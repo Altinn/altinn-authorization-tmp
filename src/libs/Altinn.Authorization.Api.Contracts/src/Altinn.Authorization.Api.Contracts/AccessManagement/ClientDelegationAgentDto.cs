@@ -1,40 +1,50 @@
-using System.Text.Json.Serialization;
-
 namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Model representing a connected client party, meaning a party which has been authorized for one or more accesses, either directly or through role(s), access packages, resources or resource instances.
 /// Model can be used both to represent a connection received from another party or a connection provided to another party.
 /// </summary>
-public class ClientDto
+public class ClientDelegationAgentDto
 {
     /// <summary>
     /// Gets or sets the party
     /// </summary>
-    [JsonPropertyName("client")]
-    public CompactEntityDto Client { get; set; }
+    public ClientParty Party { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of all access information for the client 
     /// </summary>
-    [JsonPropertyName("access")]
-    public List<RoleAccessPackages> Access { get; set; } = [];
+    public List<ClientRoleAccessPackages> Access { get; set; } = [];
 
     /// <summary>
     /// Composite Key instances
     /// </summary>
-    public class RoleAccessPackages
+    public class ClientParty
     {
         /// <summary>
-        /// Roles
+        /// Gets or sets the universally unique identifier of the party
         /// </summary>
-        [JsonPropertyName("role")]
-        public CompactRoleDto Role { get; set; }
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the party
+        /// </summary>
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// Composite Key instances
+    /// </summary>
+    public class ClientRoleAccessPackages
+    {
+        /// <summary>
+        /// Role
+        /// </summary>
+        public string Role { get; set; }
 
         /// <summary>
         /// Packages
         /// </summary>
-        [JsonPropertyName("packages")]
-        public CompactPackageDto[] Packages { get; set; }
+        public string[] Packages { get; set; }
     }
 }
