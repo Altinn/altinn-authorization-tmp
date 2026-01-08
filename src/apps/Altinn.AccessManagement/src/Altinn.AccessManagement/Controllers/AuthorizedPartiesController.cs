@@ -42,7 +42,7 @@ public class AuthorizedPartiesController(
     /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
     /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
     /// <param name="partyFilter">Optional: A list of party uuids to filter the results.</param>
-    /// <param name="anyResource">Optional: Filter for only returning authorized parties where the subject has access to any (OR) of the provided resource ids. Invalid resource ids are ignored.</param>
+    /// <param name="anyOfResourceIds">Optional: Filter for only returning authorized parties where the subject has access to any of the provided resource ids. Invalid resource ids are ignored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -68,7 +68,7 @@ public class AuthorizedPartiesController(
         [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.Auto,
         [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.Auto,
         [FromQuery] IEnumerable<Guid>? partyFilter = null,
-        [FromQuery] string[] anyResource = null,
+        [FromQuery] string[] anyOfResourceIds = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -84,7 +84,7 @@ public class AuthorizedPartiesController(
                 IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
                 IncludeSubParties = includeSubParties,
                 IncludeInactiveParties = includeInactiveParties,
-                AnyOfResourceIds = anyResource
+                AnyOfResourceIds = anyOfResourceIds
             };
 
             if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && partyFilter?.Count() > 0)
@@ -135,7 +135,7 @@ public class AuthorizedPartiesController(
     /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
     /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
     /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
-    /// <param name="anyResource">Optional: Filter for only returning authorized parties where the subject has access to any (OR) of the provided resource ids. Invalid resource ids are ignored.</param>
+    /// <param name="anyOfResourceIds">Optional: Filter for only returning authorized parties where the subject has access to any of the provided resource ids. Invalid resource ids are ignored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -161,7 +161,7 @@ public class AuthorizedPartiesController(
         [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.Auto,
         [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.Auto,
         [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.Auto,
-        [FromQuery] string[] anyResource = null,
+        [FromQuery] string[] anyOfResourceIds = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -183,7 +183,7 @@ public class AuthorizedPartiesController(
                 IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
                 IncludeSubParties = includeSubParties,
                 IncludeInactiveParties = includeInactiveParties,
-                AnyOfResourceIds = anyResource
+                AnyOfResourceIds = anyOfResourceIds
             };
 
             int userId = AuthenticationHelper.GetUserId(HttpContext);

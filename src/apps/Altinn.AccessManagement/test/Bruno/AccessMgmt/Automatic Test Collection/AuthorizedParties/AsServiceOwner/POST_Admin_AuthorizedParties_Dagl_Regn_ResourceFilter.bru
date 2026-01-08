@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&anyResource=altinn_access_management&anyResource=app_digdir_godkjenn-bruksvilkaar&anyResource=app_digdir_asdfg
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&orgCode=digdir&anyOfResourceIds=altinn_access_management&anyOfResourceIds=app_digdir_godkjenn-bruksvilkaar&anyOfResourceIds=app_digdir_asdfg
   body: json
   auth: inherit
 }
@@ -14,9 +14,10 @@ params:query {
   includeAltinn2: true
   includeAltinn3: true
   includeAccessPackages: true
-  anyResource: altinn_access_management
-  anyResource: app_digdir_godkjenn-bruksvilkaar
-  anyResource: app_digdir_asdfg
+  orgCode: digdir
+  anyOfResourceIds: altinn_access_management
+  anyOfResourceIds: app_digdir_godkjenn-bruksvilkaar
+  anyOfResourceIds: app_digdir_asdfg
 }
 
 headers {
@@ -34,8 +35,9 @@ body:json {
 script:pre-request {
   bru.runner.skipRequest(); // ToDo: Update/complete test after AT22 Deploy
   
-  const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
-  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const sharedtestdata = require(`./Testdata/sharedtestdata.js`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.js`);
   
   bru.setVar("requestName", "POST_Admin_AuthorizedParties_Dagl_Regn_ResourceFilter");
   bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
@@ -52,7 +54,7 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.js`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   

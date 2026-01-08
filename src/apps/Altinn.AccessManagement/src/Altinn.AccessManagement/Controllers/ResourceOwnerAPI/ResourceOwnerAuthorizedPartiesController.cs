@@ -1,16 +1,20 @@
-﻿using System.Net.Mime;
+﻿using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
+using System.Threading;
 
 namespace Altinn.AccessManagement.Controllers;
 
@@ -19,7 +23,7 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/resourceowner")]
-public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAuthorizedPartiesController> logger, IMapper mapper, FeatureManager featureManager, IAuthorizedPartiesService authorizedPartiesService) : ControllerBase
+public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAuthorizedPartiesController> logger, IMapper mapper, FeatureManager featureManager, IAuthorizedPartiesService authorizedPartiesService, IProviderService providerService) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
@@ -34,7 +38,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
     /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
     /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
     /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
-    /// <param name="anyResource">Optional: Filter for only returning authorized parties where the subject has access to any (OR) of the provided resource ids. Invalid resource ids are ignored.</param>
+    /// <param name="anyOfResourceIds">Optional: Filter for only returning authorized parties where the subject has access to any of the provided resource ids. Invalid resource ids are ignored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -61,12 +65,23 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
         [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
         [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
-        [FromQuery] string[] anyResource = null,
+        [FromQuery] string orgCode = null,
+        [FromQuery] string[] anyOfResourceIds = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
             BaseAttribute subjectAttribute = new BaseAttribute(subject.Type, subject.Value);
+
+            if (orgCode != null)
+            {
+                orgCode = orgCode.Trim().ToLower();
+                if (! await IsAuthorizedForOrgCode(orgCode, cancellationToken))
+                {
+                    ModelState.AddModelError(orgCode, $"Authenticated service owner organization is not authorized/owner of org code: {orgCode}.");
+                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
+                }
+            }
 
             var filters = new AuthorizedPartiesFilters
             {
@@ -79,25 +94,9 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
                 IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
                 IncludeSubParties = includeSubParties,
                 IncludeInactiveParties = includeInactiveParties,
-                AnyOfResourceIds = anyResource
+                ProviderCode = orgCode,
+                AnyOfResourceIds = anyOfResourceIds
             };
-
-            var isAdmin = User.FindFirst("scope")?.Value.Contains(AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN);
-            if (isAdmin != true)
-            {
-                var providerCode = User.FindFirst("urn:altinn:org")?.Value;
-                if (string.IsNullOrEmpty(providerCode))
-                {
-                    /* 
-                     * Not sure if we can introduce this as a hard limitation. Will require that all existing serviceowner use go through token exchange.
-                     * Or this must be rewritten to only use organization number to identify provider.
-                     */
-                    ModelState.AddModelError(providerCode, "Provider code could not be determined from token for resourceowner access");
-                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
-                }
-
-                filters.ProviderCode = providerCode;
-            }
 
             if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && subject.PartyFilter?.Count() > 0)
             {
@@ -122,5 +121,32 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
             logger.LogError(500, ex, "Unexpected internal exception occurred during ServiceOwnerGetAuthorizedParties");
             return new ObjectResult(ProblemDetailsFactory.CreateProblemDetails(HttpContext, detail: "Internal Server Error"));
         }
+    }
+
+    private async Task<bool> IsAuthorizedForOrgCode(string orgCode, CancellationToken ct)
+    {
+        var isAdmin = User.FindFirst("scope")?.Value.Contains(AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN);
+        if (isAdmin == true)
+        {
+            return true;
+        }
+
+        var tokenOrgCode = User.FindFirst("urn:altinn:org")?.Value;
+        if (!string.IsNullOrEmpty(tokenOrgCode) && tokenOrgCode.Equals(orgCode, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var consumerUrn = OrgUtil.GetAuthenticatedParty(User);
+        if (consumerUrn.IsOrganizationId(out var organizationId))
+        {
+            Provider provider = await providerService.GetProviderByOrganizationId(organizationId.ToString(), ct);
+            if (orgCode.Equals(provider?.Code, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

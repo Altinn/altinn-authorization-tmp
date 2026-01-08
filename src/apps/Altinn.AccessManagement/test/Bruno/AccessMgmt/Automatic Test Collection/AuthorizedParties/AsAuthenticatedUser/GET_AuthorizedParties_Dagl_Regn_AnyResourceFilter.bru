@@ -1,22 +1,21 @@
-meta {
+﻿meta {
   name: GET_AuthorizedParties_Dagl_Regn_AnyResourceFilter
   type: http
   seq: 14
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&anyResource=altinn_access_management&anyResource=app_digdir_godkjenn-bruksvilkaar&anyResource=app_digdir_asdfg
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=false&includeAltinn3=true&includeAccessPackages=true&anyOfResourceIds=altinn_access_management&anyOfResourceIds=app_ttd_bruno
   body: json
   auth: inherit
 }
 
 params:query {
-  includeAltinn2: true
+  includeAltinn2: false
   includeAltinn3: true
   includeAccessPackages: true
-  anyResource: altinn_access_management
-  anyResource: app_digdir_godkjenn-bruksvilkaar
-  anyResource: app_digdir_asdfg
+  anyOfResourceIds: altinn_access_management
+  anyOfResourceIds: app_ttd_bruno
 }
 
 headers {
