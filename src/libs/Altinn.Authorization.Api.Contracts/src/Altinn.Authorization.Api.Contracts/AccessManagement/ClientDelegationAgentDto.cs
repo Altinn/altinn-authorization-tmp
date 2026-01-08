@@ -30,23 +30,6 @@ public class ClientDelegationAgentDto
         /// Gets or sets the name of the party
         /// </summary>
         public string Name { get; set; }
-
-        /* ToBe Added in the future maybe
-        /// <summary>
-        /// Gets or sets the type of party
-        /// </summary>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether this party is marked as deleted in the Central Coordinating Register for Legal Entities
-        /// </summary>
-        public bool IsDeleted { get; set; }
-
-        /// <summary>
-        /// Gets or sets a set of subunits of this party, which the authorized subject also has some access to.
-        /// </summary>
-        public List<ClientParty> Subunits { get; set; } = [];
-        */
     }
 
     /// <summary>
