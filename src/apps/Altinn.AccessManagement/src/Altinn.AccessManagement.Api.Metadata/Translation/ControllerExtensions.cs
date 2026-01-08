@@ -39,14 +39,13 @@ public static class ControllerExtensions
     {
         try
         {
-            if (controller.HttpContext.Items.TryGetValue(TranslationConstants.AllowPartialKey, out var allowPartial) &&
-                allowPartial is bool allow)
+            if (controller.HttpContext.Items.TryGetValue(TranslationConstants.AllowPartialKey, out var allowPartial) && allowPartial is bool allow)
             {
                 return allow;
             }
 
             return true; // Default to allowing partial translations
-        }
+        } 
         catch
         {
             return true;
