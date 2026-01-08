@@ -168,6 +168,8 @@ public partial class ConnectionService(
         return null;
     }
 
+    #region Resources
+
     public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
@@ -352,6 +354,20 @@ public partial class ConnectionService(
 
         return null;
     }
+
+    public async Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Packages
 
     public async Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -608,6 +624,8 @@ public partial class ConnectionService(
 
         return await CheckPackage(party, [.. packageIds, .. packagesFound.Select(p => p.Id)], configureConnection, cancellationToken);
     }
+
+    #endregion
 
     private async Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
     {
@@ -1054,7 +1072,7 @@ public partial class ConnectionService
                 FromId = connection.FromId,
                 ToId = connection.ToId,
                 FacilitatorId = connection.ViaId ?? Guid.Empty
-            } 
+            }
             : null,
             From = new SystemUserClientConnectionDto.Client()
             {
@@ -1091,7 +1109,7 @@ public partial class ConnectionService
                 Name = connection.Via.Name,
                 RefId = connection.Via.RefId,
                 ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : null
-            } 
+            }
             : null,
             FacilitatorRole = connection.ViaRoleId.HasValue ? new SystemUserClientConnectionDto.ServiceProviderRole()
             {
@@ -1101,7 +1119,7 @@ public partial class ConnectionService
                 Description = connection.ViaRole.Description,
                 IsKeyRole = connection.ViaRole.IsKeyRole,
                 Urn = connection.ViaRole.Urn
-            } 
+            }
             : null
         });
     }
