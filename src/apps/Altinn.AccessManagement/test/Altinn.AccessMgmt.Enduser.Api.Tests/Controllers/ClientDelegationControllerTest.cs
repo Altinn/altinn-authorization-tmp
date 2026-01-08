@@ -6,9 +6,9 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.TestUtils;
 using Altinn.AccessMgmt.TestUtils.Data;
 using Altinn.AccessMgmt.TestUtils.Fixtures;
-using Altinn.AccessMgmt.TestUtils.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 

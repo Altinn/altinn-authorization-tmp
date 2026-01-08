@@ -14,7 +14,10 @@ using Xunit.Sdk;
 namespace Altinn.AccessMgmt.TestUtils.Factories;
 
 /// <summary>
-/// Postgres singleton that creates a npg sql server and creates a new database for each test 
+/// Test helper that provisions a PostgreSQL container and provides per-test
+/// databases. On first use the factory starts a PostgreSQL container, creates
+/// a migrated and seeded template database, and thereafter returns cloned
+/// databases based on that template to provide isolation between tests.
 /// </summary>
 public static class EFPostgresFactory
 {
@@ -30,25 +33,28 @@ public static class EFPostgresFactory
     private static int _databaseInstance = 0;
 
     /// <summary>
-    /// Database Password
+    /// Password used for the test database users.
     /// </summary>
     public static readonly string DbPassword = "Password";
 
     /// <summary>
-    /// Database Username
+    /// Application-level database user (non-admin) used by tests.
     /// </summary>
     public static readonly string DbUserName = "platform_authorization";
 
     /// <summary>
-    /// Database Admin
+    /// Administrative database user used when performing migrations and other privileged operations.
     /// </summary>
     public static readonly string DbAdminName = "platform_authorization_admin";
 
     /// <summary>
-    /// Creates a new database instance cloned from a migrated template database
+    /// Creates and returns a new database instance for a test. The first call
+    /// initializes the container, sets up roles and a migrated template database
+    /// named <c>test_primary</c>, and seeds it with test data. Subsequent calls
+    /// create cloned databases using <c>CREATE DATABASE ... WITH TEMPLATE test_primary</c>.
     /// </summary>
-    /// <returns></returns>
-    /// <exception cref="XunitException">gets raised if bootstrapping of primary db fails.</exception>
+    /// <returns>A <see cref="PostgresDatabase"/> describing the newly created database.</returns>
+    /// <exception cref="XunitException">Thrown when bootstrapping the primary database or roles fails.</exception>
     public static async Task<PostgresDatabase> Create()
     {
         await _semaphore.WaitAsync();
@@ -121,12 +127,17 @@ public static class EFPostgresFactory
 }
 
 /// <summary>
-/// Container for persisting connections string and database name
+/// Container that provides connection string builders for both the admin and
+/// application user for a specific test database. Also implements
+/// <see cref="IOptions{PostgreSQLSettings}"/> so it can be injected where
+/// configuration of the test database is required.
 /// </summary>
+/// <param name="dbname">The name of the physical database.</param>
+/// <param name="connectionString">Base connection string returned from the test container.</param>
 public class PostgresDatabase(string dbname, string connectionString) : IOptions<PostgreSQLSettings>
 {
     /// <summary>
-    /// Admin name
+    /// Connection string builder configured for administrative actions (migrations, template creation).
     /// </summary>
     public NpgsqlConnectionStringBuilder Admin { get; } = new NpgsqlConnectionStringBuilder(connectionString)
     {
@@ -135,7 +146,6 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = EFPostgresFactory.DbAdminName,
         Password = EFPostgresFactory.DbPassword,
         IncludeErrorDetail = true,
-        //// Pooling enabled (remove previous Pooling = false)
         Pooling = true,
         ConnectionIdleLifetime = 30,
         MinPoolSize = 0,
@@ -144,7 +154,7 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
     };
 
     /// <summary>
-    /// User name
+    /// Connection string builder configured for the application-level test user.
     /// </summary>
     public NpgsqlConnectionStringBuilder User { get; } = new NpgsqlConnectionStringBuilder(connectionString)
     {
@@ -161,7 +171,9 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
     };
 
     /// <summary>
-    /// Implements <see cref="IOptions{PostgreSQLSettings}"/> 
+    /// Returns a <see cref="PostgreSQLSettings"/> instance populated with the
+    /// user connection string and password, suitable for injection into
+    /// components that consume <see cref="IOptions{PostgreSQLSettings}"/>.
     /// </summary>
     public PostgreSQLSettings Value => new()
     {
