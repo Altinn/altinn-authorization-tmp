@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -15,7 +14,9 @@ using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -235,15 +236,15 @@ public partial class ConnectionService(
             return Problems.MissingConnection;
         }
 
-        //var check = await CheckPackage(fromId, packageIds: [packageId], configureConnection, cancellationToken);
-        //if (check.IsProblem)
-        //{
-        //    return check.Problem;
-        //}
+        var check = await CheckResource(fromId, resourceIds: [resourceId], configureConnection, cancellationToken);
+        if (check.IsProblem)
+        {
+            return check.Problem;
+        }
 
         //problem = ValidationComposer.Validate(
-        //    PackageValidation.AuthorizePackageAssignment(check.Value),
-        //    PackageValidation.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), to.Type, queryParamName)
+        //    PackageValidation.AuthorizeResourceAssignment(check.Value),
+        //    PackageValidation.ResourceIsAssignableToRecipient(check.Value.Select(p => p.Key), to.Type, "resource")
         //);
 
         //if (problem is { })
@@ -355,14 +356,47 @@ public partial class ConnectionService(
         return null;
     }
 
-    public async Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var connections = await connectionQuery.GetConnectionsAsync(
+            filter: new ConnectionQueryFilter()
+            {
+                FromIds = [auditAccessor.AuditValues.ChangedBy],
+                ToIds = [party],
+                IncludeDelegation = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludePackages = true,
+                IncludeResource = false,
+                IncludeSubConnections = true,
+                EnrichEntities = true,
+                EnrichPackageResources = false,
+                ResourceIds = resourceIds.ToList(),
+            },
+            direction: ConnectionQueryDirection.FromOthers,
+            useNewQuery: true,
+            ct: cancellationToken
+            );
+
+        return resourceIds.ToDictionary(t => t, t => connections.Any(y => y.Resources.Select(r => r.Id).Contains(t)));
     }
 
-    public async Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var resourceObjects = await dbContext.Resources.AsNoTracking().Where(r => resources.Contains(r.RefId)).ToListAsync(cancellationToken);
+
+        if (resourceObjects is null || !resourceObjects.Any())
+        {
+            return resources.ToDictionary(t => t, t => false);
+        }
+
+        var idToKey = resourceObjects.ToDictionary(r => r.Id, r => r.RefId);
+        var checkResult = await CheckResource(party, idToKey.Keys, configureConnection, cancellationToken);
+
+        return idToKey.ToDictionary(
+            pair => pair.Value,
+            pair => checkResult.Value.TryGetValue(pair.Key, out var allowed) && allowed
+        );
     }
 
     #endregion
