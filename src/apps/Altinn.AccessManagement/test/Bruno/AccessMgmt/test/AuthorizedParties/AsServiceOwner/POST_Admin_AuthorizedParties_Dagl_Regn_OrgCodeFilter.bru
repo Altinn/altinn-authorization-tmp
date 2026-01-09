@@ -1,11 +1,11 @@
 meta {
-  name: POST_Admin_AuthorizedParties_Dagl_Regn_AutoFilters
+  name: POST_Admin_AuthorizedParties_Dagl_Regn_OrgCodeFilter
   type: http
-  seq: 11
+  seq: 13
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includePartiesViaKeyRoles=auto&includeSubParties=auto&includeInactiveParties=auto
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&orgCode=digdir&anyOfResourceIds=altinn_access_management&anyOfResourceIds=app_ttd_authz-bruno-testapp1
   body: json
   auth: inherit
 }
@@ -14,9 +14,9 @@ params:query {
   includeAltinn2: true
   includeAltinn3: true
   includeAccessPackages: true
-  includePartiesViaKeyRoles: auto
-  includeSubParties: auto
-  includeInactiveParties: auto
+  orgCode: digdir
+  anyOfResourceIds: altinn_access_management
+  anyOfResourceIds: app_ttd_authz-bruno-testapp1
 }
 
 headers {
@@ -32,11 +32,13 @@ body:json {
 }
 
 script:pre-request {
+  bru.runner.skipRequest(); // ToDo: Update/complete test after AT22 Deploy
   
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Dagl_Regn_AutoFilters");
+  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn_ProviderFilter");
   bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
   
   var getTokenParameters = {
@@ -46,7 +48,6 @@ script:pre-request {
     auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
   }
   
-  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
   const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken", token);
 }

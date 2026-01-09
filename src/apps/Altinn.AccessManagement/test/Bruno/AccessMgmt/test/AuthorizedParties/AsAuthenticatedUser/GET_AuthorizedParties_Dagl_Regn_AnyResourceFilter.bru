@@ -1,11 +1,11 @@
 meta {
-  name: POST_Admin_AuthorizedParties_Dagl_Regn_AutoFilters
+  name: GET_AuthorizedParties_Dagl_Regn_AnyResourceFilter
   type: http
-  seq: 11
+  seq: 16
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includePartiesViaKeyRoles=auto&includeSubParties=auto&includeInactiveParties=auto
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&anyOfResourceIds=altinn_access_management&anyOfResourceIds=authz_bruno_gar_resource1&anyOfResourceIds=app_ttd_authz-bruno-testapp1
   body: json
   auth: inherit
 }
@@ -14,9 +14,9 @@ params:query {
   includeAltinn2: true
   includeAltinn3: true
   includeAccessPackages: true
-  includePartiesViaKeyRoles: auto
-  includeSubParties: auto
-  includeInactiveParties: auto
+  anyOfResourceIds: altinn_access_management
+  anyOfResourceIds: authz_bruno_gar_resource1
+  anyOfResourceIds: app_ttd_authz-bruno-testapp1
 }
 
 headers {
@@ -24,26 +24,21 @@ headers {
   Accept: application/json
 }
 
-body:json {
-  {
-    "type": "urn:altinn:person:identifier-no",
-    "value": "{{personId}}"
-  }
-}
-
 script:pre-request {
+  bru.runner.skipRequest(); // ToDo: Update/complete test after AT22 Deploy
   
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Dagl_Regn_AutoFilters");
-  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
+  bru.setVar("requestName", "GET_AuthorizedParties_Dagl_Regn_IncludeInactiveFalse");
   
   var getTokenParameters = {
-    auth_org: sharedtestdata.serviceOwners.digdir.org,
-    auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
-    auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
+    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
+    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
+    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
+    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
   
   const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
@@ -168,8 +163,6 @@ tests {
     
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
     const innehaverOfActiveEnk = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.partyUuid);
-    const innehaverOfDeletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.innehaver.partyUuid);
-    const innehaverOfDeletedEnkMoreThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.innehaver.partyUuid);
   
     assert.exists(innehaverOfActiveEnk, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.name+' to exist');
     assert.includeMembers(innehaverOfActiveEnk.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
@@ -191,6 +184,16 @@ tests {
     assert.notIncludeMembers(targetParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
     expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(124);
     
+  });
+  
+  test(requestName + "|Check deleted AuthorizedParties are not included", function() {    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const deletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.partyUuid);
+    const innehaverOfDeletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.innehaver.partyUuid);
+  
+    assert.strictEqual(deletedEnkLessThanTwoYears, undefined, 'Expected Deleted Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.name+' to NOT exist');
+    assert.strictEqual(innehaverOfDeletedEnkLessThanTwoYears, undefined, 'Expected Innehaver of deleted Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.innehaver.name+' to NOT exist');  
+   
   });
   
   
