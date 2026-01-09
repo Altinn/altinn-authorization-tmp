@@ -22,11 +22,42 @@ public partial class AltinnAccessManagementClient(
 {
     private HttpClient HttpClient => HttpClientFactory.CreateClient(PlatformOptions.Value.HttpClientName);
 
+    /// <inheritdoc />
     public async Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamAppRightDelegations(string nextPage = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-            RequestComposer.WithSetUri(AccessManagementOptions.Value.Endpoint, "/register/api/v1/internal/apprightdelegation/stream"),
+            RequestComposer.WithSetUri(AccessManagementOptions.Value.Endpoint, "/accessmanagement/api/v1/internal/singleright/appdelegation/stream"),
+            RequestComposer.WithSetUri(nextPage),
+            RequestComposer.WithPlatformAccessToken(async () => await TokenGenerator.CreatePlatformAccessToken(cancellationToken))
+        ];
+
+        var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
+
+        return new PaginatorStream<DelegationChange>(HttpClient, response, request);
+    }
+
+    /// <inheritdoc />
+    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<InstanceDelegationChange>>>> StreamInstanceRightDelegations(string nextPage = null, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<Action<HttpRequestMessage>> request = [
+            RequestComposer.WithHttpVerb(HttpMethod.Get),
+            RequestComposer.WithSetUri(AccessManagementOptions.Value.Endpoint, "/accessmanagement/api/v1/internal/singleright/instancedelegation/stream"),
+            RequestComposer.WithSetUri(nextPage),
+            RequestComposer.WithPlatformAccessToken(async () => await TokenGenerator.CreatePlatformAccessToken(cancellationToken))
+        ];
+
+        var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
+
+        return new PaginatorStream<InstanceDelegationChange>(HttpClient, response, request);
+    }
+
+    /// <inheritdoc />
+    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResouceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<Action<HttpRequestMessage>> request = [
+            RequestComposer.WithHttpVerb(HttpMethod.Get),
+            RequestComposer.WithSetUri(AccessManagementOptions.Value.Endpoint, "/accessmanagement/api/v1/internal/singleright/resourcedelegation/stream"),
             RequestComposer.WithSetUri(nextPage),
             RequestComposer.WithPlatformAccessToken(async () => await TokenGenerator.CreatePlatformAccessToken(cancellationToken))
         ];
@@ -43,11 +74,26 @@ public partial class AltinnAccessManagementClient(
 public interface IAltinnAccessManagement
 {
     /// <summary>
-    /// Streams a paginated list of parties from the Altinn Register service.
+    /// Streams a paginated list of single app right delegations from the RightsInternal controller.
     /// </summary>
-    /// <param name="fields">The fields to include in the response.</param>
     /// <param name="nextPage">The URL of the next page, if paginated.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of paginated <see cref="Party"/> items.</returns>
+    /// <returns>An asynchronous enumerable of paginated <see cref="DelegationChange"/> items.</returns>
     Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamAppRightDelegations(string nextPage = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Streams a paginated list of single resource registry right delegations from the RightsInternal controller.
+    /// </summary>
+    /// <param name="nextPage">The URL of the next page, if paginated.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of paginated <see cref="DelegationChange"/> items.</returns>
+    Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResouceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Streams a paginated list of single instance delegations from the RightsInternal controller.
+    /// </summary>
+    /// <param name="nextPage">The URL of the next page, if paginated.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of paginated <see cref="InstanceDelegationChange"/> items.</returns>
+    Task<IAsyncEnumerable<PlatformResponse<PageStream<InstanceDelegationChange>>>> StreamInstanceRightDelegations(string nextPage = null, CancellationToken cancellationToken = default);
 }

@@ -13,7 +13,7 @@ using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
-    public class SingleAppRightSyncService : BaseSyncService, ISingleAppRightSyncService
+    public class SingleInstanceRightSyncService : BaseSyncService, ISingleInstanceRightSyncService
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AltinnAdminRoleSyncService"/> class.
@@ -21,7 +21,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         /// <param name="singleRights">The single rights service used for streaming roles.</param>
         /// <param name="serviceProvider">object used for creating a scope and fetching a scoped service (IDelegationService) based on this scope</param>
         /// <param name="logger">The logger instance for logging information and errors.</param>
-        public SingleAppRightSyncService(
+        public SingleInstanceRightSyncService(
             IServiceProvider serviceProvider,
             IAltinnAccessManagement singleRights,
             ILogger<SingleAppRightSyncService> logger
@@ -36,12 +36,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         private readonly ILogger<SingleAppRightSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
 
-        public async Task SyncSingleAppRights(ILease lease, CancellationToken cancellationToken)
+        public async Task SyncSingleInstanceRights(ILease lease, CancellationToken cancellationToken)
         {
             var leaseData = await lease.Get<SingleAppRightLease>(cancellationToken);
-            var singleAppRightDelegations = await _singleRights.StreamAppRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
+            var singleInstanceRightDelegations = await _singleRights.StreamInstanceRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
 
-            await foreach (var page in singleAppRightDelegations)
+            await foreach (var page in singleInstanceRightDelegations)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -56,7 +56,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing app delegation page '{0}'", batchName);
+                _logger.LogInformation("Starting proccessing instance delegation page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
@@ -67,57 +67,58 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             await using var scope = _serviceProivider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
 
-                            if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid))
+                            if (!Guid.TryParse(item.PerformedBy, out Guid performedByGuid))
                             {
                                 performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
                             }
 
                             AuditValues values = new AuditValues(
                                 performedByGuid,
-                                SystemEntityConstants.SingleRightImportSystem.Id,
+                                SystemEntityConstants.SingleRightImportSystem,
                                 batchId.ToString(),
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                            string[] appValues = item.ResourceId.Split('/', 2, StringSplitOptions.TrimEntries);
-                            string resource = $"app_{appValues[0].ToLower()}_{appValues[1].ToLower()}";
-
                             if (item.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
                             {
-                                int revokes = await assignmentService.RevokeImportedAssignmentResource(
-                                    item.FromUuid.Value,
-                                    item.ToUuid.Value,
-                                    resource,
+                                int revokes = await assignmentService.RevokeImportedInstanceAssignment(
+                                    item.FromUuid,
+                                    item.ToUuid,
+                                    item.ResourceId,
+                                    item.InstanceId,
                                     values,
                                     cancellationToken);
 
                                 if (revokes == 0)
                                 {
                                     _logger.LogWarning(
-                                        "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                        "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
                                         item.FromUuid,
                                         item.ToUuid,
-                                        resource);
+                                        item.ResourceId,
+                                        item.InstanceId);
                                 }
                             }
                             else
                             {
-                                int adds = await assignmentService.ImportAssignmentResourceChange(
-                                    item.FromUuid.Value,
-                                    item.ToUuid.Value,
-                                    resource,
+                                int adds = await assignmentService.ImportInstanceAssignmentChange(
+                                    item.FromUuid,
+                                    item.ToUuid,
+                                    item.ResourceId,
                                     item.BlobStoragePolicyPath,
                                     item.BlobStorageVersionId,
-                                    item.DelegationChangeId,
+                                    item.InstanceId,
+                                    item.InstanceDelegationChangeId,
                                     values,
                                     cancellationToken);
 
                                 if (adds == 0)
                                 {
                                     _logger.LogWarning(
-                                        "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                        "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
                                         item.FromUuid,
                                         item.ToUuid,
-                                        resource);
+                                        item.ResourceId,
+                                        item.InstanceId);
                                 }
                             }
                         }
@@ -137,8 +138,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                                 ErrorQueue error = new ErrorQueue
                                 {
-                                    DelegationChangeId = item.DelegationChangeId,
-                                    OriginType = "App",
+                                    DelegationChangeId = item.InstanceDelegationChangeId,
+                                    OriginType = "Instance",
                                     ErrorItem = JsonSerializer.Serialize(item),
                                     ErrorMessage = ex.InnerException is null ? ex.Message : ex.InnerException.Message
                                 };
@@ -169,24 +170,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
         }
 
-        private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, DelegationChange item, CancellationToken cancellationToken)
+        private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, InstanceDelegationChange item, CancellationToken cancellationToken)
         {
-            if (ex.Message.StartsWith("Resource '", StringComparison.InvariantCultureIgnoreCase) && ex.Message.EndsWith("' not found", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_toid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_fromid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
+            return false;   
         }
     }
 }

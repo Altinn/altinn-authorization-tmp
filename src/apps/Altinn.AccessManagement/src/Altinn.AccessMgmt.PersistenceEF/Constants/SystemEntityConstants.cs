@@ -151,6 +151,32 @@ public static class SystemEntityConstants
     /// - <c>TypeId:</c> Internal entity type
     /// - <c>VariantId:</c> Standard variant
     /// </remarks>
+    public static ConstantDefinition<Entity> SingleRightImportSystem { get; } = new ConstantDefinition<Entity>(AuditDefaults.SingleRightImportSystem)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.SingleRightImportSystem),
+            RefId = "sys-single-right-import-system",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Internal API Import System")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Internt API-importsystem")),
+    };
+
+    /// <summary>
+    /// Represents the InternalApiImportSystem system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> b96cda05-c0e0-4c59-b4b8-f15a7dff9590
+    /// - <c>Name:</c> InternalApiImportSystem
+    /// - <c>RefId:</c> sys-internal-api-import-system
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
     public static ConstantDefinition<Entity> Altinn2RoleImportSystem { get; } = new ConstantDefinition<Entity>(AuditDefaults.Altinn2RoleImportSystem)
     {
         Entity = new()

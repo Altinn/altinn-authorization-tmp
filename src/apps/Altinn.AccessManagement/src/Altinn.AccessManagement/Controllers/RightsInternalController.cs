@@ -428,7 +428,7 @@ namespace Altinn.AccessManagement.Controllers
 
         ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
         [ActionName(nameof(SingleAppRightsFeed))]
-        [HttpGet("internal/singleright/appdelegation")]
+        [HttpGet("internal/singleright/appdelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -457,7 +457,7 @@ namespace Altinn.AccessManagement.Controllers
 
         ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
         [ActionName(nameof(SingleResourceRightsFeed))]
-        [HttpGet("internal/singleright/resourcedelegation")]
+        [HttpGet("internal/singleright/resourcedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
@@ -486,7 +486,7 @@ namespace Altinn.AccessManagement.Controllers
 
         ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
         [ActionName(nameof(SingleInstanceRightsFeed))]
-        [HttpGet("internal/singleright/instancedelegation")]
+        [HttpGet("internal/singleright/instancedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
