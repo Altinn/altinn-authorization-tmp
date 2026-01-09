@@ -1,23 +1,14 @@
 ﻿using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
-    [Route("/accessmanagement/api/v1/meta/info/types/")]
+    [Route("/accessmanagement/api/v1/meta/types")]
     [ApiController]
     public class TypesController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-
-        public TypesController(AppDbContext dbContext)
-        {
-            this.dbContext = dbContext;
-        }
-
         /// <summary>
         /// Gets all <see cref="EntityTypeDto"/>
         /// </summary>
@@ -25,21 +16,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// [HttpGet]
         private async Task<ActionResult<List<EntityTypeDto>>> GetAllTypes()
         {
-            var res = await dbContext.EntityTypes.AsNoTracking().ToListAsync();
-            if (res == null)
-            {
-                return NotFound();
-            }
-
-            var dtos = res.Select(DtoMapper.Convert);
-
-            return Ok(dtos);
+            return EntityTypeConstants.AllEntities().Select(t => DtoMapper.Convert(t.Entity)).ToList();
         }
 
         /// <summary>
         /// Gets all <see cref="VariantDto"/> for given type
         /// </summary>
-        /// [Route("{typeName}/variants")]
+        /// [Route("{typeName}/types")]
         /// [HttpGet]
         private async Task<ActionResult<List<VariantDto>>> GetTypeVariants(string typeName)
         {
@@ -48,33 +31,17 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Type {typeName} not found. Try 'Organisasjon'");
             }
 
-            var res = await dbContext.EntityVariants.AsNoTracking().Where(t => t.TypeId == entityType.Id).ToListAsync();
-            if (res == null)
-            {
-                return NotFound();
-            }
-
-            var dtos = res.Select(DtoMapper.ConvertFlat);
-
-            return Ok(dtos);
+            return EntityVariantConstants.AllEntities().Where(t => t.Entity.TypeId == entityType.Id).Select(t => DtoMapper.ConvertFlat(t.Entity)).ToList();
         }
 
         /// <summary>
         /// Gets all organization variants <see cref="VariantDto"/>
         /// </summary>
-        [Route("organization/variants")]
+        [Route("organization/types")]
         [HttpGet]
         public async Task<ActionResult<List<VariantDto>>> GetOrganizationVariants()
         {
-            var res = await dbContext.EntityVariants.AsNoTracking().Where(t => t.TypeId == EntityTypeConstants.Organization.Id).ToListAsync();
-            if (res == null)
-            {
-                return NotFound();
-            }
-
-            var dtos = res.Select(DtoMapper.ConvertFlat);
-
-            return Ok(dtos);
+            return EntityVariantConstants.AllEntities().Where(t => t.Entity.TypeId == EntityTypeConstants.Organization.Id).Select(t => DtoMapper.ConvertFlat(t.Entity)).ToList();
         }
     }
 }
