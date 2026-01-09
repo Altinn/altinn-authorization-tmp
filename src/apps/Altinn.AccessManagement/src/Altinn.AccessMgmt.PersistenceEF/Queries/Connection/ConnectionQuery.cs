@@ -688,7 +688,7 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        SortedList<string, Entity> entityDict = [];
+        SortedList<Guid, Entity> entityDict = [];
         var entitites = await db
             .Entities
             .AsNoTracking()
@@ -735,23 +735,23 @@ public class ConnectionQuery(AppDbContext db)
 
         foreach (var entity in entitites)
         {
-            entityDict.Add(entity.Id.ToString(), entity);
+            entityDict.Add(entity.Id, entity);
         }
 
-        SortedList<string, List<Entity>> childrenDict = [];
+        SortedList<Guid, List<Entity>> childrenDict = [];
         if (delayChildNesting)
         {
             var children = await db
                 .Entities
                 .AsNoTracking()
-                .Where(e => e.ParentId != null && entityDict.Keys.Select(k => Guid.Parse(k)).ToList().Contains((Guid)e.ParentId))
+                .Where(e => e.ParentId != null && entityDict.Keys.Contains((Guid)e.ParentId))
                 .Select(e => new Entity()
                 {
                     Id = e.Id,
                     Name = e.Name,
                     OrganizationIdentifier = e.OrganizationIdentifier,
                     ParentId = e.ParentId,
-                    Parent = entityDict[e.ParentId.ToString()],
+                    Parent = entityDict[(Guid)e.ParentId],
                     PersonIdentifier = e.PersonIdentifier,
                     DateOfBirth = e.DateOfBirth,
                     DateOfDeath = e.DateOfDeath,
@@ -769,13 +769,13 @@ public class ConnectionQuery(AppDbContext db)
 
             foreach (var child in children)
             {
-                if (!childrenDict.ContainsKey(child.ParentId.ToString()))
+                if (!childrenDict.ContainsKey((Guid)child.ParentId))
                 {
-                    childrenDict.Add(child.ParentId.ToString(), [child]);
+                    childrenDict.Add((Guid)child.ParentId, [child]);
                 }
                 else
                 {
-                    childrenDict[child.ParentId.ToString()].Add(child);
+                    childrenDict[(Guid)child.ParentId].Add(child);
                 }
             }
         }
@@ -792,9 +792,9 @@ public class ConnectionQuery(AppDbContext db)
         {
             foreach (var c in allKeys)
             {
-                c.From = entityDict[c.FromId.ToString()];
-                c.To = entityDict[c.ToId.ToString()];
-                c.Via = c.ViaId != null ? entityDict[c.ViaId.ToString()] : null;
+                c.From = entityDict[c.FromId];
+                c.To = entityDict[c.ToId];
+                c.Via = c.ViaId != null ? entityDict[(Guid)c.ViaId] : null;
                 c.Role = c.RoleId != Guid.Empty ? sortedRoles[c.RoleId.ToString()] : null;
                 c.ViaRole = c.ViaRoleId != null && c?.ViaRoleId != Guid.Empty ? sortedRoles[c.ViaRoleId.ToString()] : null;
             }
@@ -820,14 +820,14 @@ public class ConnectionQuery(AppDbContext db)
                     continue;
                 }
 
-                c.From = entityDict[c.FromId.ToString()];
-                c.To = entityDict[c.ToId.ToString()];
-                c.Via = c.ViaId != null ? entityDict[c.ViaId.ToString()] : null;
+                c.From = entityDict[c.FromId];
+                c.To = entityDict[c.ToId];
+                c.Via = c.ViaId != null ? entityDict[(Guid)c.ViaId] : null;
                 c.Role = c.RoleId != Guid.Empty ? sortedRoles[c.RoleId.ToString()] : null;
                 c.ViaRole = c.ViaRoleId != null && c?.ViaRoleId != Guid.Empty ? sortedRoles[c.ViaRoleId.ToString()] : null;
                 keysWithChildren.Add(c);
 
-                if (c.Reason != ConnectionReason.Hierarchy && childrenDict.TryGetValue(c.From.Id.ToString(), out List<Entity> children))
+                if (c.Reason != ConnectionReason.Hierarchy && childrenDict.TryGetValue(c.From.Id, out List<Entity> children))
                 {
                     foreach (var child in children)
                     {
