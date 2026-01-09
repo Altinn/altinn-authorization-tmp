@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.TestUtils.Data;
+namespace Altinn.AccessManagement.TestUtils.Data;
 
 public static class TestEntities
 {
