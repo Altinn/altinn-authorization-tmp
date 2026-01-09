@@ -24,6 +24,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/clientdelegations")]
 [FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+[Tags("Client Delegation")]
 public class ClientDelegationController(
     IClientDelegationService clientDelegationService,
     IUserProfileLookupService UserProfileLookupService,
