@@ -264,6 +264,16 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.AccountingAndEconomicReporting.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.AccountingAndEconomicReporting.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
+            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.Revision.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.AuditorAttestation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.AuditorAttestation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.AuditorAttestation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
