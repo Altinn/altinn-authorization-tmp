@@ -1,7 +1,7 @@
 meta {
   name: GET_AuthorizedParties_Dagl_Regn_IncludeInactiveFalse
   type: http
-  seq: 13
+  seq: 15
 }
 
 get {
@@ -41,8 +41,8 @@ script:pre-request {
   }
   
   
-const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
-const token = await testTokenGenerator.getToken(getTokenParameters);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken", token);
 }
 

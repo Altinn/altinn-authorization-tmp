@@ -38,7 +38,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn_ProviderFilter");
+  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn_OrgCodeFilter");
   bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
   
   var getTokenParameters = {

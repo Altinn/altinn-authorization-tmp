@@ -1,7 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -106,7 +105,7 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
     /// <returns>Enumerable of resources</returns>
-    Task<SortedDictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    Task<List<Resource>> GetResources(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
 
     /// <summary>
     /// Get resources filtered by provider code and/or resource ids, grouped by role codes (including legacy code)
@@ -114,8 +113,8 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <param name="providerCode">Provider code</param>
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
-    /// <returns>Dictionary of resources keyed by role code and legacy code</returns>
-    Task<SortedDictionary<string, List<Resource>>> GetResourcesGroupedByRoleCode(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    /// <returns>List of role resources</returns>
+    Task<List<RoleResource>> GetRoleResources(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
 
     /// <summary>
     /// Get resources filtered by provider code and/or resource ids, grouped by package id
@@ -123,8 +122,8 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <param name="providerCode">Provider code</param>
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
-    /// <returns>Dictionary of resources keyed by package id</returns>
-    Task<SortedDictionary<Guid, List<Resource>>> GetResourcesGroupedByPackageId(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    /// <returns>List of package resources</returns>
+    Task<List<PackageResource>> GetPackageResources(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
 
     /// <summary>
     /// Get roles filtered by role ids and/or package ids, grouped by package id
@@ -132,6 +131,6 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <param name="roleIds">List of role ids</param>
     /// <param name="packageIds">List of package ids</param>
     /// <param name="ct">Cancellation token</param>
-    /// <returns>Dictionary of roles grouped by package id</returns>
-    Task<SortedDictionary<Guid, List<Role>>> GetRolesGroupedByPackageId(IEnumerable<Guid>? roleIds = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default);
+    /// <returns>List of role packages</returns>
+    Task<List<RolePackage>> GetRolePackages(IEnumerable<Guid>? roleIds = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default);
 }

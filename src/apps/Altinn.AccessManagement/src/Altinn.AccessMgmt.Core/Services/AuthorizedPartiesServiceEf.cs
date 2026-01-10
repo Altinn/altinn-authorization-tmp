@@ -457,8 +457,16 @@ public class AuthorizedPartiesServiceEf(
         List<Guid> toOrgs = null,
         CancellationToken cancellationToken = default)
     {
-        // Get AccessPackage Delegations
-        var connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
+        /*
+         * Get AccessPackage connections but only if no resource filter is specified, or if both resource and package filters are specified.
+         * Note: will need updating when connection query are to be used for lookup and filters of roles and/or resource connections as well.
+         */
+        List<ConnectionQueryExtendedRecord> connections = [];
+        bool resourceFilterSpecified = filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0;
+        if (!resourceFilterSpecified || filter.PackageFilter?.Count > 0)
+        {
+            connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
+        }
 
         // Get App, Resource and Instance delegations
         List<Guid> allToParties = toOrgs ?? new List<Guid>();
@@ -740,10 +748,10 @@ public class AuthorizedPartiesServiceEf(
 
     private async Task<AuthorizedPartiesFilters> ProcessProviderAndResourceFilters(AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
-        // Should probably only get these if providerCode or anyResource filter exists?
+        // Only build resource filters if providerCode or anyOfResourceIds filters are specified
         if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0)
         {
-            SortedDictionary<string, Resource> resources = await repoService.GetResourcesByProvider(filter.ProviderCode, filter.AnyOfResourceIds, ct: cancellationToken);
+            List<Resource> resources = await repoService.GetResources(filter.ProviderCode, filter.AnyOfResourceIds, ct: cancellationToken);
 
             if (resources.Count == 0)
             {
@@ -752,37 +760,43 @@ public class AuthorizedPartiesServiceEf(
             }
 
             filter.ResourceFilter = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var resourceId in resources.Keys)
+            foreach (var resource in resources)
             {
-                filter.ResourceFilter[resourceId] = resourceId;
+                filter.ResourceFilter[resource.RefId] = resource.RefId;
             }
 
-            SortedDictionary<string, List<Resource>> roleResources = await repoService.GetResourcesGroupedByRoleCode(filter.ProviderCode, resources.Keys, ct: cancellationToken);
-            SortedDictionary<Guid, List<Resource>> packageResources = await repoService.GetResourcesGroupedByPackageId(filter.ProviderCode, resources.Keys, ct: cancellationToken);
+            List<PackageResource> packageResources = await repoService.GetPackageResources(filter.ProviderCode, filter.ResourceFilter.Keys, ct: cancellationToken);
 
             // Add packageIds from packageResources to filter.PackageFilter
             filter.PackageFilter ??= new SortedDictionary<Guid, Guid>();
-            foreach (var packageId in packageResources.Keys)
+            foreach (var package in packageResources)
             {
-                if (!filter.PackageFilter.ContainsKey(packageId))
+                if (!filter.PackageFilter.ContainsKey(package.Id))
                 {
-                    filter.PackageFilter[packageId] = packageId;
+                    filter.PackageFilter[package.Id] = package.Id;
+                }
+            }
+
+            // Build filter.RoleFilter based on roleResources and packageRoles
+            filter.RoleFilter ??= new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            
+            List<RoleResource> roleResources = await repoService.GetRoleResources(filter.ProviderCode, filter.ResourceFilter.Keys, ct: cancellationToken);
+            foreach (var group in roleResources.GroupBy(rr => rr.RoleId))
+            {
+                Role role = group.First().Role;
+                filter.RoleFilter[role.Code] = role.Code;
+
+                if (role.LegacyCode != null)
+                {
+                    filter.RoleFilter[role.LegacyCode] = role.LegacyCode;
                 }
             }
 
             // Find all Roles for the PackageResources found above, as we need to include roles giving access via packages as well.
-            SortedDictionary<Guid, List<Role>> packageRoles = await repoService.GetRolesGroupedByPackageId(packageIds: packageResources.Keys, ct: cancellationToken);
-
-            // Build filter.RoleFilter based on roleResources and packageRoles above
-            filter.RoleFilter ??= new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var roleCode in roleResources.Keys)
+            List<RolePackage> rolePackages = await repoService.GetRolePackages(packageIds: filter.PackageFilter.Keys, ct: cancellationToken);
+            foreach (var group in rolePackages.GroupBy(rp => rp.PackageId))
             {
-                filter.RoleFilter[roleCode] = roleCode;
-            }
-
-            foreach (var packageId in packageRoles.Keys)
-            {
-                foreach (var role in packageRoles[packageId])
+                foreach (var role in group.Select(rp => rp.Role))
                 {
                     if (!filter.RoleFilter.ContainsKey(role.Code))
                     {
