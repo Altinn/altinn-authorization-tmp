@@ -32,14 +32,19 @@ public class EntityVariantDto
 }
 
 /// <summary>
-/// Variant
+/// Extended EntityVariant
 /// </summary>
-public class VariantDto
+public class EntitySubTypeDto
 {
     /// <summary>
     /// Id
     /// </summary>
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// TypeId
+    /// </summary>
+    public Guid TypeId { get; set; }
 
     /// <summary>
     /// Name
@@ -50,4 +55,9 @@ public class VariantDto
     /// Description
     /// </summary>
     public string Description { get; set; }
+
+    /// <summary>
+    /// Type
+    /// </summary>
+    public EntityTypeDto Type { get; set; }
 }
