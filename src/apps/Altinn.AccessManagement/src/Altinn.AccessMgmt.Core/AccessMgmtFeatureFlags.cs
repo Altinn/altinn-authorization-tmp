@@ -38,6 +38,11 @@ public static class AccessMgmtFeatureFlags
     public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
 
     /// <summary>
+    /// Specifies Client Delegation should be enabled in enduser API.
+    /// </summary>
+    public const string EnduserControllerClientDelegation = $"AccessMgmt.Enduser.Controller.ClientDelegation";
+
+    /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
     /// </summary>
     public const string HostedServicesSingleAppRightSync = $"AccessMgmt.Core.HostedServices.SingleAppRightsSync";
