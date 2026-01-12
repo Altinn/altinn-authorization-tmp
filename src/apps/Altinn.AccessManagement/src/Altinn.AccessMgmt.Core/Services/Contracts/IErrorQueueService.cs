@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -15,5 +16,23 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         /// <param name="cancellation">The <see cref="CancellationToken"/></param>
         /// <returns></returns>
         Task<bool> AddErrorQueue(ErrorQueue error, AuditValues values, CancellationToken cancellation);
+
+        /// <summary>
+        /// Retrives all errors marked for ReProcessing of the defined type.
+        /// </summary>
+        /// <param name="type">the type to rerive</param>
+        /// <param name="afterDelegationChangeId">the </param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+        /// <returns></returns>
+        Task<List<ErrorQueue>> RetiveItemsForReProcessing(string type, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Mark ErrorQueue element as processed
+        /// </summary>
+        /// <param name="id">The</param>
+        /// <param name="values">Audit values</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+        /// <returns></returns>
+        Task<bool> MarkErrorQueueElementProcessed(Guid id, AuditValues values, CancellationToken cancellationToken);
     }
 }

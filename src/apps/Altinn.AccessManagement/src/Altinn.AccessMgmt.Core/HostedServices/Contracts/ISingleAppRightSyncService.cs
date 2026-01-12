@@ -8,11 +8,18 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Contracts
     public interface ISingleAppRightSyncService
     {
         /// <summary>
-        /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
+        /// Synchronizes app delegations by first acquiring a remote lease and streaming delegations.
         /// Returns if lease is already taken.
         /// </summary>
         /// <param name="lease">The lease result containing the lease data and status.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
         Task SyncSingleAppRights(ILease lease, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Synchronizes app delegations from errorqueue
+        /// Returns if lease is already taken.
+        /// </summary>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        Task SyncFailedSingleAppRights(CancellationToken cancellationToken);
     }
 }

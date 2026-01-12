@@ -26,4 +26,14 @@ public class ErrorQueue : BaseErrorQueue
     /// Logs the error message associated with the failed processing attempt.
     /// </summary>
     public string ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Flag to toogle ErrorQueue messages to reprocess instead of running new import.
+    /// </summary>
+    public bool ReProcess { get; set; }
+
+    /// <summary>
+    /// Flag to mark a element as reprocessed to see if element is still failing after reprocessing
+    /// </summary>
+    public bool Processed { get; set; }
 }

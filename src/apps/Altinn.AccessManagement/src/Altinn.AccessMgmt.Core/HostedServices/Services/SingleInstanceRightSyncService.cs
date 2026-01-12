@@ -170,6 +170,87 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
         }
 
+        public async Task SyncFailedSingleInstanceRights(CancellationToken cancellationToken)
+        {
+            Guid batchId = Guid.CreateVersion7();
+
+            await using var scope = _serviceProivider.CreateAsyncScope();
+            IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
+
+            var items = await errorQueueService.RetiveItemsForReProcessing("ResourceRegistry", cancellationToken);
+
+            foreach (var item in items)
+            {
+                try
+                {
+                    IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+
+                    var element = JsonSerializer.Deserialize<InstanceDelegationChange>(item.ErrorItem);
+
+                    if (!Guid.TryParse(element.PerformedBy, out Guid performedByGuid))
+                    {
+                        performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                    }
+
+                    AuditValues values = new AuditValues(
+                        performedByGuid,
+                        SystemEntityConstants.SingleRightImportSystem.Id,
+                        batchId.ToString(),
+                        element.Created?.ToUniversalTime() ?? DateTime.UtcNow);
+
+                    if (element.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
+                    {
+                        int revokes = await assignmentService.RevokeImportedInstanceAssignment(
+                            element.FromUuid,
+                            element.ToUuid,
+                            element.ResourceId,
+                            element.InstanceId,
+                            values,
+                            cancellationToken);
+
+                        if (revokes == 0)
+                        {
+                            _logger.LogWarning(
+                                "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
+                                element.FromUuid,
+                                element.ToUuid,
+                                element.ResourceId,
+                                element.InstanceId);
+                        }
+                    }
+                    else
+                    {
+                        int adds = await assignmentService.ImportInstanceAssignmentChange(
+                            element.FromUuid,
+                            element.ToUuid,
+                            element.ResourceId,
+                            element.BlobStoragePolicyPath,
+                            element.BlobStorageVersionId,
+                            element.InstanceId,
+                            element.InstanceDelegationChangeId,
+                            values,
+                            cancellationToken);
+
+                        if (adds == 0)
+                        {
+                            _logger.LogWarning(
+                                "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
+                                element.FromUuid,
+                                element.ToUuid,
+                                element.ResourceId,
+                                element.InstanceId);
+                        }
+                    }
+
+                    var result = errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+        }
+
         private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, InstanceDelegationChange item, CancellationToken cancellationToken)
         {
             return false;   

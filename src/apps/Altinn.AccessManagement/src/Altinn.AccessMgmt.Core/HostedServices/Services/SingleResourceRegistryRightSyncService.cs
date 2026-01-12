@@ -168,6 +168,83 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }            
         }
 
+        public async Task SyncFailedSingleResourceRegistryRights(CancellationToken cancellationToken)
+        {
+            Guid batchId = Guid.CreateVersion7();
+
+            await using var scope = _serviceProivider.CreateAsyncScope();
+            IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
+
+            var items = await errorQueueService.RetiveItemsForReProcessing("ResourceRegistry", cancellationToken);
+
+            foreach (var item in items)
+            {
+                try
+                {
+                    IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+
+                    var element = JsonSerializer.Deserialize<DelegationChange>(item.ErrorItem);
+
+                    if (!Guid.TryParse(element.PerformedByUuid, out Guid performedByGuid))
+                    {
+                        performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                    }
+
+                    AuditValues values = new AuditValues(
+                        performedByGuid,
+                        SystemEntityConstants.SingleRightImportSystem.Id,
+                        batchId.ToString(),
+                        element.Created?.ToUniversalTime() ?? DateTime.UtcNow);
+
+                    if (element.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
+                    {
+                        int revokes = await assignmentService.RevokeImportedAssignmentResource(
+                            element.FromUuid.Value,
+                            element.ToUuid.Value,
+                            element.ResourceId,
+                            values,
+                            cancellationToken);
+
+                        if (revokes == 0)
+                        {
+                            _logger.LogWarning(
+                                "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                element.FromUuid,
+                                element.ToUuid,
+                                element.ResourceId);
+                        }
+                    }
+                    else
+                    {
+                        int adds = await assignmentService.ImportAssignmentResourceChange(
+                            element.FromUuid.Value,
+                            element.ToUuid.Value,
+                            element.ResourceId,
+                            element.BlobStoragePolicyPath,
+                            element.BlobStorageVersionId,
+                            element.ResourceRegistryDelegationChangeId,
+                            values,
+                            cancellationToken);
+
+                        if (adds == 0)
+                        {
+                            _logger.LogWarning(
+                                "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                element.FromUuid,
+                                element.ToUuid,
+                                element.ResourceId);
+                        }
+                    }
+
+                    var result = errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }                
+            }
+        }
+
         private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, DelegationChange item, CancellationToken cancellationToken)
         {
             if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_toid\"", StringComparison.InvariantCultureIgnoreCase))

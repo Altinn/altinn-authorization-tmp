@@ -56,7 +56,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                 var cancellationToken = (CancellationToken)state;
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAllAltinnRoleSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_allaltinnrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_allaltinnrole_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncAllAltinnRoles(lease, cancellationToken);
@@ -65,7 +65,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnClientRoleSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_altinnclientrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnclientrole_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncAltinnClientRoles(lease, cancellationToken);
@@ -74,7 +74,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnAdminRoleSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_altinnadminrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnadminrole_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncAltinnAdminRoles(lease, cancellationToken);

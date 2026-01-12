@@ -8,11 +8,18 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Contracts
     public interface ISingleInstanceRightSyncService
     {
         /// <summary>
-        /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
+        /// Synchronizes resourceregistry instances first acquiring a remote lease and streaming delegation entries.
         /// Returns if lease is already taken.
         /// </summary>
         /// <param name="lease">The lease result containing the lease data and status.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
         Task SyncSingleInstanceRights(ILease lease, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Synchronizes resourceregistry instances from error queue.
+        /// Returns if lease is already taken.
+        /// </summary>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        Task SyncFailedSingleInstanceRights(CancellationToken cancellationToken);
     }
 }

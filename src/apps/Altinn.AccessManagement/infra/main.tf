@@ -263,7 +263,25 @@ module "appsettings" {
       description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"
       value       = false
+    },    
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync.FromErrorQueue"
+      description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
     },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleResourceRightsSync.FromErrorQueue"
+      description = "Specifies if the single resource right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue"
+      description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },    
     {
       name        = "AccessManagement.HostedServices.ResourceRegistrySync"
       description = "Specifies if the resource register data should streamed from resource register service to access management database."

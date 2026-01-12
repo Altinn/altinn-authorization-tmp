@@ -54,7 +54,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                 var cancellationToken = (CancellationToken)state;
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleAppRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleappright_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleappright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncSingleAppRights(lease, cancellationToken);
@@ -63,7 +63,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleresorceregistryright_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncSingleResourceRegistryRights(lease, cancellationToken);
@@ -72,10 +72,37 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleInstanceRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleinstanceright_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleinstanceright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncSingleInstanceRights(lease, cancellationToken);
+                    }
+                }
+
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleAppRightSyncFromErrorQueue))
+                {
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleappright_fromerrorqueue_sync", cancellationToken);
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
+                    {
+                        await SyncFailedSingleAppRights(lease, cancellationToken);
+                    }
+                }
+
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSyncFromErrorQueue))
+                {
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_fromerrorqueue_sync", cancellationToken);
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
+                    {
+                        await SyncFailedSingleResourceRegistryRights(cancellationToken);
+                    }
+                }
+
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleInstanceRightSyncFromErrorQueue))
+                {
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleinstanceright_fromerrorqueue_sync", cancellationToken);
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
+                    {
+                        await SyncFailedSingleInstanceRights(lease, cancellationToken);
                     }
                 }
             }
@@ -119,6 +146,43 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             try
             {
                 await _singleInstanceRightSyncService.SyncSingleInstanceRights(lease, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+            }
+        }
+
+        private async Task SyncFailedSingleAppRights(ILease lease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _singleAppRightSyncService.SyncFailedSingleAppRights(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+            }
+
+        }
+
+        private async Task SyncFailedSingleResourceRegistryRights(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _singleResourceRightSyncService.SyncFailedSingleResourceRegistryRights(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+            }
+        }
+
+        private async Task SyncFailedSingleInstanceRights(ILease lease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _singleInstanceRightSyncService.SyncFailedSingleInstanceRights(cancellationToken);
             }
             catch (Exception ex)
             {
