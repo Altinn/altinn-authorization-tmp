@@ -120,6 +120,17 @@ public partial class DtoMapper : IDtoMapper
             Type = Convert(entityVariant.Type)
         };
 
+    /// <summary>Convert EntityVariant to VariantDto.</summary>
+    public static EntitySubTypeDto? ConvertFlat(EntityVariant? entityVariant) =>
+        entityVariant is null ? null : new EntitySubTypeDto
+        {
+            Id = entityVariant.Id,
+            Name = entityVariant.Name,
+            Description = entityVariant.Description,
+            TypeId = entityVariant.TypeId,
+            Type = Convert(entityVariant.Type)
+        };
+
     /// <summary>Convert EntityType to EntityTypeDto.</summary>
     public static EntityTypeDto? Convert(EntityType? entityType) =>
         entityType is null ? null : new EntityTypeDto

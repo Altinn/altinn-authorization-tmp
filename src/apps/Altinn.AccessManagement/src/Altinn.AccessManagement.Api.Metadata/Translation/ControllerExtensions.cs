@@ -22,14 +22,12 @@ public static class ControllerExtensions
             {
                 return lang;
             }
-
             return TranslationConstants.DefaultLanguageCode;
         }
         catch
         {
             return TranslationConstants.DefaultLanguageCode;
         }
-
     }
 
     /// <summary>
