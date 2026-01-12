@@ -28,7 +28,6 @@ public static class ControllerExtensions
             }
         }
 
-        return TranslationConstants.DefaultLanguageCode;
     }
 
     /// <summary>
@@ -38,13 +37,19 @@ public static class ControllerExtensions
     /// <returns>True if partial translation is allowed, false otherwise</returns>
     public static bool AllowPartialTranslation(this ControllerBase controller)
     {
-        if (controller.HttpContext.Items.TryGetValue(TranslationConstants.AllowPartialKey, out var allowPartial) &&
-            allowPartial is bool allow)
+        try
         {
-            return allow;
-        }
+            if (controller.HttpContext.Items.TryGetValue(TranslationConstants.AllowPartialKey, out var allowPartial) && allowPartial is bool allow)
+            {
+                return allow;
+            }
 
-        return true; // Default to allowing partial translations
+            return true; // Default to allowing partial translations
+        } 
+        catch
+        {
+            return true;
+        }
     }
 
     /// <summary>
