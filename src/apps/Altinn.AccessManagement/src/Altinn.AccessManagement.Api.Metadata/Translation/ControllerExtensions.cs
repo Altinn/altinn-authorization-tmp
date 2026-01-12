@@ -27,7 +27,8 @@ public static class ControllerExtensions
                 return MapLanguageCode(firstLanguage);
             }
         }
-
+        
+        return TranslationConstants.DefaultLanguageCode;
     }
 
     /// <summary>
