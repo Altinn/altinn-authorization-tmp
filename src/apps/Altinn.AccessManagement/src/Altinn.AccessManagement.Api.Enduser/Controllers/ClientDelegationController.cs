@@ -23,7 +23,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/clientdelegations")]
 [FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 [Tags("Client Delegation")]
 public class ClientDelegationController(
     IClientDelegationService clientDelegationService,
@@ -71,7 +71,7 @@ public class ClientDelegationController(
     }
 
     [HttpPost("agents")]
-    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    // [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
