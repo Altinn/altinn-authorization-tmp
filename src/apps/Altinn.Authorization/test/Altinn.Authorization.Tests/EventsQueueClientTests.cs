@@ -25,7 +25,7 @@ namespace Altinn.Authorization.Tests
                 AuthorizationEventQueueName = "testqueue",
                 TimeToLive = 1
             });
-            var logger = Mock.Of<ILogger<EventsQueueClient>>();
+            var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<EventsQueueClient>.Instance;
             return new EventsQueueClient(settings, logger);
         }
 
@@ -45,7 +45,7 @@ namespace Altinn.Authorization.Tests
             var evt = new AuthorizationEvent
             {
                 Operation = "read",
-                ContextRequestJson = JsonSerializer.Deserialize<JsonElement>("{\"foo\":\"bar\"}")
+                ContextRequestJson = JsonSerializer.Deserialize<JsonElement>("""{"foo":"bar"}""")
             };
 
             // Act
