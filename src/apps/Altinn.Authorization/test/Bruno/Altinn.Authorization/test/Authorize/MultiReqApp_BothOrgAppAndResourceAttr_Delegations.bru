@@ -1,5 +1,5 @@
 meta {
-  name: MultiReqAppDelegations
+  name: MultiReqApp_BothOrgAppAndResourceAttr_Delegations
   type: http
   seq: 4
 }
@@ -90,6 +90,40 @@ body:json {
               "IncludeInResult": true
             }
           ]
+        },
+        {
+          "Id": "r3", //Same as R1 but with resource attribute
+          "Attribute": [
+            {
+              "AttributeId": "urn:altinn:resource",
+              "Value": "app_ttd_authz-bruno-testapp1",
+              "DataType": "http://www.w3.org/2001/XMLSchema#string",
+              "IncludeInResult": true
+            },
+            {
+              "AttributeId": "urn:altinn:organization:identifier-no",
+              "Value": "313332330",
+              "DataType": "http://www.w3.org/2001/XMLSchema#string",
+              "IncludeInResult": true
+            }
+          ]
+        },
+        {
+          "Id": "r4", //Same as R2 but with resource attribute
+          "Attribute": [
+            {
+              "AttributeId": "urn:altinn:resource",
+              "Value": "app_ttd_authz-bruno-testapp2",
+              "DataType": "http://www.w3.org/2001/XMLSchema#string",
+              "IncludeInResult": true
+            },
+            {
+              "AttributeId": "urn:altinn:organization:identifier-no",
+              "Value": "313332330",
+              "DataType": "http://www.w3.org/2001/XMLSchema#string",
+              "IncludeInResult": true
+            }
+          ]
         }
       ],
       "MultiRequests": {
@@ -106,6 +140,20 @@ body:json {
               "s1",
               "a1",
               "r2"
+            ]
+          },
+          {
+            "ReferenceId": [
+              "s1",
+              "a1",
+              "r3"
+            ]
+          },
+          {
+            "ReferenceId": [
+              "s1",
+              "a1",
+              "r4"
             ]
           }
         ]

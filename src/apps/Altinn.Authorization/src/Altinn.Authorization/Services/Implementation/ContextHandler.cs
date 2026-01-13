@@ -225,9 +225,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryAttribute, $"app_{orgAttribute.AttributeValues.FirstOrDefault()?.Value}_{appAttribute.AttributeValues.FirstOrDefault()?.Value}"));
             }
 
-            if (resourceInstanceAttribute == null)
+            if (resourceInstanceAttribute == null && resourceAttributes.ResourceInstanceValue != null)
             {
-                // Missing resource instanceId attribute
+                // Missing resource registry instanceId attribute, but altinn app instance id exists.
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.ResourceInstanceValue));
             }
         }
