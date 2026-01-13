@@ -245,9 +245,8 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Util
         public static AuthorizationEvent GetAuthorizationEvent(string testCase)
         {
             string content = null;
-            var options = new JsonSerializerOptions
+            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
-                PropertyNameCaseInsensitive = true,
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             };
 
