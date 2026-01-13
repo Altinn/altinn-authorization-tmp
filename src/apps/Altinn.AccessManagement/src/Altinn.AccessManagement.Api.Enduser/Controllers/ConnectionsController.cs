@@ -473,6 +473,10 @@ public class ConnectionsController(
 
         var toUuid = resolveResult.ToUuid;
 
+        /*WRITE POLICY*/
+
+
+        /*Write to Db?*/
         async Task<Result<AssignmentResourceDto>> AddResource()
         {
             if (resourceId.HasValue)

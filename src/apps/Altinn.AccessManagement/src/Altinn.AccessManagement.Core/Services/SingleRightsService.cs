@@ -17,6 +17,7 @@ using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Resolvers.Extensions;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -75,7 +76,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             RightsQuery rightsQuery;
             DelegationHelper.TryGetResourceFromAttributeMatch(request.Resource, out ResourceAttributeMatchType resourceMatchType, out string resourceRegistryId, out string org, out string app, out string serviceCode, out string serviceEditionCode);
-            if (resource.ResourceType == ResourceType.Altinn2Service)
+            if (resource.ResourceType == Models.ResourceRegistry.ResourceType.Altinn2Service)
             {
                 return await _altinn2RightsClient.PostDelegationCheck(authenticatedUserId, fromParty.PartyId, serviceCode, serviceEditionCode);
             }
@@ -132,6 +133,110 @@ namespace Altinn.AccessManagement.Core.Services
         {
             rules = await EnrichRulesWithUuidInformation(rules, cancellationToken);
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
+        }
+
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(AssignmentResource assignmentResource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken)
+        {
+            var rules = GenerateRules(assignmentResource, actionIds, performedBy).ToList();
+            return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
+        }
+
+        private IEnumerable<Rule> GenerateRules(AssignmentResource assignmentResource, List<string> actionIds, Entity performedBy)
+        {
+            var coveredBy = assignmentResource.Assignment.To;
+            var offeredBy = assignmentResource.Assignment.From;
+
+            var coveredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(coveredBy.TypeId);
+            var offeredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(offeredBy.TypeId);
+            var performedByUuidType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId);
+
+            var resourceAttributes = ConvertResourceToAttributeMatches(assignmentResource.Resource);
+
+            var result = actionIds.Select(action =>
+                new Rule
+                {
+                    RuleId = Guid.NewGuid().ToString(),
+                    Type = RuleType.None,
+                    //CreatedSuccessfully = true,
+                    //DelegatedDateTime = delegatedDateTime,
+
+                    CoveredBy = ConvertEntityToAttributeMatch(coveredBy),
+                    Resource = resourceAttributes,
+                    Action = ConvertActionToAttributeMatch(action),
+
+                    OfferedByPartyId = offeredBy.PartyId.HasValue ? offeredBy.PartyId.Value : 0,
+                    OfferedByPartyUuid = offeredBy.Id,
+                    OfferedByPartyType = offeredByUuidType,
+
+                    PerformedBy = ConvertEntityToAttributeMatch(performedBy),
+                    DelegatedByUserId = performedBy.UserId,
+                    DelegatedByPartyId = performedBy.PartyId,
+                });
+
+            return result;
+        }
+
+        private static AttributeMatch ConvertActionToAttributeMatch(string action)
+        {
+            return new AttributeMatch
+            {
+                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId,
+                Value = action
+            };
+        }
+
+        private static List<AttributeMatch> ConvertEntityToAttributeMatch(Entity entity)
+        {
+            var matches = new List<AttributeMatch>();
+
+            // UUID
+            var uuidType = DelegationHelper.GetUuidTypeFromEntityType(entity.TypeId);
+            matches.Add(new AttributeMatch
+            {
+                Id = uuidType.EnumMemberAttributeValueOrName(),
+                Value = entity.Id.ToString()
+            });
+
+            // User
+            if (entity.UserId.HasValue)
+            {
+                matches.Add(new AttributeMatch
+                {
+                    Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute,
+                    Value = entity.UserId.Value.ToString()
+                });
+            }
+
+            // Party
+            if (entity.PartyId.HasValue)
+            {
+                matches.Add(new AttributeMatch
+                {
+                    Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute,
+                    Value = entity.PartyId.Value.ToString()
+                });
+            }
+
+            return matches;
+        }
+
+        private static List<AttributeMatch> ConvertResourceToAttributeMatches(Resource resource)
+        {
+            var matches = new List<AttributeMatch>();
+
+            matches.Add(new AttributeMatch
+            {
+                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceAttribute,
+                Value = resource.RefId
+            });
+
+            matches.Add(new AttributeMatch
+            {
+                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceTypeAttribute,
+                Value = resource.Type.Name
+            });
+
+            return matches;
         }
 
         private async Task<List<Rule>> EnrichRulesWithUuidInformation(List<Rule> rules, CancellationToken cancellationToken)
@@ -458,7 +563,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             // Altinn 2 service delegation is handled by SBL Bridge
-            if (resource.ResourceType == ResourceType.Altinn2Service)
+            if (resource.ResourceType == Models.ResourceRegistry.ResourceType.Altinn2Service)
             {
                 SblRightDelegationRequest sblRightDelegationRequest = new SblRightDelegationRequest { To = to.FirstOrDefault(), Rights = delegation.Rights };
                 DelegationActionResult sblResult = await _altinn2RightsClient.PostDelegation(authenticatedUserId, fromParty.PartyId, sblRightDelegationRequest);
@@ -645,7 +750,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return (result, resource, null);
             }
 
-            if (resource.ResourceType == ResourceType.MaskinportenSchema)
+            if (resource.ResourceType == Models.ResourceRegistry.ResourceType.MaskinportenSchema)
             {
                 result.Errors.Add("right[0].Resource", $"This operation does not support MaskinportenSchema resources. Please use the MaskinportenSchema DelegationCheck API. Invalid resource: {resourceRegistryId}. Invalid resource type: {resource.ResourceType}");
                 return (result, resource, null);
@@ -704,7 +809,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return (result, resource, null, null);
             }
 
-            if (resource.ResourceType == ResourceType.MaskinportenSchema)
+            if (resource.ResourceType == Models.ResourceRegistry.ResourceType.MaskinportenSchema)
             {
                 result.Errors.Add("right[0].Resource", $"This operation does not support delegations for MaskinportenSchema resources. Please use the MaskinportenSchema Delegations API. Invalid resource: {resourceRegistryId}. Invalid resource type: {resource.ResourceType}");
                 return (result, resource, null, null);
