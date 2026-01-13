@@ -26,22 +26,28 @@ namespace Altinn.Authorization.Tests
                 TimeToLive = 1
             });
             var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<EventsQueueClient>.Instance;
-            return new EventsQueueClient(settings, logger);
-        }
-
-        private byte[] InvokeCompress(EventsQueueClient client, AuthorizationEvent evt)
-        {
-            using var stream = new MemoryStream();
-            var method = typeof(EventsQueueClient).GetMethod("CompressAuthorizationEvent", BindingFlags.NonPublic | BindingFlags.Instance);
-            method.Invoke(client, new object[] { stream, evt });
-            return stream.ToArray();
+            var client = new EventsQueueClient(settings, logger);
+            return client;
         }
 
         [Fact]
-        public void CompressAuthorizationEvent_SmallJson_CompressesAndRetainsData()
+        public async Task EnqueueAuthorizationEvent_SendsCompressedEventToQueue()
         {
             // Arrange
+            var mockQueueClient = new Mock<IRawEventsQueueClient>();
+            BinaryData? sentData = null;
+            mockQueueClient
+                .Setup(q => q.SendMessageAsync(
+                    It.IsAny<BinaryData>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Returns(Task.CompletedTask);
+
             var client = CreateClient();
+            client.AuthenticationEventQueueClient = mockQueueClient.Object;
+
             var evt = new AuthorizationEvent
             {
                 Operation = "read",
@@ -49,34 +55,50 @@ namespace Altinn.Authorization.Tests
             };
 
             // Act
-            var result = InvokeCompress(client, evt);
+            var receipt = await client.EnqueueAuthorizationEvent(evt);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.True(result.Length > 2);
+            Assert.True(receipt.Success);
+            Assert.NotNull(sentData);
 
-            // Decompress and verify
-            using var ms = new MemoryStream(result, 2, result.Length - 2);
+            var bytes = sentData.ToArray();
+
+            // 1. Check the version header
+            Assert.True(bytes.Length > 2, "Data should be at least 3 bytes (2 header + data)");
+            Assert.Equal((byte)'0', bytes[0]);
+            Assert.Equal((byte)'1', bytes[1]);
+
+            // 2. Decompress the payload (skip the first two bytes)
+            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
+
+            // 3. Verify the decompressed content
             Assert.Equal(evt.Operation, decompressed.Operation);
-            Assert.Equal(evt.ContextRequestJson.GetRawText(), decompressed.ContextRequestJson.GetRawText());
+            Assert.True(JsonElement.DeepEquals(evt.ContextRequestJson, decompressed.ContextRequestJson));
         }
 
         [Fact]
-        public void CompressAuthorizationEvent_LargeJson_CompressesAndHandlesFallback()
+        public async Task EnqueueAuthorizationEvent_LargeJson_TriggersFallbackAndSendsFallbackMessage()
         {
             // Arrange
-            const int LENGTH = 64 * 1024;
-            var values = new List<int>(LENGTH);
-            var random = new Random();
-            for (var i = 0; i < LENGTH; i++)
-            {
-                values.Add(random.Next());
-            }
+            var mockQueueClient = new Mock<IRawEventsQueueClient>();
+            BinaryData? sentData = null;
+            mockQueueClient
+                .Setup(q => q.SendMessageAsync(
+                    It.IsAny<BinaryData>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Returns(Task.CompletedTask);
 
-            var largeJson = JsonSerializer.Serialize(values);
             var client = CreateClient();
+            client.AuthenticationEventQueueClient = mockQueueClient.Object;
+
+            // Create a large JSON array to exceed the 64KB limit after compression
+            var values = Enumerable.Range(0, 70_000).ToArray();
+            var largeJson = JsonSerializer.Serialize(values);
             var evt = new AuthorizationEvent
             {
                 Operation = "write",
@@ -84,24 +106,72 @@ namespace Altinn.Authorization.Tests
             };
 
             // Act
-            // Get the compressed data
-            var result = InvokeCompress(client, evt);
+            var receipt = await client.EnqueueAuthorizationEvent(evt);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.True(result.Length > 2, "Compressed data should be longer than version header.");
-            Console.WriteLine(BitConverter.ToString(result.Take(10).ToArray()));
-            Assert.True(result.Length >= 64 * 1024); // Should be within size limit after fallback
+            Assert.True(receipt.Success);
+            Assert.NotNull(sentData);
 
-            // Decompress and verify fallback, Skip the first two bytes (version header) when decompressing
-            using var ms = new MemoryStream(result, 2, result.Length - 2);
+            var bytes = sentData.ToArray();
+
+            // Decompress the payload (skip the first two bytes for version header)
+            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
+
+            // The fallback message should be present
             Assert.Equal(evt.Operation, decompressed.Operation);
-            Assert.Contains(
-                largeJson.ToString(),
-                decompressed.ContextRequestJson.ToString()
-            );
+            Assert.True(decompressed.ContextRequestJson.TryGetProperty("message", out var msg));
+            Assert.Contains("ContextRequestJson is not available", msg.GetString());
+        }
+
+        [Fact]
+        public async Task EnqueueAuthorizationEvent_LargeButCompressibleJson_DoesNotTriggerFallback()
+        {
+            // Arrange
+            var mockQueueClient = new Mock<IRawEventsQueueClient>();
+            BinaryData? sentData = null;
+            mockQueueClient
+                .Setup(q => q.SendMessageAsync(
+                    It.IsAny<BinaryData>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<TimeSpan?>(),
+                    It.IsAny<CancellationToken>()))
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Returns(Task.CompletedTask);
+
+            var client = CreateClient();
+            client.AuthenticationEventQueueClient = mockQueueClient.Object;
+
+            // Create a large, highly compressible JSON (e.g., a large array of zeros)
+            var obj = new { foo = "bar", baz = 123 };
+            var values = Enumerable.Repeat(obj, 20000).ToArray();
+            var largeCompressibleJson = JsonSerializer.Serialize(values);
+            var evt = new AuthorizationEvent
+            {
+                Operation = "compressible",
+                ContextRequestJson = JsonSerializer.Deserialize<JsonElement>(largeCompressibleJson)
+            };
+
+            // Act
+            var receipt = await client.EnqueueAuthorizationEvent(evt);
+
+            // Assert
+            Assert.True(receipt.Success);
+            Assert.NotNull(sentData);
+
+            var bytes = sentData.ToArray();
+
+            // Decompress the payload (skip the first two bytes for version header)
+            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
+            using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
+            var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
+           
+            Assert.Equal(evt.Operation, decompressed.Operation);
+            
+            // Ensure the original JSON is preserved (fallback was NOT triggered)
+            Assert.True(JsonElement.DeepEquals(evt.ContextRequestJson, decompressed.ContextRequestJson));
+
         }
     }
 }

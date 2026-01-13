@@ -24,10 +24,14 @@ namespace Altinn.Platform.Authorization.Clients
         });
 
         private readonly QueueStorageSettings _settings;
-
-        private QueueClient _authenticationEventQueueClient;
         private readonly ILogger<EventsQueueClient> _logger;
         private static readonly RecyclableMemoryStreamManager _manager = new();
+
+        /// <summary>
+        /// Gets or sets the client used to enqueue and process raw authentication events.
+        /// </summary>
+        /// <remarks>This is used in testing to override the client used.</remarks>
+        internal IRawEventsQueueClient AuthenticationEventQueueClient { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventsQueueClient"/> class.
@@ -47,7 +51,7 @@ namespace Altinn.Platform.Authorization.Clients
         {
             try
             {
-                QueueClient client = await GetAuthorizationEventQueueClient();
+                var client = await GetAuthorizationEventQueueClient();
                 TimeSpan timeToLive = TimeSpan.FromDays(_settings.TimeToLive);
 
                 using var stream = _manager.GetStream();
@@ -63,8 +67,8 @@ namespace Altinn.Platform.Authorization.Clients
                 }
 
                 var buffer = stream.GetBuffer();
-                var data = BinaryData.FromBytes(buffer.AsMemory(checked((int)stream.Length)));
-                
+                var data = BinaryData.FromBytes(buffer.AsMemory(0, checked((int)stream.Length)));
+
                 await client.SendMessageAsync(data, null, timeToLive, cancellationToken);
             }
             catch (OperationCanceledException ex)
@@ -81,15 +85,17 @@ namespace Altinn.Platform.Authorization.Clients
             return new QueuePostReceipt { Success = true };
         }
 
-        private async Task<QueueClient> GetAuthorizationEventQueueClient()
+        private async Task<IRawEventsQueueClient> GetAuthorizationEventQueueClient()
         {
-            if (_authenticationEventQueueClient == null)
+            if (AuthenticationEventQueueClient == null)
             {
-                _authenticationEventQueueClient = new QueueClient(_settings.EventLogConnectionString, _settings.AuthorizationEventQueueName);
-                await _authenticationEventQueueClient.CreateIfNotExistsAsync();
+                var client = new QueueClient(_settings.EventLogConnectionString, _settings.AuthorizationEventQueueName);
+                await client.CreateIfNotExistsAsync();
+
+                AuthenticationEventQueueClient = new StorageQueueRawClient(client);
             }
 
-            return _authenticationEventQueueClient;
+            return AuthenticationEventQueueClient;
         }
 
         private void CompressAuthorizationEvent(Stream stream, AuthorizationEvent authorizationEvent)
@@ -104,6 +110,25 @@ namespace Altinn.Platform.Authorization.Clients
             stream.Position = 0;
         }
 
+        private sealed class StorageQueueRawClient : IRawEventsQueueClient
+        {
+            private readonly QueueClient _queueClient;
+
+            public StorageQueueRawClient(QueueClient queueClient)
+            {
+                _queueClient = queueClient;
+            }
+
+            public async Task SendMessageAsync(
+                BinaryData message,
+                TimeSpan? visibilityTimeout = default,
+                TimeSpan? timeToLive = default,
+                CancellationToken cancellationToken = default)
+            {
+                await _queueClient.SendMessageAsync(message, visibilityTimeout, timeToLive, cancellationToken);
+            }
+        }
+
         private static partial class Log
         {
             [LoggerMessage(1, LogLevel.Warning, "Authorization event size {size} bytes exceeds maximum allowed size for queue messages.")]
@@ -115,5 +140,14 @@ namespace Altinn.Platform.Authorization.Clients
             [LoggerMessage(3, LogLevel.Error, "An error occurred while enqueuing authorization event.")]
             public static partial void Error(ILogger logger, Exception exception);
         }
+    }
+
+    public interface IRawEventsQueueClient
+    {
+        Task SendMessageAsync(
+            BinaryData message,
+            TimeSpan? visibilityTimeout = default,
+            TimeSpan? timeToLive = default,
+            CancellationToken cancellationToken = default);
     }
 }
