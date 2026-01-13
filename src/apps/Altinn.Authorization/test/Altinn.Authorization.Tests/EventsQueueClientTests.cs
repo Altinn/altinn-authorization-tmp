@@ -35,14 +35,14 @@ namespace Altinn.Authorization.Tests
         {
             // Arrange
             var mockQueueClient = new Mock<IRawEventsQueueClient>();
-            BinaryData? sentData = null;
+            byte[]? sentData = null;
             mockQueueClient
                 .Setup(q => q.SendMessageAsync(
                     It.IsAny<BinaryData>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data.ToArray())
                 .Returns(Task.CompletedTask);
 
             var client = CreateClient();
@@ -61,15 +61,13 @@ namespace Altinn.Authorization.Tests
             Assert.True(receipt.Success);
             Assert.NotNull(sentData);
 
-            var bytes = sentData.ToArray();
-
             // 1. Check the version header
-            Assert.True(bytes.Length > 2, "Data should be at least 3 bytes (2 header + data)");
-            Assert.Equal((byte)'0', bytes[0]);
-            Assert.Equal((byte)'1', bytes[1]);
+            Assert.True(sentData.Length > 2, "Data should be at least 3 bytes (2 header + data)");
+            Assert.Equal((byte)'0', sentData[0]);
+            Assert.Equal((byte)'1', sentData[1]);
 
             // 2. Decompress the payload (skip the first two bytes)
-            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
+            using var ms = new MemoryStream(sentData, 2, sentData.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
 
@@ -83,14 +81,14 @@ namespace Altinn.Authorization.Tests
         {
             // Arrange
             var mockQueueClient = new Mock<IRawEventsQueueClient>();
-            BinaryData? sentData = null;
+            byte[]? sentData = null;
             mockQueueClient
                 .Setup(q => q.SendMessageAsync(
                     It.IsAny<BinaryData>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data.ToArray())
                 .Returns(Task.CompletedTask);
 
             var client = CreateClient();
@@ -112,10 +110,10 @@ namespace Altinn.Authorization.Tests
             Assert.True(receipt.Success);
             Assert.NotNull(sentData);
 
-            var bytes = sentData.ToArray();
+            //var bytes = sentData.ToArray();
 
             // Decompress the payload (skip the first two bytes for version header)
-            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
+            using var ms = new MemoryStream(sentData, 2, sentData.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
 
@@ -130,20 +128,20 @@ namespace Altinn.Authorization.Tests
         {
             // Arrange
             var mockQueueClient = new Mock<IRawEventsQueueClient>();
-            BinaryData? sentData = null;
+            byte[]? sentData = null;
             mockQueueClient
                 .Setup(q => q.SendMessageAsync(
                     It.IsAny<BinaryData>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<TimeSpan?>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data)
+                .Callback<BinaryData, TimeSpan?, TimeSpan?, CancellationToken>((data, _, _, _) => sentData = data.ToArray())
                 .Returns(Task.CompletedTask);
 
             var client = CreateClient();
             client.AuthenticationEventQueueClient = mockQueueClient.Object;
 
-            // Create a large, highly compressible JSON (e.g., a large array of zeros)
+            // Create a large, highly compressible JSON
             var obj = new { foo = "bar", baz = 123 };
             var values = Enumerable.Repeat(obj, 20000).ToArray();
             var largeCompressibleJson = JsonSerializer.Serialize(values);
@@ -160,10 +158,8 @@ namespace Altinn.Authorization.Tests
             Assert.True(receipt.Success);
             Assert.NotNull(sentData);
 
-            var bytes = sentData.ToArray();
-
             // Decompress the payload (skip the first two bytes for version header)
-            using var ms = new MemoryStream(bytes, 2, bytes.Length - 2);
+            using var ms = new MemoryStream(sentData, 2, sentData.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
            
