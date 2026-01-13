@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -9,7 +8,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -33,7 +31,7 @@ public class ClientDelegationService(
             },
             ct: cancellationToken);
 
-        var result = DtoMapper.ConvertToClientDelegationAgentDto(connections);
+        var result = DtoMapper.ConvertToAgentDto(connections);
 
         return result;
     }
@@ -103,58 +101,180 @@ public class ClientDelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ClientDto>>> GetDelegationsForClientAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<AgentDto>>> GetDelegatedAccessPackagesFromClientsViaParty(Guid partyId, Guid fromId, CancellationToken cancellationToken = default)
     {
-        var delegations = await db.Assignments.AsNoTracking()
-            .Where(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent.Id)
-            .Join(
-                db.Delegations,
-                a => a.Id,
-                d => d.ToId,
-                (a, d) => new { Delegation = d })
-                .Include(d => d.Delegation.From)
-                .ThenInclude(d => d.From)
-                .ThenInclude(d => d.Type)
-                .Include(d => d.Delegation.From)
-                .ThenInclude(d => d.From)
-                .ThenInclude(d => d.Variant)
-                .Include(d => d.Delegation)
-                .ThenInclude(d => d.To)
-                .Include(d => d)
-                .ToListAsync(cancellationToken);
-
-        var result = new List<ClientDto>();
-        foreach (var delegation in delegations)
-        {
-            result.Append(DtoMapper.Convert(delegation))
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<List<AgentDto>>> GetDelegationsForAgentsAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        var delegations = connectionQuery
-            .GetConnectionsAsync(new()
+        var connections = await connectionQuery.GetConnectionsToOthersAsync(
+            new()
             {
-                ViaIds = RoleConstants.Agent,
-            });
+                FromIds = [fromId],
+                ViaIds = [partyId],
+                ViaRoleIds = [RoleConstants.Agent],
+                EnrichEntities = true,
+                IncludePackages = true
+            },
+            true,
+            cancellationToken);
+
+        var result = DtoMapper.ConvertToAgentDto(connections);
+
+        return result;
     }
 
     /// <inheritdoc/>
-    public Task<Result<DelegationDto>> AddDelegationForAgentAsync(Guid partyId, Guid fromId, Guid toId, Guid packageId, Guid package, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ClientDto>>> GetDelegatedAccessPackagesToAgentsViaPartyAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var connections = await connectionQuery.GetConnectionsFromOthersAsync(
+            new()
+            {
+                ViaIds = [partyId],
+                ViaRoleIds = [RoleConstants.Agent],
+                ToIds = [toId],
+                EnrichEntities = true,
+                IncludePackages = true,
+            },
+            true,
+            cancellationToken);
+
+        var result = DtoMapper.ConvertToClientDto(connections);
+
+        return result;
     }
 
     /// <inheritdoc/>
-    public Task RemoveAgentDelegation(Guid partyId, Guid fromId, Guid toId, Guid packageId, Guid package, CancellationToken cancellationToken = default)
+    public async Task<Result<DelegationDto>> AddDelegationForAgentAsync(Guid partyId, Guid fromId, Guid toId, Guid? packageId, string package, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        if (PackageConstants.TryGetByName(package, out var pkg))
+        {
+        }
+        else if (packageId.HasValue && PackageConstants.TryGetById((Guid)packageId, out pkg))
+        {
+        }
+        else
+        {
+            return Problems.ConnectionEntitiesDoNotExist;
+        }
+
+        if (!pkg.Entity.IsAssignable)
+        {
+            return Problems.ConnectionEntitiesDoNotExist;
+        }
+
+        var possibleDelegationsTask = connectionQuery.GetConnectionsFromOthersAsync(
+            new ConnectionQueryFilter
+            {
+                ToIds = [partyId],
+                FromIds = [fromId],
+                IncludeResource = true,
+                IncludePackages = true,
+                EnrichEntities = true,
+            },
+            ct: cancellationToken);
+        var existingDelegationsTask = connectionQuery.GetConnectionsFromOthersAsync(
+            new()
+            {
+                ViaIds = [partyId],
+                ViaRoleIds = [RoleConstants.Agent],
+                ToIds = [toId],
+                FromIds = [fromId],
+                EnrichEntities = true,
+                IncludePackages = true,
+            },
+            true,
+            cancellationToken);
+
+        var possibleDelegations = await possibleDelegationsTask;
+        var existingDelegations = await existingDelegationsTask;
+        var assignmentToAgent = await db.Assignments
+            .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId, cancellationToken: cancellationToken);
+
+        // Check if to has an agent releationship with party.
+        if (assignmentToAgent is null)
+        {
+            return Problems.ConnectionEntitiesDoNotExist;
+        }
+
+        // Check if the delegations w eare actully tring to do exists.
+        var existingDelegation = existingDelegations.FirstOrDefault(
+            d => d.FromId == fromId &&
+            d.ToId == toId &&
+            d.ViaId == partyId &&
+            d.Packages.Any(d => d.Id == pkg.Id));
+
+        if (existingDelegation is { })
+        {
+            return DtoMapper.ConvertToDelegationDto(existingDelegation, pkg.Id);
+        }
+
+        // Check if client has assigned or delegated package to party. 
+        var clientDelegationAssignment = possibleDelegations.Where(d => d.FromId == fromId && d.ToId == toId && d.Packages.Any(p => p.Id == pkg.Id)).ToList();
+        if (clientDelegationAssignment.Count == 0)
+        {
+            return Problems.ConnectionEntitiesDoNotExist;
+        }
+
+        var delegation = new Delegation()
+        {
+            FromId = (Guid)clientDelegationAssignment.First(p => p.AssignmentId is { }).AssignmentId,
+            ToId = assignmentToAgent.Id,
+            FacilitatorId = partyId,
+        };
+
+        db.Delegations.Add(delegation);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return DtoMapper.ConvertToDelegationDto(delegation, pkg.Id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProblemDescriptor?> RemoveAgentDelegation(Guid partyId, Guid fromId, Guid toId, Guid? packageId, string package, CancellationToken cancellationToken = default)
+    {
+        if (PackageConstants.TryGetByName(package, out var pkg))
+        {
+        }
+        else if (packageId.HasValue && PackageConstants.TryGetById((Guid)packageId, out pkg))
+        {
+        }
+        else
+        {
+            // error?
+            return Problems.InvalidResourceCombination; 
+        }
+
+        if (!pkg.Entity.IsAssignable)
+        {
+            // error?
+            return Problems.InvalidResourceCombination;
+        }
+
+        var existingDelegations = await connectionQuery.GetConnectionsFromOthersAsync(
+            new()
+            {
+                ViaIds = [partyId],
+                ViaRoleIds = [RoleConstants.Agent],
+                ToIds = [toId],
+                FromIds = [fromId],
+                IncludePackages = true,
+            },
+            true,
+            cancellationToken);
+
+        var existingDelegation = existingDelegations.FirstOrDefault(
+            d => d.FromId == fromId &&
+            d.ToId == toId &&
+            d.ViaId == partyId &&
+            d.Packages.Any(d => d.Id == pkg.Id));
+
+        var delegation = await db.Delegations.FirstOrDefaultAsync(d => d.Id == existingDelegation.DelegationId, cancellationToken);
+
+        db.Delegations.Remove(delegation);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return null;
     }
 }
 
 /// <summary>
-/// a
+/// I
 /// </summary>
 public interface IClientDelegationService
 {
@@ -166,11 +286,11 @@ public interface IClientDelegationService
 
     Task RemoveAgent(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default);
 
-    Task<Result<List<ClientDto>>> GetDelegationsForClientAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default);
+    Task<Result<List<AgentDto>>> GetDelegatedAccessPackagesFromClientsViaParty(Guid partyId, Guid fromId, CancellationToken cancellationToken = default);
 
-    Task<Result<List<AgentDto>>> GetDelegationsForAgentsAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default);
+    Task<Result<List<ClientDto>>> GetDelegatedAccessPackagesToAgentsViaPartyAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default);
 
-    Task<Result<DelegationDto>> AddDelegationForAgentAsync(Guid partyId, Guid fromId, Guid toId, Guid packageId, Guid package, CancellationToken cancellationToken = default);
+    Task<Result<DelegationDto>> AddDelegationForAgentAsync(Guid partyId, Guid fromId, Guid toId, Guid? packageId, string package, CancellationToken cancellationToken = default);
 
-    Task RemoveAgentDelegation(Guid partyId, Guid fromId, Guid toId, Guid packageId, Guid package, CancellationToken cancellationToken = default);
+    Task<ProblemDescriptor?> RemoveAgentDelegation(Guid partyId, Guid fromId, Guid toId, Guid? packageId, string package, CancellationToken cancellationToken = default);
 }
