@@ -41,7 +41,7 @@ public class ClientDelegationController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetClientsAsync(party, cancellationToken);
+        var result = await clientDelegationService.GetClientsForPartyAsync(party, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -61,7 +61,7 @@ public class ClientDelegationController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetAgentsAsync(party, cancellationToken);
+        var result = await clientDelegationService.GetAgentsForPartyAsync(party, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -107,7 +107,7 @@ public class ClientDelegationController(
             return resolveResult.ErrorResult!;
         }
 
-        var result = await clientDelegationService.AddAgent(party, resolveResult.ToUuid, cancellationToken);
+        var result = await clientDelegationService.AddAgentForParty(party, resolveResult.ToUuid, cancellationToken);
 
         if (result.IsProblem)
         {
@@ -129,8 +129,13 @@ public class ClientDelegationController(
         [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        await clientDelegationService.RemoveAgent(party, to, cancellationToken);
-        return NoContent();
+        var result = await clientDelegationService.GetClientsForPartyAsync(party, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     [HttpGet("agents/accesspackages")]
@@ -139,6 +144,7 @@ public class ClientDelegationController(
         [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
+
         return StatusCode(StatusCodes.Status501NotImplemented);
     }
 
