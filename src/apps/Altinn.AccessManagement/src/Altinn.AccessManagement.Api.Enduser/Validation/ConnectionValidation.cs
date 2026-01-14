@@ -71,17 +71,6 @@ internal static class ConnectionValidation
         );
 
     /// <summary>
-    /// Validation rule for removing an existing rightholder connection.
-    /// </summary>
-    internal static RuleExpression ValidateRemoveConnection(string party, string from, string to) =>
-        ValidationComposer.All(
-            ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
-            ConnectionParameterRules.PartyTo(to),
-            ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
-        );
-
-    /// <summary>
     /// Validation rule for removing package from existing rightholder connection.
     /// </summary>
     internal static RuleExpression ValidateRemovePackageFromConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
@@ -90,6 +79,53 @@ internal static class ConnectionValidation
             ConnectionParameterRules.PartyFrom(from),
             ConnectionParameterRules.PartyTo(to),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
+            ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
+        );
+
+    /// <summary>
+    /// Validation rule for adding an resource to an existing rightholder connection with <see cref="ConnectionInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddResourceToConnectionWithConnectionInput(string party, string from, string to, Guid? resourceId, string resourceKey) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyTo(to),
+            ConnectionCombinationRules.ExclusiveResourceReference(resourceId, resourceKey),
+            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+        );
+
+    /// <summary>
+    /// Validation rule for adding an resource to an existing rightholder connection with  <see cref="PersonInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddResourceToConnectionWithPersonInput(string party, string from, string personIdentifier, string personLastName, Guid? resourceId, string resourceKey) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PersonInput(personIdentifier, personLastName),
+            ConnectionCombinationRules.ExclusiveResourceReference(resourceId, resourceKey),
+            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+        );
+
+    /// <summary>
+    /// Validation rule for removing package from existing rightholder connection.
+    /// </summary>
+    internal static RuleExpression ValidateRemoveResourceFromConnection(string party, string from, string to, Guid? resourceId, string resourceKey) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyTo(to),
+            ConnectionCombinationRules.ExclusiveResourceReference(resourceId, resourceKey),
+            ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
+        );
+
+    /// <summary>
+    /// Validation rule for removing an existing rightholder connection.
+    /// </summary>
+    internal static RuleExpression ValidateRemoveConnection(string party, string from, string to) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyTo(to),
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
         );
 }

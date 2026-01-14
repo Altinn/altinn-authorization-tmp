@@ -8,6 +8,7 @@ using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
+using Altinn.AccessMgmt.Core.Services.Legacy;
 using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Altinn.Platform.Register.Enums;
 using Azure.Core;
@@ -45,15 +46,23 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
 
-        if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseNewQueryRepo"))
+        if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseEFQueryRepo"))
         {
-            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepo>();
+            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataEF>();
             builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
         }
         else
         {
-            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepository>();
-            builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepository>();
+            if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseNewQueryRepo"))
+            {
+                builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepo>();
+                builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
+            }
+            else
+            {
+                builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepository>();
+                builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepository>();
+            }
         }
 
         builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();

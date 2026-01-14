@@ -8,7 +8,7 @@ public class ResourcePermissionDto
     /// <summary>
     /// Resource the permissions are for
     /// </summary>
-    public ResourceDto Resource { get; set; }
+    public CompactResourceDto Resource { get; set; }
 
     /// <summary>
     /// Parties with permissions

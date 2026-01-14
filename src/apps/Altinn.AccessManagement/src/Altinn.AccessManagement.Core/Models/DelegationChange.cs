@@ -13,13 +13,13 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the delegation change id
         /// </summary>
         [JsonPropertyName("delegationchangeid")]
-        public int DelegationChangeId { get; set; }
+        public long DelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the resource registry delegation change id
         /// </summary>
         [JsonPropertyName("resourceregistrydelegationchangeid")]
-        public int ResourceRegistryDelegationChangeId { get; set; }
+        public long ResourceRegistryDelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the delegation change type

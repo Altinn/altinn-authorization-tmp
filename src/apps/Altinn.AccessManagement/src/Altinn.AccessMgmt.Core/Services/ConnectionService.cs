@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -15,7 +14,9 @@ using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -167,6 +168,240 @@ public partial class ConnectionService(
 
         return null;
     }
+
+    #region Resources
+
+    public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
+        if (problem is { })
+        {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<ResourcePermissionDto>();
+            }
+
+            return problem;
+        }
+
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
+        var connections = await connectionQuery.GetConnectionsAsync(
+        new ConnectionQueryFilter()
+        {
+            FromIds = fromId.HasValue ? [fromId.Value] : null,
+            ToIds = toId.HasValue ? [toId.Value] : null,
+            EnrichEntities = true,
+            IncludeSubConnections = true,
+            IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
+            IncludePackages = true,
+            IncludeResource = true,
+            EnrichPackageResources = true,
+            ExcludeDeleted = false,
+            OnlyUniqueResults = false
+        },
+        direction,
+        true,
+        cancellationToken
+        );
+
+        return DtoMapper.ConvertResources(connections);
+    }
+
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
+        return await AddResource(fromId, toId, resource.Id, configureConnection, cancellationToken);
+    }
+
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        {
+            return Problems.MissingConnection;
+        }
+
+        var check = await CheckResource(fromId, resourceIds: [resourceId], configureConnection, cancellationToken);
+        if (check.IsProblem)
+        {
+            return check.Problem;
+        }
+
+        //problem = ValidationComposer.Validate(
+        //    PackageValidation.AuthorizeResourceAssignment(check.Value),
+        //    PackageValidation.ResourceIsAssignableToRecipient(check.Value.Select(p => p.Key), to.Type, "resource")
+        //);
+
+        //if (problem is { })
+        //{
+        //    return problem;
+        //}
+
+        // Look for existing direct rightholder assignment
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment == null)
+        {
+            assignment = new Assignment()
+            {
+                FromId = fromId,
+                ToId = toId,
+                RoleId = RoleConstants.Rightholder
+            };
+
+            await dbContext.Assignments.AddAsync(assignment, cancellationToken);
+        }
+        else
+        {
+            var existingAssignmentResource = await dbContext.AssignmentResources
+                .AsNoTracking()
+                .Where(a => a.AssignmentId == assignment.Id)
+                .Where(a => a.ResourceId == resourceId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingAssignmentResource is { })
+            {
+                return DtoMapper.Convert(existingAssignmentResource);
+            }
+        }
+
+        var newAssignmentResource = new AssignmentResource()
+        {
+            AssignmentId = assignment.Id,
+            ResourceId = resourceId,
+            /**/
+        };
+
+        await dbContext.AssignmentResources.AddAsync(newAssignmentResource, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (from.PartyId.HasValue && to.PartyId.HasValue)
+        {
+            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
+        }
+
+        return DtoMapper.Convert(newAssignmentResource);
+    }
+
+    public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
+        return await RemoveResource(fromId, toId, resource.Id, configureConnection, cancellationToken);
+    }
+
+    public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;
+        }
+
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignmentResources = await dbContext.AssignmentResources
+            .AsTracking()
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentResources is null)
+        {
+            return null;
+        }
+
+        dbContext.Remove(existingAssignmentResources);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
+    }
+
+    public async Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var connections = await connectionQuery.GetConnectionsAsync(
+            filter: new ConnectionQueryFilter()
+            {
+                FromIds = [auditAccessor.AuditValues.ChangedBy],
+                ToIds = [party],
+                IncludeDelegation = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludePackages = true,
+                IncludeResource = false,
+                IncludeSubConnections = true,
+                EnrichEntities = true,
+                EnrichPackageResources = false,
+                ResourceIds = resourceIds.ToList(),
+            },
+            direction: ConnectionQueryDirection.FromOthers,
+            useNewQuery: true,
+            ct: cancellationToken
+            );
+
+        return resourceIds.ToDictionary(t => t, t => connections.Any(y => y.Resources.Select(r => r.Id).Contains(t)));
+    }
+
+    public async Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resourceObjects = await dbContext.Resources.AsNoTracking().Where(r => resources.Contains(r.RefId)).ToListAsync(cancellationToken);
+
+        if (resourceObjects is null || !resourceObjects.Any())
+        {
+            return resources.ToDictionary(t => t, t => false);
+        }
+
+        var idToKey = resourceObjects.ToDictionary(r => r.Id, r => r.RefId);
+        var checkResult = await CheckResource(party, idToKey.Keys, configureConnection, cancellationToken);
+
+        return idToKey.ToDictionary(
+            pair => pair.Value,
+            pair => checkResult.Value.TryGetValue(pair.Key, out var allowed) && allowed
+        );
+    }
+
+    #endregion
+
+    #region Packages
 
     public async Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -423,6 +658,8 @@ public partial class ConnectionService(
 
         return await CheckPackage(party, [.. packageIds, .. packagesFound.Select(p => p.Id)], configureConnection, cancellationToken);
     }
+
+    #endregion
 
     private async Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
     {
@@ -869,7 +1106,7 @@ public partial class ConnectionService
                 FromId = connection.FromId,
                 ToId = connection.ToId,
                 FacilitatorId = connection.ViaId ?? Guid.Empty
-            } 
+            }
             : null,
             From = new SystemUserClientConnectionDto.Client()
             {
@@ -906,7 +1143,7 @@ public partial class ConnectionService
                 Name = connection.Via.Name,
                 RefId = connection.Via.RefId,
                 ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : null
-            } 
+            }
             : null,
             FacilitatorRole = connection.ViaRoleId.HasValue ? new SystemUserClientConnectionDto.ServiceProviderRole()
             {
@@ -916,7 +1153,7 @@ public partial class ConnectionService
                 Description = connection.ViaRole.Description,
                 IsKeyRole = connection.ViaRole.IsKeyRole,
                 Urn = connection.ViaRole.Urn
-            } 
+            }
             : null
         });
     }
