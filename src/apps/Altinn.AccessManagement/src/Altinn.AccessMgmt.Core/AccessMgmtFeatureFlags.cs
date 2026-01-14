@@ -3,6 +3,11 @@
 public static class AccessMgmtFeatureFlags
 {
     /// <summary>
+    /// Ensures that all pipelines has at executed before application starts.
+    /// </summary>
+    public const string PipelineInit = "AccessManagement.Core.Pipeline.Init";
+
+    /// <summary>
     /// Specifies if the register data should streamed from register service to access management database
     /// </summary>
     public const string HostedServicesRegisterSync = $"AccessMgmt.Core.HostedServices.RegisterSync";

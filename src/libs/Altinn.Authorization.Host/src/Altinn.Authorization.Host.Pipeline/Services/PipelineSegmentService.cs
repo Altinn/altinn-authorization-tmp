@@ -25,11 +25,6 @@ internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> lo
         {
             await EnumerateSegment(args, inbound, outbound, func);
         }
-        catch (InvalidOperationException ex)
-        {
-            // Should only occur if inbound is closed. However, this shouldn't be throwed as we use the enumerator of inbound queue.
-            Log.InboundQueueClosed(logger, args.Descriptor.Name, args.Name, ex);
-        }
         finally
         {
             outbound.CompleteAdding();
@@ -43,11 +38,26 @@ internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> lo
         PipelineSegment<TIn, TOut> func)
     {
         using var serviceScope = args.Descriptor.ServiceScope?.Invoke(serviceProvider) ?? serviceProvider.CreateScope();
+        var inFailingState = false;
+        var inCancelledState = false;
+        
         foreach (var data in inbound.GetConsumingEnumerable())
         {
-            await Task.Delay(TimeSpan.FromSeconds(2));
             using var activity = PipelineTelemetry.ActivitySource.StartActivity($"Pipeline Segment: {args.Name}", ActivityKind.Internal, data.ActivityContext ?? default);
             activity.SetSequence(data.Sequence);
+
+            if (inFailingState)
+            {
+                activity.RecordFaultyState();
+                continue;
+            }
+
+            if (inCancelledState)
+            {
+                activity.RecordCancelledState();
+                continue;
+            }
+
             try
             {
                 var ctx = new PipelineSegmentContext<TIn>()
@@ -60,23 +70,35 @@ internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> lo
                 Log.SegmentMessageStart(logger, args.Descriptor.Name, args.Name, data.Sequence);
                 var result = await DispatchSegment(data.Sequence, args, func, ctx);
                 Log.SegmentMessageCompleted(logger, args.Descriptor.Name, args.Name, data.Sequence);
-                outbound.Add(new(result, data.ActivityContext, data.CancellationTokenSource)
-                {
-                    Sequence = data.Sequence,
-                });
+                outbound.Add(
+                    new(result, data.ActivityContext, data.CancellationTokenSource)
+                    {
+                        Sequence = data.Sequence,
+                    },
+                    data.CancellationTokenSource.Token);
+
                 Log.SegmentMessageSent(logger, args.Descriptor.Name, args.Name, data.Sequence);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) 
             {
                 // Should only occur if segment fails to process the same data repeatedly.
-                activity?.AddException(ex);
                 await data.CancellationTokenSource.CancelAsync();
+                activity?.AddException(ex);
                 Log.SegmentMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
-                return;
+                inFailingState = true;
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) 
             {
+                // Someone issued termination of the pipeline.
+                inCancelledState = true;
+            }
+            catch (Exception ex) 
+            {
+                // unexpected.
+                await data.CancellationTokenSource.CancelAsync();
+                activity?.AddException(ex);
                 Log.SegmentUnhandledError(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
+                inFailingState = true;
                 throw;
             }
         }
