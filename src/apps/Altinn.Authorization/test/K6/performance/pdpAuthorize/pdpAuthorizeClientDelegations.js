@@ -1,15 +1,15 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { expect, describe, randomItem, URL } from "./common/testimports.js";
-import { postAuthorizeUrl } from './common/config.js';
-import { buildClientDelegationAuthorizeBody } from './testData/buildAuthorizeBody.js';
-import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeToken, readCsv } from "./commonFunctions.js";
+import { expect, describe, randomItem, URL } from "../common/testimports.js";
+import { postAuthorizeUrl } from '../common/config.js';
+import { buildClientDelegationAuthorizeBody } from '../testData/buildAuthorizeBody.js';
+import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeToken, readCsv } from "../common/commonFunctions.js";
 
 const regnResources = "ttd-performance-clientdelegation";
 const fforResource = "ttd-performance-clientdelegation-ffor";
 const revResource = "ttd-performance-clientdelegation-revisor";
 
-const systemUsersFilename = `./testData/customers.csv`;
+const systemUsersFilename = import.meta.resolve(`../testData/customers.csv`);
 const systemUsers = new SharedArray('systemUsers', function () {
   return readCsv(systemUsersFilename);
 });

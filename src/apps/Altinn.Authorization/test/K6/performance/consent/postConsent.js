@@ -1,10 +1,10 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { postConsent, postConsentApprove, env } from './common/config.js';
-import { expect, describe, randomItem, randomIntBetween, URL, uuidv4 } from "./common/testimports.js";
-import { buildOptions, readCsv, getConsentRequestToken, getConsentApproveToken, getAuthorizeParams } from './commonFunctions.js';
+import { postConsent, postConsentApprove, env } from '../common/config.js';
+import { expect, describe, randomItem, randomIntBetween, URL, uuidv4 } from "../common/testimports.js";
+import { buildOptions, readCsv, getConsentRequestToken, getConsentApproveToken, getAuthorizeParams } from '../common/commonFunctions.js';
 
-const orgsDaglFilename = `./testData/orgsIn-${env}-WithPartyUuid.csv`;
+const orgsDaglFilename = import.meta.resolve(`../testData/orgsIn-${env}-WithPartyUuid.csv`);
 const orgsDagl = new SharedArray('orgsDagl', function () {
   return readCsv(orgsDaglFilename);
 });
