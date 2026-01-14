@@ -1,7 +1,7 @@
 meta {
-  name: MultiReqResourceDelegations
+  name: MultiReqResource_Delegations
   type: http
-  seq: 3
+  seq: 5
 }
 
 post {
@@ -118,7 +118,7 @@ script:pre-request {
 }
 
 tests {
-  test("MultiReqResourceDelegations Decision result on read is permit", function() {
+  test("MultiReqResource_Delegations Decision result is Permit on all requests", function() {
     const data = res.getBody();  
     expect(res.status).to.equal(200);
     expect(data.response[0]).to.have.property('decision', "Permit");

@@ -107,7 +107,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         {
             XacmlContextAttributes resourceContextAttributes = request.GetResourceAttributes();
             XacmlResourceAttributes resourceAttributes = GetResourceAttributeValues(resourceContextAttributes);
-            EnrichRequestResourceAttributes(resourceContextAttributes, resourceAttributes);
             await EnrichResourceParty(resourceContextAttributes, resourceAttributes, isExternalRequest, cancellationToken);
 
             bool resourceAttributeComplete = IsResourceComplete(resourceAttributes);
@@ -152,6 +151,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     resourceAttributes.ResourcePartyValue = partyId;
                 }
             }
+
+            // Resource must be enriched after getting instance data which resolves org/app through the instance id
+            resourceContextAttributes = EnrichRequestResourceAttributes(resourceContextAttributes, resourceAttributes);
 
             await EnrichSubjectAttributes(request, resourceAttributes, isExternalRequest, cancellationToken);
         }
@@ -198,11 +200,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         }
 
         /// <summary>
-        /// Updates needed resource information for the Context Request for a specific delegation
+        /// Updates needed resource information for the Context Request
         /// </summary>
         /// <param name="requestResourceAttributes">The current collection of resource attributes on the request to be enriched</param>
         /// <param name="resourceAttributes">Preprocessed collection of resource attributes based on the input request <see cref="ContextHandler.GetResourceAttributeValues(XacmlContextAttributes)"/></param>
-        public void EnrichRequestResourceAttributes(XacmlContextAttributes requestResourceAttributes, XacmlResourceAttributes resourceAttributes)
+        private static XacmlContextAttributes EnrichRequestResourceAttributes(XacmlContextAttributes requestResourceAttributes, XacmlResourceAttributes resourceAttributes)
         {
             XacmlAttribute resourceAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.ResourceRegistryAttribute));
             XacmlAttribute resourceInstanceAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.ResourceRegistryInstanceAttribute));
@@ -230,6 +232,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 // Missing resource registry instanceId attribute, but altinn app instance id exists.
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.ResourceInstanceValue));
             }
+
+            return requestResourceAttributes;
         }
 
         /// <summary>
