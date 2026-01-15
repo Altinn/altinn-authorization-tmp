@@ -123,7 +123,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (item.PerformedByPartyId != null)
                             {
                                 _logger.LogWarning(
-                                    "The delegation is performed as a client delegation and should not be imported as a package to A3 FromParty {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
+                                    "The delegation is performed as a client delegation and should not be imported as a package to A3. FromParty {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));
