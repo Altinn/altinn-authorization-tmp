@@ -211,7 +211,7 @@ public interface IAssignmentService
     /// <param name="fromId">The unique identifier of the entity from which the resource was originally assigned.</param>
     /// <param name="toId">The unique identifier of the entity whose access to the resource is being revoked.</param>
     /// <param name="resourceName">The id of the resource to revoke access to. Cannot be null or empty.</param>
-    /// <param name="instanceId">The identifier for the instance the deleagtion is about</param>
+    /// <param name="instanceId">The identifier for the instance the delegation is about</param>
     /// <param name="audit">The audit information to record for this operation. Cannot be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the number of resources that were
@@ -226,7 +226,7 @@ public interface IAssignmentService
     /// <param name="resourceName">The id that identifies the resource being changed. Cannot be null or empty.</param>
     /// <param name="blobStoragePolicyPath">The path to the blob storage policy that governs access to the resource data. Cannot be null or empty.</param>
     /// <param name="blobStorageVersionId">The version identifier of the blob storage object to associate with the resource change. Cannot be null or empty.</param>
-    /// <param name="instanceId">The identifier for the instance the deleagtion is about</param>
+    /// <param name="instanceId">The identifier for the instance the delegation is about</param>
     /// <param name="delegationEventId">The identifier of the delegation event that triggered this resource change.</param>
     /// <param name="audit">The audit information to record for this operation. Cannot be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the import operation.</param>

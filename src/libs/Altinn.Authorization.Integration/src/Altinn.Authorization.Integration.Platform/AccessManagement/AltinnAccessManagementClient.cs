@@ -8,7 +8,7 @@ namespace Altinn.Authorization.Integration.Platform.AccessManagement;
 /// Client for interacting with the Altinn Register service.
 /// </summary>
 /// <param name="HttpClientFactory">Factory for creating HTTP clients.</param>
-/// <param name="Options">Configuration options for the Altinn Register service.</param>/// 
+/// <param name="Options">Configuration options for the Altinn Register service.</param>
 /// <param name="PlatformOptions">Options for configuring platform integration services.</param>
 /// <param name="AccessManagementOptions">Options for configuring access management services.</param>
 /// <param name="TokenGenerator">Service for generating platform access tokens.</param>
@@ -53,7 +53,7 @@ public partial class AltinnAccessManagementClient(
     }
 
     /// <inheritdoc />
-    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResouceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default)
+    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResourceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
@@ -87,7 +87,7 @@ public interface IAltinnAccessManagement
     /// <param name="nextPage">The URL of the next page, if paginated.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of paginated <see cref="DelegationChange"/> items.</returns>
-    Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResouceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default);
+    Task<IAsyncEnumerable<PlatformResponse<PageStream<DelegationChange>>>> StreamResourceRegistryRightDelegations(string nextPage = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Streams a paginated list of single instance delegations from the RightsInternal controller.

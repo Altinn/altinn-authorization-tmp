@@ -61,7 +61,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                     }
                 }
 
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSync))
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResourceRightSync))
                 {
                     await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
@@ -88,7 +88,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                     }
                 }
 
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSyncFromErrorQueue))
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResourceRightSyncFromErrorQueue))
                 {
                     await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_fromerrorqueue_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)

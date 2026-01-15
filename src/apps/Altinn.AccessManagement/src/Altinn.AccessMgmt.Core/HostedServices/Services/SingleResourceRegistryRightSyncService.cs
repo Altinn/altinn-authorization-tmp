@@ -41,7 +41,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         public async Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken)
         {
             var leaseData = await lease.Get<SingleAppRightLease>(cancellationToken);
-            var singleResourceRightDelegations = await _singleRights.StreamResouceRegistryRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
+            var singleResourceRightDelegations = await _singleRights.StreamResourceRegistryRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
 
             await foreach (var page in singleResourceRightDelegations)
             {
@@ -58,7 +58,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing resorce delegation page '{0}'", batchName);
+                _logger.LogInformation("Starting processing resource delegation page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
@@ -175,7 +175,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             await using var scope = _serviceProivider.CreateAsyncScope();
             IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
-            var items = await errorQueueService.RetiveItemsForReProcessing("ResourceRegistry", cancellationToken);
+            var items = await errorQueueService.RetrieveItemsForReProcessing("ResourceRegistry", cancellationToken);
 
             foreach (var item in items)
             {

@@ -8,12 +8,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models;
 public class ErrorQueue : BaseErrorQueue
 {
     /// <summary>
-    /// The assosiated delegationChangeId (app/resource/instance)
+    /// The associated delegationChangeId (app/resource/instance)
     /// </summary>
     public long DelegationChangeId { get; set; }
 
     /// <summary>
-    /// The origion of the change (app/resource/instance)
+    /// The origin of the change (app/resource/instance)
     /// </summary>
     public string OriginType { get; set; }
 
@@ -28,7 +28,7 @@ public class ErrorQueue : BaseErrorQueue
     public string ErrorMessage { get; set; }
 
     /// <summary>
-    /// Flag to toogle ErrorQueue messages to reprocess instead of running new import.
+    /// Flag to toggle ErrorQueue messages to reprocess instead of running new import.
     /// </summary>
     public bool ReProcess { get; set; }
 

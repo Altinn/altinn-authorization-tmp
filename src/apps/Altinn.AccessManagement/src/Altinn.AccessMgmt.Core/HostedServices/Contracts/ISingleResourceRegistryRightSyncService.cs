@@ -16,7 +16,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Contracts
         Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sync all flaged elements from error queue
+        /// Sync all flagged elements from error queue
         /// </summary>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
         /// <returns></returns>

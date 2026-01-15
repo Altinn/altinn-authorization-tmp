@@ -50,7 +50,7 @@ public static class AccessMgmtFeatureFlags
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single resourceregistry rights.
     /// </summary>
-    public const string HostedServicesSingleResorceRightSync = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync";
+    public const string HostedServicesSingleResourceRightSync = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync";
 
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
@@ -65,7 +65,7 @@ public static class AccessMgmtFeatureFlags
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single resourceregistry rights.
     /// </summary>
-    public const string HostedServicesSingleResorceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync.FromErrorQueue";
+    public const string HostedServicesSingleResourceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync.FromErrorQueue";
 
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.

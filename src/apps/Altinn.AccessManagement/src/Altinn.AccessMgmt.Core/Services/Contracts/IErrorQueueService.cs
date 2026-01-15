@@ -18,13 +18,12 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         Task<bool> AddErrorQueue(ErrorQueue error, AuditValues values, CancellationToken cancellation);
 
         /// <summary>
-        /// Retrives all errors marked for ReProcessing of the defined type.
+        /// Retrieves all errors marked for ReProcessing of the defined type.
         /// </summary>
-        /// <param name="type">the type to rerive</param>
-        /// <param name="afterDelegationChangeId">the </param>
+        /// <param name="type">the type to retrieve</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns></returns>
-        Task<List<ErrorQueue>> RetiveItemsForReProcessing(string type, CancellationToken cancellationToken);
+        Task<List<ErrorQueue>> RetrieveItemsForReProcessing(string type, CancellationToken cancellationToken);
 
         /// <summary>
         /// Mark ErrorQueue element as processed

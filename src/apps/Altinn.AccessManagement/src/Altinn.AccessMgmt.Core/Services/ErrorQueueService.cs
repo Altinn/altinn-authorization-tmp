@@ -21,7 +21,7 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<List<ErrorQueue>> RetiveItemsForReProcessing(string type, CancellationToken cancellationToken)
+        public async Task<List<ErrorQueue>> RetrieveItemsForReProcessing(string type, CancellationToken cancellationToken)
         {
             var items = await db.ErrorQueue.AsNoTracking()
             .Where(t => t.OriginType == type && t.ReProcess)

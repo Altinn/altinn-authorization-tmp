@@ -426,7 +426,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok();
         }
 
-        ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
         [ActionName(nameof(SingleAppRightsFeed))]
         [HttpGet("internal/singleright/appdelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -446,7 +446,7 @@ namespace Altinn.AccessManagement.Controllers
                 nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleAppDelegationEventId={nextEventId}";
             }
 
-            // create reult
+            // create result
             Paginated<DelegationChange> result;
             PaginatedLinks link = new PaginatedLinks(nextLink);
             result = new Paginated<DelegationChange>(link, data);
@@ -455,7 +455,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
         [ActionName(nameof(SingleResourceRightsFeed))]
         [HttpGet("internal/singleright/resourcedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -475,7 +475,7 @@ namespace Altinn.AccessManagement.Controllers
                 nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleResourceDelegationEventId={nextEventId}";
             }
 
-            // create reult
+            // create result
             Paginated<DelegationChange> result;
             PaginatedLinks link = new PaginatedLinks(nextLink);
             result = new Paginated<DelegationChange>(link, data);
@@ -484,7 +484,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
         [ActionName(nameof(SingleInstanceRightsFeed))]
         [HttpGet("internal/singleright/instancedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]

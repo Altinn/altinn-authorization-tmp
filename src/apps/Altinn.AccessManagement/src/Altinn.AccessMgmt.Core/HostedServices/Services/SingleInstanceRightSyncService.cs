@@ -56,7 +56,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing instance delegation page '{0}'", batchName);
+                _logger.LogInformation("Starting processing instance delegation page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
@@ -177,7 +177,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             await using var scope = _serviceProivider.CreateAsyncScope();
             IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
-            var items = await errorQueueService.RetiveItemsForReProcessing("ResourceRegistry", cancellationToken);
+            var items = await errorQueueService.RetrieveItemsForReProcessing("ResourceRegistry", cancellationToken);
 
             foreach (var item in items)
             {

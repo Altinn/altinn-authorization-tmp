@@ -145,7 +145,7 @@ public static class SystemEntityConstants
     /// Represents the InternalApiImportSystem system entity.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> b96cda05-c0e0-4c59-b4b8-f15a7dff9590
+    /// - <c>Id:</c> f1be3999-68f6-4757-92b4-d3f3d33345e1
     /// - <c>Name:</c> InternalApiImportSystem
     /// - <c>RefId:</c> sys-internal-api-import-system
     /// - <c>TypeId:</c> Internal entity type
