@@ -147,7 +147,7 @@ jobs:
           exit 1
         fi
     - name: Setup k6
-      uses: grafana/setup-k6-action@6e12d9dc873f3ade01a7d9bdddd0805b50b4cf50
+      uses: grafana/setup-k6-action@ef2973be47b56231aefca6eaab9c2f6ce5d8979b
     - name: Run K6 tests (${{ inputs.testSuitePath }})
       shell: bash
       run: |
