@@ -49,7 +49,6 @@ module.exports = {
       userId: 20600687,
       partyId: 50485120,
       partyUuid: "7c6617f7-71d2-4235-99bf-c35658ae5161",
-
     },
   },
   REVI_Organisasjon: {
