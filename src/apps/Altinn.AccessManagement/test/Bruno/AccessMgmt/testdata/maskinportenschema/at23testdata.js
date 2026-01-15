@@ -6,7 +6,7 @@ module.exports =
     "org1": {
         "orgno": "810414782",
         "partyid": 50024759,
-        "partyuuid": "",
+        "partyuuid": "8fb8857f-5a9b-473d-9914-0cbc2e25fcc6",
         "dagl": {
             "pid":"21025400167",
             "userid": 20002359,
