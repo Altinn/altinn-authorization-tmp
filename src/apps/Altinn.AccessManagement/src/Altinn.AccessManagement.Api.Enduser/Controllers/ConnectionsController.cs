@@ -1,8 +1,8 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
@@ -14,8 +14,10 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -29,7 +31,10 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 public class ConnectionsController(
     IConnectionService ConnectionService,
     IUserProfileLookupService UserProfileLookupService,
-    IEntityService EntityService) : ControllerBase
+    ISingleRightsService singleRightsService,
+    IEntityService EntityService,
+    IResourceService resourceService
+    ) : ControllerBase
 {
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
@@ -444,56 +449,32 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromBody] PersonInput? person, [FromQuery] Guid? resourceId, [FromQuery] string resource, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] Guid? resourceId, [FromQuery] string resource, [FromQuery] string[] actionKeys, CancellationToken cancellationToken = default)
     {
-        bool hasPersonInputParameter = person is { };
-
-        var validationErrors = hasPersonInputParameter
-            ? ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddResourceToConnectionWithPersonInput(connection.Party, connection.From, person.PersonIdentifier, person.LastName, resourceId, resource))
-            : ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, resourceId, resource));
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, resourceId, resource));
 
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
         }
 
-        var fromUuid = Guid.Parse(connection.From);
+        var byId = AuthenticationHelper.GetPartyUuid(this.HttpContext);
 
-        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = hasPersonInputParameter
-            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
-            : await resolver.ResolveWithConnectionInputAsync(Guid.Parse(connection.To), true, cancellationToken);
-
-        if (!resolveResult.Success)
+        if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
         {
-            return resolveResult.ErrorResult!;
+            return Problem();
         }
 
-        var toUuid = resolveResult.ToUuid;
+        var from = await EntityService.GetEntity(fromId, cancellationToken);
+        var to = await EntityService.GetEntity(toId, cancellationToken);
+        var by = await EntityService.GetEntity(byId, cancellationToken);
+        var resourceObj = resourceId.HasValue
+            ? await resourceService.GetResource(resourceId.Value, cancellationToken)
+            : await resourceService.GetResource(resource, cancellationToken);
 
-        /*WRITE POLICY*/
+        var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
-
-        /*Write to Db?*/
-        async Task<Result<AssignmentResourceDto>> AddResource()
-        {
-            if (resourceId.HasValue)
-            {
-                return await ConnectionService.AddResource(fromUuid, toUuid, resourceId.Value, ConfigureConnections, cancellationToken);
-            }
-
-            return await ConnectionService.AddResource(fromUuid, toUuid, resource, ConfigureConnections, cancellationToken);
-        }
-
-        var result = await AddResource();
-        if (result.IsProblem)
-        {
-            return result.Problem.ToActionResult();
-        }
-
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     /// <summary>

@@ -135,22 +135,22 @@ namespace Altinn.AccessManagement.Core.Services
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        public async Task<List<Rule>> TryWriteDelegationPolicyRules(AssignmentResource assignmentResource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken)
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken)
         {
-            var rules = GenerateRules(assignmentResource, actionIds, performedBy).ToList();
+            var rules = GenerateRules(from, to, resource, actionIds, performedBy).ToList();
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        private IEnumerable<Rule> GenerateRules(AssignmentResource assignmentResource, List<string> actionIds, Entity performedBy)
+        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy)
         {
-            var coveredBy = assignmentResource.Assignment.To;
-            var offeredBy = assignmentResource.Assignment.From;
+            var coveredBy = to; ////assignmentResource.Assignment.To;
+            var offeredBy = from; ////assignmentResource.Assignment.From;
 
             var coveredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(coveredBy.TypeId);
             var offeredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(offeredBy.TypeId);
             var performedByUuidType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId);
 
-            var resourceAttributes = ConvertResourceToAttributeMatches(assignmentResource.Resource);
+            var resourceAttributes = ConvertResourceToAttributeMatches(resource);
 
             var result = actionIds.Select(action =>
                 new Rule
@@ -222,21 +222,47 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static List<AttributeMatch> ConvertResourceToAttributeMatches(Resource resource)
         {
-            var matches = new List<AttributeMatch>();
-
-            matches.Add(new AttributeMatch
+            switch (resource.Type.Name.ToLower())
             {
-                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceAttribute,
-                Value = resource.RefId
-            });
-
-            matches.Add(new AttributeMatch
-            {
-                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceTypeAttribute,
-                Value = resource.Type.Name
-            });
-
-            return matches;
+                default:
+                case "resource":
+                    return
+                    [
+                        new AttributeMatch
+                        {
+                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute,
+                            Value = resource.RefId
+                        }
+                    ];
+                case "app":
+                    return
+                    [
+                        new AttributeMatch
+                        {
+                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute,
+                            Value = resource.Provider.Code
+                        },
+                        new AttributeMatch
+                        {
+                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute,
+                            Value = resource.RefId
+                        }
+                    ];
+                //case "altinn2service":
+                //    return
+                //    [
+                //        new AttributeMatch
+                //        {
+                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ServiceCodeAttribute,
+                //            Value = resource.ServiceCode
+                //        },
+                //        new AttributeMatch
+                //        {
+                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ServiceEditionCodeAttribute,
+                //            Value = resource.ServiceEditionCode
+                //        }
+                //    ];
+            }
         }
 
         private async Task<List<Rule>> EnrichRulesWithUuidInformation(List<Rule> rules, CancellationToken cancellationToken)

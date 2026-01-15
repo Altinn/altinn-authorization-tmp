@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
@@ -24,6 +25,8 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
         public Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken);
+
+        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken);
 
         /// <summary>
         /// Enrich delete request with Performed by uuid and call PAP to delete rules
