@@ -327,12 +327,6 @@ namespace Altinn.AccessManagement.Core.Services
             return result;
         }
 
-        /// <inheritdoc/>
-        public async Task<List<bool>> GetAppRightFeed(long appRightFeedId, CancellationToken cancellationToken = default)
-        {
-            return new List<bool>();
-        }
-
         private static List<InstanceRightDelegationResult> GetRightsFromPolicy(XacmlPolicy policy)
         {
             List<InstanceRightDelegationResult> result = new List<InstanceRightDelegationResult>();
