@@ -13,9 +13,9 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         /// </summary>
         /// <param name="error">the model to log</param>
         /// <param name="values">Audit values</param>
-        /// <param name="cancellation">The <see cref="CancellationToken"/></param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns></returns>
-        Task<bool> AddErrorQueue(ErrorQueue error, AuditValues values, CancellationToken cancellation);
+        Task<bool> AddErrorQueue(ErrorQueue error, AuditValues values, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves all errors marked for ReProcessing of the defined type.
@@ -28,7 +28,7 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         /// <summary>
         /// Mark ErrorQueue element as processed
         /// </summary>
-        /// <param name="id">The</param>
+        /// <param name="id">The id of the error queue element to mark as processed</param>
         /// <param name="values">Audit values</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns></returns>

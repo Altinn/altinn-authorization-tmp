@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Microsoft.Extensions.Options;
-using Microsoft.Win32;
 
 namespace Altinn.Authorization.Integration.Platform.AccessManagement;
 

@@ -23,7 +23,7 @@ public class AssignmentResource : BaseAssignmentResource
     public string PolicyPath { get; set; }
 
     /// <summary>
-    /// The version of the policy reffered to by this change.
+    /// The version of the policy referred to by this change.
     /// </summary>
     public string PolicyVersion { get; set; }
 }

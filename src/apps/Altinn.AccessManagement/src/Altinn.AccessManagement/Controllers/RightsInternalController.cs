@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Core;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Net.Mime;
+using Altinn.AccessManagement.Core;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
@@ -7,15 +10,10 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Utilities;
-using Altinn.Authorization.Integration.Platform;
 using AutoMapper;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Controllers
 {
@@ -455,7 +453,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
         [ActionName(nameof(SingleResourceRightsFeed))]
         [HttpGet("internal/singleright/resourcedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -484,7 +482,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
         [ActionName(nameof(SingleInstanceRightsFeed))]
         [HttpGet("internal/singleright/instancedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
