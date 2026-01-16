@@ -1622,6 +1622,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Is Accounting Address For"),
+            KeyValuePair.Create("Description", "Is Accounting Address For")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Er rekneskapsføraradresse for"),
+            KeyValuePair.Create("Description", "Er rekneskapsføraradresse for")
+        ),
     };
 
     /// <summary>
@@ -1650,6 +1658,14 @@ public static class RoleConstants
             LegacyUrn = "urn:altinn:rolecode:sign",
             IsAvailableForServiceOwners = true,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Signatory"),
+            KeyValuePair.Create("Description", "Signatory")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Signatur"),
+            KeyValuePair.Create("Description", "Signatur")
+        ),
     };
 
     /// <summary>
@@ -1679,6 +1695,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "To be merged with"),
+            KeyValuePair.Create("Description", "To be merged with")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Skal fusjonerast med"),
+            KeyValuePair.Create("Description", "Skal fusjonerast med")
+        ),
     };
 
     /// <summary>
@@ -1708,6 +1732,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "To be divided with"),
+            KeyValuePair.Create("Description", "To be divided with")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Skal fisjonerast med"),
+            KeyValuePair.Create("Description", "Skal fisjonerast med")
+        ),
     };
 
     /// <summary>
@@ -1737,6 +1769,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Has as registration unit BEDR"),
+            KeyValuePair.Create("Description", "Has as registration unit")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Har som registreringseining BEDR"),
+            KeyValuePair.Create("Description", "Har som registreringseining")
+        ),
     };
 
     /// <summary>
@@ -1766,6 +1806,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Has as registration unit AAFY"),
+            KeyValuePair.Create("Description", "Has as registration unit")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Har som registreringseining AAFY"),
+            KeyValuePair.Create("Description", "Har som registreringseining")
+        ),
     };
 
     /// <summary>
@@ -1795,6 +1843,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Joint procuration"),
+            KeyValuePair.Create("Description", "Joint procuration")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Prokura i fellesskap"),
+            KeyValuePair.Create("Description", "Prokura i fellesskap")
+        ),
     };
 
     /// <summary>
@@ -1824,6 +1880,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Individual procuration"),
+            KeyValuePair.Create("Description", "Individual procuration")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Prokura kvar for seg"),
+            KeyValuePair.Create("Description", "Prokura kvar for seg")
+        ),
     };
 
     /// <summary>
@@ -1853,6 +1917,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Procuration"),
+            KeyValuePair.Create("Description", "Procuration")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Prokura"),
+            KeyValuePair.Create("Description", "Prokura")
+        ),
     };
 
     /// <summary>
@@ -1882,6 +1954,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Is auditor address for"),
+            KeyValuePair.Create("Description", "Is auditor address for")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Er revisoradresse for"),
+            KeyValuePair.Create("Description", "Er revisoradresse for")
+        ),
     };
 
     /// <summary>
@@ -1911,6 +1991,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Co-owners"),
+            KeyValuePair.Create("Description", "External role")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Sameigarar"),
+            KeyValuePair.Create("Description", "Ekstern rolle")
+        ),
     };
 
     /// <summary>
@@ -1940,6 +2028,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Joint signature"),
+            KeyValuePair.Create("Description", "Joint signature")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Signatur i fellesskap"),
+            KeyValuePair.Create("Description", "Signatur i fellesskap")
+        ),
     };
 
     /// <summary>
@@ -1969,6 +2065,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Individual signature"),
+            KeyValuePair.Create("Description", "Individual signature")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Signatur kvar for seg"),
+            KeyValuePair.Create("Description", "Signatur kvar for seg")
+        ),
     };
 
     /// <summary>
@@ -1997,6 +2101,14 @@ public static class RoleConstants
             LegacyUrn = "urn:altinn:rolecode:komk",
             IsAvailableForServiceOwners = true,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Contact person in municipality"),
+            KeyValuePair.Create("Description", "External role")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Kontaktperson i kommune"),
+            KeyValuePair.Create("Description", "Ekstern rolle")
+        ),
     };
 
     /// <summary>
@@ -2025,6 +2137,14 @@ public static class RoleConstants
             LegacyUrn = "urn:altinn:rolecode:kemn",
             IsAvailableForServiceOwners = true,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Contact person in administrative unit"),
+            KeyValuePair.Create("Description", "unit - public sector")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Kontaktperson i Ad"),
+            KeyValuePair.Create("Description", "eining - offentleg sektor")
+        ),
     };
 
     /// <summary>
@@ -2053,6 +2173,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Leader in party's executive body"),
+            KeyValuePair.Create("Description", "Leader in party's executive body")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Leiar i partiets utøvande organ"),
+            KeyValuePair.Create("Description", "Leiar i partiets utøvande organ")
+        ),
     };
 
     /// <summary>
@@ -2082,6 +2210,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Electronic signing rights"),
+            KeyValuePair.Create("Description", "Electronic signing rights")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Elektronisk signeringsrett"),
+            KeyValuePair.Create("Description", "Elektronisk signeringsrett")
+        ),
     };
 
     /// <summary>
@@ -2110,6 +2246,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Granter of electronic signing rights"),
+            KeyValuePair.Create("Description", "Granter of electronic signing rights")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Tildelar av elektronisk signeringsrett"),
+            KeyValuePair.Create("Description", "Tildelar av elektronisk signeringsrett")
+        ),
     };
 
     /// <summary>
@@ -2139,6 +2283,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Member of company group with"),
+            KeyValuePair.Create("Description", "Member of company group with")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Inngår i føretaksgruppe med"),
+            KeyValuePair.Create("Description", "Inngår i føretaksgruppe med")
+        ),
     };
 
     /// <summary>
@@ -2167,6 +2319,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Has as subsidiary in group"),
+            KeyValuePair.Create("Description", "Has as subsidiary in group")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Har som dotter i konsern"),
+            KeyValuePair.Create("Description", "Har som dotter i konsern")
+        ),
     };
 
     /// <summary>
@@ -2195,6 +2355,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Has as basis for group"),
+            KeyValuePair.Create("Description", "Has as basis for group")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Har som grunnlag for konsern"),
+            KeyValuePair.Create("Description", "Har som grunnlag for konsern")
+        ),
     };
 
     /// <summary>
@@ -2223,6 +2391,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Has as parent in group"),
+            KeyValuePair.Create("Description", "Has as parent in group")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Har som mor i konsern"),
+            KeyValuePair.Create("Description", "Har som mor i konsern")
+        ),
     };
 
     /// <summary>
@@ -2251,6 +2427,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Performs liquidation"),
+            KeyValuePair.Create("Description", "Performs liquidation")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Forestår avvikling"),
+            KeyValuePair.Create("Description", "Forestår avvikling")
+        ),
     };
 
     /// <summary>
@@ -2280,6 +2464,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Member of joint registration"),
+            KeyValuePair.Create("Description", "Member of joint registration")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Inngår i fellesregistrering"),
+            KeyValuePair.Create("Description", "Inngår i fellesregistrering")
+        ),
     };
 
     /// <summary>
@@ -2309,6 +2501,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Is voluntarily registered rental building for"),
+            KeyValuePair.Create("Description", "Is voluntarily registered rental building for")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Er frivilleg registrert utleigebygg for"),
+            KeyValuePair.Create("Description", "Er frivilleg registrert utleigebygg for")
+        ),
     };
 
     /// <summary>
@@ -2338,6 +2538,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Is business operated jointly by"),
+            KeyValuePair.Create("Description", "Is business operated jointly by")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Er verksemd driven i fellesskap av"),
+            KeyValuePair.Create("Description", "Er verksemd driven i fellesskap av")
+        ),
     };
 
     /// <summary>
@@ -2367,6 +2575,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "VAT form completer"),
+            KeyValuePair.Create("Description", "VAT form completer")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Utfyllar MVA-oppgåver"),
+            KeyValuePair.Create("Description", "Utfyllar MVA-oppgåver")
+        ),
     };
 
     /// <summary>
@@ -2395,6 +2611,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "VAT form signer"),
+            KeyValuePair.Create("Description", "VAT form signer")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Signerer MVA-oppgåver"),
+            KeyValuePair.Create("Description", "Signerer MVA-oppgåver")
+        ),
     };
 
     /// <summary>
@@ -2424,6 +2648,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Auditor registered in auditor register"),
+            KeyValuePair.Create("Description", "Rights for audit firm")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Revisor registrert i revisorregisteret"),
+            KeyValuePair.Create("Description", "Rettar for revisjonsselskap")
+        ),
     };
 
     /// <summary>
@@ -2452,6 +2684,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Founder"),
+            KeyValuePair.Create("Description", "Founder")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Stiftar"),
+            KeyValuePair.Create("Description", "Stiftar")
+        ),
     };
 
     /// <summary>
@@ -2480,6 +2720,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Alternate member in party's executive body"),
+            KeyValuePair.Create("Description", "Alternate member in party's executive body")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Varamedlem i partiets utøvande organ"),
+            KeyValuePair.Create("Description", "Varamedlem i partiets utøvande organ")
+        ),
     };
 
     /// <summary>
@@ -2509,6 +2757,14 @@ public static class RoleConstants
 
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Deputy leader in party's executive body"),
+            KeyValuePair.Create("Description", "Deputy leader in party's executive body")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Nestleiar i partiets utøvande organ"),
+            KeyValuePair.Create("Description", "Nestleiar i partiets utøvande organ")
+        ),
     };
 
     /// <summary>
@@ -2537,6 +2793,14 @@ public static class RoleConstants
             LegacyUrn = "urn:altinn:rolecode:hmdl",
             IsAvailableForServiceOwners = false,
         },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Board member in party's executive body"),
+            KeyValuePair.Create("Description", "Board member in party's executive body")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Styremedlem i partiets utøvande organ"),
+            KeyValuePair.Create("Description", "Styremedlem i partiets utøvande organ")
+        ),
     };
 
     /// <summary>
