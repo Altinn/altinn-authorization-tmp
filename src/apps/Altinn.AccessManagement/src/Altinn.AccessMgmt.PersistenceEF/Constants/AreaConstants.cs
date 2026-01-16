@@ -912,28 +912,28 @@ public static class AreaConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 7d77a783-710c-463d-9187-ed1f4bbc23ad
-    /// - <c>Name:</c> "Privatperson"
-    /// - <c>Description:</c> "Tilganger knyttet direkte til rollen som privatperson i Folkeregisteret. Denne rollen kan fortsatt gi tilgang til tjenester som kun finnes i den gamle løsningen. Se listen i den gamle løsningen."
-    /// - <c>Urn:</c> "accesspackage:area:privatperson"
+    /// - <c>Name:</c> "Administratorrettigheter"
+    /// - <c>Description:</c> "Dette fullmaktsområde skal gi privatperson mulighet til å delegere tilgangsstyring til andre."
+    /// - <c>Urn:</c> "accesspackage:area:administratorrettigheter"
     /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
-    public static ConstantDefinition<Area> PrivateIndividual { get; } = new ConstantDefinition<Area>("7d77a783-710c-463d-9187-ed1f4bbc23ad")
+    public static ConstantDefinition<Area> AdministratorRights { get; } = new ConstantDefinition<Area>("7d77a783-710c-463d-9187-ed1f4bbc23ad")
     {
         Entity = new()
         {
-            Name = "Privatperson",
-            Description = "Tilganger knyttet direkte til rollen som privatperson i Folkeregisteret. Denne rollen kan fortsatt gi tilgang til tjenester som kun finnes i den gamle løsningen. Se listen i den gamle løsningen.",
+            Name = "Administratorrettigheter",
+            Description = "Dette fullmaktsområde skal gi privatperson mulighet til å delegere tilgangsstyring til andre.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
-            Urn = "accesspackage:area:privatperson"
+            Urn = "accesspackage:area:administratorrettigheter"
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Private individual"),
-            KeyValuePair.Create("Description", "Access directly linked to the role of private person in the National Register. This role can still provide access to services that only exist in the old solution. See the list in the old solution.")),
+            KeyValuePair.Create("Name", "Administrator rights"),
+            KeyValuePair.Create("Description", "This area of ​​authority shall give the private person the opportunity to delegate access control to others.")),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Privatperson"),
-            KeyValuePair.Create("Description", "Tilgangar knytte direkte til rolla som privatperson i Folkeregisteret. Denne rolla kan framleis gi tilgang til tenester som berre finst i den gamle løysinga. Sjå lista i den gamle løysinga.")),
+            KeyValuePair.Create("Name", "Administratorrettar"),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet skal gi privatperson høve til å delegera tilgangsstyring til andre.")),
     };
 
     /// <summary>

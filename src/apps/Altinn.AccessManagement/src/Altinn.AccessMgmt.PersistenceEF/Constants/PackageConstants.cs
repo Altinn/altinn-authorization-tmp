@@ -5961,5 +5961,39 @@ public static class PackageConstants
         ),
     };
 
+    /// <summary>
+    /// Represents the 'Tilgangsstyring privatperson' access package.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 540a25ff-6fd9-4574-8573-249c1779d253
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:tilgangsstyring-privatperson
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Description:</c> Gir mulighet til å gi videre tilganger for privatperson som man selv har mottatt.
+    /// </remarks>
+    public static ConstantDefinition<Package> AccessManagementPrivatePerson { get; } = new ConstantDefinition<Package>("540a25ff-6fd9-4574-8573-249c1779d253")
+    {
+        Entity = new()
+        {
+            Name = "Tilgangsstyring privatperson",
+            Description = "Gir mulighet til å gi videre tilganger for privatperson som man selv har mottatt.",
+            Urn = "urn:altinn:accesspackage:innbygger:tilgangsstyring-privatperson",
+            Code = "tilgangsstyring-privatperson",
+            IsDelegable = true,
+            IsAvailableForServiceOwners = true,
+            IsAssignable = true,
+            EntityTypeId = EntityTypeConstants.Person,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AdministratorRights,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Access management private person"),
+            KeyValuePair.Create("Description", "Gives the opportunity to give further access for private individuals that you have received yourself.")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Tilgangsstyring privatperson"),
+            KeyValuePair.Create("Description", "Gir høve til å gi vidare tilgangar for privatperson som ein sjølv har fått.")
+        ),
+    };
+
     #endregion
 }
