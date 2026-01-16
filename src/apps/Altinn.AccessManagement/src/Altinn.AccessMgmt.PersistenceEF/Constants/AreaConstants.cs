@@ -654,7 +654,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Arbeidsliv, skole og utdanning"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser som omhandler Arbeid, utdanning og arbeidsforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir."
     /// - <c>Urn:</c> "accesspackage:area:arbeidsliv_skole_og_utdanning"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Aksel_Workplace_Buildings2.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> WorkingLifeSchoolAndEducation { get; } = new ConstantDefinition<Area>("26be6035-a1a9-4ac2-a95b-0338c526f932")
@@ -663,7 +663,7 @@ public static class AreaConstants
         {
             Name = "Arbeidsliv, skole og utdanning",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser som omhandler Arbeid, utdanning og arbeidsforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Buildings2.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:arbeidsliv_skole_og_utdanning"
         },
@@ -683,7 +683,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Familie og fritid"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser knyttet til familie og fritid. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir."
     /// - <c>Urn:</c> "accesspackage:area:familie_og_fritid"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "PersonTallShort.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> FamilyAndLeisure { get; } = new ConstantDefinition<Area>("0b3223ad-f02d-4249-8746-fc8e003292e0")
@@ -692,7 +692,7 @@ public static class AreaConstants
         {
             Name = "Familie og fritid",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser knyttet til familie og fritid. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "PersonTallShort.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:familie_og_fritid"
         },
@@ -712,7 +712,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Helse og omsorg"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser knyttet til helse og omsorg. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir."
     /// - <c>Urn:</c> "accesspackage:area:helse_og_omsorg"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> HealthAndCare { get; } = new ConstantDefinition<Area>("7547c6d0-42c5-4dfd-bb8e-46453fa011eb")
@@ -721,7 +721,7 @@ public static class AreaConstants
         {
             Name = "Helse og omsorg",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester og ressurser knyttet til helse og omsorg. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:helse_og_omsorg"
         },
@@ -741,7 +741,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Kultur, idrett og frivillighet"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester innen kultur, idrett og fritidsaktiviteter. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir."
     /// - <c>Urn:</c> "accesspackage:area:kultur_idrett_og_frivillighet"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Aksel_Wellness_HeadHeart.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> CultureSportAndVolunteering { get; } = new ConstantDefinition<Area>("10a73dfd-1e70-44d4-b651-cd8db81e8b1b")
@@ -750,7 +750,7 @@ public static class AreaConstants
         {
             Name = "Kultur, idrett og frivillighet",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker som gir fullmakter til tjenester innen kultur, idrett og fritidsaktiviteter. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_HeadHeart.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:kultur_idrett_og_frivillighet"
         },
@@ -770,7 +770,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Patenter, sertifikater og attester"
     /// - <c>Description:</c> "Fullmaktsområde for tilgangspakker for tjenester som er relatert til å søke om patent, sertifisering, attester, design og varemerker. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
     /// - <c>Urn:</c> "accesspackage:area:patenter_sertifikater_og_attester"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Seal.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> PatentsCertificatesAndAttestations { get; } = new ConstantDefinition<Area>("36cac8e4-56dc-4825-a3ea-03f8f3d1a05b")
@@ -779,7 +779,7 @@ public static class AreaConstants
         {
             Name = "Patenter, sertifikater og attester",
             Description = "Fullmaktsområde for tilgangspakker for tjenester som er relatert til å søke om patent, sertifisering, attester, design og varemerker. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Seal.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:patenter_sertifikater_og_attester"
         },
@@ -799,7 +799,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Politi og rettsvesen"
     /// - <c>Description:</c> "Fullmaktsområde for tilgangspakker for tjenester som er relatert til politisaker og andre forhold til rettsvesenet. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
     /// - <c>Urn:</c> "accesspackage:area:politi_og_rettsvesen"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "GavelSoundBlock.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> PoliceAndJudiciary { get; } = new ConstantDefinition<Area>("0995c7e3-d791-4797-9ceb-1c40eadf9c81")
@@ -808,7 +808,7 @@ public static class AreaConstants
         {
             Name = "Politi og rettsvesen",
             Description = "Fullmaktsområde for tilgangspakker for tjenester som er relatert til politisaker og andre forhold til rettsvesenet. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "GavelSoundBlock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:politi_og_rettsvesen"
         },
@@ -828,7 +828,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Plan, bygg og eiendom"
     /// - <c>Description:</c> "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse innen plan og eiendom. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
     /// - <c>Urn:</c> "accesspackage:area:plan_bygg_og_eiendom"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Altinn_Bygg-anlegg-og-eiendom_HandHouse.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> PlanBuildingAndProperty { get; } = new ConstantDefinition<Area>("4a9b468d-c008-4ad3-9532-ff4b949f13b7")
@@ -837,7 +837,7 @@ public static class AreaConstants
         {
             Name = "Plan, bygg og eiendom",
             Description = "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse innen plan og eiendom. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Altinn_Bygg-anlegg-og-eiendom_HandHouse.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:plan_bygg_og_eiendom"
         },
@@ -857,7 +857,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Trafikk og transport"
     /// - <c>Description:</c> "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse som gjelder trafikk og transportforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
     /// - <c>Urn:</c> "accesspackage:area:trafikk_og_transport"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Car.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> TrafficAndTransport { get; } = new ConstantDefinition<Area>("287836cc-69ee-4220-84f1-35623a85ec7b")
@@ -866,7 +866,7 @@ public static class AreaConstants
         {
             Name = "Trafikk og transport",
             Description = "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse som gjelder trafikk og transportforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Car.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:trafikk_og_transport"
         },
@@ -886,7 +886,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Skatt, avgift, bank og forsikring"
     /// - <c>Description:</c> "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse som gjelder skatt, avgifter, bank, forsikring og andre økonomiske forhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
     /// - <c>Urn:</c> "accesspackage:area:skatt_avgift_bank_og_forsikring"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "Aksel_Money_SackKroner.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> TaxLevyBankAndInsurance { get; } = new ConstantDefinition<Area>("dcc8daab-e658-4251-a94f-a9e1c06b3833")
@@ -895,7 +895,7 @@ public static class AreaConstants
         {
             Name = "Skatt, avgift, bank og forsikring",
             Description = "Fullmaktsområde for tilgangspakker for tjenester som er relatert til søknader og korrespondanse som gjelder skatt, avgifter, bank, forsikring og andre økonomiske forhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Money_SackKroner.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:skatt_avgift_bank_og_forsikring"
         },
@@ -915,7 +915,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Administratorrettigheter"
     /// - <c>Description:</c> "Dette fullmaktsområde skal gi privatperson mulighet til å delegere tilgangsstyring til andre."
     /// - <c>Urn:</c> "accesspackage:area:administratorrettigheter"
-    /// - <c>IconUrl:</c> "Aksel_Statistics-and-math_TrendDown.svg" XXX
+    /// - <c>IconUrl:</c> "PersonSuit.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> AdministratorRights { get; } = new ConstantDefinition<Area>("7d77a783-710c-463d-9187-ed1f4bbc23ad")
@@ -924,7 +924,7 @@ public static class AreaConstants
         {
             Name = "Administratorrettigheter",
             Description = "Dette fullmaktsområde skal gi privatperson mulighet til å delegere tilgangsstyring til andre.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "PersonSuit.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:administratorrettigheter"
         },
