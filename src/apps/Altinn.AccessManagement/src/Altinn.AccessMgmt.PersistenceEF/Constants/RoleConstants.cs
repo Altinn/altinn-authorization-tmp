@@ -1623,8 +1623,8 @@ public static class RoleConstants
             IsAvailableForServiceOwners = false,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Is Accounting Address For"),
-            KeyValuePair.Create("Description", "Is Accounting Address For")
+            KeyValuePair.Create("Name", "Is accounting address For"),
+            KeyValuePair.Create("Description", "Is accounting address For")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Er rekneskapsføraradresse for"),
