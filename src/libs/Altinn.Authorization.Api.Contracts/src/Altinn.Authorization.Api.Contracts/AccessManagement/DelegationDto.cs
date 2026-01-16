@@ -6,10 +6,10 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 public class DelegationDto
 {
     /// <summary>
-    /// Id
+    /// PackageId
     /// </summary>
-    [JsonPropertyName("id")]
-    public Guid Id { get; set; }
+    [JsonPropertyName("roleId")]
+    public Guid RoleId { get; set; }
 
     /// <summary>
     /// PackageId

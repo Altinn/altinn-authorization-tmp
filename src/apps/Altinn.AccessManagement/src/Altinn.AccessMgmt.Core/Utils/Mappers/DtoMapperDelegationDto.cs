@@ -7,24 +7,24 @@ namespace Altinn.AccessMgmt.Core.Utils;
 /// <inheritdoc/>
 public partial class DtoMapper : IDtoMapper
 {
-    public static DelegationDto ConvertToDelegationDto(Delegation model, Guid packageId)
+    public static DelegationDto ConvertToDelegationDto(Delegation model, Guid packageId, Guid roleId)
     {
         return new DelegationDto()
         {
-            Id = model.Id,
             ToId = model.ToId,
             FromId = model.FromId,
             ViaId = model.FacilitatorId,
-            PackageId = packageId
+            PackageId = packageId,
+            RoleId = roleId,
         };
     }
 
-    public static DelegationDto ConvertToDelegationDto(ConnectionQueryExtendedRecord model, Guid packageId)
+    public static DelegationDto ConvertToDelegationDto(ConnectionQueryExtendedRecord model, Guid packageId, Guid roleId)
     {
         return new DelegationDto()
         {
-            Id = (Guid)model.DelegationId,
             ToId = model.ToId,
+            RoleId = model.RoleId,
             FromId = model.FromId,
             ViaId = (Guid)model.ViaId,
             PackageId = packageId

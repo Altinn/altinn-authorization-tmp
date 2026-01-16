@@ -190,11 +190,10 @@ public class ClientDelegationController(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "from")][Required] Guid from,
         [FromQuery(Name = "to")][Required] Guid to,
-        [FromQuery(Name = "packageId")] Guid? packageId,
-        [FromQuery(Name = "package")] string package,
+        [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.AddDelegationForAgentAsync(party, from, to, packageId, package, cancellationToken);
+        var result = await clientDelegationService.AddDelegationForAgentAsync(party, from, to, payload, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -204,7 +203,6 @@ public class ClientDelegationController(
     }
 
     [HttpDelete("agents/accesspackages")]
-    
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -213,17 +211,16 @@ public class ClientDelegationController(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "from")][Required] Guid from,
         [FromQuery(Name = "to")][Required] Guid to,
-        [FromQuery(Name = "packageId")] Guid? packageId,
-        [FromQuery(Name = "package")] string package,
+        [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default
     )
     {
-        var result = await clientDelegationService.RemoveAgentDelegation(party, from, to, packageId, package, cancellationToken);
-        if (result is { })
+        var result = await clientDelegationService.RemoveAgentDelegation(party, from, to, payload, cancellationToken);
+        if (result.IsProblem)
         {
-            return result.ToActionResult();
+            return result.Problem.ToActionResult();
         }
 
-        return Ok(result);
+        return Ok(result.Value);
     }
 }
