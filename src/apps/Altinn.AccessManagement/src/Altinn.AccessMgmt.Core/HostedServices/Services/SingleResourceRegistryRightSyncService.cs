@@ -28,13 +28,13 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         )
         {
             _singleRights = singleRights;
-            _serviceProivider = serviceProvider;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
         private readonly IAltinnAccessManagement _singleRights;
         private readonly ILogger<SingleAppRightSyncService> _logger;
-        private readonly IServiceProvider _serviceProivider;
+        private readonly IServiceProvider _serviceProvider;
 
         public async Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken)
         {
@@ -64,7 +64,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     {
                         try
                         {
-                            await using var scope = _serviceProivider.CreateAsyncScope();
+                            await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();                            
 
                             if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid))
@@ -129,7 +129,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (addToErrorQueue)
                             {
                                 // Log and continue processing other items
-                                await using var scope = _serviceProivider.CreateAsyncScope();
+                                await using var scope = _serviceProvider.CreateAsyncScope();
                                 IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
                                 ErrorQueue error = new ErrorQueue
@@ -170,7 +170,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         {
             Guid batchId = Guid.CreateVersion7();
 
-            await using var scope = _serviceProivider.CreateAsyncScope();
+            await using var scope = _serviceProvider.CreateAsyncScope();
             IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
             var items = await errorQueueService.RetrieveItemsForReProcessing("ResourceRegistry", cancellationToken);
