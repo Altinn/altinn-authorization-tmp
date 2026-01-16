@@ -11,6 +11,8 @@ using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
+using Altinn.AccessManagement.Api.Enduser.Models;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -189,7 +191,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(data);
-            
+
             var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
             Assert.NotNull(connection);
             Assert.Equal(TestEntities.PersonPaula.Id, connection.Agent.Id);
@@ -208,7 +210,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(data);
-            
+
             var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
             Assert.Null(connection);
         }
@@ -226,6 +228,33 @@ public class ClientDelegationControllerTest
             var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonOrjan);
             Assert.Null(connection);
         }
+
+        #endregion
+    }
+
+    public class CreateClientDelegations : IClassFixture<ApiFixture>
+    {
+        public CreateClientDelegations(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_ENDUSER));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        #region POST accessmanagement/api/v1/enduser/clientdelegations/agents
 
         #endregion
     }
