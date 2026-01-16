@@ -83,7 +83,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithNullableValue("coveredByUserId", NpgsqlDbType.Integer, coveredByUserId);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetAppDelegationChange)
+                    .SelectAwait(reader => GetAppDelegationChange(reader))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -158,7 +158,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithNullableValue("coveredByUserIds", NpgsqlDbType.Array | NpgsqlDbType.Integer, coveredByUserIds);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetAppDelegationChange)
+                    .SelectAwait(reader => GetAppDelegationChange(reader))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -221,7 +221,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithValue(ToUuid, NpgsqlDbType.Uuid, toUuid);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetAppDelegationChange)
+                    .SelectAwait(reader => GetAppDelegationChange(reader))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -1446,7 +1446,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithValue("offeredByPartyIds", NpgsqlDbType.Array | NpgsqlDbType.Integer, offeredByPartyIds);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetDelegationChange)
+                    .SelectAwait(reader => GetDelegationChange(reader, mapAppResourceId: false))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -1543,7 +1543,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithNullableValue("coveredByPartyIds", NpgsqlDbType.Array | NpgsqlDbType.Integer, coveredByPartyIds);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetDelegationChange)
+                    .SelectAwait(reader => GetDelegationChange(reader, mapAppResourceId: false))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -1639,7 +1639,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithNullableValue("toPartyUuids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, toPartyUuids);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetDelegationChange)
+                    .SelectAwait(reader => GetDelegationChange(reader, mapAppResourceId: true))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -1649,6 +1649,7 @@ namespace Altinn.AccessManagement.Persistence
             }
         }
 
+        private static async ValueTask<DelegationChange> GetDelegationChange(NpgsqlDataReader reader, bool mapAppResourceId = false)
         /// <inheritdoc/>
         public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long startFeedIndex = 1, CancellationToken cancellationToken = default)
         {
@@ -1788,14 +1789,14 @@ namespace Altinn.AccessManagement.Persistence
             }
         }
 
-        private static async ValueTask<DelegationChange> GetDelegationChange(NpgsqlDataReader reader)
+        private static async ValueTask<DelegationChange> GetDelegationChange(NpgsqlDataReader reader, bool mapAppResourceId = false)
         {
             return await reader.GetFieldValueAsync<int?>("resourceregistrydelegationchangeid") > 0
                 ? await GetResourceRegistryDelegationChange(reader)
-                : await GetAppDelegationChange(reader);
+                : await GetAppDelegationChange(reader, mapAppResourceId);
         }
 
-        private static async ValueTask<DelegationChange> GetAppDelegationChange(NpgsqlDataReader reader)
+        private static async ValueTask<DelegationChange> GetAppDelegationChange(NpgsqlDataReader reader, bool mapAppResourceId = false)
         {
             using var activity = TelemetryConfig.ActivitySource.StartActivity();
             try
@@ -1804,7 +1805,9 @@ namespace Altinn.AccessManagement.Persistence
                 {
                     DelegationChangeId = await reader.GetFieldValueAsync<int>("delegationchangeid"),
                     DelegationChangeType = await reader.GetFieldValueAsync<DelegationChangeType>(DelegationChangeType),
-                    ResourceId = await reader.GetFieldValueAsync<string>("altinnappid"),
+                    ResourceId = mapAppResourceId 
+                        ? MapAppIdToResourceId(await reader.GetFieldValueAsync<string>("altinnappid")) 
+                        : await reader.GetFieldValueAsync<string>("altinnappid"),
                     ResourceType = ResourceAttributeMatchType.AltinnAppId.ToString(),
                     OfferedByPartyId = await reader.GetFieldValueAsync<int>("offeredbypartyid"),
                     FromUuid = await reader.GetFieldValueAsync<Guid?>(FromUuid),
@@ -1826,6 +1829,17 @@ namespace Altinn.AccessManagement.Persistence
                 activity?.StopWithError(ex);
                 return await new ValueTask<DelegationChange>(Task.FromException<DelegationChange>(ex));
             }
+        }
+
+        private static string MapAppIdToResourceId(string altinnAppId)
+        {
+            string[] orgAppSplit = altinnAppId.Split('/');
+            if (orgAppSplit.Length == 2)
+            {
+                return $"app_{orgAppSplit[0]}_{orgAppSplit[1]}";
+            }
+
+            return altinnAppId;
         }
 
         private static async ValueTask<DelegationChange> GetResourceRegistryDelegationChange(NpgsqlDataReader reader)
