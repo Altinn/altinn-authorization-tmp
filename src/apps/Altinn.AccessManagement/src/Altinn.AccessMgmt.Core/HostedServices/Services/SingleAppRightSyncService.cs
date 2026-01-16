@@ -78,15 +78,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 batchId.ToString(),
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                            string[] appValues = item.ResourceId.Split('/', 2, StringSplitOptions.TrimEntries);
-                            string resource = $"app_{appValues[0].ToLower()}_{appValues[1].ToLower()}";
-
                             if (item.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
                             {
                                 int revokes = await assignmentService.RevokeImportedAssignmentResource(
                                     item.FromUuid.Value,
                                     item.ToUuid.Value,
-                                    resource,
+                                    item.ResourceId,
                                     values,
                                     cancellationToken);
 
@@ -96,7 +93,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                         "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
                                         item.FromUuid,
                                         item.ToUuid,
-                                        resource);
+                                        item.ResourceId);
                                 }
                             }
                             else
@@ -104,7 +101,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 int adds = await assignmentService.ImportAssignmentResourceChange(
                                     item.FromUuid.Value,
                                     item.ToUuid.Value,
-                                    resource,
+                                    item.ResourceId,
                                     item.BlobStoragePolicyPath,
                                     item.BlobStorageVersionId,
                                     item.DelegationChangeId,
@@ -117,7 +114,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                         "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
                                         item.FromUuid,
                                         item.ToUuid,
-                                        resource);
+                                        item.ResourceId);
                                 }
                             }
                         }

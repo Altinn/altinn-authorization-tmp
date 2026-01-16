@@ -1649,7 +1649,6 @@ namespace Altinn.AccessManagement.Persistence
             }
         }
 
-        private static async ValueTask<DelegationChange> GetDelegationChange(NpgsqlDataReader reader, bool mapAppResourceId = false)
         /// <inheritdoc/>
         public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long startFeedIndex = 1, CancellationToken cancellationToken = default)
         {
@@ -1676,7 +1675,7 @@ namespace Altinn.AccessManagement.Persistence
                 cmd.Parameters.AddWithNullableValue("limit", NpgsqlDbType.Timestamp, limit);
 
                 return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                    .SelectAwait(GetAppDelegationChange)
+                    .SelectAwait(reader => GetAppDelegationChange(reader, true))
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
