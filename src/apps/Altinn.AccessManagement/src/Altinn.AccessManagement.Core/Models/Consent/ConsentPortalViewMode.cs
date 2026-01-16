@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Authorization.Api.Contracts.Consent
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Defines the view mode of the consent portal for external users.
