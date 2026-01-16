@@ -5931,12 +5931,12 @@ public static class PackageConstants
     /// Represents the 'Støtte og tilskudd' access package.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 9f077a78-6530-428f-9660-7f61a8262f65
+    /// - <c>Id:</c> 3df18544-67ec-4725-a199-94aa998c5920
     /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:stotte-tilskudd
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike støtte- og tilskuddsordninger. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> SupportAndGrants { get; } = new ConstantDefinition<Package>("9f077a78-6530-428f-9660-7f61a8262f65")
+    public static ConstantDefinition<Package> SupportAndGrants { get; } = new ConstantDefinition<Package>("3df18544-67ec-4725-a199-94aa998c5920")
     {
         Entity = new()
         {
