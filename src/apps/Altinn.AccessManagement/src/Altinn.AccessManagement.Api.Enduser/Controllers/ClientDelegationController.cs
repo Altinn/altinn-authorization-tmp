@@ -182,7 +182,7 @@ public class ClientDelegationController(
 
     [HttpPost("agents/accesspackages")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
-    [ProducesResponseType<PaginatedResult<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -203,6 +203,7 @@ public class ClientDelegationController(
     }
 
     [HttpDelete("agents/accesspackages")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -221,6 +222,6 @@ public class ClientDelegationController(
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result.Value);
+        return NoContent();
     }
 }
