@@ -33,6 +33,7 @@ public class ClientDelegationController(
 {
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -53,6 +54,7 @@ public class ClientDelegationController(
 
     [HttpGet("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -73,6 +75,7 @@ public class ClientDelegationController(
 
     [HttpPost("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -120,6 +123,7 @@ public class ClientDelegationController(
 
     [HttpDelete("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -141,6 +145,7 @@ public class ClientDelegationController(
 
     [HttpGet("agents/accesspackages")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -161,6 +166,7 @@ public class ClientDelegationController(
 
     [HttpGet("clients/accesspackages")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -182,6 +188,7 @@ public class ClientDelegationController(
 
     [HttpPost("agents/accesspackages")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -204,6 +211,7 @@ public class ClientDelegationController(
 
     [HttpDelete("agents/accesspackages")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
