@@ -85,8 +85,10 @@ public interface IDelegationMetadataRepository
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     Task<DelegationChange> GetCurrentDelegationChange(ResourceAttributeMatchType resourceMatchType, string resourceId, int offeredByPartyId, int? coveredByPartyId, int? coveredByUserId, Guid? toUuid, UuidType toUuidType, CancellationToken cancellationToken = default);
 
+    /*
+    NOT IN USE (?)
+
     /// <summary>
-    /// NOT IN USE (?)
     /// Gets all the delegation change records matching the filter values for a complete changelog
     /// </summary>
     /// <param name="altinnAppId">The Altinn app id (org/app)</param>
@@ -95,6 +97,7 @@ public interface IDelegationMetadataRepository
     /// <param name="coveredByUserId">The user id of the entity having received the delegated policy, if the entity is a user</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// Task<List<DelegationChange>> GetAllAppDelegationChanges(string altinnAppId, int offeredByPartyId, int? coveredByPartyId, int? coveredByUserId, CancellationToken cancellationToken = default);
+    */
 
     /// <summary>
     /// Gets all the current app delegation change records matching the filter values

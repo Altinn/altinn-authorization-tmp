@@ -13,7 +13,7 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the instance delegation change id
         /// </summary>
         [JsonPropertyName("instancedelegationchangeid")]
-        public long InstanceDelegationChangeId { get; set; }
+        public int InstanceDelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the DelegationChangeType.
