@@ -889,7 +889,8 @@ public class ConnectionQuery(AppDbContext db)
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
-        var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => keys.Select(k => k.AssignmentId).Distinct().ToList().Contains(a.AssignmentId))
+        var apKeys = keys.Where(k => k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
+        var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
             .Select(ap => new { ap.PackageId, ap.AssignmentId })
             .ToListAsync(ct);
