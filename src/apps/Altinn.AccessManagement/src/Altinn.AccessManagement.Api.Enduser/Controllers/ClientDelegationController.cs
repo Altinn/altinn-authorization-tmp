@@ -89,7 +89,7 @@ public class ClientDelegationController(
         var validationErrors = ValidationComposer.Validate(
             ValidationComposer.Any(
                 ConnectionValidation.ValidateAddAssignmentWithPersonInput(person?.PersonIdentifier, person?.LastName),
-                ConnectionParameterRules.ToIsGuid(to)
+                ParameterValidation.ToIsGuid(to)
             )
         );
 

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -26,6 +27,8 @@ public class ClientDelegationService(
                 FromIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
                 IncludeResource = true,
+                OnlyUniqueResults = true,
+                IncludeSubConnections = false,
                 IncludePackages = true,
                 EnrichEntities = true,
             },
@@ -44,6 +47,8 @@ public class ClientDelegationService(
             {
                 ToIds = [partyId],
                 FromIds = [],
+                OnlyUniqueResults = true,
+                IncludeSubConnections = false,
                 IncludeResource = true,
                 IncludePackages = true,
                 EnrichEntities = true,
@@ -109,6 +114,8 @@ public class ClientDelegationService(
                 FromIds = [fromId],
                 ViaIds = [partyId],
                 ViaRoleIds = [RoleConstants.Agent],
+                OnlyUniqueResults = true,
+                IncludeSubConnections = false,
                 EnrichEntities = true,
                 IncludePackages = true
             },
@@ -129,6 +136,8 @@ public class ClientDelegationService(
                 ViaIds = [partyId],
                 ViaRoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
+                OnlyUniqueResults = true,
+                IncludeSubConnections = false,
                 EnrichEntities = true,
                 IncludePackages = true,
             },
@@ -148,43 +157,81 @@ public class ClientDelegationService(
         DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
+        ValidationErrorBuilder errorBuilder = default;
         var inputs = payload.Values
-            .Select(r =>
+            .Select((r, idx) =>
             {
                 var roleExist = RoleConstants.TryGetByCode(r.Role, out var role);
 
-                var pkgs = new List<(bool PackageExist, Package Package, string InputPackage)>();
-                foreach (var packageInput in r.Packages)
+                var pkgs = new List<(bool PackageExist, Package Package, string InputPackage, int PackageIdx)>();
+                var pkg = r.Packages.Select((p, idx) =>
                 {
-                    var packageExist = PackageConstants.TryGetByUrn(packageInput, out var package);
-                    pkgs.Add(new()
+                    var packageExist = PackageConstants.TryGetByUrn(p, out var package);
+                    return new
                     {
-                        InputPackage = packageInput,
+                        PackageIdx = idx,
+                        InputPackage = p,
                         Package = package,
                         PackageExist = packageExist,
-                    });
-                }
-
-                pkgs = pkgs.DistinctBy(p => p.Package?.Id).ToList();
+                    };
+                });
 
                 return new
                 {
+                    RoleIdx = idx,
                     InputRole = r.Role,
-                    InputPackage = r.Packages,
+                    InputPackages = pkgs,
                     InputOk = roleExist && pkgs.All(p => p.PackageExist),
                     Role = role,
                     Packages = pkgs,
                 };
             });
 
-        if (inputs.Any(i => !i.InputOk))
+        foreach (var input in inputs)
         {
-            // Return different err
-            return Problems.ConnectionEntitiesDoNotExist;
+            if (input.Role is null)
+            {
+                errorBuilder.Add(ValidationErrors.InvalidRole, $"BODY/values[{input.RoleIdx}]/role", [new($"{input.Role}", "role do not exist.")]);
+            }
+
+            foreach (var inputPackage in input.InputPackages)
+            {
+                if (!inputPackage.PackageExist)
+                {
+                    errorBuilder.Add(ValidationErrors.InvalidPackage, $"BODY/values[{input.RoleIdx}]/packages[{inputPackage.PackageIdx}]", [new($"{inputPackage.InputPackage}", "package do not exist.")]);
+                }
+            }
+        }
+
+        var entities = await db.Entities.Where(e => e.Id == partyId || e.Id == fromId || e.Id == toId).ToDictionaryAsync(e => e.Id, cancellationToken);
+        if (!entities.ContainsKey(partyId))
+        {
+            throw new UnreachableException();
+        }
+
+        if (!entities.ContainsKey(fromId))
+        {
+            errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/from", [new($"{fromId}", "entity do not exist.")]);
+        }
+
+        if (!entities.ContainsKey(toId))
+        {
+            errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/to", [new($"{toId}", "entity do not exist.")]);
+        }
+
+        if (errorBuilder.TryBuild(out var errorResult))
+        {
+            return errorResult;
         }
 
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent, cancellationToken: cancellationToken);
+        
+        if (agentAssignment is null)
+        {
+            return new List<DelegationDto>();
+        }
+
         var result = new List<DelegationDto>();
         foreach (var input in inputs)
         {
@@ -254,43 +301,65 @@ public class ClientDelegationService(
         DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
+        ValidationErrorBuilder errorBuilder = default;
         var inputs = payload.Values
-            .Select(r =>
+            .Select((r, idx) =>
             {
                 var roleExist = RoleConstants.TryGetByCode(r.Role, out var role);
 
-                var pkgs = new List<(bool PackageExist, Package Package, string InputPackage)>();
-                foreach (var packageInput in r.Packages)
+                var pkgs = new List<(bool PackageExist, Package Package, string InputPackage, int PackageIdx)>();
+                var pkg = r.Packages.Select((p, idx) =>
                 {
-                    var packageExist = PackageConstants.TryGetByUrn(packageInput, out var package);
-                    pkgs.Add(new()
+                    var packageExist = PackageConstants.TryGetByUrn(p, out var package);
+                    return new
                     {
-                        InputPackage = packageInput,
+                        PackageIdx = idx,
+                        InputPackage = p,
                         Package = package,
                         PackageExist = packageExist,
-                    });
-                }
-                
-                pkgs = pkgs.DistinctBy(p => p.Package?.Id).ToList();
+                    };
+                });
 
                 return new
                 {
+                    RoleIdx = idx,
                     InputRole = r.Role,
-                    InputPackage = r.Packages,
+                    InputPackages = pkgs,
                     InputOk = roleExist && pkgs.All(p => p.PackageExist),
                     Role = role,
                     Packages = pkgs,
                 };
             });
 
-        if (inputs.Any(i => !i.InputOk))
+        foreach (var input in inputs)
         {
-            // Return different err
-            return Problems.ConnectionEntitiesDoNotExist;
+            if (input.Role is null)
+            {
+                errorBuilder.Add(ValidationErrors.InvalidRole, $"BODY/values[{input.RoleIdx}]/role", [new($"{input.Role}", "role do not exist.")]);
+            }
+
+            foreach (var inputPackage in input.InputPackages)
+            {
+                if (!inputPackage.PackageExist)
+                {
+                    errorBuilder.Add(ValidationErrors.InvalidPackage, $"BODY/values[{input.RoleIdx}]/packages[{inputPackage.PackageIdx}]", [new($"{inputPackage.InputPackage}", "package do not exist.")]);
+                }
+            }
+        }
+
+        var entities = await db.Entities.Where(e => e.Id == partyId || e.Id == fromId || e.Id == toId).ToDictionaryAsync(e => e.Id, cancellationToken);
+        if (!entities.ContainsKey(partyId))
+        {
+            throw new UnreachableException();
         }
 
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent, cancellationToken: cancellationToken);
+        if (agentAssignment is null)
+        {
+            return new List<DelegationDto>();
+        }
+
         var result = new List<DelegationDto>();
         foreach (var input in inputs)
         {
@@ -350,7 +419,7 @@ public class ClientDelegationService(
 }
 
 /// <summary>
-/// I
+/// Delegation Service
 /// </summary>
 public interface IClientDelegationService
 {

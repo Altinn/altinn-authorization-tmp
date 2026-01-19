@@ -121,4 +121,16 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor PackageIsNotAssignableToRecipient { get; }
         = _factory.Create(28, $"One or more packages is not assignable to receipient.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when an invalid Role.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidRole { get; }
+        = _factory.Create(29, $"Invalid Role.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when an invalid package.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPackage { get; }
+        = _factory.Create(30, $"Invalid Package.");
 }
