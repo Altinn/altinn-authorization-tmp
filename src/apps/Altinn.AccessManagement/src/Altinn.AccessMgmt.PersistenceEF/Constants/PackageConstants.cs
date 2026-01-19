@@ -4889,7 +4889,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Pensjon for innbygger",
+            Name = "Pensjon",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondansen knyttet til pensjon. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:pensjon",
             Code = "pensjon",
@@ -4901,11 +4901,11 @@ public static class PackageConstants
             AreaId = AreaConstants.WorkingLifeSchoolAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Pension for inhabitants"),
+            KeyValuePair.Create("Name", "Pension"),
             KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to pensions. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Pensjon for innbyggjar"),
+            KeyValuePair.Create("Name", "Pensjon"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondansen knytt til pensjon. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -4957,7 +4957,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Sykefravær for innbygger",
+            Name = "Sykefravær",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til sykefravær. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:sykefravaer",
             Code = "sykefravaer",
@@ -4969,11 +4969,11 @@ public static class PackageConstants
             AreaId = AreaConstants.WorkingLifeSchoolAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sick leave for inhabitants"),
+            KeyValuePair.Create("Name", "Sick leave"),
             KeyValuePair.Create("Description", "This access package authorizes services and correspondence related to sickness absence. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sjukefråvær for innbyggjar"),
+            KeyValuePair.Create("Name", "Sjukefråvær"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til sjukefråvær. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -5237,7 +5237,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Helsetjenester for innbygger",
+            Name = "Helsetjenester",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike helsetjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:helsetjenester",
             Code = "helsetjenester",
@@ -5249,11 +5249,11 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthAndCare,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Health services for inhabitants"),
+            KeyValuePair.Create("Name", "Health services"),
             KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to various healthcare services. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Helsetenester for innbyggjar"),
+            KeyValuePair.Create("Name", "Helsetenester"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til ulike helsetenester. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -5483,7 +5483,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Attester for innbygger",
+            Name = "Attester",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til attester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:attester",
             Code = "attester",
@@ -5495,11 +5495,11 @@ public static class PackageConstants
             AreaId = AreaConstants.PatentsCertificatesAndAttestations,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Attestation for inhabitants"),
+            KeyValuePair.Create("Name", "Attestation"),
             KeyValuePair.Create("Description", "This access package authorizes services and correspondence related to certificates. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Attestar for innbyggjar"),
+            KeyValuePair.Create("Name", "Attestar"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til attestar. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -5626,7 +5626,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Byggesøknad for innbygger",
+            Name = "Byggesøknad",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til byggesøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:byggesoknad",
             Code = "byggesoknad",
@@ -5638,11 +5638,11 @@ public static class PackageConstants
             AreaId = AreaConstants.PlanBuildingAndProperty,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Building application for inhabitants"),
+            KeyValuePair.Create("Name", "Building application"),
             KeyValuePair.Create("Description", "This access package authorizes services and correspondence related to building applications. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Byggjesøknad for innbyggjar"),
+            KeyValuePair.Create("Name", "Byggjesøknad"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til byggjesøknader. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -5732,7 +5732,7 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Kjøretøy for innbygger",
+            Name = "Kjøretøy",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kjøretøy. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger:kjoretoy",
             Code = "kjoretoy",
@@ -5744,11 +5744,11 @@ public static class PackageConstants
             AreaId = AreaConstants.TrafficAndTransport,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Vehicle for inhabitant"),
+            KeyValuePair.Create("Name", "Vehicle"),
             KeyValuePair.Create("Description", "This access package authorizes services and correspondence related to vehicles. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Køyretøy innbyggjar"),
+            KeyValuePair.Create("Name", "Køyretøy"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til køyretøy. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
