@@ -36,7 +36,7 @@ internal static class ConnectionParameterRules
         }
 
         return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/party", [new("party", ValidationErrorMessageTexts.InvalidPartyValue)]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/party", [new("party", ValidationErrorMessageTexts.InvalidPartyValue)]);
     };
 
     /// <summary>
@@ -50,7 +50,7 @@ internal static class ConnectionParameterRules
         if (value is null || value == Guid.Empty)
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"$QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
         }
 
         return null;
@@ -86,19 +86,13 @@ internal static class ConnectionParameterRules
         if (string.IsNullOrWhiteSpace(personIdentifier))
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationErrorMessageTexts.PersonIdentifierRequired)]);
-        }
-
-        if (!PersonIdentifier.TryParse(personIdentifier, null, out _))
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationErrorMessageTexts.PersonIdentifierInvalid)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, "/personIdentifier", [new("personIdentifier", ValidationErrorMessageTexts.PersonIdentifierRequired)]);
         }
 
         if (string.IsNullOrWhiteSpace(personLastName))
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", ValidationErrorMessageTexts.LastNameRequired)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, "/lastName", [new("lastName", ValidationErrorMessageTexts.LastNameRequired)]);
         }
 
         return null;
@@ -117,7 +111,7 @@ internal static class ConnectionParameterRules
         else
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"$QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
         }
     };
 
