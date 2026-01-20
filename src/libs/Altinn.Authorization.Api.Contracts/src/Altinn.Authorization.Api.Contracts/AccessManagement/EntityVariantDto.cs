@@ -28,13 +28,13 @@ public class EntityVariantDto
     /// <summary>
     /// Type
     /// </summary>
-    public EntityTypeDto Type { get; set; }
+    public TypeDto Type { get; set; }
 }
 
 /// <summary>
 /// Extended EntityVariant
 /// </summary>
-public class EntitySubTypeDto
+public class SubTypeDto
 {
     /// <summary>
     /// Id
@@ -59,5 +59,5 @@ public class EntitySubTypeDto
     /// <summary>
     /// Type
     /// </summary>
-    public EntityTypeDto Type { get; set; }
+    public TypeDto Type { get; set; }
 }

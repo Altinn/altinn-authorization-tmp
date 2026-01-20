@@ -10,21 +10,21 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     public class TypesController : ControllerBase
     {
         /// <summary>
-        /// Gets all <see cref="EntityTypeDto"/>
+        /// Gets all <see cref="TypeDto"/>
         /// </summary>
         /// [Route("")]
         /// [HttpGet]
-        private async Task<ActionResult<List<EntityTypeDto>>> GetAllTypes()
+        private ActionResult<List<TypeDto>> GetAllTypes()
         {
             return EntityTypeConstants.AllEntities().Select(t => DtoMapper.Convert(t.Entity)).ToList();
         }
 
         /// <summary>
-        /// Gets all <see cref="EntityTypeDto"/> for given type
+        /// Gets all <see cref="TypeDto"/> for given type
         /// </summary>
         /// [Route("{parentTypeName}/subtypes")]
         /// [HttpGet]
-        private async Task<ActionResult<List<EntitySubTypeDto>>> GetSubTypes(string parentTypeName)
+        private ActionResult<List<SubTypeDto>> GetSubTypes(string parentTypeName)
         {
             if (!EntityTypeConstants.TryGetByName(parentTypeName, out var entityType))
             {
@@ -35,11 +35,11 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets all organization variants <see cref="EntitySubTypeDto"/>
+        /// Gets all organization sub types <see cref="SubTypeDto"/>
         /// </summary>
         [Route("organization/subtypes")]
         [HttpGet]
-        public async Task<ActionResult<List<EntitySubTypeDto>>> GetOrganizationSubTypes()
+        public ActionResult<List<SubTypeDto>> GetOrganizationSubTypes()
         {
             return EntityVariantConstants.AllEntities().Where(t => t.Entity.TypeId == EntityTypeConstants.Organization.Id).Select(t => DtoMapper.ConvertFlat(t.Entity)).ToList();
         }
