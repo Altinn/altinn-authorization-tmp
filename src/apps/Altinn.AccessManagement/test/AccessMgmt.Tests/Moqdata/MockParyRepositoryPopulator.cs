@@ -43,7 +43,7 @@ namespace AccessMgmt.Tests.Moqdata
                 PartyId = 501235,
                 Name = "SmekkFull Bank AS",
                 OrganizationId = "810419512",
-                PartyType = EntityTypeConstants.Organisation // Organization type
+                PartyType = EntityTypeConstants.Organization // Organization type
             };
 
             _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(smekkFullBank.OrganizationId), It.IsAny<CancellationToken>()))
@@ -62,7 +62,7 @@ namespace AccessMgmt.Tests.Moqdata
                 PartyId = 501236,
                 Name = "DIGITALISERINGSDIREKTORATET",
                 OrganizationId = "991825827",
-                PartyType = EntityTypeConstants.Organisation // Organization type
+                PartyType = EntityTypeConstants.Organization // Organization type
             };
 
             _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(digitaliseringsdirektoratet.OrganizationId), It.IsAny<CancellationToken>()))
@@ -81,7 +81,7 @@ namespace AccessMgmt.Tests.Moqdata
                 PartyId = 50004219,
                 Name = "KOLSAAS OG FLAAM",
                 OrganizationId = "810418192",
-                PartyType = EntityTypeConstants.Organisation // Organization type
+                PartyType = EntityTypeConstants.Organization // Organization type
             };
 
             _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810418192"), It.IsAny<CancellationToken>()))
@@ -100,7 +100,7 @@ namespace AccessMgmt.Tests.Moqdata
                 PartyId = 50006078,
                 Name = "LEPSØY OG TONSTAD",
                 OrganizationId = "910493353",
-                PartyType = EntityTypeConstants.Organisation // Organization type
+                PartyType = EntityTypeConstants.Organization // Organization type
             };
 
             _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("910493353"), It.IsAny<CancellationToken>()))
