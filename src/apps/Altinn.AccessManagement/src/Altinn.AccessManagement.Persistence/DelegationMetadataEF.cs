@@ -77,7 +77,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             return UuidType.Person;
         }
 
-        if (entityTypeId.Equals(EntityTypeConstants.Organisation))
+        if (entityTypeId.Equals(EntityTypeConstants.Organization))
         {
             return UuidType.Organization;
         }

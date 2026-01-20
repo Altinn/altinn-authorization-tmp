@@ -1068,7 +1068,7 @@ namespace Altinn.AccessManagement.Core.Helpers
                 return UuidType.Person;
             }
 
-            if (entityType == EntityTypeConstants.Organisation.Id)
+            if (entityType == EntityTypeConstants.Organization.Id)
             {
                 return UuidType.Organization;
             }
