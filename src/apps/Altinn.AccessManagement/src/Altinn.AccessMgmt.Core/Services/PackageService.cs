@@ -28,8 +28,12 @@ public class PackageService : IPackageService
         Guid? typeId = null;
         if (string.IsNullOrEmpty(typeName))
         {
-            EntityTypeConstants.TryGetByName(typeName, out var type);
-            typeId = type is not null ? type.Id : null;
+            try
+            {
+                EntityTypeConstants.TryGetByName(typeName, out var type);
+                typeId = type is not null ? type.Id : null;
+            }
+            catch { }
         }
 
         var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
