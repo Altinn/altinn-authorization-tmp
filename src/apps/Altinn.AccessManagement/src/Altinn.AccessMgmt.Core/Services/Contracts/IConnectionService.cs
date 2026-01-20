@@ -126,7 +126,7 @@ public interface IConnectionService
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
-    Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific resource.
@@ -140,7 +140,7 @@ public interface IConnectionService
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
-    Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get connection packages

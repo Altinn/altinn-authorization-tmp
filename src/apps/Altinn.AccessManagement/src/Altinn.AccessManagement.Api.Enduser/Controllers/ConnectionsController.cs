@@ -535,15 +535,37 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? resourceIds, [FromQuery] IEnumerable<string>? resources, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] IEnumerable<string>? resources, CancellationToken cancellationToken = default)
     {
-        async Task<Result<IEnumerable<ResourceDto.Check>>> CheckResource()
+        async Task<Result<Dictionary<string, bool>>> CheckResource()
         {
-            if (resources.Any())
-            {
-                return await ConnectionService.CheckResource(party, resources, ConfigureConnections, cancellationToken);
-            }
+            return await ConnectionService.CheckResource(party, resources, ConfigureConnections, cancellationToken);
+        }
 
+        var result = await CheckResource();
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
+    }
+
+    /// <summary>
+    /// Delegation check of resources, for which resources the authenticated user has permission to assign to others on behalf of the specified party.
+    /// </summary>
+    [HttpGet("resources/delegationcheck")]
+    [FeatureGate("connections/resources")]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType<PaginatedResult<ResourceCheckDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CheckUuidResource([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? resourceIds, [FromQuery] IEnumerable<string>? resources, CancellationToken cancellationToken = default)
+    {
+        async Task<Result<Dictionary<Guid, bool>>> CheckResource()
+        {
             return await ConnectionService.CheckResource(party, resourceIds, ConfigureConnections, cancellationToken);
         }
 
