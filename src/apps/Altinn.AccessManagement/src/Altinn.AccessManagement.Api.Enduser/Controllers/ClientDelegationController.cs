@@ -133,13 +133,8 @@ public class ClientDelegationController(
         [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetClientsForPartyAsync(party, cancellationToken);
-        if (result.IsProblem)
-        {
-            return result.Problem.ToActionResult();
-        }
-
-        return Ok(PaginatedResult.Create(result.Value, null));
+        await clientDelegationService.RemoveAgent(party, to, cancellationToken);
+        return NoContent();
     }
 
     [HttpGet("agents/accesspackages")]
