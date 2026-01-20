@@ -34,7 +34,7 @@ public class ConnectionQuery(AppDbContext db)
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter, true) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
-            var result = (await baseQuery.AsNoTracking().ToListAsync(ct)).Select(ToDtoEmpty).ToList();
+            var result = baseQuery.Select(ToDtoEmpty).ToList();
             if (filter.IncludePackages || filter.EnrichPackageResources)
             {
                 try
@@ -795,7 +795,7 @@ public class ConnectionQuery(AppDbContext db)
         }
 
         // Could be cached
-        var roles = await db.Roles.Include(r => r.Provider).ThenInclude(p => p.Type).ToListAsync(ct);
+        var roles = await db.Roles.Include(r => r.Provider).ThenInclude(p => p.Type).AsNoTracking().ToListAsync(ct);
         SortedList<string, Role> sortedRoles = [];
         foreach (var role in roles)
         {
