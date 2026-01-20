@@ -82,3 +82,8 @@ variable "db_storage_tier" {
   type    = string
   default = "P10"
 }
+
+variable "db_read_replicas" {
+  type    = list(string)
+  default = []
+}

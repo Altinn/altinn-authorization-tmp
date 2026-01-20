@@ -54,12 +54,29 @@ resource "azurerm_private_dns_zone" "postgres" {
   resource_group_name = var.resource_group_name
 }
 
+# Pinpointed DNS server that contains just this replica pgsqlsrv. 
+resource "azurerm_private_dns_zone" "postgres_replica" {
+  name                = "psqlsrv${each.value}${var.prefix}${var.suffix}.auth.postgres.database.azure.com"
+  resource_group_name = var.resource_group_name
+  for_each            = toset(var.read_replicas)
+}
+
 resource "azurerm_private_dns_zone_virtual_network_link" "link" {
   name                = data.azurerm_virtual_network.hub.name
   resource_group_name = var.resource_group_name
 
   virtual_network_id    = data.azurerm_virtual_network.hub.id
   private_dns_zone_name = azurerm_private_dns_zone.postgres.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "link_replica" {
+  name                = data.azurerm_virtual_network.hub.name
+  resource_group_name = var.resource_group_name
+
+  virtual_network_id    = data.azurerm_virtual_network.hub.id
+  private_dns_zone_name = azurerm_private_dns_zone.postgres_replica[each.value].name
+
+  for_each = toset(var.read_replicas)
 }
 
 resource "azurerm_postgresql_flexible_server" "postgres_server" {
@@ -106,6 +123,53 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   tags = var.tags
 }
 
+resource "azurerm_postgresql_flexible_server" "postgres_replicas" {
+  name                = "psqlsrv${each.value}${var.prefix}${var.suffix}"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  version             = var.postgres_version
+
+  source_server_id              = azurerm_postgresql_flexible_server.postgres_server.id
+  delegated_subnet_id           = var.subnet_id
+  private_dns_zone_id           = azurerm_private_dns_zone.postgres.id
+  public_network_access_enabled = false
+
+  dynamic "high_availability" {
+    for_each = var.enable_high_availability ? ["enabled"] : []
+
+    content {
+      mode = "ZoneRedundant"
+    }
+  }
+
+  storage_mb        = var.storage_mb
+  auto_grow_enabled = true
+  storage_tier      = var.storage_tier
+
+  administrator_login          = "NotInUse"
+  administrator_password       = random_password.pass.result
+  backup_retention_days        = var.backup_retention_days
+  geo_redundant_backup_enabled = false
+
+  authentication {
+    active_directory_auth_enabled = true
+    password_auth_enabled         = true
+    tenant_id                     = data.azurerm_client_config.current.tenant_id
+  }
+
+  create_mode = "Replica"
+  sku_name    = local.compute_sku.sku_name
+
+  lifecycle {
+    ignore_changes  = [zone, storage_mb, high_availability[0].standby_availability_zone]
+    prevent_destroy = true
+  }
+
+  tags = var.tags
+
+  for_each = toset(var.read_replicas)
+}
+
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "admin" {
   server_name         = azurerm_postgresql_flexible_server.postgres_server.name
   resource_group_name = var.resource_group_name
@@ -133,7 +197,6 @@ resource "azurerm_postgresql_flexible_server_configuration" "use_pgbouncer" {
   name      = "pgbouncer.enabled"
   value     = var.use_pgbouncer
 }
-
 
 resource "azurerm_management_lock" "postgres" {
   name       = "Terraform Managed Lock"

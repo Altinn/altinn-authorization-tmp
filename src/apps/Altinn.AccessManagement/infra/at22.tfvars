@@ -13,3 +13,4 @@ platform_workflow_principal_ids = [
 ]
 db_max_pool_size = 4
 db_compute_sku   = "D2"
+db_read_replicas = ["r1", "r2"]
