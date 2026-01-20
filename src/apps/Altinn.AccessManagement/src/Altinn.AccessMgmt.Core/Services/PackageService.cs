@@ -25,18 +25,9 @@ public class PackageService : IPackageService
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, string? typeName = null, CancellationToken cancellationToken = default)
     {
-        Guid? typeId = null;
-        if (!string.IsNullOrEmpty(typeName))
-        {
-            try
-            {
-                if (EntityTypeConstants.TryGetByName(typeName, out var type))
-                {
-                    typeId = type.Id;
-                }
-            }
-            catch { }
-        }
+        Guid? typeId = !string.IsNullOrEmpty(typeName) && EntityTypeConstants.TryGetByName(typeName, out var type)
+        ? type.Id
+        : null;
 
         var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
 
