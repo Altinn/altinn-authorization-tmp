@@ -93,16 +93,60 @@ public class ClientDelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task RemoveAgent(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default)
+    public async Task<ValidationProblemInstance?> RemoveAgent(Guid partyId, Guid toUuid, bool cascade, CancellationToken cancellationToken = default)
     {
-        var existingAssignment = await db.Assignments.AsTracking().Where(p => p.FromId == partyId && p.ToId == toUuid && p.RoleId == RoleConstants.Agent).FirstOrDefaultAsync(cancellationToken);
-        if (existingAssignment is null)
+        ValidationErrorBuilder errorBuilder = default;
+
+        var existingAssignment = await db.Assignments.AsTracking()
+            .Where(p => p.FromId == partyId && p.ToId == toUuid && p.RoleId == RoleConstants.Agent)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (!cascade)
         {
-            return;
+            var existingDelegations = await db.Delegations.AsNoTracking()
+                .Where(p => p.ToId == toUuid)
+                .Include(p => p.To)
+                .Join(db.DelegationPackages, d => d.Id, dp => dp.DelegationId, (d, dp) => new
+                {
+                    Delegation = d,
+                    DelegationPackage = dp,
+                })
+                .GroupBy(d => d.Delegation.Id)
+                .ToListAsync(cancellationToken);
+
+            foreach (var existingDelegation in existingDelegations)
+            {
+                var first = existingDelegation.FirstOrDefault();
+                if (first is null)
+                {
+                    continue;
+                }
+
+                var pkgs = string.Join(", ", existingDelegation.Select(p => p.DelegationPackage.PackageId));
+                var fromId = first.Delegation.FromId;
+                var delegationId = first.Delegation.Id;
+
+                if (fromId is { })
+                {
+                    errorBuilder.Add(
+                        ValidationErrors.DelegationHasActiveConnections,
+                        "QUERY/cascade",
+                        [
+                            new($"{delegationId}",$"Cannot remove delegation because party {toUuid} still has active delegated packages ({pkgs}) from party {fromId}.")
+                        ]
+                    );
+                }
+            }
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
         }
 
         db.Assignments.Remove(existingAssignment);
         await db.SaveChangesAsync(cancellationToken);
+        return null;
     }
 
     /// <inheritdoc/>
@@ -226,7 +270,7 @@ public class ClientDelegationService(
 
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent, cancellationToken: cancellationToken);
-        
+
         if (agentAssignment is null)
         {
             return new List<DelegationDto>();
@@ -429,7 +473,7 @@ public interface IClientDelegationService
 
     Task<Result<AssignmentDto>> AddAgentForParty(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default);
 
-    Task RemoveAgent(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default);
+    Task<ValidationProblemInstance?> RemoveAgent(Guid partyId, Guid toUuid, bool cascade, CancellationToken cancellationToken = default);
 
     Task<Result<List<AgentDto>>> GetDelegatedAccessPackagesFromClientsViaParty(Guid partyId, Guid fromId, CancellationToken cancellationToken = default);
 

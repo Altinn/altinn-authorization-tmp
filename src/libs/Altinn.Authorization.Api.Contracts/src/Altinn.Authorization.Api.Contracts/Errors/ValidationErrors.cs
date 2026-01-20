@@ -133,4 +133,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidPackage { get; }
         = _factory.Create(30, $"Invalid Package.");
+    
+    /// <summary>
+    /// Delegation has active connections.
+    /// </summary>
+    public static ValidationErrorDescriptor DelegationHasActiveConnections { get; }
+        = _factory.Create(10, $"Delegation has one or more active access packages connected to it.");
 }

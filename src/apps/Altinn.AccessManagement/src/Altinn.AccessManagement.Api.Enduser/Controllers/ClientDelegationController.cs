@@ -131,9 +131,15 @@ public class ClientDelegationController(
     public async Task<IActionResult> RemoveAgent(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        await clientDelegationService.RemoveAgent(party, to, cancellationToken);
+        var problem = await clientDelegationService.RemoveAgent(party, to, cascade, cancellationToken);
+        if (problem is { })
+        {
+            return problem.ToActionResult();
+        }
+
         return NoContent();
     }
 
