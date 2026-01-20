@@ -143,25 +143,21 @@ namespace Altinn.AccessManagement.Core.Services
 
         private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy)
         {
-            var coveredBy = to; ////assignmentResource.Assignment.To;
-            var offeredBy = from; ////assignmentResource.Assignment.From;
+            var coveredBy = to;
+            var offeredBy = from;
 
             var coveredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(coveredBy.TypeId);
             var offeredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(offeredBy.TypeId);
             var performedByUuidType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId);
-
-            var resourceAttributes = ConvertResourceToAttributeMatches(resource);
 
             var result = actionIds.Select(action =>
                 new Rule
                 {
                     RuleId = Guid.NewGuid().ToString(),
                     Type = RuleType.None,
-                    //CreatedSuccessfully = true,
-                    //DelegatedDateTime = delegatedDateTime,
 
                     CoveredBy = ConvertEntityToAttributeMatch(coveredBy),
-                    Resource = resourceAttributes,
+                    Resource = ConvertResourceToAttributeMatches(resource),
                     Action = ConvertActionToAttributeMatch(action),
 
                     OfferedByPartyId = offeredBy.PartyId.HasValue ? offeredBy.PartyId.Value : 0,
@@ -198,7 +194,7 @@ namespace Altinn.AccessManagement.Core.Services
             });
 
             // User
-            if (entity.UserId.HasValue)
+            if (!matches.Any() && entity.UserId.HasValue)
             {
                 matches.Add(new AttributeMatch
                 {
@@ -208,7 +204,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             // Party
-            if (entity.PartyId.HasValue)
+            if (!matches.Any() && entity.PartyId.HasValue)
             {
                 matches.Add(new AttributeMatch
                 {
@@ -222,10 +218,25 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static List<AttributeMatch> ConvertResourceToAttributeMatches(Resource resource)
         {
-            switch (resource.Type.Name.ToLower())
+            /*
+            |GenericAccessResource| ResourceRegistry | urn:altinn:resource
+            |Systemresource       | ResourceRegistry | urn:altinn:resource
+            |MaskinportenSchema   | ResourceRegistry | urn:altinn:resource
+            |CorrespondenceService| ResourceRegistry | urn:altinn:resource
+            |Consent              | ResourceRegistry | urn:altinn:resource 
+            |AltinnApp            | AltinnApp  | urn:altinn:org + urn:altinn:app
+            |AltinnApp            | AltinnApp  | urn:altinn:resource with value/resourceId app_{orgcode}_{appname}
+            dbo.Resource.RefId : app_ttd_signering-brukerstyrt
+            */
+
+            switch (resource.Type.Name)
             {
                 default:
-                case "resource":
+                case "GenericAccessResource":
+                case "Systemresource":
+                case "MaskinportenSchema":
+                case "CorrespondenceService":
+                case "Consent":
                     return
                     [
                         new AttributeMatch
@@ -234,32 +245,18 @@ namespace Altinn.AccessManagement.Core.Services
                             Value = resource.RefId
                         }
                     ];
-                case "app":
-                    return
-                    [
-                        new AttributeMatch
-                        {
-                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute,
-                            Value = resource.Provider.Code
-                        },
-                        new AttributeMatch
-                        {
-                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute,
-                            Value = resource.RefId
-                        }
-                    ];
-                //case "altinn2service":
+                //case "AltinnApp":
                 //    return
                 //    [
                 //        new AttributeMatch
                 //        {
-                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ServiceCodeAttribute,
-                //            Value = resource.ServiceCode
+                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute,
+                //            Value = resource.Provider.Code
                 //        },
                 //        new AttributeMatch
                 //        {
-                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ServiceEditionCodeAttribute,
-                //            Value = resource.ServiceEditionCode
+                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute,
+                //            Value = resource.RefId
                 //        }
                 //    ];
             }
@@ -1023,3 +1020,4 @@ namespace Altinn.AccessManagement.Core.Services
         }
     }
 }
+

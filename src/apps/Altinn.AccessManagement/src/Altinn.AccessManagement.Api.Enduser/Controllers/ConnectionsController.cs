@@ -478,7 +478,7 @@ public class ConnectionsController(
     }
 
     /// <summary>
-    /// Remove resource from rightholder connection
+    /// Remove resource from rightholder connection and all actions
     /// </summary>
     [HttpDelete("resources")]
     [FeatureGate("connections/resources")]
@@ -498,17 +498,20 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        var fromUuid = Guid.Parse(connection.From);
-        var toUuid = Guid.Parse(connection.To);
+        var byId = AuthenticationHelper.GetPartyUuid(this.HttpContext);
+        if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
+        {
+            return Problem();
+        }
 
         async Task<ValidationProblemInstance> RemoveResource()
         {
             if (resourceId.HasValue)
             {
-                return await ConnectionService.RemoveResource(fromUuid, toUuid, resourceId.Value, ConfigureConnections, cancellationToken);
+                return await ConnectionService.RemoveResource(fromId, toId, resourceId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.RemoveResource(fromUuid, toUuid, resource, ConfigureConnections, cancellationToken);
+            return await ConnectionService.RemoveResource(fromId, toId, resource, ConfigureConnections, cancellationToken);
         }
 
         var problem = await RemoveResource();

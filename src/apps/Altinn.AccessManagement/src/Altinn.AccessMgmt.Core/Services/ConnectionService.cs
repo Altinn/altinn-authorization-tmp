@@ -216,12 +216,14 @@ public partial class ConnectionService(
 
     public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException("Not complete");
         var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
         return await AddResource(fromId, toId, resource.Id, configureConnection, cancellationToken);
     }
 
     public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException("Not complete");
         var options = new ConnectionOptions(configureConnection);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         var problem = ValidateWriteOpInput(from, to, options);
@@ -241,16 +243,6 @@ public partial class ConnectionService(
         {
             return check.Problem;
         }
-
-        //problem = ValidationComposer.Validate(
-        //    PackageValidation.AuthorizeResourceAssignment(check.Value),
-        //    PackageValidation.ResourceIsAssignableToRecipient(check.Value.Select(p => p.Key), to.Type, "resource")
-        //);
-
-        //if (problem is { })
-        //{
-        //    return problem;
-        //}
 
         // Look for existing direct rightholder assignment
         var assignment = await dbContext.Assignments
@@ -289,7 +281,9 @@ public partial class ConnectionService(
         {
             AssignmentId = assignment.Id,
             ResourceId = resourceId,
-            /**/
+            // DelegationChangeId = 0,
+            // PolicyPath = "",
+            // PolicyVersion = ""
         };
 
         await dbContext.AssignmentResources.AddAsync(newAssignmentResource, cancellationToken);
@@ -361,8 +355,8 @@ public partial class ConnectionService(
         var connections = await connectionQuery.GetConnectionsAsync(
             filter: new ConnectionQueryFilter()
             {
-                FromIds = [auditAccessor.AuditValues.ChangedBy],
-                ToIds = [party],
+                FromIds = [party],
+                ToIds = [auditAccessor.AuditValues.ChangedBy],
                 IncludeDelegation = true,
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
