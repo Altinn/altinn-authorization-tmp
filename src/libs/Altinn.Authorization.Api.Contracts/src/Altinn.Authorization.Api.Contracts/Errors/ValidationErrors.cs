@@ -52,7 +52,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor EntityNotExists { get; }
         = _factory.Create(6, $"Entity do not exists.");
-    
+
     /// <summary>
     /// Role is missing.
     /// </summary>
@@ -106,7 +106,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidResourceContext { get; }
     = _factory.Create(25, $"Resource context does not match consent request rights");
-    
+
     public static ValidationErrorDescriptor UserNotAuthorized { get; }
     = _factory.Create(26, $"User not authorized for operation.");
 
@@ -133,10 +133,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidPackage { get; }
         = _factory.Create(30, $"Invalid Package.");
-    
+
     /// <summary>
     /// Delegation has active connections.
     /// </summary>
     public static ValidationErrorDescriptor DelegationHasActiveConnections { get; }
-        = _factory.Create(10, $"Delegation has one or more active access packages connected to it.");
+        = _factory.Create(10, "The delegation has one or more active access packages associated with it. Set cascade to true to remove the delegation and its active access packages.");
 }
