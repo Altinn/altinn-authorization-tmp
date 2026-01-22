@@ -312,7 +312,8 @@ public class ClientDelegationControllerTest
             var client = Fixture.Server.CreateClient();
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE));
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE}"));
             });
 
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -320,7 +321,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListAgent_ForNoAgentAssignment_ReturnsOk()
+        public async Task CreateDelegation_WithValidInput_ReturnsOk()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -340,6 +341,12 @@ public class ClientDelegationControllerTest
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var getDelegations = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var delegations = await getDelegations.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegations);
+
+            Assert.NotEmpty(result.Items);
         }
 
         #endregion
