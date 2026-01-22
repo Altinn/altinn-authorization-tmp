@@ -271,17 +271,17 @@ public class ClientDelegationService(
             errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/to", [new($"{toId}", "entity do not exist.")]);
         }
 
-        if (errorBuilder.TryBuild(out var errorResult))
-        {
-            return errorResult;
-        }
-
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent.Id, cancellationToken: cancellationToken);
 
         if (agentAssignment is null)
         {
-            return new List<DelegationDto>();
+            errorBuilder.Add(ValidationErrors.MissingAssignment, $"QUERY/to", [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]);
+        }
+
+        if (errorBuilder.TryBuild(out var errorResult))
+        {
+            return errorResult;
         }
 
         var result = new List<DelegationDto>();
@@ -289,10 +289,10 @@ public class ClientDelegationService(
         {
             var pkgIds = input.Packages.Select(p => p.Package).Select(p => p.Id).Distinct();
             var clientAssignment = await db.Assignments.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == fromId && t.ToId == partyId && t.RoleId == input.Role.Id, cancellationToken);
-            
+
             if (clientAssignment is null)
             {
-                errorBuilder.Add(ValidationErrors.MissingAssignment, $"BODY/values[{input.RoleIdx}].role", [new($"{input.Role.Entity.Urn}", $"Role is not assigned to '{partyId}' from '{fromId}'.")]);
+                errorBuilder.Add(ValidationErrors.MissingAssignment, $"BODY/values[{input.RoleIdx}]/role", [new($"{input.Role.Entity.Urn}", $"Role is not assigned to '{partyId}' from '{fromId}'.")]);
                 continue;
             }
 
@@ -369,17 +369,15 @@ public class ClientDelegationService(
             .Select((r, idx) =>
             {
                 var roleExist = RoleConstants.TryGetByCode(r.Role, out var role);
-
-                var pkgs = new List<(bool PackageExist, Package Package, string InputPackage, int PackageIdx)>();
-                var pkg = r.Packages.Select((p, idx) =>
+                var pkgs = r.Packages.Select((p, idx) =>
                 {
                     var packageExist = PackageConstants.TryGetByUrn(p, out var package);
                     return new
                     {
-                        PackageIdx = idx,
-                        InputPackage = p,
-                        Package = package,
                         PackageExist = packageExist,
+                        Package = package,
+                        InputPackage = p,
+                        PackageIdx = idx,
                     };
                 });
 
@@ -418,6 +416,7 @@ public class ClientDelegationService(
 
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent, cancellationToken: cancellationToken);
+        
         if (agentAssignment is null)
         {
             return new List<DelegationDto>();
