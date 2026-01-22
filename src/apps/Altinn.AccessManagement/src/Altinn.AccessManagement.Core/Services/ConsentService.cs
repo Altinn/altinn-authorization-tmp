@@ -173,17 +173,18 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (consentRequest != null)
                 {
-                    ConsentRequest consentRequestA3 = new ConsentRequest
+                    ConsentRequest consentFromAltinn2 = new ConsentRequest
                     {
                         Id = consentRequest.Id,
                         From = consentRequest.From,
                         To = consentRequest.To,
                         ValidTo = consentRequest.ValidTo,
                         ConsentRights = consentRequest.ConsentRights,
-                        RedirectUrl = consentRequest.RedirectUrl
+                        RedirectUrl = consentRequest.RedirectUrl,
+                        TemplateId = consentRequest.TemplateId
                     };
 
-                    await CreateRequest(consentRequestA3, from, cancellationToken);
+                    await CreateRequest(consentFromAltinn2, from, cancellationToken);
                 }
             }
 
@@ -223,6 +224,22 @@ namespace Altinn.AccessManagement.Core.Services
             if (consentRequest == null)
             {
                 consentRequest = await _altinn2ConsentClient.GetConsent(consentRequestId, cancellationToken);
+
+                if (consentRequest != null)
+                {
+                    ConsentRequest consentFromAltinn2 = new ConsentRequest
+                    {
+                        Id = consentRequest.Id,
+                        From = consentRequest.From,
+                        To = consentRequest.To,
+                        ValidTo = consentRequest.ValidTo,
+                        ConsentRights = consentRequest.ConsentRights,
+                        RedirectUrl = consentRequest.RedirectUrl,
+                        TemplateId = consentRequest.TemplateId
+                    };
+
+                    await CreateRequest(consentFromAltinn2, consentRequest.From, cancellationToken);
+                }
             }
 
             if (consentRequest == null)
