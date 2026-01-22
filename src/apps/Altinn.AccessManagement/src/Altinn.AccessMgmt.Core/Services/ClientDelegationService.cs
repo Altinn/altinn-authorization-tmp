@@ -336,6 +336,11 @@ public class ClientDelegationService(
             }
         }
 
+        if (errorBuilder.TryBuild(out errorResult))
+        {
+            return errorResult;
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         return result;
