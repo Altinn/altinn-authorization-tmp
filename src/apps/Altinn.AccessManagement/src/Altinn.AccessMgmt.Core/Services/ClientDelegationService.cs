@@ -159,9 +159,14 @@ public class ClientDelegationService(
                 ViaIds = [partyId],
                 ViaRoleIds = [RoleConstants.Agent],
                 OnlyUniqueResults = true,
+                IncludeDelegation = true,
+                IncludePackages = true,
+
                 IncludeSubConnections = false,
-                EnrichEntities = true,
-                IncludePackages = true
+                IncludeKeyRole = false,
+                IncludeResource = false,
+                IncludeMainUnitConnections = false,
+                EnrichEntities = false,
             },
             true,
             cancellationToken);
@@ -181,9 +186,14 @@ public class ClientDelegationService(
                 ViaRoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
                 OnlyUniqueResults = true,
-                IncludeSubConnections = false,
-                EnrichEntities = true,
+                IncludeDelegation = true,
                 IncludePackages = true,
+
+                IncludeSubConnections = false,
+                IncludeKeyRole = false,
+                IncludeResource = false,
+                IncludeMainUnitConnections = false,
+                EnrichEntities = false,
             },
             true,
             cancellationToken);
@@ -282,7 +292,7 @@ public class ClientDelegationService(
             
             if (clientAssignment is null)
             {
-                errorBuilder.Add(ValidationErrors.MissingAssignment, $"BODY/values[{input.RoleIdx}]", [new($"{input.Role.Entity.Urn}", $"Role is not assigned to '{partyId}' from '{fromId}'.")]);
+                errorBuilder.Add(ValidationErrors.MissingAssignment, $"BODY/values[{input.RoleIdx}].role", [new($"{input.Role.Entity.Urn}", $"Role is not assigned to '{partyId}' from '{fromId}'.")]);
                 continue;
             }
 
