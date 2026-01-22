@@ -953,7 +953,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var delegationIds = keys.Select(k => k.DelegationId).Where(id => id != null).Distinct().ToList();
         var delegationPackagesRaw = delegationIds.Count == 0 ? [] :
-            await db.DelegationPackages.Where(d => keys.Select(k => k.DelegationId).Distinct().ToList().Contains(d.DelegationId))
+            await db.DelegationPackages.Where(d => delegationIds.Contains(d.DelegationId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
             .Select(d => new { d.PackageId, d.DelegationId })
             .ToListAsync(ct);
