@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -313,6 +313,7 @@ public class ClientDelegationControllerTest
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
                 claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE));
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.OrganizationVerdiqAS.Id.ToString()));
             });
 
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
