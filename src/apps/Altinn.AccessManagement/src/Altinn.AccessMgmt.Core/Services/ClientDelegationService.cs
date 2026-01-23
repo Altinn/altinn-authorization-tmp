@@ -166,7 +166,7 @@ public class ClientDelegationService(
                 IncludeKeyRole = false,
                 IncludeResource = false,
                 IncludeMainUnitConnections = false,
-                EnrichEntities = false,
+                EnrichEntities = true,
             },
             true,
             cancellationToken);
@@ -183,7 +183,7 @@ public class ClientDelegationService(
             new()
             {
                 ViaIds = [partyId],
-                ViaRoleIds = [RoleConstants.Agent],
+                // ViaRoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
                 OnlyUniqueResults = true,
                 IncludeDelegation = true,
@@ -193,7 +193,7 @@ public class ClientDelegationService(
                 IncludeKeyRole = false,
                 IncludeResource = false,
                 IncludeMainUnitConnections = false,
-                EnrichEntities = false,
+                EnrichEntities = true,
             },
             true,
             cancellationToken);
