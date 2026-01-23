@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -361,7 +361,7 @@ public class ClientDelegationControllerTest
 
             var accessToClient = delegationsFromClientResult.Items.FirstOrDefault();
             Assert.Equal(TestEntities.PersonPaula.Id, accessToClient.Agent.Id);
-            Assert.Equal(RoleConstants.Agent.Entity.Code, accessToClient.Access.FirstOrDefault()?.Role?.Code);
+            Assert.Equal(RoleConstants.Rightholder.Entity.Code, accessToClient.Access.FirstOrDefault()?.Role?.Code);
             Assert.Equal(PackageConstants.Customs.Entity.Urn, accessToClient.Access.FirstOrDefault()?.Packages?.FirstOrDefault().Urn);
         }
 

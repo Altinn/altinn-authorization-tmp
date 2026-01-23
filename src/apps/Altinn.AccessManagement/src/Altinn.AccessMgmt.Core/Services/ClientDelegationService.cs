@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Utils;
@@ -157,7 +157,7 @@ public class ClientDelegationService(
             {
                 FromIds = [fromId],
                 ViaIds = [partyId],
-                // ViaRoleIds = [RoleConstants.Agent],
+                ViaRoleIds = [RoleConstants.Agent],
                 OnlyUniqueResults = true,
                 IncludeDelegation = true,
                 IncludePackages = true,
@@ -183,7 +183,7 @@ public class ClientDelegationService(
             new()
             {
                 ViaIds = [partyId],
-                // ViaRoleIds = [RoleConstants.Agent],
+                RoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
                 OnlyUniqueResults = true,
                 IncludeDelegation = true,
