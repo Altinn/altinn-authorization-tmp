@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -219,7 +220,14 @@ public class TranslationService : ITranslationService
             _db.Update(entry);
         }
 
-        await _db.SaveChangesAsync(cancellationToken);
+        // Translation entries are not audited entities, but AppDbContext.SaveChangesAsync requires audit values.
+        // Provide system default audit values for translation management operations.
+        var systemAudit = new AuditValues(
+            changedBy: Guid.Empty,  // System operation
+            changedBySystem: Guid.Empty  // Translation service
+        );
+        
+        await _db.SaveChangesAsync(systemAudit, cancellationToken);
 
         // Invalidate cache
         var cacheKey = $"translation_{translationEntry.Type}_{translationEntry.Id}_{translationEntry.LanguageCode}";
