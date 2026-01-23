@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -27,7 +29,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
 
         _db = new AppDbContext(options);
         _cache = new MemoryCache(new MemoryCacheOptions());
-        _translationService = new TranslationService(_db, _cache);
+        _translationService = new TranslationService(_db, _cache, NullLogger<TranslationService>.Instance);
     }
 
     #region Norwegian Bokmål (Base Language) Tests
