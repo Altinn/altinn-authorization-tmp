@@ -198,7 +198,7 @@ public class ClientDelegationService(
             true,
             cancellationToken);
 
-        var result = DtoMapper.ConvertToClientDto(connections);
+        var result = DtoMapper.ConvertToClientDto(connections, true);
 
         return result;
     }

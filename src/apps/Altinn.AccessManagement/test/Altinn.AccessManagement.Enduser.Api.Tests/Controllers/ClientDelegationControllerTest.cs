@@ -257,7 +257,6 @@ public class ClientDelegationControllerTest
             return client;
         }
 
-
         #endregion
     }
 
@@ -350,7 +349,7 @@ public class ClientDelegationControllerTest
 
             var agentAccess = delegationToAgentResult.Items.FirstOrDefault();
             Assert.Equal(TestEntities.OrganizationNordisAS.Id, agentAccess.Client.Id);
-            Assert.Equal(RoleConstants.Agent.Entity.Code, agentAccess.Access.FirstOrDefault()?.Role?.Code);
+            Assert.Equal(RoleConstants.Rightholder.Entity.Code, agentAccess.Access.FirstOrDefault()?.Role?.Code);
             Assert.Equal(PackageConstants.Customs.Entity.Urn, agentAccess.Access.FirstOrDefault()?.Packages?.FirstOrDefault().Urn);
 
             var getDelegationFromClient = await client.GetAsync($"{Route}/clients/accesspackages?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
