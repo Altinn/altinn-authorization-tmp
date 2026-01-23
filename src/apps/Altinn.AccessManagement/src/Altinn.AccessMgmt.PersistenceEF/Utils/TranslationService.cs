@@ -222,9 +222,10 @@ public class TranslationService : ITranslationService
 
         // Translation entries are not audited entities, but AppDbContext.SaveChangesAsync requires audit values.
         // Provide system default audit values for translation management operations.
+        // Use well-known system GUID to indicate this is a translation service operation.
         var systemAudit = new AuditValues(
-            changedBy: Guid.Empty,  // System operation
-            changedBySystem: Guid.Empty  // Translation service
+            changedBy: new Guid("00000000-0000-0000-0000-000000000001"),  // System operation
+            changedBySystem: new Guid("00000000-0000-0000-0000-000000000001")  // Translation service
         );
         
         await _db.SaveChangesAsync(systemAudit, cancellationToken);
