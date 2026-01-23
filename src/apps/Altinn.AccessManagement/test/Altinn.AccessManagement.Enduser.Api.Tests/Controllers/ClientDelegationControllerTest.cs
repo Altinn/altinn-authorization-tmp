@@ -267,8 +267,6 @@ public class ClientDelegationControllerTest
         {
             Fixture = fixture;
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
             Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
@@ -342,11 +340,27 @@ public class ClientDelegationControllerTest
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var getDelegations = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
-            var delegations = await getDelegations.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegations);
+            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
 
-            Assert.NotEmpty(result.Items);
+            Assert.NotEmpty(delegationToAgentResult.Items);
+
+            var agentAccess = delegationToAgentResult.Items.FirstOrDefault();
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, agentAccess.Client.Id);
+            Assert.Equal(RoleConstants.Agent.Entity.Code, agentAccess.Access.FirstOrDefault()?.Role?.Code);
+            Assert.Equal(PackageConstants.Customs.Entity.Urn, agentAccess.Access.FirstOrDefault()?.Packages?.FirstOrDefault().Urn);
+
+            var getDelegationFromClient = await client.GetAsync($"{Route}/clients/accesspackages?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            var delegationsFromClientPayload = await getDelegationFromClient.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var delegationsFromClientResult = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(delegationsFromClientPayload);
+
+            Assert.NotEmpty(delegationsFromClientResult.Items);
+
+            var accessToClient = delegationsFromClientResult.Items.FirstOrDefault();
+            Assert.Equal(TestEntities.PersonPaula.Id, accessToClient.Agent.Id);
+            Assert.Equal(RoleConstants.Agent.Entity.Code, accessToClient.Access.FirstOrDefault()?.Role?.Code);
+            Assert.Equal(PackageConstants.Customs.Entity.Urn, accessToClient.Access.FirstOrDefault()?.Packages?.FirstOrDefault().Urn);
         }
 
         #endregion
