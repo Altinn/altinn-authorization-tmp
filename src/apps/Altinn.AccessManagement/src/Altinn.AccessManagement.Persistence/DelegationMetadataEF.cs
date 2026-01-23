@@ -13,14 +13,24 @@ namespace Altinn.AccessMgmt.Core.Services.Legacy;
 /// <inheritdoc/>
 public class DelegationMetadataEF : IDelegationMetadataRepository
 {
-    private DelegationChange Convert(AssignmentResource assignmentResource)
+
+    private string ConvertAppResourceId(string resourceId)
+    {
+        //app_skd_skattemelding -> skd/skattemelding
+        return "";
+    }
+
+    private DelegationChange Convert(AssignmentResource assignmentResource, bool isLegacy = false)
     {
         return new DelegationChange()
         {
             DelegationChangeId = assignmentResource.DelegationChangeId,
             Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
             
-            ResourceId = assignmentResource.ResourceId.ToString(),
+            ResourceId = assignmentResource.Resource.Type.Name == "App???"
+            ? ConvertAppResourceId(assignmentResource.Resource.RefId)
+            : assignmentResource.Resource.RefId, 
+
             ResourceType = assignmentResource.Resource.Type.Name,
             BlobStoragePolicyPath = assignmentResource.PolicyPath,
             BlobStorageVersionId = assignmentResource.PolicyVersion,
@@ -57,7 +67,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             ResourceId = assignmentInstance.ResourceId.ToString(),
             InstanceId = assignmentInstance.InstanceId,
             
-            InstanceDelegationMode = InstanceDelegationMode.Normal,
+            InstanceDelegationMode = InstanceDelegationMode.ParallelSigning,
             InstanceDelegationChangeId = assignmentInstance.DelegationChangeId,
 
             Created = assignmentInstance.Audit_ValidFrom.UtcDateTime,
@@ -366,7 +376,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> InsertMultipleInstanceDelegations(List<PolicyWriteOutput> policyWriteOutputs, CancellationToken cancellationToken = default)
+    public async Task<bool> InsertMultipleInstanceDelegations(List<PolicyWriteOutput> policyWriteOutputs, bool isLegacy = false, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -540,17 +550,6 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     /// <inheritdoc/>
     public async Task<List<DelegationChange>> GetAllDelegationChangesForAuthorizedParties(List<int> coveredByUserIds, List<int> coveredByPartyIds, CancellationToken cancellationToken = default)
     {
-        /*
-        Intended?
-        var simpleResult = await DbContext.AssignmentResources.AsNoTracking()
-          .Include(t => t.Assignment).ThenInclude(t => t.From)
-          .Include(t => t.Assignment).ThenInclude(t => t.To)
-          .Include(t => t.Resource)
-          .WhereIf(coveredByPartyIds != null && coveredByPartyIds.Any(), t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value))
-          .WhereIf(coveredByUserIds != null && coveredByUserIds.Any(), t => t.Assignment.To.UserId.HasValue && coveredByUserIds.Contains(t.Assignment.To.UserId.Value))
-          .ToListAsync(cancellationToken);
-        */
-
         var partyChanges = DbContext.AssignmentResources.AsNoTracking()
           .Include(t => t.Assignment).ThenInclude(t => t.From)
           .Include(t => t.Assignment).ThenInclude(t => t.To)

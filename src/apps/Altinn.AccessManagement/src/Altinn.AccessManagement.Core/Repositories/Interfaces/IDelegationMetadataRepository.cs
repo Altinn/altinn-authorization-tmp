@@ -16,9 +16,10 @@ public interface IDelegationMetadataRepository
     /// </summary>
     /// <param name="resourceMatchType">The resource match type specifying whether the lookup is for an Altinn App delegation or a resource from the Resource Registry</param>
     /// <param name="delegationChange">The DelegationChange model describing the delegation, to insert in the database</param>
+    /// <param name="isLegacy">Set if source is legacy</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>The complete DelegationChange record stored in the database</returns>
-    Task<DelegationChange> InsertDelegation(ResourceAttributeMatchType resourceMatchType, DelegationChange delegationChange, CancellationToken cancellationToken = default);
+    Task<DelegationChange> InsertDelegation(ResourceAttributeMatchType resourceMatchType, DelegationChange delegationChange, bool isLegacy = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetch all the latest Instance delegations for a given instance
@@ -96,7 +97,7 @@ public interface IDelegationMetadataRepository
     /// <param name="coveredByPartyId">The party id of the entity having received the delegated policy, if the entity is an organization</param>
     /// <param name="coveredByUserId">The user id of the entity having received the delegated policy, if the entity is a user</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-    /// Task<List<DelegationChange>> GetAllAppDelegationChanges(string altinnAppId, int offeredByPartyId, int? coveredByPartyId, int? coveredByUserId, CancellationToken cancellationToken = default);
+    Task<List<DelegationChange>> GetAllAppDelegationChanges(string altinnAppId, int offeredByPartyId, int? coveredByPartyId, int? coveredByUserId, CancellationToken cancellationToken = default);
     */
 
     /// <summary>
