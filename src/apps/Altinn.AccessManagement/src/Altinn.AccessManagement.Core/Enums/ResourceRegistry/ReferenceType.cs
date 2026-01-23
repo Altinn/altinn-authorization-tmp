@@ -26,6 +26,9 @@ namespace Altinn.AccessManagement.Core.Models.ResourceRegistry
         ServiceEditionCode = 5,
 
         [EnumMember(Value = "ApplicationId")]
-        ApplicationId = 6
+        ApplicationId = 6,
+
+        [EnumMember(Value = "ServiceEditionVersion")]
+        ServiceEditionVersion = 7
     }
 }
