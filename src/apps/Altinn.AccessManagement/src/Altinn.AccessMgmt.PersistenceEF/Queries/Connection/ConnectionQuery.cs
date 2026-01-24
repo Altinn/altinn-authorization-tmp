@@ -111,7 +111,6 @@ public class ConnectionQuery(AppDbContext db)
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(AppDbContext db, ConnectionQueryFilter filter, bool delayChildNesting)
     {
         var toId = filter.ToIds.First();
-        var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
         var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
         var viaSet = filter.ViaIds?.Count > 0 ? new HashSet<Guid>(filter.ViaIds) : null;
         var viaRoleSet = filter.ViaRoleIds?.Count > 0 ? new HashSet<Guid>(filter.ViaRoleIds) : null;
@@ -289,7 +288,6 @@ public class ConnectionQuery(AppDbContext db)
 
         return
             query
-            .FromIdContains(fromSet)
             .ViaIdContains(viaSet)
             .ViaRoleIdContains(viaRoleSet)
             .RoleIdContains(roleSet);
@@ -851,6 +849,11 @@ public class ConnectionQuery(AppDbContext db)
                     });
                 }
             }
+        }
+
+        if (filter.FromIds != null && filter.FromIds.Count > 0)
+        {
+            keysWithChildren = keysWithChildren.Where(c => filter.FromIds.Contains(c.FromId)).ToList();
         }
 
         return keysWithChildren;
