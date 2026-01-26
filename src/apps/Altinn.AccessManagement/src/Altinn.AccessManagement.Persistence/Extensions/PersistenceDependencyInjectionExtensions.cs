@@ -46,24 +46,10 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
 
-        if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseEFQueryRepo"))
-        {
-            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataEF>();
-            builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
-        }
-        else
-        {
-            if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseNewQueryRepo"))
-            {
-                builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepo>();
-                builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
-            }
-            else
-            {
-                builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepository>();
-                builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepository>();
-            }
-        }
+        builder.Services.AddSingleton<DelegationMetadataEF>();
+        builder.Services.AddSingleton<DelegationMetadataRepo>();
+        builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRouter>();
+        builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
         builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();
 

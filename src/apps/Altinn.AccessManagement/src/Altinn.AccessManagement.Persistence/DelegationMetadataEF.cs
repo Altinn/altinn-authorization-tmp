@@ -7,20 +7,36 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
+
+public interface IDelegationRoutingPolicy
+{
+    Task<bool> UseLegacyAsync(string methodName, CancellationToken ct = default);
+}
+
+public sealed class FeatureFlagDelegationRoutingPolicy : IDelegationRoutingPolicy
+{
+    private readonly IFeatureManager _features;
+
+    public FeatureFlagDelegationRoutingPolicy(IFeatureManager features) => _features = features;
+
+    public Task<bool> UseLegacyAsync(string methodName, CancellationToken ct = default) => _features.IsEnabledAsync($"DelegationMetadata.{methodName}.Legacy");
+}
 
 /// <inheritdoc/>
 public class DelegationMetadataEF : IDelegationMetadataRepository
 {
-
     private string ConvertAppResourceId(string resourceId)
     {
         //app_skd_skattemelding -> skd/skattemelding
-        return "";
+        return resourceId.Replace("app_", string.Empty).Replace('_', '/');
     }
 
-    private DelegationChange Convert(AssignmentResource assignmentResource, bool isLegacy = false)
+    private DelegationChange Convert(AssignmentResource assignmentResource)
     {
         return new DelegationChange()
         {
@@ -293,6 +309,11 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             DbContext.AssignmentResources.Add(assignmentResource);
         }
 
+        if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+        {
+            DbContext.AssignmentResources.Remove(assignmentResource);
+        }
+
         await DbContext.SaveChangesAsync();
 
         return await GetAssignmentResource(assignmentResource.Id);
@@ -370,37 +391,51 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             DbContext.AssignmentInstances.Add(assignmentInstance);
         }
 
+        if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+        {
+            DbContext.AssignmentInstances.Remove(assignmentInstance);
+        }
+
         await DbContext.SaveChangesAsync();
 
         return await GetAssignmentInstance(assignmentInstance.Id);
     }
 
     /// <inheritdoc />
-    public async Task<bool> InsertMultipleInstanceDelegations(List<PolicyWriteOutput> policyWriteOutputs, bool isLegacy = false, CancellationToken cancellationToken = default)
+    public async Task<bool> InsertMultipleInstanceDelegations(List<PolicyWriteOutput> policyWriteOutputs, CancellationToken cancellationToken = default)
     {
         try
         {
-            var assignmentInstances = new List<AssignmentInstance>();
             var role = RoleConstants.Rightholder;
 
             foreach (var policy in policyWriteOutputs)
             {
-                var resource = await GetResource(policy.Rules.ResourceId);
+                var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
+                var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == policy.Rules.InstanceId, cancellationToken);
 
-                assignmentInstances.Add(new AssignmentInstance()
+                if (assignmentInstance is null)
                 {
-                    Id = Guid.CreateVersion7(),
-                    AssignmentId = assignment.Id,
-                    ResourceId = resource.Id,
-                    InstanceId = policy.Rules.InstanceId,
-                    DelegationChangeId = 0,
-                    PolicyPath = policy.PolicyPath,
-                    PolicyVersion = policy.VersionId,
-                });
+                    assignmentInstance = new AssignmentInstance()
+                    {
+                        Id = Guid.CreateVersion7(),
+                        AssignmentId = assignment.Id,
+                        ResourceId = resource.Id,
+                        InstanceId = policy.Rules.InstanceId,
+                        DelegationChangeId = 0,
+                        PolicyPath = policy.PolicyPath,
+                        PolicyVersion = policy.VersionId,
+                    };
+
+                    DbContext.AssignmentInstances.Add(assignmentInstance);
+                }
+
+                if (policy.ChangeType == DelegationChangeType.RevokeLast)
+                {
+                    DbContext.AssignmentInstances.Remove(assignmentInstance);
+                }
             }
 
-            DbContext.AssignmentInstances.AddRange(assignmentInstances);
             await DbContext.SaveChangesAsync();
             return true;
         }
