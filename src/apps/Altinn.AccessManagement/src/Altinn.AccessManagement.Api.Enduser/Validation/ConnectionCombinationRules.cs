@@ -136,38 +136,4 @@ internal static class ConnectionCombinationRules
             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{urnName}", [new(urnName, ValidationErrorMessageTexts.RequireOnePackageRef)]);
         };
     };
-
-    /// <summary>
-    /// Package reference must be exactly one of (packageId, packageUrn). Reject empty Guid.
-    /// </summary>
-    internal static RuleExpression ExclusiveResourceReference(Guid? resourceId, string resourceKey, string idName = "resourceId", string keyName = "resource") => () =>
-    {
-        var keyProvided = !string.IsNullOrWhiteSpace(resourceKey);
-        var idProvided = resourceId.HasValue && resourceId.Value != Guid.Empty;
-        if (idProvided ^ keyProvided)
-        {
-            return null; // exactly one OK
-        }
-
-        if (idProvided && keyProvided)
-        {
-            return (ref ValidationErrorBuilder errors) =>
-            {
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{idName}", [new(idName, ValidationErrorMessageTexts.ProvideEitherResourceRef)]);
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{keyName}", [new(keyName, ValidationErrorMessageTexts.ProvideEitherResourceRef)]);
-            };
-        }
-
-        if (resourceId.HasValue && resourceId.Value == Guid.Empty)
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{idName}", [new(idName, ValidationErrorMessageTexts.ResourceIdMustNotBeEmpty)]);
-        }
-
-        return (ref ValidationErrorBuilder errors) =>
-        {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{idName}", [new(idName, ValidationErrorMessageTexts.RequireOneResourceRef)]);
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{keyName}", [new(keyName, ValidationErrorMessageTexts.RequireOneResourceRef)]);
-        };
-    };
 }

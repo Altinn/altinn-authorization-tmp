@@ -449,9 +449,9 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] Guid? resourceId, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, resourceId, resource));
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -468,9 +468,7 @@ public class ConnectionsController(
         var from = await EntityService.GetEntity(fromId, cancellationToken);
         var to = await EntityService.GetEntity(toId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
-        var resourceObj = resourceId.HasValue
-            ? await resourceService.GetResource(resourceId.Value, cancellationToken)
-            : await resourceService.GetResource(resource, cancellationToken);
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
 
         var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
@@ -488,9 +486,9 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateResource([FromQuery] ConnectionInput connection, [FromQuery] Guid? resourceId, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdateResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, resourceId, resource));
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -507,9 +505,7 @@ public class ConnectionsController(
         var from = await EntityService.GetEntity(fromId, cancellationToken);
         var to = await EntityService.GetEntity(toId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
-        var resourceObj = resourceId.HasValue
-            ? await resourceService.GetResource(resourceId.Value, cancellationToken)
-            : await resourceService.GetResource(resource, cancellationToken);
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
 
         var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
@@ -527,10 +523,10 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveResource([FromQuery] ConnectionInput connection, [FromQuery] Guid? resourceId, [FromQuery] string resource, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemoveResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
-            ConnectionValidation.ValidateRemoveResourceFromConnection(connection.Party, connection.From, connection.To, resourceId, resource));
+            ConnectionValidation.ValidateRemoveResourceFromConnection(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -543,18 +539,8 @@ public class ConnectionsController(
             return Problem();
         }
 
-        async Task<ValidationProblemInstance> RemoveResource()
-        {
-            if (resourceId.HasValue)
-            {
-                return await ConnectionService.RemoveResource(fromId, toId, resourceId.Value, ConfigureConnections, cancellationToken);
-            }
-
-            return await ConnectionService.RemoveResource(fromId, toId, resource, ConfigureConnections, cancellationToken);
-        }
-
-        var problem = await RemoveResource();
-
+        var problem = await ConnectionService.RemoveResource(fromId, toId, resource, ConfigureConnections, cancellationToken);
+        
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -574,7 +560,7 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] IEnumerable<string>? resources, [FromQuery] IEnumerable<Guid>? resourceIds, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] IEnumerable<string>? resources, CancellationToken cancellationToken = default)
     {
         return NotFound();
     }
