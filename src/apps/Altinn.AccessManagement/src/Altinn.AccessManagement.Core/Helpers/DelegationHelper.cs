@@ -1078,6 +1078,11 @@ namespace Altinn.AccessManagement.Core.Helpers
                 return UuidType.SystemUser;
             }
 
+            if (entityType == EntityTypeConstants.EnterpriseUser.Id)
+            {
+                return UuidType.EnterpriseUser;
+            }
+
             return UuidType.Party;
         }
 
