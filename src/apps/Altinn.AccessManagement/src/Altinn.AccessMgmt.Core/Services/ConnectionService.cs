@@ -344,45 +344,12 @@ public partial class ConnectionService(
 
     public async Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var connections = await connectionQuery.GetConnectionsAsync(
-            filter: new ConnectionQueryFilter()
-            {
-                FromIds = [party],
-                ToIds = [auditAccessor.AuditValues.ChangedBy],
-                IncludeDelegation = true,
-                IncludeKeyRole = true,
-                IncludeMainUnitConnections = true,
-                IncludePackages = true,
-                IncludeResource = false,
-                IncludeSubConnections = true,
-                EnrichEntities = true,
-                EnrichPackageResources = false,
-                ResourceIds = resourceIds.ToList(),
-            },
-            direction: ConnectionQueryDirection.FromOthers,
-            useNewQuery: true,
-            ct: cancellationToken
-            );
-
-        return resourceIds.ToDictionary(t => t, t => connections.Any(y => y.Resources.Select(r => r.Id).Contains(t)));
+        throw new NotImplementedException();
     }
 
     public async Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var resourceObjects = await dbContext.Resources.AsNoTracking().Where(r => resources.Contains(r.RefId)).ToListAsync(cancellationToken);
-
-        if (resourceObjects is null || !resourceObjects.Any())
-        {
-            return resources.ToDictionary(t => t, t => false);
-        }
-
-        var idToKey = resourceObjects.ToDictionary(r => r.Id, r => r.RefId);
-        var checkResult = await CheckResource(party, idToKey.Keys, configureConnection, cancellationToken);
-
-        return idToKey.ToDictionary(
-            pair => pair.Value,
-            pair => checkResult.Value.TryGetValue(pair.Key, out var allowed) && allowed
-        );
+        throw new NotImplementedException();
     }
 
     #endregion
