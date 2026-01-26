@@ -214,16 +214,14 @@ public partial class ConnectionService(
         return DtoMapper.ConvertResources(connections);
     }
 
-    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, int delegationChangeId, string policyPath, string policyVersion, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Not complete");
         var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
-        return await AddResource(fromId, toId, resource.Id, configureConnection, cancellationToken);
+        return await AddResource(fromId, toId, resource.Id, delegationChangeId, policyPath, policyVersion, configureConnection, cancellationToken);
     }
 
-    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, Guid resourceId, int delegationChangeId, string policyPath, string policyVersion, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Not complete");
         var options = new ConnectionOptions(configureConnection);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         var problem = ValidateWriteOpInput(from, to, options);
@@ -263,30 +261,32 @@ public partial class ConnectionService(
 
             await dbContext.Assignments.AddAsync(assignment, cancellationToken);
         }
-        else
-        {
-            var existingAssignmentResource = await dbContext.AssignmentResources
-                .AsNoTracking()
+
+        var assignmentResource = await dbContext.AssignmentResources.AsTracking()
                 .Where(a => a.AssignmentId == assignment.Id)
                 .Where(a => a.ResourceId == resourceId)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingAssignmentResource is { })
+        if (assignmentResource == null)
+        {
+            assignmentResource = new AssignmentResource()
             {
-                return DtoMapper.Convert(existingAssignmentResource);
-            }
+                AssignmentId = assignment.Id,
+                ResourceId = resourceId,
+                DelegationChangeId = delegationChangeId,
+                PolicyPath = policyPath,
+                PolicyVersion = policyVersion
+            };
+            await dbContext.AssignmentResources.AddAsync(assignmentResource, cancellationToken);
+        }
+        else
+        {
+            assignmentResource.PolicyPath = policyPath;
+            assignmentResource.PolicyVersion = policyVersion;
+            assignmentResource.DelegationChangeId = delegationChangeId;
         }
 
-        var newAssignmentResource = new AssignmentResource()
-        {
-            AssignmentId = assignment.Id,
-            ResourceId = resourceId,
-            // DelegationChangeId = 0,
-            // PolicyPath = "",
-            // PolicyVersion = ""
-        };
 
-        await dbContext.AssignmentResources.AddAsync(newAssignmentResource, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (from.PartyId.HasValue && to.PartyId.HasValue)
@@ -294,7 +294,7 @@ public partial class ConnectionService(
             await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
         }
 
-        return DtoMapper.Convert(newAssignmentResource);
+        return DtoMapper.Convert(assignmentResource);
     }
 
     public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
