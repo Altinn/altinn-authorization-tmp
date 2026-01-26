@@ -248,6 +248,20 @@ public partial class DtoMapper
         return null;
     }
 
+    public static CompactResourceDto ConvertCompactResource(Resource resource)
+    {
+        if (resource is { })
+        {
+            return new CompactResourceDto()
+            {
+                Id = resource.Id,
+                Value = resource.Name
+            };
+        }
+
+        return null;
+    }
+
     public static CompactPackageDto ConvertCompactPackage(Package package)
     {
         if (package is { })

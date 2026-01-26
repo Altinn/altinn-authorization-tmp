@@ -91,6 +91,18 @@ public partial class DtoMapper : IDtoMapper
             .ToList();
     }
 
+    public static List<ResourcePermissionDto> ConvertResources(IEnumerable<AssignmentResource> res)
+    {
+        return res
+        .GroupBy(t => t.Resource)
+        .Select(g => new ResourcePermissionDto
+        {
+            Resource = ConvertCompactResource(g.Key),
+            Permissions = g.Select(t => ConvertToPermission(t.Assignment))
+        })
+        .ToList();
+    }
+
     public static List<ResourcePermissionDto> ConvertResources(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var records = res.ToList();

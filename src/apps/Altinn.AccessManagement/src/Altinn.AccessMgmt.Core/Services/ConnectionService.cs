@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -13,9 +12,11 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -185,32 +186,15 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var direction = party == fromId
-            ? ConnectionQueryDirection.ToOthers
-            : ConnectionQueryDirection.FromOthers;
+        var resources = await dbContext.AssignmentResources.AsNoTracking()
+            .Include(t => t.Assignment).ThenInclude(t => t.Role)
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
+            .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Resource)
+            .Where(t => t.Assignment.FromId == fromId && t.Assignment.ToId == toId)
+            .ToListAsync();
 
-        var connections = await connectionQuery.GetConnectionsAsync(
-        new ConnectionQueryFilter()
-        {
-            FromIds = fromId.HasValue ? [fromId.Value] : null,
-            ToIds = toId.HasValue ? [toId.Value] : null,
-            EnrichEntities = true,
-            IncludeSubConnections = true,
-            IncludeKeyRole = true,
-            IncludeMainUnitConnections = true,
-            IncludeDelegation = true,
-            IncludePackages = true,
-            IncludeResource = true,
-            EnrichPackageResources = true,
-            ExcludeDeleted = false,
-            OnlyUniqueResults = false
-        },
-        direction,
-        true,
-        cancellationToken
-        );
-
-        return DtoMapper.ConvertResources(connections);
+        return DtoMapper.ConvertResources(resources);
     }
 
     public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, int delegationChangeId, string policyPath, string policyVersion, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
@@ -243,7 +227,6 @@ public partial class ConnectionService(
 
         // Look for existing direct rightholder assignment
         var assignment = await dbContext.Assignments
-            .AsNoTracking()
             .Where(a => a.FromId == fromId)
             .Where(a => a.ToId == toId)
             .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
@@ -251,6 +234,16 @@ public partial class ConnectionService(
 
         if (assignment == null)
         {
+            var hasConnection = dbContext.Assignments
+                .Where(a => a.FromId == fromId)
+                .Where(a => a.ToId == toId)
+                .Any();
+
+            if (!hasConnection)
+            {
+                throw new Exception("No connection found between parties");
+            }
+
             assignment = new Assignment()
             {
                 FromId = fromId,
