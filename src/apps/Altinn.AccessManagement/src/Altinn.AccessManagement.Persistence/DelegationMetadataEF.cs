@@ -7,33 +7,24 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
-
-public interface IDelegationRoutingPolicy
-{
-    Task<bool> UseLegacyAsync(string methodName, CancellationToken ct = default);
-}
-
-public sealed class FeatureFlagDelegationRoutingPolicy : IDelegationRoutingPolicy
-{
-    private readonly IFeatureManager _features;
-
-    public FeatureFlagDelegationRoutingPolicy(IFeatureManager features) => _features = features;
-
-    public Task<bool> UseLegacyAsync(string methodName, CancellationToken ct = default) => _features.IsEnabledAsync($"DelegationMetadata.{methodName}.Legacy");
-}
 
 /// <inheritdoc/>
 public class DelegationMetadataEF : IDelegationMetadataRepository
 {
-    private string ConvertAppResourceId(string resourceId)
+    private string ConvertFromAppResourceId(string resourceId)
     {
-        //app_skd_skattemelding -> skd/skattemelding
+        // TODO: Verify
+        //// app_skd_skattemelding => skd/skattemelding
         return resourceId.Replace("app_", string.Empty).Replace('_', '/');
+    }
+
+    private string ConvertToAppResourceId(Resource resource)
+    {
+        // TODO: Verify
+        //// skattemelding => app_skd_skattemelding
+        return $"app_{resource.Provider.Code}_{resource.RefId}";
     }
 
     private DelegationChange Convert(AssignmentResource assignmentResource)
@@ -43,8 +34,8 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             DelegationChangeId = assignmentResource.DelegationChangeId,
             Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
             
-            ResourceId = assignmentResource.Resource.Type.Name == "App???"
-            ? ConvertAppResourceId(assignmentResource.Resource.RefId)
+            ResourceId = assignmentResource.Resource.Type.Name == "AltinnApp"
+            ? ConvertFromAppResourceId(assignmentResource.Resource.RefId)
             : assignmentResource.Resource.RefId, 
 
             ResourceType = assignmentResource.Resource.Type.Name,

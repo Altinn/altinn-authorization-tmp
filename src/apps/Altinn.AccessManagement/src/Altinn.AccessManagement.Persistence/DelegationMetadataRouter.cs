@@ -3,10 +3,11 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence;
+using Altinn.AccessManagement.Persistence.Extensions;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
-public sealed class DelegationMetadataRouter(DelegationMetadataEF newEf, DelegationMetadataRepo legacyRepo, IDelegationRoutingPolicy policy) : IDelegationMetadataRepository
+public sealed class DelegationMetadataRouter(DelegationMetadataEF newEf, DelegationMetadataRepo legacyRepo, ILegacyRoutingPolicy policy) : IDelegationMetadataRepository
 {
     private async Task<T> Route<T>(
         string methodName,
@@ -14,7 +15,7 @@ public sealed class DelegationMetadataRouter(DelegationMetadataEF newEf, Delegat
         Func<DelegationMetadataEF, Task<T>> newCall,
         CancellationToken ct)
     {
-        var useLegacy = await policy.UseLegacyAsync(methodName, ct);
+        var useLegacy = await policy.UseLegacyAsync(methodName, "DelegationMetadata", "Legacy", ct);
         return useLegacy ? await legacyCall(legacyRepo) : await newCall(newEf);
     }
 
