@@ -576,26 +576,7 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] IEnumerable<string>? resources, [FromQuery] IEnumerable<Guid>? resourceIds, CancellationToken cancellationToken = default)
     {
-        if (resourceIds is not null && resourceIds.Any())
-        {
-            var result = await ConnectionService.CheckResource(party, resourceIds, ConfigureConnections, cancellationToken);
-            if (result.IsProblem)
-            {
-                return result.Problem.ToActionResult();
-            }
-
-            return Ok(PaginatedResult.Create(result.Value, null));
-        }
-        else
-        {
-            var result = await ConnectionService.CheckResource(party, resources, ConfigureConnections, cancellationToken);
-            if (result.IsProblem)
-            {
-                return result.Problem.ToActionResult();
-            }
-
-            return Ok(PaginatedResult.Create(result.Value, null));
-        }
+        return NotFound();
     }
 
     #endregion
