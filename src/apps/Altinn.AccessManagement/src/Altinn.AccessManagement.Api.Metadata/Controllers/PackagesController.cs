@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Api.Metadata.Translation;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
@@ -32,14 +33,26 @@ public class PackagesController : ControllerBase
     /// Søker etter access packages basert på et søkeord.
     /// </summary>
     /// <param name="term">Søketerm.</param>
-    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>
+    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>   
     /// <param name="searchInResources">Søk i ressurs verdier</param>
+    /// <param name="typeName">Package for type (e.g. Organization, Person)</param>
     /// <returns>Liste over søkeresultater.</returns>
     [Route("search")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false)
+    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false, [FromQuery] string? typeName = null)
     {
-        var res = await packageService.Search(term, resourceProviderCode, searchInResources);
+        Guid? typeId = null;
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            if (!EntityTypeConstants.TryGetByName(name: typeName, includeTranslations: true, out var type))
+            {
+                return Problem($"Type '{typeName}' not found. Try organization, organisasjon or person");
+            }
+
+            typeId = type.Id;
+        }
+
+        var res = await packageService.Search(term, resourceProviderCode, searchInResources, typeId);
         if (res == null || !res.Any())
         {
             return NoContent();
