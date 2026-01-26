@@ -20,7 +20,7 @@ public class AccessPackageDto
     /// </summary>
     public Guid AreaId { get; set; }
 
-    public class Check
+    public class AccessPackageDtoCheck
     {
         /// <summary>
         /// Package the delegation check is regarding

@@ -49,9 +49,11 @@ public static class PersistenceDependencyInjectionExtensions
         // Add FeatureFlag or Config
         AccessMgmt.PersistenceEF.Features.PersistenceFeatures.IgnoreSingleRightsImportedAssignments = true;
 
-        builder.Services.AddSingleton<DelegationMetadataEF>();
-        builder.Services.AddSingleton<DelegationMetadataRepo>();
+        builder.Services.AddSingleton<ILegacyRoutingPolicy, FeatureFlagLegacyRoutingPolicy>();
+        builder.Services.AddScoped<DelegationMetadataEF>();
+        builder.Services.AddScoped<DelegationMetadataRepo>();
         builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRouter>();
+
         builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
         builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();

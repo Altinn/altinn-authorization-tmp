@@ -245,20 +245,21 @@ namespace Altinn.AccessManagement.Core.Services
                             Value = resource.RefId
                         }
                     ];
-                //case "AltinnApp":
-                //    return
-                //    [
-                //        new AttributeMatch
-                //        {
-                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute,
-                //            Value = resource.Provider.Code
-                //        },
-                //        new AttributeMatch
-                //        {
-                //            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute,
-                //            Value = resource.RefId
-                //        }
-                //    ];
+                case "AltinnApp":
+                    return
+                    [
+                        new AttributeMatch
+                        {
+                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute,
+                            Value = resource.Provider.Code
+                        },
+                        new AttributeMatch
+                        {
+                            // TODO: Verify
+                            Id = AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute,
+                            Value = resource.RefId.Replace("app_", string.Empty).Replace('_', '/')
+                        }
+                    ];
             }
         }
 

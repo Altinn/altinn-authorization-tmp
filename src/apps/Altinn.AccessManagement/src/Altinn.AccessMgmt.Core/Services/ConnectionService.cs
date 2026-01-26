@@ -592,7 +592,7 @@ public partial class ConnectionService(
         return DtoMapper.Convert(newAssignmentPackage);
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await dbContext.GetAssignableAccessPackages(
             party,
@@ -604,7 +604,7 @@ public partial class ConnectionService(
         return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
         {
             var firstPackage = group.First();
-            return new AccessPackageDto.Check
+            return new AccessPackageDto.AccessPackageDtoCheck
             {
                 Package = new AccessPackageDto
                 {
@@ -613,7 +613,7 @@ public partial class ConnectionService(
                     AreaId = firstPackage.Package.AreaId
                 },
                 Result = group.Any(p => p.Result),
-                Reasons = group.Select(p => new AccessPackageDto.Check.Reason
+                Reasons = group.Select(p => new AccessPackageDto.AccessPackageDtoCheck.Reason
                 {
                     Description = p.Reason.Description,
                     RoleId = p.Reason.RoleId,
@@ -631,7 +631,7 @@ public partial class ConnectionService(
         }).ToList();
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var packagesFound = packages.Select(p =>
         {

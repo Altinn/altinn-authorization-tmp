@@ -45,7 +45,7 @@ public class ResourceDto
     /// </summary>
     public ResourceTypeDto Type { get; set; }
 
-    public class Check
+    public class ResourceDtoCheck
     {
         /// <summary>
         /// Resource the delegation check is regarding

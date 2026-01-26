@@ -23,7 +23,7 @@ public static class ResourceValidation
         );
     };
 
-    internal static RuleExpression AuthorizeResourceAssignment(IEnumerable<ResourceDto.Check> resources, string paramName = "resource") => () =>
+    internal static RuleExpression AuthorizeResourceAssignment(IEnumerable<ResourceDto.ResourceDtoCheck> resources, string paramName = "resource") => () =>
     {
         if (resources.Any(p => !p.Result))
         {
