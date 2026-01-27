@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
+    public class ConsentService(IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
         IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
@@ -38,6 +38,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IProfileClient _profileClient = profileClient;
         private readonly TimeProvider _timeProvider = timeProvider;
         private readonly GeneralSettings _generalSettings = generalSettings.Value;
+        private readonly IAltinn2ConsentClient _altinn2ConsentClient = altinn2ConsentClient;
 
         private const string ResourceParam = "Resource";
 
@@ -169,6 +170,27 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest == null)
             {
+                consentRequest = await _altinn2ConsentClient.GetConsent(consentRequestId, cancellationToken);
+
+                if (consentRequest != null)
+                {
+                    ConsentRequest consentFromAltinn2 = new ConsentRequest
+                    {
+                        Id = consentRequest.Id,
+                        From = consentRequest.From,
+                        To = consentRequest.To,
+                        ValidTo = consentRequest.ValidTo,
+                        ConsentRights = consentRequest.ConsentRights,
+                        RedirectUrl = consentRequest.RedirectUrl,
+                        TemplateId = consentRequest.TemplateId
+                    };
+
+                    await CreateRequest(consentFromAltinn2, from, cancellationToken);
+                }
+            }
+
+            if (consentRequest == null)
+            {
                 return Problems.ConsentNotFound;
             }
             else
@@ -199,6 +221,27 @@ namespace Altinn.AccessManagement.Core.Services
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+
+            if (consentRequest == null)
+            {
+                consentRequest = await _altinn2ConsentClient.GetConsent(consentRequestId, cancellationToken);
+
+                if (consentRequest != null)
+                {
+                    ConsentRequest consentFromAltinn2 = new ConsentRequest
+                    {
+                        Id = consentRequest.Id,
+                        From = consentRequest.From,
+                        To = consentRequest.To,
+                        ValidTo = consentRequest.ValidTo,
+                        ConsentRights = consentRequest.ConsentRights,
+                        RedirectUrl = consentRequest.RedirectUrl,
+                        TemplateId = consentRequest.TemplateId
+                    };
+
+                    await CreateRequest(consentFromAltinn2, consentRequest.From, cancellationToken);
+                }
+            }
 
             if (consentRequest == null)
             {
