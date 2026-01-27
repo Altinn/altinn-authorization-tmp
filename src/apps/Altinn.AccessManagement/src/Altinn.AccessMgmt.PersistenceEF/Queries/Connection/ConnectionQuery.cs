@@ -25,6 +25,86 @@ public class ConnectionQuery(AppDbContext db)
     }
 
     /// <summary>
+    /// Checks if connection exists between to parties
+    /// Returns first result only (Assignment => Delegation => Hierarchy => KeyRole)
+    /// </summary>
+    /// <param name="fromId">From identifier</param>
+    /// <param name="toId">To identifier</param>
+    /// <returns></returns>
+    public async Task<(bool Result, ConnectionReason? Reason)> HasConnection(Guid fromId, Guid toId)
+    {
+        return await HasConnection(fromId, toId, [ConnectionReason.Assignment, ConnectionReason.Delegation, ConnectionReason.Hierarchy, ConnectionReason.KeyRole]);
+    }
+
+    /// <summary>
+    /// Checks if connection exists between to parties
+    /// Returns first result only (Assignment => Delegation => Hierarchy => KeyRole)
+    /// <param name="fromId">From identifier</param>
+    /// <param name="toId">To identifier</param>
+    /// <param name="reasons">Reasons to check</param>
+    /// </summary>
+    public async Task<(bool Result, ConnectionReason? Reason)> HasConnection(Guid fromId, Guid toId, ConnectionReason[] reasons)
+    {
+        if (reasons == null || reasons.Length == 0)
+        {
+            return (false, null);
+        }
+
+        if (reasons.Contains(ConnectionReason.Assignment))
+        {
+            var assignments = db.Assignments.AsNoTracking()
+                .Where(t => t.FromId == fromId && t.ToId == toId);
+        
+            if (await assignments.AnyAsync())
+            {
+                return (true, ConnectionReason.Assignment);
+            }
+        }
+
+        if (reasons.Contains(ConnectionReason.Delegation))
+        {
+            var delegations = db.Delegations.AsNoTracking()
+                .Where(t => t.From.FromId == fromId && t.To.ToId == toId);
+
+            if (await delegations.AnyAsync())
+            {
+                return (true, ConnectionReason.Delegation);
+            }
+        }
+
+        if (reasons.Contains(ConnectionReason.Hierarchy))
+        {
+            var hierarchy =
+            from a in db.Assignments.AsNoTracking()
+            join e in db.Entities.AsNoTracking() on a.FromId equals e.ParentId
+            where a.ToId == toId && e.Id == fromId
+            select 1;
+
+            if (await hierarchy.AnyAsync())
+            {
+                return (true, ConnectionReason.Hierarchy);
+            }
+        }
+
+        if (reasons.Contains(ConnectionReason.KeyRole))
+        {
+            var keyRoles =
+            from a in db.Assignments.AsNoTracking()
+            join k in db.Assignments.AsNoTracking() on a.ToId equals k.FromId
+            join kr in db.Roles.AsNoTracking() on k.RoleId equals kr.Id
+            where a.FromId == fromId && kr.IsKeyRole == true && k.ToId == toId
+            select 1;
+
+            if (await keyRoles.AnyAsync())
+            {
+                return (true, ConnectionReason.KeyRole);
+            }
+        }
+
+        return (false, null);
+    }
+
+    /// <summary>
     /// Returns connections between to entities based on assignments and delegations
     /// </summary>
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true, CancellationToken ct = default)

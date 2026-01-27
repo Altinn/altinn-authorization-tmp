@@ -186,13 +186,19 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var resources = await dbContext.AssignmentResources.AsNoTracking()
-            .Include(t => t.Assignment).ThenInclude(t => t.Role)
-            .Include(t => t.Assignment).ThenInclude(t => t.From)
-            .Include(t => t.Assignment).ThenInclude(t => t.To)
-            .Include(t => t.Resource)
-            .Where(t => t.Assignment.FromId == fromId && t.Assignment.ToId == toId)
-            .ToListAsync();
+        var resources = await connectionQuery.GetConnectionsFromOthersAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = [from.Id],
+                ToIds = [to.Id],
+                EnrichPackageResources = false,
+                IncludeDelegation = false,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludePackages = false,
+                IncludeResource = true,
+                IncludeSubConnections = true,
+            });
 
         return DtoMapper.ConvertResources(resources);
     }
@@ -234,12 +240,8 @@ public partial class ConnectionService(
 
         if (assignment == null)
         {
-            var hasConnection = dbContext.Assignments
-                .Where(a => a.FromId == fromId)
-                .Where(a => a.ToId == toId)
-                .Any();
-
-            if (!hasConnection)
+            var hasConnection = await connectionQuery.HasConnection(fromId, toId);
+            if (hasConnection.Result)
             {
                 throw new Exception("No connection found between parties");
             }
@@ -248,7 +250,7 @@ public partial class ConnectionService(
             {
                 FromId = fromId,
                 ToId = toId,
-                RoleId = RoleConstants.Rightholder
+                RoleId = RoleConstants.Rightholder.Id
             };
 
             await dbContext.Assignments.AddAsync(assignment, cancellationToken);
@@ -277,7 +279,6 @@ public partial class ConnectionService(
             assignmentResource.PolicyVersion = policyVersion;
             assignmentResource.DelegationChangeId = delegationChangeId;
         }
-
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
