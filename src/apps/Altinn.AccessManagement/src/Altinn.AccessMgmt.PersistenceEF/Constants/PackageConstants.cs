@@ -5963,7 +5963,7 @@ public static class PackageConstants
     };
 
     /// <summary>
-    /// Represents the 'Tilgangsstyring privatperson' access package.
+    /// Represents the 'Tilgangsstyring for privatperson' access package.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 540a25ff-6fd9-4574-8573-249c1779d253
@@ -5987,11 +5987,11 @@ public static class PackageConstants
             AreaId = AreaConstants.AdministratorRights,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Access management private person"),
+            KeyValuePair.Create("Name", "Access management for private individuals"),
             KeyValuePair.Create("Description", "Gives the opportunity to give further access for private individuals that you have received yourself.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Tilgangsstyring privatperson"),
+            KeyValuePair.Create("Name", "Tilgangsstyring for privatperson"),
             KeyValuePair.Create("Description", "Gir høve til å gi vidare tilgangar for privatperson som ein sjølv har fått.")
         ),
     };
