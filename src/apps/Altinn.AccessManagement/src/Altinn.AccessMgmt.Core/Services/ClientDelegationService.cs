@@ -79,7 +79,7 @@ public class ClientDelegationService(
                 IncludeSubConnections = false,
                 IncludeKeyRole = false,
                 IncludeResource = false,
-                IncludeMainUnitConnections = true,
+                IncludeMainUnitConnections = false,
                 EnrichEntities = true,
             },
             ct: cancellationToken);
