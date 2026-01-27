@@ -4814,7 +4814,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 7e35f1d3-7477-4cd1-b179-d00613fe36af
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:permisjon-oppsigelse
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-permisjon-oppsigelse
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til permisjon og oppsigelser i arbeidsforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4824,8 +4824,8 @@ public static class PackageConstants
         {
             Name = "Permisjon og oppsigelse",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til permisjon og oppsigelser i arbeidsforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:permisjon-oppsigelse",
-            Code = "permisjon-oppsigelse",
+            Urn = "urn:altinn:accesspackage:innbygger-permisjon-oppsigelse",
+            Code = "innbygger-permisjon-oppsigelse",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -4848,7 +4848,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 3ba61d9a-82c3-4542-bd64-0e5e81d983fb
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:arbeidsliv
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-arbeidsliv
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til arbeidsliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4858,8 +4858,8 @@ public static class PackageConstants
         {
             Name = "Arbeidsliv",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til arbeidsliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:arbeidsliv",
-            Code = "arbeidsliv",
+            Urn = "urn:altinn:accesspackage:innbygger-arbeidsliv",
+            Code = "innbygger-arbeidsliv",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -4882,7 +4882,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 2a54082f-c15d-4768-9dc6-f284091b8660
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:pensjon
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-pensjon
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondansen knyttet til pensjon. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4892,8 +4892,8 @@ public static class PackageConstants
         {
             Name = "Pensjon",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondansen knyttet til pensjon. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:pensjon",
-            Code = "pensjon",
+            Urn = "urn:altinn:accesspackage:innbygger-pensjon",
+            Code = "innbygger-pensjon",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -4916,7 +4916,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 5a051eb7-34a1-4bd7-bd99-b856231aa586
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:utdanning
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-utdanning
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til utdanning. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4926,8 +4926,8 @@ public static class PackageConstants
         {
             Name = "Utdanning",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til utdanning. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:utdanning",
-            Code = "utdanning",
+            Urn = "urn:altinn:accesspackage:innbygger-utdanning",
+            Code = "innbygger-utdanning",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -4950,7 +4950,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> e54b8f6f-edd3-48a1-8e31-c8ed57087ce8
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:sykefravaer
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-sykefravaer
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til sykefravær. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4960,8 +4960,8 @@ public static class PackageConstants
         {
             Name = "Sykefravær",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til sykefravær. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:sykefravaer",
-            Code = "sykefravaer",
+            Urn = "urn:altinn:accesspackage:innbygger-sykefravaer",
+            Code = "innbygger-sykefravaer",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -4984,7 +4984,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 5d572527-02e1-4e02-b423-c6617a49492f
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:soknader-sertifisering
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-soknader-sertifisering
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader og sertifisering. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -4994,8 +4994,8 @@ public static class PackageConstants
         {
             Name = "Søknader og sertifisering",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader og sertifisering. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:soknader-sertifisering",
-            Code = "soknader-sertifisering",
+            Urn = "urn:altinn:accesspackage:innbygger-soknader-sertifisering",
+            Code = "innbygger-soknader-sertifisering",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5022,7 +5022,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 7b333ea2-8fc2-47a6-93c4-dad50d3ef9a6
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:barn-foreldre
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-barn-foreldre
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5032,8 +5032,8 @@ public static class PackageConstants
         {
             Name = "Barn og foreldre",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:barn-foreldre",
-            Code = "barn-foreldre",
+            Urn = "urn:altinn:accesspackage:innbygger-barn-foreldre",
+            Code = "innbygger-barn-foreldre",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5056,7 +5056,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 8dd91aeb-9f95-4d1c-bcf0-f46bd86a4ef7
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:barnehage-sfo-skole
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-barnehage-sfo-skole
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5066,8 +5066,8 @@ public static class PackageConstants
         {
             Name = "Barnehage, SFO og skole",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:barnehage-sfo-skole",
-            Code = "barnehage-sfo-skole",
+            Urn = "urn:altinn:accesspackage:innbygger-barnehage-sfo-skole",
+            Code = "innbygger-barnehage-sfo-skole",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5090,7 +5090,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 7778f33d-83b7-4089-93fc-4fbacbf28600
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:samliv
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-samliv
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til samliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5100,8 +5100,8 @@ public static class PackageConstants
         {
             Name = "Samliv",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til samliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:samliv",
-            Code = "samliv",
+            Urn = "urn:altinn:accesspackage:innbygger-samliv",
+            Code = "innbygger-samliv",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5124,7 +5124,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 945e8c72-6f49-4dac-b068-d378b5a6a1a3
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:fritidsaktiviteter-friluftsliv
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-fritidsaktiviteter-friluftsliv
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5134,8 +5134,8 @@ public static class PackageConstants
         {
             Name = "Fritidsaktiviteter og friluftsliv",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:fritidsaktiviteter-friluftsliv",
-            Code = "fritidsaktiviteter-friluftsliv",
+            Urn = "urn:altinn:accesspackage:innbygger-fritidsaktiviteter-friluftsliv",
+            Code = "innbygger-fritidsaktiviteter-friluftsliv",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5162,7 +5162,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 990bc1ff-b0cd-4d87-83ae-861c22c980fd
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:avlastning-stotte
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-avlastning-stotte
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5172,8 +5172,8 @@ public static class PackageConstants
         {
             Name = "Avlastning og støtte",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:avlastning-stotte",
-            Code = "avlastning-stotte",
+            Urn = "urn:altinn:accesspackage:innbygger-avlastning-stotte",
+            Code = "innbygger-avlastning-stotte",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5196,7 +5196,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> b35d9354-3247-4182-ade2-4c41d7ba7d4e
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:behandling
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-behandling
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike behandlingstilbud. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5206,8 +5206,8 @@ public static class PackageConstants
         {
             Name = "Behandling",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike behandlingstilbud. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:behandling",
-            Code = "behandling",
+            Urn = "urn:altinn:accesspackage:innbygger-behandling",
+            Code = "innbygger-behandling",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5230,7 +5230,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> fadbe391-bedb-4487-9514-9d424d7c54e9
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:helsetjenester
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-helsetjenester
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike helsetjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5240,8 +5240,8 @@ public static class PackageConstants
         {
             Name = "Helsetjenester",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike helsetjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:helsetjenester",
-            Code = "helsetjenester",
+            Urn = "urn:altinn:accesspackage:innbygger-helsetjenester",
+            Code = "innbygger-helsetjenester",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5264,7 +5264,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 9e785c27-9769-4e46-bb8c-d106dd8cc5a2
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:pleie-omsorg
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-pleie-omsorg
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike pleie- og omsorgstjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5274,8 +5274,8 @@ public static class PackageConstants
         {
             Name = "Pleie og omsorg",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike pleie- og omsorgstjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:pleie-omsorg",
-            Code = "pleie-omsorg",
+            Urn = "urn:altinn:accesspackage:innbygger-pleie-omsorg",
+            Code = "innbygger-pleie-omsorg",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5302,7 +5302,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 9e65c773-1ac4-46db-8cfc-57c528b66dfb
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:kultur
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-kultur
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kultur. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5312,8 +5312,8 @@ public static class PackageConstants
         {
             Name = "Kultur",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kultur. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:kultur",
-            Code = "kultur",
+            Urn = "urn:altinn:accesspackage:innbygger-kultur",
+            Code = "innbygger-kultur",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5336,7 +5336,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> b01f84f6-598a-42d6-b675-acf6a612c55d
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:idrett
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-idrett
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til idrett. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5346,8 +5346,8 @@ public static class PackageConstants
         {
             Name = "Idrett",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til idrett. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:idrett",
-            Code = "idrett",
+            Urn = "urn:altinn:accesspackage:innbygger-idrett",
+            Code = "innbygger-idrett",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5370,7 +5370,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 449d3027-9ef4-4363-a5a1-99edef3e67ab
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:frivillighet
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-frivillighet
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til frivillighet. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5380,8 +5380,8 @@ public static class PackageConstants
         {
             Name = "Frivillighet",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til frivillighet. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:frivillighet",
-            Code = "frivillighet",
+            Urn = "urn:altinn:accesspackage:innbygger-frivillighet",
+            Code = "innbygger-frivillighet",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5408,7 +5408,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> ca5faa7e-dbc3-4071-935d-a95bc8fc14e1
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:patent
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-patent
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til patentsøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5418,8 +5418,8 @@ public static class PackageConstants
         {
             Name = "Patent",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til patentsøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:patent",
-            Code = "patent",
+            Urn = "urn:altinn:accesspackage:innbygger-patent",
+            Code = "innbygger-patent",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5442,7 +5442,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 2c721152-d0ef-488b-ab93-a358ce615ae0
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:sertifisering
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-sertifisering
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om ulike sertifiseringer. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5452,8 +5452,8 @@ public static class PackageConstants
         {
             Name = "Sertifisering",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om ulike sertifiseringer. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:sertifisering",
-            Code = "sertifisering",
+            Urn = "urn:altinn:accesspackage:innbygger-sertifisering",
+            Code = "innbygger-sertifisering",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5476,7 +5476,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> f4bb3f8d-1ecb-4832-a5db-b954a6fd6f70
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:attester
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-attester
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til attester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5486,8 +5486,8 @@ public static class PackageConstants
         {
             Name = "Attester",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til attester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:attester",
-            Code = "attester",
+            Urn = "urn:altinn:accesspackage:innbygger-attester",
+            Code = "innbygger-attester",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5510,7 +5510,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 9b2c3171-d95d-42cf-8235-4f9309b311e9
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:design-varemerke
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-design-varemerke
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til design og varemerke. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5520,8 +5520,8 @@ public static class PackageConstants
         {
             Name = "Design og varemerke",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til design og varemerke. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:design-varemerke",
-            Code = "design-varemerke",
+            Urn = "urn:altinn:accesspackage:innbygger-design-varemerke",
+            Code = "innbygger-design-varemerke",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5548,7 +5548,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 420378eb-01ca-4e00-96cd-7b3d5558bdfc
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:straffesak
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-straffesak
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til straffesaker. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5558,8 +5558,8 @@ public static class PackageConstants
         {
             Name = "Straffesak",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til straffesaker. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:straffesak",
-            Code = "straffesak",
+            Urn = "urn:altinn:accesspackage:innbygger-straffesak",
+            Code = "innbygger-straffesak",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5582,7 +5582,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 2e9a3f64-5395-4170-a8d7-8fcc8ff2ac36
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:vapen
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-vapen
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til våpenhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5592,8 +5592,8 @@ public static class PackageConstants
         {
             Name = "Våpen",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til våpenhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:vapen",
-            Code = "vapen",
+            Urn = "urn:altinn:accesspackage:innbygger-vapen",
+            Code = "innbygger-vapen",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5619,7 +5619,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 25d9cb75-9f72-4cc6-b57f-0b759f69e3ed
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:byggesoknad
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-byggesoknad
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til byggesøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5629,8 +5629,8 @@ public static class PackageConstants
         {
             Name = "Byggesøknad",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til byggesøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:byggesoknad",
-            Code = "byggesoknad",
+            Urn = "urn:altinn:accesspackage:innbygger-byggesoknad",
+            Code = "innbygger-byggesoknad",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5653,7 +5653,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 03c04070-abac-488f-a63b-84d69f2b9b5b
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:bolig-eiendom
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-bolig-eiendom
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bolig og eiendom. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5663,8 +5663,8 @@ public static class PackageConstants
         {
             Name = "Bolig og eiendom",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bolig og eiendom. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:bolig-eiendom",
-            Code = "bolig-eiendom",
+            Urn = "urn:altinn:accesspackage:innbygger-bolig-eiendom",
+            Code = "innbygger-bolig-eiendom",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5691,7 +5691,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> ba9c67da-3696-4c08-8472-542ad9eead94
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:loyve
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-loyve
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om løyve. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5701,8 +5701,8 @@ public static class PackageConstants
         {
             Name = "Løyve",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om løyve. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:loyve",
-            Code = "loyve",
+            Urn = "urn:altinn:accesspackage:innbygger-loyve",
+            Code = "innbygger-loyve",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5725,7 +5725,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 67542d17-e2a9-488b-b13b-c83bd8711acd
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:kjoretoy
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-kjoretoy
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kjøretøy. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5735,8 +5735,8 @@ public static class PackageConstants
         {
             Name = "Kjøretøy",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kjøretøy. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:kjoretoy",
-            Code = "kjoretoy",
+            Urn = "urn:altinn:accesspackage:innbygger-kjoretoy",
+            Code = "innbygger-kjoretoy",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5759,7 +5759,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 6b35160e-a23d-4377-bd19-8535fc57580f
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:forerkort
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-forerkort
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til førerkort. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5769,8 +5769,8 @@ public static class PackageConstants
         {
             Name = "Førerkort",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til førerkort. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:forerkort",
-            Code = "forerkort",
+            Urn = "urn:altinn:accesspackage:innbygger-forerkort",
+            Code = "innbygger-forerkort",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5797,7 +5797,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 54418547-7991-449d-b819-2c4698cb006f
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:bank-finans
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-bank-finans
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bank og finans. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5807,8 +5807,8 @@ public static class PackageConstants
         {
             Name = "Bank og finans",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bank og finans. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:bank-finans",
-            Code = "bank-finans",
+            Urn = "urn:altinn:accesspackage:innbygger-bank-finans",
+            Code = "innbygger-bank-finans",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5831,7 +5831,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 4de3029b-bbab-4c76-96bd-3eb377a2b63f
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:forsikring
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-forsikring
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til forsikring. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5841,8 +5841,8 @@ public static class PackageConstants
         {
             Name = "Forsikring",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til forsikring. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:forsikring",
-            Code = "forsikring",
+            Urn = "urn:altinn:accesspackage:innbygger-forsikring",
+            Code = "innbygger-forsikring",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5865,7 +5865,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 6b4c19ff-250a-4625-a4f7-d9684db537f4
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:skatteforhold-privatpersoner
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-skatteforhold-privatpersoner
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til skatteforhold for privatpersoner. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5875,8 +5875,8 @@ public static class PackageConstants
         {
             Name = "Skatteforhold for privatpersoner",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til skatteforhold for privatpersoner. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:skatteforhold-privatpersoner",
-            Code = "skatteforhold-privatpersoner",
+            Urn = "urn:altinn:accesspackage:innbygger-skatteforhold-privatpersoner",
+            Code = "innbygger-skatteforhold-privatpersoner",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5899,7 +5899,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 9f077a78-6530-428f-9660-7f61a8262f65
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:toll-avgift
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-toll-avgift
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til toll og avgift. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5909,8 +5909,8 @@ public static class PackageConstants
         {
             Name = "Toll og avgift",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til toll og avgift. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:toll-avgift",
-            Code = "toll-avgift",
+            Urn = "urn:altinn:accesspackage:innbygger-toll-avgift",
+            Code = "innbygger-toll-avgift",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5933,7 +5933,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 3df18544-67ec-4725-a199-94aa998c5920
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:stotte-tilskudd
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-stotte-tilskudd
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike støtte- og tilskuddsordninger. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
@@ -5943,8 +5943,8 @@ public static class PackageConstants
         {
             Name = "Støtte og tilskudd",
             Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike støtte- og tilskuddsordninger. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
-            Urn = "urn:altinn:accesspackage:innbygger:stotte-tilskudd",
-            Code = "stotte-tilskudd",
+            Urn = "urn:altinn:accesspackage:innbygger-stotte-tilskudd",
+            Code = "innbygger-stotte-tilskudd",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
@@ -5967,7 +5967,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 540a25ff-6fd9-4574-8573-249c1779d253
-    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger:tilgangsstyring-privatperson
+    /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-tilgangsstyring-privatperson
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Gir mulighet til å gi videre tilganger for privatperson som man selv har mottatt.
     /// </remarks>
@@ -5975,10 +5975,10 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Tilgangsstyring privatperson",
+            Name = "Tilgangsstyring for privatperson",
             Description = "Gir mulighet til å gi videre tilganger for privatperson som man selv har mottatt.",
-            Urn = "urn:altinn:accesspackage:innbygger:tilgangsstyring-privatperson",
-            Code = "tilgangsstyring-privatperson",
+            Urn = "urn:altinn:accesspackage:innbygger-tilgangsstyring-privatperson",
+            Code = "innbygger-tilgangsstyring-privatperson",
             IsDelegable = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
