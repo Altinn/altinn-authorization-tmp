@@ -109,6 +109,12 @@ public static class ConstantLookup
     public static bool TryGetById<TType>(Type constantsClass, Guid id, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
         where TType : class, IEntityId
     {
+        if (id == Guid.Empty)
+        {
+            result = null;
+            return false;
+        }
+
         var byId = GetById<TType>(constantsClass);
         if (byId.TryGetValue(id, out var value))
         {
@@ -126,6 +132,12 @@ public static class ConstantLookup
     public static bool TryGetByName<TType>(Type constantsClass, string name, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
         where TType : class, IEntityId, IEntityName
     {
+        if (string.IsNullOrEmpty(name))
+        {
+            result = null;
+            return false;
+        }
+
         var byName = GetByName<TType>(constantsClass);
         if (byName.TryGetValue(name, out var value))
         {
@@ -143,6 +155,12 @@ public static class ConstantLookup
     public static bool TryGetByName<TType>(Type constantsClass, string name, bool includeTranslations, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
         where TType : class, IEntityId, IEntityName
     {
+        if (string.IsNullOrEmpty(name))
+        {
+            result = null;
+            return false;
+        }
+
         var byName = GetByName<TType>(constantsClass);
         if (byName.TryGetValue(name, out var value))
         {
@@ -170,6 +188,12 @@ public static class ConstantLookup
     public static bool TryGetByUrn<TType>(Type constantsClass, string urn, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
         where TType : class, IEntityId, IEntityUrn
     {
+        if (string.IsNullOrEmpty(urn))
+        {
+            result = null;
+            return false;
+        }
+
         var byUrn = GetByUrn<TType>(constantsClass);
         if (byUrn.TryGetValue(urn, out var value))
         {
@@ -187,6 +211,12 @@ public static class ConstantLookup
     public static bool TryGetByCode<TType>(Type constantsClass, string code, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
         where TType : class, IEntityId, IEntityCode
     {
+        if (string.IsNullOrEmpty(code))
+        {
+            result = null;
+            return false;
+        }
+
         var byCode = GetByCode<TType>(constantsClass);
         if (byCode.TryGetValue(code, out var value))
         {

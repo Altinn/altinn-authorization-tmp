@@ -12,10 +12,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 public static class RoleConstants
 {
     /// <summary>
-    /// Try to get <see cref="Role"/> by any identifier: Code, Name, Urn or Guid.
+    /// Try to get <see cref="Role"/> by any identifier: Code, Urn or Guid.
     /// </summary>
     /// <returns></returns>
-    public static bool TryGetByAllIdentifiers(string value, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
+    public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
     {
         if (TryGetByCode(value, out result))
         {

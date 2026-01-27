@@ -50,7 +50,7 @@ public class ClientDelegationService(
         var roleFilter = new List<Guid>();
         foreach (var r in roles)
         {
-            if (RoleConstants.TryGetByAllIdentifiers(r, out var role))
+            if (RoleConstants.TryGetByAll(r, out var role))
             {
                 roleFilter.Add(role.Id);
             }
