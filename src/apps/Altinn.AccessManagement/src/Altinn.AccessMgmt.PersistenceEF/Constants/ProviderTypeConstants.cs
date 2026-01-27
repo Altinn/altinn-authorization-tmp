@@ -14,7 +14,6 @@ public static class ProviderTypeConstants
     /// <summary>
     /// Try to get <see cref="ProviderType"/> by any identifier: Name or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<ProviderType>? result)
     {
         if (TryGetByName(value, out result))

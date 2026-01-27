@@ -14,7 +14,6 @@ public static class EntityVariantConstants
     /// <summary>
     /// Try to get <see cref="Package"/> by any identifier: Name or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<EntityVariant>? result)
     {
         if (TryGetByName(value, out result))

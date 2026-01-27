@@ -14,7 +14,6 @@ public static class PackageConstants
     /// <summary>
     /// Try to get <see cref="Package"/> by any identifier: Urn, Name or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
     {
         if (TryGetByUrn(value, out result))

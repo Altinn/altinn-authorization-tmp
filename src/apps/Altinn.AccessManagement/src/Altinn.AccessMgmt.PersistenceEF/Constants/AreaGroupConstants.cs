@@ -14,7 +14,6 @@ public static class AreaGroupConstants
     /// <summary>
     /// Try to get <see cref="AreaGroup"/> by any identifier: Name or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
     {
         if (TryGetByName(value, out result))

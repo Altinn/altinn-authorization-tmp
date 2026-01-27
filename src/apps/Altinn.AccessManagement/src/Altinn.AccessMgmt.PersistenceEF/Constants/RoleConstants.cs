@@ -14,7 +14,6 @@ public static class RoleConstants
     /// <summary>
     /// Try to get <see cref="Role"/> by any identifier: Code, Urn or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
     {
         if (TryGetByCode(value, out result))

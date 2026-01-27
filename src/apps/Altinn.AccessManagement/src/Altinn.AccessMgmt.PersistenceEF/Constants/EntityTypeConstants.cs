@@ -14,7 +14,6 @@ public static class EntityTypeConstants
     /// <summary>
     /// Try to get <see cref="EntityType"/> by any identifier: Name or Guid.
     /// </summary>
-    /// <returns></returns>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<EntityType>? result, bool includeTranslations = false)
     {
         if (TryGetByName(value, includeTranslations, out result))
