@@ -8,10 +8,11 @@ public sealed class FeatureFlagLegacyRoutingPolicy : ILegacyRoutingPolicy
 
     public FeatureFlagLegacyRoutingPolicy(IFeatureManager features) => _features = features;
 
-    public Task<bool> UseLegacyAsync(string methodName, string space = "DelegationMetadata", string key = "Legacy", CancellationToken ct = default) => _features.IsEnabledAsync($"{space}.{methodName}.{key}");
+    public Task<bool> IsEnabledAsync(string feature, string key = "Enabled", string space = "AccessManagement", CancellationToken ct = default) 
+        => _features.IsEnabledAsync($"{space}.{feature}.{key}");
 }
 
 public interface ILegacyRoutingPolicy
 {
-    Task<bool> UseLegacyAsync(string methodName, string space = "DelegationMetadata", string key = "Legacy", CancellationToken ct = default);
+    Task<bool> IsEnabledAsync(string feature, string key = "Enabled", string space = "AccessManagement", CancellationToken ct = default);
 }

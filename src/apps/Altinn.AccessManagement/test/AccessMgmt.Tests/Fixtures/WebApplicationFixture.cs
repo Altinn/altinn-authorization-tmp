@@ -34,26 +34,8 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
                ["PostgreSQLSettings:EnableDBConnection"] = "true",
                ["Logging:LogLevel:*"] = "Error",
                ["FeatureManagement:AccessManagement.MigrationDbEf"] = "true",
-
-               ["FeatureManagement:DelegationMetadata.InsertDelegation.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.InsertInstanceDelegation.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetAllLatestInstanceDelegationChanges.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetAllCurrentReceivedInstanceDelegations.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetLastInstanceDelegationChange.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.InsertInstanceDelegation.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.InsertMultipleInstanceDelegations.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetActiveInstanceDelegations.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetCurrentDelegationChange.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetAllCurrentAppDelegationChanges.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetAllCurrentResourceRegistryDelegationChanges.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetOfferedResourceRegistryDelegations.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetOfferedDelegations.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetReceivedResourceRegistryDelegationsForCoveredByPartys.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetReceivedResourceRegistryDelegationsForCoveredByUser.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetResourceRegistryDelegationChanges.Legacy"] = "true",
-               ["FeatureManagement:DelegationMetadata.GetAllDelegationChangesForAuthorizedParties.Legacy"] = "true",
-
-
+               ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "false",
+               ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "false",
                ["RunIntegrationTests"] = "true",
            });
 
