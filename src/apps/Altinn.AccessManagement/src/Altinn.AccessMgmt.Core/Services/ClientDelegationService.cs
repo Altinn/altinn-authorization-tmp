@@ -26,8 +26,7 @@ public class ClientDelegationService(
                 ToIds = [],
                 FromIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
-                OnlyUniqueResults = true,
-                IncludeDelegation = true,
+                IncludeDelegation = false,
                 IncludePackages = true,
 
                 IncludeSubConnections = false,
@@ -72,8 +71,7 @@ public class ClientDelegationService(
                 FromIds = [],
                 RoleIds = roleFilter.Count > 0 ? roleFilter : null,
 
-                OnlyUniqueResults = true,
-                IncludeDelegation = true,
+                IncludeDelegation = false,
                 IncludePackages = true,
 
                 IncludeSubConnections = false,
@@ -187,7 +185,6 @@ public class ClientDelegationService(
                 FromIds = [fromId],
                 ViaIds = [partyId],
                 ViaRoleIds = [RoleConstants.Agent],
-                OnlyUniqueResults = true,
                 IncludeDelegation = true,
                 IncludePackages = true,
 
@@ -214,7 +211,6 @@ public class ClientDelegationService(
                 ViaIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
-                OnlyUniqueResults = true,
                 IncludeDelegation = true,
                 IncludePackages = true,
 
