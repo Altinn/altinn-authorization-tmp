@@ -1,4 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -7,6 +9,7 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
+using Altinn.Platform.Register.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -23,17 +26,20 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         public AltinnAdminRoleSyncService(
             IAltinnSblBridge role,
             IServiceProvider serviceProvider,
-            ILogger<AltinnClientRoleSyncService> logger
+            ILogger<AltinnClientRoleSyncService> logger,
+            IAMPartyService partyService
         )
         {
             _role = role;
             _serviceProivider = serviceProvider;
             _logger = logger;
+            _partyService = partyService;
         }
 
         private readonly IAltinnSblBridge _role;
         private readonly ILogger<AltinnClientRoleSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
+        private readonly IAMPartyService _partyService;
 
         public async Task SyncAdminRoles(ILease lease, CancellationToken cancellationToken)
         {
@@ -76,7 +82,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             batchId.ToString(),
                             item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                        List<string> packageUrns = GetAdminPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
+                        MinimalParty fromParty = await _partyService.GetByUid(item.FromPartyUuid, cancellationToken);
+
+                        List<string> packageUrns = GetAdminPackageFromRoleTypeCode(item.RoleTypeCode, fromParty.PartyType, cancellationToken);
 
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
@@ -152,14 +160,23 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
         }
 
-        private List<string> GetAdminPackageFromRoleTypeCode(string roleTypeCode, CancellationToken cancellationToken = default)
+        private List<string> GetAdminPackageFromRoleTypeCode(string roleTypeCode, Guid entityType, CancellationToken cancellationToken = default)
         {
             List<string> packages = new List<string>();
+            bool usePersonalPackage = entityType == EntityTypeConstants.Person.Id ? true : false;
 
             switch (roleTypeCode.ToUpper())
             {
                 case "ADMAI":
-                    packages.Add("urn:altinn:accesspackage:tilgangsstyrer");
+                    if (usePersonalPackage)
+                    {
+                        packages.Add("urn:altinn:accesspackage:person:tilgangsstyrer");
+                    }
+                    else
+                    {
+                        packages.Add("urn:altinn:accesspackage:tilgangsstyrer");
+                    }
+                    
                     break;
                 case "APIADM":
                     packages.Add("urn:altinn:accesspackage:maskinporten-administrator");

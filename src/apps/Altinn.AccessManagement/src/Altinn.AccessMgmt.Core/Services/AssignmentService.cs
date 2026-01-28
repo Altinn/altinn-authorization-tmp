@@ -830,6 +830,14 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
             errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
         }
 
+        var instances = await db.AssignmentInstances.AsNoTracking()
+            .Where(t => t.AssignmentId == assignmentId)
+            .ToListAsync(cancellationToken);
+        if (resources != null && resources.Any())
+        {
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
+        }
+
         var delegationsFromAssingment = await db.Delegations.AsNoTracking()
             .Where(t => t.FromId == assignmentId)
             .ToListAsync(cancellationToken);
