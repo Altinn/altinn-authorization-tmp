@@ -48,6 +48,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         var seen = new HashSet<string>();
         var ingestEntities = new List<Entity>();
+        var ingestAssignments = new List<Assignment>();
 
         using var scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -75,12 +76,20 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
 
+                var assignment = item switch
+                {
+                    Person person => MapAssignmentForPerson(person),
+                    SelfIdentifiedUser selfIdentifiedUser => MapAssignmentForSelfIdentifiedUser(selfIdentifiedUser),
+                    _ => null
+                };
+
                 if (!seen.Add(entity.RefId))
                 {
                     await Flush();
                 }
 
                 ingestEntities.Add(entity);
+                ingestAssignments.Add(assignment);
             }
 
             var flushed = await Flush();
@@ -99,8 +108,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         async Task<int> Flush()
         {
-            var batchId = Guid.CreateVersion7();
-            var batchName = batchId.ToString("N");
+            var batchIdEntity = Guid.CreateVersion7();
+            var batchNameEntity = batchIdEntity.ToString("N");
+
+            var batchIdAssignment = Guid.CreateVersion7();
+            var batchNameAssignment = batchIdAssignment.ToString("N");
 
             if (ingestEntities.Count == 0)
             {
@@ -109,23 +121,31 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             try
             {
-                _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchName);
+                _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchNameEntity);
 
-                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchIdEntity, cancellationToken);
+                var ingestedAssignments = await ingestService.IngestTempData(ingestAssignments, batchIdAssignment, cancellationToken);
 
                 if (ingestedEntities != ingestEntities.Count)
                 {
                     _logger.LogWarning("Ingest partial complete: Entity ({0}/{1})", ingestedEntities, ingestEntities.Count);
                 }
 
-                var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, matchColumns: ["id"], ignoreColumns: ["parentid"], cancellationToken);
+                if (ingestedAssignments != ingestAssignments.Count)
+                {
+                    _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingestedAssignments, ingestAssignments.Count);
+                }
+
+                var mergedEntities = await ingestService.MergeTempData<Entity>(batchIdEntity, options, matchColumns: ["id"], ignoreColumns: ["parentid"], cancellationToken);
+                var mergedAssignments = await ingestService.MergeTempData<Assignment>(batchIdAssignment, options, matchColumns: ["fromid","toid","roleid"], ignoreColumns: null, cancellationToken);
+
 
                 _logger.LogInformation("Merge complete: Entity ({0}/{1})", mergedEntities, ingestedEntities);
                 return mergedEntities;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to ingest and/or merge Entity batch {0} to db", batchName);
+                _logger.LogError(ex, "Failed to ingest and/or merge Entity batch {0} to db", batchNameEntity);
                 await Task.Delay(2000, cancellationToken);
             }
             finally
@@ -151,6 +171,26 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         });
 
         return entity;
+    }
+
+    private Assignment MapAssignmentForPerson(Person person)
+    {
+        return new Assignment()
+        {
+            FromId = person.Uuid,
+            ToId = person.Uuid,
+            RoleId = RoleConstants.PrivatePerson.Id
+        };
+    }
+
+    private Assignment MapAssignmentForSelfIdentifiedUser(SelfIdentifiedUser user)
+    {
+        return new Assignment()
+        {
+            FromId = user.Uuid,
+            ToId = user.Uuid,
+            RoleId = RoleConstants.SelfRegisteredUser.Id
+        };
     }
 
     private Entity MapOrganization(Organization organization)
