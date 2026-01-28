@@ -21,6 +21,14 @@ public class RoleConstantsTest
     }
 
     [Fact]
+    public void TryGetByAll_WithExistingLegacyCode_ReturnsTrue()
+    {
+        bool result = RoleConstants.TryGetByAll(RoleConstants.ManagingDirector.Entity.LegacyCode, out var role);
+        Assert.True(result);
+        Assert.Equal(role, RoleConstants.ManagingDirector);
+    }
+
+    [Fact]
     public void TryGetByAll_WithExistingId_ReturnsTrue()
     {
         bool result = RoleConstants.TryGetByAll(RoleConstants.Agent.Id.ToString(), out var role);
