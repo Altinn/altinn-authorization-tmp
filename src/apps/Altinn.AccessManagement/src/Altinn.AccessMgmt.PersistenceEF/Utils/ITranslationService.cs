@@ -51,12 +51,4 @@ public interface ITranslationService
     /// <param name="allowPartial">If true, returns partial translation when some fields cannot be translated.</param>
     /// <returns>The translated collection.</returns>
     ValueTask<IEnumerable<T>> TranslateCollectionAsync<T>(IEnumerable<T> sources, string languageCode, bool allowPartial = true);
-
-    /// <summary>
-    /// Inserts a new translation entry or updates an existing one in the database.
-    /// </summary>
-    /// <param name="translationEntry">The translation entry to insert or update.</param>
-    /// <param name="cancellationToken">Cancellation token for the async operation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task UpsertTranslationAsync(TranslationEntry translationEntry, CancellationToken cancellationToken = default);
 }

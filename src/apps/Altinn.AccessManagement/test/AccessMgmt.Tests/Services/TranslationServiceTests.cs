@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -27,7 +29,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
 
         _db = new AppDbContext(options);
         _cache = new MemoryCache(new MemoryCacheOptions());
-        _translationService = new TranslationService(_db, _cache);
+        _translationService = new TranslationService(_db, _cache, NullLogger<TranslationService>.Instance);
     }
 
     #region Norwegian Bokmål (Base Language) Tests
@@ -423,98 +425,6 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
     #endregion
 
     #region Database Fallback Tests
-
-    [Fact]
-    public async Task UpsertTranslationAsync_AddsNewTranslation()
-    {
-        // Arrange
-        var customId = Guid.NewGuid();
-        var translationEntry = new TranslationEntry
-        {
-            Id = customId,
-            Type = "TestType",
-            LanguageCode = "eng",
-            FieldName = "Name",
-            Value = "Test Translation"
-        };
-
-        // Act
-        await _translationService.UpsertTranslationAsync(translationEntry);
-
-        // Assert
-        var saved = await _db.TranslationEntries
-            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name");
-        Assert.NotNull(saved);
-        Assert.Equal("Test Translation", saved.Value);
-    }
-
-    [Fact]
-    public async Task UpsertTranslationAsync_UpdatesExistingTranslation()
-    {
-        // Arrange
-        var customId = Guid.NewGuid();
-        var translationEntry = new TranslationEntry
-        {
-            Id = customId,
-            Type = "TestType",
-            LanguageCode = "eng",
-            FieldName = "Name",
-            Value = "Original"
-        };
-
-        await _translationService.UpsertTranslationAsync(translationEntry);
-
-        // Update the value
-        translationEntry.Value = "Updated";
-
-        // Act
-        await _translationService.UpsertTranslationAsync(translationEntry);
-
-        // Assert
-        var saved = await _db.TranslationEntries
-            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name");
-        Assert.NotNull(saved);
-        Assert.Equal("Updated", saved.Value);
-    }
-
-    #endregion
-
-    #region Performance Tests
-
-    [Fact]
-    public async Task TranslateAsync_SecondCall_UsesCachedData()
-    {
-        // Arrange - Add a custom translation to database
-        var customId = Guid.NewGuid();
-        var translationEntry = new TranslationEntry
-        {
-            Id = customId,
-            Type = "RoleDto",
-            LanguageCode = "eng",
-            FieldName = "Name",
-            Value = "Cached Translation"
-        };
-        await _translationService.UpsertTranslationAsync(translationEntry);
-
-        var role = new RoleDto
-        {
-            Id = customId,
-            Name = "Original"
-        };
-
-        // Act - First call (should query database) - Using normalized language code
-        var result1 = await _translationService.TranslateAsync(role, "eng");
-        
-        // Reset the object
-        role.Name = "Original";
-        
-        // Second call (should use cache)
-        var result2 = await _translationService.TranslateAsync(role, "eng");
-
-        // Assert
-        Assert.Equal("Cached Translation", result1.Name);
-        Assert.Equal("Cached Translation", result2.Name);
-    }
 
     #endregion
 }
