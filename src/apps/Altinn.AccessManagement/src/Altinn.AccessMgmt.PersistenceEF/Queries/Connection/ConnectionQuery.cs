@@ -39,7 +39,12 @@ public class ConnectionQuery(AppDbContext db)
             }
 
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
-                ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter, !delayChildNesting, !delayFromFilter) : BuildBaseQueryFromOthers(db, filter)
+                ? useNewQuery ? BuildBaseQueryFromOthersNew(
+                    db,
+                    filter,
+                    filter.IncludeSubConnections && !delayChildNesting,
+                    !filter.IncludeSubConnections || !delayFromFilter)
+                : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
             var result = baseQuery.Select(ToDtoEmpty).ToList();
@@ -82,7 +87,14 @@ public class ConnectionQuery(AppDbContext db)
 
             if (filter.EnrichEntities || filter.ExcludeDeleted)
             {
-                result = await EnrichEntities(result, filter.ExcludeDeleted, direction, filter, delayChildNesting, delayFromFilter, ct);
+                result = await EnrichEntities(
+                    result,
+                    filter.ExcludeDeleted,
+                    direction,
+                    filter,
+                    filter.IncludeSubConnections && delayChildNesting,
+                    filter.IncludeSubConnections && delayFromFilter,
+                    ct);
             }
 
             return result;
@@ -100,7 +112,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
-            var baseQuery = BuildBaseQueryFromOthersNew(db, filter, true, true);
+            var baseQuery = BuildBaseQueryFromOthersNew(db, filter, filter.IncludeSubConnections, true);
             var queryString = baseQuery.ToQueryString();
 
             var query = EnrichFromEntities(filter, baseQuery);
