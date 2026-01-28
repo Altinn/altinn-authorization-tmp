@@ -12,10 +12,28 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 public static class RoleConstants
 {
     /// <summary>
-    /// Try to get <see cref="Role"/> by name.
+    /// Try to get <see cref="Role"/> by any identifier: Code, Name, Urn or Guid.
     /// </summary>
-    public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
-        => ConstantLookup.TryGetByName(typeof(RoleConstants), name, out result);
+    /// <returns></returns>
+    public static bool TryGetByAllIdentifiers(string value, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
+    {
+        if (TryGetByCode(value, out result))
+        {
+            return true;
+        }
+
+        if (TryGetByUrn(value, out result))
+        {
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var roleGuid) && TryGetById(roleGuid, out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Try to get <see cref="Role"/> using Guid.
@@ -70,7 +88,7 @@ public static class RoleConstants
             IsKeyRole = false,
             IsAssignable = true,
             IsAvailableForServiceOwners = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(
@@ -171,7 +189,7 @@ public static class RoleConstants
             Urn = "urn:altinn:role:hovedadministrator",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn3,
             IsAvailableForServiceOwners = false,
         },
@@ -209,7 +227,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "ados",
             LegacyUrn = "urn:altinn:rolecode:ados",
@@ -246,7 +264,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:nestleder",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "nest",
             LegacyUrn = "urn:altinn:rolecode:nest",
@@ -282,7 +300,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontorfelleskapmedlem",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "ktrf",
             LegacyUrn = "urn:altinn:rolecode:ktrf",
@@ -319,7 +337,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "orgl",
             LegacyUrn = "urn:altinn:rolecode:orgl",
@@ -356,7 +374,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:saerskilt-oppdelt-enhet",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "opmv",
             LegacyUrn = "urn:altinn:rolecode:opmv",
@@ -393,7 +411,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:daglig-leder",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "dagl",
             LegacyUrn = "urn:altinn:rolecode:dagl",
@@ -429,7 +447,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:deltaker-delt-ansvar",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "dtpr",
             LegacyUrn = "urn:altinn:rolecode:dtpr",
@@ -465,7 +483,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:innehaver",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "innh",
             LegacyUrn = "urn:altinn:rolecode:innh",
@@ -501,7 +519,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:deltaker-fullt-ansvar",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "dtso",
             LegacyUrn = "urn:altinn:rolecode:dtso",
@@ -537,7 +555,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:varamedlem",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "vara",
             LegacyUrn = "urn:altinn:rolecode:vara",
@@ -574,7 +592,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:observator",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "obs",
             LegacyUrn = "urn:altinn:rolecode:obs",
@@ -611,7 +629,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:styremedlem",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "medl",
             LegacyUrn = "urn:altinn:rolecode:medl",
@@ -647,7 +665,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:styreleder",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "lede",
             LegacyUrn = "urn:altinn:rolecode:lede",
@@ -683,7 +701,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:personlige-konkurs",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "kenk",
             LegacyUrn = "urn:altinn:rolecode:kenk",
@@ -720,7 +738,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:norsk-representant",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "repr",
             LegacyUrn = "urn:altinn:rolecode:repr",
@@ -756,7 +774,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontaktperson",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "kont",
             LegacyUrn = "urn:altinn:rolecode:kont",
@@ -792,7 +810,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontaktperson-nuf",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "knuf",
             LegacyUrn = "urn:altinn:rolecode:knuf",
@@ -828,7 +846,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:bestyrende-reder",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "best",
             LegacyUrn = "urn:altinn:rolecode:best",
@@ -864,7 +882,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:eierkommune",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "eikm",
             LegacyUrn = "urn:altinn:rolecode:eikm",
@@ -901,7 +919,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:bostyrer",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "bobe",
             LegacyUrn = "urn:altinn:rolecode:bobe",
@@ -937,7 +955,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:helseforetak",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "hlse",
             LegacyUrn = "urn:altinn:rolecode:hlse",
@@ -974,7 +992,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:revisor",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "revi",
             LegacyUrn = "urn:altinn:rolecode:revi",
@@ -1010,7 +1028,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:forretningsforer",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "ffør",
             LegacyUrn = "urn:altinn:rolecode:ffør",
@@ -1046,7 +1064,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:komplementar",
             IsKeyRole = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "komp",
             LegacyUrn = "urn:altinn:rolecode:komp",
@@ -1082,7 +1100,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:konkursdebitor",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "kdeb",
             LegacyUrn = "urn:altinn:rolecode:kdeb",
@@ -1119,7 +1137,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kirkelig-fellesraad",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "kirk",
             LegacyUrn = "urn:altinn:rolecode:kirk",
@@ -1156,7 +1174,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:hovedforetak",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "hfor",
             LegacyUrn = "urn:altinn:rolecode:hfor",
@@ -1193,7 +1211,7 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:regnskapsforer",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             LegacyCode = "regn",
             LegacyUrn = "urn:altinn:rolecode:regn",
@@ -2699,7 +2717,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0212",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2733,7 +2751,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0236",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2767,7 +2785,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0237",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2801,7 +2819,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0238",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2835,7 +2853,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0239",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2869,7 +2887,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0240",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -2903,7 +2921,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0241",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -3009,7 +3027,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:a0278",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -3043,7 +3061,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:ADMAI",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
 
             IsAvailableForServiceOwners = false,
@@ -3078,7 +3096,7 @@ public static class RoleConstants
             Urn = "urn:altinn:rolecode:APIADM",
             IsKeyRole = false,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             IsAvailableForServiceOwners = true,
         },
@@ -3108,7 +3126,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Er regnskapsforeradresse for",
             Code = "regnskapsforeradressat",
@@ -3145,7 +3163,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Signatur",
             Code = "signerer",
@@ -3181,7 +3199,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Skal fusjoneres med",
             Code = "fusjonsovertaker",
@@ -3218,7 +3236,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Skal fisjoneres med",
             Code = "fisjonsovertaker",
@@ -3255,7 +3273,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Har som registreringsenhet BEDR",
             Code = "hovedenhet",
@@ -3292,7 +3310,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Har som registreringsenhet AAFY",
             Code = "ikke-naeringsdrivende-hovedenhet",
@@ -3329,7 +3347,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Prokura i fellesskap",
             Code = "prokurist-fellesskap",
@@ -3366,7 +3384,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Prokura hver for seg",
             Code = "prokurist-hver-for-seg",
@@ -3403,7 +3421,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Prokura",
             Code = "prokurist",
@@ -3440,7 +3458,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Er revisoradresse for",
             Code = "revisoradressat",
@@ -3477,7 +3495,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Sameiere",
             Code = "sameier",
@@ -3514,7 +3532,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Signatur i fellesskap",
             Code = "signerer-fellesskap",
@@ -3551,7 +3569,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Signatur hver for seg",
             Code = "signerer-hver-for-seg",
@@ -3588,7 +3606,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Kontaktperson i kommune",
             Code = "kontaktperson-kommune",
@@ -3624,7 +3642,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Kontaktperson i Ad",
             Code = "kontaktperson-ados",
@@ -3659,7 +3677,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Leder i partiets utovende organ",
             Code = "parti-organ-leder",
@@ -3696,7 +3714,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Elektronisk signeringsrett",                  /*"ESGR"*/
             Code = "elektronisk-signeringsrettig",
@@ -3732,7 +3750,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Tildeler av elektronisk signeringsrett",      /*"ETDL"*/
             Code = "elektronisk-signeringsrett-tildeler",
@@ -3769,7 +3787,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Inngår i foretaksgruppe med",                 /*"FGRP"*/
             Code = "foretaksgruppe-med",
@@ -3805,7 +3823,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Har som datter i konsern",                    /*"KDAT"*/
             Code = "konsern-datter",
@@ -3841,7 +3859,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Har som grunnlag for konsern",                /*"KGRL"*/
             Code = "konsern-grunnlag",
@@ -3877,7 +3895,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Har som mor i konsern",                       /*"KMOR"*/
             Code = "konsern-mor",
@@ -3913,7 +3931,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Forestår avvikling",                          /*"AVKL"*/
             Code = "forestaar-avvikling",
@@ -3950,7 +3968,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Inngår i felles- registrering",               /*"FEMV"*/
             Code = "felles-registrert-med",
@@ -3987,7 +4005,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Er frivillig registrert utleiebygg for",      /*"UTBG"*/
             Code = "utleiebygg",
@@ -4024,7 +4042,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Er virksomhet drevet i fellesskap av",        /*"VIFE"*/
             Code = "virksomhet-fellesskap-drifter",
@@ -4061,7 +4079,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Utfyller MVA-oppgaver",                       /*"MVAU"*/
             Code = "mva-utfyller",
@@ -4097,7 +4115,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Signerer MVA-oppgaver",                       /*"MVAG"*/
             Code = "mva-signerer",
@@ -4134,7 +4152,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Revisor registrert i revisorregisteret",      /*"SREVA"*/
             Code = "kontaktperson-revisor",
@@ -4170,7 +4188,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Stifter",                                     /*"STFT"*/
             Code = "stifter",
@@ -4206,7 +4224,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Varamedlem i partiets utovende organ",        /*"HVAR"*/
             Code = "parti-organ-varamedlem",
@@ -4243,7 +4261,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Nestleder i partiets utovende organ",         /*"HNST"*/
             Code = "parti-organ-nestleder",
@@ -4280,7 +4298,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
             Name = "Styremedlem i partiets utovende organ",       /*"HMDL"*/
             Code = "parti-organ-styremedlem",
@@ -4316,7 +4334,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Skatteforhold for privatpersoner",
             Code = "a0282",
@@ -4349,7 +4367,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post ",
             Code = "a0286",
@@ -4372,7 +4390,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post - oppvekst og utdanning",
             Code = "a0287",
@@ -4405,7 +4423,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post - administrasjon",
             Code = "a0288",
@@ -4438,7 +4456,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Algetestdata",
             Code = "a0293",
@@ -4471,7 +4489,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Transportløyvegaranti",
             Code = "a0294",
@@ -4504,7 +4522,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Revisorattesterer",
             Code = "a0298",
@@ -4537,7 +4555,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Programmeringsgrensesnitt for NUF (API)",
             Code = "apiadmnuf",
@@ -4570,7 +4588,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Revisorattesterer - MVA kompensasjon",
             Code = "attst",
@@ -4603,7 +4621,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Konkursbo tilgangsstyring",
             Code = "boadm",
@@ -4626,7 +4644,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Konkursbo lesetilgang",
             Code = "bobel",
@@ -4659,7 +4677,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Konkursbo skrivetilgang",
             Code = "bobes",
@@ -4692,7 +4710,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "ECKEYROLE",
             Code = "eckeyrole",
@@ -4725,7 +4743,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Eksplisitt tjenestedelegering",
             Code = "ektj",
@@ -4758,7 +4776,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Godkjenning av bedriftshelsetjeneste",
             Code = "gkbht",
@@ -4791,7 +4809,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Hovedadministrator",
             Code = "hadm",
@@ -4824,7 +4842,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Økokrim rapportering",
             Code = "hvask",
@@ -4857,7 +4875,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Klientadministrator",
             Code = "kladm",
@@ -4890,7 +4908,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Kommunale tjenester",
             Code = "komab",
@@ -4923,7 +4941,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Lønn og personalmedarbeider",
             Code = "loper",
@@ -4946,7 +4964,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Parallell signering",
             Code = "pasig",
@@ -4979,7 +4997,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Patent, varemerke og design",
             Code = "pavad",
@@ -5012,7 +5030,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Privatperson begrensede rettigheter",
             Code = "priut",
@@ -5045,7 +5063,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Regnskapsmedarbeider",
             Code = "regna",
@@ -5078,7 +5096,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Revisorrettighet",
             Code = "revai",
@@ -5111,7 +5129,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post fra kommunen",
             Code = "sens01",
@@ -5144,7 +5162,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Signerer av Samordnet registermelding",
             Code = "signe",
@@ -5177,7 +5195,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Begrenset signeringsrettighet",
             Code = "siskd",
@@ -5210,7 +5228,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Helse-, sosial- og velferdstjenester",
             Code = "uihtl",
@@ -5243,7 +5261,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Samferdsel",
             Code = "uiluf",
@@ -5276,7 +5294,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Utfyller/Innsender",
             Code = "utinn",
@@ -5309,7 +5327,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Energi, miljø og klima",
             Code = "utomr",
@@ -5342,7 +5360,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Hovedrolle for sensitive tjeneste",
             Code = "sens",
