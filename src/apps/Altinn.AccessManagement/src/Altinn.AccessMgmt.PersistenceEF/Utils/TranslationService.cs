@@ -193,6 +193,48 @@ public class TranslationService : ITranslationService
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task UpsertTranslationAsync(TranslationEntry translationEntry, CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Upserting translation for {Type} with ID {Id}, field {FieldName} in language {LanguageCode}", 
+            translationEntry.Type, translationEntry.Id, translationEntry.FieldName, translationEntry.LanguageCode);
+        
+        var entry = await _db.TranslationEntries.SingleOrDefaultAsync(
+            t => t.Id == translationEntry.Id && 
+                 t.Type == translationEntry.Type && 
+                 t.LanguageCode == translationEntry.LanguageCode && 
+                 t.FieldName == translationEntry.FieldName, 
+            cancellationToken);
+
+        if (entry == null)
+        {
+            _logger.LogInformation("Creating new translation entry for {Type} with ID {Id}, field {FieldName} in language {LanguageCode}", 
+                translationEntry.Type, translationEntry.Id, translationEntry.FieldName, translationEntry.LanguageCode);
+            _db.Add(translationEntry);
+        }
+        else
+        {
+            _logger.LogDebug("Updating existing translation entry for {Type} with ID {Id}, field {FieldName} in language {LanguageCode}", 
+                translationEntry.Type, translationEntry.Id, translationEntry.FieldName, translationEntry.LanguageCode);
+            entry.Value = translationEntry.Value;
+            _db.Update(entry);
+        }
+
+        // Translation entries are not audited entities, but AppDbContext.SaveChangesAsync requires audit values.
+        // Provide system default audit values for translation management operations.
+        var systemAudit = new AuditValues(
+            changedBy: Guid.Empty,  // System operation
+            changedBySystem: Guid.Empty  // Translation service
+        );
+        
+        await _db.SaveChangesAsync(systemAudit, cancellationToken);
+
+        // Invalidate cache
+        var cacheKey = $"translation_{translationEntry.Type}_{translationEntry.Id}_{translationEntry.LanguageCode}";
+        _cache.Remove(cacheKey);
+        _logger.LogDebug("Invalidated cache for key: {CacheKey}", cacheKey);
+    }
+
     /// <summary>
     /// Attempts to retrieve translations from Constants classes (RoleConstants, PackageConstants, etc.)
     /// </summary>
