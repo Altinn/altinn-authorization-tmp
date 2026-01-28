@@ -9,26 +9,26 @@ namespace Altinn.AccessMgmt.Core.Validation;
 /// <summary>
 /// A utility class that provides methods for validating data using a series of rules.
 /// </summary>
-public static class PackageValidation
+public static class ResourceValidation
 {
-    internal static RuleExpression PackageExists(Package package, string packageName, string paramName = "package") => () =>
+    internal static RuleExpression ResourceExists(Resource resource, string resourceName, string paramName = "resource") => () =>
     {
-        if (package is { })
+        if (resource is { })
         {
             return null;
         }
 
         return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.PackageNotExists, $"QUERY/{paramName}", [new("packages", $"No packages with name '{packageName}' do not exists.")]
+            errors.Add(ValidationErrors.ResourceNotExists, $"QUERY/{paramName}", [new("resources", $"No resources with name '{resourceName}' exists.")]
         );
     };
 
-    internal static RuleExpression AuthorizePackageAssignment(IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, string paramName = "packageId") => () =>
+    internal static RuleExpression AuthorizeResourceAssignment(IEnumerable<ResourceDto.ResourceDtoCheck> resources, string paramName = "resource") => () =>
     {
-        if (packages.Any(p => !p.Result))
+        if (resources.Any(p => !p.Result))
         {
-            var packageUrns = string.Join(", ", packages.Select(p => p.Package.Urn));
-            return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("packages", $"User is not allowed to assign the following package(s) '{packageUrns}'.")]);
+            var resourceKeys = string.Join(", ", resources.Select(p => p.Resource.RefId));
+            return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("resources", $"User is not allowed to assign the following resource(s) '{resourceKeys}'.")]);
         }
 
         return null;
