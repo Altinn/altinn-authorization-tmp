@@ -126,24 +126,24 @@
         public const string SCOPE_ENDUSER_CLIENTDELEGATION_WRITE = "altinn:clientdelegations.write";
 
         /// <summary>
-        /// Enduser scope giving access to read operations on received connections 
+        /// Enduser scope giving access to read operations on received connections aka from others
         /// </summary>
-        public const string SCOPE_ENDUSER_CONNECTIONS_RECEIVED_READ = "altinn:enduser/connections:fromothers.read"; // ToDo: naming, why u so hard?
+        public const string SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ = "altinn:accmgmt/enduser:connections:from-others.read";
 
         /// <summary>
-        /// Enduser scope giving access to write operations on received connections
+        /// Enduser scope giving access to write operations on received connections aka from others
         /// </summary>
-        public const string SCOPE_ENDUSER_CONNECTIONS_RECEIVED_WRITE = "altinn:enduser/connections:fromothers.write"; // ToDo: naming, why u so hard?
+        public const string SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE = "altinn:accmgmt/enduser:connections:from-others.write";
 
         /// <summary>
-        /// Enduser scope giving access to read operations on provided connections 
+        /// Enduser scope giving access to read operations on provided connections aka to others
         /// </summary>
-        public const string SCOPE_ENDUSER_CONNECTIONS_PROVIDED_READ = "altinn:enduser/connections:toothers.read"; // ToDo: naming, why u so hard?
+        public const string SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ = "altinn:accmgmt/enduser:connections:to-others.read";
 
         /// <summary>
-        /// Enduser scope giving access to write operations on provided connections
+        /// Enduser scope giving access to write operations on provided connections aka to others
         /// </summary>
-        public const string SCOPE_ENDUSER_CONNECTIONS_PROVIDED_WRITE = "altinn:enduser/connections:toothers.write"; // ToDo: naming, why u so hard?
+        public const string SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE = "altinn:accmgmt/enduser:connections:to-others.write";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
