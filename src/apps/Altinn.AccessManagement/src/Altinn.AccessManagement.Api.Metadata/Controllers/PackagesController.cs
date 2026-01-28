@@ -1,5 +1,8 @@
-﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+﻿using Altinn.AccessManagement.Api.Metadata.Translation;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,34 +16,66 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers;
 public class PackagesController : ControllerBase
 {
     private readonly IPackageService packageService;
+    private readonly ITranslationService translationService;
 
     /// <summary>
     /// Initialiserer en ny instans av <see cref="PackagesController"/>.
     /// </summary>
     /// <param name="packageService">Service for håndtering av access packages.</param>
-    public PackagesController(IPackageService packageService)
+    /// <param name="translationService">Service for translation of entities.</param>
+    public PackagesController(IPackageService packageService, ITranslationService translationService)
     {
         this.packageService = packageService;
+        this.translationService = translationService;
     }
 
     /// <summary>
     /// Søker etter access packages basert på et søkeord.
     /// </summary>
     /// <param name="term">Søketerm.</param>
-    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>
+    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>   
     /// <param name="searchInResources">Søk i ressurs verdier</param>
+    /// <param name="typeName">Package for type (e.g. Organization, Person)</param>
     /// <returns>Liste over søkeresultater.</returns>
     [Route("search")]
     [HttpGet]
-    public async Task<ActionResult<SearchObject<PackageDto>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false)
+    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false, [FromQuery] string? typeName = null)
     {
-        var res = await packageService.Search(term, resourceProviderCode, searchInResources);
+        Guid? typeId = null;
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            if (!EntityTypeConstants.TryGetByName(name: typeName, includeTranslations: true, out var type))
+            {
+                return Problem($"Type '{typeName}' not found. Try organization, organisasjon or person");
+            }
+
+            typeId = type.Id;
+        }
+
+        var res = await packageService.Search(term, resourceProviderCode, searchInResources, typeId);
         if (res == null || !res.Any())
         {
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate each search result
+        var translatedResults = new List<SearchObject<PackageDto>>();
+        foreach (var searchResult in res)
+        {
+            var translatedDto = await searchResult.Object.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+            
+            translatedResults.Add(new SearchObject<PackageDto> 
+            { 
+                Object = translatedDto,
+                Score = searchResult.Score,
+                Fields = searchResult.Fields
+            });
+        }
+
+        return Ok(translatedResults);
     }
 
     /// <summary>
@@ -57,7 +92,13 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate the area groups
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -74,7 +115,13 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate the area groups
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -92,7 +139,13 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(res);
+        // Translate the area group
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -118,7 +171,13 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate the areas
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -135,8 +194,14 @@ public class PackagesController : ControllerBase
         {
             return NotFound();
         }
+
+        // Translate the area
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
         
-        return Ok(res);
+        return Ok(translated);
     }
 
     /// <summary>
@@ -162,7 +227,13 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate the packages
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -180,7 +251,13 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(res);
+        // Translate the package
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -198,7 +275,13 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(res);
+        // Translate the package
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 
     /// <summary>
@@ -224,6 +307,12 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        return Ok(res);
+        // Translate the resources
+        var translated = await res.TranslateAsync(
+            translationService,
+            this.GetLanguageCode(),
+            this.AllowPartialTranslation());
+
+        return Ok(translated);
     }
 }

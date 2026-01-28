@@ -205,6 +205,12 @@ module "appsettings" {
 
   feature_flags = [
     {
+      name        = "AccessMgmt.Enduser.Controller.ClientDelegation"
+      description = "Specifies Client Delegation should be enabled in enduser API."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"
       description = "(EF) Specifies if the AuthorizedParty service re-write to run on mainly EF-services should be used in dependency injection. Will need recycle of pods to take effect."
       label       = "${lower(var.environment)}-access-management"
@@ -281,6 +287,18 @@ module "appsettings" {
       description = "Specifies if feature access connections are enabled for internal usage."
       label       = "${lower(var.environment)}-access-management"
       value       = true
+    },
+    {
+      name        = "AccessManagement.InstanceDelegation.EF"
+      description = "Specifies if singlerights instaince delegation should use ef."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.ResourceDelegation.EF"
+      description = "Specifies if singlerights resource delegation should use ef."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
     },
   ]
   providers = {

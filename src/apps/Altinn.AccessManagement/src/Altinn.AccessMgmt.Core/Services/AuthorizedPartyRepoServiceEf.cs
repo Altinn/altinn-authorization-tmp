@@ -1,18 +1,17 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery connectionQuery, IServiceProvider _serviceProvider) : IAuthorizedPartyRepoServiceEf
+public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery connectionQuery) : IAuthorizedPartyRepoServiceEf
 {
     /// <inheritdoc/>
     public async Task<Entity?> GetEntity(Guid id, CancellationToken ct = default) =>
@@ -96,37 +95,6 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<PackagePermissionDto>> GetPackagesFromOthers(
-        Guid toId,
-        IEnumerable<Guid>? fromIds = null,
-        IEnumerable<Guid>? packageIds = null,
-        AuthorizedPartiesFilters filters = null,
-        CancellationToken ct = default)
-    {
-        var connections = await connectionQuery.GetConnectionsAsync(
-        new ConnectionQueryFilter()
-        {
-            ToIds = [toId],
-            FromIds = fromIds != null ? fromIds.ToList() : null,
-            PackageIds = packageIds != null ? packageIds.ToList() : null,
-            EnrichEntities = true,
-            IncludeSubConnections = true,
-            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles ?? true,
-            IncludeMainUnitConnections = true,
-            IncludeDelegation = true,
-            IncludePackages = filters?.IncludeAccessPackages ?? false,
-            IncludeResource = false,
-            EnrichPackageResources = false,
-            ExcludeDeleted = false
-        },
-        ConnectionQueryDirection.FromOthers,
-        useNewQuery: true,
-        ct);
-
-        return DtoMapper.ConvertPackages(connections);
-    }
-
-    /// <inheritdoc />
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthers(
         Guid toId,
         AuthorizedPartiesFilters filters = null,
@@ -137,13 +105,13 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
         {
             ToIds = [toId],
             FromIds = filters?.PartyFilter?.Keys.ToList(),
-            PackageIds = null,
-            EnrichEntities = true,
+            PackageIds = filters?.PackageFilter?.Keys.ToList(),
+            EnrichEntities = false,
             IncludeSubConnections = true,
-            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles ?? true,
+            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True ? true : false,
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
-            IncludePackages = filters?.IncludeAccessPackages ?? false,
+            IncludePackages = filters?.IncludeAccessPackages == true || filters?.PackageFilter?.Keys?.Count > 0,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false
@@ -167,7 +135,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             PackageIds = null,
             EnrichEntities = false,
             IncludeSubConnections = true,
-            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles ?? true,
+            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True ? true : false,
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
             IncludePackages = filters?.IncludeAccessPackages ?? true,
@@ -178,42 +146,49 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
         ct);
     }
 
-    public async Task<Dictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<List<Resource>> GetResources(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
     {
         return await db.Resources
             .AsNoTracking()
             .Include(res => res.Provider)
             .WhereIf(providerCode != null, res => res.Provider.Code == providerCode)
-            .WhereIf(resourceIds != null, res => resourceIds.Contains(res.RefId))
-            .ToDictionaryAsync(res => res.RefId, res => res, ct);
+            .WhereIf(resourceIds != null, res => resourceIds!.Contains(res.RefId))
+            .ToListAsync(ct);
     }
 
-    public async Task<Dictionary<Guid, IEnumerable<RoleResource>>> GetRoleResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<List<RoleResource>> GetRoleResources(
+        string? providerCode = null,
+        IEnumerable<string>? resourceIds = null,
+        CancellationToken ct = default)
     {
-        var roleResources = await db.RoleResources
+        return await db.RoleResources
             .AsNoTracking()
             .Include(rr => rr.Role)
             .Include(rr => rr.Resource)
-            .ThenInclude(res => res.Provider)
+                .ThenInclude(res => res.Provider)
             .WhereIf(providerCode != null, rr => rr.Resource.Provider.Code == providerCode)
-            .WhereIf(resourceIds != null, rr => resourceIds.Contains(rr.Resource.RefId))
+            .WhereIf(resourceIds != null, rr => resourceIds!.Contains(rr.Resource.RefId))
             .ToListAsync(ct);
-
-        return roleResources.GroupBy(rr => rr.RoleId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
     }
 
-    public async Task<Dictionary<Guid, IEnumerable<PackageResource>>> GetPackageResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<List<PackageResource>> GetPackageResources(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
     {
-        var packageResources = await db.PackageResources
+        return await db.PackageResources
             .AsNoTracking()
             .Include(pr => pr.Resource)
-            .ThenInclude(res => res.Provider)
+                .ThenInclude(res => res.Provider)
             .WhereIf(providerCode != null, pr => pr.Resource.Provider.Code == providerCode)
             .WhereIf(resourceIds != null, pr => resourceIds.Contains(pr.Resource.RefId))
             .ToListAsync(ct);
+    }
 
-        return packageResources.GroupBy(pr => pr.PackageId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
+    public async Task<List<RolePackage>> GetRolePackages(IEnumerable<Guid>? roleIds = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default)
+    {
+        return await db.RolePackages
+            .AsNoTracking()
+            .Include(rp => rp.Role)
+            .WhereIf(roleIds != null, rp => roleIds.Contains(rp.RoleId))
+            .WhereIf(packageIds != null, rp => packageIds.Contains(rp.PackageId))
+            .ToListAsync(ct);
     }
 }

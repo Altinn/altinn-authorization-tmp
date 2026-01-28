@@ -4,7 +4,6 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +29,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AssignmentPackage> AssignmentPackages => Set<AssignmentPackage>();
 
     public DbSet<AssignmentResource> AssignmentResources => Set<AssignmentResource>();
+
+    public DbSet<AssignmentInstance> AssignmentInstances => Set<AssignmentInstance>();
 
     public DbSet<Delegation> Delegations => Set<Delegation>();
 
@@ -60,8 +61,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ResourceType> ResourceTypes => Set<ResourceType>();
 
     public DbSet<Role> Roles => Set<Role>();
-
-    public DbSet<RoleLookup> RoleLookups => Set<RoleLookup>();
 
     public DbSet<RoleMap> RoleMaps => Set<RoleMap>();
 
@@ -113,8 +112,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AuditRole> AuditRoles => Set<AuditRole>();
 
-    public DbSet<AuditRoleLookup> AuditRoleLookups => Set<AuditRoleLookup>();
-
     public DbSet<AuditRoleMap> AuditRoleMaps => Set<AuditRoleMap>();
 
     public DbSet<AuditRolePackage> AuditRolePackages => Set<AuditRolePackage>();
@@ -134,12 +131,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactResource>(new CompactResourceConfiguration());
 
-        // modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration2());
+        /*
+        modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
+        modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
+        modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());
+        modelBuilder.ApplyConfiguration<CompactResource>(new CompactResourceConfiguration());
+        
+        modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration2());
+        */
     }
 
     private void ApplyAuditConfiguration(ModelBuilder modelBuilder)
@@ -149,6 +149,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditAssignment>(new AuditAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentPackage>(new AuditAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentResource>(new AuditAssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AuditAssignmentInstance>(new AuditAssignmentInstanceConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegation>(new AuditDelegationConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationPackage>(new AuditDelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationResource>(new AuditDelegationResourceConfiguration());
@@ -164,7 +165,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditResource>(new AuditResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditResourceType>(new AuditResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditRole>(new AuditRoleConfiguration());
-        modelBuilder.ApplyConfiguration<AuditRoleLookup>(new AuditRoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleMap>(new AuditRoleMapConfiguration());
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
@@ -179,6 +179,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<Assignment>(new AssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentPackage>(new AssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentResource>(new AssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AssignmentInstance>(new AssignmentInstanceConfiguration());
         modelBuilder.ApplyConfiguration<Delegation>(new DelegationConfiguration());
         modelBuilder.ApplyConfiguration<DelegationPackage>(new DelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<DelegationResource>(new DelegationResourceConfiguration());
@@ -195,7 +196,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());
-        modelBuilder.ApplyConfiguration<RoleLookup>(new RoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<RoleMap>(new RoleMapConfiguration());
         modelBuilder.ApplyConfiguration<RolePackage>(new RolePackageConfiguration());
         modelBuilder.ApplyConfiguration<RoleResource>(new RoleResourceConfiguration());
@@ -209,11 +209,57 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default) =>
         SaveChangesAsync(AuditAccessor.AuditValues ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
 
+    public async Task<int> SaveChangesAsync(AuditValues audit, CancellationToken ct = default) =>
+        await SaveChangesAsync(audit, acceptAllChangesOnSuccess: true, ct);
+
+    public override int SaveChanges() =>
+        SaveChanges(AuditAccessor.AuditValues ?? throw MissingAudit());
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
+        SaveChanges(AuditAccessor.AuditValues ?? throw MissingAudit(), acceptAllChangesOnSuccess);
+
+    public int SaveChanges(AuditValues audit) => SaveChanges(audit, acceptAllChangesOnSuccess: true);
+
     private static InvalidOperationException MissingAudit() =>
         new("AuditContextAccessor.Current is null. Set it in your controller/service OR call SaveChangesAsync(BaseAudit audit, ...) explicitly.");
 
-    public async Task<int> SaveChangesAsync(AuditValues audit, CancellationToken ct = default) =>
-        await SaveChangesAsync(audit, acceptAllChangesOnSuccess: true, ct);
+    public int SaveChanges(AuditValues audit, bool acceptAllChangesOnSuccess)
+    {
+        ValidateAuditValues(audit);
+
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
+        {
+            if (entry.Entity is BaseAudit auditable)
+            {
+                auditable.SetAuditValues(audit);
+            }
+        }
+
+        var currentTransaction = Database.CurrentTransaction is not null;
+        using var transaction = currentTransaction ? null : Database.BeginTransaction();
+
+        try
+        {
+            Database.ExecuteSqlInterpolated(AuditContextSql(audit));
+            var affected = base.SaveChanges(acceptAllChangesOnSuccess);
+
+            if (transaction is { })
+            {
+                transaction.Commit();
+            }
+
+            return affected;
+        }
+        catch
+        {
+            if (transaction is { })
+            {
+                transaction.Rollback();
+            }
+
+            throw;
+        }
+    }
 
     public async Task<int> SaveChangesAsync(AuditValues audit, bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
@@ -235,7 +281,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             await Database.ExecuteSqlInterpolatedAsync(AuditContextSql(audit), cancellationToken);
             var affected = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
-            if (transaction is not null)
+            if (transaction is { })
             {
                 await transaction.CommitAsync(cancellationToken);
             }
@@ -244,7 +290,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
         catch
         {
-            if (transaction is not null)
+            if (transaction is { })
             {
                 await transaction.RollbackAsync(cancellationToken);
             }

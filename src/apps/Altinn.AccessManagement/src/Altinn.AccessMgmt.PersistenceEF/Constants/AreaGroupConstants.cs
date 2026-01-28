@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
@@ -11,6 +11,24 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 /// </summary>
 public static class AreaGroupConstants
 {
+    /// <summary>
+    /// Try to get <see cref="AreaGroup"/> by any identifier: Name or Guid.
+    /// </summary>
+    public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
+    {
+        if (TryGetByName(value, out result))
+        {
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var areaGroupGuid) && TryGetById(areaGroupGuid, out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Try to get <see cref="AreaGroup"/> by name.
     /// </summary>
@@ -50,7 +68,7 @@ public static class AreaGroupConstants
         {
             Name = "Allment",
             Description = "Standard gruppe",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -74,7 +92,7 @@ public static class AreaGroupConstants
         {
             Name = "Bransje",
             Description = "For bransje grupper",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -98,12 +116,36 @@ public static class AreaGroupConstants
         {
             Name = "Særskilt",
             Description = "For de sære tingene",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Special")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Særskilt")),
+    };
+
+    /// <summary>
+    /// Represents the Inhabitant group.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 413f99ca-19ca-4124-8470-b0c1dba3d2ee
+    /// - <c>Name:</c> "inhabitant"
+    /// - <c>Description:</c> "For innbyggere"
+    /// - <c>EntityTypeId:</c> Person entity type
+    /// </remarks>
+    public static ConstantDefinition<AreaGroup> Inhabitant { get; } = new ConstantDefinition<AreaGroup>("413f99ca-19ca-4124-8470-b0c1dba3d2ee")
+    {
+        Entity = new()
+        {
+            Name = "Innbygger",
+            Description = "For innbyggere",
+            EntityTypeId = EntityTypeConstants.Person,
+            Urn = null,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Inhabitant")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "innbyggjar")),
     };
 }

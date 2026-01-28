@@ -91,7 +91,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 continue;
                             }
 
-                            int revokes = await assignmentService.RevokeAssignmentPackages(
+                            int revokes = await assignmentService.RevokeImportedAssignmentPackages(
                                 item.FromPartyUuid,
                                 item.ToUserPartyUuid.Value,
                                 packageUrns,
@@ -120,6 +120,16 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 continue;
                             }
 
+                            if (item.PerformedByPartyId != null)
+                            {
+                                _logger.LogWarning(
+                                    "The delegation is performed as a client delegation and should not be imported as a package to A3. FromParty {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
+                                    item.FromPartyUuid,
+                                    item.ToUserPartyUuid,
+                                    string.Join(", ", packageUrns));
+                                continue;
+                            }
+
                             List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
                             if (adds.Count == 0)
                             {
@@ -130,7 +140,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     string.Join(", ", packageUrns));
                             }
                         }
-
                     }
                 }
 

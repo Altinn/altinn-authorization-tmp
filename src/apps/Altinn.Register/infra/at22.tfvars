@@ -15,8 +15,13 @@ db_max_pool_size = 50
 db_compute_sku   = "D2"
 sbl_endpoint     = "https://at22.altinn.cloud/sblbridge/"
 use_pgbouncer    = true
+key_vault_rbac = [{
+  id       = "09e1005e-0934-4a4a-a1f5-0c8583e27088" # Rune
+  rolename = "Key Vault Secrets Officer"
+}]
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
@@ -24,5 +29,8 @@ features = {
   }
   party_import = {
     system_users = true
+    npr = {
+      guardianships = true
+    }
   }
 }

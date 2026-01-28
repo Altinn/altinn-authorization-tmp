@@ -237,7 +237,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task Organization_ShouldExist()
     {
-        var orgType = await _db.EntityTypes.AsNoTracking().SingleAsync(t => t.Id == EntityTypeConstants.Organisation);
+        var orgType = await _db.EntityTypes.AsNoTracking().SingleAsync(t => t.Id == EntityTypeConstants.Organization);
 
         Assert.NotNull(orgType);
         Assert.Equal("Organisasjon", orgType.Name);
@@ -297,19 +297,23 @@ internal static class TestDataSet
         return Entities.First(x => x.Name == name);
     }
 
+    #pragma warning disable IDE0028 // Simplify collection initialization
+    #pragma warning disable SA1401 // Fields should be private
     internal static List<Entity> Entities = new()
+    #pragma warning restore SA1401 // Fields should be private
+    #pragma warning restore IDE0028 // Simplify collection initialization
     {
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), Name = "Baker Johnsen", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-01", ParentId = null, RefId = "ORG-01" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7006-8da4-55c17e07f4d6"), Name = "Baker Johnsen - Oslo", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-01", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-01" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7fb8-915b-c13b5c1c5264"), Name = "Baker Johnsen - Bergen", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-02", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-02" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-72da-afe2-daa4fe116965"), Name = "Baker Johnsen - Kristiansand", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-03", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-03" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-71fa-9a7e-624ca11ebaf7"), Name = "Regnskaperne", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-02", ParentId = null, RefId = "ORG-02" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7127-8101-095fd6ffe7bf"), Name = "Regnskaperne - Oslo", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-02-01", ParentId = Guid.Parse("0195efb8-7c80-71fa-9a7e-624ca11ebaf7"), RefId = "ORG-02-01" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), Name = "Skrik Frisør", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-03", ParentId = null, RefId = "ORG-03" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7225-bf3e-0aab8e9f59c3"), Name = "Skrik Frisør - Byporten", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-03-01", ParentId = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), RefId = "ORG-03-01" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7b40-8415-0c0fe952dd2f"), Name = "Skrik Frisør - CC Vest", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-03-02", ParentId = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), RefId = "ORG-03-02" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-7c46-96b3-b2b1b0b51895"), Name = "Revi", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-04", ParentId = null, RefId = "ORG-04" },
-        new Entity() { Id = Guid.Parse("0195efb8-7c80-713c-b504-84984779378c"), Name = "Revi - Stavanger", TypeId = EntityTypeConstants.Organisation, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-04-01", ParentId = Guid.Parse("0195efb8-7c80-7c46-96b3-b2b1b0b51895"), RefId = "ORG-04-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), Name = "Baker Johnsen", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-01", ParentId = null, RefId = "ORG-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7006-8da4-55c17e07f4d6"), Name = "Baker Johnsen - Oslo", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-01", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7fb8-915b-c13b5c1c5264"), Name = "Baker Johnsen - Bergen", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-02", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-02" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-72da-afe2-daa4fe116965"), Name = "Baker Johnsen - Kristiansand", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-01-03", ParentId = Guid.Parse("0195efb8-7c80-773a-ba5c-d81b5345f4fa"), RefId = "ORG-01-03" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-71fa-9a7e-624ca11ebaf7"), Name = "Regnskaperne", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-02", ParentId = null, RefId = "ORG-02" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7127-8101-095fd6ffe7bf"), Name = "Regnskaperne - Oslo", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-02-01", ParentId = Guid.Parse("0195efb8-7c80-71fa-9a7e-624ca11ebaf7"), RefId = "ORG-02-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), Name = "Skrik Frisør", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-03", ParentId = null, RefId = "ORG-03" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7225-bf3e-0aab8e9f59c3"), Name = "Skrik Frisør - Byporten", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-03-01", ParentId = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), RefId = "ORG-03-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7b40-8415-0c0fe952dd2f"), Name = "Skrik Frisør - CC Vest", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-03-02", ParentId = Guid.Parse("0195efb8-7c80-7fac-9944-8a51f26c2633"), RefId = "ORG-03-02" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7c46-96b3-b2b1b0b51895"), Name = "Revi", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-04", ParentId = null, RefId = "ORG-04" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-713c-b504-84984779378c"), Name = "Revi - Stavanger", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.BEDR, OrganizationIdentifier = "ORG-04-01", ParentId = Guid.Parse("0195efb8-7c80-7c46-96b3-b2b1b0b51895"), RefId = "ORG-04-01" },
 
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7d22-b320-2eed10bc8a84"), Name = "Petter", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "01018412345", RefId = "01018412345", DateOfBirth = DateOnly.Parse("1984-01-01") },
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7414-87e1-3b3b9799161d"), Name = "Gunnar", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "02018412345", RefId = "02018412345", DateOfBirth = DateOnly.Parse("1984-01-02") },
@@ -317,10 +321,11 @@ internal static class TestDataSet
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7d2c-b030-1d1c205d5400"), Name = "Kari", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "04018412345", RefId = "04018412345", DateOfBirth = DateOnly.Parse("1984-01-04") },
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7911-bf6c-67713e9fe4f8"), Name = "William", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "05018412345", RefId = "05018412345", DateOfBirth = DateOnly.Parse("1984-01-05") },
         new Entity() { Id = Guid.Parse("0195efb8-7c80-706b-9e0e-87f73c5b3ed0"), Name = "Terje", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "06018412345", RefId = "06018412345", DateOfBirth = DateOnly.Parse("1984-01-06") },
-
     };
 
+    #pragma warning disable SA1401 // Fields should be private
     internal static List<Assignment> Assignments = new()
+    #pragma warning restore SA1401 // Fields should be private
     {
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7f47-9046-14e33e571f55"), FromId = Entities.First(t => t.Name == "Baker Johnsen").Id, ToId = Entities.First(t => t.Name == "Regnskaperne").Id, RoleId = RoleConstants.Accountant }, // Regnskapsfører
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7c9d-9191-9e6c04c4683c"), FromId = Entities.First(t => t.Name == "Regnskaperne").Id, ToId = Entities.First(t => t.Name == "Petter").Id, RoleId = RoleConstants.ManagingDirector }, // Daglig leder
@@ -340,7 +345,9 @@ internal static class TestDataSet
         return Assignments.First(t => t.FromId == fromEntity.Id && t.ToId == toEntity.Id);
     }
 
+    #pragma warning disable SA1401 // Fields should be private
     internal static List<Delegation> Delegations = new()
+    #pragma warning restore SA1401 // Fields should be private
     {
         new Delegation() { FromId = GetAssignment("Baker Johnsen", "Regnskaperne", RoleConstants.Accountant).Id, ToId = GetAssignment("Regnskaperne", "Gunnar", RoleConstants.Agent).Id, FacilitatorId = GetEntity("Regnskaperne").Id },
         new Delegation() { FromId = GetAssignment("Baker Johnsen", "Regnskaperne", RoleConstants.Accountant).Id, ToId = GetAssignment("Regnskaperne", "Revi", RoleConstants.Auditor).Id, FacilitatorId = GetEntity("Regnskaperne").Id },

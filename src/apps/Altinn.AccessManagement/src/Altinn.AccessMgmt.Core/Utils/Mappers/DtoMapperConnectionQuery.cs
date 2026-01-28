@@ -1,4 +1,6 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -8,10 +10,24 @@ public partial class DtoMapper : IDtoMapper
 {
     public static List<ConnectionDto> ConvertToOthers(IEnumerable<ConnectionQueryExtendedRecord> connections, bool getSingle = false)
     {
+        SortedDictionary<Guid, List<ConnectionQueryExtendedRecord>> viaDict = [];
+        foreach (var connection in connections)
+        {
+            if (connection.ViaId != null && (connection.Reason == ConnectionReason.KeyRole || connection.Reason == ConnectionReason.Delegation))
+            {
+                if (!viaDict.ContainsKey(connection.ViaId.Value))
+                {
+                    viaDict[connection.ViaId.Value] = [];
+                }
+
+                viaDict[connection.ViaId.Value].Add(connection);
+            }
+        }
+
         var result = connections.Where(t => getSingle || (t.Reason != ConnectionReason.KeyRole && t.Reason != ConnectionReason.Delegation)).GroupBy(res => res.ToId).Select(c =>
         {
             var connection = c.First();
-            var subconnections = connections.Where(c => c.ViaId == connection.ToId && (c.Reason == ConnectionReason.KeyRole || c.Reason == ConnectionReason.Delegation));
+            var subconnections = viaDict.ContainsKey(connection.ToId) ? viaDict[connection.ToId] : Enumerable.Empty<ConnectionQueryExtendedRecord>();
             return new ConnectionDto()
             {
                 Party = Convert(connection.To),
@@ -27,10 +43,24 @@ public partial class DtoMapper : IDtoMapper
 
     public static List<ConnectionDto> ConvertFromOthers(IEnumerable<ConnectionQueryExtendedRecord> connections, bool getSingle = false)
     {
+        SortedDictionary<Guid, List<ConnectionQueryExtendedRecord>> viaDict = [];
+        foreach (var connection in connections)
+        {
+            if (connection.ViaId != null && connection.Reason == ConnectionReason.Hierarchy)
+            {
+                if (!viaDict.ContainsKey(connection.ViaId.Value))
+                {
+                    viaDict[connection.ViaId.Value] = [];
+                }
+
+                viaDict[connection.ViaId.Value].Add(connection);
+            }
+        }
+
         var result = connections.Where(t => getSingle || (t.Reason != ConnectionReason.Hierarchy)).GroupBy(res => res.FromId).Select(c =>
         {
             var connection = c.First();
-            var subconnections = connections.Where(c => c.ViaId == connection.FromId && c.Reason == ConnectionReason.Hierarchy);
+            var subconnections = viaDict.ContainsKey(connection.FromId) ? viaDict[connection.FromId] : Enumerable.Empty<ConnectionQueryExtendedRecord>();
             return new ConnectionDto()
             {
                 Party = Convert(connection.From),
@@ -43,7 +73,7 @@ public partial class DtoMapper : IDtoMapper
 
         return result.ToList();
     }
-    
+
     public static List<PackagePermissionDto> ConvertPackages(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var records = res.ToList();
@@ -59,6 +89,49 @@ public partial class DtoMapper : IDtoMapper
                     .Select(ConvertToPermission)
             })
             .ToList();
+    }
+
+    public static List<ResourcePermissionDto> ConvertResources(IEnumerable<AssignmentResource> res)
+    {
+        return res
+        .GroupBy(t => t.Resource)
+        .Select(g => new ResourcePermissionDto
+        {
+            Resource = ConvertCompactResource(g.Key),
+            Permissions = g.Select(t => ConvertToPermission(t.Assignment))
+        })
+        .ToList();
+    }
+
+    public static List<ResourcePermissionDto> ConvertResources(IEnumerable<ConnectionQueryExtendedRecord> res)
+    {
+        var records = res.ToList();
+
+        var resources = records
+            .SelectMany(r => r.Resources)
+            .DistinctBy(p => p.Id)
+            .Select(res => new ResourcePermissionDto
+            {
+                Resource = ConvertCompactResource(res),
+                Permissions = records
+                    .Where(r => r.Resources.Any(p => p.Id == res.Id))
+                    .Select(ConvertToPermission)
+            })
+            .ToList();
+
+        resources.AddRange(records
+            .SelectMany(t => t.Packages)
+            .SelectMany(p => p.Resources)
+            .DistinctBy(r => r.Id)
+            .Select(res => new ResourcePermissionDto
+            {
+                Resource = ConvertCompactResource(res),
+                Permissions = records
+                    .Where(r => r.Resources.Any(p => p.Id == res.Id))
+                    .Select(ConvertToPermission)
+            }));
+
+        return resources;
     }
 
     public static List<ConnectionDto> ConvertSubConnectionsFromOthers(IEnumerable<ConnectionQueryExtendedRecord> res)
@@ -152,5 +225,70 @@ public partial class DtoMapper : IDtoMapper
             Id = resource.Id,
             Name = resource.Name,
         };
+    }
+
+    public static List<AgentDto> ConvertToAgentDto(List<ConnectionQueryExtendedRecord> connections)
+    {
+        var agents = connections.GroupBy(c => c.ToId);
+        var result = new List<AgentDto>();
+
+        foreach (var agent in agents)
+        {
+            var entity = agent.First();
+            var party = Convert(entity.To);
+            var roles = agent.GroupBy(c => c.Role.Id);
+            var roleAccess = new List<AgentDto.AgentRoleAccessPackages>();
+
+            foreach (var role in roles)
+            {
+                var access = new AgentDto.AgentRoleAccessPackages
+                {
+                    Role = ConvertCompactRole(role.First().Role),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
+                };
+
+                roleAccess.Add(access);
+            }
+
+            result.Add(new AgentDto
+            {
+                Agent = party,
+                Access = roleAccess,
+            });
+        }
+
+        return result;
+    }
+
+    public static List<ClientDto> ConvertToClientDto(List<ConnectionQueryExtendedRecord> connections, bool useViaRole = false)
+    {
+        var clients = connections.GroupBy(c => c.FromId);
+        var result = new List<ClientDto>();
+
+        foreach (var client in clients)
+        {
+            var entity = client.First().From;
+            var party = Convert(entity);
+            var roles = client.GroupBy(c => c.Role.Id);
+            var roleAccess = new List<ClientDto.RoleAccessPackages>();
+            foreach (var role in roles)
+            {
+                var access = new ClientDto.RoleAccessPackages
+                {
+                    Role = ConvertCompactRole(useViaRole ? role.First().ViaRole : role.First().Role),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
+                };
+
+                roleAccess.Add(access);
+            }
+
+            result.Add(new ClientDto
+            {
+                Client = party,
+                Access = roleAccess,
+            });
+        }
+
+        return result;
     }
 }

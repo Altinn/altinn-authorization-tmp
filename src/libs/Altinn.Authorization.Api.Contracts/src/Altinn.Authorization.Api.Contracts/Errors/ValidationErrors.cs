@@ -52,7 +52,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor EntityNotExists { get; }
         = _factory.Create(6, $"Entity do not exists.");
-    
+
     /// <summary>
     /// Role is missing.
     /// </summary>
@@ -84,6 +84,12 @@ public static class ValidationErrors
         = _factory.Create(11, $"Package do not exists.");
 
     /// <summary>
+    /// Resource does not exist.
+    /// </summary>
+    public static ValidationErrorDescriptor ResourceNotExists { get; }
+        = _factory.Create(11, $"Resource do not exists.");
+
+    /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor TimeNotInFuture { get; }
@@ -106,7 +112,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidResourceContext { get; }
     = _factory.Create(25, $"Resource context does not match consent request rights");
-    
+
     public static ValidationErrorDescriptor UserNotAuthorized { get; }
     = _factory.Create(26, $"User not authorized for operation.");
 
@@ -121,4 +127,34 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor PackageIsNotAssignableToRecipient { get; }
         = _factory.Create(28, $"One or more packages is not assignable to receipient.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when an invalid Role.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidRole { get; }
+        = _factory.Create(29, $"Invalid Role.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when an invalid package.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPackage { get; }
+        = _factory.Create(30, $"Invalid Package.");
+
+    /// <summary>
+    /// Delegation has active connections.
+    /// </summary>
+    public static ValidationErrorDescriptor DelegationHasActiveConnections { get; }
+        = _factory.Create(31, "The delegation has one or more active access packages associated with it. Set cascade to true to remove the delegation and its active access packages.");
+    
+    /// <summary>
+    /// Delegation has active connections.
+    /// </summary>
+    public static ValidationErrorDescriptor MissingAssignment { get; }
+        = _factory.Create(32, "Assignment of role do not exist.");
+    
+    /// <summary>
+    /// Delegation has active connections.
+    /// </summary>
+    public static ValidationErrorDescriptor PackageIsNotDelegable { get; }
+        = _factory.Create(33, "Package is not delegable.");
 }

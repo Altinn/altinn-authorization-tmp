@@ -17,7 +17,10 @@ public partial class DtoMapper : IDtoMapper
             Urn = obj.Urn,
             Description = obj.Description,
             IsDelegable = obj.IsDelegable,
-            IsAssignable = obj.IsAssignable
+            IsAssignable = obj.IsAssignable,
+            IsResourcePolicyAvailable = obj.IsAvailableForServiceOwners,
+            Area = obj.Area is not null ? Convert(obj.Area) : null,
+            Type = obj.EntityType is not null ? Convert(obj.EntityType) : null
         };
 
     /// <summary>Convert Package (with Area and Resources) to PackageDto.</summary>
@@ -30,7 +33,9 @@ public partial class DtoMapper : IDtoMapper
             Description = obj.Description,
             IsDelegable = obj.IsDelegable,
             IsAssignable = obj.IsAssignable,
+            IsResourcePolicyAvailable = obj.IsAvailableForServiceOwners,
             Area = Convert(area),
+            Type = Convert(obj.EntityType),
             Resources = resources?.Select(r => Convert(r)!).ToList() ?? new()
         };
 
@@ -57,8 +62,9 @@ public partial class DtoMapper : IDtoMapper
             IsKeyRole = obj.IsKeyRole,
             Urn = obj.Urn,
             Provider = Convert(obj.Provider),
-            LegacyRoleCode = null,
-            LegacyUrn = null
+            LegacyRoleCode = obj.LegacyCode,
+            LegacyUrn = obj.LegacyUrn,
+            IsResourcePolicyAvailable = obj.IsAvailableForServiceOwners
         };
 
     /// <summary>Convert AreaGroup to AreaGroupDto.</summary>
@@ -120,9 +126,20 @@ public partial class DtoMapper : IDtoMapper
             Type = Convert(entityVariant.Type)
         };
 
+    /// <summary>Convert EntityVariant to VariantDto.</summary>
+    public static SubTypeDto? ConvertFlat(EntityVariant? entityVariant) =>
+        entityVariant is null ? null : new SubTypeDto
+        {
+            Id = entityVariant.Id,
+            Name = entityVariant.Name,
+            Description = entityVariant.Description,
+            TypeId = entityVariant.TypeId,
+            Type = Convert(entityVariant.Type)
+        };
+
     /// <summary>Convert EntityType to EntityTypeDto.</summary>
-    public static EntityTypeDto? Convert(EntityType? entityType) =>
-        entityType is null ? null : new EntityTypeDto
+    public static TypeDto? Convert(EntityType? entityType) =>
+        entityType is null ? null : new TypeDto
         {
             Id = entityType.Id,
             ProviderId = entityType.ProviderId,

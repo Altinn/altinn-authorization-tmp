@@ -29,10 +29,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAssignmentService, AssignmentService>();
         services.AddScoped<IDelegationService, DelegationService>();
         services.AddScoped<IResourceService, ResourceService>();
+        services.AddScoped<IProviderService, ProviderService>();
         services.AddScoped<IEntityService, EntityService>();
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
+        services.AddScoped<IClientDelegationService, ClientDelegationService>();
 
         if (configuration.GetValue<bool>("FeatureManagement:AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"))
         {
