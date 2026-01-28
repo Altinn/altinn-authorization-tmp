@@ -156,7 +156,7 @@ public static class RoleConstants
             Urn = "urn:altinn:role:supplier",
             IsKeyRole = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(

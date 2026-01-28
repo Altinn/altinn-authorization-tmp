@@ -593,7 +593,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         return result > 0;
     }
 
-    private async Task<bool> UpsertAssignmentInstanceInternal(Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, long delegationChangeId, AuditValues audit, CancellationToken cancellationToken = default)
+    private async Task<bool> UpsertAssignmentInstanceInternal(Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, int delegationChangeId, AuditValues audit, CancellationToken cancellationToken = default)
     {
         var assignment = await db.Assignments.AsNoTracking().SingleAsync(t => t.Id == assignmentId, cancellationToken);
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);

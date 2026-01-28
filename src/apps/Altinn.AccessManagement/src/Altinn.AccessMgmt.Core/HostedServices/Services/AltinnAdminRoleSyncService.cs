@@ -26,14 +26,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         public AltinnAdminRoleSyncService(
             IAltinnSblBridge role,
             IServiceProvider serviceProvider,
-            ILogger<AltinnClientRoleSyncService> logger,
-            IAMPartyService partyService
+            ILogger<AltinnClientRoleSyncService> logger
         )
         {
             _role = role;
             _serviceProivider = serviceProvider;
             _logger = logger;
-            _partyService = partyService;
         }
 
         private readonly IAltinnSblBridge _role;
@@ -75,6 +73,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+                        IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
 
                         AuditValues values = new AuditValues(
                             item.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
@@ -82,7 +81,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             batchId.ToString(),
                             item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                        MinimalParty fromParty = await _partyService.GetByUid(item.FromPartyUuid, cancellationToken);
+                        MinimalParty fromParty = await partyService.GetByUid(item.FromPartyUuid, cancellationToken);
 
                         List<string> packageUrns = GetAdminPackageFromRoleTypeCode(item.RoleTypeCode, fromParty.PartyType, cancellationToken);
 
@@ -170,7 +169,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 case "ADMAI":
                     if (usePersonalPackage)
                     {
-                        packages.Add("urn:altinn:accesspackage:person:tilgangsstyrer");
+                        packages.Add(PackageConstants.AccessManagementPrivatePerson.Entity.Urn);
                     }
                     else
                     {
