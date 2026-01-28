@@ -4818,7 +4818,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til permisjon og oppsigelser i arbeidsforhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> LeaveAndDismissal { get; } = new ConstantDefinition<Package>("7e35f1d3-7477-4cd1-b179-d00613fe36af")
+    public static ConstantDefinition<Package> InnbyggerPermisjonOppsigelse { get; } = new ConstantDefinition<Package>("7e35f1d3-7477-4cd1-b179-d00613fe36af")
     {
         Entity = new()
         {
@@ -4852,7 +4852,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til arbeidsliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> WorkingLife { get; } = new ConstantDefinition<Package>("3ba61d9a-82c3-4542-bd64-0e5e81d983fb")
+    public static ConstantDefinition<Package> InnbyggerArbeidsliv { get; } = new ConstantDefinition<Package>("3ba61d9a-82c3-4542-bd64-0e5e81d983fb")
     {
         Entity = new()
         {
@@ -4886,7 +4886,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondansen knyttet til pensjon. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> InhabitantPension { get; } = new ConstantDefinition<Package>("2a54082f-c15d-4768-9dc6-f284091b8660")
+    public static ConstantDefinition<Package> InnbyggerPensjon { get; } = new ConstantDefinition<Package>("2a54082f-c15d-4768-9dc6-f284091b8660")
     {
         Entity = new()
         {
@@ -4920,7 +4920,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til utdanning. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Education { get; } = new ConstantDefinition<Package>("5a051eb7-34a1-4bd7-bd99-b856231aa586")
+    public static ConstantDefinition<Package> InnbyggerUtdanning { get; } = new ConstantDefinition<Package>("5a051eb7-34a1-4bd7-bd99-b856231aa586")
     {
         Entity = new()
         {
@@ -4954,7 +4954,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til sykefravær. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> InhabitantSickLeave { get; } = new ConstantDefinition<Package>("e54b8f6f-edd3-48a1-8e31-c8ed57087ce8")
+    public static ConstantDefinition<Package> InnbyggerSykefravaer { get; } = new ConstantDefinition<Package>("e54b8f6f-edd3-48a1-8e31-c8ed57087ce8")
     {
         Entity = new()
         {
@@ -4988,7 +4988,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader og sertifisering. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> ApplicationsAndCertification { get; } = new ConstantDefinition<Package>("5d572527-02e1-4e02-b423-c6617a49492f")
+    public static ConstantDefinition<Package> InnbyggerSoknaderSertifisering { get; } = new ConstantDefinition<Package>("5d572527-02e1-4e02-b423-c6617a49492f")
     {
         Entity = new()
         {
@@ -5026,7 +5026,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> ChildrenAndParents { get; } = new ConstantDefinition<Package>("7b333ea2-8fc2-47a6-93c4-dad50d3ef9a6")
+    public static ConstantDefinition<Package> InnbyggerBarnForeldre { get; } = new ConstantDefinition<Package>("7b333ea2-8fc2-47a6-93c4-dad50d3ef9a6")
     {
         Entity = new()
         {
@@ -5060,7 +5060,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> KindergartenSFOAndSchool { get; } = new ConstantDefinition<Package>("8dd91aeb-9f95-4d1c-bcf0-f46bd86a4ef7")
+    public static ConstantDefinition<Package> InnbyggerBarnehageSfoSkole { get; } = new ConstantDefinition<Package>("8dd91aeb-9f95-4d1c-bcf0-f46bd86a4ef7")
     {
         Entity = new()
         {
@@ -5094,7 +5094,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til samliv. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Cohabitation { get; } = new ConstantDefinition<Package>("7778f33d-83b7-4089-93fc-4fbacbf28600")
+    public static ConstantDefinition<Package> InnbyggerSamliv { get; } = new ConstantDefinition<Package>("7778f33d-83b7-4089-93fc-4fbacbf28600")
     {
         Entity = new()
         {
@@ -5128,7 +5128,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> LeisureActivitiesAndOutdoorLife { get; } = new ConstantDefinition<Package>("945e8c72-6f49-4dac-b068-d378b5a6a1a3")
+    public static ConstantDefinition<Package> InnbyggerFritidsaktiviteterFriluftsliv { get; } = new ConstantDefinition<Package>("945e8c72-6f49-4dac-b068-d378b5a6a1a3")
     {
         Entity = new()
         {
@@ -5166,7 +5166,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> ReliefAndSupport { get; } = new ConstantDefinition<Package>("990bc1ff-b0cd-4d87-83ae-861c22c980fd")
+    public static ConstantDefinition<Package> InnbyggerAvlastningStotte { get; } = new ConstantDefinition<Package>("990bc1ff-b0cd-4d87-83ae-861c22c980fd")
     {
         Entity = new()
         {
@@ -5200,7 +5200,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike behandlingstilbud. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Treatment { get; } = new ConstantDefinition<Package>("b35d9354-3247-4182-ade2-4c41d7ba7d4e")
+    public static ConstantDefinition<Package> InnbyggerBehandling { get; } = new ConstantDefinition<Package>("b35d9354-3247-4182-ade2-4c41d7ba7d4e")
     {
         Entity = new()
         {
@@ -5234,7 +5234,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike helsetjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> InhabitantHealthServices { get; } = new ConstantDefinition<Package>("fadbe391-bedb-4487-9514-9d424d7c54e9")
+    public static ConstantDefinition<Package> InnbyggerHelsetjenester { get; } = new ConstantDefinition<Package>("fadbe391-bedb-4487-9514-9d424d7c54e9")
     {
         Entity = new()
         {
@@ -5268,7 +5268,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike pleie- og omsorgstjenester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> CareAndNursing { get; } = new ConstantDefinition<Package>("9e785c27-9769-4e46-bb8c-d106dd8cc5a2")
+    public static ConstantDefinition<Package> InnbyggerPleieOmsorg { get; } = new ConstantDefinition<Package>("9e785c27-9769-4e46-bb8c-d106dd8cc5a2")
     {
         Entity = new()
         {
@@ -5306,7 +5306,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kultur. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Culture { get; } = new ConstantDefinition<Package>("9e65c773-1ac4-46db-8cfc-57c528b66dfb")
+    public static ConstantDefinition<Package> InnbyggerKultur { get; } = new ConstantDefinition<Package>("9e65c773-1ac4-46db-8cfc-57c528b66dfb")
     {
         Entity = new()
         {
@@ -5340,7 +5340,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til idrett. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Sports { get; } = new ConstantDefinition<Package>("b01f84f6-598a-42d6-b675-acf6a612c55d")
+    public static ConstantDefinition<Package> InnbyggerIdrett { get; } = new ConstantDefinition<Package>("b01f84f6-598a-42d6-b675-acf6a612c55d")
     {
         Entity = new()
         {
@@ -5374,7 +5374,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til frivillighet. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> InhabitantSports { get; } = new ConstantDefinition<Package>("449d3027-9ef4-4363-a5a1-99edef3e67ab")
+    public static ConstantDefinition<Package> InnbyggerFrivillighet { get; } = new ConstantDefinition<Package>("449d3027-9ef4-4363-a5a1-99edef3e67ab")
     {
         Entity = new()
         {
@@ -5412,7 +5412,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til patentsøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Patent { get; } = new ConstantDefinition<Package>("ca5faa7e-dbc3-4071-935d-a95bc8fc14e1")
+    public static ConstantDefinition<Package> InnbyggerPatent { get; } = new ConstantDefinition<Package>("ca5faa7e-dbc3-4071-935d-a95bc8fc14e1")
     {
         Entity = new()
         {
@@ -5446,7 +5446,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om ulike sertifiseringer. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Certification { get; } = new ConstantDefinition<Package>("2c721152-d0ef-488b-ab93-a358ce615ae0")
+    public static ConstantDefinition<Package> InnbyggerSertifisering { get; } = new ConstantDefinition<Package>("2c721152-d0ef-488b-ab93-a358ce615ae0")
     {
         Entity = new()
         {
@@ -5480,7 +5480,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til attester. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Attestation { get; } = new ConstantDefinition<Package>("f4bb3f8d-1ecb-4832-a5db-b954a6fd6f70")
+    public static ConstantDefinition<Package> InnbyggerAttester { get; } = new ConstantDefinition<Package>("f4bb3f8d-1ecb-4832-a5db-b954a6fd6f70")
     {
         Entity = new()
         {
@@ -5514,7 +5514,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til design og varemerke. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> DesignAndTrademark { get; } = new ConstantDefinition<Package>("9b2c3171-d95d-42cf-8235-4f9309b311e9")
+    public static ConstantDefinition<Package> InnbyggerDesignVaremerke { get; } = new ConstantDefinition<Package>("9b2c3171-d95d-42cf-8235-4f9309b311e9")
     {
         Entity = new()
         {
@@ -5552,7 +5552,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til straffesaker. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> CriminalCase { get; } = new ConstantDefinition<Package>("420378eb-01ca-4e00-96cd-7b3d5558bdfc")
+    public static ConstantDefinition<Package> InnbyggerStraffesak { get; } = new ConstantDefinition<Package>("420378eb-01ca-4e00-96cd-7b3d5558bdfc")
     {
         Entity = new()
         {
@@ -5586,7 +5586,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til våpenhold. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Weapon { get; } = new ConstantDefinition<Package>("2e9a3f64-5395-4170-a8d7-8fcc8ff2ac36")
+    public static ConstantDefinition<Package> InnbyggerVapen { get; } = new ConstantDefinition<Package>("2e9a3f64-5395-4170-a8d7-8fcc8ff2ac36")
     {
         Entity = new()
         {
@@ -5612,7 +5612,7 @@ public static class PackageConstants
     };
     #endregion
 
-    #region Plan, bygg og eiendom
+    #region Plan, bygg og eiendom (Innbygger)
 
     /// <summary>
     /// Represents the 'Byggesøknad' access package.
@@ -5623,7 +5623,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til byggesøknader. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> InhabitantBuildingApplication { get; } = new ConstantDefinition<Package>("25d9cb75-9f72-4cc6-b57f-0b759f69e3ed")
+    public static ConstantDefinition<Package> InnbyggerByggesoknad { get; } = new ConstantDefinition<Package>("25d9cb75-9f72-4cc6-b57f-0b759f69e3ed")
     {
         Entity = new()
         {
@@ -5657,7 +5657,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bolig og eiendom. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> HousingAndProperty { get; } = new ConstantDefinition<Package>("03c04070-abac-488f-a63b-84d69f2b9b5b")
+    public static ConstantDefinition<Package> InnbyggerBoligEiendom { get; } = new ConstantDefinition<Package>("03c04070-abac-488f-a63b-84d69f2b9b5b")
     {
         Entity = new()
         {
@@ -5684,7 +5684,7 @@ public static class PackageConstants
 
     #endregion
 
-    #region Trafikk og transport
+    #region Trafikk og transport (Innbygger)
 
     /// <summary>
     /// Represents the 'Løyve' access package.
@@ -5695,7 +5695,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til søknader om løyve. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> License { get; } = new ConstantDefinition<Package>("ba9c67da-3696-4c08-8472-542ad9eead94")
+    public static ConstantDefinition<Package> InnbyggerLoyve { get; } = new ConstantDefinition<Package>("ba9c67da-3696-4c08-8472-542ad9eead94")
     {
         Entity = new()
         {
@@ -5729,7 +5729,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til kjøretøy. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Vehicle { get; } = new ConstantDefinition<Package>("67542d17-e2a9-488b-b13b-c83bd8711acd")
+    public static ConstantDefinition<Package> InnbyggerKjoretoy { get; } = new ConstantDefinition<Package>("67542d17-e2a9-488b-b13b-c83bd8711acd")
     {
         Entity = new()
         {
@@ -5763,7 +5763,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til førerkort. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> DrivingLicense { get; } = new ConstantDefinition<Package>("6b35160e-a23d-4377-bd19-8535fc57580f")
+    public static ConstantDefinition<Package> InnbyggerForerkort { get; } = new ConstantDefinition<Package>("6b35160e-a23d-4377-bd19-8535fc57580f")
     {
         Entity = new()
         {
@@ -5801,7 +5801,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til bank og finans. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> BankingAndFinance { get; } = new ConstantDefinition<Package>("54418547-7991-449d-b819-2c4698cb006f")
+    public static ConstantDefinition<Package> InnbyggerBankFinans { get; } = new ConstantDefinition<Package>("54418547-7991-449d-b819-2c4698cb006f")
     {
         Entity = new()
         {
@@ -5835,7 +5835,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til forsikring. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> Insurance { get; } = new ConstantDefinition<Package>("4de3029b-bbab-4c76-96bd-3eb377a2b63f")
+    public static ConstantDefinition<Package> InnbyggerForsikring { get; } = new ConstantDefinition<Package>("4de3029b-bbab-4c76-96bd-3eb377a2b63f")
     {
         Entity = new()
         {
@@ -5869,7 +5869,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til skatteforhold for privatpersoner. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> TaxationForIndividuals { get; } = new ConstantDefinition<Package>("6b4c19ff-250a-4625-a4f7-d9684db537f4")
+    public static ConstantDefinition<Package> InnbyggerSkatteforholdPrivatpersoner { get; } = new ConstantDefinition<Package>("6b4c19ff-250a-4625-a4f7-d9684db537f4")
     {
         Entity = new()
         {
@@ -5903,7 +5903,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til toll og avgift. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> CustomsDutiesAndTaxes { get; } = new ConstantDefinition<Package>("9f077a78-6530-428f-9660-7f61a8262f65")
+    public static ConstantDefinition<Package> InnbyggerTollAvgift { get; } = new ConstantDefinition<Package>("9f077a78-6530-428f-9660-7f61a8262f65")
     {
         Entity = new()
         {
@@ -5937,7 +5937,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til ulike støtte- og tilskuddsordninger. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
-    public static ConstantDefinition<Package> SupportAndGrants { get; } = new ConstantDefinition<Package>("3df18544-67ec-4725-a199-94aa998c5920")
+    public static ConstantDefinition<Package> InnbyggerStotteTilskudd { get; } = new ConstantDefinition<Package>("3df18544-67ec-4725-a199-94aa998c5920")
     {
         Entity = new()
         {
@@ -5962,6 +5962,10 @@ public static class PackageConstants
         ),
     };
 
+    #endregion
+
+    #region Administratorrettigheter (Innbygger)
+
     /// <summary>
     /// Represents the 'Tilgangsstyring for privatperson' access package.
     /// </summary>
@@ -5971,7 +5975,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Gir mulighet til å gi videre tilganger for privatperson som man selv har mottatt.
     /// </remarks>
-    public static ConstantDefinition<Package> AccessManagementPrivatePerson { get; } = new ConstantDefinition<Package>("540a25ff-6fd9-4574-8573-249c1779d253")
+    public static ConstantDefinition<Package> InnbyggerTilgangsstyringPrivatperson { get; } = new ConstantDefinition<Package>("540a25ff-6fd9-4574-8573-249c1779d253")
     {
         Entity = new()
         {
