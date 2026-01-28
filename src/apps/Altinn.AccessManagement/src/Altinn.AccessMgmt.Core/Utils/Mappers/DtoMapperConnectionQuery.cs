@@ -91,6 +91,49 @@ public partial class DtoMapper : IDtoMapper
             .ToList();
     }
 
+    public static List<ResourcePermissionDto> ConvertResources(IEnumerable<AssignmentResource> res)
+    {
+        return res
+        .GroupBy(t => t.Resource)
+        .Select(g => new ResourcePermissionDto
+        {
+            Resource = ConvertCompactResource(g.Key),
+            Permissions = g.Select(t => ConvertToPermission(t.Assignment))
+        })
+        .ToList();
+    }
+
+    public static List<ResourcePermissionDto> ConvertResources(IEnumerable<ConnectionQueryExtendedRecord> res)
+    {
+        var records = res.ToList();
+
+        var resources = records
+            .SelectMany(r => r.Resources)
+            .DistinctBy(p => p.Id)
+            .Select(res => new ResourcePermissionDto
+            {
+                Resource = ConvertCompactResource(res),
+                Permissions = records
+                    .Where(r => r.Resources.Any(p => p.Id == res.Id))
+                    .Select(ConvertToPermission)
+            })
+            .ToList();
+
+        resources.AddRange(records
+            .SelectMany(t => t.Packages)
+            .SelectMany(p => p.Resources)
+            .DistinctBy(r => r.Id)
+            .Select(res => new ResourcePermissionDto
+            {
+                Resource = ConvertCompactResource(res),
+                Permissions = records
+                    .Where(r => r.Resources.Any(p => p.Id == res.Id))
+                    .Select(ConvertToPermission)
+            }));
+
+        return resources;
+    }
+
     public static List<ConnectionDto> ConvertSubConnectionsFromOthers(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var result = res.GroupBy(res => res.FromId).Select(c =>
@@ -217,7 +260,7 @@ public partial class DtoMapper : IDtoMapper
         return result;
     }
 
-    public static List<ClientDto> ConvertToClientDto(List<ConnectionQueryExtendedRecord> connections)
+    public static List<ClientDto> ConvertToClientDto(List<ConnectionQueryExtendedRecord> connections, bool useViaRole = false)
     {
         var clients = connections.GroupBy(c => c.FromId);
         var result = new List<ClientDto>();
@@ -232,7 +275,7 @@ public partial class DtoMapper : IDtoMapper
             {
                 var access = new ClientDto.RoleAccessPackages
                 {
-                    Role = ConvertCompactRole(role.First().Role),
+                    Role = ConvertCompactRole(useViaRole ? role.First().ViaRole : role.First().Role),
                     Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
                 };
 

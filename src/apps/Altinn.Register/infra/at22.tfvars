@@ -21,6 +21,7 @@ key_vault_rbac = [{
 }]
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
@@ -28,5 +29,8 @@ features = {
   }
   party_import = {
     system_users = true
+    npr = {
+      guardianships = true
+    }
   }
 }

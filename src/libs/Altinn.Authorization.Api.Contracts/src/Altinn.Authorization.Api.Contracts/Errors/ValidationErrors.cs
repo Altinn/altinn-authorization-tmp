@@ -84,6 +84,12 @@ public static class ValidationErrors
         = _factory.Create(11, $"Package do not exists.");
 
     /// <summary>
+    /// Resource does not exist.
+    /// </summary>
+    public static ValidationErrorDescriptor ResourceNotExists { get; }
+        = _factory.Create(11, $"Resource do not exists.");
+
+    /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor TimeNotInFuture { get; }
@@ -145,4 +151,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor MissingAssignment { get; }
         = _factory.Create(32, "Assignment of role do not exist.");
+    
+    /// <summary>
+    /// Delegation has active connections.
+    /// </summary>
+    public static ValidationErrorDescriptor PackageIsNotDelegable { get; }
+        = _factory.Create(33, "Package is not delegable.");
 }

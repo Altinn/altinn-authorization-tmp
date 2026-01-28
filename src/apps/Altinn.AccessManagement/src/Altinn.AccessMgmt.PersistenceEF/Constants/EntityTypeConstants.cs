@@ -12,10 +12,34 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 public static class EntityTypeConstants
 {
     /// <summary>
+    /// Try to get <see cref="EntityType"/> by any identifier: Name or Guid.
+    /// </summary>
+    public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<EntityType>? result, bool includeTranslations = false)
+    {
+        if (TryGetByName(value, includeTranslations, out result))
+        {
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var entityTypeGuid) && TryGetById(entityTypeGuid, out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Try to get <see cref="EntityType"/> by name.
     /// </summary>
     public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<EntityType>? result)
         => ConstantLookup.TryGetByName(typeof(EntityTypeConstants), name, out result);
+
+    /// <summary>
+    /// Try to get <see cref="EntityType"/> by name.
+    /// </summary>
+    public static bool TryGetByName(string name, bool includeTranslations, [NotNullWhen(true)] out ConstantDefinition<EntityType>? result)
+        => ConstantLookup.TryGetByName(typeof(EntityTypeConstants), name, includeTranslations, out result);
 
     /// <summary>
     /// Try to get <see cref="EntityType"/> using Guid.
