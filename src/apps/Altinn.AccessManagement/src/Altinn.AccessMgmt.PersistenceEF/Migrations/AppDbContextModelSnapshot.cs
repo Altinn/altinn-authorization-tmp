@@ -954,9 +954,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("IdPortenEmailIdentifier")
                         .HasColumnType("text")
-                        .HasColumnName("email");
+                        .HasColumnName("idportenemailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -2119,9 +2119,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("IdPortenEmailIdentifier")
                         .HasColumnType("text")
-                        .HasColumnName("email");
+                        .HasColumnName("idportenemailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")

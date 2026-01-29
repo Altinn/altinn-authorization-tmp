@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260128143148_FeatureEpostSelfidentifedSupport")]
-    partial class FeatureEpostSelfidentifedSupport
+    [Migration("20260129091211_FeatureIdportenEpost")]
+    partial class FeatureIdportenEpost
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -957,9 +957,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("IdPortenEmailIdentifier")
                         .HasColumnType("text")
-                        .HasColumnName("email");
+                        .HasColumnName("idportenemailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -2122,9 +2122,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("IdPortenEmailIdentifier")
                         .HasColumnType("text")
-                        .HasColumnName("email");
+                        .HasColumnName("idportenemailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")

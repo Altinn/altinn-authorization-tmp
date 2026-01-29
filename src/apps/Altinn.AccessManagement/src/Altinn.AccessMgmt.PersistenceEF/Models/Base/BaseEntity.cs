@@ -38,7 +38,7 @@ public class BaseEntity : BaseAudit, IEntityId, IEntityName
     /// <summary>
     /// Email. Used for ID-porten email login identification
     /// </summary>
-    public string Email { get; set; }
+    public string IdPortenEmailIdentifier { get; set; }
 
     /// <summary>
     /// Parent identifier
