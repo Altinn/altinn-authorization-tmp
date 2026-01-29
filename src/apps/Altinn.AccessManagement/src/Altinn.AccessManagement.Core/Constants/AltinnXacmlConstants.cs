@@ -1,4 +1,4 @@
-namespace Altinn.AccessManagement.Core.Constants
+﻿namespace Altinn.AccessManagement.Core.Constants
 {
     /// <summary>
     /// Altinn specific XACML constants used for urn identifiers and attributes
@@ -85,6 +85,26 @@ namespace Altinn.AccessManagement.Core.Constants
             /// Role Code attribute match indentifier 
             /// </summary>
             public const string RoleAttribute = "urn:altinn:rolecode";
+
+            /// <summary>
+            /// External CCR Role Code attribute match indentifier 
+            /// </summary>
+            public const string ExternalCcrRoleAttribute = "urn:altinn:external-role:ccr";
+
+            /// <summary>
+            /// External CCR Role Code attribute match indentifier 
+            /// </summary>
+            public const string ExternalCraRoleAttribute = "urn:altinn:external-role:cra";
+
+            /// <summary>
+            /// Access package for organisations attribute match indentifier 
+            /// </summary>
+            public const string AccessPackageAttribute = "urn:altinn:accesspackage";
+
+            /// <summary>
+            /// Access package for organisations attribute match indentifier 
+            /// </summary>
+            public const string AccessPackagePersonAttribute = "urn:altinn:accesspackage:innbygger";
 
             /// <summary>
             /// Resource Registry attribute match indentifier 

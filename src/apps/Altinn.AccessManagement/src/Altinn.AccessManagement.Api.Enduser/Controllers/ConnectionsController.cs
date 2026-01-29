@@ -1,8 +1,8 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
@@ -16,6 +16,7 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -29,7 +30,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 public class ConnectionsController(
     IConnectionService ConnectionService,
     IUserProfileLookupService UserProfileLookupService,
-    IEntityService EntityService) : ControllerBase
+    IEntityService EntityService,
+    IResourceService ResourceService) : ControllerBase
 {
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
@@ -478,26 +480,25 @@ public class ConnectionsController(
     /// Delegation check of resources, for which resources the authenticated user has permission to assign to others on behalf of the specified party.
     /// </summary>
     [HttpGet("resources/delegationcheck")]
-    [FeatureGate("connections/resources")]
+    ////[FeatureGate("connections/resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<PaginatedResult<ResourceCheckDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
     {
-        async Task<Result<IEnumerable<ResourceCheckDto>>> CheckResourceInternal()
-        {
-            return await Task.FromResult(new Result<IEnumerable<ResourceCheckDto>>(Enumerable.Empty<ResourceCheckDto>())); // ToDo: Implement when resource service is ready
-        }
+        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+        int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
 
-        var result = await CheckResourceInternal();
+        var result = await ResourceService.DelegationCheck(authenticatedUserUuid, authenticatedUserId, authenticationLevel, party, resourceId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        return Ok(result.Value);
     }
 }

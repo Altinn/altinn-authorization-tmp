@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
@@ -57,6 +58,18 @@ public interface IConnectionService
     /// </summary>
     /// <returns></returns>
     Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves extended connection information records for the specified source, target, and resource
+    /// identifiers.
+    /// </summary>
+    /// <param name="fromId">The unique identifier of the source entity for which to retrieve connection information.</param>
+    /// <param name="toId">The unique identifier of the target entity for which to retrieve connection information.</param>
+    /// <param name="resourceId">The unique identifier of the resource associated with the connection query.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of extended connection query
+    /// records matching the specified criteria. The list is empty if no matching records are found.</returns>
+    Task<List<ConnectionQueryExtendedRecord>> GetConnectionInfo(Guid fromId, Guid toId, Guid resourceId, CancellationToken ct = default);
 
     /// <summary>
     /// Adds a package to an assignment (by package ID) based on the role between two entities.
