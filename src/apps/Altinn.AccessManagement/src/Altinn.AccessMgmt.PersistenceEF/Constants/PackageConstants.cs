@@ -6048,6 +6048,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bank - Representation daily banking"),
@@ -6082,6 +6083,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bank - Taking out loans/credits"),
@@ -6116,6 +6118,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Insurance company - Managing insurance agreements"),
@@ -6150,6 +6153,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helfo - Reimbursement for private individuals"),
@@ -6184,6 +6188,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helfo - General practitioner"),
@@ -6218,6 +6223,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Housing Bank - Housing allowance"),
@@ -6252,6 +6258,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Housing Bank - Start-up loan"),
@@ -6286,6 +6293,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Debt collection companies - Negotiate and conclude debt collection agreements"),
@@ -6320,6 +6328,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Sale of real estate/condominium share"),
@@ -6354,6 +6363,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Purchase of property"),
@@ -6388,6 +6398,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Inheritance - private settlement and undivided estate"),
@@ -6422,6 +6433,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Change of property"),
@@ -6456,6 +6468,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Agreements and rights"),
@@ -6490,6 +6503,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Deletion"),
@@ -6524,6 +6538,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Mapping Authority - Loan acquisition"),
@@ -6558,6 +6573,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality - Building and property"),
@@ -6592,6 +6608,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality - Health and care"),
@@ -6626,6 +6643,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality - Tax and duty"),
@@ -6660,6 +6678,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality - Social services"),
@@ -6694,6 +6713,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality - School and education"),
@@ -6728,6 +6748,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Credit rating agency - Credit freeze"),
@@ -6762,6 +6783,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Enforcement Officer - Debt settlement"),
@@ -6796,6 +6818,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Enforcement Officer - Enforcement"),
@@ -6830,6 +6853,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Nav - Work"),
@@ -6864,6 +6888,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Nav - Family"),
@@ -6898,6 +6923,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Nav - Assistive devices"),
@@ -6932,6 +6958,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Nav - Pension"),
@@ -6966,6 +6993,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Nav - Social services"),
@@ -7000,6 +7028,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Patient travel - Reimbursement of patient travel"),
@@ -7034,6 +7063,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Tax Administration - Collection"),
@@ -7068,6 +7098,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Tax Administration - Change postal address"),
@@ -7102,6 +7133,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Tax Administration - Report moving"),
@@ -7136,6 +7168,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Tax Administration - Tax"),
@@ -7170,6 +7203,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian National Collection Agency - Debt settlement and payment agreements"),
@@ -7204,6 +7238,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "County Governor - Apply for consent to disposition"),
@@ -7238,6 +7273,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The District Court - Petition for undivided estate"),
@@ -7272,6 +7308,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The District Court - Private settlement of estate"),
@@ -7306,6 +7343,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The District Court - Petition for settlement of undivided estate"),
@@ -7340,6 +7378,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Others - Purchase/rental of goods and services"),
@@ -7374,6 +7413,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Others - Conclusion of lease agreements"),
@@ -7408,6 +7448,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Others - Termination of lease agreements"),
@@ -7442,6 +7483,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.CivilRightsAuthority,
+            AreaId = AreaConstants.Guardianship,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Others - Sale of personal property of greater value"),
