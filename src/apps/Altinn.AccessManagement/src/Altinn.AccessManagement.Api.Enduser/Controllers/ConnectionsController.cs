@@ -443,7 +443,7 @@ public class ConnectionsController(
     [HttpPost("resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -460,7 +460,7 @@ public class ConnectionsController(
 
         if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
         {
-            return Problem();
+            return BadRequest();
         }
 
         var from = await EntityService.GetEntity(fromId, cancellationToken);
@@ -470,7 +470,17 @@ public class ConnectionsController(
 
         var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
-        return Ok(result);
+        if (result.All(t => t.CreatedSuccessfully))
+        {
+            return Created();
+        }
+
+        if (result.All(t => !t.CreatedSuccessfully))
+        {
+            return Problem();
+        }
+
+        return Problem("Partial delegation", statusCode: 500);
     }
 
     /// <summary>
@@ -479,7 +489,7 @@ public class ConnectionsController(
     [HttpPut("resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -506,7 +516,17 @@ public class ConnectionsController(
 
         var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
-        return Ok(result);
+        if (result.All(t => t.CreatedSuccessfully))
+        {
+            return NoContent();
+        }
+
+        if (result.All(t => !t.CreatedSuccessfully))
+        {
+            return Problem();
+        }
+
+        return Problem("Partial delegation", statusCode: 500);
     }
 
     /// <summary>
