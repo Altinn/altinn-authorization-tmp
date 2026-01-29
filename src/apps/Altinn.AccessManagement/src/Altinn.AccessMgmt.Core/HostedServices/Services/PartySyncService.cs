@@ -184,7 +184,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             s.VariantId = userType switch
             {
                 { IsNull: true } => EntityVariantConstants.SI,
-                { IsUnset: true } => throw new UnreachableException("We should always have a SI user type set"),
+                { IsUnset: true } => throw new UnreachableException("Missing selfidentfiedUserType from register. Should never happen."),
                 { Value.IsUnknown: true } => throw new InvalidOperationException("..."),
                 { Value.Value: SelfIdentifiedUserType rrr } => rrr switch 
                 {
