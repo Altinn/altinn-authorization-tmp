@@ -1,5 +1,6 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Contexts;
@@ -24,7 +25,7 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var db = PostgresServer.NewDatabase();
+        var db = PostgresServer.NewEFDatabase();
 
         var appsettings = new ConfigurationBuilder()
            .AddJsonFile("appsettings.test.json")
@@ -35,6 +36,8 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
                ["PostgreSQLSettings:EnableDBConnection"] = "true",
                ["Logging:LogLevel:*"] = "Error",
                ["FeatureManagement:AccessManagement.MigrationDbEf"] = "true",
+               ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "false",
+               ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "false",
                ["RunIntegrationTests"] = "true",
            });
 
