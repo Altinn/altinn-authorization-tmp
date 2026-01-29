@@ -194,7 +194,7 @@ public class TranslationService : ITranslationService
     }
 
     /// <inheritdoc />
-    public async Task UpsertTranslationAsync(TranslationEntry translationEntry, CancellationToken cancellationToken = default)
+    public async Task UpsertTranslationAsync(TranslationEntry translationEntry, Guid changedBy, Guid changedBySystem, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Upserting translation for {Type} with ID {Id}, field {FieldName} in language {LanguageCode}", 
             translationEntry.Type, translationEntry.Id, translationEntry.FieldName, translationEntry.LanguageCode);
@@ -221,10 +221,10 @@ public class TranslationService : ITranslationService
         }
 
         // Translation entries are not audited entities, but AppDbContext.SaveChangesAsync requires audit values.
-        // Provide system default audit values for translation management operations.
+        // The caller specifies the system context for audit tracking.
         var systemAudit = new AuditValues(
-            changedBy: Guid.Empty,  // System operation
-            changedBySystem: Guid.Empty  // Translation service
+            changedBy: changedBy,
+            changedBySystem: changedBySystem
         );
         
         await _db.SaveChangesAsync(systemAudit, cancellationToken);
@@ -407,7 +407,7 @@ public class TranslationEntryList
     public string LanguageCode { get; set; } = default!;
 
     /// <summary>
-    /// Fileds and Values
+    /// Fields and Values
     /// </summary>
     public Dictionary<string, string> Translations { get; set; } = [];
 

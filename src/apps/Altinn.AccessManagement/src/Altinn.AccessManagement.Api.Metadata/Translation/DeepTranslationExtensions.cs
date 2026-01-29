@@ -49,10 +49,6 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of PackageDtos with all nested objects
     /// </summary>
-    /// <remarks>
-    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
-    /// Performance impact is minimal due to in-memory Constants and caching.
-    /// </remarks>
     public static async ValueTask<IEnumerable<PackageDto>> TranslateDeepAsync(
         this IEnumerable<PackageDto> packages,
         ITranslationService translationService,
@@ -130,10 +126,6 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of AreaDtos with all nested objects
     /// </summary>
-    /// <remarks>
-    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
-    /// Performance impact is minimal due to in-memory Constants and caching.
-    /// </remarks>
     public static async ValueTask<IEnumerable<AreaDto>> TranslateDeepAsync(
         this IEnumerable<AreaDto> areas,
         ITranslationService translationService,
@@ -184,10 +176,6 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of AreaGroupDtos with all nested objects
     /// </summary>
-    /// <remarks>
-    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
-    /// Performance impact is minimal due to in-memory Constants and caching.
-    /// </remarks>
     public static async ValueTask<IEnumerable<AreaGroupDto>> TranslateDeepAsync(
         this IEnumerable<AreaGroupDto> areaGroups,
         ITranslationService translationService,
@@ -244,10 +232,6 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of ResourceDtos with all nested objects
     /// </summary>
-    /// <remarks>
-    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
-    /// Performance impact is minimal due to in-memory Constants and caching.
-    /// </remarks>
     public static async ValueTask<IEnumerable<ResourceDto>> TranslateDeepAsync(
         this IEnumerable<ResourceDto> resources,
         ITranslationService translationService,
@@ -350,10 +334,6 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of RoleDtos with all nested objects
     /// </summary>
-    /// <remarks>
-    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
-    /// Performance impact is minimal due to in-memory Constants and caching.
-    /// </remarks>
     public static async ValueTask<IEnumerable<RoleDto>> TranslateDeepAsync(
         this IEnumerable<RoleDto> roles,
         ITranslationService translationService,
