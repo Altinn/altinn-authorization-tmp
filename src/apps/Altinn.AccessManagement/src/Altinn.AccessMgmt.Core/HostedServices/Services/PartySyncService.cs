@@ -180,7 +180,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         {
             s.RefId = selfIdentifiedUser.User.Value.Username.Value;
             s.TypeId = EntityTypeConstants.SelfIdentified;
-            s.IdPortenEmailIdentifier = selfIdentifiedUser.Email.Value;
+            s.EmailIdentifier = selfIdentifiedUser.Email.Value;
             s.VariantId = userType switch
             {
                 { IsNull: true } => EntityVariantConstants.SI,
