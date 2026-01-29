@@ -311,7 +311,9 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ])))
             .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE])))
-            .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
+            .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])))
+            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ])))
+            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE])));
 
         builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ClaimAccessHandler>();
