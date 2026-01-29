@@ -26,10 +26,13 @@ public class ClientDelegationService(
                 ToIds = [],
                 FromIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
-                IncludeResource = true,
-                OnlyUniqueResults = true,
-                IncludeSubConnections = false,
+                IncludeDelegation = false,
                 IncludePackages = true,
+
+                IncludeSubConnections = false,
+                IncludeKeyRole = false,
+                IncludeResource = false,
+                IncludeMainUnitConnections = false,
                 EnrichEntities = true,
             },
             ct: cancellationToken);
@@ -40,17 +43,41 @@ public class ClientDelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ClientDto>>> GetClients(Guid partyId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ClientDto>>> GetClients(Guid partyId, List<string>? roles, CancellationToken cancellationToken = default)
     {
+        roles ??= [];
+        var roleFilter = new List<Guid>();
+        foreach (var r in roles)
+        {
+            if (RoleConstants.TryGetByAll(r, out var role))
+            {
+                roleFilter.Add(role.Id);
+            }
+            else
+            {
+                roleFilter.Add(Guid.Empty);
+            }
+        }
+
+        if (roleFilter.Count > 0 && roleFilter.All(p => p == Guid.Empty))
+        {
+            return new List<ClientDto>();
+        }
+
         var connections = await connectionQuery.GetConnectionsFromOthersAsync(
             new ConnectionQueryFilter
             {
                 ToIds = [partyId],
                 FromIds = [],
-                OnlyUniqueResults = true,
-                IncludeSubConnections = false,
-                IncludeResource = true,
+                RoleIds = roleFilter.Count > 0 ? roleFilter : null,
+
+                IncludeDelegation = false,
                 IncludePackages = true,
+
+                IncludeSubConnections = false,
+                IncludeKeyRole = false,
+                IncludeResource = false,
+                IncludeMainUnitConnections = false,
                 EnrichEntities = true,
             },
             ct: cancellationToken);
@@ -101,45 +128,48 @@ public class ClientDelegationService(
             .Where(p => p.FromId == partyId && p.ToId == toUuid && p.RoleId == RoleConstants.Agent)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (!cascade)
-        {
-            var existingDelegations = await db.Delegations.AsNoTracking()
-                .Where(p => p.ToId == toUuid)
-                .Include(p => p.To)
-                .Join(db.DelegationPackages, d => d.Id, dp => dp.DelegationId, (d, dp) => new
-                {
-                    Delegation = d,
-                    DelegationPackage = dp,
-                })
-                .GroupBy(d => d.Delegation.Id)
-                .ToListAsync(cancellationToken);
-
-            foreach (var existingDelegation in existingDelegations)
+        var existingDelegations = await db.Delegations.AsNoTracking()
+            .Where(p => p.ToId == toUuid)
+            .Include(p => p.To)
+            .Join(db.DelegationPackages, d => d.Id, dp => dp.DelegationId, (d, dp) => new
             {
-                var first = existingDelegation.FirstOrDefault();
-                if (first is null)
-                {
-                    continue;
-                }
+                Delegation = d,
+                DelegationPackage = dp,
+            })
+            .GroupBy(d => d.Delegation.Id)
+            .ToListAsync(cancellationToken);
 
-                var pkgs = string.Join(", ", existingDelegation.Select(p => p.DelegationPackage.PackageId));
-                var fromId = first.Delegation.FromId;
-                var delegationId = first.Delegation.Id;
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
+        }
 
-                if (fromId is { })
-                {
-                    errorBuilder.Add(
-                        ValidationErrors.DelegationHasActiveConnections,
-                        "QUERY/cascade",
-                        [
-                            new($"{delegationId}",$"Cannot remove delegation because party {toUuid} still has active delegated packages ({pkgs}) from party {fromId}.")
-                        ]
-                    );
-                }
+        foreach (var existingDelegation in existingDelegations)
+        {
+            var first = existingDelegation.FirstOrDefault();
+
+            if (first is null)
+            {
+                continue;
+            }
+
+            var pkgs = string.Join(", ", existingDelegation.Select(p => p.DelegationPackage.PackageId));
+            var fromId = first.Delegation.FromId;
+            var delegationId = first.Delegation.Id;
+
+            if (!cascade)
+            {
+                errorBuilder.Add(
+                    ValidationErrors.DelegationHasActiveConnections,
+                    "QUERY/cascade",
+                    [
+                        new($"{first.Delegation.Id}",$"Cannot remove delegation because party {toUuid} still has active delegated packages ({pkgs}) from party {fromId}.")
+                    ]
+                );
             }
         }
 
-        if (errorBuilder.TryBuild(out var problem))
+        if (errorBuilder.TryBuild(out problem))
         {
             return problem;
         }
@@ -158,7 +188,6 @@ public class ClientDelegationService(
                 FromIds = [fromId],
                 ViaIds = [partyId],
                 ViaRoleIds = [RoleConstants.Agent],
-                OnlyUniqueResults = true,
                 IncludeDelegation = true,
                 IncludePackages = true,
 
@@ -185,7 +214,6 @@ public class ClientDelegationService(
                 ViaIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
                 ToIds = [toId],
-                OnlyUniqueResults = true,
                 IncludeDelegation = true,
                 IncludePackages = true,
 
@@ -215,7 +243,7 @@ public class ClientDelegationService(
         var inputs = payload.Values
             .Select((r, idx) =>
             {
-                var roleExist = RoleConstants.TryGetByCode(r.Role, out var role);
+                var roleExist = RoleConstants.TryGetByAll(r.Role, out var role);
                 var pkgs = r.Packages.Select((p, idx) =>
                 {
                     var packageExist = PackageConstants.TryGetByUrn(p, out var package);
@@ -518,7 +546,7 @@ public class ClientDelegationService(
 /// </summary>
 public interface IClientDelegationService
 {
-    Task<Result<List<ClientDto>>> GetClients(Guid partyId, CancellationToken cancellationToken = default);
+    Task<Result<List<ClientDto>>> GetClients(Guid partyId, List<string>? roles, CancellationToken cancellationToken = default);
 
     Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default);
 

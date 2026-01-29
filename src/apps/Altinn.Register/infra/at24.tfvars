@@ -17,6 +17,7 @@ sbl_endpoint     = "https://at24.altinn.cloud/sblbridge/"
 use_pgbouncer    = true
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true

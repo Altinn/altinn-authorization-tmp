@@ -83,6 +83,7 @@ variable "key_vault_rbac" {
 
 variable "features" {
   type = object({
+    maskinporten = optional(bool, false),
     a2_party_import = optional(object({
       parties  = optional(bool, false),
       user_ids = optional(bool, false),
@@ -90,6 +91,9 @@ variable "features" {
     }), {})
     party_import = optional(object({
       system_users = optional(bool, false),
+      npr = optional(object({
+        guardianships = optional(bool, false),
+      }), {})
     }), {})
   })
   default = {}
