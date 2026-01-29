@@ -1,14 +1,11 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Utils.Models;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
-using System;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -23,12 +20,8 @@ public class PackageService : IPackageService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, string? typeName = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, CancellationToken cancellationToken = default)
     {
-        Guid? typeId = !string.IsNullOrEmpty(typeName) && EntityTypeConstants.TryGetByName(typeName, out var type)
-        ? type.Id
-        : null;
-
         var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
 
         if (string.IsNullOrEmpty(term))
@@ -73,7 +66,7 @@ public class PackageService : IPackageService
         bool filterResourceProviders = resourceProviderCodes != null && resourceProviderCodes.Any();
 
         var areas = await DbContext.Areas.AsNoTracking().ToListAsync(cancellationToken);
-        var packages = await DbContext.Packages.AsNoTracking().Include(t => t.EntityType).WhereIf(typeId.HasValue, t => t.EntityTypeId == typeId.Value).ToListAsync(cancellationToken);
+        var packages = await DbContext.Packages.AsNoTracking().Include(t => t.EntityType).WhereIf(typeId.HasValue && typeId.Value != Guid.Empty, t => t.EntityTypeId == typeId.Value).ToListAsync(cancellationToken);
 
         var result = new List<PackageDto>();
 

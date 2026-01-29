@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessMgmt.Core.Models;
@@ -18,6 +17,7 @@ using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -169,6 +169,194 @@ public partial class ConnectionService(
 
         return null;
     }
+
+    #region Resources
+
+    public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
+        if (problem is { })
+        {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<ResourcePermissionDto>();
+            }
+
+            return problem;
+        }
+
+        var resources = await connectionQuery.GetConnectionsFromOthersAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = [from.Id],
+                ToIds = [to.Id],
+                EnrichPackageResources = false,
+                IncludeDelegation = false,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludePackages = false,
+                IncludeResource = true,
+                IncludeSubConnections = true,
+            });
+
+        return DtoMapper.ConvertResources(resources);
+    }
+
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, string resourceId, int delegationChangeId, string policyPath, string policyVersion, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
+        return await AddResource(fromId, toId, resource.Id, delegationChangeId, policyPath, policyVersion, configureConnection, cancellationToken);
+    }
+
+    public async Task<Result<AssignmentResourceDto>> AddResource(Guid fromId, Guid toId, Guid resourceId, int delegationChangeId, string policyPath, string policyVersion, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        {
+            return Problems.MissingConnection;
+        }
+
+        var check = await CheckResource(fromId, resourceIds: [resourceId], configureConnection, cancellationToken);
+        if (check.IsProblem)
+        {
+            return check.Problem;
+        }
+
+        // Look for existing direct rightholder assignment
+        var assignment = await dbContext.Assignments
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment == null)
+        {
+            var hasConnection = await connectionQuery.HasConnection(fromId, toId);
+            if (hasConnection.Result)
+            {
+                throw new Exception("No connection found between parties");
+            }
+
+            assignment = new Assignment()
+            {
+                FromId = fromId,
+                ToId = toId,
+                RoleId = RoleConstants.Rightholder.Id
+            };
+
+            await dbContext.Assignments.AddAsync(assignment, cancellationToken);
+        }
+
+        var assignmentResource = await dbContext.AssignmentResources.AsTracking()
+                .Where(a => a.AssignmentId == assignment.Id)
+                .Where(a => a.ResourceId == resourceId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignmentResource == null)
+        {
+            assignmentResource = new AssignmentResource()
+            {
+                AssignmentId = assignment.Id,
+                ResourceId = resourceId,
+                DelegationChangeId = delegationChangeId,
+                PolicyPath = policyPath,
+                PolicyVersion = policyVersion
+            };
+            await dbContext.AssignmentResources.AddAsync(assignmentResource, cancellationToken);
+        }
+        else
+        {
+            assignmentResource.PolicyPath = policyPath;
+            assignmentResource.PolicyVersion = policyVersion;
+            assignmentResource.DelegationChangeId = delegationChangeId;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (from.PartyId.HasValue && to.PartyId.HasValue)
+        {
+            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
+        }
+
+        return DtoMapper.Convert(assignmentResource);
+    }
+
+    public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resource = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceId);
+        return await RemoveResource(fromId, toId, resource.Id, configureConnection, cancellationToken);
+    }
+
+    public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;
+        }
+
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignmentResources = await dbContext.AssignmentResources
+            .AsTracking()
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentResources is null)
+        {
+            return null;
+        }
+
+        dbContext.Remove(existingAssignmentResources);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
+    }
+
+    public async Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Packages
 
     public async Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -366,7 +554,7 @@ public partial class ConnectionService(
         return DtoMapper.Convert(newAssignmentPackage);
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await dbContext.GetAssignableAccessPackages(
             party,
@@ -378,7 +566,7 @@ public partial class ConnectionService(
         return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
         {
             var firstPackage = group.First();
-            return new AccessPackageDto.Check
+            return new AccessPackageDto.AccessPackageDtoCheck
             {
                 Package = new AccessPackageDto
                 {
@@ -387,7 +575,7 @@ public partial class ConnectionService(
                     AreaId = firstPackage.Package.AreaId
                 },
                 Result = group.Any(p => p.Result),
-                Reasons = group.Select(p => new AccessPackageDto.Check.Reason
+                Reasons = group.Select(p => new AccessPackageDto.AccessPackageDtoCheck.Reason
                 {
                     Description = p.Reason.Description,
                     RoleId = p.Reason.RoleId,
@@ -405,7 +593,7 @@ public partial class ConnectionService(
         }).ToList();
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var packagesFound = packages.Select(p =>
         {
@@ -425,6 +613,8 @@ public partial class ConnectionService(
 
         return await CheckPackage(party, [.. packageIds, .. packagesFound.Select(p => p.Id)], configureConnection, cancellationToken);
     }
+
+    #endregion
 
     private async Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
     {
@@ -800,27 +990,6 @@ public partial class ConnectionService
     }
 
     #region Mappers
-    private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
-    {
-        return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
-        {
-            Party = DtoMapper.Convert(relation.To),
-            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
-            Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
-        });
-    }
-
-    private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoFromOthers(IEnumerable<Connection> res, Guid party)
-    {
-        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
-        {
-            Party = DtoMapper.Convert(relation.From),
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
-            Connections = new()
-        });
-    }
 
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
@@ -852,34 +1021,12 @@ public partial class ConnectionService
         });
     }
 
-    private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoToOthers(IEnumerable<Connection> res, Guid party)
-    {
-        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
-        {
-            Party = DtoMapper.Convert(relation.To),
-            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
-            Connections = new()
-        });
-    }
-
     private IEnumerable<ConnectionDto> ExtractRelationDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
         return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
         {
             Party = DtoMapper.Convert(relation.From),
             Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
-            Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
-        });
-    }
-
-    private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
-    {
-        return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
-        {
-            Party = DtoMapper.Convert(relation.From),
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
         });
     }
@@ -895,7 +1042,7 @@ public partial class ConnectionService
                 FromId = connection.FromId,
                 ToId = connection.ToId,
                 FacilitatorId = connection.ViaId ?? Guid.Empty
-            } 
+            }
             : null,
             From = new SystemUserClientConnectionDto.Client()
             {
@@ -932,7 +1079,7 @@ public partial class ConnectionService
                 Name = connection.Via.Name,
                 RefId = connection.Via.RefId,
                 ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : null
-            } 
+            }
             : null,
             FacilitatorRole = connection.ViaRoleId.HasValue ? new SystemUserClientConnectionDto.ServiceProviderRole()
             {
@@ -942,7 +1089,7 @@ public partial class ConnectionService
                 Description = connection.ViaRole.Description,
                 IsKeyRole = connection.ViaRole.IsKeyRole,
                 Urn = connection.ViaRole.Urn
-            } 
+            }
             : null
         });
     }

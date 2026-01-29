@@ -17,6 +17,7 @@ db_storage_tier  = "P40"
 sbl_endpoint     = "https://ai-yt01-vip-sblbridge.ai.basefarm.net/sblbridge/"
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
