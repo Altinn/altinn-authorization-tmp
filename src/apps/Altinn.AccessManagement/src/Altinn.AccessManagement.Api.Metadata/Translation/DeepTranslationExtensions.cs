@@ -47,8 +47,12 @@ public static class DeepTranslationExtensions
     }
 
     /// <summary>
-    /// Translates a collection of PackageDtos with all nested objects (optimized with parallel processing)
+    /// Translates a collection of PackageDtos with all nested objects
     /// </summary>
+    /// <remarks>
+    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
+    /// Performance impact is minimal due to in-memory Constants and caching.
+    /// </remarks>
     public static async ValueTask<IEnumerable<PackageDto>> TranslateDeepAsync(
         this IEnumerable<PackageDto> packages,
         ITranslationService translationService,
@@ -60,12 +64,14 @@ public static class DeepTranslationExtensions
             return packages;
         }
 
-        // Parallelize translation for better performance with large collections
-        var packageList = packages as List<PackageDto> ?? packages.ToList();
-        var translationTasks = packageList.Select(package => 
-            package.TranslateDeepAsync(translationService, languageCode, allowPartial).AsTask());
+        var result = new List<PackageDto>();
+        foreach (var package in packages)
+        {
+            var translated = await package.TranslateDeepAsync(translationService, languageCode, allowPartial);
+            result.Add(translated);
+        }
         
-        return await Task.WhenAll(translationTasks);
+        return result;
     }
 
     /// <summary>
@@ -122,8 +128,12 @@ public static class DeepTranslationExtensions
     }
 
     /// <summary>
-    /// Translates a collection of AreaDtos with all nested objects (optimized with parallel processing)
+    /// Translates a collection of AreaDtos with all nested objects
     /// </summary>
+    /// <remarks>
+    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
+    /// Performance impact is minimal due to in-memory Constants and caching.
+    /// </remarks>
     public static async ValueTask<IEnumerable<AreaDto>> TranslateDeepAsync(
         this IEnumerable<AreaDto> areas,
         ITranslationService translationService,
@@ -135,12 +145,14 @@ public static class DeepTranslationExtensions
             return areas;
         }
 
-        // Parallelize translation for better performance with large collections
-        var areaList = areas as List<AreaDto> ?? areas.ToList();
-        var translationTasks = areaList.Select(area => 
-            area.TranslateDeepAsync(translationService, languageCode, allowPartial).AsTask());
+        var result = new List<AreaDto>();
+        foreach (var area in areas)
+        {
+            var translated = await area.TranslateDeepAsync(translationService, languageCode, allowPartial);
+            result.Add(translated);
+        }
         
-        return await Task.WhenAll(translationTasks);
+        return result;
     }
 
     /// <summary>
@@ -172,6 +184,10 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of AreaGroupDtos with all nested objects
     /// </summary>
+    /// <remarks>
+    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
+    /// Performance impact is minimal due to in-memory Constants and caching.
+    /// </remarks>
     public static async ValueTask<IEnumerable<AreaGroupDto>> TranslateDeepAsync(
         this IEnumerable<AreaGroupDto> areaGroups,
         ITranslationService translationService,
@@ -183,12 +199,14 @@ public static class DeepTranslationExtensions
             return areaGroups;
         }
 
-        // Parallelize translation for better performance with large collections
-        var areaGroupList = areaGroups as List<AreaGroupDto> ?? areaGroups.ToList();
-        var translationTasks = areaGroupList.Select(areaGroup => 
-            areaGroup.TranslateDeepAsync(translationService, languageCode, allowPartial).AsTask());
+        var result = new List<AreaGroupDto>();
+        foreach (var areaGroup in areaGroups)
+        {
+            var translated = await areaGroup.TranslateDeepAsync(translationService, languageCode, allowPartial);
+            result.Add(translated);
+        }
         
-        return await Task.WhenAll(translationTasks);
+        return result;
     }
 
     /// <summary>
@@ -226,6 +244,10 @@ public static class DeepTranslationExtensions
     /// <summary>
     /// Translates a collection of ResourceDtos with all nested objects
     /// </summary>
+    /// <remarks>
+    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
+    /// Performance impact is minimal due to in-memory Constants and caching.
+    /// </remarks>
     public static async ValueTask<IEnumerable<ResourceDto>> TranslateDeepAsync(
         this IEnumerable<ResourceDto> resources,
         ITranslationService translationService,
@@ -237,12 +259,14 @@ public static class DeepTranslationExtensions
             return resources;
         }
 
-        // Parallelize translation for better performance with large collections
-        var resourceList = resources as List<ResourceDto> ?? resources.ToList();
-        var translationTasks = resourceList.Select(resource => 
-            resource.TranslateDeepAsync(translationService, languageCode, allowPartial).AsTask());
+        var result = new List<ResourceDto>();
+        foreach (var resource in resources)
+        {
+            var translated = await resource.TranslateDeepAsync(translationService, languageCode, allowPartial);
+            result.Add(translated);
+        }
         
-        return await Task.WhenAll(translationTasks);
+        return result;
     }
 
     /// <summary>
@@ -324,8 +348,12 @@ public static class DeepTranslationExtensions
     }
 
     /// <summary>
-    /// Translates a collection of RoleDtos with all nested objects (optimized with parallel processing)
+    /// Translates a collection of RoleDtos with all nested objects
     /// </summary>
+    /// <remarks>
+    /// Sequential processing is used to avoid concurrent DbContext access issues with EF Core.
+    /// Performance impact is minimal due to in-memory Constants and caching.
+    /// </remarks>
     public static async ValueTask<IEnumerable<RoleDto>> TranslateDeepAsync(
         this IEnumerable<RoleDto> roles,
         ITranslationService translationService,
@@ -337,11 +365,13 @@ public static class DeepTranslationExtensions
             return roles;
         }
 
-        // Parallelize translation for better performance with large collections
-        var roleList = roles as List<RoleDto> ?? roles.ToList();
-        var translationTasks = roleList.Select(role => 
-            role.TranslateDeepAsync(translationService, languageCode, allowPartial).AsTask());
+        var result = new List<RoleDto>();
+        foreach (var role in roles)
+        {
+            var translated = await role.TranslateDeepAsync(translationService, languageCode, allowPartial);
+            result.Add(translated);
+        }
         
-        return await Task.WhenAll(translationTasks);
+        return result;
     }
 }
