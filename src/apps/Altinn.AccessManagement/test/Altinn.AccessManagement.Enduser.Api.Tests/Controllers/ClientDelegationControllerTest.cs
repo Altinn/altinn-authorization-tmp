@@ -332,6 +332,44 @@ public class ClientDelegationControllerTest
                 Assert.Equal(ValidationErrors.DisallowedEntityType.ErrorCode, error.ErrorCode);
             });
         }
+
+        [Fact]
+        public async Task AddAgent_NotPermittedEntityTypeStandardSystemUser_ReturnsBadRequest()
+        {
+            // Try to add organization as agent
+            var client = CreateClient();
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.SystemUserStandard}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data);
+
+            // Ensure proper error returned
+            Assert.Single(problem.Errors);
+            Assert.All(problem.Errors, error =>
+            {
+                Assert.Equal(ValidationErrors.DisallowedEntityType.ErrorCode, error.ErrorCode);
+            });
+        }
+
+        [Fact]
+        public async Task AddAgent_PermittedEntityTypeAgentSystemUser_ReturnsOk()
+        {
+            // Try to add organization as agent
+            var client = CreateClient();
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.SystemUserClient}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var getAgents = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var getAgentsData = await getAgents.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(getAgentsData);
+
+            var agent = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.SystemUserClient);
+            Assert.NotNull(agent);
+        }
     }
 
     #endregion

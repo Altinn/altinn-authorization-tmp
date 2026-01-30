@@ -112,7 +112,7 @@ public class ClientDelegationService(
         if (!SupportedToTypes.Any(e => e.Id == entity.TypeId))
         {
             var supportedToTypeNames = string.Join(", ", SupportedToTypes.Select(t => t.Entity.Name));
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{entity.TypeId}", $"entity type is not supported as agent, only {supportedToTypeNames}>.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{entity.TypeId}", $"entity type is not supported as agent, only <{supportedToTypeNames}>.")]);
         }
 
         if (entity.TypeId == EntityTypeConstants.SystemUser && entity.VariantId != EntityVariantConstants.AgentSystem)
@@ -340,7 +340,7 @@ public class ClientDelegationService(
         if (!SupportedToTypes.Any(e => e.Id == to.TypeId))
         {
             var supportedToTypeNames = string.Join(", ", SupportedToTypes.Select(t => t.Entity.Name));
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{to.TypeId}", $"entity type is not supported as agent, only {supportedToTypeNames}>.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{to.TypeId}", $"entity type is not supported as agent, only <{supportedToTypeNames}>.")]);
         }
 
         if (to.TypeId == EntityTypeConstants.SystemUser && to.VariantId != EntityVariantConstants.AgentSystem)
