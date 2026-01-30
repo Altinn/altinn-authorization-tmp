@@ -78,7 +78,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
 
-                var assignment = item switch
+                Assignment assignment = item switch
                 {
                     Person person => MapAssignmentForPerson(person),
                     SelfIdentifiedUser selfIdentifiedUser => MapAssignmentForSelfIdentifiedUser(selfIdentifiedUser),
@@ -126,7 +126,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchNameEntity);
 
                 var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchIdEntity, cancellationToken);
-                var ingestedAssignments = await ingestService.IngestTempData(ingestAssignments, batchIdAssignment, cancellationToken);
+                int ingestedAssignments = await ingestService.IngestTempData(ingestAssignments, batchIdAssignment, cancellationToken);
 
                 if (ingestedEntities != ingestEntities.Count)
                 {
