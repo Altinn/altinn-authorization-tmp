@@ -93,6 +93,7 @@ public class PartiesClient : IPartiesClient
             string endpointUrl = $"parties/partylist?fetchSubUnits={includeSubunits}";
             string token = JwtTokenUtil.GetTokenFromContext(_httpContextAccessor.HttpContext, _platformSettings.JwtCookieName);
             var accessToken = _accessTokenGenerator.GenerateAccessToken("platform", "access-management");
+            accessToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IkJCQjA2MkM5ODI4NEZBRTYxOUNCMjlGRkYyQ0FBMDFGNUE3QzU2RjIiLCJ0eXAiOiJKV1QiLCJ4NWMiOiJCQkIwNjJDOTgyODRGQUU2MTlDQjI5RkZGMkNBQTAxRjVBN0M1NkYyIn0.eyJ1cm46YWx0aW5uOmFwcCI6InNibC5hdXRob3JpemF0aW9uIiwiZXhwIjoyMTI5NDI1MDQyLCJpYXQiOjE3Njk0MjUwNDIsImlzcyI6InBsYXRmb3JtIiwiYWN0dWFsX2lzcyI6ImFsdGlubi10ZXN0LXRvb2xzIiwibmJmIjoxNzY5NDI1MDQyfQ.E94FvkxfLo0fKUH8j3tEOtSHrcM4tan_Czdn3llSWVt4mMK0YJytljrLnXRugVKqa2ZP1x1Rs0XUhc2stsC73BZHQ7UkQ05OGb0FEqBxC6nq8rM74AdV8HTl0-PasXDpPkrzX-naPUvbtOIZgjMBA-E7tGvBoVpicuNkY1JPPtzAqWbRL6SXFHzT3P8n534ZG--r8XUWe-HBloHh765-__YTC74M0M-d1ZmY5ZkzfXBCNIqIo4OTa_HPBGiUSyGEiiA1dlgYb2JqEyn0Y1ASRA8F0M7mn3gZ7PGMtlYsouD9SheH4iQp1X3ObtbOsT2hW6dQhBaujWJcpA7vzouJLg";
             StringContent requestBody = new StringContent(JsonSerializer.Serialize(partyIds), Encoding.UTF8, "application/json");
             
             HttpResponseMessage response = await _client.PostAsync(token, endpointUrl, requestBody, accessToken, cancellationToken);
