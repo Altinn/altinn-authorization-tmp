@@ -307,12 +307,33 @@ public class ClientDelegationControllerTest
             var client = Fixture.Server.CreateClient();
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
                 claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ}"));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
             return client;
         }
+
+        [Fact]
+        public async Task AddAgent_NotPermittedEntityType_ReturnsBadRequest()
+        {
+            // Try to add organization as agent
+            var client = CreateClient();
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.OrganizationNordisAS}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data);
+
+            // Ensure proper error returned
+            Assert.Single(problem.Errors);
+            Assert.All(problem.Errors, error =>
+            {
+                Assert.Equal(ValidationErrors.DisallowedEntityType.ErrorCode, error.ErrorCode);
+            });
+        }
     }
+
     #endregion
 
     #region DELETE accessmanagement/api/v1/enduser/clientdelegations/agents
