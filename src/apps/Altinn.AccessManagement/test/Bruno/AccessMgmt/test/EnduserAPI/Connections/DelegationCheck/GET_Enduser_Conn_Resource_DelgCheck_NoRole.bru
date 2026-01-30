@@ -1,18 +1,18 @@
 meta {
-  name: GET_Enduser_Conn_Resource_DelgCheck_Dagl_NoFilter copy
+  name: GET_Enduser_Conn_Resource_DelgCheck_NoRole
   type: http
-  seq: 12
+  seq: 13
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/delegationcheck?party={{party}}&resourceId=app_ttd_terje-sin-test-app
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/delegationcheck?party={{party}}&resourceId=tilgangspakke_delegering_ressurs
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  resourceId: app_ttd_terje-sin-test-app
+  resourceId: tilgangspakke_delegering_ressurs
 }
 
 headers {
@@ -25,7 +25,7 @@ script:pre-request {
   
   bru.setVar("requestName", "GET_Enduser_Conn_AccPcks_DelgCheck_Dagl_NoFilter");
   
-  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  bru.setVar("party", testdata.regnskapsforer.partyuuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -46,13 +46,16 @@ tests {
   
   test(bru.getVar("requestName"), function() {
     const body = res.getBody();
-    const data = body.data;
+    const actions = body.actions;
     
     expect(res.status).to.equal(200);
-    assert.isNotEmpty(data, "Expected data in response body to NOT be empty array");
+    assert.isNotEmpty(actions, "Expected data in response body to NOT be empty array");
     
-    const expectedNumPackages = 137;
-    assert.lengthOf(data, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages`);
+    const expectedNumActions = 6;
+    assert.lengthOf(actions, expectedNumActions, `Expected response data to contain all ${expectedNumActions} available packages giving access to the resource`);
     
+    actions.forEach((action, index) => {
+      expect(action.result, `result mismatch at index ${index}`).to.equal(false);
+    })
   });
 }

@@ -766,8 +766,7 @@ public partial class ConnectionService(
             IncludeKeyRole = true,
             IncludeMainUnitConnections = true,
             IncludeDelegation = false,
-            IncludePackages = true,
-            
+            IncludePackages = true,            
             IncludeResource = true,            
             EnrichPackageResources = false,
             ExcludeDeleted = false

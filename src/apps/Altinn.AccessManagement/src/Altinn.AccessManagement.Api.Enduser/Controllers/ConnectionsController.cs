@@ -550,7 +550,7 @@ public class ConnectionsController(
     /// </summary>
     [HttpGet("resources/delegationcheck")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<PaginatedResult<ResourceDto.ResourceDtoCheck>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -561,7 +561,7 @@ public class ConnectionsController(
         int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
         int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
 
-        var result = await ResourceService.DelegationCheck(authenticatedUserUuid, authenticatedUserId, authenticationLevel, party, resourceId, cancellationToken);
+        var result = await resourceService.DelegationCheck(authenticatedUserUuid, authenticatedUserId, authenticationLevel, party, resourceId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
