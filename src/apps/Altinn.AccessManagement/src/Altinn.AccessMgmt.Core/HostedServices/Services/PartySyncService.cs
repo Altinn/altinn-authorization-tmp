@@ -51,6 +51,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var seen = new HashSet<string>();
         var ingestEntities = new List<Entity>();
         var ingestAssignments = new List<Assignment>();
+        var seenAssignments = new HashSet<(Guid FromId, Guid ToId, Guid RoleId)>();
 
         using var scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -91,7 +92,10 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 }
 
                 ingestEntities.Add(entity);
-                ingestAssignments.Add(assignment);
+                if (assignment != null && seenAssignments.Add((assignment.FromId, assignment.ToId, assignment.RoleId)))
+                {
+                    ingestAssignments.Add(assignment);
+                }
             }
 
             var flushed = await Flush();
