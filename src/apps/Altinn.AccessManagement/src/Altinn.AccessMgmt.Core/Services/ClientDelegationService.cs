@@ -326,9 +326,6 @@ public class ClientDelegationService(
             return errorResult;
         }
 
-        var from = entities[fromId];
-        var to = entities[toId];
-
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent.Id, cancellationToken: cancellationToken);
 
@@ -336,7 +333,9 @@ public class ClientDelegationService(
         {
             errorBuilder.Add(ValidationErrors.MissingAssignment, $"QUERY/to", [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]);
         }
-
+    
+        var from = entities[fromId];
+        var to = entities[toId];
         if (!SupportedToTypes.Any(e => e.Id == to.TypeId))
         {
             var supportedToTypeNames = string.Join(", ", SupportedToTypes.Select(t => t.Entity.Name));
@@ -346,11 +345,6 @@ public class ClientDelegationService(
         if (to.TypeId == EntityTypeConstants.SystemUser && to.VariantId != EntityVariantConstants.AgentSystem)
         {
             errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{to.Id}", $"system user '{to.Id}' is not created for client delegation.")]);
-        }
-
-        if (errorBuilder.TryBuild(out errorResult))
-        {
-            return errorResult;
         }
 
         if (errorBuilder.TryBuild(out errorResult))
