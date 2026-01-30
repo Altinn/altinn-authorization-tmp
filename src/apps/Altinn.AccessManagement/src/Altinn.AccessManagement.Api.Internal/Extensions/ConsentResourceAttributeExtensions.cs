@@ -18,7 +18,8 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
             return new ConsentResourceAttributeDto
             {
                 Type = core.Type,
-                Value = core.Value
+                Value = core.Value,
+                Version = core.Version
             };
         }
     }
