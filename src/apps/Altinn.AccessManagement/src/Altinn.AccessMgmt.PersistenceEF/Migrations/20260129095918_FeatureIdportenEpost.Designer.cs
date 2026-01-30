@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129095918_FeatureIdportenEpost")]
+    partial class FeatureIdportenEpost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,8 +227,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("InstanceId")
@@ -338,8 +341,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("PolicyPath")
@@ -594,8 +597,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("InstanceId")
@@ -714,8 +717,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("PolicyPath")
