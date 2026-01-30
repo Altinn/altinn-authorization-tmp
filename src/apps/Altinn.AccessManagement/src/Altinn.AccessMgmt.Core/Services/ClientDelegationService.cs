@@ -17,6 +17,11 @@ public class ClientDelegationService(
     AppDbContext db,
     ConnectionQuery connectionQuery) : IClientDelegationService
 {
+    private IEnumerable<ConstantDefinition<EntityType>> SupportedToTypes { get; } = [
+        EntityTypeConstants.Person,
+        EntityTypeConstants.SystemUser
+    ];
+
     /// <inheritdoc/>
     public async Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default)
     {
@@ -90,6 +95,8 @@ public class ClientDelegationService(
     /// <inheritdoc/>
     public async Task<Result<AssignmentDto>> AddAgent(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default)
     {
+        ValidationErrorBuilder errorBuilder = default;
+
         var existingAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyId && p.ToId == toUuid && p.RoleId == RoleConstants.Agent).FirstOrDefaultAsync(cancellationToken);
         if (existingAssignment is { })
         {
@@ -102,9 +109,20 @@ public class ClientDelegationService(
             return Problems.EntityTypeNotFound;
         }
 
-        if ((entity.TypeId != EntityTypeConstants.Person) && entity.TypeId != EntityTypeConstants.SystemUser && entity.VariantId == EntityVariantConstants.AgentSystem)
+        if (!SupportedToTypes.Any(e => e.Id == entity.TypeId))
         {
-            return Problems.UnsupportedEntityType;
+            var supportedToTypeNames = string.Join(", ", SupportedToTypes.Select(t => t.Entity.Name));
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{entity.TypeId}", $"entity type is not supported as agent, only {supportedToTypeNames}>.")]);
+        }
+
+        if (entity.TypeId == EntityTypeConstants.SystemUser && entity.VariantId != EntityVariantConstants.AgentSystem)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{toUuid}", $"system user with id '{toUuid}' is not created for client delegation.")]);
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
         }
 
         var assignment = new Assignment
@@ -303,6 +321,14 @@ public class ClientDelegationService(
             errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/to", [new($"{toId}", "entity do not exist.")]);
         }
 
+        if (errorBuilder.TryBuild(out var errorResult))
+        {
+            return errorResult;
+        }
+
+        var from = entities[fromId];
+        var to = entities[toId];
+
         var agentAssignment = await db.Assignments
             .FirstOrDefaultAsync(a => a.FromId == partyId && a.ToId == toId && a.RoleId == RoleConstants.Agent.Id, cancellationToken: cancellationToken);
 
@@ -311,7 +337,23 @@ public class ClientDelegationService(
             errorBuilder.Add(ValidationErrors.MissingAssignment, $"QUERY/to", [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]);
         }
 
-        if (errorBuilder.TryBuild(out var errorResult))
+        if (!SupportedToTypes.Any(e => e.Id == to.TypeId))
+        {
+            var supportedToTypeNames = string.Join(", ", SupportedToTypes.Select(t => t.Entity.Name));
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{to.TypeId}", $"entity type is not supported as agent, only {supportedToTypeNames}>.")]);
+        }
+
+        if (to.TypeId == EntityTypeConstants.SystemUser && to.VariantId != EntityVariantConstants.AgentSystem)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "QUERY/to", [new($"{to.Id}", $"system user '{to.Id}' is not created for client delegation.")]);
+        }
+
+        if (errorBuilder.TryBuild(out errorResult))
+        {
+            return errorResult;
+        }
+
+        if (errorBuilder.TryBuild(out errorResult))
         {
             return errorResult;
         }
