@@ -334,7 +334,6 @@ public class ClientDelegationService(
             errorBuilder.Add(ValidationErrors.MissingAssignment, $"QUERY/to", [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]);
         }
     
-        var from = entities[fromId];
         var to = entities[toId];
         if (!SupportedToTypes.Any(e => e.Id == to.TypeId))
         {
