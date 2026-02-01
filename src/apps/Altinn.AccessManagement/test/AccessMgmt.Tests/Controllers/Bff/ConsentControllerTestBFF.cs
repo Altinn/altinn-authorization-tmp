@@ -55,6 +55,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
                     services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                     services.AddSingleton<IPDP, PdpPermitMock>();
                     services.AddSingleton<IProfileClient, ProfileClientMock>();
+                    services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
 
                     // Register the SAME mock instance
                     services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
