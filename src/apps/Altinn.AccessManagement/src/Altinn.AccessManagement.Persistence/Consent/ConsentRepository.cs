@@ -96,14 +96,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, requestMessage, templateId, templateVersion, redirectUrl, portalviewmode)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, consented, requestMessage, templateId, templateVersion, redirectUrl)
                 VALUES (
                 @consentRequestId, 
                 @fromPartyUuid,
                 @requiredDelegatorUuid,
                 @toPartyUuid, 
                 @handledByPartyUuid,
-                @validTo, 
+                @validTo,
+                @consentedTime,
                 @requestMessage,
                 @templateId, 
                 @templateVersion, 
@@ -121,6 +122,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
             command.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRequest.Id;
             command.Parameters.Add<string>("templateId", NpgsqlDbType.Text).TypedValue = consentRequest.TemplateId;
             command.Parameters.Add<int?>("templateVersion", NpgsqlDbType.Integer).TypedValue = consentRequest.TemplateVersion;
+
+            if (consentRequest.Consented != null)
+            {
+                command.Parameters.Add<DateTimeOffset?>("consentedTime", NpgsqlDbType.TimestampTz).TypedValue = consentRequest.Consented?.ToOffset(TimeSpan.Zero);
+            }
+            else
+            {
+                command.Parameters.Add<DateTimeOffset?>("consentedTime", NpgsqlDbType.TimestampTz).TypedValue = null;
+            }
 
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
@@ -236,6 +246,31 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 }
             }
 
+            if (consentRequest.ConsentRequestEvents != null && consentRequest.ConsentRequestEvents.Count > 0)
+            {
+                foreach (ConsentRequestEvent consentEvent in consentRequest.ConsentRequestEvents)
+                {
+                    await using NpgsqlCommand eventCommand = conn.CreateCommand();
+                    eventCommand.CommandText = EventQuery;
+                    eventCommand.Parameters.Add<Guid>(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid).TypedValue = Guid.CreateVersion7();
+                    eventCommand.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRequest.Id;
+                    eventCommand.Parameters.Add<ConsentRequestEventType>(PARAM_EVENT_TYPE, NpgsqlDbType.Integer).TypedValue = consentEvent.EventType;
+                    eventCommand.Parameters.Add<DateTimeOffset>(PARAM_CREATED, NpgsqlDbType.TimestampTz).TypedValue = consentEvent.Created.ToOffset(TimeSpan.Zero);
+                    if (consentEvent.PerformedBy.IsPartyUuid(out Guid performedByPartyGuid))
+                    {
+                        eventCommand.Parameters.Add<Guid>(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid).TypedValue = performedByPartyGuid;
+                    }
+                    else
+                    {
+                        throw new InvalidDataException("Invalid fromPartyUuid");
+                    }
+
+                    await eventCommand.PrepareAsync(cancellationToken);
+                    await eventCommand.ExecuteNonQueryAsync(cancellationToken);
+                }
+            }
+            else
+            {
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = EventQuery;
             eventCommand.Parameters.Add<Guid>(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid).TypedValue = Guid.CreateVersion7();
@@ -255,6 +290,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
 
             await tx.CommitAsync(cancellationToken); 
+            }
 
             return await GetRequest(consentRequest.Id, cancellationToken);
         }
