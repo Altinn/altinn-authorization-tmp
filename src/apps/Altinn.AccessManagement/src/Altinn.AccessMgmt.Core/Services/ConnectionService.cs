@@ -751,6 +751,46 @@ public partial class ConnectionService(
             };
         }).ToList();
     }
+
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<RoleDtoCheck>>> RoleDelegationCheck(Guid party, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var results = await dbContext.GetRolesForResourceDelegationCheck(
+            fromId: party,
+            toId: auditAccessor.AuditValues.ChangedBy,
+            toIsMainAdminForFrom: true,
+            ct: cancellationToken
+        );
+
+        return results.GroupBy(p => p.Role.Id).Select(group =>
+        {
+            var firstRole = group.First();
+            return new RoleDtoCheck
+            {
+                Role = new RoleDto
+                {
+                    Id = firstRole.Role.Id,
+                    Urn = firstRole.Role.Urn,
+                    LegacyUrn = firstRole.Role.LegacyUrn
+                },
+                Result = group.Any(p => p.Result),
+                Reasons = group.Select(p => new RoleDtoCheck.Reason
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
+            };
+        }).ToList();
+    }
 }
 
 /// <summary>

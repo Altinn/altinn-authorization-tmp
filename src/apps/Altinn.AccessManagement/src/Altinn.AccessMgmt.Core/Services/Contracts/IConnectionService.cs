@@ -53,6 +53,15 @@ public interface IConnectionService
     Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Checks the role delegation for a specific user.
+    /// </summary>
+    /// <param name="party">The user is operating on behalf of.</param>
+    /// <param name="configureConnection">A delegate used to configure connection behavior.</param>
+    /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a collection of role delegations.</returns>
+    Task<Result<IEnumerable<RoleDtoCheck>>> RoleDelegationCheck(Guid party, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get connection resources
     /// </summary>
     /// <returns></returns>
