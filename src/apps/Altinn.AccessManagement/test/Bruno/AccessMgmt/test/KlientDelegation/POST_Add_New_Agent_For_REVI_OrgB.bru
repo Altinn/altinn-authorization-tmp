@@ -1,7 +1,7 @@
 meta {
-  name: POST_New_Agent_For_REGN_Org
+  name: POST_Add_New_Agent_For_REVI_OrgB
   type: http
-  seq: 1
+  seq: 16
 }
 
 post {
@@ -25,16 +25,17 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("party", testdata.REGN_Organisasjon.partyUuid);
+  
+  bru.setVar("party", testdata.REVI_Organisasjon.partyUuid);
   bru.setVar("toPerson", testdata.REGN_Organisasjon.REGN_Agent.personidentity);
   bru.setVar("toPersonlastName", testdata.REGN_Organisasjon.REGN_Agent.etternavn);
   
   
   var getTokenParameters = {
-    auth_userId: testdata.REGN_Organisasjon.dagligleder.userId,
-    auth_partyId: testdata.REGN_Organisasjon.dagligleder.partyId,
-    auth_partyUuid: testdata.REGN_Organisasjon.dagligleder.partyUuid,
-    auth_ssn: testdata.REGN_Organisasjon.dagligleder.pid,
+    auth_userId: testdata.REVI_Organisasjon.dagligleder.userId,
+    auth_partyId: testdata.REVI_Organisasjon.dagligleder.partyId,
+    auth_partyUuid: testdata.REVI_Organisasjon.dagligleder.partyUuid,
+    auth_ssn: testdata.REVI_Organisasjon.dagligleder.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
@@ -47,6 +48,7 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const testdata2 = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
   
   test("Add user som agent for client delegation ", function() {
     const data = res.getBody();
@@ -54,7 +56,7 @@ tests {
     expect(res.status).to.equal(200);
     assert.isOk(data, "Expected response body to return created assignment");
     
-    assert.equal(data.fromId, testdata.REGN_Organisasjon.partyUuid);
+    assert.equal(data.fromId, testdata.REVI_Organisasjon.partyUuid);
     assert.equal(data.toId, testdata.REGN_Organisasjon.REGN_Agent.userUuid);
     
   });
