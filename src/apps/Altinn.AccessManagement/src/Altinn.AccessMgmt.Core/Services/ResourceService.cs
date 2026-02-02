@@ -65,7 +65,7 @@ public class ResourceService : IResourceService
         return await Db.Resources.AsNoTracking().Include(t => t.Type).Include(t => t.Provider).SingleOrDefaultAsync(r => r.RefId == refId, cancellationToken);
     }
 
-    public async ValueTask<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, int authenticatedUserId, int authenticationLevel, Guid party, string resourceId, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, int authenticationLevel, Guid party, string resourceId, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await PartyService.GetByUid(party, cancellationToken);

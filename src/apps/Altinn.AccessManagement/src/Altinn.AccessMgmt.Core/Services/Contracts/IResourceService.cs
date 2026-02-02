@@ -10,5 +10,5 @@ public interface IResourceService
 
     ValueTask<Resource> GetResource(string refId, CancellationToken cancellationToken);
 
-    ValueTask<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, int authenticatedUserId, int authenticationLevel, Guid party, string resourceId, CancellationToken cancellationToken);
+    ValueTask<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, int authenticationLevel, Guid party, string resourceId, CancellationToken cancellationToken);
 }
