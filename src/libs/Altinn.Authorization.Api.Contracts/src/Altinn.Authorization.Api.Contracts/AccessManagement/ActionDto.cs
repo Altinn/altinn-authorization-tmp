@@ -58,7 +58,7 @@ public class ActionDto
         /// <summary>
         /// Package ID of the package providing access
         /// </summary>
-        public Guid? PackageId { get;  set; }
+        public Guid? PackageId { get; set; }
 
         /// <summary>
         /// Package URN of the package providing access

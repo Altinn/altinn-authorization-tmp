@@ -234,7 +234,7 @@ public interface IConnectionService
     /// <param name="configureConnection">ConnectionOptions</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>The result on all the resource/action that is delegable on the resource and a reason behinf if the user can or can not delegate a given action</returns>
-    Task<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.

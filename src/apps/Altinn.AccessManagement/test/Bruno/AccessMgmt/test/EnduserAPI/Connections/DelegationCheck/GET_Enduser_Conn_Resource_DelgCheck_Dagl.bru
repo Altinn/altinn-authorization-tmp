@@ -54,8 +54,7 @@ tests {
     const expectedNumPackages = 6;
     assert.lengthOf(actions, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages giving access to the resource`);
     
-    for (int i = 0; i < actions.Length; i++)
-    {
+    for (let i = 0; i < actions.Length; i++) {
       assert.isTrue(actions[i].result, "expected all actions to be available");
     }
   });

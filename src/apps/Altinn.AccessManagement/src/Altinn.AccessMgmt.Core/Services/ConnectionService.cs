@@ -812,7 +812,7 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);

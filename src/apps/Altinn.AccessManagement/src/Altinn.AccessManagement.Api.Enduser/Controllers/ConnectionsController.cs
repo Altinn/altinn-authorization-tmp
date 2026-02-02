@@ -558,9 +558,8 @@ public class ConnectionsController(
     public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
     {
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
-        int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
-
-        var result = await ConnectionService.DelegationCheck(authenticatedUserUuid, party, resourceId, ConfigureConnections, cancellationToken);
+        
+        var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resourceId, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

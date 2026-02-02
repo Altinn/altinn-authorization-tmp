@@ -102,11 +102,6 @@
             public const string AccessPackageAttribute = "urn:altinn:accesspackage";
 
             /// <summary>
-            /// Access package for organisations attribute match identifier 
-            /// </summary>
-            public const string AccessPackagePersonAttribute = "urn:altinn:accesspackage:innbygger";
-
-            /// <summary>
             /// Resource Registry attribute match identifier 
             /// </summary>
             public const string ResourceRegistryAttribute = "urn:altinn:resource";

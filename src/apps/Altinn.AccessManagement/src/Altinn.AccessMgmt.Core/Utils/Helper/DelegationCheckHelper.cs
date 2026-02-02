@@ -28,48 +28,8 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 List<AttributeMatch> roles = GetAttributeMatches(rightAccessSources.SelectMany(roleAccessSource => roleAccessSource.PolicySubjects)).FindAll(policySubject => policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute, StringComparison.OrdinalIgnoreCase) 
                                                                                                                                                                            || policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.ExternalCcrRoleAttribute, StringComparison.OrdinalIgnoreCase)
                                                                                                                                                                            || policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.ExternalCraRoleAttribute, StringComparison.OrdinalIgnoreCase)
-                                                                                                                                                                           || policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute, StringComparison.OrdinalIgnoreCase)
-                                                                                                                                                                           || policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackagePersonAttribute, StringComparison.OrdinalIgnoreCase));
+                                                                                                                                                                           || policySubject.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute, StringComparison.OrdinalIgnoreCase));
                 return roles.Count != 0;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the resource attribute values as out params from a Resource specified as a List of AttributeMatches
-        /// </summary>
-        /// <param name="input">The resource to fetch org and app from</param>
-        /// <param name="resourceMatchType">the resource match type</param>
-        /// <param name="resourceId">the resource id. Either a resource registry id or org/app</param>
-        /// <param name="org">the org part of the resource</param>
-        /// <param name="app">the app part of the resource</param>
-        /// <param name="serviceCode">altinn 2 service code</param>
-        /// <param name="serviceEditionCode">altinn 2 service edition code</param>
-        /// <returns>A bool indicating whether params where found</returns>
-        public static bool TrySplitResiurceIdIntoOrgApp(string input, out ResourceAttributeMatchType resourceMatchType, out string resourceId, out string org, out string app)
-        {
-            resourceMatchType = ResourceAttributeMatchType.None;
-            resourceId = null;
-            org = null;
-            app = null;
-
-            if (input.StartsWith("app_", StringComparison.InvariantCultureIgnoreCase))
-            {
-                string[] parts = input.Split("_", 3, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                if (parts.Length == 3)
-                {
-                    resourceMatchType = ResourceAttributeMatchType.AltinnAppId;
-                    org = parts[1];
-                    app = parts[2];
-                    return true;
-                }
-            }
-            else
-            {
-                resourceMatchType = ResourceAttributeMatchType.ResourceRegistry;
-                resourceId = input;
-                return true;
             }
 
             return false;
@@ -271,9 +231,9 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
         }
 
         /// <summary>
-        /// Method to chack if a resourceid is an app and decompose it into org/app values
+        /// Method to check if a resourceid is an app and decompose it into org/app values
         /// </summary>
-        /// <param name="resourceId">the resourceid to chack</param>
+        /// <param name="resourceId">the resourceid to check</param>
         /// <param name="org">the org part of the resourceid if it is an app</param>
         /// <param name="app">the app part of the resourceid if it is an app</param>
         /// <returns>true if app false if not</returns>
@@ -327,11 +287,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 else if (urn.StartsWith(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute))
                 {
                     result.Add(urn);
-                }
-                else if (urn.StartsWith(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackagePersonAttribute))
-                {
-                    result.Add(urn);
-                }
+                }                
             }
 
             return result;
