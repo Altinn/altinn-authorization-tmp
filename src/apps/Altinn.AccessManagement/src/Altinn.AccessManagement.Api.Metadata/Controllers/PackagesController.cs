@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Api.Metadata.Translation;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
@@ -32,24 +33,36 @@ public class PackagesController : ControllerBase
     /// Søker etter access packages basert på et søkeord.
     /// </summary>
     /// <param name="term">Søketerm.</param>
-    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>
+    /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>   
     /// <param name="searchInResources">Søk i ressurs verdier</param>
+    /// <param name="typeName">Package for type (e.g. Organization, Person)</param>
     /// <returns>Liste over søkeresultater.</returns>
     [Route("search")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false)
+    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false, [FromQuery] string? typeName = null)
     {
-        var res = await packageService.Search(term, resourceProviderCode, searchInResources);
+        Guid? typeId = null;
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            if (!EntityTypeConstants.TryGetByName(name: typeName, includeTranslations: true, out var type))
+            {
+                return Problem($"Type '{typeName}' not found. Try organization, organisasjon or person");
+            }
+
+            typeId = type.Id;
+        }
+
+        var res = await packageService.Search(term, resourceProviderCode, searchInResources, typeId);
         if (res == null || !res.Any())
         {
             return NoContent();
         }
 
-        // Translate each search result
+        // Translate each search result with deep translation for nested objects
         var translatedResults = new List<SearchObject<PackageDto>>();
         foreach (var searchResult in res)
         {
-            var translatedDto = await searchResult.Object.TranslateAsync(
+            var translatedDto = await searchResult.Object.TranslateDeepAsync(
                 translationService,
                 this.GetLanguageCode(),
                 this.AllowPartialTranslation());
@@ -79,8 +92,8 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        // Translate the area groups
-        var translated = await res.TranslateAsync(
+        // Translate the area groups with deep translation for nested Areas and Packages
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -102,8 +115,8 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        // Translate the area groups
-        var translated = await res.TranslateAsync(
+        // Translate the area groups with deep translation for nested Areas and Packages
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -126,8 +139,8 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        // Translate the area group
-        var translated = await res.TranslateAsync(
+        // Translate the area group with deep translation for nested Areas and Packages
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -158,8 +171,8 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        // Translate the areas
-        var translated = await res.TranslateAsync(
+        // Translate the areas with deep translation for nested Groups and Packages
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -182,8 +195,8 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        // Translate the area
-        var translated = await res.TranslateAsync(
+        // Translate the area with deep translation for nested Groups and Packages
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -214,8 +227,8 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        // Translate the packages
-        var translated = await res.TranslateAsync(
+        // Translate the packages with deep translation for nested Area and Resources
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -238,8 +251,8 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        // Translate the package
-        var translated = await res.TranslateAsync(
+        // Translate the package with deep translation for nested Area and Resources
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -262,8 +275,8 @@ public class PackagesController : ControllerBase
             return NotFound();
         }
 
-        // Translate the package
-        var translated = await res.TranslateAsync(
+        // Translate the package with deep translation for nested Area and Resources
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
@@ -294,8 +307,8 @@ public class PackagesController : ControllerBase
             return NoContent();
         }
 
-        // Translate the resources
-        var translated = await res.TranslateAsync(
+        // Translate the resources with deep translation for nested Provider and Type
+        var translated = await res.TranslateDeepAsync(
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());

@@ -12,6 +12,24 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 public static class AreaGroupConstants
 {
     /// <summary>
+    /// Try to get <see cref="AreaGroup"/> by any identifier: Name or Guid.
+    /// </summary>
+    public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
+    {
+        if (TryGetByName(value, out result))
+        {
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var areaGroupGuid) && TryGetById(areaGroupGuid, out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Try to get <see cref="AreaGroup"/> by name.
     /// </summary>
     public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
@@ -50,7 +68,7 @@ public static class AreaGroupConstants
         {
             Name = "Allment",
             Description = "Standard gruppe",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -74,7 +92,7 @@ public static class AreaGroupConstants
         {
             Name = "Bransje",
             Description = "For bransje grupper",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -98,7 +116,7 @@ public static class AreaGroupConstants
         {
             Name = "Særskilt",
             Description = "For de sære tingene",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(

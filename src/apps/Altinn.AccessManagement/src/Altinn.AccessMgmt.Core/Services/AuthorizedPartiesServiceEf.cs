@@ -90,7 +90,7 @@ public class AuthorizedPartiesServiceEf(
 
                 return await GetAuthorizedParties(filter, subject, eckeyroleEntities.Select(t => t.Id), cancellationToken);
 
-            case var id when id == EntityTypeConstants.Organisation.Id:
+            case var id when id == EntityTypeConstants.Organization.Id:
 
                 // Organizations can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
@@ -720,7 +720,7 @@ public class AuthorizedPartiesServiceEf(
 
         switch (entity.TypeId)
         {
-            case var orgType when orgType == EntityTypeConstants.Organisation.Id:
+            case var orgType when orgType == EntityTypeConstants.Organization.Id:
                 party.OrganizationNumber = entity.OrganizationIdentifier;
                 party.Type = AuthorizedPartyType.Organization;
 
@@ -751,6 +751,9 @@ public class AuthorizedPartiesServiceEf(
         // Only build resource filters if providerCode or anyOfResourceIds filters are specified
         if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0)
         {
+            // Make sure all include filters are set to true, as we need all access info when filtering on provider/resources
+            filter.IncludeAltinn2 = filter.IncludeAltinn3 = filter.IncludeRoles = filter.IncludeAccessPackages = filter.IncludeResources = filter.IncludeInstances = true;
+
             List<Resource> resources = await repoService.GetResources(filter.ProviderCode, filter.AnyOfResourceIds, ct: cancellationToken);
 
             if (resources.Count == 0)
@@ -769,11 +772,11 @@ public class AuthorizedPartiesServiceEf(
 
             // Add packageIds from packageResources to filter.PackageFilter
             filter.PackageFilter ??= new SortedDictionary<Guid, Guid>();
-            foreach (var package in packageResources)
+            foreach (var packageResource in packageResources)
             {
-                if (!filter.PackageFilter.ContainsKey(package.Id))
+                if (!filter.PackageFilter.ContainsKey(packageResource.PackageId))
                 {
-                    filter.PackageFilter[package.Id] = package.Id;
+                    filter.PackageFilter[packageResource.PackageId] = packageResource.PackageId;
                 }
             }
 

@@ -133,7 +133,7 @@ public partial class DtoMapper
     {
         var result = new Dictionary<string, string>();
 
-        if (entity.TypeId.Equals(EntityTypeConstants.Organisation))
+        if (entity.TypeId.Equals(EntityTypeConstants.Organization))
         {
             result.Add("OrganizationIdentifier", entity.RefId);
         }
@@ -228,6 +228,34 @@ public partial class DtoMapper
                 Id = package.Id,
                 Urn = package.Urn,
                 AreaId = package.AreaId,
+            };
+        }
+
+        return null;
+    }
+
+    public static CompactResourceDto ConvertCompactResource(ConnectionQueryResource resource)
+    {
+        if (resource is { })
+        {
+            return new CompactResourceDto()
+            {
+                Id = resource.Id,
+                Value = resource.Name
+            };
+        }
+
+        return null;
+    }
+
+    public static CompactResourceDto ConvertCompactResource(Resource resource)
+    {
+        if (resource is { })
+        {
+            return new CompactResourceDto()
+            {
+                Id = resource.Id,
+                Value = resource.Name
             };
         }
 

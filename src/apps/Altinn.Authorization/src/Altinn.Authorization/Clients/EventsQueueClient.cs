@@ -1,4 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Buffers;
+using System.Buffers.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Text.Json;
 using Altinn.Platform.Authorization.Clients.Interfaces;
@@ -17,6 +19,8 @@ namespace Altinn.Platform.Authorization.Clients
     [ExcludeFromCodeCoverage]
     public partial class EventsQueueClient : IEventsQueueClient
     {
+        private static readonly int MAX_MESSAGE_LENGTH = (64 * 1024) / 2;
+
         private static readonly JsonElement FallbackContextRequestJson = JsonSerializer.SerializeToElement(new
         {
             message = "ContextRequestJson is not available due to size limitations.",
@@ -57,7 +61,7 @@ namespace Altinn.Platform.Authorization.Clients
                 using var stream = _manager.GetStream();
                 CompressAuthorizationEvent(stream, authorizationEvent);
 
-                if (stream.Length > 64 * 1024)
+                if (stream.Length > MAX_MESSAGE_LENGTH)
                 {
                     Log.AuthorizationEventTooLarge(_logger, stream.Length);
                     authorizationEvent.ContextRequestJson = FallbackContextRequestJson;
@@ -67,8 +71,8 @@ namespace Altinn.Platform.Authorization.Clients
                 }
 
                 var buffer = stream.GetBuffer();
-                var data = BinaryData.FromBytes(buffer.AsMemory(0, checked((int)stream.Length)));
-
+                var encoded = DoubleBase64Encode(buffer, checked((int)stream.Length));
+                var data = BinaryData.FromBytes(encoded);
                 await client.SendMessageAsync(data, null, timeToLive, cancellationToken);
             }
             catch (OperationCanceledException ex)
@@ -108,6 +112,39 @@ namespace Altinn.Platform.Authorization.Clients
             }
 
             stream.Position = 0;
+        }
+
+        private static ReadOnlyMemory<byte> DoubleBase64Encode(byte[] buffer, int length)
+        {
+            var base64Length = Base64.GetMaxEncodedToUtf8Length(Base64.GetMaxEncodedToUtf8Length(length));
+            if (buffer.Length >= base64Length)
+            {
+                int bytesWritten;
+                Check(Base64.EncodeToUtf8InPlace(buffer, length, out bytesWritten));
+
+                length = bytesWritten;
+                Check(Base64.EncodeToUtf8InPlace(buffer, length, out bytesWritten));
+
+                return buffer.AsMemory(0, bytesWritten);
+            }
+
+            return EncodeToNewArray(buffer.AsSpan(0, length), base64Length);
+
+            static ReadOnlyMemory<byte> EncodeToNewArray(ReadOnlySpan<byte> input, int base64Length)
+            {
+                byte[] buffer = new byte[base64Length];
+                input.CopyTo(buffer);
+
+                return DoubleBase64Encode(buffer, input.Length);
+            }
+
+            static void Check(OperationStatus status)
+            {
+                if (status != OperationStatus.Done)
+                {
+                    throw new InvalidOperationException("Base64 encoding failed.");
+                }
+            }
         }
 
         private sealed class StorageQueueRawClient : IRawEventsQueueClient
