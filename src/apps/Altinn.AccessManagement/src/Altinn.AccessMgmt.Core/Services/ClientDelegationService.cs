@@ -181,14 +181,14 @@ public class ClientDelegationService(
     /// <inheritdoc/>
     public async Task<Result<List<AgentDto>>> GetDelegatedAccessPackagesFromClientsViaParty(Guid partyId, Guid fromId, CancellationToken cancellationToken = default)
     {
-        var query = await db.Entities
+        var query = await db.Assignments
             .AsNoTracking()
-            .Where(e => e.Id == fromId)
+            .Where(e => e.FromId == fromId)
             .Join(
-                db.Assignments,
-                e => e.Id,
+                db.Entities,
                 a => a.FromId,
-                (e, a) => new { EntityFrom = e, Assignment = a, EntityVia = a.To })
+                e => e.Id,
+                (a, e) => new { EntityFrom = a.From, Assignment = a, EntityVia = a.To })
             .Join(
                 db.Delegations,
                 x => x.Assignment.Id,
