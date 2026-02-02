@@ -32,6 +32,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
        Guid? fromRoleId,
        Guid? toRoleId,
        bool includePackages = false,
+       bool includePossibleConnections = false,
        CancellationToken cancellationToken = default
        )
     {
@@ -39,6 +40,20 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         {
             throw new ArgumentException("From, To or Via must have a value");
         }
+
+        if (includePossibleConnections && !viaId.HasValue)
+        {
+            throw new ArgumentException("Via must have a value when includePossibleConnections is true");
+        }
+
+        if (includePossibleConnections && !toRoleId.HasValue)
+        {
+            throw new ArgumentException("ToRoleId must have a value when includePossibleConnections is true");
+
+            // Must be Agent
+        }
+
+       
 
         var dbresult = await db.Delegations.AsNoTracking()
             .Include(t => t.To).ThenInclude(t => t.Role)
@@ -66,7 +81,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
             ToRole = DtoMapper.Convert(t.To.Role)
         }).ToList();
 
-
         if (includePackages)
         {
             var delegationIds = result.Select(t => t.Id).ToArray();
@@ -76,6 +90,35 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                 .ToListAsync();
 
             result.ForEach(r => r.Packages = delegationPackages.Where(dp => r.Id == dp.DelegationId).Select(t => DtoMapper.Convert(t.Package)).ToList());
+        }
+
+        if (includePossibleConnections)
+        {
+            var agents = db.Assignments.AsNoTracking()
+                .Where(t => t.FromId == viaId.Value)
+                .WhereIf(toRoleId.HasValue, t => t.RoleId == toRoleId.Value)
+                .WhereIf(toId.HasValue, t => t.ToId != toId.Value);
+
+            var clients = db.Assignments.AsNoTracking()
+                .Where(t => t.ToId == viaId.Value)
+                .WhereIf(fromRoleId.HasValue, t => t.RoleId != fromRoleId.Value)
+                .WhereIf(fromId.HasValue, t => t.FromId != fromId.Value);
+
+            foreach (var agent in agents)
+            {
+                foreach (var client in clients)
+                {
+                    result.Add(new RelationDto()
+                    {
+                        Id = null,
+                        From = DtoMapper.Convert(client.From),
+                        FromRole = DtoMapper.Convert(client.Role),
+                        To = DtoMapper.Convert(agent.To),
+                        ToRole = DtoMapper.Convert(agent.Role),
+                        Via = DtoMapper.Convert(client.To),
+                    });
+                }
+            }
         }
 
         return result;

@@ -5,7 +5,7 @@ public class RelationDto
     /// <summary>
     /// Delegation id
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
 
     /// <summary>
     /// The From assignments From (e.g. Bakerhuset Johnsen)
@@ -36,9 +36,4 @@ public class RelationDto
     /// Packages delegated
     /// </summary>
     public List<PackageDto> Packages { get; set; }
-
-    /// <summary>
-    /// Resources delegated
-    /// </summary>
-    public List<ResourceDto> Resources { get; set; }
 }

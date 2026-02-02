@@ -25,8 +25,7 @@ public interface IDelegationService
     /// <param name="fromRoleId">From assignment role</param>
     /// <param name="toRoleId">To assignment role</param>
     /// <param name="includePackages">Include packages</param>
-    /// <param name="includeResources">Include resources</param>
-    /// <param name="includePackageResources">Include package resources</param>
+    /// <param name="includePossibleDelegations">Include possible delegations</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns></returns>
     Task<IEnumerable<RelationDto>> Get(
@@ -36,8 +35,7 @@ public interface IDelegationService
         Guid? fromRoleId,
         Guid? toRoleId,
         bool includePackages = false,
-        bool includeResources = false,
-        bool includePackageResources = false,
+        bool includePossibleDelegations = false,
         CancellationToken cancellationToken = default
     );
 
