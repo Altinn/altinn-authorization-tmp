@@ -990,7 +990,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 2b855fbf-0104-4c3c-a115-4e0dacfb0bf1
     /// - <c>Name:</c> "Bank"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Representasjon dagligbank, Ta opp lån/kreditter."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til banktjenester."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-bank"
     /// - <c>IconUrl:</c> "PersonSuit.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1000,17 +1000,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Bank",
-            Description = "Tilgangspakken har følgende undergrupper: Representasjon dagligbank, Ta opp lån/kreditter.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til banktjenester.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "PersonSuit.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-bank"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bank"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Daily bank representation, Take out loans/credits.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to Banks.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bank"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Representasjon daglegbank, Ta opp lån/kredittar.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til banktenester.")),
     };
 
     /// <summary>
@@ -1019,7 +1019,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> aa9b2a34-fdfd-4c3d-9894-06795f8a621f
     /// - <c>Name:</c> "Forsikringsselskap"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Forvalte forsikringsavtaler."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til forsikring."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-forsikringsselskap"
     /// - <c>IconUrl:</c> "Aksel_Workplace_Buildings2.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1029,17 +1029,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Forsikringsselskap",
-            Description = "Tilgangspakken har følgende undergrupper: Forvalte forsikringsavtaler.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til forsikring.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Buildings2.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-forsikringsselskap"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Insurance company"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Manage insurance contracts.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to Insurance companies.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Forsikringsselskap"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Forvalta forsikringsavtalar.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til forsikring.")),
     };
 
     /// <summary>
@@ -1048,7 +1048,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 07524eb8-7db0-49ac-a34c-4cc56501f26f
     /// - <c>Name:</c> "Husbanken"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Bostøtte, Startlån."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til husbanken."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-husbanken"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1058,17 +1058,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Husbanken",
-            Description = "Tilgangspakken har følgende undergrupper: Bostøtte, Startlån.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til husbanken.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-husbanken"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The house bank"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Housing benefit, Start-up loan.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to The house bank.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Husbanken"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Bustøtte, Startlån.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Husbanken.")),
     };
 
     /// <summary>
@@ -1077,7 +1077,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 8d4c94dc-bf59-4f3d-bf3f-c4915d582997
     /// - <c>Name:</c> "Inkassoselskap"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Forhandle og inngå inkassoavtaler."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til inkassoselskap."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-inkassoselskap"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1087,17 +1087,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Inkassoselskap",
-            Description = "Tilgangspakken har følgende undergrupper: Forhandle og inngå inkassoavtaler.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til inkassoselskap.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-inkassoselskap"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Debt collection company"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Negotiate and enter into debt collection agreements.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to debt collection companies.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Inkassoselskap"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Forhandle og inngå inkassoavtalar.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til inkassoselskap.")),
     };
 
     /// <summary>
@@ -1106,7 +1106,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 217820cc-911d-416b-92f1-fb5dc0cc1f04
     /// - <c>Name:</c> "Kartverket"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Salg av fast eiendom/borettslagsandel, Kjøp av eiendom, Arv - privat skifte og uskifte, Endring av eiendom Avtaler og rettigheter Sletting, Låneopptak."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kartverket."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kartverket"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1116,17 +1116,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Kartverket",
-            Description = "Tilgangspakken har følgende undergrupper: Salg av fast eiendom/borettslagsandel, Kjøp av eiendom, Arv - privat skifte og uskifte, Endring av eiendom Avtaler og rettigheter Sletting, Låneopptak.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kartverket.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kartverket"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Norwegian Mapping Authority"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Sale of real estate/housing association share, Purchase of property, Inheritance - private transfer and non-transfer, Change of property Agreements and rights Deletion, Taking out a loan.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to he Norwegian Mapping Authority.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kartverket"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Sal av fast eigedom/burettslagsdel, Kjøp av eigedom, Arv - privat skifte og uskifte, Endring av eigedom Avtaler og rettar Sletting, Låneopptak.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Kartverket.")),
     };
 
     /// <summary>
@@ -1135,7 +1135,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 217820cc-911d-416b-92f1-fb5dc0cc1f04
     /// - <c>Name:</c> "Kredittvurderingsselskap"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Kredittsperre."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kredittvurderingsselskap."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kredittvurderingsselskap"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1145,17 +1145,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Kredittvurderingsselskap",
-            Description = "Tilgangspakken har følgende undergrupper: Kredittsperre.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kredittvurderingsselskap.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kredittvurderingsselskap"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Credit rating company"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Credit freeze.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to credit rating companies.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kredittvurderingsselskap"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Kredittsperre.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Kredittvurderingsselskap.")),
     };
 
     /// <summary>
@@ -1164,7 +1164,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 46d7f172-caad-4494-9c6d-3add8d120920
     /// - <c>Name:</c> "Namsmannen"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Gjeldsordning, Tvangsfullbyrdelse."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Namsmannen."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-namsmannen"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1174,17 +1174,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Namsmannen",
-            Description = "Tilgangspakken har følgende undergrupper: Gjeldsordning, Tvangsfullbyrdelse.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Namsmannen.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-namsmannen"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bailiff"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Debt arrangement, Enforcement.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to the Bailiff.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Namsmannen"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Gjeldsordning, Tvangsfullbyrdelse.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Namsmannen.")),
     };
 
     /// <summary>
@@ -1193,7 +1193,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> a0d54306-9af8-48c3-beb4-e37085642c95
     /// - <c>Name:</c> "Skatteetaten"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Gjeldsordning, Tvangsfullbyrdelse."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Skatteetaten."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-skatteetaten"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1203,17 +1203,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Skatteetaten",
-            Description = "Tilgangspakken har følgende undergrupper: Innkreving, Endre postadresse, Melde flytting, Skatt.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Skatteetaten.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-skatteetaten"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The tax authority"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Collection, Change postal address, Report move, Tax.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to the Tax Authority.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Skatteetaten"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Endre postadresse, Melde flytting, Skatt.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Skatteetaten.")),
     };
 
     /// <summary>
@@ -1222,7 +1222,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 4a780efa-8609-43be-b059-6c59473c46dd
     /// - <c>Name:</c> "Statens Innkrevingssentral"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Gjeldsordning og betalingsavtaler."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statens Innkrevingssentral."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-statens-innkrevingssentral"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1232,17 +1232,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Statens Innkrevingssentral",
-            Description = "Tilgangspakken har følgende undergrupper: Gjeldsordning og betalingsavtaler.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statens Innkrevingssentral.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-statens-innkrevingssentral"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The Norwegian Collection Center"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Debt arrangement and payment agreements.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to the Norwegian Collection Center.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Statens innkrevjingssentral"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Gjeldsordning og betalingsavtalar.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Statens Innkrevjingssentral.")),
     };
 
     /// <summary>
@@ -1251,7 +1251,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> b34f7595-498f-458c-8a18-06ca2e8d8918
     /// - <c>Name:</c> "Statsforvalteren"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Søke om samtykke til disposisjon."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statsforvelteren."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-statsforvalteren"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1261,17 +1261,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Statsforvalteren",
-            Description = "Tilgangspakken har følgende undergrupper: Søke om samtykke til disposisjon.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statsforvelteren.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-statsforvalteren"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "The State Administrator"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Apply for consent to disposal.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to the State Administrator.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Statsforvaltaren"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Søkja om samtykke til disposisjon.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Statsforvaltaren.")),
     };
 
     /// <summary>
@@ -1280,7 +1280,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> b34f7595-498f-458c-8a18-06ca2e8d8918
     /// - <c>Name:</c> "Tingretten"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Begjære uskifte, Privat skifte av dødsbo, Begjære skifte av uskiftebo."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Tingretten."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-tingretten"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1290,17 +1290,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Tingretten",
-            Description = "Tilgangspakken har følgende undergrupper: Begjære uskifte, Privat skifte av dødsbo, Begjære skifte av uskiftebo.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Tingretten.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-tingretten"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "District Court"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Petition for intestate estate, Private probate of deceased's estate, Petition for probate of intestate estate.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to the District Court.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tingretten"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Krevja uskifte, Privat skifte av dødsbu, Begjære skifte av uskiftebu.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Tingretten.")),
     };
 
     /// <summary>
@@ -1309,7 +1309,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 4cf6b40c-24f2-4006-b280-b73b06d23504
     /// - <c>Name:</c> "Annen kjøp og avtaleinngåelse"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Kjøp/leie av varer og tjenester, Inngåelse av husleiekontrakter, Avslutning av husleiekontrakter, Salg av løsøre av større verdi, Disponere inntekter til å dekke utgifter."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Annen kjøp og avtaleinngåelse."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-annen-kjop-avtaleinngaelse"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1319,17 +1319,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Annen kjøp og avtaleinngåelse",
-            Description = "Tilgangspakken har følgende undergrupper: Kjøp/leie av varer og tjenester, Inngåelse av husleiekontrakter, Avslutning av husleiekontrakter, Salg av løsøre av større verdi, Disponere inntekter til å dekke utgifter.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Annen kjøp og avtaleinngåelse.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-annen-kjop-avtaleinngaelse"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Other purchases and conclusion of agreements"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Purchase/rental of goods and services, Entering into leases, Termination of leases, Sale of movable property of greater value, Allocating income to cover expenses.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to other purchases and conclusion of agreements.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Anna kjøp og avtaleinngåing"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Kjøp/leie av varer og tenester, Inngåelse av husleigekontraktar, Avslutning av husleigekontraktar, Salg av lausøyre av større verdi, Disponere inntekter til å dekkja utgifter.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til anna kjøp og avtaleinngåing.")),
     };
 
     /// <summary>
@@ -1338,7 +1338,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 0c1c1143-5e8d-4979-aef8-7de61f05a467
     /// - <c>Name:</c> "Kommune"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Bygg og eiendom, Helse og omsorg, Skatt og avgift, Sosiale tjenester, Skole og utdanning."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kommune."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kommune"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1348,17 +1348,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Kommune",
-            Description = "Tilgangspakken har følgende undergrupper: Bygg og eiendom, Helse og omsorg, Skatt og avgift, Sosiale tjenester, Skole og utdanning.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kommune.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kommune"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Municipality"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Building and property, Health and care, Tax and levy, Social services, School and education.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to municipalities.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kommune"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Bygg og eigedom, Helse og omsorg, Skatt og avgift, Sosiale tenester, Skole og utdanning.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til kommune.")),
     };
 
     /// <summary>
@@ -1367,7 +1367,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 1dfa599d-1ade-48bd-86b4-ac033027c3d5
     /// - <c>Name:</c> "NAV"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Arbeid, Familie, Hjelpemidler, Pensjon, Sosiale tjenester."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til NAV."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-nav"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1377,17 +1377,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "NAV",
-            Description = "Tilgangspakken har følgende undergrupper: Arbeid, Familie, Hjelpemidler, Pensjon, Sosiale tjenester.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til NAV.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-nav"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "NAV"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Work, Family, Aids, Pension, Social services.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to NAV.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "NAV"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Arbeid, Familie, Hjelpemidler, Pensjon, Sosiale tenester.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til NAV.")),
     };
 
     /// <summary>
@@ -1396,7 +1396,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 0f1095a5-1e2b-4756-b376-bab8c36a89e4
     /// - <c>Name:</c> "Pasientreiser"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Refusjon av pasientreiser."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientreiser."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-pasientreiser"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1406,17 +1406,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Pasientreiser",
-            Description = "Tilgangspakken har følgende undergrupper: Refusjon av pasientreiser.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientreiser.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-pasientreiser"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Patient travel"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Work, Family, Aids, Pension, Social services.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to patient travel.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Pasientreiser"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Refusjon av pasientreiser.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Pasientreiser.")),
     };
 
     /// <summary>
@@ -1425,7 +1425,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 0f1095a5-1e2b-4756-b376-bab8c36a89e4
     /// - <c>Name:</c> "Helfo"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: Refusjon for privatpersoner, Fastlege."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Helfo."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-helfo"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1435,17 +1435,17 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Helfo",
-            Description = "Tilgangspakken har følgende undergrupper: Refusjon for privatpersoner, Fastlege.",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Helfo.",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-helfo"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helfo"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: Reimbursement for private individuals, GP.")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to Helfo.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helfo"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Refusjon for privatpersonar, Fastlege.")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til Helfo.")),
     };
 
     /// <summary>
@@ -1454,7 +1454,7 @@ public static class AreaConstants
     /// <remarks>
     /// - <c>Id:</c> 43e8458d-4b88-49b6-b079-38dfa1ba663a
     /// - <c>Name:</c> "Pasientopplysninger og -tjenester"
-    /// - <c>Description:</c> "Tilgangspakken har følgende undergrupper: HelseNorge (gjelder ikke Helse Midt), Helsami (gjelder Helse Midt), Full tilgang til Helsami, Lesetilgang til Helsami, Bare kommunisere, Kommune (gjelder pasient og helseopplysninger hos kommuner)."
+    /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientopplysninger og -tjenester."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-pasientopplysninger-tjenester"
     /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
@@ -1464,16 +1464,16 @@ public static class AreaConstants
         Entity = new()
         {
             Name = "Pasientopplysninger og -tjenester",
-            Description = "Tilgangspakken har følgende undergrupper: HelseNorge (gjelder ikke Helse Midt), Helsami (gjelder Helse Midt), Full tilgang til Helsami, Lesetilgang til Helsami, Bare kommunisere, Kommune (gjelder pasient og helseopplysninger hos kommuner).",
+            Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientopplysninger og -tjenester",
             IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-pasientopplysninger-tjenester"
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Patient information and services"),
-            KeyValuePair.Create("Description", "The access package has the following sub-groups: HelseNorge (does not apply to Helse Midt), Helsami (applies to Helse Midt), Full access to Helsami, Read access to Helsami, Only communicate, Municipality (applies to patient and health information at municipalities).")),
+            KeyValuePair.Create("Description", "This area of ​​authority includes access packages linked to patient information and services.")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Pasientopplysningar og -tenester"),
-            KeyValuePair.Create("Description", "Tilgangspakken har følgjande undergrupper: Helsenoreg (gjeld ikkje Helse Midt), *Helsami (gjeld Helse Midt), Full tilgang til *Helsami, Lesetilgang til *Helsami, Berre kommunisera, Kommune (gjeld pasient og helseopplysningar hos kommunar).")),
+            KeyValuePair.Create("Description", "Dette fullmaktsområdet omfattar tilgangspakkar knytte til pasientopplysningar og -tenester.")),
     };
 }
