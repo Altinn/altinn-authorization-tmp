@@ -129,8 +129,7 @@ public class ClientDelegationService(
             .FirstOrDefaultAsync(cancellationToken);
 
         var existingDelegations = await db.Delegations.AsNoTracking()
-            .Where(p => p.ToId == toUuid)
-            .Include(p => p.To)
+            .Where(p => p.ToId == existingAssignment.Id)
             .Join(db.DelegationPackages, d => d.Id, dp => dp.DelegationId, (d, dp) => new
             {
                 Delegation = d,
@@ -163,7 +162,7 @@ public class ClientDelegationService(
                     ValidationErrors.DelegationHasActiveConnections,
                     "QUERY/cascade",
                     [
-                        new($"{first.Delegation.Id}",$"Cannot remove delegation because party {toUuid} still has active delegated packages ({pkgs}) from party {fromId}.")
+                        new($"{first.Delegation.Id}", $"Cannot remove delegation '{first.Delegation.Id}' because party '{toUuid}' still has active delegated packages <{pkgs}> from party '{fromId}'.")
                     ]
                 );
             }

@@ -560,7 +560,7 @@ public partial class ConnectionService(
             party,
             auditAccessor.AuditValues.ChangedBy,
             packageIds,
-            cancellationToken
+            ct: cancellationToken
         );
 
         return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
