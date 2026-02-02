@@ -9,20 +9,20 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 public class ActionDto
 {
     /// <summary>
-    /// Key that unique identifies an action with all parameters find it in a policy
+    /// Key that uniquely identifies an action with all parameters found in the policy
     /// </summary>
-    public string ActionKey { get; set; }
+    public required string ActionKey { get; set; }
 
     /// <summary>
     /// Name of the action to present in frontend
     /// </summary>
-    public string ActionName { get; set; }
-    
+    public required string ActionName { get; set; }
+
     /// <summary>
     /// Result of the delegation check.
     /// True if the user is authorized to give others access to the resource on behalf of the specified party, false otherwise.
     /// </summary>
-    public bool Result { get; set; }
+    public required bool Result { get; set; }
 
     /// <summary>
     /// Reason for the result of the delegation check.
@@ -40,7 +40,7 @@ public class ActionDto
         public required string Description { get; set; }
 
         /// <summary>
-        /// Reason 
+        /// Reason  code indicating the type of delegation check result.
         /// </summary>
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public required DelegationCheckReasonCode ReasonKey { get; set; }

@@ -791,30 +791,7 @@ public partial class ConnectionService(
                 Permissions = connection.Select(connection => DtoMapper.ConvertToPermission(connection)),
             };
         }).ToList();
-    }
-
-    /// <inheritdoc />
-    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionInfo(Guid fromId, Guid toId, Guid resourceId, CancellationToken ct = default)
-    {
-        return await connectionQuery.GetConnectionsAsync(
-        new ConnectionQueryFilter()
-        {
-            ToIds = [toId],
-            FromIds = [fromId],
-            ResourceIds = [resourceId],
-            EnrichEntities = false,
-            IncludeKeyRole = true,
-            IncludeMainUnitConnections = true,
-            IncludeDelegation = false,
-            IncludePackages = true,            
-            IncludeResource = true,            
-            EnrichPackageResources = false,
-            ExcludeDeleted = false
-        },
-        ConnectionQueryDirection.FromOthers,
-        useNewQuery: true,
-        ct);
-    }
+    }    
 }
 
 /// <summary>

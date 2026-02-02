@@ -11,7 +11,7 @@ public class ResourceCheckDto
     public required ResourceDto Resource { get; set; }
 
     /// <summary>
-    /// 
+    /// Actions for which access is being checked on the resource.
     /// </summary>
     public required IEnumerable<ActionDto> Actions { get; set; }
 }

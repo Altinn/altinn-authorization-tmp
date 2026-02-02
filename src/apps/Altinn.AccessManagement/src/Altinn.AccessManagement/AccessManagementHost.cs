@@ -313,7 +313,7 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
 
-        ////builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
+        builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ClaimAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, EndUserResourceAccessHandler>();
