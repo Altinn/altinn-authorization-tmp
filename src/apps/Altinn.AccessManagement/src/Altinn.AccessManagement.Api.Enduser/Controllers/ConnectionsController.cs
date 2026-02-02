@@ -560,7 +560,7 @@ public class ConnectionsController(
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
 
-        var result = await resourceService.DelegationCheck(authenticatedUserUuid, authenticationLevel, party, resourceId, cancellationToken);
+        var result = await ConnectionService.DelegationCheck(authenticatedUserUuid, party, resourceId, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

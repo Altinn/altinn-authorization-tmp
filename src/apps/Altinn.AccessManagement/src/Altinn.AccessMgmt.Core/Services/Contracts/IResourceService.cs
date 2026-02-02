@@ -9,6 +9,4 @@ public interface IResourceService
     ValueTask<Resource> GetResource(Guid id, CancellationToken cancellationToken);
 
     ValueTask<Resource> GetResource(string refId, CancellationToken cancellationToken);
-
-    ValueTask<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, int authenticationLevel, Guid party, string resourceId, CancellationToken cancellationToken);
 }

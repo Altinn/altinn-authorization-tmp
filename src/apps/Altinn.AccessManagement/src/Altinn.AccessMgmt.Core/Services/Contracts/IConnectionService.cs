@@ -226,6 +226,17 @@ public interface IConnectionService
     Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Method to check if a resource is delegable by an authenticated user on behalf of a party
+    /// </summary>
+    /// <param name="authenticatedUserUuid">The authenticated user</param>
+    /// <param name="party">The party performing the checl on behalf of</param>
+    /// <param name="resourceId">The resource id to check</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>The result on all the resource/action that is delegable on the resource and a reason behinf if the user can or can not delegate a given action</returns>
+    Task<Result<ResourceCheckDto>> DelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.
     /// </summary>
     /// <param name="party">ID of the person.</param>
