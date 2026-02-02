@@ -176,7 +176,14 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, from, cancellationToken);
 
-                    await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+                    if (!result.IsProblem)
+                    {
+                        if (altinn2ConsentRequest.From.Equals(from))
+                        {
+                            await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+                            consentRequest = result.Value.ConsentRequest;
+                        }
+                    }
                 }
             }
 
@@ -212,18 +219,6 @@ namespace Altinn.AccessManagement.Core.Services
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
-
-            if (consentRequest == null)
-            {
-                ConsentRequest altinn2ConsentRequest = await _altinn2ConsentClient.GetConsent(consentRequestId, cancellationToken);
-
-                if (altinn2ConsentRequest != null)
-                {
-                    Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, altinn2ConsentRequest.From, cancellationToken);
-
-                    await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
-                }
-            }
 
             if (consentRequest == null)
             {
