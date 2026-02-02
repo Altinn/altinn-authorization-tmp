@@ -222,10 +222,10 @@ public class ClientDelegationService(
             .Select(e =>
             new AgentDto()
             {
-                Agent = DtoMapper.Convert(e.FirstOrDefault().EntityTo),
+                Agent = DtoMapper.Convert(e.First().EntityTo),
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new AgentDto.AgentRoleAccessPackages
                 {
-                    Role = DtoMapper.ConvertCompactRole(r.FirstOrDefault().Role),
+                    Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToArray(),
                 }).ToList(),
             }).ToList();
