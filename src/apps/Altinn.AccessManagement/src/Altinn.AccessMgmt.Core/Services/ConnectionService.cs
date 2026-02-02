@@ -593,6 +593,46 @@ public partial class ConnectionService(
         }).ToList();
     }
 
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var assignablePackages = await dbContext.GetAssignableAccessPackages(
+            party,
+            auditAccessor.AuditValues.ChangedBy,
+            packageIds,
+            true,
+            cancellationToken
+        );
+
+        return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
+        {
+            var firstPackage = group.First();
+            return new AccessPackageDto.AccessPackageDtoCheck
+            {
+                Package = new AccessPackageDto
+                {
+                    Id = firstPackage.Package.Id,
+                    Urn = firstPackage.Package.Urn,
+                    AreaId = firstPackage.Package.AreaId
+                },
+                Result = group.Any(p => p.Result),
+                Reasons = group.Select(p => new AccessPackageDto.AccessPackageDtoCheck.Reason
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
+            };
+        }).ToList();
+    }
+
     public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var packagesFound = packages.Select(p =>

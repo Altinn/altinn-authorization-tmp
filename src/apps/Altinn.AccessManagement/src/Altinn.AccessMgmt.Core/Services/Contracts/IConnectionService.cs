@@ -238,6 +238,20 @@ public interface IConnectionService
     Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
     /// </summary>
     /// <param name="party">ID of the person.</param>

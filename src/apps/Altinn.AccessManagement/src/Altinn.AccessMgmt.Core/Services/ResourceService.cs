@@ -87,7 +87,7 @@ public class ResourceService : IResourceService
         List<ActionAccess> actionAccesses = DelegationCheckHelper.DecomposePolicy(policy);
 
         // Fetch packages
-        var packages = await ConnectionService.CheckPackage(party, null, ConfigureConnections, cancellationToken);
+        var packages = await ConnectionService.CheckPackageForResource(party, null, ConfigureConnections, cancellationToken);
 
         // Fetch roles
 
@@ -96,7 +96,7 @@ public class ResourceService : IResourceService
         ProcessTheAccessToTheAccessKeys(actionAccesses, packages.Value);
 
         // Map to result
-        IEnumerable<ActionDto> actions = await MapFromInternalToExternalActions(actionAccesses, resourceId, accessListMode, fromParty, requiredAuthenticationLevel, authenticationLevel, isResourceDelegable, cancellationToken);
+        IEnumerable<ActionDto> actions = await MapFromInternalToExternalActions(actionAccesses, resourceId, accessListMode, fromParty, authenticationLevel, isResourceDelegable, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
@@ -157,7 +157,7 @@ public class ResourceService : IResourceService
         return char.ToUpper(input[0]) + input.Substring(1);
     }
     
-    private async Task<ActionDto> MapFromInternalToExternalAction(ActionAccess actionAccess, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, int requiredAuthenticationLevel, int authenticationLevel, bool isResourceDelegable, CancellationToken cancellationToken)
+    private async Task<ActionDto> MapFromInternalToExternalAction(ActionAccess actionAccess, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, int authenticationLevel, bool isResourceDelegable, CancellationToken cancellationToken)
     {
         if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
         {
@@ -183,37 +183,7 @@ public class ResourceService : IResourceService
             ActionName = GetActionNameFromKey(actionAccess.ActionKey, resourceId)
         };
 
-        if (requiredAuthenticationLevel > authenticationLevel)
-        {
-            currentAction.Result = false;
-            ActionDto.Reason reason = new ActionDto.Reason
-            {
-                Description = $"User authentication level {authenticationLevel} is lower than required authentication level {requiredAuthenticationLevel}",
-                ReasonKey = DelegationCheckReasonCode.InsufficientAuthenticationLevel,
-            };
-            currentAction.Reasons = currentAction.Reasons.Append(reason);
-        }
-        else if (!isResourceDelegable)
-        {
-            currentAction.Result = false;
-            ActionDto.Reason reason = new ActionDto.Reason
-            {
-                Description = $"Resource is not delegable",
-                ReasonKey = DelegationCheckReasonCode.ResourceNotDelegable,
-            };
-            currentAction.Reasons = currentAction.Reasons.Append(reason);
-        }
-        else if (actionAccess.AccessListDenied == true)
-        {
-            currentAction.Result = false;
-            ActionDto.Reason reason = new ActionDto.Reason
-            {
-                Description = "AccesList is enabled and user has no access",
-                ReasonKey = DelegationCheckReasonCode.AccessListValidationFail,
-            };
-            currentAction.Reasons = currentAction.Reasons.Append(reason);
-        }
-        else if (actionAccess.PackageAllowAccess.Count == 0 && actionAccess.RoleAllowAccess.Count == 0 && actionAccess.ResourceAllowAccess.Count == 0)
+        if (actionAccess.PackageAllowAccess.Count == 0 && actionAccess.RoleAllowAccess.Count == 0 && actionAccess.ResourceAllowAccess.Count == 0)
         {
             currentAction.Result = false;
             List<ActionDto.Reason> reasons = new List<ActionDto.Reason>();
@@ -258,16 +228,49 @@ public class ResourceService : IResourceService
             }
         }
 
+        if (authenticationLevel < 3)
+        {
+            currentAction.Result = false;
+            ActionDto.Reason reason = new ActionDto.Reason
+            {
+                Description = $"Resource-AuthenticationLevel-ToLow",
+                ReasonKey = DelegationCheckReasonCode.InsufficientAuthenticationLevel,
+            };
+            currentAction.Reasons = currentAction.Reasons.Append(reason);
+        }
+
+        if (!isResourceDelegable)
+        {
+            currentAction.Result = false;
+            ActionDto.Reason reason = new ActionDto.Reason
+            {
+                Description = $"Resource-NotDelegable",
+                ReasonKey = DelegationCheckReasonCode.ResourceNotDelegable,
+            };
+            currentAction.Reasons = currentAction.Reasons.Append(reason);
+        }
+
+        if (actionAccess.AccessListDenied == true)
+        {
+            currentAction.Result = false;
+            ActionDto.Reason reason = new ActionDto.Reason
+            {
+                Description = "Resource-AccesList-Enabled-NotListed",
+                ReasonKey = DelegationCheckReasonCode.AccessListValidationFail,
+            };
+            currentAction.Reasons = currentAction.Reasons.Append(reason);
+        }
+
         return currentAction;
     }
 
-    private async Task<IEnumerable<ActionDto>> MapFromInternalToExternalActions(List<ActionAccess> actionAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, int requiredAuthenticationLevel, int authenticationLevel, bool isResourceDelegable, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<ActionDto>> MapFromInternalToExternalActions(List<ActionAccess> actionAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, int authenticationLevel, bool isResourceDelegable, CancellationToken cancellationToken = default)
     {
         List<ActionDto> actions = [];
 
         foreach (var actionAccess in actionAccesses)
         {
-            actions.Add(await MapFromInternalToExternalAction(actionAccess, resourceId, accessListMode, fromParty, requiredAuthenticationLevel, authenticationLevel, isResourceDelegable, cancellationToken));
+            actions.Add(await MapFromInternalToExternalAction(actionAccess, resourceId, accessListMode, fromParty, authenticationLevel, isResourceDelegable, cancellationToken));
         }
 
         return actions;
