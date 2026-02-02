@@ -992,7 +992,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Bank"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til banktjenester."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-bank"
-    /// - <c>IconUrl:</c> "PersonSuit.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalBank { get; } = new ConstantDefinition<Area>("2b855fbf-0104-4c3c-a115-4e0dacfb0bf1")
@@ -1001,7 +1001,7 @@ public static class AreaConstants
         {
             Name = "Bank",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til banktjenester.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "PersonSuit.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-bank"
         },
@@ -1021,7 +1021,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Forsikringsselskap"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til forsikring."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-forsikringsselskap"
-    /// - <c>IconUrl:</c> "Aksel_Workplace_Buildings2.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalInsuranceCompany { get; } = new ConstantDefinition<Area>("aa9b2a34-fdfd-4c3d-9894-06795f8a621f")
@@ -1030,7 +1030,7 @@ public static class AreaConstants
         {
             Name = "Forsikringsselskap",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til forsikring.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Buildings2.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-forsikringsselskap"
         },
@@ -1050,7 +1050,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Husbanken"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til husbanken."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-husbanken"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalTheHouseBank { get; } = new ConstantDefinition<Area>("07524eb8-7db0-49ac-a34c-4cc56501f26f")
@@ -1059,7 +1059,7 @@ public static class AreaConstants
         {
             Name = "Husbanken",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til husbanken.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-husbanken"
         },
@@ -1079,7 +1079,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Inkassoselskap"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til inkassoselskap."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-inkassoselskap"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalDebtCollectionCompany { get; } = new ConstantDefinition<Area>("8d4c94dc-bf59-4f3d-bf3f-c4915d582997")
@@ -1088,7 +1088,7 @@ public static class AreaConstants
         {
             Name = "Inkassoselskap",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til inkassoselskap.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-inkassoselskap"
         },
@@ -1108,7 +1108,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Kartverket"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kartverket."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kartverket"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalNorwegianMappingAuthority { get; } = new ConstantDefinition<Area>("217820cc-911d-416b-92f1-fb5dc0cc1f04")
@@ -1117,7 +1117,7 @@ public static class AreaConstants
         {
             Name = "Kartverket",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kartverket.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kartverket"
         },
@@ -1137,7 +1137,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Kredittvurderingsselskap"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kredittvurderingsselskap."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kredittvurderingsselskap"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalCreditRatingCompany { get; } = new ConstantDefinition<Area>("217820cc-911d-416b-92f1-fb5dc0cc1f04")
@@ -1146,7 +1146,7 @@ public static class AreaConstants
         {
             Name = "Kredittvurderingsselskap",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kredittvurderingsselskap.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kredittvurderingsselskap"
         },
@@ -1166,7 +1166,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Namsmannen"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Namsmannen."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-namsmannen"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalBailiff { get; } = new ConstantDefinition<Area>("46d7f172-caad-4494-9c6d-3add8d120920")
@@ -1175,7 +1175,7 @@ public static class AreaConstants
         {
             Name = "Namsmannen",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Namsmannen.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-namsmannen"
         },
@@ -1195,7 +1195,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Skatteetaten"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Skatteetaten."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-skatteetaten"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalTaxAuthority { get; } = new ConstantDefinition<Area>("a0d54306-9af8-48c3-beb4-e37085642c95")
@@ -1204,7 +1204,7 @@ public static class AreaConstants
         {
             Name = "Skatteetaten",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Skatteetaten.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-skatteetaten"
         },
@@ -1224,7 +1224,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Statens Innkrevingssentral"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statens Innkrevingssentral."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-statens-innkrevingssentral"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalNorwegianCollectionCenter { get; } = new ConstantDefinition<Area>("4a780efa-8609-43be-b059-6c59473c46dd")
@@ -1233,7 +1233,7 @@ public static class AreaConstants
         {
             Name = "Statens Innkrevingssentral",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statens Innkrevingssentral.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-statens-innkrevingssentral"
         },
@@ -1253,7 +1253,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Statsforvalteren"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statsforvelteren."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-statsforvalteren"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalStateAdministrator { get; } = new ConstantDefinition<Area>("b34f7595-498f-458c-8a18-06ca2e8d8918")
@@ -1262,7 +1262,7 @@ public static class AreaConstants
         {
             Name = "Statsforvalteren",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statsforvelteren.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-statsforvalteren"
         },
@@ -1282,7 +1282,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Tingretten"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Tingretten."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-tingretten"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalDistrictCourt { get; } = new ConstantDefinition<Area>("b34f7595-498f-458c-8a18-06ca2e8d8918")
@@ -1291,7 +1291,7 @@ public static class AreaConstants
         {
             Name = "Tingretten",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Tingretten.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-tingretten"
         },
@@ -1311,7 +1311,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Annen kjøp og avtaleinngåelse"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Annen kjøp og avtaleinngåelse."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-annen-kjop-avtaleinngaelse"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalOtherPurchasesAndConclusionsOfAgreemets { get; } = new ConstantDefinition<Area>("4cf6b40c-24f2-4006-b280-b73b06d23504")
@@ -1320,7 +1320,7 @@ public static class AreaConstants
         {
             Name = "Annen kjøp og avtaleinngåelse",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Annen kjøp og avtaleinngåelse.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-annen-kjop-avtaleinngaelse"
         },
@@ -1340,7 +1340,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Kommune"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kommune."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kommune"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalMunicipality { get; } = new ConstantDefinition<Area>("0c1c1143-5e8d-4979-aef8-7de61f05a467")
@@ -1349,7 +1349,7 @@ public static class AreaConstants
         {
             Name = "Kommune",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kommune.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-kommune"
         },
@@ -1369,7 +1369,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "NAV"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til NAV."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-nav"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalNav { get; } = new ConstantDefinition<Area>("1dfa599d-1ade-48bd-86b4-ac033027c3d5")
@@ -1378,7 +1378,7 @@ public static class AreaConstants
         {
             Name = "NAV",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til NAV.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-nav"
         },
@@ -1398,7 +1398,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Pasientreiser"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientreiser."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-pasientreiser"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalPatientTravel { get; } = new ConstantDefinition<Area>("0f1095a5-1e2b-4756-b376-bab8c36a89e4")
@@ -1407,7 +1407,7 @@ public static class AreaConstants
         {
             Name = "Pasientreiser",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientreiser.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-pasientreiser"
         },
@@ -1427,7 +1427,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Helfo"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Helfo."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-helfo"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalHelfo { get; } = new ConstantDefinition<Area>("0f1095a5-1e2b-4756-b376-bab8c36a89e4")
@@ -1436,7 +1436,7 @@ public static class AreaConstants
         {
             Name = "Helfo",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Helfo.",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-helfo"
         },
@@ -1456,7 +1456,7 @@ public static class AreaConstants
     /// - <c>Name:</c> "Pasientopplysninger og -tjenester"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientopplysninger og -tjenester."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-pasientopplysninger-tjenester"
-    /// - <c>IconUrl:</c> "Aksel_Wellness_Hospital.svg" XXX
+    /// - <c>IconUrl:</c> "ShieldLock.svg"
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
     public static ConstantDefinition<Area> VergemalPatientInformationAndServices { get; } = new ConstantDefinition<Area>("43e8458d-4b88-49b6-b079-38dfa1ba663a")
@@ -1465,7 +1465,7 @@ public static class AreaConstants
         {
             Name = "Pasientopplysninger og -tjenester",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientopplysninger og -tjenester",
-            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
+            IconUrl = new Uri(AltinnCDNPackageIcons, "ShieldLock.svg").ToString(),
             GroupId = AreaGroupConstants.Inhabitant,
             Urn = "accesspackage:area:vergemal-pasientopplysninger-tjenester"
         },
