@@ -17,6 +17,31 @@ public interface IDelegationService
     Task<Delegation> GetDelegation(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get delegation
+    /// </summary>
+    /// <param name="fromId">From assignments from (e.g. Client)</param>
+    /// <param name="toId">To assignments to (e.g. Agent)</param>
+    /// <param name="viaId">Via (from assignments to and to assignments from)</param>
+    /// <param name="fromRoleId">From assignment role</param>
+    /// <param name="toRoleId">To assignment role</param>
+    /// <param name="includePackages">Include packages</param>
+    /// <param name="includeResources">Include resources</param>
+    /// <param name="includePackageResources">Include package resources</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns></returns>
+    Task<IEnumerable<RelationDto>> Get(
+        Guid? fromId,
+        Guid? toId,
+        Guid? viaId,
+        Guid? fromRoleId,
+        Guid? toRoleId,
+        bool includePackages = false,
+        bool includeResources = false,
+        bool includePackageResources = false,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Create a new delegation betweeen two assignments
     /// </summary>
     /// <param name="userId">User</param>

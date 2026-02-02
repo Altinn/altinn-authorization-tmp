@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +23,62 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         }
 
         return true;
+    }
+
+    public async Task<IEnumerable<RelationDto>> Get(
+       Guid? fromId,
+       Guid? toId,
+       Guid? viaId,
+       Guid? fromRoleId,
+       Guid? toRoleId,
+       bool includePackages = false,
+       CancellationToken cancellationToken = default
+       )
+    {
+        if (!fromId.HasValue && !toId.HasValue && !viaId.HasValue)
+        {
+            throw new ArgumentException("From, To or Via must have a value");
+        }
+
+        var dbresult = await db.Delegations.AsNoTracking()
+            .Include(t => t.To).ThenInclude(t => t.Role)
+            .Include(t => t.From).ThenInclude(t => t.Role)
+            .Include(t => t.Facilitator)
+            .WhereIf(fromId.HasValue, t => t.From.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.To.ToId == toId.Value)
+            .WhereIf(viaId.HasValue, t => t.Facilitator.Id == viaId.Value)
+            .WhereIf(fromRoleId.HasValue, t => t.From.Role.Id == fromRoleId.Value)
+            .WhereIf(toRoleId.HasValue, t => t.To.Role.Id == toRoleId.Value)
+            .ToListAsync();
+
+        if (!dbresult.Any())
+        {
+            return default;
+        }
+
+        var result = dbresult.Select(t => new RelationDto()
+        {
+            Id = t.Id,
+            From = DtoMapper.Convert(t.From.From),
+            To = DtoMapper.Convert(t.To.To),
+            Via = DtoMapper.Convert(t.Facilitator),
+            FromRole = DtoMapper.Convert(t.From.Role),
+            ToRole = DtoMapper.Convert(t.To.Role)
+        }).ToList();
+
+
+        if (includePackages)
+        {
+            var delegationIds = result.Select(t => t.Id).ToArray();
+            var delegationPackages = await db.DelegationPackages.AsNoTracking()
+                .Include(t => t.Package)
+                .Where(t => delegationIds.Contains(t.DelegationId))
+                .ToListAsync();
+
+            result.ForEach(r => r.Packages = delegationPackages.Where(dp => r.Id == dp.DelegationId).Select(t => DtoMapper.Convert(t.Package)).ToList());
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>
