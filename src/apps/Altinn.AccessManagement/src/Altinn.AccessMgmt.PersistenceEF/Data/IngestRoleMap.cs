@@ -478,7 +478,6 @@ public static partial class StaticDataIngest
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.ManagingDirector.Id },
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.Ektj.Id },
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.A0286.Id },
-            new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.Sens01.Id }, // ToDo: verify that this role should still be supported
 
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.Loper.Id },
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.Regna.Id },
