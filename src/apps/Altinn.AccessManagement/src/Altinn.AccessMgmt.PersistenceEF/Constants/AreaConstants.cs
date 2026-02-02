@@ -1104,14 +1104,14 @@ public static class AreaConstants
     /// Represents the Vergemål Debt collection company area.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 217820cc-911d-416b-92f1-fb5dc0cc1f04
+    /// - <c>Id:</c> 1096b041-b6cb-4e2e-94d8-55843148c4bf
     /// - <c>Name:</c> "Kartverket"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Kartverket."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-kartverket"
     /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
-    public static ConstantDefinition<Area> VergemalNorwegianMappingAuthority { get; } = new ConstantDefinition<Area>("217820cc-911d-416b-92f1-fb5dc0cc1f04")
+    public static ConstantDefinition<Area> VergemalNorwegianMappingAuthority { get; } = new ConstantDefinition<Area>("1096b041-b6cb-4e2e-94d8-55843148c4bf")
     {
         Entity = new()
         {
@@ -1249,14 +1249,14 @@ public static class AreaConstants
     /// Represents the Vergemål Tax authority area.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> b34f7595-498f-458c-8a18-06ca2e8d8918
+    /// - <c>Id:</c> 28920dfd-e934-4f47-929e-c32359c92896
     /// - <c>Name:</c> "Statsforvalteren"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Statsforvelteren."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-statsforvalteren"
     /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
-    public static ConstantDefinition<Area> VergemalStateAdministrator { get; } = new ConstantDefinition<Area>("b34f7595-498f-458c-8a18-06ca2e8d8918")
+    public static ConstantDefinition<Area> VergemalStateAdministrator { get; } = new ConstantDefinition<Area>("28920dfd-e934-4f47-929e-c32359c92896")
     {
         Entity = new()
         {
@@ -1394,14 +1394,14 @@ public static class AreaConstants
     /// Represents the Vergemål Patient travel area.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 0f1095a5-1e2b-4756-b376-bab8c36a89e4
+    /// - <c>Id:</c> ad1e864d-5ad0-4063-aa70-f5b7d431da50
     /// - <c>Name:</c> "Pasientreiser"
     /// - <c>Description:</c> "Dette fullmaktsområdet omfatter tilgangspakker knyttet til Pasientreiser."
     /// - <c>Urn:</c> "accesspackage:area:vergemal-pasientreiser"
     /// - <c>IconUrl:</c> "ShieldLock.svg" 
     /// - <c>GroupId:</c> Inhabitant (Innbygger)
     /// </remarks>
-    public static ConstantDefinition<Area> VergemalPatientTravel { get; } = new ConstantDefinition<Area>("0f1095a5-1e2b-4756-b376-bab8c36a89e4")
+    public static ConstantDefinition<Area> VergemalPatientTravel { get; } = new ConstantDefinition<Area>("ad1e864d-5ad0-4063-aa70-f5b7d431da50")
     {
         Entity = new()
         {
