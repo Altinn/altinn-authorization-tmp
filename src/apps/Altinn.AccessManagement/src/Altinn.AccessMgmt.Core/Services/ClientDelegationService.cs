@@ -582,6 +582,54 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             }
         }
 
+        var uniqueRoleIds = inputs.Select(p => p.Role.Id).Distinct();
+        var delegations = await db.Delegations
+            .Where(d => d.FacilitatorId == partyId)
+            .Include(d => d.From)
+            .Where(d => d.FromId == fromId && uniqueRoleIds.Contains(d.From.RoleId))
+            .Join(
+                db.DelegationPackages,
+                d => d.Id,
+                dp => dp.DelegationId,
+                (d, dp) => new
+                {
+                    Delegation = d,
+                    dp.Package,
+                    d.From.Role,
+                }
+            )
+            .GroupBy(x => x.Delegation.Id)
+            .ToListAsync(cancellationToken);
+
+        foreach (var delegation in delegations)
+        {
+            var delegationId = delegation.First().Delegation.Id;
+            var roleId = delegation.First().Role.Id;
+
+            var existingPackages = delegation
+                .Select(x => x.Package.Id)
+                .ToHashSet();
+
+            var deletedPackages = result
+                .Where(r => r.Changed && r.RoleId == roleId)
+                .Select(r => r.PackageId)
+                .ToHashSet();
+
+            var removeDelegation = existingPackages.SetEquals(deletedPackages);
+
+            if (removeDelegation)
+            {
+                var deleteDelegation = await db.Delegations
+                    .AsTracking()
+                    .FirstOrDefaultAsync(d => d.Id == delegationId, cancellationToken);
+
+                if (deleteDelegation != null)
+                {
+                    db.Delegations.Remove(deleteDelegation);
+                }
+            }
+        }
+
         await db.SaveChangesAsync(cancellationToken);
 
         return result;
