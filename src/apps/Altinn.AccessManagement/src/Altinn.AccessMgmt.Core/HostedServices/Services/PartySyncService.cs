@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -23,6 +25,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IAssignmentService _assignmentService;
 
     /// <summary>
     /// PartySyncService Constructor
@@ -30,12 +33,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     public PartySyncService(
         IAltinnRegister register,
         ILogger<RegisterHostedService> logger,
-        IServiceProvider serviceProvider
+        IServiceProvider serviceProvider,
+        IAssignmentService assignmentService
     )
     {
         _register = register;
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _assignmentService = assignmentService;
     }
 
     /// <inheritdoc/>
@@ -50,6 +55,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         var seen = new HashSet<string>();
         var ingestEntities = new List<Entity>();
+        HashSet<Guid> seenDeadPeople = [];
 
         using var scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -80,6 +86,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 if (!seen.Add(entity.RefId))
                 {
                     await Flush();
+                }
+
+                if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath.HasValue) 
+                {
+                    if (!seenDeadPeople.Add(entity.Id))
+                    {
+                        continue;
+                    }
                 }
 
                 ingestEntities.Add(entity);
@@ -114,6 +128,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchName);
 
                 var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+
+                if (seenDeadPeople.Count > 0)
+                {
+                    foreach (var refId in seenDeadPeople)
+                    {
+                        await _assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
+                    }
+                }
 
                 if (ingestedEntities != ingestEntities.Count)
                 {
