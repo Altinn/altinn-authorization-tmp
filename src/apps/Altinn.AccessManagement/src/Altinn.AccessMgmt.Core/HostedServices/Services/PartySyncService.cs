@@ -86,12 +86,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     await Flush();
                 }
 
-                if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath.HasValue) 
+                if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath.HasValue)
                 {
-                    if (!seenDeadPeople.Add(entity.Id))
-                    {
-                        continue;
-                    }
+                    seenDeadPeople.Add(entity.Id);
                 }
 
                 ingestEntities.Add(entity);
@@ -129,7 +126,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
                 if (seenDeadPeople.Count > 0)
                 {
-                    foreach (var refId in seenDeadPeople)
+                    foreach (Guid refId in seenDeadPeople)
                     {
                         await assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
                     }
@@ -154,6 +151,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 ingestEntities.Clear();
                 seen.Clear();
+                seenDeadPeople.Clear();
             }
 
             return 0;
