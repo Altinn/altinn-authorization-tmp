@@ -103,8 +103,8 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
-                        .. r.Where(p => p.AssignmentPackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id) ?? [],
-                        .. r.Where(p => p.RolePackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id) ?? [],
+                        .. r.Where(p => p.AssignmentPackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id),
+                        .. r.Where(p => p.RolePackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id),
                     ],
                 }).ToList(),
             }).ToList();
@@ -399,12 +399,13 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     continue;
                 }
 
-                var delegationExist = existingDelegationPackages.Any(
+                var delegationExist = await existingDelegationPackages.AnyAsync(
                     t =>
                     t.DelegationId == delegation.Id &&
                     t.PackageId == pkg.Package.Id &&
                     t.RolePackageId == rolePackageId &&
-                    t.AssignmentPackageId == assignmentPackageId);
+                    t.AssignmentPackageId == assignmentPackageId,
+                    cancellationToken);
 
                 if (!delegationExist)
                 {
