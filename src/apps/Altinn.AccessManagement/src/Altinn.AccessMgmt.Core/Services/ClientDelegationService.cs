@@ -392,12 +392,14 @@ public class ClientDelegationService(
                     continue;
                 }
 
-                if (!existingDelegationPackages.Any(
+                var delegationExist = existingDelegationPackages.Any(
                     t =>
                     t.DelegationId == delegation.Id &&
                     t.PackageId == pkg.Package.Id &&
                     t.RolePackageId == rolePackageId &&
-                    t.AssignmentPackageId == assignmentPackageId))
+                    t.AssignmentPackageId == assignmentPackageId);
+
+                if (!delegationExist)
                 {
                     db.DelegationPackages.Add(new DelegationPackage()
                     {
@@ -415,6 +417,7 @@ public class ClientDelegationService(
                     ViaId = partyId,
                     RoleId = input.Role,
                     PackageId = pkg.Package.Id,
+                    Changed = !delegationExist,
                 });
             }
         }
@@ -557,16 +560,17 @@ public class ClientDelegationService(
                 if (toRemove is { })
                 {
                     db.DelegationPackages.Remove(toRemove);
-
-                    result.Add(new()
-                    {
-                        FromId = fromId,
-                        ToId = toId,
-                        ViaId = partyId,
-                        RoleId = input.Role,
-                        PackageId = pkgId,
-                    });
                 }
+
+                result.Add(new()
+                {
+                    FromId = fromId,
+                    ToId = toId,
+                    ViaId = partyId,
+                    RoleId = input.Role,
+                    PackageId = pkgId,
+                    Changed = toRemove is { }
+                });
             }
         }
 
