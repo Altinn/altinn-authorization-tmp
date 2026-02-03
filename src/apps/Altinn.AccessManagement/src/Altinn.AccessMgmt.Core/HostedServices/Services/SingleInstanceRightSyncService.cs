@@ -74,7 +74,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                             AuditValues values = new AuditValues(
                                 performedByGuid,
-                                SystemEntityConstants.SingleRightImportSystem,
+                                SystemEntityConstants.SingleRightImportSystem.Id,
                                 batchId.ToString(),
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
