@@ -491,11 +491,6 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     errorBuilder.Add(ValidationErrors.InvalidPackage, $"BODY/values[{input.RoleIdx}]/packages[{inputPackage.PackageIdx}]", [new($"{inputPackage.InputPackage}", "package do not exist.")]);
                     continue;
                 }
-
-                if (!inputPackage.Package.Entity.IsDelegable)
-                {
-                    errorBuilder.Add(ValidationErrors.PackageIsNotDelegable, $"BODY/values[{input.RoleIdx}]/packages[{inputPackage.PackageIdx}]", [new($"{inputPackage.Package.Entity.Urn}", $"Package is not delegable and therefore cannot be deleted.")]);
-                }
             }
         }
 
