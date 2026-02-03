@@ -27,7 +27,7 @@ public class RoleService: IRoleService
             .Where(t => ids.Contains(t.Id))
             .ToListAsync(cancellationToken);
 
-        if (roles == null || !roles.Any())
+        if (roles == null || roles.Count == 0)
         {
             return null;
         }

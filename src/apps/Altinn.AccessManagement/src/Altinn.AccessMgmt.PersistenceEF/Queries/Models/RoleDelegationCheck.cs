@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 
 /// <summary>
 /// Role delegation check model.
@@ -8,7 +10,7 @@ public class RoleDelegationCheck
     /// <summary>
     /// Role the permissions are for
     /// </summary>
-    public DelegationCheckRole Role { get; set; }
+    public Role Role { get; set; }
 
     /// <summary>
     /// Result of the delegation check
@@ -18,21 +20,12 @@ public class RoleDelegationCheck
     /// <summary>
     /// Reason for the delegation check result
     /// </summary>
-    public DelegationCheckReason Reason { get; set; }
-
-    public class DelegationCheckRole
-    {
-        public Guid Id { get; set; }
-
-        public string Urn { get; set; }
-
-        public string LegacyUrn { get; set; }
-    }
+    public RoleReason Reason { get; set; }
 
     /// <summary>
     /// Reason for the delegation check result.
     /// </summary>
-    public class DelegationCheckReason
+    public class RoleReason
     {
         /// <summary>
         /// Description of the reason.

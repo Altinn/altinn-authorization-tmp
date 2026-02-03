@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -32,14 +33,12 @@ public static class ResourceDelegationCheckRoleQuery
         // Project rows back into your nested model
         return rows.Select(r => new RoleDelegationCheck
         {
-            Role = new RoleDelegationCheck.DelegationCheckRole
+            Role = new Role
             {
-                Id = r.RoleId,
-                Urn = r.RoleUrn,
-                LegacyUrn = r.RoleLegacyUrn
+                Id = r.RoleId
             },
             Result = r.HasAccess == true || r.CanDelegate == true,
-            Reason = new RoleDelegationCheck.DelegationCheckReason
+            Reason = new RoleDelegationCheck.RoleReason
             {
                 Description = r.Reason,
                 RoleId = r.AssignmentRoleId,

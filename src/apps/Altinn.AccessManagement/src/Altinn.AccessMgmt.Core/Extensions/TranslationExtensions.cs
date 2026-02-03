@@ -54,6 +54,30 @@ public static class TranslationExtensions
     }
 
     /// <summary>
+    /// Translates a Task result
+    /// </summary>
+    /// <typeparam name="TDto">The DTO type</typeparam>
+    /// <param name="dtoTask">The task returning the DTO</param>
+    /// <param name="translationService">The translation service</param>
+    /// <param name="languageCode">The target language code</param>
+    /// <param name="allowPartial">Whether to allow partial translation</param>
+    /// <returns>The translated DTO</returns>
+    public static async ValueTask<TDto> TranslateAsync<TDto>(
+        this Task<TDto> dtoTask,
+        ITranslationService translationService,
+        string languageCode,
+        bool allowPartial = true)
+    {
+        var dto = await dtoTask;
+        if (object.Equals(dto, default(TDto)))
+        {
+            return dto;
+        }
+
+        return await translationService.TranslateAsync(dto, languageCode, allowPartial);
+    }
+
+    /// <summary>
     /// Maps and translates a single entity to a DTO
     /// </summary>
     /// <typeparam name="TSource">The source entity type</typeparam>
@@ -105,29 +129,5 @@ public static class TranslationExtensions
 
         var dtos = sources.Select(mapper);
         return await translationService.TranslateCollectionAsync(dtos, languageCode, allowPartial);
-    }
-
-    /// <summary>
-    /// Translates a Task result
-    /// </summary>
-    /// <typeparam name="TDto">The DTO type</typeparam>
-    /// <param name="dtoTask">The task returning the DTO</param>
-    /// <param name="translationService">The translation service</param>
-    /// <param name="languageCode">The target language code</param>
-    /// <param name="allowPartial">Whether to allow partial translation</param>
-    /// <returns>The translated DTO</returns>
-    public static async ValueTask<TDto> TranslateAsync<TDto>(
-        this Task<TDto> dtoTask,
-        ITranslationService translationService,
-        string languageCode,
-        bool allowPartial = true)
-    {
-        var dto = await dtoTask;
-        if (object.Equals(dto, default(TDto)))
-        {
-            return dto;
-        }
-
-        return await translationService.TranslateAsync(dto, languageCode, allowPartial);
     }
 }

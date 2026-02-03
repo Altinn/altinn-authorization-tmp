@@ -85,7 +85,7 @@ public class TranslationMiddleware
                 var qpart = segments[1].Trim();
                 if (qpart.StartsWith("q=", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (double.TryParse(qpart.Substring(2), out var parsedQuality))
+                    if (double.TryParse(qpart.AsSpan(2), out var parsedQuality))
                     {
                         quality = parsedQuality;
                     }

@@ -768,7 +768,7 @@ public partial class ConnectionService(
             ct: cancellationToken
         );
 
-        var roles = await roleService.GetById(results.Select(r => r.Role.Id));
+        var roles = await roleService.GetById(results.Select(r => r.Role.Id), cancellationToken);
 
         var translated = await roles.TranslateDeepAsync(
             translationService,
