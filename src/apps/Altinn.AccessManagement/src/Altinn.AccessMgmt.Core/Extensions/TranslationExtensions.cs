@@ -22,7 +22,7 @@ public static class TranslationExtensions
         string languageCode,
         bool allowPartial = true)
     {
-        if (dto == null)
+        if (object.Equals(dto, default(TDto)))
         {
             return dto;
         }
@@ -45,7 +45,7 @@ public static class TranslationExtensions
         string languageCode,
         bool allowPartial = true)
     {
-        if (dtos == null)
+        if (object.Equals(dtos, default(IEnumerable<TDto>)))
         {
             return dtos;
         }
@@ -71,7 +71,7 @@ public static class TranslationExtensions
         string languageCode,
         bool allowPartial = true)
     {
-        if (source == null)
+        if (object.Equals(source, default(TSource)))
         {
             return default;
         }
@@ -98,7 +98,7 @@ public static class TranslationExtensions
         string languageCode,
         bool allowPartial = true)
     {
-        if (sources == null)
+        if (object.Equals(sources, default(IEnumerable<TSource>)))
         {
             return Enumerable.Empty<TDto>();
         }
@@ -123,7 +123,7 @@ public static class TranslationExtensions
         bool allowPartial = true)
     {
         var dto = await dtoTask;
-        if (dto == null)
+        if (object.Equals(dto, default(TDto)))
         {
             return dto;
         }
