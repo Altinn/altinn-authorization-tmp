@@ -25,7 +25,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IAssignmentService _assignmentService;
 
     /// <summary>
     /// PartySyncService Constructor
@@ -33,14 +32,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     public PartySyncService(
         IAltinnRegister register,
         ILogger<RegisterHostedService> logger,
-        IServiceProvider serviceProvider,
-        IAssignmentService assignmentService
+        IServiceProvider serviceProvider
     )
     {
         _register = register;
         _logger = logger;
         _serviceProvider = serviceProvider;
-        _assignmentService = assignmentService;
     }
 
     /// <inheritdoc/>
@@ -57,9 +54,10 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var ingestEntities = new List<Entity>();
         HashSet<Guid> seenDeadPeople = [];
 
-        using var scope = _serviceProvider.CreateEFScope(options);
+        using IServiceScope scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
+        IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
@@ -133,7 +131,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 {
                     foreach (var refId in seenDeadPeople)
                     {
-                        await _assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
+                        await assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
                     }
                 }
 
