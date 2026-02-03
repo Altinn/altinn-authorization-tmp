@@ -1019,7 +1019,7 @@ public partial class ConnectionService(
         {
             foreach (var accessorUrn in actionAccess.AccessorUrns)
             {
-                var package = packages.FirstOrDefault(p => p.Package.Urn == accessorUrn);
+                var package = packages.FirstOrDefault(p => p.Package.Urn.Equals(accessorUrn, StringComparison.InvariantCultureIgnoreCase));
 
                 if (package != null)
                 {
