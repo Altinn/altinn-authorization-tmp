@@ -1016,28 +1016,6 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         return result;
     }
 
-    private static void ValidatePartyIsNotNull(Guid id, Entity entity, ref ValidationErrorBuilder errors, string param)
-    {
-        if (entity is null)
-        {
-            errors.Add(ValidationErrors.EntityNotExists, param, [new("partyId", id.ToString())]);
-        }
-    }
-
-    private static void ValidatePartyIsOrg(Entity entity, ref ValidationErrorBuilder errors, string param)
-    {
-        if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
-        {
-            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
-        }
-    }
-
-    [DoesNotReturn]
-    private static void Unreachable()
-    {
-        throw new UnreachableException();
-    }
-
     /// <summary>
     /// Removes all assignments where the deadPerson is either a rightHolder or an agent.
     /// </summary>
@@ -1062,5 +1040,27 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         db.Assignments.RemoveRange(rightHolderAssignments);
         db.Assignments.RemoveRange(accessManagerAssignments);
         db.SaveChanges(audit);
+    }
+
+    private static void ValidatePartyIsNotNull(Guid id, Entity entity, ref ValidationErrorBuilder errors, string param)
+    {
+        if (entity is null)
+        {
+            errors.Add(ValidationErrors.EntityNotExists, param, [new("partyId", id.ToString())]);
+        }
+    }
+
+    private static void ValidatePartyIsOrg(Entity entity, ref ValidationErrorBuilder errors, string param)
+    {
+        if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+        {
+            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
+        }
+    }
+
+    [DoesNotReturn]
+    private static void Unreachable()
+    {
+        throw new UnreachableException();
     }
 }
