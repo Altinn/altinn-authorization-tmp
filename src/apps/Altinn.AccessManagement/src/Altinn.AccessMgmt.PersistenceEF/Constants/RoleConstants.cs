@@ -2685,7 +2685,7 @@ public static class RoleConstants
     /// - <c>Code:</c> A0212
     /// - <c>Description:</c> Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester
     /// </remarks>
-    public static ConstantDefinition<Role> PrimaryIndustryAndFoodstuff { get; } = new ConstantDefinition<Role>("c497b499-7e98-423d-9fe7-ad5a6c3b71ad")
+    public static ConstantDefinition<Role> A0212 { get; } = new ConstantDefinition<Role>("c497b499-7e98-423d-9fe7-ad5a6c3b71ad")
     {
         Entity = new()
         {
@@ -2719,7 +2719,7 @@ public static class RoleConstants
     /// - <c>Code:</c> A0236
     /// - <c>Description:</c> Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
     /// </remarks>
-    public static ConstantDefinition<Role> MailArchive { get; } = new ConstantDefinition<Role>("151955ec-d8aa-4c14-a435-ffa96b26a9fb")
+    public static ConstantDefinition<Role> A0236 { get; } = new ConstantDefinition<Role>("151955ec-d8aa-4c14-a435-ffa96b26a9fb")
     {
         Entity = new()
         {
@@ -2995,7 +2995,7 @@ public static class RoleConstants
     /// - <c>Code:</c> A0278
     /// - <c>Description:</c> Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
     /// </remarks>
-    public static ConstantDefinition<Role> PlanningAndConstruction { get; } = new ConstantDefinition<Role>("6828080b-e846-4c51-b670-201af4917562")
+    public static ConstantDefinition<Role> A0278 { get; } = new ConstantDefinition<Role>("6828080b-e846-4c51-b670-201af4917562")
     {
         Entity = new()
         {
@@ -4441,7 +4441,7 @@ public static class RoleConstants
             Description = "Havforskningsinstituttet - registrering av algetestdata",
             Urn = "urn:altinn:rolecode:a0293",
             IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
+            IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Algea test data"),
@@ -4474,7 +4474,7 @@ public static class RoleConstants
             Description = "Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister",
             Urn = "urn:altinn:rolecode:a0294",
             IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
+            IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Transport permit guarantee"),
@@ -4618,6 +4618,16 @@ public static class RoleConstants
         )
     };
 
+    /// <summary>
+    /// Represents the 'Konkursbo lesetilgang' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 7246639c-137b-4981-b172-6134c9fc1a7f
+    /// - <c>URN:</c> urn:altinn:rolecode:bobel
+    /// - <c>Provider:</c> Altinn2
+    /// - <c>Code:</c> bobel
+    /// - <c>Description:</c> Tilgang til å lese informasjon i tjenesten Konkursbehandling.
+    /// </remarks>
     public static ConstantDefinition<Role> Bobel { get; } = new ConstantDefinition<Role>("7246639c-137b-4981-b172-6134c9fc1a7f")
     {
         Entity = new()
@@ -4827,7 +4837,7 @@ public static class RoleConstants
             Description = "Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
             Urn = "urn:altinn:rolecode:hvask",
             IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
+            IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Økokrim reporting"),
@@ -4938,6 +4948,16 @@ public static class RoleConstants
         )
     };
 
+    /// <summary>
+    /// Represents the 'Parallell signering' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 0f276fc4-c201-4ff7-8e8a-caa3efe9c02a
+    /// - <c>URN:</c> urn:altinn:rolecode:pasig
+    /// - <c>Provider:</c> Altinn2
+    /// - <c>Code:</c> pasig
+    /// - <c>Description:</c> Denne rollen gir rettighet til å signere elementer fra andre avgivere.
+    /// </remarks>
     public static ConstantDefinition<Role> Pasig { get; } = new ConstantDefinition<Role>("0f276fc4-c201-4ff7-8e8a-caa3efe9c02a")
     {
         Entity = new()
@@ -5279,7 +5299,7 @@ public static class RoleConstants
             Description = "Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
             Urn = "urn:altinn:rolecode:utinn",
             IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
+            IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Reporter/sender"),

@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
@@ -17,6 +16,7 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -37,7 +37,7 @@ public class ConnectionsController(
 {
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
-        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization];
+        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
         options.AllowedWriteToEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
         options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
         options.AllowedReadToEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
@@ -381,6 +381,8 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveRole([FromQuery] ConnectionInput connection, [FromQuery] string roleCode, CancellationToken cancellationToken = default)
     {
+        return NotFound();
+
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
 
@@ -397,6 +399,33 @@ public class ConnectionsController(
         }
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Delegation check of roles, for which roles the authenticated user has permissions for on behalf of the specified party.
+    /// </summary>
+    [HttpGet("roles/delegationcheck")]
+    [ApiExplorerSettings(IgnoreApi = true)] //// Should stay hidden/closed in APIM unless we later on need to open for role delegation for endusers
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType<PaginatedResult<RoleDtoCheck>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DelegationCheckRoles([FromQuery] Guid party, CancellationToken cancellationToken = default)
+    {
+        async Task<Result<IEnumerable<RoleDtoCheck>>> CheckRoles()
+        {
+            return await ConnectionService.RoleDelegationCheck(party, cancellationToken: cancellationToken);
+        }
+
+        var result = await CheckRoles();
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     #endregion
@@ -555,9 +584,17 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        
+        var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resourceId, ConfigureConnections, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(result.Value);
     }
 
     #endregion
