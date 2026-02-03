@@ -181,30 +181,22 @@ public class ClientDelegationService(
     /// <inheritdoc/>
     public async Task<Result<List<AgentDto>>> GetDelegatedAccessPackagesFromClientsViaParty(Guid partyId, Guid fromId, CancellationToken cancellationToken = default)
     {
-        var query = await db.Assignments
-            .AsNoTracking()
-            .Where(e => e.FromId == fromId)
-            .Join(
-                db.Delegations,
-                x => x.Id,
-                d => d.FromId,
-                (x, d) => new { Assignment = x, Delegation = d })
-            .Where(x => x.Delegation.FacilitatorId == partyId)
+        var query = await db.Delegations.AsNoTracking()
+            .Include(d => d.From)
+            .Include(d => d.To).ThenInclude(a => a.To)
+            .Where(d => d.FacilitatorId == partyId && d.From.FromId == fromId)
             .Join(
                 db.DelegationPackages,
-                x => x.Delegation.Id,
+                d => d.Id,
                 dp => dp.DelegationId,
-                (x, dp) => new { x.Assignment, x.Delegation, DelegationPackage = dp })
+                (d, dp) => new { Delegation = d, DelegationPackage = dp })
             .Select(x => new
             {
                 x.Delegation.To.To,
                 x.Delegation.From.Role,
-                x.DelegationPackage.Package,
-
-                x.Delegation.To.To.Type.Provider,
-                x.Delegation.To.To.Variant.Type,
+                x.DelegationPackage.Package
             })
-            .GroupBy(r => r.To.Id)
+            .GroupBy(x => x.To.Id)
             .ToListAsync(cancellationToken);
 
         var result = query
@@ -225,28 +217,20 @@ public class ClientDelegationService(
     /// <inheritdoc/>
     public async Task<Result<List<ClientDto>>> GetDelegatedAccessPackagesToAgentsViaPartyAsync(Guid partyId, Guid toId, CancellationToken cancellationToken = default)
     {
-        var query = await db.Assignments
-            .AsNoTracking()
-            .Where(e => e.ToId == toId && e.RoleId == RoleConstants.Agent)
-            .Join(
-                db.Delegations,
-                x => x.Id,
-                d => d.ToId,
-                (x, d) => new { Assignment = x, Delegation = d })
-            .Where(x => x.Delegation.FacilitatorId == partyId)
+        var query = await db.Delegations.AsNoTracking()
+            .Include(d => d.To)
+            .Include(d => d.From).ThenInclude(a => a.From)
+            .Where(d => d.FacilitatorId == partyId && d.To.ToId == toId)
             .Join(
                 db.DelegationPackages,
-                x => x.Delegation.Id,
+                d => d.Id,
                 dp => dp.DelegationId,
-                (x, dp) => new { x.Assignment, x.Delegation, DelegationPackage = dp })
+                (d, dp) => new { Delegation = d, DelegationPackage = dp })
             .Select(x => new
             {
                 x.Delegation.From.From,
                 x.Delegation.From.Role,
-                x.DelegationPackage.Package,
-
-                x.Delegation.From.From.Type.Provider,
-                x.Delegation.From.From.Variant.Type,
+                x.DelegationPackage.Package
             })
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
