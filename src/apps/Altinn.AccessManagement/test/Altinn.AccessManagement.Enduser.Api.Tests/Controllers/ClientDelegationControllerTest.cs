@@ -560,19 +560,19 @@ public class ClientDelegationControllerTest
             static async Task<List<DelegationDto>> ShouldDelegateSuccessfully(HttpClient client)
             {
                 var response = await client.PostAsJsonAsync(
-                                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}",
-                                new DelegationBatchInputDto()
-                                {
-                                    Values = [
-                                        new()
+                    $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}",
+                    new DelegationBatchInputDto()
+                    {
+                        Values = [
+                        new()
                         {
                             Role = RoleConstants.Rightholder.Entity.Code,
                             Packages = [PackageConstants.Customs.Entity.Urn]
                         }
-                                    ]
-                                },
-                                TestContext.Current.CancellationToken
-                            );
+                        ]
+                    },
+                    TestContext.Current.CancellationToken
+                );
 
                 var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
