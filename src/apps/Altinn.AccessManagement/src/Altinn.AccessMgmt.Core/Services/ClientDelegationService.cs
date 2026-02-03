@@ -307,7 +307,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     Role = role,
                     Packages = pkgs,
                 };
-            }).ToList(); ;
+            }).ToList();
 
         foreach (var input in inputs)
         {
