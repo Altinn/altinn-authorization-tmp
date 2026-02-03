@@ -4,8 +4,8 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -13,33 +13,27 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class ClientDelegationService(
-    AppDbContext db,
-    ConnectionQuery connectionQuery) : IClientDelegationService
+public class ClientDelegationService(AppDbContext db) : IClientDelegationService
 {
     /// <inheritdoc/>
     public async Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default)
     {
-        var connections = await connectionQuery.GetConnectionsToOthersAsync(
-            new ConnectionQueryFilter
-            {
-                ToIds = [],
-                FromIds = [partyId],
-                RoleIds = [RoleConstants.Agent],
-                IncludeDelegation = false,
-                IncludePackages = true,
+        var query = await db.Assignments
+            .Where(a => a.FromId == partyId && a.RoleId == RoleConstants.Agent)
+            .Include(a => a.To)
+            .ToListAsync(cancellationToken);
 
-                IncludeSubConnections = false,
-                IncludeKeyRole = false,
-                IncludeResource = false,
-                IncludeMainUnitConnections = false,
-                EnrichEntities = true,
-            },
-            ct: cancellationToken);
-
-        var result = DtoMapper.ConvertToAgentDto(connections);
-
-        return result;
+        return query.Select(a => new AgentDto()
+        {
+            Agent = DtoMapper.Convert(a.To),
+            Access = [
+                new()
+                {
+                    Role = DtoMapper.ConvertCompactRole(RoleConstants.Agent.Entity),
+                    Packages = []
+                }
+            ]
+        }).ToList();
     }
 
     /// <inheritdoc/>
@@ -64,27 +58,56 @@ public class ClientDelegationService(
             return new List<ClientDto>();
         }
 
-        var connections = await connectionQuery.GetConnectionsFromOthersAsync(
-            new ConnectionQueryFilter
+        var query = await db.Assignments
+            .Where(a => a.ToId == partyId)
+            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId))
+            .Include(a => a.From)
+            .GroupJoin(
+                db.AssignmentPackages,
+                a => a.Id,
+                ap => ap.AssignmentId,
+                (a, aps) => new { Assignment = a, AssignmentPackages = aps }
+            )
+            .SelectMany(
+                x => x.AssignmentPackages.DefaultIfEmpty(),
+                (x, ap) => new { x.Assignment, AssignmentPackage = ap }
+            )
+            .GroupJoin(
+                db.RolePackages,
+                x => x.Assignment.RoleId,
+                rp => rp.RoleId,
+                (x, rps) => new { x.Assignment, x.AssignmentPackage, RolePackages = rps }
+            )
+            .SelectMany(
+                x => x.RolePackages.DefaultIfEmpty(),
+                (x, rp) => new
+                {
+                    x.Assignment.From,
+                    x.Assignment.Role,
+                    AssignmentPackage = x.AssignmentPackage.Package,
+                    RolePackage = rp.Package
+                }
+            )
+            .Where(x =>
+                (x.AssignmentPackage == null || x.AssignmentPackage.IsDelegable) &&
+                (x.RolePackage == null || x.RolePackage.IsDelegable))
+            .GroupBy(x => x.From.Id)
+            .ToListAsync(cancellationToken);
+
+        return query
+            .Select(access =>
+            new ClientDto()
             {
-                ToIds = [partyId],
-                FromIds = [],
-                RoleIds = roleFilter.Count > 0 ? roleFilter : null,
-
-                IncludeDelegation = false,
-                IncludePackages = true,
-
-                IncludeSubConnections = false,
-                IncludeKeyRole = false,
-                IncludeResource = false,
-                IncludeMainUnitConnections = false,
-                EnrichEntities = true,
-            },
-            ct: cancellationToken);
-
-        var result = DtoMapper.ConvertToClientDto(connections);
-
-        return result;
+                Client = DtoMapper.Convert(access.First().From),
+                Access = access.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccessPackages
+                {
+                    Role = DtoMapper.ConvertCompactRole(r.First().Role),
+                    Packages = [
+                        .. r.Where(p => p.AssignmentPackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id) ?? [],
+                        .. r.Where(p => p.RolePackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id) ?? [],
+                    ],
+                }).ToList(),
+            }).ToList();
     }
 
     /// <inheritdoc/>
