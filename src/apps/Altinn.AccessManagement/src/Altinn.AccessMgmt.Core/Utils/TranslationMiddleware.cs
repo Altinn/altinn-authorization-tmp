@@ -1,9 +1,9 @@
-﻿using Altinn.AccessManagement.Api.Metadata.Translation;
+﻿using Altinn.AccessMgmt.Core.Constants.Translation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Altinn.AccessManagement.Api.Metadata.Middleware;
+namespace Altinn.AccessMgmt.Core.Utils;
 
 /// <summary>
 /// Middleware that extracts language preferences from HTTP headers and stores them in HttpContext.

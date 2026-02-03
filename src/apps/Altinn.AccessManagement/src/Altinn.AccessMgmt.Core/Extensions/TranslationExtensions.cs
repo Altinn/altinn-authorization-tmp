@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Utils;
 
-namespace Altinn.AccessManagement.Api.Metadata.Translation;
+namespace Altinn.AccessMgmt.Core.Extensions;
 
 /// <summary>
 /// Extension methods for translating DTOs and collections

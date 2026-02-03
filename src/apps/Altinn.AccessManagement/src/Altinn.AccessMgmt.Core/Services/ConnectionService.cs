@@ -1,5 +1,8 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Constants.Translation;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -12,11 +15,10 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -25,7 +27,9 @@ public partial class ConnectionService(
     AppDbContext dbContext,
     ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor,
-    IAltinn2RightsClient altinn2Client) : IConnectionService
+    IAltinn2RightsClient altinn2Client,
+    IRoleService roleService,
+    ITranslationService translationService) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -753,26 +757,30 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<IEnumerable<RoleDtoCheck>>> RoleDelegationCheck(Guid party, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<RoleDtoCheck>>> RoleDelegationCheck(Guid party, Guid? toId = null, bool toIsMainAdminForFrom = false, CancellationToken cancellationToken = default)
     {
+        toId = toId ?? auditAccessor.AuditValues.ChangedBy;
+
         var results = await dbContext.GetRolesForResourceDelegationCheck(
             fromId: party,
-            toId: auditAccessor.AuditValues.ChangedBy,
-            toIsMainAdminForFrom: true,
+            toId: toId.Value,
+            toIsMainAdminForFrom,
             ct: cancellationToken
         );
+
+        var roles = await roleService.GetById(results.Select(r => r.Role.Id));
+
+        var translated = await roles.TranslateDeepAsync(
+            translationService,
+            TranslationConstants.DefaultLanguageCode,
+            true);
 
         return results.GroupBy(p => p.Role.Id).Select(group =>
         {
             var firstRole = group.First();
             return new RoleDtoCheck
             {
-                Role = new RoleDto
-                {
-                    Id = firstRole.Role.Id,
-                    Urn = firstRole.Role.Urn,
-                    LegacyUrn = firstRole.Role.LegacyUrn
-                },
+                Role = translated.FirstOrDefault(r => r.Id == firstRole.Role.Id),
                 Result = group.Any(p => p.Result),
                 Reasons = group.Select(p => new RoleDtoCheck.Reason
                 {

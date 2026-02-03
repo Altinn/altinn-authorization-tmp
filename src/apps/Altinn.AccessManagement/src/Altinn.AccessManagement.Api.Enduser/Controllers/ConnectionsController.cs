@@ -402,7 +402,7 @@ public class ConnectionsController(
     }
 
     /// <summary>
-    /// Delegation check of roles, for which roles the authenticated user has permission to assign to others on behalf of the specified party.
+    /// Delegation check of roles, for which roles the authenticated user has permissions for on behalf of the specified party.
     /// </summary>
     [HttpGet("roles/delegationcheck")]
     [ApiExplorerSettings(IgnoreApi = true)] //// Should stay hidden/closed in APIM unless we later on need to open for role delegation for endusers
@@ -416,7 +416,7 @@ public class ConnectionsController(
     {
         async Task<Result<IEnumerable<RoleDtoCheck>>> CheckRoles()
         {
-            return await ConnectionService.RoleDelegationCheck(party, ConfigureConnections, cancellationToken);
+            return await ConnectionService.RoleDelegationCheck(party, cancellationToken: cancellationToken);
         }
 
         var result = await CheckRoles();

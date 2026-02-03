@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
-namespace Altinn.AccessManagement.Api.Metadata.Translation;
+namespace Altinn.AccessMgmt.Core.Extensions;
 
 /// <summary>
 /// Extension methods for deep translation of DTOs with nested objects

@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -17,22 +16,15 @@ public static class ResourceDelegationCheckRoleQuery
         this AppDbContext dbContext,
         Guid fromId,
         Guid toId,
-        IEnumerable<Guid>? roleIds = null,
-        Guid? resourceId = null,
         bool toIsMainAdminForFrom = false,
         CancellationToken ct = default)
     {
-        ////var ids = roleIds?.ToArray();
-
         var rows = await dbContext.Database
             .SqlQueryRaw<RoleDelegationCheckRow>(
                 QUERY,
                 new NpgsqlParameter("fromId", fromId),
-                new NpgsqlParameter("toId", toId)
-                ////new NpgsqlParameter("roleIds", NpgsqlDbType.Array | NpgsqlDbType.Uuid)
-                ////{
-                ////    Value = (ids != null && ids.Length > 0) ? ids : DBNull.Value
-                ////}
+                new NpgsqlParameter("toId", toId),
+                new NpgsqlParameter("isMainAdmin", NpgsqlDbType.Boolean) { Value = toIsMainAdminForFrom }
             )
             .AsNoTracking()
             .ToListAsync(ct);
@@ -84,9 +76,7 @@ public static class ResourceDelegationCheckRoleQuery
                 r.isassignable,
                 false AS isdelegable -- Roles does not have delegable property, only packages
             FROM dbo.role r
-                JOIN dbo.entity e ON r.entitytypeid = e.typeid      -- Doubt this join works as intended for roles as most A2 roles are setup as org-roles but are for both orgs and persons
-                    AND e.id = @fromId
-            WHERE r.isavailableforserviceowners = true      -- This could be a better filter for relevant roles
+            WHERE r.isavailableforserviceowners = true      -- Unsure if this is sufficient filter for relevant roles
         ),
         mainAdminRoles AS (
             -- Get all roles for main administrator
@@ -100,7 +90,7 @@ public static class ResourceDelegationCheckRoleQuery
                 JOIN dbo.rolemap rm ON rm.getroleid = r.id
                 JOIN dbo.role ar ON rm.hasroleid = ar.id
             WHERE ar.code = 'hovedadministrator'
-                --AND @isMainAdmin = true
+                AND @isMainAdmin = true
         ),
         userRoles AS (
             -- Get direct assignment roles to user/party
@@ -330,9 +320,5 @@ public static class ResourceDelegationCheckRoleQuery
             LEFT JOIN dbo.entity viaEntity ON aur.viaid = viaEntity.id
             LEFT JOIN dbo.role viaRole ON aur.viaroleid = viaRole.id
             LEFT JOIN dbo.role assRole ON aur.assroleid = assRole.id
-        /* ToDo: Add filtering on specific roleIds
-        WHERE 
-            (array_length(@roleIds, 1) IS NULL OR r.id = ANY(@roleIds)) 
-        */
         """;
 }
