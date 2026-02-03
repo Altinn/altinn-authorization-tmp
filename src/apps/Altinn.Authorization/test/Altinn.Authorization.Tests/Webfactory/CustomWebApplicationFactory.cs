@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +17,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Webfactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseSetting("PostgreSQLSettings:EnableDBConnection", "false");
             builder.ConfigureTestServices((services) =>
             {
             });
