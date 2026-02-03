@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105121908_AddErrorQueue")]
+    partial class AddErrorQueue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,8 +227,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("InstanceId")
@@ -338,8 +341,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("PolicyPath")
@@ -594,8 +597,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("InstanceId")
@@ -714,8 +717,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<int>("DelegationChangeId")
-                        .HasColumnType("integer")
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
                         .HasColumnName("delegationchangeid");
 
                     b.Property<string>("PolicyPath")
@@ -953,10 +956,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
-
-                    b.Property<string>("EmailIdentifier")
-                        .HasColumnType("text")
-                        .HasColumnName("emailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -2119,10 +2118,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
-                    b.Property<string>("EmailIdentifier")
-                        .HasColumnType("text")
-                        .HasColumnName("emailidentifier");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
@@ -2460,14 +2455,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("origintype");
 
-                    b.Property<bool>("Processed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("processed");
-
-                    b.Property<bool>("ReProcess")
-                        .HasColumnType("boolean")
-                        .HasColumnName("reprocess");
-
                     b.HasKey("Id")
                         .HasName("pk_errorqueue");
 
@@ -2559,9 +2546,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_package_providerid");
 
-                    b.HasIndex("ProviderId", "Name", "EntityTypeId")
+                    b.HasIndex("ProviderId", "Name")
                         .IsUnique()
-                        .HasDatabaseName("ix_package_providerid_name_entitytypeid");
+                        .HasDatabaseName("ix_package_providerid_name");
 
                     b.ToTable("package", "dbo");
 
