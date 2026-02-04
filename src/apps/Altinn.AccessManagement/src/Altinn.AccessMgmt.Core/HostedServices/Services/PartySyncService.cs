@@ -181,6 +181,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private Assignment MapAssignmentForPerson(Person person)
     {
+        if ((person.IsDeleted.HasValue && person.IsDeleted.Value) || (person.DateOfDeath.HasValue && person.DateOfDeath.Value > DateOnly.MinValue))
+        {
+            // Dead or deleted
+            return null;
+        }
+
         return new Assignment()
         {
             FromId = person.Uuid,
@@ -191,6 +197,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private Assignment MapAssignmentForSelfIdentifiedUser(SelfIdentifiedUser user)
     {
+        if (user.IsDeleted.HasValue && user.IsDeleted.Value)
+        {
+            // Deleted
+            return null;
+        }
+
         return new Assignment()
         {
             FromId = user.Uuid,
