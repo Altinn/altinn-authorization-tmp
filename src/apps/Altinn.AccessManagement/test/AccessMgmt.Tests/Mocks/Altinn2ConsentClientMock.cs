@@ -12,6 +12,8 @@ using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.AccessManagement.Integration.Clients;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 
 namespace Altinn.AccessManagement.Tests.Mocks
 {
@@ -30,17 +32,9 @@ namespace Altinn.AccessManagement.Tests.Mocks
         /// <inheritdoc/>
         public Task<ConsentRequest> GetConsent(Guid consentGuid, CancellationToken cancellationToken = default)
         {
-            // Dummy values for required properties
-            var consent = new ConsentRequest
-            {
-                Id = consentGuid,
-                From = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()), // Replace with appropriate initialization if needed
-                To = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()),   // Replace with appropriate initialization if needed
-                ValidTo = DateTimeOffset.UtcNow.AddDays(30),
-                ConsentRights = new List<ConsentRight>(),
-                RedirectUrl = "https://example.com/redirect"
-            };
-            return Task.FromResult(consent);
+            ConsentRequest request = GetRequest(consentGuid);
+
+            return Task.FromResult(request);
         }
 
         /// <inheritdoc/>
@@ -74,6 +68,18 @@ namespace Altinn.AccessManagement.Tests.Mocks
         public Task<bool> UpdateConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(true);
+        }
+
+        private ConsentRequest GetRequest(Guid id)
+        {
+            Stream dataStream = File.OpenRead($"Data/Consent/consent_request_{id.ToString()}.json");
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            ConsentRequest result = JsonSerializer.Deserialize<ConsentRequest>(dataStream, options);
+            return result;
         }
     }
 }

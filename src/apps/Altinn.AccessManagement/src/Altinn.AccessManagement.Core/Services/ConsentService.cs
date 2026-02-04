@@ -174,14 +174,14 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (altinn2ConsentRequest != null)
                 {
-                    Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, from, cancellationToken);
-
-                    if (!result.IsProblem)
+                    if (altinn2ConsentRequest.From.Equals(from))
                     {
-                        if (altinn2ConsentRequest.From.Equals(from))
+                        Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, from, cancellationToken);
+
+                        if (!result.IsProblem)
                         {
                             await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
-                            consentRequest = result.Value.ConsentRequest;
+                            consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
                         }
                     }
                 }
