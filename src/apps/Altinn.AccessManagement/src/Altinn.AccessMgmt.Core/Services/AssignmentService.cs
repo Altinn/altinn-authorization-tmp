@@ -11,9 +11,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
-using Role = Altinn.AccessMgmt.PersistenceEF.Models.Role;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
