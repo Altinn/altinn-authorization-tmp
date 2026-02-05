@@ -876,7 +876,7 @@ public partial class ConnectionService(
         }
         catch (ValidationException)
         {
-            return Problems.InvalidResource;
+            return Problems.InvallidResource;
         }
 
         // Fetch Resourcemetadata
@@ -1004,7 +1004,7 @@ public partial class ConnectionService(
             currentAction.Result = true;
 
             ProcessPackageAllowAccessReasons(actionAccess.PackageAllowAccess, reasons);
-            ProcessPackageALowAccessReasons(actionAccess.RoleAllowAccess, reasons);
+            ProcessPackageAllowAccessReasons(actionAccess.RoleAllowAccess, reasons);
         }
 
         if (!isResourceDelegable)
@@ -1023,7 +1023,7 @@ public partial class ConnectionService(
             currentAction.Result = false;
             ActionDto.Reason reason = new ActionDto.Reason
             {
-                Description = "Resource-AccesList-Enabled-NotListed",
+                Description = "Resource-AccessList-Enabled-NotListed",
                 ReasonKey = DelegationCheckReasonCode.AccessListValidationFail,
             };
             reasons.Add(reason);
@@ -1033,7 +1033,7 @@ public partial class ConnectionService(
         return currentAction;
     }
 
-    private void ProcessPackageALowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<ActionDto.Reason> reasons)
+    private void ProcessPackageAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<ActionDto.Reason> reasons)
     {
         if (rolesAllowAccess.Count > 0)
         {
