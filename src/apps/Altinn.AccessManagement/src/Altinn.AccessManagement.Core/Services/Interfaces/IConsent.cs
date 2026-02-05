@@ -54,5 +54,20 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Returns the redirect url for a consent request. This is used to redirect the user to the consent page in Altinn Studio.
         /// </summary>
         Task<string> GetRequestRedirectUrl(Guid consentRequestId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a list of consent guids for migrations.
+        /// </summary>
+        Task<Result<List<Guid>>> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Returns a list of consents for migrations.
+        /// </summary>
+        Task<Result<List<ConsentRequest>>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Returns true if status is updated ok.
+        /// </summary>
+        Task<Result<bool>> UpdateConsentMigrateStatus(string consentId, int status, CancellationToken cancellationToken = default);
     }
 }

@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
+    public class ConsentService(IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
         IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
@@ -38,6 +38,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IProfileClient _profileClient = profileClient;
         private readonly TimeProvider _timeProvider = timeProvider;
         private readonly GeneralSettings _generalSettings = generalSettings.Value;
+        private readonly IAltinn2ConsentClient _altinn2ConsentClient = altinn2ConsentClient;
 
         private const string ResourceParam = "Resource";
 
@@ -166,6 +167,25 @@ namespace Altinn.AccessManagement.Core.Services
             // Map from external to internal identies 
             from = await MapFromExternalIdenity(from, cancellationToken);
             to = await MapFromExternalIdenity(to, cancellationToken);
+
+            if (consentRequest == null)
+            {
+                ConsentRequest altinn2ConsentRequest = await _altinn2ConsentClient.GetConsent(consentRequestId, cancellationToken);
+
+                if (altinn2ConsentRequest != null)
+                {
+                    if (altinn2ConsentRequest.From.Equals(from))
+                    {
+                        Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, from, cancellationToken);
+
+                        if (!result.IsProblem)
+                        {
+                            await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+                            consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+                        }
+                    }
+                }
+            }
 
             if (consentRequest == null)
             {
@@ -423,6 +443,24 @@ namespace Altinn.AccessManagement.Core.Services
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             return updated;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<List<Guid>>> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.GetConsentListForMigration(numberOfConsentsToReturn, status, onlyGetExpired, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<List<ConsentRequest>>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.GetMultipleConsents(consentList, cancellationToken);
+        }
+        
+        /// <inheritdoc/>
+        public async Task<Result<bool>> UpdateConsentMigrateStatus(string consentId, int status, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentId, status, cancellationToken);
         }
 
         /// <inheritdoc/>
