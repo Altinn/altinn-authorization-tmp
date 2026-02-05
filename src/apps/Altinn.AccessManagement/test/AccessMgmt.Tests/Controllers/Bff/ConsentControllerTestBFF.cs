@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
+using Npgsql.Internal;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -100,6 +101,57 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Assert.Equal("https:///www.urlfromsavedreqest.com", consentRequest.RedirectUrl);  // TODO FI
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentPortalViewMode.Hide, consentRequest.PortalViewMode);
+        }
+
+        /// <summary>
+        /// Test case: Get consent request
+        /// Scenario: User is authenticated and is the same person that has been request to accept the request
+        /// User is authorized for all rights in the consent request
+        /// </summary>
+        [Fact]
+        public async Task GetConsentListForMigration_Valid()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/getconsentlistformigration?numberOfConsentsToReturn=3&status=1&onlyGetExpired=false");
+            string responseText = await response.Content.ReadAsStringAsync();
+        }
+
+        /// <summary>
+        /// Test case: Get consent request
+        /// Scenario: User is authenticated and is the same person that has been request to accept the request
+        /// User is authorized for all rights in the consent request
+        /// </summary>
+        [Fact]
+        public async Task GetMultipleConsents_Valid()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/getmultipleconsents?consentList=4a73a516-7a91-435c-8a0e-0f4659588594&consentList=4a73a516-7a91-435c-8a0e-0f4659588594");
+            string responseText = await response.Content.ReadAsStringAsync();
+            List<ConsentRequest> altinn2Consents = JsonSerializer.Deserialize<List<ConsentRequest>>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.Equal(2, altinn2Consents.Count);
+        }
+
+        /// <summary>
+        /// Test case: Update consent migrate status
+        /// Scenario: Consent migrate status is updated for given consent ids
+        /// </summary>
+        [Fact]
+        public async Task UpdateConsentMigrateStatus_Valid()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/updateconsentmigratestatus?consentId=4a73a516-7a91-435c-8a0e-0f4659588594&status=1");
+            string responseText = await response.Content.ReadAsStringAsync();
+            Result altinn2ConsentUpdated = JsonSerializer.Deserialize<Result>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.True(altinn2ConsentUpdated.IsSuccess);
         }
 
         [Fact]

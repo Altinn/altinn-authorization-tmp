@@ -62,6 +62,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
                 ConsentRights = new List<ConsentRight>(),
                 RedirectUrl = "https://example.com/redirect"
             }).ToList();
+
             return Task.FromResult(consents);
         }
 

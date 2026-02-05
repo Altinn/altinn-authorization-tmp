@@ -446,6 +446,24 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
+        public async Task<Result<List<Guid>>> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.GetConsentListForMigration(numberOfConsentsToReturn, status, onlyGetExpired, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<List<ConsentRequest>>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.GetMultipleConsents(consentList, cancellationToken);
+        }
+        
+        /// <inheritdoc/>
+        public async Task<Result<bool>> UpdateConsentMigrateStatus(string consentId, int status, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentId, status, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<string> GetRequestRedirectUrl(Guid consentRequestId, CancellationToken cancellationToken)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);

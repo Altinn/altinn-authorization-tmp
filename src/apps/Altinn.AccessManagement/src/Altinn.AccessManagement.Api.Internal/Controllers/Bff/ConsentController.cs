@@ -280,6 +280,44 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             return Ok(result.Value);
         }
 
+        [HttpGet]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+        [Route("consentrequests/getconsentlistformigration")]
+        public async Task<IActionResult> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
+        {
+            Result<List<Guid>> consentRequest = await ConsentService.GetConsentListForMigration(numberOfConsentsToReturn, status, onlyGetExpired, cancellationToken);
+            if (consentRequest.IsProblem)
+            {
+                return consentRequest.Problem.ToActionResult();
+            }
+
+            return Ok(consentRequest.Value);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+        [Route("consentrequests/getmultipleconsents")]
+        public async Task<IActionResult> GetMultipleConsents([FromQuery] List<string> consentList, CancellationToken cancellationToken = default)
+        {
+            Result<List<ConsentRequest>> consentRequest = await ConsentService.GetMultipleConsents(consentList, cancellationToken);
+            if (consentRequest.IsProblem)
+            {
+                return consentRequest.Problem.ToActionResult();
+            }
+
+            return Ok(consentRequest.Value);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+        [Route("consentrequests/updateconsentmigratestatus")]
+        public async Task<IActionResult> UpdateConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default)
+        {
+            Result<bool> consentStatusUpdated = await ConsentService.UpdateConsentMigrateStatus(consentGuid, status, cancellationToken);
+            return Ok(consentStatusUpdated);
+        }
+
+
         private async Task<bool> AuthorizeResourceAccess(string resource, Guid resourceParty, ClaimsPrincipal userPrincipal,  string action)
         {
             XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(resource, resourceParty, userPrincipal, action);
