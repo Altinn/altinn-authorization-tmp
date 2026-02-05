@@ -1003,7 +1003,7 @@ public partial class ConnectionService(
         {
             currentAction.Result = true;
 
-            ProcessPackageALowAccessReasons(actionAccess.PackageAllowAccess, reasons);
+            ProcessPackageAllowAccessReasons(actionAccess.PackageAllowAccess, reasons);
             ProcessPackageALowAccessReasons(actionAccess.RoleAllowAccess, reasons);
         }
 
@@ -1063,7 +1063,7 @@ public partial class ConnectionService(
         }
     }
 
-    private void ProcessPackageALowAccessReasons(List<AccessPackageDto.AccessPackageDtoCheck> packagesAllowAccess, List<ActionDto.Reason> reasons)
+    private void ProcessPackageAllowAccessReasons(List<AccessPackageDto.AccessPackageDtoCheck> packagesAllowAccess, List<ActionDto.Reason> reasons)
     {
         if (packagesAllowAccess.Count > 0)
         {
