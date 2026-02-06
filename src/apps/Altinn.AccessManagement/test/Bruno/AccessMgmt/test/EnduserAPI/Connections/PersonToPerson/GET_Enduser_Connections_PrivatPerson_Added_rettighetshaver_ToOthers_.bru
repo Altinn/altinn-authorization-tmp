@@ -1,19 +1,19 @@
 meta {
-  name: GET_Enduser_Connections_Person_Added_FromOthers
+  name: GET_Enduser_Connections_PrivatPerson_Added_rettighetshaver_ToOthers_
   type: http
-  seq: 4
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&to={{party}}&from={{FromOrg}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toPerson}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  to: {{party}}
-  from: {{FromOrg}}
+  from: {{party}}
+  to: {{toPerson}}
 }
 
 body:json {
@@ -24,14 +24,15 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/person-accesspackage-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("party", testdata.vassen_riktig_tiger_as.person1.partyuuid);
-  bru.setVar("FromOrg", testdata.vassen_riktig_tiger_as.partyuuid);
+  bru.setVar("party", testdata.privat_person_A.partyuuid);
+  bru.setVar("toPerson", testdata.privat_person_B.partyuuid);
+  
   
   var getTokenParameters = {
-    auth_userId: testdata.vassen_riktig_tiger_as.person1.userid,
-    auth_partyId: testdata.vassen_riktig_tiger_as.person1.partyid,
-    auth_partyUuid: testdata.vassen_riktig_tiger_as.person1.partyuuid,
-    auth_ssn: testdata.vassen_riktig_tiger_as.person1.pid,
+    auth_userId: testdata.privat_person_A.userid,
+    auth_partyId: testdata.privat_person_A.partyid,
+    auth_partyUuid: testdata.privat_person_A.partyuuid,
+    auth_ssn: testdata.privat_person_A.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
@@ -44,14 +45,14 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/person-accesspackage-delegation/${bru.getEnvVar("tokenEnv")}.js`);
-  test("GET_Enduser_Connections_Person_Added_FromOthers", function() {
+  test("GET added person as rettighetshaver toOthers", function() {
   
      const data = res.getBody();
     
     const role = data.data.find(item => item.roles[0].code === "rettighetshaver");
     expect(role).to.exist;
     
-    expect(role.party.id).to.equal(testdata.vassen_riktig_tiger_as.partyuuid.toLowerCase());
+    expect(role.party.id).to.equal(testdata.privat_person_B.partyuuid.toLowerCase());
   });
 }
 

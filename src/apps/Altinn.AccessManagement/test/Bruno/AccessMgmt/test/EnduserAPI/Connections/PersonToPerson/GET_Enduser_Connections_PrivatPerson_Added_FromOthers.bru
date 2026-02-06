@@ -1,35 +1,34 @@
 meta {
-  name: GET_Enduser_Connections_Person_Added_ToOthers
+  name: GET_Enduser_Connections_PrivatPerson_Added_FromOthers
   type: http
   seq: 3
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toPerson}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&to={{party}}&from={{toPerson}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  from: {{party}}
-  to: {{toPerson}}
-  ~to: {{toPerson}}
+  to: {{party}}
+  from: {{toPerson}}
 }
 
 script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/person-accesspackage-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("party", testdata.vassen_riktig_tiger_as.partyuuid);
-  bru.setVar("toPerson", testdata.vassen_riktig_tiger_as.person1.partyuuid);
+  bru.setVar("party", testdata.privat_person_B.partyuuid);
+  bru.setVar("toPerson", testdata.privat_person_A.partyuuid);
   
   
   var getTokenParameters = {
-    auth_userId: testdata.vassen_riktig_tiger_as.dagl.userid,
-    auth_partyId: testdata.vassen_riktig_tiger_as.dagl.partyid,
-    auth_partyUuid: testdata.vassen_riktig_tiger_as.dagl.partyuuid,
-    auth_ssn: testdata.vassen_riktig_tiger_as.dagl.pid,
+    auth_userId: testdata.privat_person_B.userid,
+    auth_partyId: testdata.privat_person_B.partyid,
+    auth_partyUuid: testdata.privat_person_B.partyuuid,
+    auth_ssn: testdata.privat_person_B.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
@@ -42,11 +41,11 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/person-accesspackage-delegation/${bru.getEnvVar("tokenEnv")}.js`);
-  test("GET_Enduser_Connections_Person_Added_ToOthers", function() {
+  test("GET added person in fullmakter hos andre : FromOthers", function() {
   
      const data = res.getBody();
   
-     const conn = data.data.find(item => item.party.id === testdata.vassen_riktig_tiger_as.person1.partyuuid.toLowerCase());
+     const conn = data.data.find(item => item.party.id === testdata.privat_person_A.partyuuid.toLowerCase());
      expect(conn).to.exist;
      const role = conn.roles.find(item => item.code === "rettighetshaver");
      expect(role).to.exist;
