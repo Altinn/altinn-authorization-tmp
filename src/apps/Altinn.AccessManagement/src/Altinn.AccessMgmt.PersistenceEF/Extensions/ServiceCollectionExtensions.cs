@@ -14,6 +14,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private static readonly SortedDictionary<int, string> _sqlHashes = [];
+
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
@@ -49,6 +51,111 @@ public static class ServiceCollectionExtensions
     private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+        builder.ConfigureDataSource((dataSourceBuilder) =>
+        {
+            dataSourceBuilder.ConfigureTracing(o =>
+            {
+                o.EnableFirstResponseEvent(false);
+                o.ConfigureCommandEnrichmentCallback((activity, command) =>
+                {
+                    // Remove useless tags
+                    activity.SetTag("db.connection_id", null);
+                    activity.SetTag("db.connection_string", null);
+                    activity.SetTag("db.name", null);
+                    activity.SetTag("db.user", null);
+                    activity.SetTag("net.peer.ip", null);
+                    activity.SetTag("net.peer.name", null);
+                    activity.SetTag("net.transport", null);
+
+                    // Change statement tag to hash large queries and log the full query once per application lifetime
+                    activity.SetTag("db.statement", GetCommandTextHash(command.CommandText));
+                    if (command.Parameters.Count > 0)
+                    {
+                        activity.AddTag("db.command.parameters", GetParametersForLogging(command));
+                    }
+                });
+            });
+        });
+    }
+
+    private static string GetCommandTextHash(string commandText)
+    {
+        if (commandText.Length < 1000 || _sqlHashes.Count > 1000)
+        {
+            return commandText;
+        }
+
+        int hash = commandText.GetHashCode();
+        if (!_sqlHashes.ContainsKey(hash))
+        {
+            lock (_sqlHashes)
+            {
+                if (!_sqlHashes.ContainsKey(hash))
+                {
+                    _sqlHashes.Add(hash, commandText);
+
+                    // Log the full command text first occurrence of this hash
+                    return hash + ":" + commandText;
+                }
+            }
+        }
+
+        // Return hash + truncated command text
+        return hash + "-" + commandText.Substring(0, 200);
+    }
+
+    private static string GetParametersForLogging(Npgsql.NpgsqlCommand command)
+    {
+        string parameters = string.Empty;
+        try
+        {
+            foreach (var parameter in command.Parameters)
+            {
+                parameters += $"{((Npgsql.NpgsqlParameter)parameter).ParameterName}={GetParameterValueForLogging((Npgsql.NpgsqlParameter)parameter)};";
+            }
+        }
+        catch (Exception ex)
+        {
+            parameters = "Could not format parameters: " + ex.Message;
+        }
+
+        return parameters.TrimEnd(';');
+    }
+
+    private static string GetParameterValueForLogging(Npgsql.NpgsqlParameter parameter)
+    {
+        if (!parameter.DataTypeName.EndsWith("[]"))
+        {
+            return MaskSensitiveValue(parameter.Value?.ToString());
+        }
+
+        string parameters = string.Empty;
+        int i = 0;
+        int maxToLog = 5;
+        if (parameter.Value is System.Collections.IEnumerable enumerable)
+        {
+            foreach (var parameterValue in enumerable)
+            {
+                parameters += $"{MaskSensitiveValue(parameterValue.ToString())}:";
+                if (++i >= maxToLog)
+                {
+                    parameters += $"...skip-{enumerable.Cast<object>().Count() - maxToLog}";
+                    break;
+                }
+            }
+        }
+        else
+        {
+            throw new NotImplementedException($"Array parameter logging not implemented for type {parameter.Value?.GetType().FullName}");
+        }
+
+        return parameters.TrimEnd(':');
+    }
+
+    private static string MaskSensitiveValue(string value)
+    {
+        // Currently the only sensitive query parameter access mgmt is SSN
+        return value?.Length == 11 && value.All(char.IsDigit) ? value.Substring(0, 6) + "*****" : value;
     }
 
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
@@ -59,7 +166,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
-        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql).EnableSensitiveDataLogging();
+        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
     }
 
     public class AccessManagementDatabaseOptions
