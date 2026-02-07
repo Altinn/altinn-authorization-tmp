@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using System.Text;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
@@ -14,7 +15,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    private static readonly SortedDictionary<int, string> _sqlHashes = [];
+    private static readonly SortedSet<ulong> _sqlHashes = [];
 
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
@@ -80,19 +81,19 @@ public static class ServiceCollectionExtensions
 
     private static string GetCommandTextHash(string commandText)
     {
-        if (commandText.Length < 1000 || _sqlHashes.Count > 1000)
+        if (commandText.Length < 1000 || _sqlHashes.Count > 4000)
         {
             return commandText;
         }
 
-        int hash = commandText.GetHashCode();
-        if (!_sqlHashes.ContainsKey(hash))
+        ulong hash = XxHash64Utf8(commandText);
+        if (!_sqlHashes.Contains(hash))
         {
             lock (_sqlHashes)
             {
-                if (!_sqlHashes.ContainsKey(hash))
+                if (!_sqlHashes.Contains(hash))
                 {
-                    _sqlHashes.Add(hash, commandText);
+                    _sqlHashes.Add(hash);
 
                     // Log the full command text first occurrence of this hash
                     return hash + ":" + commandText;
@@ -106,20 +107,20 @@ public static class ServiceCollectionExtensions
 
     private static string GetParametersForLogging(Npgsql.NpgsqlCommand command)
     {
-        string parameters = string.Empty;
+        var parameters = new StringBuilder();
         try
         {
             foreach (var parameter in command.Parameters)
             {
-                parameters += $"{((Npgsql.NpgsqlParameter)parameter).ParameterName}={GetParameterValueForLogging((Npgsql.NpgsqlParameter)parameter)};";
+                parameters.Append($"{((Npgsql.NpgsqlParameter)parameter).ParameterName}={GetParameterValueForLogging((Npgsql.NpgsqlParameter)parameter)};");
             }
         }
         catch (Exception ex)
         {
-            parameters = "Could not format parameters: " + ex.Message;
+            return "Could not format parameters: " + ex.Message;
         }
 
-        return parameters.TrimEnd(';');
+        return parameters.ToString().TrimEnd(';');
     }
 
     private static string GetParameterValueForLogging(Npgsql.NpgsqlParameter parameter)
@@ -129,17 +130,17 @@ public static class ServiceCollectionExtensions
             return MaskSensitiveValue(parameter.Value?.ToString());
         }
 
-        string parameters = string.Empty;
+        var parameters = new StringBuilder();
         int i = 0;
         int maxToLog = 5;
         if (parameter.Value is System.Collections.IEnumerable enumerable)
         {
             foreach (var parameterValue in enumerable)
             {
-                parameters += $"{MaskSensitiveValue(parameterValue.ToString())}:";
+                parameters.Append($"{MaskSensitiveValue(parameterValue.ToString())}:");
                 if (++i >= maxToLog)
                 {
-                    parameters += $"...skip-{enumerable.Cast<object>().Count() - maxToLog}";
+                    parameters.Append($"...skip-{enumerable.Cast<object>().Count() - maxToLog}");
                     break;
                 }
             }
@@ -149,13 +150,22 @@ public static class ServiceCollectionExtensions
             throw new NotImplementedException($"Array parameter logging not implemented for type {parameter.Value?.GetType().FullName}");
         }
 
-        return parameters.TrimEnd(':');
+        return parameters.ToString().TrimEnd(':');
     }
 
     private static string MaskSensitiveValue(string value)
     {
         // Currently the only sensitive query parameter access mgmt is SSN
         return value?.Length == 11 && value.All(char.IsDigit) ? value.Substring(0, 6) + "*****" : value;
+    }
+
+    private static ulong XxHash64Utf8(string parameter)
+    {
+        // Avoid allocation by encoding to a stackalloc buffer when small
+        var maxLen = Encoding.UTF8.GetMaxByteCount(parameter.Length);
+        Span<byte> buf = maxLen <= 2048 ? stackalloc byte[maxLen] : new byte[maxLen];
+        var len = Encoding.UTF8.GetBytes(parameter.AsSpan(), buf);
+        return System.IO.Hashing.XxHash64.HashToUInt64(buf[..len]);
     }
 
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
