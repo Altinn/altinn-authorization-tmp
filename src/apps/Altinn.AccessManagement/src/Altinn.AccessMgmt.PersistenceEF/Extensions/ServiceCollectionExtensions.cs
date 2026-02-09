@@ -16,10 +16,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 public static class ServiceCollectionExtensions
 {
     private static readonly SortedSet<ulong> _sqlHashes = [];
+    private static bool _configureTracing = false;
 
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
+        _configureTracing = !options.AppConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase);
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
@@ -52,31 +54,34 @@ public static class ServiceCollectionExtensions
     private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
-        builder.ConfigureDataSource((dataSourceBuilder) =>
+        if (_configureTracing)
         {
-            ////dataSourceBuilder.ConfigureTracing(o =>
-            ////{
-            ////    o.EnableFirstResponseEvent(false);
-            ////    o.ConfigureCommandEnrichmentCallback((activity, command) =>
-            ////    {
-            ////        // Remove useless tags
-            ////        activity.SetTag("db.connection_id", null);
-            ////        activity.SetTag("db.connection_string", null);
-            ////        activity.SetTag("db.name", null);
-            ////        activity.SetTag("db.user", null);
-            ////        activity.SetTag("net.peer.ip", null);
-            ////        activity.SetTag("net.peer.name", null);
-            ////        activity.SetTag("net.transport", null);
+            builder.ConfigureDataSource((dataSourceBuilder) =>
+            {
+                dataSourceBuilder.ConfigureTracing(o =>
+                {
+                    o.EnableFirstResponseEvent(false);
+                    o.ConfigureCommandEnrichmentCallback((activity, command) =>
+                    {
+                        // Remove useless tags
+                        activity.SetTag("db.connection_id", null);
+                        activity.SetTag("db.connection_string", null);
+                        activity.SetTag("db.name", null);
+                        activity.SetTag("db.user", null);
+                        activity.SetTag("net.peer.ip", null);
+                        activity.SetTag("net.peer.name", null);
+                        activity.SetTag("net.transport", null);
 
-            ////        // Change statement tag to hash large queries and log the full query once per application lifetime
-            ////        activity.SetTag("db.statement", GetCommandTextHash(command.CommandText));
-            ////        if (command.Parameters.Count > 0)
-            ////        {
-            ////            activity.AddTag("db.command.parameters", GetParametersForLogging(command));
-            ////        }
-            ////    });
-            ////});
-        });
+                        // Change statement tag to hash large queries and log the full query once per application lifetime
+                        activity.SetTag("db.statement", GetCommandTextHash(command.CommandText));
+                        if (command.Parameters.Count > 0)
+                        {
+                            activity.AddTag("db.command.parameters", GetParametersForLogging(command));
+                        }
+                    });
+                });
+            });
+        }
     }
 
     private static string GetCommandTextHash(string commandText)
