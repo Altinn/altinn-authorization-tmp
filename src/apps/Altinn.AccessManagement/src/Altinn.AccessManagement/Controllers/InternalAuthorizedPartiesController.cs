@@ -22,8 +22,8 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/")]
-public class AuthorizedPartiesController(
-    ILogger<AuthorizedPartiesController> logger,
+public class InternalAuthorizedPartiesController(
+    ILogger<InternalAuthorizedPartiesController> logger,
     IMapper mapper,
     FeatureManager featureManager,
     IAuthorizedPartiesService authorizedPartiesService,
