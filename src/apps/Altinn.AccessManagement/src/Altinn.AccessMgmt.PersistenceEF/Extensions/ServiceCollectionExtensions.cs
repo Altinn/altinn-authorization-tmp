@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
+using System.Text;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -117,7 +118,9 @@ public static class ServiceCollectionExtensions
         {
             foreach (var parameter in command.Parameters)
             {
-                parameters.Append($"{((Npgsql.NpgsqlParameter)parameter).ParameterName}={GetParameterValueForLogging((Npgsql.NpgsqlParameter)parameter)};");
+                parameters.Append($"{((Npgsql.NpgsqlParameter)parameter).ParameterName}=");
+                AppendParameterValueForLogging((Npgsql.NpgsqlParameter)parameter, parameters);
+                parameters.Append(';');
             }
         }
         catch (Exception ex)
@@ -125,17 +128,22 @@ public static class ServiceCollectionExtensions
             return "Could not format parameters: " + ex.Message;
         }
 
-        return parameters.ToString().TrimEnd(';');
+        if (parameters[parameters.Length - 1] == ';')
+        {
+            parameters.Length--; // Remove trailing ';'
+        }
+
+        return parameters.ToString();
     }
 
-    private static string GetParameterValueForLogging(Npgsql.NpgsqlParameter parameter)
+    private static void AppendParameterValueForLogging(Npgsql.NpgsqlParameter parameter, StringBuilder parameters)
     {
         if (!parameter.DataTypeName.EndsWith("[]"))
         {
-            return MaskSensitiveValue(parameter.Value?.ToString());
+            parameters.Append(MaskSensitiveValue(parameter.Value?.ToString()));
+            return;
         }
 
-        var parameters = new StringBuilder();
         int i = 0;
         int maxToLog = 5;
         if (parameter.Value is System.Collections.IEnumerable enumerable)
@@ -155,7 +163,10 @@ public static class ServiceCollectionExtensions
             throw new NotImplementedException($"Array parameter logging not implemented for type {parameter.Value?.GetType().FullName}");
         }
 
-        return parameters.ToString().TrimEnd(':');
+        if (parameters[parameters.Length - 1] == ':')
+        {
+            parameters.Length--; // Remove trailing ':'
+        }
     }
 
     private static string MaskSensitiveValue(string value)
@@ -166,11 +177,7 @@ public static class ServiceCollectionExtensions
 
     private static ulong XxHash64Utf8(string parameter)
     {
-        // Avoid allocation by encoding to a stackalloc buffer when small
-        var maxLen = Encoding.UTF8.GetMaxByteCount(parameter.Length);
-        Span<byte> buf = maxLen <= 2048 ? stackalloc byte[maxLen] : new byte[maxLen];
-        var len = Encoding.UTF8.GetBytes(parameter.AsSpan(), buf);
-        return System.IO.Hashing.XxHash64.HashToUInt64(buf[..len]);
+        return System.IO.Hashing.XxHash64.HashToUInt64(MemoryMarshal.AsBytes(parameter.AsSpan()));
     }
 
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
