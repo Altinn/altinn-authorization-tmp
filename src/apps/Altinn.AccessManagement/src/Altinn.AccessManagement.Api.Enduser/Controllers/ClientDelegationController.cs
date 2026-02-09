@@ -32,7 +32,6 @@ public class ClientDelegationController(
     IEntityService EntityService) : ControllerBase
 {
     [HttpGet("me/clients")]
-    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
     [ProducesResponseType<PaginatedResult<MyClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -54,7 +53,6 @@ public class ClientDelegationController(
     }
 
     [HttpDelete("me/agents")]
-    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -68,7 +66,6 @@ public class ClientDelegationController(
     }
 
     [HttpDelete("me/clients")]
-    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
