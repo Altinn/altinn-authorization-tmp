@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
         {
             dataSourceBuilder.ConfigureTracing(o =>
             {
-                o.EnableFirstResponseEvent(false);
+                ////o.EnableFirstResponseEvent(false);
                 ////o.ConfigureCommandEnrichmentCallback((activity, command) =>
                 ////{
                 ////    Remove useless tags
