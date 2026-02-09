@@ -16,24 +16,56 @@ namespace Altinn.AccessMgmt.Core.Services;
 public class ClientDelegationService(AppDbContext db) : IClientDelegationService
 {
     /// <inheritdoc/>
-    public async Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<MyClientDto>>> MyClients(Guid partyId, List<Guid> via, CancellationToken cancellationToken = default)
     {
+        via ??= [];
         var query = await db.Assignments
-            .Where(a => a.FromId == partyId && a.RoleId == RoleConstants.Agent)
-            .Include(a => a.To)
+            .Where(a => a.ToId == partyId && a.RoleId == RoleConstants.Agent)
+            .Include(a => a.From) // Via
+            .Join(
+                db.Delegations,
+                a => a.Id,
+                d => d.ToId,
+                (a, d) => new { Delegation = d, }
+            ).
+            Join(
+                db.Assignments,
+                x => x.Delegation.FromId,
+                a => a.Id,
+                (x, a) => new { FromAssignment = a, x.Delegation }
+            )
+            .WhereIf(via.Count > 0, a => via.Contains(a.FromAssignment.ToId))
+            .Join(
+                db.DelegationPackages,
+                x => x.Delegation.Id,
+                dp => dp.DelegationId,
+                (x, dp) => new
+                {
+                    x.FromAssignment.Role,
+                    x.FromAssignment.From,
+                    x.FromAssignment.To,
+                    dp.Package,
+                    Via = x.FromAssignment.To,
+                }
+            )
+            .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
-        return query.Select(a => new AgentDto()
-        {
-            Agent = DtoMapper.Convert(a.To),
-            Access = [
-                new()
+        return query
+            .Select(i => i.GroupBy(a => a.Via.Id).Select(j =>
+                new MyClientDto()
                 {
-                    Role = DtoMapper.ConvertCompactRole(RoleConstants.Agent.Entity),
-                    Packages = []
+                    Client = DtoMapper.Convert(i.First().From),
+                    Via = DtoMapper.Convert(j.First().To),
+                    Access = i.GroupBy(r => r.Role).Select(r => new MyClientDto.RoleAccessPackages
+                    {
+                        Role = DtoMapper.ConvertCompactRole(r.First().Role),
+                        Packages = r.Where(p => p.Package is { }).Select(p => DtoMapper.ConvertCompactPackage(p.Package)).DistinctBy(p => p.Id).ToArray(),
+                    }).ToList()
                 }
-            ]
-        }).ToList();
+            ))
+            .SelectMany(a => a)
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -82,6 +114,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 x => x.RolePackages.DefaultIfEmpty(),
                 (x, rp) => new
                 {
+                    x.Assignment.To,
                     x.Assignment.From,
                     x.Assignment.Role,
                     AssignmentPackage = x.AssignmentPackage.Package,
@@ -108,6 +141,27 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     ],
                 }).ToList(),
             }).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default)
+    {
+        var query = await db.Assignments
+            .Where(a => a.FromId == partyId && a.RoleId == RoleConstants.Agent)
+            .Include(a => a.To)
+            .ToListAsync(cancellationToken);
+
+        return query.Select(a => new AgentDto()
+        {
+            Agent = DtoMapper.Convert(a.To),
+            Access = [
+                new()
+                {
+                    Role = DtoMapper.ConvertCompactRole(RoleConstants.Agent.Entity),
+                    Packages = []
+                }
+            ]
+        }).ToList();
     }
 
     /// <inheritdoc/>
@@ -635,6 +689,8 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
 /// </summary>
 public interface IClientDelegationService
 {
+    Task<Result<List<MyClientDto>>> MyClients(Guid partyId, List<Guid> via, CancellationToken cancellationToken = default);
+
     Task<Result<List<ClientDto>>> GetClients(Guid partyId, List<string>? roles, CancellationToken cancellationToken = default);
 
     Task<Result<List<AgentDto>>> GetAgents(Guid partyId, CancellationToken cancellationToken = default);
