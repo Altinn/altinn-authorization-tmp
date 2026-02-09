@@ -1041,21 +1041,31 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         throw new UnreachableException();
     }
 
-    public async Task<List<ResourceActionPermissionDto>> GetResources(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, CancellationToken cancellationToken = default)
+    public async Task<List<ResourceRulesDto>> GetResources(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, CancellationToken cancellationToken = default)
     {
         if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("You need to specify from or to");
         }
 
-        var result = new List<ResourceActionPermissionDto>();
+        var result = new List<ResourceRulesDto>();
+
+
+        var baseQuery = db.AssignmentResources.AsNoTracking()
+                .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+                .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+                .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+                .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value);
+
+
+
 
         var direct = await db.AssignmentResources.AsNoTracking()
             .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .Select(t => new ResPerm()
+            .Select(t => new AssignmentResourceQueryResult()
             {
                 Resource = t.Resource,
                 From = t.Assignment.From,
@@ -1073,7 +1083,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 db.Entities.AsNoTracking(),
                 ar => ar.Assignment.FromId,
                 c => c.ParentId,
-                (ar, c) => new ResPerm
+                (ar, c) => new AssignmentResourceQueryResult
                 {
                     Resource = ar.Resource,
                     From = c,
@@ -1091,7 +1101,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                db.Assignments.AsNoTracking().Where(t => t.Role.IsKeyRole),
                ar => ar.Assignment.ToId,
                c => c.FromId,
-               (ar, c) => new ResPerm
+               (ar, c) => new AssignmentResourceQueryResult
                {
                    Resource = ar.Resource,
                    From = ar.Assignment.From,
@@ -1116,7 +1126,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 db.Assignments.AsNoTracking().Where(a => a.Role.IsKeyRole),
                 x => x.ar.Assignment.ToId,
                 kr => kr.FromId,
-                (x, kr) => new ResPerm
+                (x, kr) => new AssignmentResourceQueryResult
                 {
                     Resource = x.ar.Resource,
                     From = x.fromChild,
@@ -1134,7 +1144,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             var resourceActionPermission = result.FirstOrDefault(t => t.Resource.Id == assignemntResource.Resource.Id);
             if (resourceActionPermission is not { })
             {
-                resourceActionPermission = new ResourceActionPermissionDto() { Resource = assignemntResource.Resource, Rules = new List<ActionPermission>() };
+                resourceActionPermission = new ResourceRulesDto() { Resource = DtoMapper.Convert(assignemntResource.Resource), Rules = new List<RulePermission>() };
             }
 
             var policy = await policyRetrievalPoint.GetPolicyAsync(assignemntResource.Resource.RefId, cancellationToken);
@@ -1146,7 +1156,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                     var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == action);
                     if (actionRule is not { })
                     {
-                        actionRule = new ActionPermission() { Action = action, Permissions = new List<PermissionDto>() };
+                        actionRule = new RulePermission() { Action = action, Permissions = new List<PermissionDto>() };
                         resourceActionPermission.Rules.Add(actionRule);
                     }
 
@@ -1167,31 +1177,15 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
 
         return result;
     }
-}
 
-public class ResPerm
-{
-    public Resource Resource { get; set; }
-    public Entity From { get; set; }
-    public Entity To { get; set; }
-    public Role Role { get; set; }
-}
+    internal class AssignmentResourceQueryResult
+    {
+        internal Resource Resource { get; set; }
 
-public class ResourceActionPermissionDto
-{
-    public Resource Resource { get; set; }
+        internal Entity From { get; set; }
 
-    public List<ActionPermission> Rules { get; set; }
-}
+        internal Entity To { get; set; }
 
-public class ActionPermission
-{
-    public string Action { get; set; }
-
-    public List<PermissionDto> Permissions { get; set; }
-}
-
-public interface IPolicyService
-{
-    Task<XacmlPolicy> GetPolicy(string path, string version);
+        internal Role Role { get; set; }
+    }
 }
