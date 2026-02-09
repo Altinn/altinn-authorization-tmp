@@ -87,23 +87,26 @@ public static class ServiceCollectionExtensions
 
     private static string GetCommandTextHash(string commandText)
     {
-        if (commandText.Length < 1000 || _sqlHashes.Count > 4000)
+        if (commandText.Length < 1000)
         {
             return commandText;
         }
 
         ulong hash = XxHash64Utf8(commandText);
-        if (!_sqlHashes.Contains(hash))
+        lock (_sqlHashes)
         {
-            lock (_sqlHashes)
+            if (_sqlHashes.Count > 4000)
             {
-                if (!_sqlHashes.Contains(hash))
-                {
-                    _sqlHashes.Add(hash);
+                // Can't keep track of more than 4000 unique SQL statement hashes
+                return commandText;
+            }
 
-                    // Log the full command text first occurrence of this hash
-                    return hash + ":" + commandText;
-                }
+            if (!_sqlHashes.Contains(hash))
+            {
+                _sqlHashes.Add(hash);
+
+                // Log the full command text first occurrence of this hash
+                return hash + ":" + commandText;
             }
         }
 
