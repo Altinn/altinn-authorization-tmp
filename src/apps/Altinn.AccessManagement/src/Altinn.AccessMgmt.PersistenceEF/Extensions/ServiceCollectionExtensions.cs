@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
-        _configureTracing = !options.AppConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+        _configureTracing = options.AppConnectionString.Contains("database=authorizationdb", StringComparison.OrdinalIgnoreCase);
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
