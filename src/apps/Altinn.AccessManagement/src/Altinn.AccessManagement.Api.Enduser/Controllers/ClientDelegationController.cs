@@ -52,7 +52,7 @@ public class ClientDelegationController(
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
-    [HttpDelete("my/agents")]
+    [HttpDelete("my/clientproviders")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
