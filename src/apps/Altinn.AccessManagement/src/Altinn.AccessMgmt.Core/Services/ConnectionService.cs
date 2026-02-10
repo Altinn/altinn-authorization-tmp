@@ -24,7 +24,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
-using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
@@ -1580,11 +1579,10 @@ public partial class ConnectionService
             .Union(keyRoleResult)
             .Union(keyRoleSubUnit);
 
-        res.First().Reason.Matches(AccessReason.Set(AccessReasonKeys.Hierarchy, AccessReasonKeys.KeyRole).Or(AccessReasonKeys.Delegation));
-
         foreach (var assignmentResource in res)
         {
             var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(assignmentResource.Resource.RefId, cancellationToken);
+            var validRuleActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, assignmentResource.Resource.RefId));
 
             var resourceActionPermission = result.FirstOrDefault(t => t.Resource.Id == assignmentResource.Resource.Id);
             if (resourceActionPermission is not { })
@@ -1595,28 +1593,25 @@ public partial class ConnectionService
             var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
             foreach (var r in policy.Rules)
             {
-                var actions = DelegationCheckHelper.CalculateActionKeyParts(r, assignmentResource.Resource.RefId);
-                //var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
+                var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
 
-                foreach (var actionSplit in actions)
+                foreach (var actionKey in actions)
                 {
-                    var action = actionSplit.SubResource + ":" + actionSplit.Action;
+                    if (!validRuleActions.Contains(actionKey))
+                    {
+                        continue;
+                    }
 
-                    //if (!validRuleActions.Keys.Contains(action))
-                    //{
-                    //    continue;
-                    //}
-
-                    var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == action);
+                    var actionSplit = DelegationCheckHelper.SplitActionKey(actionKey);
+                    var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == actionKey);
                     if (actionRule is not { })
                     {
-                        actionRule = new RulePermission() 
-                        { 
-                            Key = action,
-                            SubResource = actionSplit.SubResource,
+                        actionRule = new RulePermission()
+                        {
+                            Key = actionKey,
+                            SubResource = string.Join(':', actionSplit.Resource),
                             Action = actionSplit.Action,
                             Permissions = new List<PermissionDto>(),
-                            //Reason = assignmentResource.Reason.Name,
                         };
                         resourceActionPermission.Rules.Add(actionRule);
                     }
@@ -1628,6 +1623,7 @@ public partial class ConnectionService
                             From = DtoMapper.Convert(assignmentResource.From),
                             To = DtoMapper.Convert(assignmentResource.To),
                             Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
+                            Reason = assignmentResource.Reason
                         });
                     }
                 }
