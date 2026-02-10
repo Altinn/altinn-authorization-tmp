@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Utils.Values;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Reasons for access

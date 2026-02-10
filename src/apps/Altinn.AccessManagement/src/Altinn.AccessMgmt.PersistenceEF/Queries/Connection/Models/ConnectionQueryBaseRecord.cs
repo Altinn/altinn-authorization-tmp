@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
