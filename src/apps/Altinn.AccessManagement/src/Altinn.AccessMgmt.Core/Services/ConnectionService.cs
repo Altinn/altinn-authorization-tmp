@@ -71,7 +71,7 @@ public partial class ConnectionService(
             {
                 FromIds = fromId.HasValue ? [fromId.Value] : null,
                 ToIds = toId.HasValue ? [toId.Value] : null,
-                ExcludeRoleIds = [RoleConstants.Agent],
+                ExcludeRoleIds = options?.ExcludeRoleIds.Count > 0 ? options.ExcludeRoleIds : null,
                 EnrichEntities = true,
                 IncludeSubConnections = true,
                 IncludeKeyRole = true,
@@ -894,7 +894,7 @@ public partial class ConnectionService(
         ServiceResource resourceMetadata = await contextRetrievalService.GetResourceFromResourceList(resourceId, isApp ? org : null, isApp ? app : null);
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
         bool isResourceDelegable = resourceMetadata.Delegable;
-        
+
         // Decompose policy into resource/tasks
         List<ActionAccess> actionAccesses = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
 
@@ -1163,7 +1163,7 @@ public partial class ConnectionService(
                             Description = $"Missing-Role",
                             ReasonKey = DelegationCheckReasonCode.MissingRoleAccess,
                             RoleId = role.Role.Id,
-                            RoleUrn = role.Role.Urn,                            
+                            RoleUrn = role.Role.Urn,
                         };
 
                         actionAccess.RoleDenyAccess.Add(reason);
@@ -1593,4 +1593,6 @@ public sealed class ConnectionOptions
     public IEnumerable<Guid> FilterToEntityTypes { get; set; } = [];
 
     public IEnumerable<Guid> FilterFromEntityTypes { get; set; } = [];
+
+    public IReadOnlyCollection<Guid> ExcludeRoleIds { get; set; } = [];
 }

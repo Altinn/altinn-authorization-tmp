@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
@@ -16,7 +17,6 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -43,6 +43,7 @@ public class ConnectionsController(
         options.AllowedReadToEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
         options.FilterFromEntityTypes = [];
         options.FilterToEntityTypes = [];
+        options.ExcludeRoleIds = [RoleConstants.Agent];
     };
 
     /// <summary>
@@ -566,7 +567,7 @@ public class ConnectionsController(
         }
 
         var problem = await ConnectionService.RemoveResource(fromId, toId, resource, ConfigureConnections, cancellationToken);
-        
+
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -588,7 +589,7 @@ public class ConnectionsController(
     public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resource, CancellationToken cancellationToken = default)
     {
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
-        
+
         var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
