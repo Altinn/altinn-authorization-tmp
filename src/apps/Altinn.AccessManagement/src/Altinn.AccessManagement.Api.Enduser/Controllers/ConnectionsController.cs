@@ -43,7 +43,6 @@ public class ConnectionsController(
         options.AllowedReadToEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
         options.FilterFromEntityTypes = [];
         options.FilterToEntityTypes = [];
-        options.ExcludeRoleIds = [RoleConstants.Agent];
     };
 
     /// <summary>
@@ -58,6 +57,7 @@ public class ConnectionsController(
     public async Task<IActionResult> GetConnections(
         [FromQuery] ConnectionInput connection,
         [FromQuery, FromHeader] PagingInput paging,
+        [FromQuery] bool includeClientDelegations = false,
         CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
@@ -72,7 +72,15 @@ public class ConnectionsController(
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        var result = await ConnectionService.Get(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.Get(
+            partyUuid,
+            validFromUuid ? fromUuid : null,
+            validToUuid ? toUuid : null,
+            includeClientDelegations,
+            ConfigureConnections,
+            cancellationToken
+        );
+        
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

@@ -47,7 +47,7 @@ public partial class ConnectionService(
     IRoleService roleService,
     ITranslationService translationService) : IConnectionService
 {
-    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = false, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
@@ -71,12 +71,11 @@ public partial class ConnectionService(
             {
                 FromIds = fromId.HasValue ? [fromId.Value] : null,
                 ToIds = toId.HasValue ? [toId.Value] : null,
-                ExcludeRoleIds = options?.ExcludeRoleIds.Count > 0 ? options.ExcludeRoleIds : null,
                 EnrichEntities = true,
                 IncludeSubConnections = true,
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
-                IncludeDelegation = true,
+                IncludeDelegation = includeClientDelegations,
                 IncludePackages = true,
                 IncludeResources = false,
                 EnrichPackageResources = false,
@@ -250,7 +249,7 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        var connection = await Get(fromId, fromId, toId, true, configureConnection, cancellationToken: cancellationToken);
         if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
             return Problems.MissingConnection;
@@ -513,7 +512,7 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        var connection = await Get(fromId, fromId, toId, true, configureConnection, cancellationToken: cancellationToken);
         if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
             return Problems.MissingConnection;
@@ -1593,6 +1592,4 @@ public sealed class ConnectionOptions
     public IEnumerable<Guid> FilterToEntityTypes { get; set; } = [];
 
     public IEnumerable<Guid> FilterFromEntityTypes { get; set; } = [];
-
-    public IReadOnlyCollection<Guid> ExcludeRoleIds { get; set; } = [];
 }
