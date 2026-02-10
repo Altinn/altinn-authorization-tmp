@@ -59,7 +59,7 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteMyAgentViaParty(
-        [FromQuery(Name = "from")][Required] Guid from,
+        [FromQuery(Name = "provider")][Required] Guid provider,
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();   
@@ -72,7 +72,7 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteMyClientViaParty(
-        [FromQuery(Name = "via")][Required] Guid via,
+        [FromQuery(Name = "provider")][Required] Guid provider,
         [FromQuery(Name = "from")][Required] Guid from,
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
