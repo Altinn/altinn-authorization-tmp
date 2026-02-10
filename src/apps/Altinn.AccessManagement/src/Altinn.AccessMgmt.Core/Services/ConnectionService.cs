@@ -1447,7 +1447,7 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid? toId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        return await GetResources(
+        return await GetResourcesRules(
            fromId: partyId,
            toId: toId,
            resourceId: resourceId,
@@ -1459,7 +1459,7 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid? fromId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        return await GetResources(
+        return await GetResourcesRules(
             fromId: fromId, 
             toId: partyId, 
             resourceId: resourceId, 
@@ -1468,7 +1468,7 @@ public partial class ConnectionService
             );
     }
 
-    private async Task<List<ResourceRulesDto>> GetResources(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, CancellationToken cancellationToken = default)
+    private async Task<List<ResourceRulesDto>> GetResourcesRules(Guid? fromId, Guid? toId, Guid? resourceId, Guid? roleId, CancellationToken cancellationToken = default)
     {
         if (!fromId.HasValue && !toId.HasValue)
         {
@@ -1778,4 +1778,21 @@ public sealed class ConnectionOptions
     public IEnumerable<Guid> FilterToEntityTypes { get; set; } = [];
 
     public IEnumerable<Guid> FilterFromEntityTypes { get; set; } = [];
+}
+
+internal class AssignmentResourceQueryResult
+{
+    internal Resource Resource { get; set; }
+
+    internal Entity From { get; set; }
+
+    internal Entity To { get; set; }
+
+    internal Role Role { get; set; }
+
+    internal string PolicyPath { get; set; }
+
+    internal string PolicyVersion { get; set; }
+
+    internal Reason Reason { get; set; }
 }
