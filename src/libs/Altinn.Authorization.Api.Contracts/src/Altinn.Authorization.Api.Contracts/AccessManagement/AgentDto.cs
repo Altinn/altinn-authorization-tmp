@@ -17,8 +17,8 @@ public class AgentDto
     /// <summary>
     /// Specfies Datetime when agent was added.
     /// </summary>
-    [JsonPropertyName("modifiedAt")]
-    public DateTimeOffset ModifiedAt { get; set; }
+    [JsonPropertyName("agentAddedAt")]
+    public DateTimeOffset AgentAddedAt { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of all access information for the client 
