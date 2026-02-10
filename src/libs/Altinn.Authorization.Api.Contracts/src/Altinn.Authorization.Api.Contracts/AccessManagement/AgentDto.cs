@@ -15,6 +15,12 @@ public class AgentDto
     public CompactEntityDto Agent { get; set; }
 
     /// <summary>
+    /// Specfies Datetime when agent was added.
+    /// </summary>
+    [JsonPropertyName("modifiedAt")]
+    public DateTimeOffset ModifiedAt { get; set; }
+
+    /// <summary>
     /// Gets or sets a collection of all access information for the client 
     /// </summary>
     [JsonPropertyName("access")]
