@@ -152,21 +152,15 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             return false;
         }
 
-        public static IEnumerable<string> CalculateActionKey(XacmlRule rule, string resourceId)
-        {
-            var res = CalculateActionKeyParts(rule, resourceId);
-            return res.Select(t => t.SubResource + ":" + t.Action);
-        }
-
         /// <summary>
         /// Returns a list of resource/action keys based on a given policy rule
         /// </summary>
         /// <param name="rule">the rule to analyze</param>
         /// <param name="resourceId">the resourceid subjects must contain</param>
         /// <returns>list of resource/action keys</returns>
-        public static IEnumerable<(string SubResource, string Action)> CalculateActionKeyParts(XacmlRule rule, string resourceId)
+        public static IEnumerable<string> CalculateActionKey(XacmlRule rule, string resourceId)
         {
-            var newResult = new List<(string AubResource, string Action)>();
+            List<string> result = [];
 
             //Use policy to calculate the rest of the key
             var resources = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Resource).ToList();
@@ -237,11 +231,11 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             {
                 foreach (var action in actionKeys)
                 {
-                    newResult.Add((resource, action));
+                    result.Add(resource + ":" + action);
                 }
             }
 
-            return newResult;
+            return result;
         }
 
         /// <summary>
