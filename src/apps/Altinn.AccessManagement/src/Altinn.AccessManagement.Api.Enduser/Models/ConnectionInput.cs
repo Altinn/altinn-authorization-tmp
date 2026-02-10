@@ -1,3 +1,4 @@
+﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -28,4 +29,6 @@ public class ConnectionInput
     [FromQuery(Name = "to")]
     [SwaggerSchema(Description = "to", Format = "<me, all | blank, uuid>")]
     public string To { get; set; }
+
+    public ConnectionQueryDirection Direction => From == Party ? ConnectionQueryDirection.ToOthers : ConnectionQueryDirection.FromOthers;
 }

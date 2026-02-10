@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Features;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
@@ -242,9 +243,10 @@ public class ConnectionQuery(AppDbContext db)
                     ViaId = null,
                     ViaRoleId = null,
                     Reason = ConnectionReason.Assignment,
+                    NewReason = AccessReason.Assignment,
                     IsKeyRoleAccess = false,
                     IsMainUnitAccess = false,
-                    IsRoleMap = false
+                    IsRoleMap = false,
                 });
 
         var keyrole =
@@ -270,9 +272,10 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = x.d.FromId,
                         ViaRoleId = x.d.RoleId,
                         Reason = ConnectionReason.KeyRole,
+                        NewReason = AccessReason.KeyRole,
                         IsKeyRoleAccess = true,
                         IsMainUnitAccess = false,
-                        IsRoleMap = false
+                        IsRoleMap = false,
                     });
 
         var a1 = filter.IncludeKeyRole
@@ -295,9 +298,10 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = dkr.ViaId,
                         ViaRoleId = null,
                         Reason = ConnectionReason.RoleMap,
+                        NewReason = AccessReason.RoleMap,
                         IsKeyRoleAccess = dkr.IsKeyRoleAccess,
                         IsMainUnitAccess = false,
-                        IsRoleMap = true
+                        IsRoleMap = true,
                     });
 
         var delegations =
@@ -325,9 +329,10 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = fa.ToId,
                         ViaRoleId = fa.RoleId,
                         Reason = ConnectionReason.Delegation,
+                        NewReason = AccessReason.Delegation,
                         IsKeyRoleAccess = false,
                         IsMainUnitAccess = false,
-                        IsRoleMap = false
+                        IsRoleMap = false,
                     });
 
         var a2 = filter.IncludeDelegation
@@ -351,9 +356,10 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = c.FromId,
                 ViaRoleId = c.ViaRoleId,
                 Reason = ConnectionReason.Hierarchy,
+                NewReason = AccessReason.Hierarchy,
                 IsKeyRoleAccess = c.IsKeyRoleAccess,
                 IsMainUnitAccess = true,
-                IsRoleMap = c.IsRoleMap
+                IsRoleMap = c.IsRoleMap,
             });
 
         var innehaverConnections =
@@ -378,7 +384,8 @@ public class ConnectionQuery(AppDbContext db)
                 IsKeyRoleAccess = reviRegnConnection.IsKeyRoleAccess,
                 IsRoleMap = reviRegnConnection.IsRoleMap,
                 IsMainUnitAccess = reviRegnConnection.IsMainUnitAccess,
-                Reason = ConnectionReason.Hierarchy
+                Reason = ConnectionReason.Hierarchy,
+                NewReason = AccessReason.Hierarchy,
             };
 
         /*

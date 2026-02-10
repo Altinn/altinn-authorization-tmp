@@ -10,11 +10,13 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.FeatureManagement.Mvc;
 using System.Net.Mime;
 
@@ -455,16 +457,25 @@ public class ConnectionsController(
         var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
-        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken) ?? null;
 
-        // Does not return Actions => Use DelegationCheck
-        var result = await ConnectionService.GetResources(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, resourceObj?.Id, ConfigureConnections, cancellationToken);
-        if (result.IsProblem)
-        {
-            return result.Problem.ToActionResult();
-        }
+        var result = connection.Direction == ConnectionQueryDirection.ToOthers
+            ? await ConnectionService.GetResourceRulesToOthers(
+                partyId: partyUuid,
+                toId: validFromUuid ? toUuid : null,
+                resourceId: resourceObj == null ? null : resourceObj.Id,
+                configureConnection: ConfigureConnections,
+                cancellationToken: cancellationToken
+                )
+            : await ConnectionService.GetResourceRulesFromOthers(
+                partyId: partyUuid,
+                fromId: validFromUuid ? fromUuid : null,
+                resourceId: resourceObj == null ? null : resourceObj.Id,
+                configureConnection: ConfigureConnections,
+                cancellationToken: cancellationToken
+                ); 
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        return Ok(PaginatedResult.Create(result, null));
     }
 
     /// <summary>

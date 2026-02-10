@@ -321,6 +321,16 @@ public interface IConnectionService
     Task<IEnumerable<ResourcePermissionDto>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get list of resourcerules with a list of parties that have this permission
+    /// </summary>
+    Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid? toId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of resourcerules with a list of parties that have this permission
+    /// </summary>
+    Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid? fromId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets all connections to an agent of the given service provider (viaId)
     /// </summary>
     /// <param name="viaId">The uuid of the service provider party</param>

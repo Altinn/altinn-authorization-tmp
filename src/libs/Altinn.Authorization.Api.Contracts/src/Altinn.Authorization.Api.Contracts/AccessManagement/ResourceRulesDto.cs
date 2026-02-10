@@ -37,6 +37,11 @@ public class RulePermission
     public string Action { get; set; }
 
     /// <summary>
+    /// Reason
+    /// </summary>
+    public string Reason { get; set; }
+
+    /// <summary>
     /// Permissions
     /// </summary>
     public List<PermissionDto> Permissions { get; set; }

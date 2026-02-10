@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
@@ -32,4 +33,9 @@ public class ConnectionQueryRecord : ConnectionQueryBaseRecord
     /// Connection Delegation Via Role
     /// </summary>
     public Role ViaRole { get; set; }
+
+    /// <summary>
+    /// Reason
+    /// </summary>
+    public AccessReason Reason { get; set; }
 }
