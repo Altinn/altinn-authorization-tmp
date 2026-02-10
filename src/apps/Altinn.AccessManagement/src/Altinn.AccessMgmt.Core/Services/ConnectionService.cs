@@ -1580,6 +1580,8 @@ public partial class ConnectionService
             .Union(keyRoleResult)
             .Union(keyRoleSubUnit);
 
+        res.First().Reason.Matches(AccessReason.Set(AccessReasonKeys.Hierarchy, AccessReasonKeys.KeyRole).Or(AccessReasonKeys.Delegation));
+
         foreach (var assignmentResource in res)
         {
             var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(assignmentResource.Resource.RefId, cancellationToken);

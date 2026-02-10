@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
 /// <summary>
 /// Base row for ConnectionQuery
@@ -59,6 +61,8 @@ public class ConnectionQueryBaseRecord
     /// Reason for connection
     /// </summary>
     public ConnectionReason Reason { get; set; }
+
+    public AccessReason NewReason { get; set; }
 
     /// <summary>
     /// Connection Composite Key

@@ -86,7 +86,7 @@ public sealed record AccessReasonKey(string Name, string Description)
 public static class AccessReasonKeys
 {
     public static readonly AccessReasonKey Assignment =
-        new("assignment", "Access granted directly with roleassignment");
+        new("assignment", "Access granted directly with assignment");
 
     public static readonly AccessReasonKey Delegation =
         new("delegation", "Access granted via delegation");
