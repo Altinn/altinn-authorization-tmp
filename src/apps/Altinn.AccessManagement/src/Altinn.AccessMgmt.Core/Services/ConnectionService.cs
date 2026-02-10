@@ -1499,7 +1499,7 @@ public partial class ConnectionService
                 PolicyVersion = t.PolicyVersion,
                 Reason = ReasonConstants.Assignment
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         // Hierarchy (Parent/Child)
         var childResult = await dbContext.AssignmentResources.AsNoTracking()
@@ -1582,8 +1582,6 @@ public partial class ConnectionService
         foreach (var assignmentResource in res)
         {
             var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(assignmentResource.Resource.RefId, cancellationToken);
-            var validResourceActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, assignmentResource.Resource.RefId));
-            //// Cache ... 
 
             var resourceActionPermission = result.FirstOrDefault(t => t.Resource.Id == assignmentResource.Resource.Id);
             if (resourceActionPermission is not { })
@@ -1594,18 +1592,29 @@ public partial class ConnectionService
             var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
             foreach (var r in policy.Rules)
             {
-                var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
-                foreach (var action in actions)
+                var actions = DelegationCheckHelper.CalculateActionKeyParts(r, assignmentResource.Resource.RefId);
+                //var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
+
+                foreach (var actionSplit in actions)
                 {
-                    if (!validResourceActions.Contains(action))
-                    {
-                        continue;
-                    }
+                    var action = actionSplit.SubResource + ":" + actionSplit.Action;
+
+                    //if (!validRuleActions.Keys.Contains(action))
+                    //{
+                    //    continue;
+                    //}
 
                     var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == action);
                     if (actionRule is not { })
                     {
-                        actionRule = new RulePermission() { Action = action, Permissions = new List<PermissionDto>() };
+                        actionRule = new RulePermission() 
+                        { 
+                            Key = action,
+                            SubResource = actionSplit.SubResource,
+                            Action = actionSplit.Action,
+                            Permissions = new List<PermissionDto>(),
+                            Reason = assignmentResource.Reason.Name,
+                        };
                         resourceActionPermission.Rules.Add(actionRule);
                     }
 
@@ -1615,7 +1624,7 @@ public partial class ConnectionService
                         {
                             From = DtoMapper.Convert(assignmentResource.From),
                             To = DtoMapper.Convert(assignmentResource.To),
-                            Role = DtoMapper.ConvertCompactRole(assignmentResource.Role)
+                            Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
                         });
                     }
                 }
@@ -1788,7 +1797,7 @@ internal class AssignmentResourceQueryResult
 
     internal Entity To { get; set; }
 
-    internal Role Role { get; set; }
+    internal PersistenceEF.Models.Role Role { get; set; }
 
     internal string PolicyPath { get; set; }
 
