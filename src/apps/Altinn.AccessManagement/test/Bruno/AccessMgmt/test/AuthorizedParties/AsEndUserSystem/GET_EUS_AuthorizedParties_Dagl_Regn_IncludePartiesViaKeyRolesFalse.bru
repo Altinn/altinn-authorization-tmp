@@ -1,19 +1,16 @@
 meta {
   name: GET_EUS_AuthorizedParties_Dagl_Regn_IncludePartiesViaKeyRolesFalse
   type: http
-  seq: 11
+  seq: 10
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includePartiesViaKeyRoles=false
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includePartiesViaKeyRoles=false
   body: json
   auth: inherit
 }
 
 params:query {
-  includeAltinn2: true
-  includeAltinn3: true
-  includeAccessPackages: true
   includePartiesViaKeyRoles: false
 }
 

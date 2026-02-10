@@ -1,19 +1,16 @@
 meta {
   name: GET_EUS_AuthorizedParties_Dagl_Regn_AnyResourceFilter
   type: http
-  seq: 16
+  seq: 15
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&anyOfResourceIds=altinn_access_management&anyOfResourceIds=authz_bruno_gar_resource1&anyOfResourceIds=app_ttd_authz-bruno-testapp1
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?anyOfResourceIds=altinn_access_management&anyOfResourceIds=authz_bruno_gar_resource1&anyOfResourceIds=app_ttd_authz-bruno-testapp1
   body: json
   auth: inherit
 }
 
 params:query {
-  includeAltinn2: true
-  includeAltinn3: true
-  includeAccessPackages: true
   anyOfResourceIds: altinn_access_management
   anyOfResourceIds: authz_bruno_gar_resource1
   anyOfResourceIds: app_ttd_authz-bruno-testapp1

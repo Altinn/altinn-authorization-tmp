@@ -1,19 +1,13 @@
 meta {
   name: GET_EUS_AuthorizedParties_Dagl_Forretningsforer
   type: http
-  seq: 6
+  seq: 5
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties
   body: json
   auth: inherit
-}
-
-params:query {
-  includeAltinn2: true
-  includeAltinn3: true
-  includeAccessPackages: true
 }
 
 headers {

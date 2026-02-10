@@ -1,17 +1,13 @@
 meta {
   name: GET_EUS_AuthorizedParties_RightholderWithPackages
   type: http
-  seq: 5
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAccessPackages=true
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties
   body: json
   auth: inherit
-}
-
-params:query {
-  includeAccessPackages: true
 }
 
 headers {

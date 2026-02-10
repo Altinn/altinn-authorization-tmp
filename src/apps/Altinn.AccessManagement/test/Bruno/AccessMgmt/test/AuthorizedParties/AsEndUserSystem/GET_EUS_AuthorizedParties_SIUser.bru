@@ -1,18 +1,13 @@
 meta {
   name: GET_EUS_AuthorizedParties_SIUser
   type: http
-  seq: 3
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAltinn2=true&includeAltinn3=true
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties
   body: json
   auth: inherit
-}
-
-params:query {
-  includeAltinn2: true
-  includeAltinn3: true
 }
 
 headers {

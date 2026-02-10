@@ -1,19 +1,16 @@
 meta {
   name: GET_EUS_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithSubUnitPartyFilter
   type: http
-  seq: 10
+  seq: 9
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&partyFilter={{partySubUnitFilter}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?partyFilter={{partySubUnitFilter}}
   body: json
   auth: inherit
 }
 
 params:query {
-  includeAltinn2: true
-  includeAltinn3: true
-  includeAccessPackages: true
   partyFilter: {{partySubUnitFilter}}
 }
 
