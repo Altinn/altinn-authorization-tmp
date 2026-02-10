@@ -15,7 +15,7 @@ public class AgentDto
     public CompactEntityDto Agent { get; set; }
 
     /// <summary>
-    /// Specfies Datetime when agent was added.
+    /// Specifies when the <see cref="Agent"/> was added.
     /// </summary>
     [JsonPropertyName("agentAddedAt")]
     public DateTimeOffset AgentAddedAt { get; set; }
