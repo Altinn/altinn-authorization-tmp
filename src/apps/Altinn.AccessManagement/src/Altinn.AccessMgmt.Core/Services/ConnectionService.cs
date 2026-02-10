@@ -4,7 +4,6 @@ using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
@@ -72,6 +71,7 @@ public partial class ConnectionService(
             {
                 FromIds = fromId.HasValue ? [fromId.Value] : null,
                 ToIds = toId.HasValue ? [toId.Value] : null,
+                ExcludeRoleIds = [RoleConstants.Agent],
                 EnrichEntities = true,
                 IncludeSubConnections = true,
                 IncludeKeyRole = true,
