@@ -154,6 +154,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
         return query.Select(a => new AgentDto()
         {
             Agent = DtoMapper.Convert(a.To),
+            AgentAddedAt = a.Audit_ValidFrom,
             Access = [
                 new()
                 {
@@ -271,7 +272,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             {
                 x.Delegation.To.To,
                 x.Delegation.From.Role,
-                x.DelegationPackage.Package
+                x.DelegationPackage.Package,
             })
             .GroupBy(x => x.To.Id)
             .ToListAsync(cancellationToken);
@@ -281,6 +282,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             new AgentDto()
             {
                 Agent = DtoMapper.Convert(e.First().To),
+                AgentAddedAt = e.First().To.Audit_ValidFrom,
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new AgentDto.AgentRoleAccessPackages
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
