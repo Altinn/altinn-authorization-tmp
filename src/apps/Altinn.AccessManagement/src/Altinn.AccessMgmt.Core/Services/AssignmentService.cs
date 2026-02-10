@@ -1,24 +1,30 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-
+﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+using Altinn.Authorization.ABAC.Utils;
+using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery) : IAssignmentService
+public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery, IPolicyRetrievalPoint policyRetrievalPoint) : IAssignmentService
 {
     /// <inheritdoc/>
     public async Task<List<Authorization.Api.Contracts.AccessManagement.AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default)
@@ -1036,5 +1042,176 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
     private static void Unreachable()
     {
         throw new UnreachableException();
+    }
+
+    public async Task<List<ResourceRulesDto>> GetResources(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, CancellationToken cancellationToken = default)
+    {
+        if (!fromId.HasValue && !toId.HasValue)
+        {
+            throw new ArgumentException("You need to specify from or to");
+        }
+
+        var result = new List<ResourceRulesDto>();
+
+        var baseQuery = db.AssignmentResources.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value);
+
+        var direct = await db.AssignmentResources.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .Select(t => new AssignmentResourceQueryResult()
+            {
+                Resource = t.Resource,
+                From = t.Assignment.From,
+                To = t.Assignment.To,
+                Role = t.Assignment.Role,
+                PolicyPath = t.PolicyPath,
+                PolicyVersion = t.PolicyVersion
+            })
+            .ToListAsync();
+
+        var childResult = await db.AssignmentResources.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .Join(
+                db.Entities.AsNoTracking(),
+                ar => ar.Assignment.FromId,
+                c => c.ParentId,
+                (ar, c) => new AssignmentResourceQueryResult
+                {
+                    Resource = ar.Resource,
+                    From = c,
+                    To = ar.Assignment.To,
+                    Role = ar.Assignment.Role,
+                    PolicyPath = ar.PolicyPath,
+                    PolicyVersion = ar.PolicyVersion
+                })
+            .ToListAsync();
+
+        var keyRoleResult = await db.AssignmentResources.AsNoTracking()
+           .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+           .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+           .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+           .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+           .Join(
+               db.Assignments.AsNoTracking().Where(t => t.Role.IsKeyRole),
+               ar => ar.Assignment.ToId,
+               c => c.FromId,
+               (ar, c) => new AssignmentResourceQueryResult
+               {
+                   Resource = ar.Resource,
+                   From = ar.Assignment.From,
+                   To = c.To,
+                   Role = ar.Assignment.Role,
+                   PolicyPath = ar.PolicyPath,
+                   PolicyVersion = ar.PolicyVersion
+               })
+           .ToListAsync();
+
+
+        var keyRoleSubUnit = await db.AssignmentResources.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .Join(
+                db.Entities.AsNoTracking(),
+                ar => ar.Assignment.FromId,
+                e => e.ParentId,
+                (ar, fromChild) => new { ar, fromChild }
+            )
+            .Join(
+                db.Assignments.AsNoTracking().Where(a => a.Role.IsKeyRole),
+                x => x.ar.Assignment.ToId,
+                kr => kr.FromId,
+                (x, kr) => new AssignmentResourceQueryResult
+                {
+                    Resource = x.ar.Resource,
+                    From = x.fromChild,
+                    To = kr.To,
+                    Role = x.ar.Assignment.Role,
+                    PolicyPath = x.ar.PolicyPath,
+                    PolicyVersion = x.ar.PolicyVersion
+                }
+            )
+            .ToListAsync();
+
+        var res = direct.Union(childResult).Union(keyRoleResult).Union(keyRoleSubUnit);
+
+        foreach (var assignmentResource in res)
+        {
+            var resourcePolicy = await GetResourcePolicy(assignmentResource.Resource);
+            var validResourceActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, assignmentResource.Resource.RefId));
+            //// Cache ... 
+
+            var resourceActionPermission = result.FirstOrDefault(t => t.Resource.Id == assignmentResource.Resource.Id);
+            if (resourceActionPermission is not { })
+            {
+                resourceActionPermission = new ResourceRulesDto() { Resource = DtoMapper.Convert(assignmentResource.Resource), Rules = new List<RulePermission>() };
+            }
+
+            var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
+            foreach (var r in policy.Rules)
+            {
+                var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
+                foreach (var action in actions)
+                {
+                    if (!validResourceActions.Contains(action))
+                    {
+                        continue;
+                    }
+
+                    var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == action);
+                    if (actionRule is not { })
+                    {
+                        actionRule = new RulePermission() { Action = action, Permissions = new List<PermissionDto>() };
+                        resourceActionPermission.Rules.Add(actionRule);
+                    }
+
+                    if (!actionRule.Permissions.Any(t => t.From.Id == assignmentResource.From.Id && t.To.Id == assignmentResource.To.Id && t.Role.Id == assignmentResource.Role.Id))
+                    {
+                        actionRule.Permissions.Add(new PermissionDto()
+                        {
+                            From = DtoMapper.Convert(assignmentResource.From),
+                            To = DtoMapper.Convert(assignmentResource.To),
+                            Role = DtoMapper.ConvertCompactRole(assignmentResource.Role)
+                        });
+                    }
+                }
+            }
+
+            result.Add(resourceActionPermission);
+        }
+
+        return result;
+    }
+
+    public async Task<XacmlPolicy> GetResourcePolicy(Resource resource)
+    {
+        HttpClient client = new HttpClient();
+        var stream = await client.GetStreamAsync("");
+        return PolicyHelper.ParsePolicy(stream);
+    }
+
+    internal class AssignmentResourceQueryResult
+    {
+        internal Resource Resource { get; set; }
+
+        internal Entity From { get; set; }
+
+        internal Entity To { get; set; }
+
+        internal Role Role { get; set; }
+
+        internal string PolicyPath { get; set; }
+
+        internal string PolicyVersion { get; set; }
     }
 }

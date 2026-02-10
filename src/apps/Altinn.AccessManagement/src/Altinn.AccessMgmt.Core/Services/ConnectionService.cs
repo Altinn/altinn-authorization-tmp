@@ -1370,7 +1370,7 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(
+    public async Task<IEnumerable<ResourcePermissionDto>> GetResourcePermissionsFromOthers(
         Guid partyId,
         Guid? fromId = null,
         Guid? packageId = null,
@@ -1395,9 +1395,9 @@ public partial class ConnectionService
 
         if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
-            return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+            return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermissionDto()
             {
-                Resource = permission.Resource,
+                Resource = DtoMapper.Convert(permission.Resource),
                 Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
@@ -1406,7 +1406,7 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(
+    public async Task<IEnumerable<ResourcePermissionDto>> GetResourcePermissionsToOthers(
         Guid partyId,
         Guid? toId = null,
         Guid? packageId = null,
@@ -1431,9 +1431,9 @@ public partial class ConnectionService
 
         if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
-            return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+            return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermissionDto()
             {
-                Resource = permission.Resource,
+                Resource = DtoMapper.Convert(permission.Resource),
                 Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
