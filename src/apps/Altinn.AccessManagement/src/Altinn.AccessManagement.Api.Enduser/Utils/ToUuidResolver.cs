@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using System.Diagnostics;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core;
 using Altinn.AccessManagement.Core.Errors;
@@ -6,11 +7,11 @@ using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.ProblemDetails;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Utils;
 
@@ -20,47 +21,78 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils;
 /// - PersonInput (identifier + last name) resolved via <see cref="IUserProfileLookupService"/>
 /// Internal implementation detail of the Enduser API.
 /// </summary>
-internal sealed class ToUuidResolver
+public sealed class ToUuidResolver(
+    IEntityService entityService,
+    IUserProfileLookupService userProfileLookupService,
+    IHttpContextAccessor httpContextAccessor,
+    ConnectionQuery connectionQuery)
 {
-    private readonly IEntityService _entityService;
-    private readonly IUserProfileLookupService _userProfileLookupService;
-
-    internal ToUuidResolver(IEntityService entityService, IUserProfileLookupService userProfileLookupService)
+    public async Task<Result<Entity>> Resolve(PersonInput person, Guid? to, Guid party, bool acceptAnyConnectionForPerson = true, CancellationToken cancellationToken = default)
     {
-        _entityService = entityService;
-        _userProfileLookupService = userProfileLookupService;
-    }
-
-    internal sealed record ResolveToUuidResult(Guid ToUuid, IActionResult? ErrorResult)
-    {
-        public bool Success => ErrorResult is null;
-    }
-
-    /// <summary>
-    /// Resolve target UUID for a non-person entity from <see cref="ConnectionInput"/> via <see cref="EntityService"/>.
-    /// </summary>
-    internal async Task<ResolveToUuidResult> ResolveWithConnectionInputAsync(Guid connectionInputToUuid, bool allowConnectionInputForPersonEntity, CancellationToken cancellationToken)
-    {
-        var entity = await _entityService.GetEntity(connectionInputToUuid, cancellationToken);
-        if (entity == null)
+        if (to is { } partyuuid && partyuuid != Guid.Empty)
         {
-            return new ResolveToUuidResult(Guid.Empty, Problems.PartyNotFound.ToActionResult());
+            var entity = await entityService.GetEntity(partyuuid, cancellationToken);
+            if (entity is null)
+            {
+                return Problems.PartyNotFound;
+            }
+
+            if (entity.Type.Id == EntityTypeConstants.Person)
+            {
+                if (acceptAnyConnectionForPerson)
+                {
+                    var connections = await connectionQuery.GetConnectionsFromOthersAsync(
+                        new()
+                        {
+                            FromIds = [party],
+                            ToIds = [partyuuid],
+
+                            IncludeDelegation = false,
+
+                            EnrichPackageResources = false,
+                            EnrichEntities = false
+                        },
+                        ct: cancellationToken
+                    );
+
+                    if (connections.Count > 0)
+                    {
+                        return entity;
+                    }
+                }
+            }
+            else
+            {
+                return entity;
+            }
         }
 
-        if (!allowConnectionInputForPersonEntity && entity.TypeId == EntityTypeConstants.Person.Id)
-        {
-            return new ResolveToUuidResult(Guid.Empty, Problems.PersonInputRequiredForPersonAssignment.ToActionResult());
-        }
-
-        return new ResolveToUuidResult(connectionInputToUuid, null);
+        return await ResolveWithPersonInputAsync(person, cancellationToken);
     }
 
     /// <summary>
     /// Resolve target UUID for a person entity from <see cref="PersonInput"/> via <see cref="UserProfileLookupService"/>.
     /// </summary>
-    internal async Task<ResolveToUuidResult> ResolveWithPersonInputAsync(PersonInput person, HttpContext httpContext, CancellationToken cancellationToken)
+    internal async Task<Result<Entity>> ResolveWithPersonInputAsync(PersonInput person, CancellationToken cancellationToken = default)
     {
-        int authUserId = AuthenticationHelper.GetUserId(httpContext);
+        var result = await LookupPerson(person, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem;
+        }
+
+        if (result.Value is { } uuid)
+        {
+            return await entityService.GetEntity(uuid, cancellationToken);
+        }
+
+        throw new UnreachableException();
+    }
+
+    private async Task<Result<Guid?>> LookupPerson(PersonInput person, CancellationToken cancellationToken)
+    {
+        int authUserId = AuthenticationHelper.GetUserId(httpContextAccessor.HttpContext);
+        ValidationErrorBuilder errorBuilder = default;
 
         string identifier = person.PersonIdentifier;
         string lastName = person.LastName;
@@ -79,28 +111,22 @@ internal sealed class ToUuidResolver
 
         try
         {
-            var profile = await _userProfileLookupService.GetUserProfile(authUserId, lookup, lastName);
-            if (profile == null)
+            var profile = await userProfileLookupService.GetUserProfile(authUserId, lookup, lastName, cancellationToken);
+            if (profile is null)
             {
-                ValidationErrorBuilder errors = default;
-                errors.Add(AccessMgmt.Core.Utils.Models.ValidationErrors.InvalidQueryParameter, ["/personIdentifier", "/lastName"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
-                errors.TryToActionResult(out ActionResult errorResult);
-                return new ResolveToUuidResult(Guid.Empty, errorResult);
+                errorBuilder.Add(ValidationErrors.InvalidQueryParameter, ["/personIdentifier", "/lastName"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
             }
-
-            Guid? resolvedUuid = profile.UserUuid != Guid.Empty ? profile.UserUuid : profile.Party?.PartyUuid;
-            if (!resolvedUuid.HasValue || resolvedUuid.Value == Guid.Empty)
+            else
             {
-                return new ResolveToUuidResult(Guid.Empty, Problems.PartyNotFound.ToActionResult());
+                return profile.UserUuid != Guid.Empty ? profile.UserUuid : profile.Party?.PartyUuid;
             }
-
-            return new ResolveToUuidResult(resolvedUuid.Value, null);
         }
         catch (TooManyFailedLookupsException)
         {
-            var problemDetails = Problems.PersonLookupFailedToManyErrors.ToProblemDetails();
-            var result = new ObjectResult(problemDetails) { StatusCode = StatusCodes.Status429TooManyRequests };
-            return new ResolveToUuidResult(Guid.Empty, result);
+            return Problems.PersonLookupFailedToManyErrors;
         }
+
+        errorBuilder.TryBuild(out var errors);
+        return errors;
     }
 }

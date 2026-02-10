@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
-using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -26,9 +23,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
 [Tags("Client Delegation")]
 public class ClientDelegationController(
-    IClientDelegationService clientDelegationService,
-    IUserProfileLookupService UserProfileLookupService,
-    IEntityService EntityService) : ControllerBase
+    ToUuidResolver uuidResolver,
+    IClientDelegationService clientDelegationService) : ControllerBase
 {
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
@@ -87,8 +83,6 @@ public class ClientDelegationController(
         [FromBody] PersonInput? person,
         CancellationToken cancellationToken = default)
     {
-        bool hasPersonInputParameter = person is { };
-
         var validationErrors = ValidationComposer.Validate(
             ValidationComposer.Any(
                 ConnectionValidation.ValidateAddAssignmentWithPersonInput(person?.PersonIdentifier, person?.LastName),
@@ -101,17 +95,13 @@ public class ClientDelegationController(
             return validationErrors.ToActionResult();
         }
 
-        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = hasPersonInputParameter
-            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
-            : await resolver.ResolveWithConnectionInputAsync((Guid)to, false, cancellationToken);
-
-        if (!resolveResult.Success)
+        var resolveResult = await uuidResolver.Resolve(person, to, party, true, cancellationToken);
+        if (resolveResult.IsProblem)
         {
-            return resolveResult.ErrorResult!;
+            return resolveResult.Problem.ToActionResult();
         }
 
-        var result = await clientDelegationService.AddAgent(party, resolveResult.ToUuid, cancellationToken);
+        var result = await clientDelegationService.AddAgent(party, resolveResult.Value.Id, cancellationToken);
 
         if (result.IsProblem)
         {

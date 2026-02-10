@@ -38,7 +38,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<NewUserProfile> GetUserProfile(int authnUserId, UserProfileLookup lookupIdentifier, string lastName)
+        public async Task<NewUserProfile> GetUserProfile(int authnUserId, UserProfileLookup lookupIdentifier, string lastName, CancellationToken cancellationToken = default)
         {
             string uniqueCacheKey = UserProfileLookupFailedAttempts + authnUserId;
 
@@ -51,7 +51,7 @@ namespace Altinn.AccessManagement.Core.Services
                 throw new TooManyFailedLookupsException();
             }
 
-            NewUserProfile userProfile = await _profile.GetUser(lookupIdentifier);
+            NewUserProfile userProfile = await _profile.GetUser(lookupIdentifier, cancellationToken);
 
             string nameFromParty = userProfile?.Party.Person.LastName ?? string.Empty;
 

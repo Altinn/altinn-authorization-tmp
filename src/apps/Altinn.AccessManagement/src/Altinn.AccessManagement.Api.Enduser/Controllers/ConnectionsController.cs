@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
@@ -16,7 +17,6 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -28,8 +28,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionsController(
+    ToUuidResolver toUuidResolver,
     IConnectionService ConnectionService,
-    IUserProfileLookupService UserProfileLookupService,
     ISingleRightsService singleRightsService,
     IEntityService EntityService,
     IResourceService resourceService
@@ -110,19 +110,13 @@ public class ConnectionsController(
 
         var fromUuid = Guid.Parse(connection.From);
 
-        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = hasPersonInputParameter
-            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
-            : await resolver.ResolveWithConnectionInputAsync(Guid.Parse(connection.To), false, cancellationToken);
-
-        if (!resolveResult.Success)
+        var resolverResult = await toUuidResolver.Resolve(person, Guid.Parse(connection.To), Guid.Parse(connection.Party), false, cancellationToken);
+        if (resolverResult.IsProblem)
         {
-            return resolveResult.ErrorResult!;
+            return resolverResult.Problem.ToActionResult();
         }
 
-        var toUuid = resolveResult.ToUuid;
-
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.AddAssignment(fromUuid, resolverResult.Value.Id, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -227,26 +221,20 @@ public class ConnectionsController(
 
         var fromUuid = Guid.Parse(connection.From);
 
-        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = hasPersonInputParameter
-            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
-            : await resolver.ResolveWithConnectionInputAsync(Guid.Parse(connection.To), true, cancellationToken);
-
-        if (!resolveResult.Success)
+        var resolverResult = await toUuidResolver.Resolve(person, Guid.Parse(connection.To), Guid.Parse(connection.Party), false, cancellationToken);
+        if (resolverResult.IsProblem)
         {
-            return resolveResult.ErrorResult!;
+            return resolverResult.Problem.ToActionResult();
         }
-
-        var toUuid = resolveResult.ToUuid;
 
         async Task<Result<AssignmentPackageDto>> AddPackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(fromUuid, toUuid, packageId.Value, ConfigureConnections, cancellationToken);
+                return await ConnectionService.AddPackage(fromUuid, resolverResult.Value.Id, packageId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(fromUuid, toUuid, package, ConfigureConnections, cancellationToken);
+            return await ConnectionService.AddPackage(fromUuid, resolverResult.Value.Id, package, ConfigureConnections, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -566,7 +554,7 @@ public class ConnectionsController(
         }
 
         var problem = await ConnectionService.RemoveResource(fromId, toId, resource, ConfigureConnections, cancellationToken);
-        
+
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -588,7 +576,7 @@ public class ConnectionsController(
     public async Task<IActionResult> CheckResource([FromQuery] Guid party, [FromQuery] string resource, CancellationToken cancellationToken = default)
     {
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
-        
+
         var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
