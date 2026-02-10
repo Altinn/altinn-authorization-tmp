@@ -52,6 +52,17 @@ public class ClientDelegationController(
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
+    [HttpGet("my/clientproviders")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
+    [ProducesResponseType<PaginatedResult<AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMyClientProviders(CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();   
+    }
+
     [HttpDelete("my/clientproviders")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
