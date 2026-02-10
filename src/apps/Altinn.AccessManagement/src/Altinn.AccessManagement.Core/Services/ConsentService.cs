@@ -180,7 +180,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                         if (!result.IsProblem)
                         {
-                            await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+                            await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);                          
                             consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
                         }
                     }
@@ -454,7 +454,9 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<List<ConsentRequest>>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default)
         {
-            return await _altinn2ConsentClient.GetMultipleConsents(consentList, cancellationToken);
+            List<ConsentRequest> a2List = await _altinn2ConsentClient.GetMultipleConsents(consentList, cancellationToken);
+
+            return a2List;
         }
         
         /// <inheritdoc/>

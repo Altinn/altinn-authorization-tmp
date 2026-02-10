@@ -56,11 +56,15 @@ namespace Altinn.AccessManagement.Tests.Mocks
             List<ConsentRequest> consents = consentList.Select(id => new ConsentRequest
             {
                 Id = Guid.Parse(id),
-                From = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()), // Replace with appropriate initialization if needed
-                To = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()),   // Replace with appropriate initialization if needed
+                From = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()),
+                To = ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid()),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(30),
-                ConsentRights = new List<ConsentRight>(),
-                RedirectUrl = "https://example.com/redirect"
+                RequestMessage = new Dictionary<string, string> { { "Test", "TestValue" } },
+                Consented = DateTimeOffset.UtcNow,
+                TemplateId = "TestTemplate",
+                CreatedTime = DateTimeOffset.UtcNow.AddDays(-1), 
+                RedirectUrl = "https://example.com/redirect",
+                ConsentRights = new List<ConsentRight>()
             }).ToList();
 
             return Task.FromResult(consents);
@@ -80,6 +84,29 @@ namespace Altinn.AccessManagement.Tests.Mocks
             };
 
             ConsentRequest result = JsonSerializer.Deserialize<ConsentRequest>(dataStream, options);
+
+            List<ConsentRequestEvent> consentEvents = new();
+
+            ConsentRequestEvent consentEvent = new()
+            {
+                ConsentRequestID = id,
+                Created = DateTimeOffset.UtcNow,
+                EventType = ConsentRequestEventType.Created,
+                PerformedBy = result.From
+            };
+
+            consentEvents.Add(consentEvent);
+
+            ConsentRequestEvent consentEvent2 = new()
+            {
+                ConsentRequestID = id,
+                Created = DateTimeOffset.UtcNow,
+                EventType = ConsentRequestEventType.Accepted,
+                PerformedBy = result.From
+            };
+
+            consentEvents.Add(consentEvent2);
+
             return result;
         }
     }

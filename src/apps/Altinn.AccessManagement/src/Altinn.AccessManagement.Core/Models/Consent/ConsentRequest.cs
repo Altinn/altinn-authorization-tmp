@@ -80,5 +80,9 @@
         /// </summary>
         public List<ConsentRequestEvent> ConsentRequestEvents { get; set; }
 
+        /// <summary>
+        /// The status of the consent request
+        /// </summary>
+        public ConsentRequestStatusType ConsentRequestStatus { get; set; }
     }
 }

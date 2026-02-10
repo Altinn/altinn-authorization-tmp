@@ -116,7 +116,11 @@ namespace AccessMgmt.Tests.Controllers.Bff
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/getconsentlistformigration?numberOfConsentsToReturn=3&status=1&onlyGetExpired=false");
-            string responseText = await response.Content.ReadAsStringAsync();
+            
+            // string responseText = await response.Content.ReadAsStringAsync();
+            string[] guids = JsonSerializer.Deserialize<string[]>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(3, guids.Length);
         }
 
         /// <summary>

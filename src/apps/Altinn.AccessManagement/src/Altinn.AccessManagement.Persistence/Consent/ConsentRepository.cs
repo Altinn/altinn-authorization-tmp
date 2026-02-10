@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics.Tracing;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Persistence.Extensions;
@@ -96,9 +97,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, consented, requestMessage, templateId, templateVersion, redirectUrl, portalviewmode)
+                INSERT INTO consent.consentrequest (consentRequestId, status, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, consented, requestMessage, templateId, templateVersion, redirectUrl, portalviewmode)
                 VALUES (
                 @consentRequestId, 
+                @status,
                 @fromPartyUuid,
                 @requiredDelegatorUuid,
                 @toPartyUuid, 
@@ -131,6 +133,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
             {
                 command.Parameters.Add<DateTimeOffset?>("consentedTime", NpgsqlDbType.TimestampTz).TypedValue = null;
             }
+
+            // command.Parameters.Add<ConsentRequestStatusType>("status", NpgsqlDbType.Integer).TypedValue = consentRequest.ConsentRequestStatus;
+            command.Parameters.Add(new NpgsqlParameter<ConsentRequestStatusType>("status", consentRequest.ConsentRequestStatus));
 
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
@@ -254,7 +259,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     eventCommand.CommandText = EventQuery;
                     eventCommand.Parameters.Add<Guid>(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid).TypedValue = Guid.CreateVersion7();
                     eventCommand.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRequest.Id;
-                    eventCommand.Parameters.Add<ConsentRequestEventType>(PARAM_EVENT_TYPE, NpgsqlDbType.Integer).TypedValue = consentEvent.EventType;
+                    eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, consentEvent.EventType));
                     eventCommand.Parameters.Add<DateTimeOffset>(PARAM_CREATED, NpgsqlDbType.TimestampTz).TypedValue = consentEvent.Created.ToOffset(TimeSpan.Zero);
                     if (consentEvent.PerformedBy.IsPartyUuid(out Guid performedByPartyGuid))
                     {
