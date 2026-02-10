@@ -24,6 +24,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Utils.Values;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
@@ -1497,7 +1498,7 @@ public partial class ConnectionService
                 Role = t.Assignment.Role,
                 PolicyPath = t.PolicyPath,
                 PolicyVersion = t.PolicyVersion,
-                Reason = ReasonConstants.Assignment
+                Reason = AccessReason.Assignment
             })
             .ToListAsync(cancellationToken);
 
@@ -1519,7 +1520,7 @@ public partial class ConnectionService
                     Role = ar.Assignment.Role,
                     PolicyPath = ar.PolicyPath,
                     PolicyVersion = ar.PolicyVersion,
-                    Reason = ReasonConstants.Hierarchy
+                    Reason = AccessReason.Hierarchy
                 })
             .ToListAsync();
 
@@ -1541,7 +1542,7 @@ public partial class ConnectionService
                    Role = ar.Assignment.Role,
                    PolicyPath = ar.PolicyPath,
                    PolicyVersion = ar.PolicyVersion,
-                   Reason = ReasonConstants.KeyRole
+                   Reason = AccessReason.KeyRole
                })
            .ToListAsync();
 
@@ -1569,7 +1570,7 @@ public partial class ConnectionService
                     Role = x.ar.Assignment.Role,
                     PolicyPath = x.ar.PolicyPath,
                     PolicyVersion = x.ar.PolicyVersion,
-                    Reason = ReasonConstants.HierarchyKeyRole
+                    Reason = AccessReason.Set(AccessReasonKeys.Hierarchy, AccessReasonKeys.KeyRole)
                 }
             )
             .ToListAsync();
@@ -1613,7 +1614,7 @@ public partial class ConnectionService
                             SubResource = actionSplit.SubResource,
                             Action = actionSplit.Action,
                             Permissions = new List<PermissionDto>(),
-                            Reason = assignmentResource.Reason.Name,
+                            //Reason = assignmentResource.Reason.Name,
                         };
                         resourceActionPermission.Rules.Add(actionRule);
                     }
@@ -1803,5 +1804,5 @@ internal class AssignmentResourceQueryResult
 
     internal string PolicyVersion { get; set; }
 
-    internal Reason Reason { get; set; }
+    internal AccessReason Reason { get; set; }
 }
