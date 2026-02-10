@@ -131,7 +131,7 @@ public class ClientDelegationControllerTest
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/me/clients?via={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/my/clients?provider={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
@@ -139,7 +139,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Single(result.Items);
 
-            response = await client.GetAsync($"{Route}/me/clients?via={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            response = await client.GetAsync($"{Route}/my/clients?provider={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
 
             data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
@@ -153,7 +153,7 @@ public class ClientDelegationControllerTest
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/me/clients", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/my/clients", TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
@@ -163,8 +163,11 @@ public class ClientDelegationControllerTest
             Assert.Single(result.Items);
             var item = result.Items.FirstOrDefault();
 
-            Assert.Single(item.Access);
-            var access = item.Access.FirstOrDefault();
+            Assert.Single(item.Clients);
+            var clientItem = item.Clients.FirstOrDefault();
+
+            Assert.Single(clientItem.Access);
+            var access = clientItem.Access.FirstOrDefault();
 
             Assert.Single(access.Packages);
             var package = access.Packages.FirstOrDefault();
@@ -172,8 +175,8 @@ public class ClientDelegationControllerTest
             Assert.Equal(RoleConstants.Accountant.Id, access.Role.Id);
             Assert.Equal(PackageConstants.AccountantWithSigningRights, package.Id);
 
-            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, item.Via.Id);
-            Assert.Equal(TestEntities.OrganizationNordisAS.Id, item.Client.Id);
+            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, item.Provider.Id);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, clientItem.Client.Id);
         }
     }
     #endregion

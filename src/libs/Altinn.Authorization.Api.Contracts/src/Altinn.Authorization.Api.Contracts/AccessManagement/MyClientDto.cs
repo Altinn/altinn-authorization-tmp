@@ -11,36 +11,12 @@ public class MyClientDto
     /// <summary>
     /// Gets or sets the party
     /// </summary>
-    [JsonPropertyName("client")]
-    public CompactEntityDto Client { get; set; }
+    [JsonPropertyName("provider")]
+    public CompactEntityDto Provider { get; set; }
 
     /// <summary>
-    /// Access Via party
+    /// All clients for given <see cref="Provider"/>.
     /// </summary>
-    [JsonPropertyName("via")]
-    public CompactEntityDto Via { get; set; }
-
-    /// <summary>
-    /// Gets or sets a collection of all access information for the client 
-    /// </summary>
-    [JsonPropertyName("access")]
-    public List<RoleAccessPackages> Access { get; set; } = [];
-
-    /// <summary>
-    /// Composite Key instances
-    /// </summary>
-    public class RoleAccessPackages
-    {
-        /// <summary>
-        /// Roles
-        /// </summary>
-        [JsonPropertyName("role")]
-        public CompactRoleDto Role { get; set; }
-
-        /// <summary>
-        /// Packages
-        /// </summary>
-        [JsonPropertyName("packages")]
-        public CompactPackageDto[] Packages { get; set; }
-    }
+    [JsonPropertyName("clients")]
+    public IEnumerable<ClientDto> Clients { get; set; } = [];
 }

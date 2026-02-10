@@ -31,19 +31,19 @@ public class ClientDelegationController(
     IUserProfileLookupService UserProfileLookupService,
     IEntityService EntityService) : ControllerBase
 {
-    [HttpGet("me/clients")]
+    [HttpGet("my/clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
     [ProducesResponseType<PaginatedResult<MyClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetMyClients(
-        [FromQuery(Name = "via")] List<Guid>? via,
+        [FromQuery(Name = "provider")] List<Guid>? provider,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
         var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
-        var result = await clientDelegationService.MyClients(useruuid, via, cancellationToken);
+        var result = await clientDelegationService.MyClients(useruuid, provider, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -52,7 +52,7 @@ public class ClientDelegationController(
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
-    [HttpDelete("me/agents")]
+    [HttpDelete("my/agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -65,7 +65,7 @@ public class ClientDelegationController(
         throw new NotImplementedException();   
     }
 
-    [HttpDelete("me/clients")]
+    [HttpDelete("my/clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
