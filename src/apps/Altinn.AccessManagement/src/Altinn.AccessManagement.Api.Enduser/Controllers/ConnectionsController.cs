@@ -446,8 +446,7 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetResources([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(
-            ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -457,20 +456,25 @@ public class ConnectionsController(
         var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
+
         var resourceObj = await resourceService.GetResource(resource, cancellationToken) ?? null;
+        if (resourceObj is null)
+        {
+            return NotFound($"Resource '{resource}' not found.");
+        }
 
         var result = connection.Direction == ConnectionQueryDirection.ToOthers
             ? await ConnectionService.GetResourceRulesToOthers(
                 partyId: partyUuid,
-                toId: validFromUuid ? toUuid : null,
-                resourceId: resourceObj == null ? null : resourceObj.Id,
+                toId: toUuid,
+                resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
                 )
             : await ConnectionService.GetResourceRulesFromOthers(
                 partyId: partyUuid,
-                fromId: validFromUuid ? fromUuid : null,
-                resourceId: resourceObj == null ? null : resourceObj.Id,
+                fromId: fromUuid,
+                resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
                 ); 

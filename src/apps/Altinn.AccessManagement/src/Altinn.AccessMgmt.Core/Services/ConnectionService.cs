@@ -1,7 +1,9 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Text;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
@@ -28,12 +30,7 @@ using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.ProblemDetails;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Text;
-using static Altinn.AccessMgmt.Core.Services.AssignmentService;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -1445,25 +1442,25 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid? toId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         return await GetResourcesRules(
            fromId: partyId,
            toId: toId,
            resourceId: resourceId,
-           roleId: null,
+           roleId: RoleConstants.Rightholder,
            cancellationToken: cancellationToken
            );
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid? fromId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         return await GetResourcesRules(
             fromId: fromId, 
             toId: partyId, 
             resourceId: resourceId, 
-            roleId: null, 
+            roleId: RoleConstants.Rightholder, 
             cancellationToken: cancellationToken
             );
     }
@@ -1497,7 +1494,7 @@ public partial class ConnectionService
                 Role = t.Assignment.Role,
                 PolicyPath = t.PolicyPath,
                 PolicyVersion = t.PolicyVersion,
-                Reason = AccessReason.Assignment
+                Reason = AccessReason.Direct
             })
             .ToListAsync(cancellationToken);
 
@@ -1517,9 +1514,11 @@ public partial class ConnectionService
                     From = c,
                     To = ar.Assignment.To,
                     Role = ar.Assignment.Role,
+                    Via = null, // c.Parent
+                    ViaRole = null,
                     PolicyPath = ar.PolicyPath,
                     PolicyVersion = ar.PolicyVersion,
-                    Reason = AccessReason.Hierarchy
+                    Reason = AccessReason.Parent
                 })
             .ToListAsync();
 
@@ -1539,6 +1538,8 @@ public partial class ConnectionService
                    From = ar.Assignment.From,
                    To = c.To,
                    Role = ar.Assignment.Role,
+                   Via = c.From,
+                   ViaRole = c.Role,
                    PolicyPath = ar.PolicyPath,
                    PolicyVersion = ar.PolicyVersion,
                    Reason = AccessReason.KeyRole
@@ -1567,9 +1568,11 @@ public partial class ConnectionService
                     From = x.fromChild,
                     To = kr.To,
                     Role = x.ar.Assignment.Role,
+                    Via = kr.From,
+                    ViaRole = kr.Role,
                     PolicyPath = x.ar.PolicyPath,
                     PolicyVersion = x.ar.PolicyVersion,
-                    Reason = AccessReason.Set(AccessReasonKeys.Hierarchy, AccessReasonKeys.KeyRole)
+                    Reason = AccessReason.Set(AccessReasonKeys.Parent, AccessReasonKeys.KeyRole)
                 }
             )
             .ToListAsync();
@@ -1623,6 +1626,8 @@ public partial class ConnectionService
                             From = DtoMapper.Convert(assignmentResource.From),
                             To = DtoMapper.Convert(assignmentResource.To),
                             Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
+                            Via = DtoMapper.Convert(assignmentResource.Via),
+                            ViaRole = DtoMapper.ConvertCompactRole(assignmentResource.ViaRole),
                             Reason = assignmentResource.Reason
                         });
                     }
@@ -1795,6 +1800,10 @@ internal class AssignmentResourceQueryResult
     internal Entity From { get; set; }
 
     internal Entity To { get; set; }
+
+    internal Entity Via { get; set; }
+
+    internal PersistenceEF.Models.Role ViaRole { get; set; }
 
     internal PersistenceEF.Models.Role Role { get; set; }
 

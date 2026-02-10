@@ -54,15 +54,15 @@ public sealed class AccessReason
         return false;
     }
 
-    public static AccessReason Assignment => Set(AccessReasonKeys.Assignment);
+    public static AccessReason Direct => Set(AccessReasonKeys.Direct);
 
-    public static AccessReason Delegation => Set(AccessReasonKeys.Delegation);
+    public static AccessReason ClientDelegation => Set(AccessReasonKeys.ClientDelegation);
 
     public static AccessReason KeyRole => Set(AccessReasonKeys.KeyRole);
 
     public static AccessReason RoleMap => Set(AccessReasonKeys.RoleMap);
 
-    public static AccessReason Hierarchy => Set(AccessReasonKeys.Hierarchy);
+    public static AccessReason Parent => Set(AccessReasonKeys.Parent);
 
     public IReadOnlyList<IReadOnlyCollection<AccessReasonKey>> All =>
         groups.Select(g => (IReadOnlyCollection<AccessReasonKey>)g).ToList();
@@ -85,10 +85,10 @@ public sealed record AccessReasonKey(string Name, string Description)
 
 public static class AccessReasonKeys
 {
-    public static readonly AccessReasonKey Assignment =
+    public static readonly AccessReasonKey Direct =
         new("assignment", "Access granted directly with assignment");
 
-    public static readonly AccessReasonKey Delegation =
+    public static readonly AccessReasonKey ClientDelegation =
         new("delegation", "Access granted via delegation");
 
     public static readonly AccessReasonKey KeyRole =
@@ -97,6 +97,6 @@ public static class AccessReasonKeys
     public static readonly AccessReasonKey RoleMap =
         new("rolemap", "Access granted through rolemapping");
 
-    public static readonly AccessReasonKey Hierarchy =
+    public static readonly AccessReasonKey Parent =
         new("hierarchy", "Access granted through parent/child relation");
 }

@@ -243,7 +243,7 @@ public class ConnectionQuery(AppDbContext db)
                     ViaId = null,
                     ViaRoleId = null,
                     Reason = ConnectionReason.Assignment,
-                    NewReason = AccessReason.Assignment,
+                    NewReason = AccessReason.Direct,
                     IsKeyRoleAccess = false,
                     IsMainUnitAccess = false,
                     IsRoleMap = false,
@@ -329,7 +329,7 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = fa.ToId,
                         ViaRoleId = fa.RoleId,
                         Reason = ConnectionReason.Delegation,
-                        NewReason = AccessReason.Delegation,
+                        NewReason = AccessReason.ClientDelegation,
                         IsKeyRoleAccess = false,
                         IsMainUnitAccess = false,
                         IsRoleMap = false,
@@ -356,7 +356,7 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = c.FromId,
                 ViaRoleId = c.ViaRoleId,
                 Reason = ConnectionReason.Hierarchy,
-                NewReason = AccessReason.Hierarchy,
+                NewReason = AccessReason.Parent,
                 IsKeyRoleAccess = c.IsKeyRoleAccess,
                 IsMainUnitAccess = true,
                 IsRoleMap = c.IsRoleMap,
@@ -385,7 +385,7 @@ public class ConnectionQuery(AppDbContext db)
                 IsRoleMap = reviRegnConnection.IsRoleMap,
                 IsMainUnitAccess = reviRegnConnection.IsMainUnitAccess,
                 Reason = ConnectionReason.Hierarchy,
-                NewReason = AccessReason.Hierarchy,
+                NewReason = AccessReason.Parent,
             };
 
         /*
