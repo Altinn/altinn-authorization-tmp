@@ -1213,5 +1213,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         internal string PolicyPath { get; set; }
 
         internal string PolicyVersion { get; set; }
+
+        internal Reason Reason { get; set; }
     }
 }

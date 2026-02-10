@@ -56,6 +56,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
 
+    public DbSet<Reason> Reasons => Set<Reason>();
+
     public DbSet<Resource> Resources => Set<Resource>();
 
     public DbSet<ResourceType> ResourceTypes => Set<ResourceType>();
@@ -192,6 +194,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<PackageResource>(new PackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<Provider>(new ProviderConfiguration());
         modelBuilder.ApplyConfiguration<ProviderType>(new ProviderTypeConfiguration());
+        modelBuilder.ApplyConfiguration<Reason>(new ReasonConfiguration());
         modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
