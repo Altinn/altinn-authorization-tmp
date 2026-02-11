@@ -1651,15 +1651,24 @@ public partial class ConnectionService
                         resourceRule.Rules.Add(rule);
                     }
 
-                    rule.Permissions.Add(new PermissionDto()
+                    if (!rule.Permissions.Any(p =>
+                        p.From.Id == assignmentResource.From.Id &&
+                        p.To.Id == assignmentResource.To.Id &&
+                        p.Role.Id == assignmentResource.Role.Id &&
+                        p.Via?.Id == assignmentResource.Via?.Id &&
+                        p.ViaRole?.Id == assignmentResource.ViaRole?.Id &&
+                        p.Reason == assignmentResource.Reason))
                     {
-                        From = DtoMapper.Convert(assignmentResource.From),
-                        To = DtoMapper.Convert(assignmentResource.To),
-                        Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
-                        Via = DtoMapper.Convert(assignmentResource.Via),
-                        ViaRole = DtoMapper.ConvertCompactRole(assignmentResource.ViaRole),
-                        Reason = assignmentResource.Reason
-                    });
+                        rule.Permissions.Add(new PermissionDto()
+                        {
+                            From = DtoMapper.Convert(assignmentResource.From),
+                            To = DtoMapper.Convert(assignmentResource.To),
+                            Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
+                            Via = DtoMapper.Convert(assignmentResource.Via),
+                            ViaRole = DtoMapper.ConvertCompactRole(assignmentResource.ViaRole),
+                            Reason = assignmentResource.Reason
+                        });
+                    }
                 }
             }
 
