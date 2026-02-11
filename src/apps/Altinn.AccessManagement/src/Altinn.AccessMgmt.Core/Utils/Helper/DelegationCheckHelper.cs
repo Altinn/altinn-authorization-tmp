@@ -129,7 +129,6 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 current.RoleAllowAccess = [];
                 current.RoleDenyAccess = [];
                 current.ResourceAllowAccess = [];
-                current.ResourceDenyAccess = [];
 
                 result.Add(current);
             }

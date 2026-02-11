@@ -64,6 +64,8 @@ public sealed class AccessReason
 
     public static AccessReason Hierarchy => Set(AccessReasonKeys.Hierarchy);
 
+    public static AccessReason KeyRoleAndHierarchy => Set(AccessReasonKeys.Hierarchy, AccessReasonKeys.KeyRole);
+
     public IReadOnlyList<IReadOnlyCollection<AccessReasonKey>> All =>
         groups.Select(g => (IReadOnlyCollection<AccessReasonKey>)g).ToList();
 

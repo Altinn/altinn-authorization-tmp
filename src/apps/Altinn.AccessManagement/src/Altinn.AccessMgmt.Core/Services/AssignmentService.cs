@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery, IPolicyRetrievalPoint policyRetrievalPoint) : IAssignmentService
+public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery) : IAssignmentService
 {
     /// <inheritdoc/>
     public async Task<List<Authorization.Api.Contracts.AccessManagement.AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default)
