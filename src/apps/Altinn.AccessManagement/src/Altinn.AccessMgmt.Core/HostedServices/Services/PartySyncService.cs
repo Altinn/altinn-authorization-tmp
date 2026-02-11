@@ -159,8 +159,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingestedAssignments, ingestAssignments.Count);
                 }
 
-                var mergedEntities = await ingestService.MergeTempData<Entity>(batchIdEntity, options, matchColumns: ["id"], ignoreColumns: ["parentid"], cancellationToken);
-                int mergedAssignments = await ingestService.MergeTempData<Assignment>(batchIdAssignment, options, matchColumns: ["fromid","toid","roleid"], ignoreColumns: null, cancellationToken);
+                var mergedEntities = await ingestService.MergeTempData<Entity>(batchIdEntity, options, matchColumns: ["id"], ignoreColumnsToUpdate: ["parentid"], cancellationToken: cancellationToken);
+                int mergedAssignments = await ingestService.MergeTempData<Assignment>(batchIdAssignment, options, matchColumns: ["fromid","toid","roleid"], ignoreColumnsToUpdate: [ "id", "audit_validfrom" ], cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Merge complete: Entity ({0}/{1})", mergedEntities, ingestedEntities);
                 return mergedEntities;
@@ -173,6 +173,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             finally
             {
                 ingestEntities.Clear();
+                ingestAssignments.Clear();
                 seen.Clear();
                 seenDeadPeople.Clear();
             }
@@ -198,6 +199,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private Assignment MapAssignmentForPerson(Person person)
     {
+        if ((person.IsDeleted.HasValue && person.IsDeleted.Value) || (person.DateOfDeath.HasValue && person.DateOfDeath.Value > DateOnly.MinValue))
+        {
+            // Dead or deleted
+            return null;
+        }
+
         return new Assignment()
         {
             FromId = person.Uuid,
@@ -208,6 +215,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private Assignment MapAssignmentForSelfIdentifiedUser(SelfIdentifiedUser user)
     {
+        if (user.IsDeleted.HasValue && user.IsDeleted.Value)
+        {
+            // Deleted
+            return null;
+        }
+
         return new Assignment()
         {
             FromId = user.Uuid,
