@@ -64,7 +64,11 @@ public class InputValidation(
             return await LookupProfile(personInput, cancellationToken);
         }
 
-        errorBuilder.Add(ValidationErrors.Required, ["QUERY/to", "/personIdentifier", "/lastName"], [new("params", "Invalid combination of params. Either 'QUERY/to'  must be set or '/personIdentifier' and '/lastName'.")]);
+        errorBuilder.Add(
+            ValidationErrors.Required,
+            ["QUERY/to", $"/{nameof(personInput.PersonIdentifier)}", $"/{nameof(personInput.LastName)}"],
+            [new("params", $"Invalid combination of params. Either 'QUERY/to'  must be set or '/{nameof(personInput.PersonIdentifier)}' and '/{nameof(personInput.LastName)}'.")]
+        );
         errorBuilder.TryBuild(out var problemInstance);
         return problemInstance;
     }
@@ -78,12 +82,12 @@ public class InputValidation(
 
         if (string.IsNullOrWhiteSpace(person.PersonIdentifier))
         {
-            errorBuilder.Add(ValidationErrors.Required, ["/personIdentifier"], [new("personIdentifier", "personIdentifier is null or empty.")]);
+            errorBuilder.Add(ValidationErrors.Required, [$"/{nameof(person.PersonIdentifier)}"], [new("personIdentifier", "personIdentifier is null or empty.")]);
         }
 
         if (string.IsNullOrWhiteSpace(person.LastName))
         {
-            errorBuilder.Add(ValidationErrors.Required, ["/lastName"], [new("lastName", "lastname is either null or empty.")]);
+            errorBuilder.Add(ValidationErrors.Required, [$"/{nameof(person.LastName)}"], [new("lastName", "lastname is either null or empty.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -107,7 +111,7 @@ public class InputValidation(
             var profile = await userProfileLookupService.GetUserProfile(authUserId, lookup, person.LastName);
             if (profile is null)
             {
-                errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, ["/personIdentifier", "/lastName"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
+                errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
             }
             else
             {
@@ -120,13 +124,12 @@ public class InputValidation(
                         return entity;
                     }
 
-                    errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, ["/personIdentifier", "/lastName"], [new("personInput", "person was found in profile register, but not in AM.")]);
+                    errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "person was found in profile register, but not in AM.")]);
                 }
                 else
                 {
-                    errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, ["/personIdentifier", "/lastName"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
+                    errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", ValidationErrorMessageTexts.PersonIdentifierLastNameInvalid)]);
                 }
-
             }
         }
         catch (TooManyFailedLookupsException)
