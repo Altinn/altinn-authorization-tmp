@@ -1,0 +1,58 @@
+meta {
+  name: GET_Agent_Lists_After_delegert_Innbygger_AccPKG_Deleted
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/clientdelegations/clients/accesspackages?party={{party}}&from={{from}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  from: {{from}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const testdata2 = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+  
+  bru.setVar("from", testdata.privatPerson.partyUuid);
+  bru.setVar("party", testdata.REVI_Organisasjon.partyUuid);
+  
+  
+  var getTokenParameters = {
+     auth_userId: testdata.REVI_Organisasjon.dagligleder.userId,
+    auth_partyId: testdata.REVI_Organisasjon.dagligleder.partyId,
+    auth_partyUuid: testdata.REVI_Organisasjon.dagligleder.partyUuid,
+    auth_ssn: testdata.REVI_Organisasjon.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+  
+  
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  
+  test("GET agent list after deleting delegated access pacakage", function() {
+    
+    const body = res.getBody();
+    const data = body.data;
+    
+    expect(res.status).to.equal(200);
+    assert.isEmpty(data, "Expected data in response body to be empty array");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

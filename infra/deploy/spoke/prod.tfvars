@@ -20,6 +20,7 @@ appconfiguration = {
   platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
   platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
   platform_sbl_bridge_endpoint        = "https://ai-pr-vip-sblbridge.ai.basefarm.net/sblbridge/"
+  maskinporten_endpoint               = "https://maskinporten.no/"
 }
 
 services = {
@@ -40,5 +41,16 @@ services = {
 
   folkeregisteret = {
     host = "folkeregisteret.api.skatteetaten.no"
+  }
+}
+
+logging = {
+  min_level = {
+    "AltinnCore.Authentication" = "Warning"
+
+    "Microsoft" = "Warning"
+    "System"    = "Warning"
+    "Polly"     = "Warning"
+    "Npgsql"    = "Warning"
   }
 }

@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -52,10 +54,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var ingestEntities = new List<Entity>();
         var ingestAssignments = new List<Assignment>();
         var seenAssignments = new HashSet<(Guid FromId, Guid ToId, Guid RoleId)>();
+        HashSet<Guid> seenDeadPeople = [];
 
-        using var scope = _serviceProvider.CreateEFScope(options);
+        using IServiceScope scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
+        IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
@@ -89,6 +93,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 if (!seen.Add(entity.RefId))
                 {
                     await Flush();
+                }
+
+                if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath.HasValue)
+                {
+                    seenDeadPeople.Add(entity.Id);
                 }
 
                 ingestEntities.Add(entity);
@@ -132,6 +141,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchIdEntity, cancellationToken);
                 int ingestedAssignments = await ingestService.IngestTempData(ingestAssignments, batchIdAssignment, cancellationToken);
 
+                if (seenDeadPeople.Count > 0)
+                {
+                    foreach (Guid refId in seenDeadPeople)
+                    {
+                        await assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
+                    }
+                }
+
                 if (ingestedEntities != ingestEntities.Count)
                 {
                     _logger.LogWarning("Ingest partial complete: Entity ({0}/{1})", ingestedEntities, ingestEntities.Count);
@@ -157,6 +174,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 ingestEntities.Clear();
                 seen.Clear();
+                seenDeadPeople.Clear();
             }
 
             return 0;

@@ -4,6 +4,7 @@ locals {
     "Platform:ResourceRegistry:Endpoint" = var.appconfiguration.platform_resource_registry_endpoint
     "Platform:Register:Endpoint"         = var.appconfiguration.platform_register_endpoint
     "Lease:StorageAccount:BlobEndpoint"  = azurerm_storage_account.storage.primary_blob_endpoint
+    "Altinn:MaskinPorten:Endpoint"       = var.appconfiguration.maskinporten_endpoint
   }
 }
 
@@ -32,6 +33,24 @@ module "services_configuration" {
       values = {
         for service_name, service_config in var.services :
         "Services:${service_name}:${service_config.protocol}" => { value = "${service_config.protocol}://${service_config.host}/" }
+      }
+    }
+  }
+
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
+}
+
+module "logging_configuration" {
+  source     = "../../modules/appsettings"
+  hub_suffix = local.hub_suffix
+
+  labels = {
+    lower(var.environment) = {
+      values = {
+        for logger_name, log_level in var.logging.min_level :
+        "Logging:LogLevel:${logger_name}" => { value = log_level }
       }
     }
   }

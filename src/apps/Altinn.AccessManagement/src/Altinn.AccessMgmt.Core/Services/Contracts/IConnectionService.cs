@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
@@ -14,7 +15,7 @@ public interface IConnectionService
     /// <summary>
     /// Get Connections
     /// </summary>
-    Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a role assignment between two entities.
@@ -53,10 +54,23 @@ public interface IConnectionService
     Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Checks for role delegation access for a specific user. 
+    /// Note:
+    ///     - This method assumes that the caller has already been authenticated and authorized as an access manager for the specified party.
+    ///     - Currently only usable for resource delegation checks.
+    /// </summary>
+    /// <param name="party">The party the user is operating on behalf of.</param>
+    /// <param name="toId">The user</param>
+    /// <param name="toIsMainAdminForFrom">Wether the toId user is authorized as main administrator for the party</param>
+    /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a collection of role delegations.</returns>
+    Task<Result<IEnumerable<RoleDtoCheck>>> RoleDelegationCheck(Guid party, Guid? toId = null, bool toIsMainAdminForFrom = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get connection resources
     /// </summary>
     /// <returns></returns>
-    Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Guid? resourceId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a resource to an assignment (by resource ID) based on the role between two entities.
@@ -223,6 +237,31 @@ public interface IConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Method to check if a resource is delegable by an authenticated user on behalf of a party
+    /// </summary>
+    /// <param name="authenticatedUserUuid">The authenticated user</param>
+    /// <param name="party">The party performing the checl on behalf of</param>
+    /// <param name="resourceId">The resource id to check</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>The result on all the resource/action that is delegable on the resource and a reason behinf if the user can or can not delegate a given action</returns>
+    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.

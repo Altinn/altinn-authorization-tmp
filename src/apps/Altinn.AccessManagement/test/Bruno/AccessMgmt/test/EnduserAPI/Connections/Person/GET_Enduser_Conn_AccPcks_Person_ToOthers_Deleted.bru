@@ -1,11 +1,11 @@
 meta {
   name: GET_Enduser_Conn_AccPcks_Person_ToOthers_Deleted
   type: http
-  seq: 8
+  seq: 9
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{party}}&from={{party}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{party}}&from={{party}}&to={{toPerson}}&package={{package}}
   body: json
   auth: inherit
 }
@@ -13,17 +13,12 @@ get {
 params:query {
   party: {{party}}
   from: {{party}}
-  ~packageId: {{toPerson}}
-  ~package: 
-  ~to: {{toPerson}}
-  ~to: {{toPerson}}
+  to: {{toPerson}}
+  package: {{package}}
 }
 
 body:json {
-   {
-    "personidentifier": "{{toPerson}}", // fnr or username
-    "lastName": "{{toPersonLastName}}"
-  }
+   
 }
 
 script:pre-request {
@@ -44,8 +39,8 @@ script:pre-request {
   }
   
   
-const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
-const token = await testTokenGenerator.getToken(getTokenParameters);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken",  token);
 }
 
