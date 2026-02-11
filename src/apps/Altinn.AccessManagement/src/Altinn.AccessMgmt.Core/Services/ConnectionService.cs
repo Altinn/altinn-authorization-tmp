@@ -45,6 +45,7 @@ public partial class ConnectionService(
     IAccessListsAuthorizationClient accessListsAuthorizationClient,
     IPolicyRetrievalPoint policyRetrievalPoint,
     IRoleService roleService,
+    IResourceService resourceService,
     ITranslationService translationService) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
@@ -1442,37 +1443,41 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<ResourceRuleDto> GetResourceRulesToOthers(Guid partyId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        return await GetResourcesRules(
+        var result = await GetResourcesRules(
            fromId: partyId,
            toId: toId,
            resourceId: resourceId,
            roleId: RoleConstants.Rightholder,
            cancellationToken: cancellationToken
            );
+
+        return result.FirstOrDefault();
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<ResourceRuleDto> GetResourceRulesFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        return await GetResourcesRules(
+        var result = await GetResourcesRules(
             fromId: fromId, 
             toId: partyId, 
             resourceId: resourceId, 
             roleId: RoleConstants.Rightholder, 
             cancellationToken: cancellationToken
             );
+
+        return result.FirstOrDefault();
     }
 
-    private async Task<List<ResourceRulesDto>> GetResourcesRules(Guid? fromId, Guid? toId, Guid? resourceId, Guid? roleId, CancellationToken cancellationToken = default)
+    private async Task<List<ResourceRuleDto>> GetResourcesRules(Guid? fromId, Guid? toId, Guid? resourceId, Guid? roleId, CancellationToken cancellationToken = default)
     {
         if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("You need to specify from or to");
         }
 
-        var result = new List<ResourceRulesDto>();
+        #region Data
 
         var baseQuery = dbContext.AssignmentResources.AsNoTracking()
             .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
@@ -1607,59 +1612,58 @@ public partial class ConnectionService
 
         var res = await query.ToListAsync();
 
-        foreach (var assignmentResource in res)
+        #endregion
+
+        var result = new List<ResourceRuleDto>();
+
+        foreach (var resource in res.Select(t => t.Resource).DistinctBy(t => t.Id))
         {
-            var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(assignmentResource.Resource.RefId, cancellationToken);
-            var validRuleActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, assignmentResource.Resource.RefId));
-
-            var resourceActionPermission = result.FirstOrDefault(t => t.Resource.Id == assignmentResource.Resource.Id);
-            if (resourceActionPermission is not { })
+            var resourceRule = new ResourceRuleDto()
             {
-                resourceActionPermission = new ResourceRulesDto() { Resource = DtoMapper.Convert(assignmentResource.Resource), Rules = new List<RulePermission>() };
-            }
+                Resource = DtoMapper.Convert(res.First().Resource),
+                Rules = new List<RulePermission>()
+            };
 
-            var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
-            foreach (var r in policy.Rules)
+            var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(resource.RefId, cancellationToken);
+            var validRuleActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, resource.RefId));
+
+            foreach (var assignmentResource in res)
             {
-                var actions = DelegationCheckHelper.CalculateActionKey(r, assignmentResource.Resource.RefId);
+                var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
+                var actions = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, resource.RefId));
+                var validActions = validRuleActions.Intersect(actions); // Only valid actions
 
-                foreach (var actionKey in actions)
+                foreach (var actionKey in validRuleActions)
                 {
-                    if (!validRuleActions.Contains(actionKey))
-                    {
-                        continue;
-                    }
+                    var rule = resourceRule.Rules.FirstOrDefault(t => t.Key == actionKey);
 
-                    var actionSplit = DelegationCheckHelper.SplitActionKey(actionKey);
-                    var actionRule = resourceActionPermission.Rules.FirstOrDefault(t => t.Action == actionKey);
-                    if (actionRule is not { })
+                    if (rule == null)
                     {
-                        actionRule = new RulePermission()
+                        var splitAction = DelegationCheckHelper.SplitActionKey(actionKey);
+                        rule = new RulePermission()
                         {
                             Key = actionKey,
-                            SubResource = string.Join(':', actionSplit.Resource),
-                            Action = actionSplit.Action,
+                            SubResource = string.Join(':', splitAction.Resource),
+                            Action = splitAction.Action,
+                            Reason = assignmentResource.Reason,
                             Permissions = new List<PermissionDto>(),
                         };
-                        resourceActionPermission.Rules.Add(actionRule);
+                        resourceRule.Rules.Add(rule);
                     }
 
-                    if (!actionRule.Permissions.Any(t => t.From.Id == assignmentResource.From.Id && t.To.Id == assignmentResource.To.Id && t.Role.Id == assignmentResource.Role.Id))
+                    rule.Permissions.Add(new PermissionDto()
                     {
-                        actionRule.Permissions.Add(new PermissionDto()
-                        {
-                            From = DtoMapper.Convert(assignmentResource.From),
-                            To = DtoMapper.Convert(assignmentResource.To),
-                            Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
-                            Via = DtoMapper.Convert(assignmentResource.Via),
-                            ViaRole = DtoMapper.ConvertCompactRole(assignmentResource.ViaRole),
-                            Reason = assignmentResource.Reason
-                        });
-                    }
+                        From = DtoMapper.Convert(assignmentResource.From),
+                        To = DtoMapper.Convert(assignmentResource.To),
+                        Role = DtoMapper.ConvertCompactRole(assignmentResource.Role),
+                        Via = DtoMapper.Convert(assignmentResource.Via),
+                        ViaRole = DtoMapper.ConvertCompactRole(assignmentResource.ViaRole),
+                        Reason = assignmentResource.Reason
+                    });
                 }
             }
 
-            result.Add(resourceActionPermission);
+            result.Add(resourceRule);
         }
 
         return result;

@@ -323,12 +323,12 @@ public interface IConnectionService
     /// <summary>
     /// Get list of resourcerules with a list of parties that have this permission
     /// </summary>
-    Task<IEnumerable<ResourceRulesDto>> GetResourceRulesToOthers(Guid partyId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<ResourceRuleDto> GetResourceRulesToOthers(Guid partyId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get list of resourcerules with a list of parties that have this permission
     /// </summary>
-    Task<IEnumerable<ResourceRulesDto>> GetResourceRulesFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<ResourceRuleDto> GetResourceRulesFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all connections to an agent of the given service provider (viaId)

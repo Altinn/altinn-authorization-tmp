@@ -3,7 +3,7 @@
 /// <summary>
 /// Resource rules
 /// </summary>
-public class ResourceRulesDto
+public class ResourceRuleDto
 {
     /// <summary>
     /// Resource
@@ -39,7 +39,7 @@ public class RulePermission
     /// <summary>
     /// Reason
     /// </summary>
-    public string Reason { get; set; }
+    public AccessReason Reason { get; set; }
 
     /// <summary>
     /// Permissions
