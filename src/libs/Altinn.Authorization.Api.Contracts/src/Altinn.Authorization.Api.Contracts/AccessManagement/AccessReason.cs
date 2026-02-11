@@ -49,6 +49,25 @@ public sealed class AccessReason
         return new(left.flag | right.flag);
     }
 
+    public override bool Equals(object? obj)
+    {
+        if (obj is not AccessReason other)
+        {
+            return false;
+        }
+
+        return flag == other.flag;
+    }
+
+    public static bool operator ==(AccessReason left, AccessReason right)
+    => left?.flag == right?.flag;
+
+    public static bool operator !=(AccessReason left, AccessReason right)
+        => !(left == right);
+
+    public override int GetHashCode()
+        => flag.GetHashCode();
+
     public static implicit operator AccessReason(AccessReasonFlag flag)
         => new(flag);
 
