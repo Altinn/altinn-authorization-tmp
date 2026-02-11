@@ -111,6 +111,16 @@
         public const string SCOPE_PORTAL_ENDUSER = "altinn:portal/enduser";
 
         /// <summary>
+        /// MyClients-Administration Read enduser scope giving access to read operations on behalf of Agent having received client-delegations
+        /// </summary>
+        public const string SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ = "altinn:clientdelegations/myclients.read";
+
+        /// <summary>
+        /// MyClients-Administration Write enduser scope giving access to write operations on behalf of Agent having received client-delegations
+        /// </summary>
+        public const string SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE = "altinn:clientdelegations/myclients.write";
+
+        /// <summary>
         /// Client-Administration Read enduser scope giving access to read operations on behalf of Client-Administrators
         /// </summary>
         public const string SCOPE_ENDUSER_CLIENTDELEGATION_READ = "altinn:clientdelegations.read";
