@@ -440,14 +440,13 @@ public class ConnectionsController(
     [HttpGet("resources")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    [ProducesResponseType<PaginatedResult<ResourcePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<ResourceRuleDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetResources([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(
-            ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -457,25 +456,30 @@ public class ConnectionsController(
         var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
+
         var resourceObj = await resourceService.GetResource(resource, cancellationToken) ?? null;
+        if (resourceObj is null)
+        {
+            return NotFound($"Resource '{resource}' not found.");
+        }
 
         var result = connection.Direction == ConnectionQueryDirection.ToOthers
             ? await ConnectionService.GetResourceRulesToOthers(
                 partyId: partyUuid,
-                toId: validFromUuid ? toUuid : null,
-                resourceId: resourceObj == null ? null : resourceObj.Id,
+                toId: toUuid,
+                resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
                 )
             : await ConnectionService.GetResourceRulesFromOthers(
                 partyId: partyUuid,
-                fromId: validFromUuid ? fromUuid : null,
-                resourceId: resourceObj == null ? null : resourceObj.Id,
+                fromId: fromUuid,
+                resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
                 ); 
 
-        return Ok(PaginatedResult.Create(result, null));
+        return Ok(result);
     }
 
     /// <summary>

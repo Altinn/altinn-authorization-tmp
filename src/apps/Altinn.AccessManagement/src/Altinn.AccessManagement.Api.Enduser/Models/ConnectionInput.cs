@@ -30,5 +30,8 @@ public class ConnectionInput
     [SwaggerSchema(Description = "to", Format = "<me, all | blank, uuid>")]
     public string To { get; set; }
 
-    public ConnectionQueryDirection Direction => From == Party ? ConnectionQueryDirection.ToOthers : ConnectionQueryDirection.FromOthers;
+    /// <summary>
+    /// Direction based on from/to+party input
+    /// </summary>
+    internal ConnectionQueryDirection Direction => From == Party ? ConnectionQueryDirection.ToOthers : ConnectionQueryDirection.FromOthers;
 }
