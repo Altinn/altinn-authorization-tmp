@@ -71,7 +71,7 @@ public class AuthorizedPartiesController(
                 AnyOfResourceIds = anyOfResourceIds
             };
 
-            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && partyFilter?.Count() > 0)
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled, cancellationToken) && partyFilter?.Any() == true)
             {
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();

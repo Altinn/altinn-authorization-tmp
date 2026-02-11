@@ -87,7 +87,7 @@ public class InternalAuthorizedPartiesController(
                 AnyOfResourceIds = anyOfResourceIds
             };
 
-            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && partyFilter?.Count() > 0)
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled, cancellationToken) && partyFilter?.Any() == true)
             {
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();
@@ -193,7 +193,7 @@ public class InternalAuthorizedPartiesController(
                 return Unauthorized();
             }
 
-            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled))
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled, cancellationToken))
             {
                 var partyFilters = new BaseAttribute(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, partyId.ToString()).SingleToList();
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilters, cancellationToken);
