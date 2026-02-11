@@ -91,7 +91,7 @@ public class InternalAuthorizedPartiesController(
             {
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();
-                foreach (var partyUuid in partyUuids?.Distinct())
+                foreach (var partyUuid in partyUuids.Distinct())
                 {
                     filters.PartyFilter[partyUuid] = partyUuid;
                 }
@@ -198,7 +198,7 @@ public class InternalAuthorizedPartiesController(
                 var partyFilters = new BaseAttribute(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, partyId.ToString()).SingleToList();
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilters, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();
-                foreach (var partyUuid in partyUuids?.Distinct())
+                foreach (var partyUuid in partyUuids.Distinct())
                 {
                     filters.PartyFilter[partyUuid] = partyUuid;
                 }

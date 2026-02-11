@@ -75,7 +75,8 @@ public class AuthorizedPartiesController(
             {
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();
-                foreach (var partyUuid in partyUuids?.Distinct())
+
+                foreach (var partyUuid in partyUuids.Distinct())
                 {
                     filters.PartyFilter[partyUuid] = partyUuid;
                 }
