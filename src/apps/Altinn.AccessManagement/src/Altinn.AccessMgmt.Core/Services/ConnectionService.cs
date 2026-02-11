@@ -1500,8 +1500,6 @@ public partial class ConnectionService
 
         // Hierarchy (Parent/Child)
         var childResult = await dbContext.AssignmentResources.AsNoTracking()
-            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .Join(
@@ -1520,12 +1518,12 @@ public partial class ConnectionService
                     PolicyVersion = ar.PolicyVersion,
                     Reason = AccessReason.Parent
                 })
+            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
             .ToListAsync();
 
         // KeyRole
         var keyRoleResult = await dbContext.AssignmentResources.AsNoTracking()
-           .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
-           .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
            .Join(
@@ -1544,12 +1542,12 @@ public partial class ConnectionService
                    PolicyVersion = ar.PolicyVersion,
                    Reason = AccessReason.KeyRole
                })
+           .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
+           .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
            .ToListAsync();
 
         // KeyRole + Heirarchy
         var keyRoleSubUnit = await dbContext.AssignmentResources.AsNoTracking()
-            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .Join(
@@ -1575,6 +1573,8 @@ public partial class ConnectionService
                     Reason = AccessReason.Set(AccessReasonKeys.Parent, AccessReasonKeys.KeyRole)
                 }
             )
+            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
             .ToListAsync();
 
         var res = direct
