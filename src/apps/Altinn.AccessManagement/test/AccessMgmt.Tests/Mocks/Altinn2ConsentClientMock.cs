@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
@@ -67,6 +68,8 @@ namespace Altinn.AccessManagement.Tests.Mocks
                 ConsentRights = new List<ConsentRight>()
             }).ToList();
 
+            GetA2Request(Guid.Parse(consentList.First()));
+
             return Task.FromResult(consents);
         }
 
@@ -120,6 +123,88 @@ namespace Altinn.AccessManagement.Tests.Mocks
             result.ConsentRequestEvents = consentEvents;
 
             return result;
+        }
+
+        private ConsentRequest GetA2Request(Guid id)
+        {
+            Stream dataStream = File.OpenRead($"Data/Consent/a2consent_request_{id.ToString()}.json");
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            Altinn2ConsentRequest result = JsonSerializer.Deserialize<Altinn2ConsentRequest>(dataStream, options);
+
+            ConsentRequest consentRequest = MapA2ConsentToA3Consent(result, CancellationToken.None).GetAwaiter().GetResult();
+
+            return consentRequest;
+        }
+
+        private async Task<ConsentRequest> MapA2ConsentToA3Consent(Altinn2ConsentRequest altinn2Consent, CancellationToken cancellationToken)
+        {
+            ConsentRequest consent = new ConsentRequest
+            {
+                Id = altinn2Consent.ConsentGuid,
+                CreatedTime = altinn2Consent.CreatedTime,
+                From = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.OfferedByPartyUUID),
+                To = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.CoveredByPartyUUID),
+                ValidTo = altinn2Consent.ValidTo,
+                ConsentRights = await MapAltinn2ResourcesToConsentRights(altinn2Consent.RequestResources, cancellationToken),
+                ConsentRequestEvents = await MapA2ConsentEventsToA3ConsentEvents(altinn2Consent.ConsentHistoryEvents, cancellationToken),
+                RedirectUrl = altinn2Consent.RedirectUrl,
+                TemplateId = altinn2Consent.TemplateId
+            };
+
+            return consent;
+        }
+
+        private async Task<List<ConsentRight>> MapAltinn2ResourcesToConsentRights(List<AuthorizationRequestResourceBE> resources, CancellationToken cancellationToken)
+        {
+            List<ConsentRight> consentRights = new();
+
+            foreach (AuthorizationRequestResourceBE resource in resources)
+            {
+                ConsentRight consentRight = new()
+                {
+                    Action = resource.Operations,
+                    Resource = new List<ConsentResourceAttribute>(),
+                    Metadata = new MetadataDictionary()
+                };
+
+                consentRight.AddMetadataValues(resource.Metadata);
+
+                string searchParam = $"reference={resource.ServiceEditionVersionID}&ResourceType=Consent&id={resource.ServiceCode}_{resource.ServiceEditionCode}";
+                ConsentResourceAttribute consentResourceAttribute = new()
+                {
+                    Type = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute,
+                    Value = "Identifier",
+                    Version = "123"
+                };
+
+                consentRight.Resource.Add(consentResourceAttribute);
+            }
+
+            return await Task.FromResult(consentRights);
+        }
+
+        private async Task<List<ConsentRequestEvent>> MapA2ConsentEventsToA3ConsentEvents(List<Altinn2ConsentRequestEvent> a2Events, CancellationToken cancellationToken)
+        {
+            List<ConsentRequestEvent> consentEvents = new();
+
+            foreach (Altinn2ConsentRequestEvent a2Event in a2Events)
+            {
+                ConsentRequestEvent consentEvent = new()
+                {
+                    ConsentRequestID = a2Event.ConsentRequestID,
+                    Created = a2Event.Created,
+                    EventType = Enum.Parse<ConsentRequestEventType>(a2Event.EventType),
+                    PerformedBy = ConsentPartyUrn.PartyUuid.Create(a2Event.PerformedByPartyUUID ?? Guid.Empty)
+                };
+
+                consentEvents.Add(consentEvent);
+            }
+
+            return await Task.FromResult(consentEvents);
         }
     }
 }
