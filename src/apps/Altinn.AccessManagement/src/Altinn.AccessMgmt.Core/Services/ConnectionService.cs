@@ -1481,7 +1481,7 @@ public partial class ConnectionService
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value);
 
         // Direct
-        var direct = await dbContext.AssignmentResources.AsNoTracking()
+        var direct = dbContext.AssignmentResources.AsNoTracking()
             .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
@@ -1495,11 +1495,10 @@ public partial class ConnectionService
                 PolicyPath = t.PolicyPath,
                 PolicyVersion = t.PolicyVersion,
                 Reason = AccessReason.Direct
-            })
-            .ToListAsync(cancellationToken);
+            });
 
         // Hierarchy (Parent/Child)
-        var childResult = await dbContext.AssignmentResources.AsNoTracking()
+        var childResult = dbContext.AssignmentResources.AsNoTracking()
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .Join(
@@ -1519,11 +1518,10 @@ public partial class ConnectionService
                     Reason = AccessReason.Parent
                 })
             .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
-            .ToListAsync();
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
 
         // KeyRole
-        var keyRoleResult = await dbContext.AssignmentResources.AsNoTracking()
+        var keyRoleResult = dbContext.AssignmentResources.AsNoTracking()
            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
            .Join(
@@ -1543,11 +1541,10 @@ public partial class ConnectionService
                    Reason = AccessReason.KeyRole
                })
            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-           .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
-           .ToListAsync();
+           .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
 
         // KeyRole + Heirarchy
-        var keyRoleSubUnit = await dbContext.AssignmentResources.AsNoTracking()
+        var keyRoleSubUnit = dbContext.AssignmentResources.AsNoTracking()
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .Join(
@@ -1574,13 +1571,16 @@ public partial class ConnectionService
                 }
             )
             .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
-            .ToListAsync();
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
 
-        var res = direct
+        var query = direct
             .Union(childResult)
             .Union(keyRoleResult)
             .Union(keyRoleSubUnit);
+
+        var queryString = query.ToQueryString();
+
+        var res = await query.ToListAsync();
 
         foreach (var assignmentResource in res)
         {
