@@ -129,16 +129,49 @@ namespace AccessMgmt.Tests.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetMultipleConsents_Valid()
+        public async Task GetConsentListForMigrationAllStatuses_Valid()
         {
             SetupMockPartyRepository();
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/getmultipleconsents?consentList=4a73a516-7a91-435c-8a0e-0f4659588594&consentList=4a73a516-7a91-435c-8a0e-0f4659588594");
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/getconsentlistformigration?numberOfConsentsToReturn=3&status=&onlyGetExpired=false");
+
+            // string responseText = await response.Content.ReadAsStringAsync();
+            string[] guids = JsonSerializer.Deserialize<string[]>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(3, guids.Length);
+        }
+
+        /// <summary>
+        /// Test case: Get consent request
+        /// Scenario: User is authenticated and is the same person that has been request to accept the request
+        /// User is authorized for all rights in the consent request
+        /// </summary>
+        [Fact]
+        public async Task GetMultipleConsents_Valid()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+
+            List<string> list = new List<string>
+            {
+                "d5b861c8-8e3b-44cd-9952-5315e5990cf1",
+                "d5b861c8-8e3b-44cd-9952-5315e5990cf2",
+                "d5b861c8-8e3b-44cd-9952-5315e5990cf3"
+            };
+
+            string jsonContent = JsonSerializer.Serialize(list);
+
+            // Create HttpContent from the JSON string
+            HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/getmultipleconsents", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             List<ConsentRequest> altinn2Consents = JsonSerializer.Deserialize<List<ConsentRequest>>(responseText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            Assert.Equal(2, altinn2Consents.Count);
+            Assert.Equal(3, altinn2Consents.Count);
         }
 
         /// <summary>

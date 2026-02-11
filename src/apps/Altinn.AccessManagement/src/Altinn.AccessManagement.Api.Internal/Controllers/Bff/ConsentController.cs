@@ -294,10 +294,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             return Ok(consentRequest.Value);
         }
 
-        [HttpGet]
+        [HttpPost]
         [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consentrequests/getmultipleconsents")]
-        public async Task<IActionResult> GetMultipleConsents([FromQuery] List<string> consentList, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetMultipleConsents([FromBody] List<string> consentList, CancellationToken cancellationToken = default)
         {
             Result<List<ConsentRequest>> consentRequest = await ConsentService.GetMultipleConsents(consentList, cancellationToken);
             if (consentRequest.IsProblem)

@@ -178,9 +178,10 @@ namespace Altinn.AccessManagement.Core.Services
                     {
                         Result<ConsentRequestDetailsWrapper> result = await CreateRequest(altinn2ConsentRequest, from, cancellationToken);
 
+                        await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);                          
+                        
                         if (!result.IsProblem)
                         {
-                            await _altinn2ConsentClient.UpdateConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);                          
                             consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
                         }
                     }

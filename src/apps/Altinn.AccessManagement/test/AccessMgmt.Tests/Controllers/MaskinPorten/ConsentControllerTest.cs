@@ -72,20 +72,16 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         };
 
         [Fact]
-        public async Task GetConsentFromAltinn2_Valid()
+        public async Task GetConsentFromA2_Valid()
         {
             SetupMockPartyRepository();
 
-            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed45");
+            Guid requestId = Guid.Parse("4a73a516-7a91-435c-8a0e-0f4659588595"); // 4a73a516-7a91-435c-8a0e-0f4659588595
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
-            ConsentRequest request = await GetRequest(requestId);
-            request.ValidTo = DateTime.UtcNow.AddDays(10);
-            await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
                 Language = "nb",
             };
-            await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), consentContextExternal.ToConsentContext());
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
@@ -101,9 +97,10 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             };
 
             HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
+            var task = await repositgo.GetRequest(requestId, default);
             string responseContent = await response.Content.ReadAsStringAsync();
             ConsentInfoMaskinportenDto consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinportenDto>(responseContent, _jsonOptions);
-            Assert.True(DateTime.UtcNow.AddDays(-2) < consentInfo.Consented);
+            Assert.True(DateTime.Parse("2026-01-30T10:30:00") == consentInfo.Consented);
             Assert.Equal(2, consentInfo.ConsentRights.Count());
         }
 
@@ -138,39 +135,6 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             Assert.Equal(2, problemDetails.Problems.Count());
             Assert.Equal(Problems.ConsentExpired.ErrorCode, problemDetails.Problems.ToList()[0].ErrorCode);
             Assert.Equal(Problems.ConsentNotAccepted.ErrorCode, problemDetails.Problems.ToList()[1].ErrorCode);
-        }
-
-        [Fact]
-        public async Task GetConsentFromA2_Valid()
-        {
-            SetupMockPartyRepository();
-
-            Guid requestId = Guid.Parse("4a73a516-7a91-435c-8a0e-0f4659588595");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
-            ConsentContextDto consentContextExternal = new ConsentContextDto
-            {
-                Language = "nb",
-            };
-
-            HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
-
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:maskinporten/consent.read");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ConsentLookupDto consentLookup = new ConsentLookupDto()
-            {
-                Id = requestId,
-                From = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
-            };
-
-            HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
-            var task = await repositgo.GetRequest(requestId, default);
-            string responseContent = await response.Content.ReadAsStringAsync();
-            ConsentInfoMaskinportenDto consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinportenDto>(responseContent, _jsonOptions);
-            Assert.True(DateTime.Parse("2026-01-30T10:30:00") == consentInfo.Consented);
-            Assert.Equal(2, consentInfo.ConsentRights.Count());
         }
 
         [Fact]

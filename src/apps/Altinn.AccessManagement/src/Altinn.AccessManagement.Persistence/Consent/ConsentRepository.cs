@@ -293,9 +293,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
                 await eventCommand.PrepareAsync(cancellationToken);
                 await eventCommand.ExecuteNonQueryAsync(cancellationToken);
-
-                await tx.CommitAsync(cancellationToken);
             }
+            
+            await tx.CommitAsync(cancellationToken);
 
             return await GetRequest(consentRequest.Id, cancellationToken);
         }

@@ -101,11 +101,23 @@ namespace Altinn.AccessManagement.Tests.Mocks
             {
                 ConsentRequestID = id,
                 Created = DateTimeOffset.UtcNow,
-                EventType = ConsentRequestEventType.Accepted,
+                EventType = ConsentRequestEventType.Used,
                 PerformedBy = result.From
             };
 
             consentEvents.Add(consentEvent2);
+
+            ConsentRequestEvent consentEvent3 = new()
+            {
+                ConsentRequestID = id,
+                Created = DateTimeOffset.UtcNow,
+                EventType = ConsentRequestEventType.Accepted,
+                PerformedBy = result.From
+            };
+
+            consentEvents.Add(consentEvent3);
+
+            result.ConsentRequestEvents = consentEvents;
 
             return result;
         }
