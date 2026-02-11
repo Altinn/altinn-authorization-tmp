@@ -21,32 +21,34 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
         provider ??= [];
         var query = await db.Assignments
             .Where(a => a.ToId == partyId && a.RoleId == RoleConstants.Agent)
-            .Include(a => a.From) // Via
-            .Join(
+            .WhereIf(provider.Count > 0, a => provider.Contains(a.FromId))
+            .GroupJoin(
                 db.Delegations,
                 a => a.Id,
                 d => d.ToId,
-                (a, d) => new { Delegation = d, }
-            ).
-            Join(
+                (a, d) => new { Provider = a.From, Delegations = d, }
+            )
+            .SelectMany(d => d.Delegations.DefaultIfEmpty(), (a, d) => new { a.Provider, Delegation = d, })
+            .GroupJoin(
                 db.Assignments,
                 x => x.Delegation.FromId,
                 a => a.Id,
-                (x, a) => new { FromAssignment = a, x.Delegation }
+                (x, a) => new { x.Provider, x.Delegation, FromAssignments = a,  }
             )
-            .WhereIf(provider.Count > 0, a => provider.Contains(a.FromAssignment.ToId))
-            .Join(
+            .SelectMany(x => x.FromAssignments.DefaultIfEmpty(), (x, a) => new { x.Provider, x.Delegation, a.Role, Client = a.From })
+            .GroupJoin(
                 db.DelegationPackages,
                 x => x.Delegation.Id,
                 dp => dp.DelegationId,
                 (x, dp) => new
                 {
-                    x.FromAssignment.Role,
-                    Client = x.FromAssignment.From,
-                    Provider = x.FromAssignment.To,
-                    dp.Package,
+                    x.Provider,
+                    x.Client,
+                    x.Role,
+                    Packages = dp,
                 }
             )
+            .SelectMany(x => x.Packages.DefaultIfEmpty(), (x, dp) => new { x.Client, x.Provider, x.Role, dp.Package })
             .GroupBy(x => x.Provider.Id)
             .ToListAsync(cancellationToken);
 
@@ -55,7 +57,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 new MyClientDto()
                 {
                     Provider = DtoMapper.Convert(i.First().Provider),
-                    Clients = i.GroupBy(j => j.Client.Id).Select(j => new ClientDto()
+                    Clients = i.Where(j => j.Client is { }).GroupBy(j => j.Client.Id).Select(j => new ClientDto()
                     {
                         Client = DtoMapper.Convert(j.First().Client),
                         Access = j.Select(r => new ClientDto.RoleAccessPackages

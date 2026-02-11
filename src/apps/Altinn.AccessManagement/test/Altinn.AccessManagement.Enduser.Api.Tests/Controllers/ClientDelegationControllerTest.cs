@@ -35,7 +35,7 @@ public class ClientDelegationControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
             Fixture.EnsureSeedOnce(db =>
             {
-                var rightholderfromNordisToVerdiq = new Assignment()
+                var rightholderFromNordisToVerdiq = new Assignment()
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.OrganizationVerdiqAS.Id,
@@ -49,30 +49,36 @@ public class ClientDelegationControllerTest
                     RoleId = RoleConstants.Accountant,
                 };
 
-                var agentFromNordisToPaula = new Assignment()
+                var agentFromVerdiqToPaula = new Assignment()
                 {
                     FromId = TestEntities.OrganizationVerdiqAS.Id,
                     ToId = TestEntities.PersonPaula,
                     RoleId = RoleConstants.Agent,
                 };
-                var agentFromNordisToOrjan = new Assignment()
+                var agentFromVerdiqToOrjan = new Assignment()
                 {
                     FromId = TestEntities.OrganizationVerdiqAS.Id,
                     ToId = TestEntities.PersonOrjan,
+                    RoleId = RoleConstants.Agent,
+                };
+                var agentFromNordisToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula,
                     RoleId = RoleConstants.Agent,
                 };
 
                 var delegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
                 {
                     FromId = accountantFromNordisToVerdiq.Id,
-                    ToId = agentFromNordisToPaula.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
                     FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
                 };
 
                 var delegationToOrjan = new AccessMgmt.PersistenceEF.Models.Delegation()
                 {
                     FromId = accountantFromNordisToVerdiq.Id,
-                    ToId = agentFromNordisToOrjan.Id,
+                    ToId = agentFromVerdiqToOrjan.Id,
                     FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
                 };
 
@@ -92,10 +98,11 @@ public class ClientDelegationControllerTest
                     PackageId = PackageConstants.AccountantWithoutSigningRights,
                 };
 
-                db.Assignments.Add(rightholderfromNordisToVerdiq);
+                db.Assignments.Add(rightholderFromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.Assignments.Add(agentFromVerdiqToOrjan);
                 db.Assignments.Add(agentFromNordisToPaula);
-                db.Assignments.Add(agentFromNordisToOrjan);
 
                 db.Delegations.Add(delegationToPaula);
                 db.Delegations.Add(delegationToOrjan);
@@ -104,7 +111,7 @@ public class ClientDelegationControllerTest
                 db.DelegationPackages.Add(delegationPackageAccountantWithSigningRightsToOrjan);
                 db.AssignmentPackages.Add(new()
                 {
-                    AssignmentId = rightholderfromNordisToVerdiq.Id,
+                    AssignmentId = rightholderFromNordisToVerdiq.Id,
                     PackageId = PackageConstants.Customs,
                 });
 
@@ -138,6 +145,7 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Single(result.Items);
+            Assert.NotEmpty(result.Items.FirstOrDefault().Clients);
 
             response = await client.GetAsync($"{Route}/my/clients?provider={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
 
@@ -145,7 +153,8 @@ public class ClientDelegationControllerTest
             result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Empty(result.Items);
+            Assert.Single(result.Items);
+            Assert.Empty(result.Items.FirstOrDefault().Clients);
         }
 
         [Fact]
@@ -158,25 +167,33 @@ public class ClientDelegationControllerTest
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
 
+            await Fixture.QueryDb(async db =>
+            {
+                var assignment = await db.Assignments.Where(a => a.ToId == TestEntities.PersonPaula).ToListAsync(TestContext.Current.CancellationToken);
+                return;
+            });
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            Assert.Single(result.Items);
-            var item = result.Items.FirstOrDefault();
+            Assert.Equal(2, result.Items.Count());
+            var verdiq = result.Items.FirstOrDefault(p => p?.Provider?.Id == TestEntities.OrganizationVerdiqAS);
+            var nordis = result.Items.FirstOrDefault(p => p?.Provider?.Id == TestEntities.OrganizationNordisAS);
+            Assert.Empty(nordis.Clients);
 
-            Assert.Single(item.Clients);
-            var clientItem = item.Clients.FirstOrDefault();
+            Assert.Single(verdiq.Clients);
+            var verdiqClients = verdiq.Clients.FirstOrDefault();
 
-            Assert.Single(clientItem.Access);
-            var access = clientItem.Access.FirstOrDefault();
+            Assert.Single(verdiqClients.Access);
+            var verdiqAccess = verdiqClients.Access.FirstOrDefault();
 
-            Assert.Single(access.Packages);
-            var package = access.Packages.FirstOrDefault();
+            Assert.Single(verdiqAccess.Packages);
+            var verdiqClientPackages = verdiqAccess.Packages.FirstOrDefault();
 
-            Assert.Equal(RoleConstants.Accountant.Id, access.Role.Id);
-            Assert.Equal(PackageConstants.AccountantWithSigningRights, package.Id);
+            Assert.Equal(RoleConstants.Accountant.Id, verdiqAccess.Role.Id);
+            Assert.Equal(PackageConstants.AccountantWithSigningRights, verdiqClientPackages.Id);
 
-            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, item.Provider.Id);
-            Assert.Equal(TestEntities.OrganizationNordisAS.Id, clientItem.Client.Id);
+            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, verdiq.Provider.Id);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, verdiqClients.Client.Id);
         }
     }
     #endregion
