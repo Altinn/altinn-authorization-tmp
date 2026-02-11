@@ -4,7 +4,7 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.ProblemDetails;
@@ -15,7 +15,7 @@ public class InputValidation(
     IHttpContextAccessor httpContextAccessor,
     IUserProfileLookupService userProfileLookupService,
     ConnectionQuery connectionQuery,
-    EntityService entityService
+    IEntityService entityService
     ) : IInputValidation
 {
     public async Task<Result<Entity>> SanitizeToInput(Guid party, Guid? toParty, PersonInput personInput, Action<SanitizeOptions> configureSanitizeOptions, CancellationToken cancellationToken = default)
