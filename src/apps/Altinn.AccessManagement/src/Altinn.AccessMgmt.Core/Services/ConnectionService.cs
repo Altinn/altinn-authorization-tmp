@@ -1494,7 +1494,7 @@ public partial class ConnectionService
                 Role = t.Assignment.Role,
                 PolicyPath = t.PolicyPath,
                 PolicyVersion = t.PolicyVersion,
-                Reason = AccessReason.Direct
+                Reason = AccessReasonFlag.Direct
             });
 
         // Hierarchy (Parent/Child)
@@ -1514,11 +1514,20 @@ public partial class ConnectionService
                     Via = null, // c.Parent
                     ViaRole = null,
                     PolicyPath = ar.PolicyPath,
-                    PolicyVersion = ar.PolicyVersion,
-                    Reason = AccessReason.Parent
+                    PolicyVersion = ar.PolicyVersion
                 })
             .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
+            .Select(t => new AssignmentResourceQueryResult()
+            {
+                Resource = t.Resource,
+                From = t.From,
+                To = t.To,
+                Role = t.Role,
+                PolicyPath = t.PolicyPath,
+                PolicyVersion = t.PolicyVersion,
+                Reason = AccessReasonFlag.Direct
+            });
 
         // KeyRole
         var keyRoleResult = dbContext.AssignmentResources.AsNoTracking()
@@ -1537,11 +1546,20 @@ public partial class ConnectionService
                    Via = c.From,
                    ViaRole = c.Role,
                    PolicyPath = ar.PolicyPath,
-                   PolicyVersion = ar.PolicyVersion,
-                   Reason = AccessReason.KeyRole
+                   PolicyVersion = ar.PolicyVersion
                })
            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-           .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
+           .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
+           .Select(t => new AssignmentResourceQueryResult()
+           {
+               Resource = t.Resource,
+               From = t.From,
+               To = t.To,
+               Role = t.Role,
+               PolicyPath = t.PolicyPath,
+               PolicyVersion = t.PolicyVersion,
+               Reason = AccessReasonFlag.Direct
+           });
 
         // KeyRole + Heirarchy
         var keyRoleSubUnit = dbContext.AssignmentResources.AsNoTracking()
@@ -1566,19 +1584,26 @@ public partial class ConnectionService
                     Via = kr.From,
                     ViaRole = kr.Role,
                     PolicyPath = x.ar.PolicyPath,
-                    PolicyVersion = x.ar.PolicyVersion,
-                    Reason = AccessReason.Set(AccessReasonKeys.Parent, AccessReasonKeys.KeyRole)
+                    PolicyVersion = x.ar.PolicyVersion
                 }
             )
             .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value);
+            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
+            .Select(t => new AssignmentResourceQueryResult()
+            {
+                Resource = t.Resource,
+                From = t.From,
+                To = t.To,
+                Role = t.Role,
+                PolicyPath = t.PolicyPath,
+                PolicyVersion = t.PolicyVersion,
+                Reason = AccessReasonFlag.Parent | AccessReasonFlag.KeyRole
+            });
 
         var query = direct
             .Union(childResult)
             .Union(keyRoleResult)
             .Union(keyRoleSubUnit);
-
-        var queryString = query.ToQueryString();
 
         var res = await query.ToListAsync();
 
@@ -1811,5 +1836,5 @@ internal class AssignmentResourceQueryResult
 
     internal string PolicyVersion { get; set; }
 
-    internal AccessReason Reason { get; set; }
+    internal AccessReasonFlag Reason { get; set; }
 }

@@ -1,102 +1,173 @@
 ﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
-/// Reasons for access
+/// Reason for access (Dto)
 /// </summary>
 public sealed class AccessReason
 {
-    private readonly List<HashSet<AccessReasonKey>> groups;
+    private readonly AccessReasonFlag flag;
 
-    private AccessReason(List<HashSet<AccessReasonKey>> groups)
-        => this.groups = groups;
+    private IReadOnlyList<AccessReasonRecord>? items;
 
-    public static AccessReason Set(params AccessReasonKey[] keys)
-        => new(new List<HashSet<AccessReasonKey>>
+    public IReadOnlyList<AccessReasonRecord> Items =>
+        items ??= AccessReasonMapping.ToRecords(flag);
+
+    internal AccessReason(AccessReasonFlag flag)
+    {
+        this.flag = flag;
+    }
+
+    public AccessReasonFlag ToEnum() => flag;
+
+    public AccessReason Add(AccessReasonFlag additional) => 
+        new(flag | additional);
+
+    public AccessReason Remove(AccessReasonFlag remove) => 
+        new(flag & ~remove);
+
+    public bool Contains(AccessReasonFlag f) =>
+    (flag & f) == f;
+
+    public static AccessReason operator |(
+    AccessReason left,
+    AccessReasonFlag right)
+    {
+        return new(left.flag | right);
+    }
+
+    public static AccessReason operator |(
+        AccessReasonFlag left,
+        AccessReason right)
+    {
+        return new(left | right.flag);
+    }
+
+    public static AccessReason operator |(
+        AccessReason left,
+        AccessReason right)
+    {
+        return new(left.flag | right.flag);
+    }
+
+    public static implicit operator AccessReason(AccessReasonFlag flag)
+        => new(flag);
+
+    public static implicit operator AccessReasonFlag(AccessReason reason)
+        => reason.flag;
+}
+
+/// <summary>
+/// Mapping helper for AccessReason and AccessResonFlag
+/// </summary>
+public static class AccessReasonMapping
+{
+    private static readonly Dictionary<AccessReasonFlag, AccessReasonRecord> FlagToItem =
+        new()
         {
-            new(keys)
-        });
-
-    public static AccessReason Set(params AccessReason[] reasons)
-        => new(reasons.SelectMany(r => r.groups).ToList());
-
-    public AccessReason And(AccessReasonKey key)
-    {
-        var copy = Clone();
-        copy.groups[^1].Add(key);
-        return copy;
-    }
-
-    public AccessReason Or(params AccessReasonKey[] keys)
-    {
-        var copy = Clone();
-        copy.groups.Add(new HashSet<AccessReasonKey>(keys));
-        return copy;
-    }
-
-    public AccessReason Or(AccessReason other)
-    {
-        var copy = Clone();
-        copy.groups.AddRange(other.groups);
-        return copy;
-    }
-
-    public bool Matches(AccessReason actual)
-    {
-        foreach (var required in groups)
-        {
-            if (actual.groups.Any(actualGroup =>
-                required.All(actualGroup.Contains)))
             {
-                return true;
+                AccessReasonFlag.Direct,
+                new("assignment", "Access granted directly with assignment")
+            },
+            {
+                AccessReasonFlag.ClientDelegation,
+                new("delegation", "Access granted via delegation")
+            },
+            {
+                AccessReasonFlag.KeyRole,
+                new("keyrole", "Access granted through a key role")
+            },
+            {
+                AccessReasonFlag.RoleMap,
+                new("rolemap", "Access granted through role mapping")
+            },
+            {
+                AccessReasonFlag.Parent,
+                new("hierarchy", "Access granted through parent/child relation")
             }
+        };
+
+    public static AccessReason ToDto(this AccessReasonFlag flag) => new(flag);
+
+    private static readonly AccessReasonFlag KnownMask = FlagToItem.Keys.Aggregate(AccessReasonFlag.None, (current, next) => current | next);
+
+    internal static IReadOnlyList<AccessReasonRecord> ToRecords(AccessReasonFlag flag)
+    {
+        if (flag == AccessReasonFlag.None)
+        {
+            return Array.Empty<AccessReasonRecord>();
         }
 
-        return false;
+        var unknownBits = flag & ~KnownMask;
+        if (unknownBits != AccessReasonFlag.None)
+        {
+            throw new InvalidOperationException(
+                $"Unknown AccessReasonFlag bits detected: {unknownBits}");
+        }
+
+        return FlagToItem
+            .Where(kvp => (flag & kvp.Key) == kvp.Key)
+            .Select(kvp => kvp.Value)
+            .ToList();
     }
-
-    public static AccessReason Direct => Set(AccessReasonKeys.Direct);
-
-    public static AccessReason ClientDelegation => Set(AccessReasonKeys.ClientDelegation);
-
-    public static AccessReason KeyRole => Set(AccessReasonKeys.KeyRole);
-
-    public static AccessReason RoleMap => Set(AccessReasonKeys.RoleMap);
-
-    public static AccessReason Parent => Set(AccessReasonKeys.Parent);
-
-    public IReadOnlyList<IReadOnlyCollection<AccessReasonKey>> All =>
-        groups.Select(g => (IReadOnlyCollection<AccessReasonKey>)g).ToList();
-
-    public IReadOnlyList<IReadOnlyCollection<string>> Names =>
-        groups.Select(g => g.Select(k => k.Name).ToList()).ToList();
-
-    private AccessReason Clone()
-        => new(
-            groups
-                .Select(g => new HashSet<AccessReasonKey>(g))
-                .ToList()
-        );
 }
 
-public sealed record AccessReasonKey(string Name, string Description)
+/// <summary>
+/// AccessReason record
+/// </summary>
+/// <param name="Name">Name</param>
+/// <param name="Description">Description</param>
+public sealed record AccessReasonRecord(string Name, string Description);
+
+/// <summary>
+/// Access reson flags (Internal)
+/// </summary>
+[Flags]
+public enum AccessReasonFlag
 {
-    public override string ToString() => Name;
+    /// <summary>
+    /// None
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// Access granted directly with assignment
+    /// </summary>
+    Direct = 1 << 0,
+
+    /// <summary>
+    /// Access granted via delegation
+    /// </summary>
+    ClientDelegation = 1 << 1,
+
+    /// <summary>
+    /// Access granted through a key role
+    /// </summary>
+    KeyRole = 1 << 2,
+
+    /// <summary>
+    /// Access granted through rolemapping
+    /// </summary>
+    RoleMap = 1 << 3,
+
+    /// <summary>
+    /// Access granted through parent/child relation
+    /// </summary>
+    Parent = 1 << 4
 }
 
-public static class AccessReasonKeys
-{
-    public static readonly AccessReasonKey Direct =
-        new("assignment", "Access granted directly with assignment");
+/*
+ AccessReason Pattern
 
-    public static readonly AccessReasonKey ClientDelegation =
-        new("delegation", "Access granted via delegation");
+ AccessReasonFlag is the EF/database representation (stored as int).
+ AccessReason is a thin wrapper used in DTO/contracts.
 
-    public static readonly AccessReasonKey KeyRole =
-        new("keyrole", "Access granted through a key role");
+ - Implicit conversion exists both ways (Flag ↔ AccessReason).
+ - Bitwise operations are performed on the enum.
+ - AccessReason exposes display metadata via Items.
+ - Unknown flag bits are rejected for safety.
 
-    public static readonly AccessReasonKey RoleMap =
-        new("rolemap", "Access granted through rolemapping");
+ To add a new reason:
+   1. Add a new bit in AccessReasonFlag.
+   2. Add corresponding mapping in AccessReasonMapping.
 
-    public static readonly AccessReasonKey Parent =
-        new("hierarchy", "Access granted through parent/child relation");
-}
+*/
