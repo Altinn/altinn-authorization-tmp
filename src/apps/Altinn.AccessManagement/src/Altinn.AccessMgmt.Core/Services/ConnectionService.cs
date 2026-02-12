@@ -48,7 +48,7 @@ public partial class ConnectionService(
     IResourceService resourceService,
     ITranslationService translationService) : IConnectionService
 {
-    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
@@ -76,11 +76,12 @@ public partial class ConnectionService(
                 IncludeSubConnections = true,
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
-                IncludeDelegation = true,
+                IncludeDelegation = includeClientDelegations,
                 IncludePackages = true,
                 IncludeResources = false,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
+                ExcludeRoleIds = includeAgentConnections ? null : [RoleConstants.Agent.Id],
                 OnlyUniqueResults = false
             },
             direction,
@@ -250,7 +251,7 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
         if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
             return Problems.MissingConnection;
@@ -513,7 +514,7 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
         if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
             return Problems.MissingConnection;
@@ -894,7 +895,7 @@ public partial class ConnectionService(
         ServiceResource resourceMetadata = await contextRetrievalService.GetResourceFromResourceList(resourceId, isApp ? org : null, isApp ? app : null);
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
         bool isResourceDelegable = resourceMetadata.Delegable;
-        
+
         // Decompose policy into resource/tasks
         List<ActionAccess> actionAccesses = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
 
@@ -1163,7 +1164,7 @@ public partial class ConnectionService(
                             Description = $"Missing-Role",
                             ReasonKey = DelegationCheckReasonCode.MissingRoleAccess,
                             RoleId = role.Role.Id,
-                            RoleUrn = role.Role.Urn,                            
+                            RoleUrn = role.Role.Urn,
                         };
 
                         actionAccess.RoleDenyAccess.Add(reason);
