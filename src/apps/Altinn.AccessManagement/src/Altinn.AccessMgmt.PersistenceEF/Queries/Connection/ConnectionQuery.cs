@@ -1012,23 +1012,27 @@ public class ConnectionQuery(AppDbContext db)
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
         var apKeys = keys.Where(k => k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
-        var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
-            .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
-            .Select(ap => new { ap.PackageId, ap.AssignmentId })
-            .ToListAsync(ct);
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
         SortedSet<Guid> apPackageIds = [];
-        foreach (var assignmentPackage in assignmentPackagesRaw)
+        if (apKeys.Count > 0)
         {
-            apPackageIds.Add(assignmentPackage.PackageId);
-            if (assignmentPackages.TryGetValue(assignmentPackage.AssignmentId, out var ids))
+            var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
+                .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
+                .Select(ap => new { ap.PackageId, ap.AssignmentId })
+                .ToListAsync(ct);
+
+            foreach (var assignmentPackage in assignmentPackagesRaw)
             {
-                ids.Add(assignmentPackage.PackageId);
-            }
-            else
-            {
-                assignmentPackages.Add(assignmentPackage.AssignmentId, [assignmentPackage.PackageId]);
+                apPackageIds.Add(assignmentPackage.PackageId);
+                if (assignmentPackages.TryGetValue(assignmentPackage.AssignmentId, out var ids))
+                {
+                    ids.Add(assignmentPackage.PackageId);
+                }
+                else
+                {
+                    assignmentPackages.Add(assignmentPackage.AssignmentId, [assignmentPackage.PackageId]);
+                }
             }
         }
 
@@ -1073,14 +1077,17 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        var entityKeys = keys.Where(k => rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
-        var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
-            .Select(e => new { e.Id, e.VariantId })
-            .ToListAsync(ct);
         SortedList<Guid, Guid> entityVariants = [];
-        foreach (var entityVariant in entityVariantsRaw)
+        var entityKeys = keys.Where(k => rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
+        if (entityKeys.Count > 0)
         {
-            entityVariants[entityVariant.Id] = entityVariant.VariantId;
+            var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
+                .Select(e => new { e.Id, e.VariantId })
+                .ToListAsync(ct);
+            foreach (var entityVariant in entityVariantsRaw)
+            {
+                entityVariants[entityVariant.Id] = entityVariant.VariantId;
+            }
         }
 
         var delegationIds = keys.Select(k => k.DelegationId).Where(id => id != null).Distinct().ToList();
