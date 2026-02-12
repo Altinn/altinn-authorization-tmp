@@ -62,8 +62,6 @@ public class ConnectionQueryBaseRecord
     /// </summary>
     public ConnectionReason Reason { get; set; }
 
-    public AccessReasonFlag NewReason { get; set; }
-
     /// <summary>
     /// Connection Composite Key
     /// </summary>

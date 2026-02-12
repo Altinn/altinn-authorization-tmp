@@ -244,7 +244,6 @@ public class ConnectionQuery(AppDbContext db)
                     ViaId = null,
                     ViaRoleId = null,
                     Reason = ConnectionReason.Assignment,
-                    NewReason = AccessReasonFlag.Direct,
                     IsKeyRoleAccess = false,
                     IsMainUnitAccess = false,
                     IsRoleMap = false,
@@ -273,7 +272,6 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = x.d.FromId,
                         ViaRoleId = x.d.RoleId,
                         Reason = ConnectionReason.KeyRole,
-                        NewReason = AccessReasonFlag.KeyRole,
                         IsKeyRoleAccess = true,
                         IsMainUnitAccess = false,
                         IsRoleMap = false,
@@ -299,7 +297,6 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = dkr.ViaId,
                         ViaRoleId = null,
                         Reason = ConnectionReason.RoleMap,
-                        NewReason = AccessReasonFlag.RoleMap,
                         IsKeyRoleAccess = dkr.IsKeyRoleAccess,
                         IsMainUnitAccess = false,
                         IsRoleMap = true,
@@ -330,7 +327,6 @@ public class ConnectionQuery(AppDbContext db)
                         ViaId = fa.ToId,
                         ViaRoleId = fa.RoleId,
                         Reason = ConnectionReason.Delegation,
-                        NewReason = AccessReasonFlag.ClientDelegation,
                         IsKeyRoleAccess = false,
                         IsMainUnitAccess = false,
                         IsRoleMap = false,
@@ -357,7 +353,6 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = c.FromId,
                 ViaRoleId = c.ViaRoleId,
                 Reason = ConnectionReason.Hierarchy,
-                NewReason = AccessReasonFlag.Parent,
                 IsKeyRoleAccess = c.IsKeyRoleAccess,
                 IsMainUnitAccess = true,
                 IsRoleMap = c.IsRoleMap,
@@ -386,7 +381,6 @@ public class ConnectionQuery(AppDbContext db)
                 IsRoleMap = reviRegnConnection.IsRoleMap,
                 IsMainUnitAccess = reviRegnConnection.IsMainUnitAccess,
                 Reason = ConnectionReason.Hierarchy,
-                NewReason = AccessReasonFlag.Parent,
             };
 
         /*
