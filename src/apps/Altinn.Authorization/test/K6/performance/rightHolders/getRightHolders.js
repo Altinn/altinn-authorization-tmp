@@ -1,12 +1,12 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { getRightHoldersUrl, tokenGeneratorEnv } from "./common/config.js";
-import { expect, describe, randomItem, URL, getPersonalToken } from "./common/testimports.js";
-import { buildOptions, getParams, readCsv } from "./commonFunctions.js";
+import { getRightHoldersUrl, tokenGeneratorEnv } from "../common/config.js";
+import { expect, describe, randomItem, URL, getPersonalToken } from "../common/testimports.js";
+import { buildOptions, getParams, readCsv } from "../common/commonFunctions.js";
 
 const randomize = (__ENV.RANDOMIZE ?? 'false') === 'true';
 const env = __ENV.API_ENVIRONMENT ?? 'yt01';
-const partiesFilename = `./testData/orgsIn-${env}-WithPartyUuid.csv`;
+const partiesFilename = import.meta.resolve(`../testData/orgsIn-${env}-WithPartyUuid.csv`);
 
 const parties = new SharedArray('parties', function () {
   return readCsv(partiesFilename);
