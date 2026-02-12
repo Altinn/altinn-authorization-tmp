@@ -1676,7 +1676,7 @@ public partial class ConnectionService
                 var actions = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, resource.RefId));
                 var validActions = validRuleActions.Intersect(actions); // Only valid actions
 
-                foreach (var actionKey in validRuleActions)
+                foreach (var actionKey in validActions)
                 {
                     var rule = resourceRule.Rules.FirstOrDefault(t => t.Key == actionKey);
 
