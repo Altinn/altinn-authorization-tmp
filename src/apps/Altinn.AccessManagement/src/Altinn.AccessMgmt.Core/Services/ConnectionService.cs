@@ -908,11 +908,9 @@ public partial class ConnectionService(
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
         // Fetch resource rights
-        //// var resources = (await GetResources(party, party, authenticatedUserUuid, ConfigureConnections, cancellationToken)).Value.Where(r => r.Resource.Id == resource.Id);
+        var resources = await GetResourcesRules(party, authenticatedUserUuid, resource.Id, null, cancellationToken);
 
-        ProcessTheAccessToTheAccessKeys(actionAccesses, packages.Value, roles.Value);
-
-        ////AddDirectDelegationRights(actionAccesses, resources);
+        ProcessTheAccessToTheAccessKeys(actionAccesses, packages.Value, roles.Value, resources);
 
         // Map to result
         IEnumerable<ActionDto> actions = await MapFromInternalToExternalActions(actionAccesses, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
@@ -923,7 +921,7 @@ public partial class ConnectionService(
             Resource = resource,
             Actions = actions
         };
-
+        
         return resourceCheckDto;
     }
 
@@ -1008,14 +1006,20 @@ public partial class ConnectionService(
 
             reasons.AddRange(actionAccess.PackageDenyAccess);
             reasons.AddRange(actionAccess.RoleDenyAccess);
-            reasons.AddRange(actionAccess.ResourceDenyAccess);
+
+            reasons.Add(new ActionDto.Reason
+            {
+                Description = "Missing-Resource",
+                ReasonKey = DelegationCheckReasonCode.MissingDelegationAccess
+            });
         }
         else
         {
             currentAction.Result = true;
 
             ProcessPackageAllowAccessReasons(actionAccess.PackageAllowAccess, reasons);
-            ProcessPackageAllowAccessReasons(actionAccess.RoleAllowAccess, reasons);
+            ProcessRoleAllowAccessReasons(actionAccess.RoleAllowAccess, reasons);
+            ProcessResourceAllowAccessReasons(actionAccess.ResourceAllowAccess, reasons);
         }
 
         if (!isResourceDelegable)
@@ -1044,7 +1048,38 @@ public partial class ConnectionService(
         return currentAction;
     }
 
-    private void ProcessPackageAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<ActionDto.Reason> reasons)
+    private void ProcessResourceAllowAccessReasons(List<RulePermission> resourceRulesAllowAccess, List<ActionDto.Reason> reasons)
+    {
+        if (resourceRulesAllowAccess.Count > 0)
+        {
+            foreach (var resourceRuleAllowAccess in resourceRulesAllowAccess)
+            {
+                foreach (var resourceRulePermission in resourceRuleAllowAccess.Permissions)
+                {
+                    ActionDto.Reason reason = new ActionDto.Reason
+                    {
+                        Description = "Access-Resource",
+                        ReasonKey = DelegationCheckReasonCode.DelegationAccess,
+                        FromName = resourceRulePermission.From?.Name,
+                        FromId = resourceRulePermission.From?.Id,
+                        ToName = resourceRulePermission.To?.Name,
+                        ToId = resourceRulePermission.To?.Id,
+                        RoleId = resourceRulePermission.Role?.Id,
+                        RoleUrn = resourceRulePermission.Role?.Urn,
+
+                        ViaId = resourceRulePermission.Via?.Id,
+                        ViaName = resourceRulePermission.Via?.Name,
+                        ViaRoleId = resourceRulePermission.ViaRole?.Id,
+                        ViaRoleUrn = resourceRulePermission.ViaRole?.Urn
+                    };
+
+                    reasons.Add(reason);
+                }
+            }
+        }
+    }
+
+    private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<ActionDto.Reason> reasons)
     {
         if (rolesAllowAccess.Count > 0)
         {
@@ -1118,7 +1153,7 @@ public partial class ConnectionService(
         return actions;
     }
 
-    private void ProcessTheAccessToTheAccessKeys(List<ActionAccess> actionAccesses, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles)
+    private void ProcessTheAccessToTheAccessKeys(List<ActionAccess> actionAccesses, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRuleDto> resources)
     {
         foreach (var actionAccess in actionAccesses)
         {
@@ -1169,6 +1204,14 @@ public partial class ConnectionService(
 
                         actionAccess.RoleDenyAccess.Add(reason);
                     }
+                }
+            }
+
+            foreach (var resource in resources)
+            {
+                if (resource.Rules.Any(r => r.Key == actionAccess.ActionKey))
+                {
+                    actionAccess.ResourceAllowAccess.Add(resource.Rules.First(r => r.Key == actionAccess.ActionKey));
                 }
             }
         }
@@ -1634,7 +1677,7 @@ public partial class ConnectionService
                 var actions = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, resource.RefId));
                 var validActions = validRuleActions.Intersect(actions); // Only valid actions
 
-                foreach (var actionKey in validRuleActions)
+                foreach (var actionKey in validActions)
                 {
                     var rule = resourceRule.Rules.FirstOrDefault(t => t.Key == actionKey);
 
