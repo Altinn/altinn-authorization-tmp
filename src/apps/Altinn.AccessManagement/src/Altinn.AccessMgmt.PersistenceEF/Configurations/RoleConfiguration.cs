@@ -31,7 +31,6 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasIndex(t => t.Urn).IsUnique();
         builder.HasIndex(t => t.Code).IsUnique();
         builder.HasIndex(t => new { t.ProviderId, t.Name }).IsUnique();
-        builder.HasIndex(t => new { t.ProviderId, t.Code }).IsUnique();
     }
 }
 
