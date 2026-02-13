@@ -32,7 +32,6 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
     private readonly PlatformSettings _platformSettings;
     private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    private readonly IResourceRegistryClient _resourceRegistryClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PartiesClient"/> class
@@ -43,15 +42,13 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
     /// <param name="httpContextAccessor">handler for http context</param>
     /// <param name="platformSettings">the platform setttings</param>
     /// <param name="accessTokenGenerator">An instance of the AccessTokenGenerator service.</param>
-    /// <param name="resourceRegistryClient">The resource registry client</param>
     public Altinn2ConsentClient(
         HttpClient httpClient, 
         IOptions<SblBridgeSettings> sblBridgeSettings, 
         ILogger<Altinn2ConsentClient> logger, 
         IHttpContextAccessor httpContextAccessor, 
         IOptions<PlatformSettings> platformSettings,
-        IAccessTokenGenerator accessTokenGenerator, 
-        IResourceRegistryClient resourceRegistryClient)
+        IAccessTokenGenerator accessTokenGenerator)
     {
         _sblBridgeSettings = sblBridgeSettings.Value;
         _logger = logger;
@@ -62,11 +59,10 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
         _platformSettings = platformSettings.Value;
         _accessTokenGenerator = accessTokenGenerator;
         _serializerOptions.Converters.Add(new JsonStringEnumConverter());
-        _resourceRegistryClient = resourceRegistryClient;
     }
 
     /// <inheritdoc/>
-    public async Task<List<Guid>> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
+    public async Task<List<Guid>> GetAltinn2ConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -93,7 +89,7 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
     }
 
     /// <inheritdoc/>
-    public async Task<List<ConsentRequest>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default)
+    public async Task<List<Altinn2ConsentRequest>> GetMultipleAltinn2Consents(List<string> consentList, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -110,14 +106,7 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
             {
                 List<Altinn2ConsentRequest> altinn2Consents = JsonSerializer.Deserialize<List<Altinn2ConsentRequest>>(responseContent, _serializerOptions);
 
-                List<ConsentRequest> consentRequests = new();
-
-                foreach (Altinn2ConsentRequest altinn2Consent in altinn2Consents)
-                {
-                    consentRequests.Add(await MapA2ConsentToA3Consent(altinn2Consent, cancellationToken));
-                }
-
-                return consentRequests;
+                return altinn2Consents;
             }
 
             _logger.LogError("AccessManagement // Altinn2ConsentClient // GetConsent // Unexpected HttpStatusCode: {StatusCode}\n {responseContent}", response.StatusCode, responseContent);
@@ -131,7 +120,7 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
     }
 
     /// <inheritdoc/>
-    public async Task<ConsentRequest> GetConsent(Guid consentGuid, CancellationToken cancellationToken = default)
+    public async Task<Altinn2ConsentRequest> GetAltinn2Consent(Guid consentGuid, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -145,7 +134,7 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 Altinn2ConsentRequest altinn2ConsentRequest = JsonSerializer.Deserialize<Altinn2ConsentRequest>(responseContent, _serializerOptions);
-                return await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
+                return altinn2ConsentRequest;
             }
 
             _logger.LogError("AccessManagement // Altinn2ConsentClient // GetConsent // Unexpected HttpStatusCode: {StatusCode}\n {responseContent}", response.StatusCode, responseContent);
@@ -159,7 +148,7 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
     }
 
     /// <inheritdoc/>
-    public async Task<bool> UpdateConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateAltinn2ConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -184,76 +173,5 @@ public class Altinn2ConsentClient : IAltinn2ConsentClient
             _logger.LogError(ex, "AccessManagement // Altinn2ConsentClient // UpdateConsentStatus // Exception");
             throw;
         }
-    }
-
-    private async Task<ConsentRequest> MapA2ConsentToA3Consent(Altinn2ConsentRequest altinn2Consent, CancellationToken cancellationToken)
-    {
-        ConsentRequest consent = new ConsentRequest
-        {
-            Id = altinn2Consent.ConsentGuid,
-            CreatedTime = altinn2Consent.CreatedTime,
-            From = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.OfferedByPartyUUID),
-            To = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.CoveredByPartyUUID),
-            ValidTo = altinn2Consent.ValidTo,
-            ConsentRights = await MapAltinn2ResourcesToConsentRights(altinn2Consent.RequestResources, cancellationToken),
-            ConsentRequestEvents = await MapA2ConsentEventsToA3ConsentEvents(altinn2Consent.ConsentHistoryEvents, cancellationToken),
-            RedirectUrl = altinn2Consent.RedirectUrl,
-            TemplateId = altinn2Consent.TemplateId
-        };
-
-        return consent;
-    }
-
-    private async Task<List<ConsentRight>> MapAltinn2ResourcesToConsentRights(List<AuthorizationRequestResourceBE> resources, CancellationToken cancellationToken)
-    {
-        List<ConsentRight> consentRights = new();
-
-        foreach (AuthorizationRequestResourceBE resource in resources)
-        {
-            ConsentRight consentRight = new()
-            {
-                Action = resource.Operations,
-                Resource = new List<ConsentResourceAttribute>(),
-                Metadata = new MetadataDictionary()
-            };
-
-            consentRight.AddMetadataValues(resource.Metadata);
-
-            string searchParam = $"reference={resource.ServiceEditionVersionID}&ResourceType=Consent&id={resource.ServiceCode}_{resource.ServiceEditionCode}";
-            List<ServiceResource> resourceDetails = await _resourceRegistryClient.GetResources(cancellationToken, searchParam);
-
-            if (resourceDetails != null)
-            {
-                ConsentResourceAttribute consentResourceAttribute = new()
-                {
-                    Type = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute,
-                    Value = resourceDetails.FirstOrDefault()?.Identifier,
-                    Version = resourceDetails.FirstOrDefault()?.VersionId.ToString()
-                };
-                consentRight.Resource.Add(consentResourceAttribute);
-            }
-        }
-
-        return await Task.FromResult(consentRights);
-    }
-
-    private async Task<List<ConsentRequestEvent>> MapA2ConsentEventsToA3ConsentEvents(List<Altinn2ConsentRequestEvent> a2Events, CancellationToken cancellationToken)
-    {
-        List<ConsentRequestEvent> consentEvents = new();
-
-        foreach (Altinn2ConsentRequestEvent a2Event in a2Events)
-        {
-            ConsentRequestEvent consentEvent = new()
-            {
-                ConsentRequestID = a2Event.ConsentRequestID,
-                Created = a2Event.Created,
-                EventType = Enum.Parse<ConsentRequestEventType>(a2Event.EventType),
-                PerformedBy = ConsentPartyUrn.PartyUuid.Create(a2Event.PerformedByPartyUUID ?? Guid.Empty)
-            };
-
-            consentEvents.Add(consentEvent);
-        }
-
-        return await Task.FromResult(consentEvents);
     }
 }

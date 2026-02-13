@@ -1,5 +1,5 @@
 ﻿{
-  "identifier": "ttd_inntektsopplysninger",
+  "identifier": "appid_119",
   "title": {
     "en": "Consent Income Resource ",
     "nb": "Generisk Tilgangslisteressurs",
@@ -37,12 +37,14 @@
   "enterpriseUserEnabled": false,
   "resourceType": "Consent",
   "consentMetadata": {
+    "fraogmed": {},
+    "tilogmed": {},
     "inntektsaar": {}
   },
   "authorizationReference": [
     {
       "id": "urn:altinn:resource",
-      "value": "ttd_inntektsopplysninger"
+      "value": "appid_119"
     }
   ],
   "consentTemplate": "sblanesoknad",

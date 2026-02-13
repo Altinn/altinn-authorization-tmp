@@ -76,7 +76,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         {
             SetupMockPartyRepository();
 
-            Guid requestId = Guid.Parse("4a73a516-7a91-435c-8a0e-0f4659588595"); // 4a73a516-7a91-435c-8a0e-0f4659588595
+            Guid requestId = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf1");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
@@ -100,7 +100,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             var task = await repositgo.GetRequest(requestId, default);
             string responseContent = await response.Content.ReadAsStringAsync();
             ConsentInfoMaskinportenDto consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinportenDto>(responseContent, _jsonOptions);
-            Assert.True(DateTime.Parse("2026-01-30T10:30:00") == consentInfo.Consented);
+            Assert.True(DateTime.Parse("2026-01-30T10:00:00") == consentInfo.Consented);
             Assert.Equal(2, consentInfo.ConsentRights.Count());
         }
 

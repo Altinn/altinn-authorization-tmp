@@ -16,7 +16,7 @@ public interface IAltinn2ConsentClient
     /// <param name="consentGuid">The consent GUID to lookup</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>Consent information</returns>
-    Task<ConsentRequest> GetConsent(Guid consentGuid, CancellationToken cancellationToken = default);
+    Task<Altinn2ConsentRequest> GetAltinn2Consent(Guid consentGuid, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get a list of unmigrated consents
@@ -26,7 +26,7 @@ public interface IAltinn2ConsentClient
     /// <param name="onlyGetExpired">Whether to only get expired consents</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>List of consent guids</returns>
-    Task<List<Guid>> GetConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default);
+    Task<List<Guid>> GetAltinn2ConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get a list of consents
@@ -34,7 +34,7 @@ public interface IAltinn2ConsentClient
     /// <param name="consentList">The list of consents to return</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>List of consent guids</returns>
-    Task<List<ConsentRequest>> GetMultipleConsents(List<string> consentList, CancellationToken cancellationToken = default);
+    Task<List<Altinn2ConsentRequest>> GetMultipleAltinn2Consents(List<string> consentList, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Update the consent migrated status
@@ -43,5 +43,5 @@ public interface IAltinn2ConsentClient
     /// <param name="status">The migrate status for the consent. 1 = Migrated, 2 = Failed</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>HttpResponse Message</returns>
-    Task<bool> UpdateConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default);
+    Task<bool> UpdateAltinn2ConsentMigrateStatus(string consentGuid, int status, CancellationToken cancellationToken = default);
 }

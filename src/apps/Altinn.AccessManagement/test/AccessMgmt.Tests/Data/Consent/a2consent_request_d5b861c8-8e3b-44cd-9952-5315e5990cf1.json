@@ -1,16 +1,16 @@
 ﻿{
     "CreatedTime": "2025-10-30T12:00:00+01:00",
-    "ConsentGuid": "4a73a516-7a91-435c-8a0e-0f4659588594",
-    "OfferedByPartyUUID": "96aa9c29-811b-47ad-92ec-7e234ccf751f",
-    "RequiredDelegatorUUID": "e4c8ca33-5f2e-4357-b69a-73179abe11d1",
-    "CoveredByPartyUUID": "14b19044-031d-4ee6-9675-1b8feaf7beef",
+    "ConsentGuid": "d5b861c8-8e3b-44cd-9952-5315e5990cf1",
+    "OfferedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
+    "RequiredDelegatorUUID": "8ef5e5fa-94e1-4869-8635-df86b6219181",
+    "CoveredByPartyUUID": "8ef5e5fa-94e1-4869-8635-df86b6219181",
     "HandledByPartyUUID": "d181df4e-70a8-4724-b192-8209a4ef0d35",
     "ValidTo": "2026-10-30T00:00:00+01:00",
     "RequestMessage": {
         "NorwegianNO": "Dette er teksten"
     },
-    "ConsentRequestStatus": "revoked",
-    "Consented": "2026-01-01T00:00:00+01:00",
+    "ConsentRequestStatus": "accepted",
+    "Consented": "2026-01-30T10:00:00+01:00",
     "RequestResources": [
         {
             "RoleTypeID": null,
@@ -48,27 +48,21 @@
     "ConsentHistoryEvents": [
         {
             "Created": "2026-01-01T00:00:00+01:00",
-            "PerformedByPartyUUID": "96aa9c29-811b-47ad-92ec-7e234ccf751f",
+            "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
             "EventType": "Accepted",
-            "ConsentRequestID": "4a73a516-7a91-435c-8a0e-0f4659588594"
-        },
-        {
-            "Created": "2026-01-02T00:00:00+01:00",
-            "PerformedByPartyUUID": "96aa9c29-811b-47ad-92ec-7e234ccf751f",
-            "EventType": "Revoked",
-            "ConsentRequestID": "4a73a516-7a91-435c-8a0e-0f4659588594"
+            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
         },
         {
             "Created": "2026-01-20T00:00:00+01:00",
-            "PerformedByPartyUUID": "14b19044-031d-4ee6-9675-1b8feaf7beef",
+            "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
             "EventType": "Used",
-            "ConsentRequestID": "4a73a516-7a91-435c-8a0e-0f4659588594"
+            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
         },
         {
             "Created": "2026-01-22T00:00:00+01:00",
-            "PerformedByPartyUUID": "14b19044-031d-4ee6-9675-1b8feaf7beef",
+            "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
             "EventType": "Used",
-            "ConsentRequestID": "4a73a516-7a91-435c-8a0e-0f4659588594"
+            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
         }
     ],
     "RedirectUrl": "https://www.vg.no",
