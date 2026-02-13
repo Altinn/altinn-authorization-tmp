@@ -19,7 +19,7 @@ public class AuditMiddleware : IMiddleware
                 var claim = context.User?.Claims?
                     .FirstOrDefault(c => c.Type.Equals(jwtClaimToDb.Claim, StringComparison.OrdinalIgnoreCase));
 
-                if (claim != null && jwtClaimToDb.AllowSystemUser)
+                if (claim == null && jwtClaimToDb.AllowSystemUser)
                 {
                     claim = GetSystemUserClaim(context.User?.Claims);
                 }
@@ -39,6 +39,9 @@ public class AuditMiddleware : IMiddleware
         await next(context);
     }
 
+    /// <summary>
+    /// Find the special system user claim and return it as standard claim if available
+    /// </summary>
     private Claim? GetSystemUserClaim(IEnumerable<Claim>? claims)
     {
         Claim? authorizationDetails = claims?.FirstOrDefault(c => c.Type.Equals("authorization_details"));
