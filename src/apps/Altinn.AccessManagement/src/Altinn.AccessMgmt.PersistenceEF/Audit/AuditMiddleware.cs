@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
-using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
