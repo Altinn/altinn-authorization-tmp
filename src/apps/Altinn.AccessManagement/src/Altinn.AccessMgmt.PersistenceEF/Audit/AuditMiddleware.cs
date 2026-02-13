@@ -21,7 +21,7 @@ public class AuditMiddleware : IMiddleware
 
                 if (claim != null && jwtClaimToDb.AllowSystemUser)
                 {
-                    claim = GetSystemUserClaim(context.User?.Claims)
+                    claim = GetSystemUserClaim(context.User?.Claims);
                 }
 
                 if (claim != null && Guid.TryParse(claim.Value, out var uuid))
@@ -50,7 +50,7 @@ public class AuditMiddleware : IMiddleware
             
             if (systemUserClaimCore?.Systemuser_id != null && systemUserClaimCore.Systemuser_id.Count > 0)
             {
-                return new Claim("systemuserid", systemUserClaimCore.Systemuser_id[0]);
+                return new Claim("urn:altinn:party:uuid", systemUserClaimCore.Systemuser_id[0]);
             }
         }
 
