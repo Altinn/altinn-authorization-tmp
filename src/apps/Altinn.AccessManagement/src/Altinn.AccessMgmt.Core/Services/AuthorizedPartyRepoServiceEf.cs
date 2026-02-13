@@ -56,6 +56,13 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
+    public async Task<Entity?> GetEntityByIdPortenEmailId(string emailIdentifier, CancellationToken ct = default) =>
+        await db.Entities
+            .AsNoTracking()
+            .Where(e => e.EmailIdentifier == emailIdentifier)
+            .FirstOrDefaultAsync(ct);
+
+    /// <inheritdoc/>
     public async Task<IEnumerable<Entity>> GetEntities(IEnumerable<Guid> ids, CancellationToken ct = default)
     {
         return await db.Entities
