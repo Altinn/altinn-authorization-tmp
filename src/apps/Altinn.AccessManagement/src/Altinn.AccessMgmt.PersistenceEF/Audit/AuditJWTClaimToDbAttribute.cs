@@ -12,7 +12,7 @@ public class AuditJWTClaimToDbAttribute : Attribute
     public string Claim { get; set; }
 
     /// <summary>
-    /// Alternative claim to used Audit if not main claim is not available
+    /// Allow system user. Will try to find system user claim if not standard claim available
     /// </summary>
     public bool AllowSystemUser { get; set; } = true;
 
