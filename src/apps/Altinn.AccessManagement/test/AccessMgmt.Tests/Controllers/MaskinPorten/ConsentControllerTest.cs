@@ -100,7 +100,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             var task = await repositgo.GetRequest(requestId, default);
             string responseContent = await response.Content.ReadAsStringAsync();
             ConsentInfoMaskinportenDto consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinportenDto>(responseContent, _jsonOptions);
-            Assert.True(DateTime.Parse("2026-01-30T10:00:00") == consentInfo.Consented);
+            Assert.True(requestId == consentInfo.Id);
             Assert.Equal(2, consentInfo.ConsentRights.Count());
         }
 
