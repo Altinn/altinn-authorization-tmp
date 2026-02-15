@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -17,7 +18,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -559,7 +559,22 @@ public class ConnectionsController(
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
 
-        var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
+        // Check that the user has access to all actionKeys
+        var canDelegate = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem.ToActionResult();
+        }
+
+        foreach (var actionKey in actionKeys)
+        {
+            if (!canDelegate.Value.Actions.Any(a => a.ActionKey == actionKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest.ToActionResult();
+            }
+        }
+
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 
         return Ok(result);
     }
@@ -594,6 +609,21 @@ public class ConnectionsController(
         var to = await EntityService.GetEntity(toId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
+
+        // Check that the user has access to all actionKeys
+        var canDelegate = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem.ToActionResult();
+        }
+
+        foreach (var actionKey in actionKeys)
+        {
+            if (!canDelegate.Value.Actions.Any(a => a.ActionKey == actionKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest.ToActionResult();
+            }
+        }
 
         var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
 

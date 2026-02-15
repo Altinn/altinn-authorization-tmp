@@ -135,34 +135,6 @@ public interface IConnectionService
     Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific resource.
-    /// </summary>
-    /// <param name="party">ID of the person.</param>
-    /// <param name="resourceIds">Filter param using unique resource identifiers.</param>
-    /// <param name="configureConnection">ConnectionOptions</param>
-    /// <param name="cancellationToken">
-    /// Token to monitor for cancellation requests.
-    /// </param>
-    /// <returns>
-    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
-    /// </returns>
-    Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific resource.
-    /// </summary>
-    /// <param name="party">ID of the person.</param>
-    /// <param name="resources">Filter param using resource key identifiers.</param>
-    /// <param name="configureConnection">ConnectionOptions</param>
-    /// <param name="cancellationToken">
-    /// Token to monitor for cancellation requests.
-    /// </param>
-    /// <returns>
-    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
-    /// </returns>
-    Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Get connection packages
     /// </summary>
     /// <returns></returns>

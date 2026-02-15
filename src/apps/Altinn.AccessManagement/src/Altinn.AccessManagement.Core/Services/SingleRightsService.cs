@@ -146,39 +146,65 @@ namespace Altinn.AccessManagement.Core.Services
             var coveredBy = to;
             var offeredBy = from;
 
-            var coveredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(coveredBy.TypeId);
             var offeredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(offeredBy.TypeId);
-            var performedByUuidType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId);
+            
+            List<Rule> rules = [];
 
-            var result = actionIds.Select(action =>
-                new Rule
+            foreach (string actionId in actionIds)
+            {
+                (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = SplitActionKey(actionId);
+
+                rules.Add(new Rule
                 {
-                    RuleId = Guid.NewGuid().ToString(),
+                    RuleId = Guid.CreateVersion7().ToString(),
                     Type = RuleType.None,
-
                     CoveredBy = ConvertEntityToAttributeMatch(coveredBy),
-                    Resource = ConvertResourceToAttributeMatches(resource),
-                    Action = ConvertActionToAttributeMatch(action),
-
+                    Resource = resourceAndAction.Resource,
+                    Action = resourceAndAction.Action,
                     OfferedByPartyId = offeredBy.PartyId.HasValue ? offeredBy.PartyId.Value : 0,
                     OfferedByPartyUuid = offeredBy.Id,
                     OfferedByPartyType = offeredByUuidType,
-
                     PerformedBy = ConvertEntityToAttributeMatch(performedBy),
                     DelegatedByUserId = performedBy.UserId,
-                    DelegatedByPartyId = performedBy.PartyId,
+                    DelegatedByPartyId = performedBy.PartyId
                 });
+            }            
 
-            return result;
+            return rules;
         }
 
-        private static AttributeMatch ConvertActionToAttributeMatch(string action)
+        private static (List<AttributeMatch> Resource, AttributeMatch Action) SplitActionKey(string actionKey)
         {
-            return new AttributeMatch
+            List<AttributeMatch> resourceList = [];
+            List<AttributeMatch> actionList = [];
+
+            string[] urns = actionKey.Split("urn:", StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string part in urns)
             {
-                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId,
-                Value = action
-            };
+                string current = "urn:" + part;
+
+                if (current.EndsWith(':'))
+                {
+                    current = current.Remove(current.Length - 1);
+                }
+
+                int index = current.LastIndexOf(':');
+                string currentKey = current.Substring(0, index);
+                string currentValue = current.Substring(index + 1);
+                AttributeMatch currentAttributeMatch = new(currentKey, currentValue);
+
+                if (currentAttributeMatch.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    actionList.Add(currentAttributeMatch);
+                }
+                else
+                {
+                    resourceList.Add(currentAttributeMatch);
+                }
+            }
+
+            return (resourceList, actionList.FirstOrDefault());
         }
 
         private static List<AttributeMatch> ConvertEntityToAttributeMatch(Entity entity)
@@ -194,17 +220,15 @@ namespace Altinn.AccessManagement.Core.Services
             });
 
             // User
-            if (!matches.Any() && entity.UserId.HasValue)
+            if (entity.UserId.HasValue)
             {
                 matches.Add(new AttributeMatch
                 {
                     Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute,
                     Value = entity.UserId.Value.ToString()
                 });
-            }
-
-            // Party
-            if (!matches.Any() && entity.PartyId.HasValue)
+            }            
+            else if (entity.PartyId.HasValue) // Party
             {
                 matches.Add(new AttributeMatch
                 {

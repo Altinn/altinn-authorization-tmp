@@ -257,11 +257,13 @@ public partial class ConnectionService(
             return Problems.MissingConnection;
         }
 
-        var check = await CheckResource(fromId, resourceIds: [resourceId], configureConnection, cancellationToken);
+        /*
+        var check = await ResourceDelegationCheck(fromId, resourceIds: [resourceId], configureConnection, cancellationToken);
         if (check.IsProblem)
         {
             return check.Problem;
         }
+        */
 
         // Look for existing direct rightholder assignment
         var assignment = await dbContext.Assignments
@@ -374,17 +376,6 @@ public partial class ConnectionService(
 
         return null;
     }
-
-    public async Task<Result<Dictionary<Guid, bool>>> CheckResource(Guid party, IEnumerable<Guid> resourceIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<Result<Dictionary<string, bool>>> CheckResource(Guid party, IEnumerable<string> resources, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 
     #region Packages
