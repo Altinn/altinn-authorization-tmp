@@ -209,7 +209,6 @@ public class ConnectionQuery(AppDbContext db)
         var direct =
             db.Assignments
                 .Where(a1 => a1.ToId == toId)
-                .FromIdContains(fromSet, applyFromFilter)
                 .WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
                 .Select(a1 => new ConnectionQueryBaseRecord
                 {
@@ -1274,23 +1273,6 @@ internal static class ConnectionQueryExtensions
         }
 
         return query.Where(t => ids.Contains(t.ToId));
-    }
-
-
-    internal static IQueryable<Assignment> FromIdContains(this IQueryable<Assignment> query, HashSet<Guid> ids, bool applyFromFilter = true)
-    {
-        if (!applyFromFilter || ids is null || ids.Count == 0)
-        {
-            return query;
-        }
-
-        if (ids.Count == 1)
-        {
-            var id = ids.First();
-            return query.Where(t => t.FromId == id);
-        }
-
-        return query.Where(t => ids.Contains(t.FromId));
     }
 
     internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid> ids, bool applyFromFilter = true)
