@@ -186,29 +186,6 @@ public class ConnectionQuery(AppDbContext db)
         }
     }
 
-    /// <summary>
-    /// Slightly optimized connection packages lookup for PIP API
-    /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionPackagesAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
-    {
-        try
-        {
-            var baseQuery = BuildBaseQueryFromOthersNew(db, filter, filter.IncludeSubConnections, true);
-            var queryString = baseQuery.ToQueryString();
-
-            var query = EnrichFromEntities(filter, baseQuery);
-            var data = await query.AsNoTracking().ToListAsync(ct);
-            var result = data.Select(ToDtoEmpty).ToList();
-
-            var pkgs = await LoadPackagesByKeyAsync(result, filter, ct);
-            return Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Failed to get pip connection packages with filter: {JsonSerializer.Serialize(filter)}", ex);
-        }
-    }
-
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(AppDbContext db, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter)
     {
         var toId = filter.ToIds.First();
@@ -232,6 +209,7 @@ public class ConnectionQuery(AppDbContext db)
         var direct =
             db.Assignments
                 .Where(a1 => a1.ToId == toId)
+                .FromIdContains(fromSet, applyFromFilter)
                 .WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
                 .Select(a1 => new ConnectionQueryBaseRecord
                 {
@@ -335,7 +313,6 @@ public class ConnectionQuery(AppDbContext db)
             ? a1.Concat(rolemap).Concat(delegations)
             : a1.Concat(rolemap);
 
-        // Temporary until GetPipConnectionPackagesAsync is removed
         var fromChildren = !doChildNesting ? a2 :
         a2
         .Join(
@@ -394,20 +371,12 @@ public class ConnectionQuery(AppDbContext db)
             : filter.IncludeSubConnections ? a2.Concat(innehaverConnections) : a2;
 
         return
-            applyFromFilter
-            ?
-                query
-                .FromIdContains(fromSet)
-                .ViaIdContains(viaSet)
-                .ViaRoleIdContains(viaRoleSet)
-                .RoleIdContains(roleSet)
-                .RoleIdExcludes(roleSetExclude)
-            :
-                query
-                .ViaIdContains(viaSet)
-                .ViaRoleIdContains(viaRoleSet)
-                .RoleIdContains(roleSet)
-                .RoleIdExcludes(roleSetExclude);
+            query
+            .FromIdContains(fromSet, applyFromFilter)
+            .ViaIdContains(viaSet)
+            .ViaRoleIdContains(viaRoleSet)
+            .RoleIdContains(roleSet)
+            .RoleIdExcludes(roleSetExclude);
     }
 
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthers(AppDbContext db, ConnectionQueryFilter filter)
@@ -983,29 +952,6 @@ public class ConnectionQuery(AppDbContext db)
         return keysWithChildren;
     }
 
-    private IQueryable<ConnectionQueryRecord> EnrichFromEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
-    {
-        var entities = db.Entities.AsQueryable();
-
-        var query = allKeys
-            .Join(entities, c => c.FromId, e => e.Id, (c, f) => new { c, f })
-            .WhereIf(filter.ExcludeDeleted, x => !x.f.IsDeleted)
-            .Select(x => new ConnectionQueryRecord
-            {
-                FromId = x.c.FromId,
-                ToId = x.c.ToId,
-                RoleId = x.c.RoleId,
-                AssignmentId = x.c.AssignmentId,
-                DelegationId = x.c.DelegationId,
-                ViaId = x.c.ViaId,
-                ViaRoleId = x.c.ViaRoleId,
-                From = x.f,
-                Reason = x.c.Reason,
-            });
-
-        return query;
-    }
-
     private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(IEnumerable<ConnectionQueryExtendedRecord> keys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
@@ -1269,23 +1215,6 @@ public class ConnectionQuery(AppDbContext db)
         return results is List<ConnectionQueryExtendedRecord> list ? list : results.ToList();
     }
 
-    private static ConnectionQueryExtendedRecord ToDtoEmpty(ConnectionQueryRecord x) => new()
-    {
-        FromId = x.FromId,
-        ToId = x.ToId,
-        RoleId = x.RoleId,
-        AssignmentId = x.AssignmentId,
-        DelegationId = x.DelegationId,
-        ViaId = x.ViaId,
-        ViaRoleId = x.ViaRoleId,
-        From = x.From,
-        To = x.To,
-        Role = x.Role,
-        Via = x.Via,
-        ViaRole = x.ViaRole,
-        Reason = x.Reason,
-    };
-
     private static ConnectionQueryExtendedRecord ToDtoEmpty(ConnectionQueryBaseRecord x) => new()
     {
         FromId = x.FromId,
@@ -1347,9 +1276,26 @@ internal static class ConnectionQueryExtensions
         return query.Where(t => ids.Contains(t.ToId));
     }
 
-    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid> ids)
+
+    internal static IQueryable<Assignment> FromIdContains(this IQueryable<Assignment> query, HashSet<Guid> ids, bool applyFromFilter = true)
     {
-        if (ids is null || ids.Count == 0)
+        if (!applyFromFilter || ids is null || ids.Count == 0)
+        {
+            return query;
+        }
+
+        if (ids.Count == 1)
+        {
+            var id = ids.First();
+            return query.Where(t => t.FromId == id);
+        }
+
+        return query.Where(t => ids.Contains(t.FromId));
+    }
+
+    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid> ids, bool applyFromFilter = true)
+    {
+        if (!applyFromFilter || ids is null || ids.Count == 0)
         {
             return query;
         }
