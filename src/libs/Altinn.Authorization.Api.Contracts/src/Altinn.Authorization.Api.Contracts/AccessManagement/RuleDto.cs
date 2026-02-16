@@ -6,17 +6,17 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 /// <summary>
 /// Action
 /// </summary>
-public class ActionDto
+public class RuleDto
 {
     /// <summary>
     /// Key that uniquely identifies an action with all parameters found in the policy
     /// </summary>
-    public required string ActionKey { get; set; }
+    public required string RuleKey { get; set; }
 
     /// <summary>
     /// Name of the action to present in frontend
     /// </summary>
-    public required string ActionName { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Result of the delegation check.

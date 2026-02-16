@@ -136,13 +136,13 @@ namespace Altinn.AccessManagement.Core.Services
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, ActionKeyListDto actionIds, Entity performedBy, CancellationToken cancellationToken)
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, RuleKeyListDto actionIds, Entity performedBy, CancellationToken cancellationToken)
         {
             var rules = GenerateRules(from, to, resource, actionIds, performedBy).ToList();
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, ActionKeyListDto actionIds, Entity performedBy)
+        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, RuleKeyListDto actionIds, Entity performedBy)
         {
             var coveredBy = to;
             var offeredBy = from;
@@ -151,9 +151,9 @@ namespace Altinn.AccessManagement.Core.Services
             
             List<Rule> rules = [];
 
-            foreach (string actionId in actionIds.ActionKeys)
+            foreach (string ruleKey in actionIds.RuleKeys)
             {
-                (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = SplitActionKey(actionId);
+                (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = SplitActionKey(ruleKey);
 
                 rules.Add(new Rule
                 {

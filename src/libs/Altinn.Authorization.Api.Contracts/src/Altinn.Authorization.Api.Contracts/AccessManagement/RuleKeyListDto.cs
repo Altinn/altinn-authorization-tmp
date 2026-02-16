@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement
 {
-    public class ActionKeyListDto
+    public class RuleKeyListDto
     {
-        public IEnumerable<string> ActionKeys { get; set; }
+        public IEnumerable<string> RuleKeys { get; set; }
     }
 }
