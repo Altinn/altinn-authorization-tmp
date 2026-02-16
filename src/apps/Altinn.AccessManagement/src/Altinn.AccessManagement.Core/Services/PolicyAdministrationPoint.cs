@@ -555,6 +555,95 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
+        public async Task<string> DeleteRulesInPolicy(string policyPath, string policyVersion, IEnumerable<string> ruleIds, CancellationToken cancellationToken = default)
+        {
+            var policyClient = _policyFactory.Create(policyPath);
+            if (!await policyClient.PolicyExistsAsync(cancellationToken))
+            {
+                _logger.LogWarning("No blob was found for the expected path: {policyPath} this must be removed without updating the database", policyPath);
+                return null;
+            }
+
+            string leaseId = await policyClient.TryAcquireBlobLease(cancellationToken);
+            var policy = await _prp.GetPolicyVersionAsync(policyPath, policyVersion, cancellationToken);
+
+            foreach (string ruleId in ruleIds)
+            {
+                XacmlRule xacmlRuleToRemove = policy.Rules.FirstOrDefault(r => r.RuleId == ruleId);
+                if (xacmlRuleToRemove == null)
+                {
+                    _logger.LogWarning("The rule with id: {ruleId} does not exist in policy with path: {policyPath}", ruleId, policyPath);
+                    continue;
+                }
+
+                policy.Rules.Remove(xacmlRuleToRemove);
+            }
+
+            var isAllRulesDeleted = policy.Rules.Count == 0;
+
+            Response<BlobContentInfo> response;
+            try
+            {
+                MemoryStream dataStream = PolicyHelper.GetXmlMemoryStreamFromXacmlPolicy(policy);
+                response = await policyClient.WritePolicyConditionallyAsync(dataStream, leaseId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Writing of delegation policy at path: {policyPath} failed. Is delegation blob storage account alive and well?", policyPath);
+                return null;
+            }
+
+            return response.Value.VersionId;
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default)
+        {
+            var policyClient = _policyFactory.Create(policyPath);
+            if (!await policyClient.PolicyExistsAsync(cancellationToken))
+            {
+                _logger.LogWarning("No blob was found for the expected path: {policyPath} this must be removed without upading the database", policyPath);
+                return null;
+            }
+
+            string leaseId = await policyClient.TryAcquireBlobLease(cancellationToken);
+            if (leaseId == null)
+            {
+                _logger.LogError("Could not acquire blob lease on delegation policy at path: {policyPath}", policyPath);
+                return null;
+            }
+
+            try
+            {
+                XacmlPolicy policy = await _prp.GetPolicyVersionAsync(policyPath, policyVersion, cancellationToken);
+                policy.Rules.Clear();
+
+                Response<BlobContentInfo> response;
+                try
+                {
+                    MemoryStream dataStream = PolicyHelper.GetXmlMemoryStreamFromXacmlPolicy(policy);
+                    response = await policyClient.WritePolicyConditionallyAsync(dataStream, leaseId, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Writing of delegation policy at path: {policyPath} failed. Is delegation blob storage account alive and well?}", policyPath);
+                    return null;
+                }
+
+                return response.Value.VersionId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An exception occured while processing rules to delete in policy: {policyPath}", policyPath);
+                return null;
+            }
+            finally
+            {
+                await policyClient.ReleaseBlobLease(leaseId, CancellationToken.None);
+            }
+        }
+
+        /// <inheritdoc/>
         public async Task<List<Rule>> TryDeleteDelegationPolicies(List<RequestToDelete> policiesToDelete, CancellationToken cancellationToken = default)
         {
             List<Rule> result = new List<Rule>();
@@ -992,5 +1081,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             return currentRules;
         }
+
+        
     }
 }

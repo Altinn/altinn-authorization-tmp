@@ -92,5 +92,16 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <returns>The result of the deletion</returns>
         /// <param name="cancellationToken">http context token</param>
         Task<ValidationProblemDetails> RevokeRightsDelegation(int authenticatedUserId, Guid authenticatedUserPartyUuid, DelegationLookup delegation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes all rules from policy and returns new versionId
+        /// </summary>
+        /// <param name="policyPath">Path to policy blob</param>
+        /// <param name="policyVersion">Blob version</param>
+        /// <param name="cancellationToken">CancellationToken</param>
+        /// <returns>VersionId</returns>
+        Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+
+        Task<string> DeleteRulesInPolicy(string policyPath, string policyVersion, RuleKeyListDto ruleKeys, CancellationToken cancellationToken = default);
     }
 }

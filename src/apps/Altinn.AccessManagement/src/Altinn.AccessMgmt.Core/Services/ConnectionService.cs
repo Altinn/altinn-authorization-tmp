@@ -2,8 +2,11 @@
 using System.Diagnostics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Party;
@@ -241,7 +244,7 @@ public partial class ConnectionService(
         var resourceObj = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resource);
         return await RemoveResource(fromId, toId, (Guid)resourceObj.Id, configureConnection, cancellationToken);
     }
-
+    
     public async Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnection);
@@ -282,8 +285,84 @@ public partial class ConnectionService(
         {
             return null;
         }
+        
+        var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, cancellationToken);
+        existingAssignmentResources.PolicyVersion = newVersion;
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         dbContext.Remove(existingAssignmentResources);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
+    }
+    
+    public async Task<ProblemInstance> RemoveResourceAction(Guid fromId, Guid toId, string resource, RuleKeyListDto ruleKeys, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resourceObj = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resource);
+        return await RemoveResourceAction(fromId, toId, (Guid)resourceObj.Id, ruleKeys, configureConnection, cancellationToken);
+    }
+
+    public async Task<ProblemInstance> RemoveResourceAction(Guid fromId, Guid toId, Guid resourceId, RuleKeyListDto ruleKeys, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;
+        }
+
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignmentResources = await dbContext.AssignmentResources
+            .AsTracking()
+            .Include(a => a.Resource)
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentResources is null)
+        {
+            return null;
+        }
+
+        // Same as for AddResource?
+        var canDelegate = await ResourceDelegationCheck(to.Id, from.Id, existingAssignmentResources.Resource.RefId, ConfigureConnections, cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem;
+        }
+
+        // Correct check?
+        foreach (var ruleKey in ruleKeys.RuleKeys)
+        {
+            if (!canDelegate.Value.Rules.Any(a => a.Rule.Key == ruleKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest;
+            }
+        }
+
+        var newVersion = await singleRightsService.DeleteRulesInPolicy(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, ruleKeys.RuleKeys, cancellationToken);
+        existingAssignmentResources.PolicyVersion = newVersion;
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;

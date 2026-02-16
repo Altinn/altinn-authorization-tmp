@@ -100,6 +100,10 @@ public interface IConnectionService
     /// </returns>
     Task<ValidationProblemInstance> RemoveResource(Guid fromId, Guid toId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
+    Task<ProblemInstance> RemoveResourceAction(Guid fromId, Guid toId, string resource, RuleKeyListDto ruleKeys, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    Task<ProblemInstance> RemoveResourceAction(Guid fromId, Guid toId, Guid resourceId, RuleKeyListDto ruleKeys, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Get connection packages
     /// </summary>

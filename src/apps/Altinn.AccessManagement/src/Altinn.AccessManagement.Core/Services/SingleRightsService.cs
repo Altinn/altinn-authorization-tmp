@@ -703,6 +703,18 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
+        public async Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default)
+        {
+            return await _pap.ClearPolicyRules(policyPath, policyVersion, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> DeleteRulesInPolicy(string policyPath, string policyVersion, RuleKeyListDto ruleKeys, CancellationToken cancellationToken = default)
+        {
+            return await _pap.DeleteRulesInPolicy(policyPath, policyVersion, ruleKeys.RuleKeys, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<ValidationProblemDetails> RevokeRightsDelegation(int authenticatedUserId, Guid authenticatedUserPartyUuid, DelegationLookup delegation, CancellationToken cancellationToken)
         {
             var assertion = AssertRevokeDelegationInput(delegation);
