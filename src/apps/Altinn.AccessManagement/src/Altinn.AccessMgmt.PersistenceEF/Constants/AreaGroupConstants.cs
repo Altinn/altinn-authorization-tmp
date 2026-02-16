@@ -12,6 +12,24 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 public static class AreaGroupConstants
 {
     /// <summary>
+    /// Try to get <see cref="AreaGroup"/> by any identifier: Name or Guid.
+    /// </summary>
+    public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
+    {
+        if (TryGetByName(value, out result))
+        {
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var areaGroupGuid) && TryGetById(areaGroupGuid, out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Try to get <see cref="AreaGroup"/> by name.
     /// </summary>
     public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<AreaGroup>? result)
@@ -129,5 +147,29 @@ public static class AreaGroupConstants
             KeyValuePair.Create("Name", "Inhabitant")),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "innbyggjar")),
+    };
+
+    /// <summary>
+    /// Represents the Guardianship group.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> baf3aad0-eee3-417d-9528-6f510ea8d49c
+    /// - <c>Name:</c> "Vergemål"
+    /// - <c>Description:</c> "For Vergemål"
+    /// - <c>EntityTypeId:</c> Person entity type
+    /// </remarks>
+    public static ConstantDefinition<AreaGroup> Guardianship { get; } = new ConstantDefinition<AreaGroup>("baf3aad0-eee3-417d-9528-6f510ea8d49c")
+    {
+        Entity = new()
+        {
+            Name = "Vergemål",
+            Description = "For Vergemål",
+            EntityTypeId = EntityTypeConstants.Person,
+            Urn = null,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Guardianship")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Verjemål")),
     };
 }

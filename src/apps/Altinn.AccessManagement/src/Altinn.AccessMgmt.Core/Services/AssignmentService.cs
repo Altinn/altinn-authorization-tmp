@@ -1,18 +1,25 @@
-﻿using Altinn.AccessManagement.Core.Models;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+using Altinn.Authorization.ABAC.Utils;
+using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -733,7 +740,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
             FromIds = [fromId],
             ToIds = [toId],
             ResourceIds = [resourceId],
-            IncludeResource = true,
+            IncludeResources = true,
         });
 
         return result.Any();
@@ -1085,6 +1092,32 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Removes all assignments where the deadPerson is either a rightHolder or an agent.
+    /// </summary>
+    public async Task ClearAssignmentsInAfterLife(Guid deadPerson, AuditValues audit, CancellationToken cancellationToken)
+    {
+        // Find all assignments where toId is deadPerson
+        // Find all assigments where fromId is deadPerson
+        List<Assignment> rightHolderAssignments = await db.Assignments.AsNoTracking()
+           .Where(t => (t.ToId == deadPerson && t.RoleId == RoleConstants.Rightholder) || (t.FromId == deadPerson && t.RoleId == RoleConstants.Rightholder))
+           .ToListAsync(cancellationToken);
+
+        // All assignments where deadPerson is agent for a client
+        List<Assignment> accessManagerAssignments = await db.Assignments.AsNoTracking()
+           .Where(t => (t.ToId == deadPerson && t.RoleId == RoleConstants.Agent))
+           .ToListAsync(cancellationToken);
+
+        if (!rightHolderAssignments.Any() && !accessManagerAssignments.Any())
+        {
+            return;
+        }
+
+        db.Assignments.RemoveRange(rightHolderAssignments);
+        db.Assignments.RemoveRange(accessManagerAssignments);
+        db.SaveChanges(audit);
     }
 
     private static void ValidatePartyIsNotNull(Guid id, Entity entity, ref ValidationErrorBuilder errors, string param)

@@ -19,4 +19,37 @@ appconfiguration = {
   platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
   platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
   platform_sbl_bridge_endpoint        = "https://at22.altinn.cloud/sblbridge/"
+  maskinporten_endpoint               = "https://test.maskinporten.no/"
+}
+
+services = {
+  altinn-authentication = {
+    protocol = "http"
+    host     = "altinn-authentication.default.svc.cluster.local"
+  }
+
+  altinn-resource-registry = {
+    protocol = "http"
+    host     = "altinn-resource-registry.default.svc.cluster.local"
+  }
+
+  altinn-register = {
+    protocol = "http"
+    host     = "altinn-register.default.svc.cluster.local"
+  }
+
+  folkeregisteret = {
+    host = "folkeregisteret-api-konsument.sits.no"
+  }
+}
+
+logging = {
+  min_level = {
+    "AltinnCore.Authentication" = "Warning"
+
+    "Microsoft" = "Warning"
+    "System"    = "Warning"
+    "Polly"     = "Warning"
+    "Npgsql"    = "Warning"
+  }
 }

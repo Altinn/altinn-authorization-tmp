@@ -185,33 +185,52 @@ data "azurerm_key_vault_secret" "postgres_app" {
   depends_on   = [null_resource.bootstrap_database]
 }
 
+data "azurerm_key_vault_secret" "register_maskinporten_jwk" {
+  count        = var.features.maskinporten ? 1 : 0
+  key_vault_id = module.key_vault.id
+  name         = "maskinporten-register-jwk"
+}
+
 module "appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
 
   labels = {
     "${var.environment}-register" = {
-      values = {
-        "Altinn:MassTransit:register:AzureServiceBus:Endpoint" = { value = "sb://sb${local.spoke_suffix}.servicebus.windows.net" }
-        "A2PartyImport:BridgeApiEndpoint"                      = { value = var.sbl_endpoint }
+      values = merge(
+        {
+          "Altinn:MassTransit:register:AzureServiceBus:Endpoint" = { value = "sb://sb${local.spoke_suffix}.servicebus.windows.net" }
+          "A2PartyImport:BridgeApiEndpoint"                      = { value = var.sbl_endpoint }
 
-        // features
-        "Altinn:register:PartyImport:A2:Enable"             = { value = var.features.a2_party_import.parties }
-        "Altinn:register:PartyImport:A2:PartyUserId:Enable" = { value = var.features.a2_party_import.user_ids }
-        "Altinn:register:PartyImport:A2:Profiles:Enable"    = { value = var.features.a2_party_import.profiles }
-        "Altinn:register:PartyImport:SystemUsers:Enable"    = { value = var.features.party_import.system_users }
+          // features
+          "Altinn:register:PartyImport:A2:Enable"                = { value = var.features.a2_party_import.parties }
+          "Altinn:register:PartyImport:A2:PartyUserId:Enable"    = { value = var.features.a2_party_import.user_ids }
+          "Altinn:register:PartyImport:A2:Profiles:Enable"       = { value = var.features.a2_party_import.profiles }
+          "Altinn:register:PartyImport:SystemUsers:Enable"       = { value = var.features.party_import.system_users }
+          "Altinn:register:PartyImport:Npr:Guardianships:Enable" = { value = var.features.party_import.npr.guardianships }
 
-        // config
-        "Altinn:register:PartyImport:A2:MaxDbSizeInGib" = { value = var.config.a2_party_import.max_db_size_in_gib }
+          // config
+          "Altinn:register:PartyImport:A2:MaxDbSizeInGib" = { value = var.config.a2_party_import.max_db_size_in_gib }
 
-        // services
-        "Services:altinn-authentication:http" = { value = "http://altinn-authentication.default.svc.cluster.local/" }
-      }
+          // services
+          "Services:altinn-authentication:http" = { value = "http://altinn-authentication.default.svc.cluster.local/" }
+        },
+        var.features.maskinporten ? {
+          // maskinporten config
+          "Altinn:MaskinPorten:Clients:register-freg:ClientId" = { value = var.config.maskinporten.client_id }
+          "Altinn:MaskinPorten:Clients:register-freg:Scope"    = { value = var.config.maskinporten.scope }
+        } : {}
+      )
 
-      vault_references = {
-        "Altinn:Npgsql:register:ConnectionString"         = { vault_key_reference = data.azurerm_key_vault_secret.postgres_app.versionless_id }
-        "Altinn:Npgsql:register:Migrate:ConnectionString" = { vault_key_reference = data.azurerm_key_vault_secret.postgres_migration.versionless_id }
-      }
+      vault_references = merge(
+        {
+          "Altinn:Npgsql:register:ConnectionString"         = { vault_key_reference = data.azurerm_key_vault_secret.postgres_app.versionless_id }
+          "Altinn:Npgsql:register:Migrate:ConnectionString" = { vault_key_reference = data.azurerm_key_vault_secret.postgres_migration.versionless_id }
+        },
+        var.features.maskinporten ? {
+          "Altinn:MaskinPorten:Clients:register-freg:Key" = { vault_key_reference = data.azurerm_key_vault_secret.register_maskinporten_jwk[0].versionless_id }
+        } : {}
+      )
     }
   }
 

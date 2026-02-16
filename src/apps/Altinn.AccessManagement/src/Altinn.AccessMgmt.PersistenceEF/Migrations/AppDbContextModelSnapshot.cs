@@ -954,6 +954,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
 
+                    b.Property<string>("EmailIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("emailidentifier");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
@@ -2016,6 +2020,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_delegationpackage");
 
+                    b.HasIndex("AssignmentPackageId")
+                        .HasDatabaseName("ix_delegationpackage_assignmentpackageid");
+
                     b.HasIndex("DelegationId")
                         .HasDatabaseName("ix_delegationpackage_delegationid");
 
@@ -2114,6 +2121,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deletedat");
+
+                    b.Property<string>("EmailIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("emailidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -2494,6 +2505,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("code");
 
@@ -2536,6 +2548,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("providerid");
 
                     b.Property<string>("Urn")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
@@ -2545,11 +2558,19 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AreaId")
                         .HasDatabaseName("ix_package_areaid");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_package_code");
+
                     b.HasIndex("EntityTypeId")
                         .HasDatabaseName("ix_package_entitytypeid");
 
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_package_providerid");
+
+                    b.HasIndex("Urn")
+                        .IsUnique()
+                        .HasDatabaseName("ix_package_urn");
 
                     b.HasIndex("ProviderId", "Name", "EntityTypeId")
                         .IsUnique()
@@ -2746,6 +2767,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("providerid");
 
                     b.Property<string>("RefId")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("refid");
 
@@ -2758,6 +2780,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_resource_providerid");
+
+                    b.HasIndex("RefId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_resource_refid");
 
                     b.HasIndex("TypeId")
                         .HasDatabaseName("ix_resource_typeid");
@@ -2887,6 +2913,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_role");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_role_code");
+
                     b.HasIndex("EntityTypeId")
                         .HasDatabaseName("ix_role_entitytypeid");
 
@@ -2896,10 +2926,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("Urn")
                         .IsUnique()
                         .HasDatabaseName("ix_role_urn");
-
-                    b.HasIndex("ProviderId", "Code")
-                        .IsUnique()
-                        .HasDatabaseName("ix_role_providerid_code");
 
                     b.HasIndex("ProviderId", "Name")
                         .IsUnique()
@@ -3333,6 +3359,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.DelegationPackage", b =>
                 {
+                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", "AssignmentPackage")
+                        .WithMany("DelegationPackages")
+                        .HasForeignKey("AssignmentPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_delegationpackage_assignmentpackage_assignmentpackageid");
+
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
                         .WithMany()
                         .HasForeignKey("DelegationId")
@@ -3346,6 +3378,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_delegationpackage_package_packageid");
+
+                    b.Navigation("AssignmentPackage");
 
                     b.Navigation("Delegation");
 
@@ -3632,6 +3666,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Navigation("Resource");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
+                {
+                    b.Navigation("DelegationPackages");
                 });
 #pragma warning restore 612, 618
         }

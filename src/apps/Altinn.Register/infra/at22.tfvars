@@ -21,6 +21,7 @@ key_vault_rbac = [{
 }]
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
@@ -28,5 +29,15 @@ features = {
   }
   party_import = {
     system_users = true
+    npr = {
+      guardianships = true
+    }
+  }
+}
+
+config = {
+  maskinporten = {
+    client_id = "6b3069e2-bc65-42ce-9aab-413e405dd5fe"
+    scope     = "folkeregister:deling/offentligmedhjemmel"
   }
 }

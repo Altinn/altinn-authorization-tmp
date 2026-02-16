@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
@@ -169,7 +168,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 case "ADMAI":
                     if (usePersonalPackage)
                     {
-                        packages.Add(PackageConstants.AccessManagementPrivatePerson.Entity.Urn);
+                        packages.Add(PackageConstants.InnbyggerTilgangsstyringPrivatperson.Entity.Urn);
                     }
                     else
                     {

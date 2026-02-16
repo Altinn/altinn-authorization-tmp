@@ -233,4 +233,10 @@ public interface IAssignmentService
     /// <returns>A task that represents the asynchronous operation. The task result contains the number of resource changes
     /// imported.</returns>
     Task<int> ImportInstanceAssignmentChange(Guid fromId, Guid toId, string resourceName, string blobStoragePolicyPath, string blobStorageVersionId, string instanceId, int delegationEventId, AuditValues audit, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears assignments for a dead person.
+    /// </summary>
+    /// <returns></returns>
+    Task ClearAssignmentsInAfterLife(Guid deadPerson, AuditValues audit = null, CancellationToken cancellationToken = default);
 }
