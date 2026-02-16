@@ -609,6 +609,7 @@ public class ConnectionsController(
     /// Remove resource from rightholder connection and all actions
     /// </summary>
     [HttpPost("resources/rules/delete")]
+    [HttpDelete("resources/rules")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
