@@ -606,6 +606,21 @@ public class ConnectionsController(
     }
 
     /// <summary>
+    /// Remove resource from rightholder connection and all actions
+    /// </summary>
+    [HttpPost("resources/rules/delete")]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RemoveResourceRules([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] ActionKeyListDto actionKeys, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
     /// Delegation check of resources, for which resources the authenticated user has permission to assign to others on behalf of the specified party.
     /// </summary>
     [HttpGet("resources/delegationcheck")]
