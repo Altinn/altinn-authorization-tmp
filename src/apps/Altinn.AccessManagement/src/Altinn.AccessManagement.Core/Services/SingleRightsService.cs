@@ -18,6 +18,7 @@ using Altinn.AccessManagement.Core.Resolvers.Extensions;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -135,13 +136,13 @@ namespace Altinn.AccessManagement.Core.Services
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken)
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, ActionKeyListDto actionIds, Entity performedBy, CancellationToken cancellationToken)
         {
             var rules = GenerateRules(from, to, resource, actionIds, performedBy).ToList();
             return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
         }
 
-        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy)
+        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, ActionKeyListDto actionIds, Entity performedBy)
         {
             var coveredBy = to;
             var offeredBy = from;
@@ -150,7 +151,7 @@ namespace Altinn.AccessManagement.Core.Services
             
             List<Rule> rules = [];
 
-            foreach (string actionId in actionIds)
+            foreach (string actionId in actionIds.ActionKeys)
             {
                 (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = SplitActionKey(actionId);
 

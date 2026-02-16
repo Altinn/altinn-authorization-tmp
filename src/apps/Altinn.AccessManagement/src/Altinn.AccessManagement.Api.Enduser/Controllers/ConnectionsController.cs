@@ -32,7 +32,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 public class ConnectionsController(
     IConnectionService ConnectionService,
     IUserProfileLookupService UserProfileLookupService,
-    ISingleRightsService singleRightsService,
     IEntityService EntityService,
     IResourceService resourceService
     ) : ControllerBase
@@ -531,14 +530,15 @@ public class ConnectionsController(
     /// <summary>
     /// Add resource to an existing rightholder connection
     /// </summary>
-    [HttpPost("resources")]
+    [HttpPost("resources/rules")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status500InternalServerError, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] ActionKeyListDto actionKeys, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
 
@@ -559,75 +559,14 @@ public class ConnectionsController(
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
 
-        // Check that the user has access to all actionKeys
-        var canDelegate = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
-        if (canDelegate.IsProblem)
+        var result = await ConnectionService.AddResource(from, to, resourceObj, actionKeys, by, ConfigureConnections, cancellationToken);
+
+        if (result.IsProblem)
         {
-            return canDelegate.Problem.ToActionResult();
+            return result.Problem.ToActionResult();
         }
 
-        foreach (var actionKey in actionKeys)
-        {
-            if (!canDelegate.Value.Actions.Any(a => a.ActionKey == actionKey && a.Result))
-            {
-                return Problems.NotAuthorizedForDelegationRequest.ToActionResult();
-            }
-        }
-
-        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Add resource to an existing rightholder connection
-    /// </summary>
-    [HttpPut("resources")]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateResource([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] string[] actionKeys, CancellationToken cancellationToken = default)
-    {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
-
-        if (validationErrors is { })
-        {
-            return validationErrors.ToActionResult();
-        }
-
-        var byId = AuthenticationHelper.GetPartyUuid(this.HttpContext);
-
-        if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
-        {
-            return Problem();
-        }
-
-        var from = await EntityService.GetEntity(fromId, cancellationToken);
-        var to = await EntityService.GetEntity(toId, cancellationToken);
-        var by = await EntityService.GetEntity(byId, cancellationToken);
-        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
-
-        // Check that the user has access to all actionKeys
-        var canDelegate = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
-        if (canDelegate.IsProblem)
-        {
-            return canDelegate.Problem.ToActionResult();
-        }
-
-        foreach (var actionKey in actionKeys)
-        {
-            if (!canDelegate.Value.Actions.Any(a => a.ActionKey == actionKey && a.Result))
-            {
-                return Problems.NotAuthorizedForDelegationRequest.ToActionResult();
-            }
-        }
-
-        var result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys.ToList(), by, cancellationToken);
-
-        return Ok(result);
+        return Created();
     }
 
     /// <summary>

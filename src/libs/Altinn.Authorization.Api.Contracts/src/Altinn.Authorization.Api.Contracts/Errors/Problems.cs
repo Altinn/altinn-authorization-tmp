@@ -124,5 +124,9 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor NotAuthorizedForDelegationRequest { get; }
-        = _factory.Create(28, HttpStatusCode.Forbidden, "Not authorized for delegation");
+    = _factory.Create(28, HttpStatusCode.Forbidden, "Not authorized for delegation");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor DelegationPolicyRuleWriteFailed { get; }
+    = _factory.Create(29, HttpStatusCode.InternalServerError, "The delegation failed");
 }

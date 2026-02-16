@@ -4,6 +4,7 @@ using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
@@ -45,8 +46,8 @@ public partial class ConnectionService(
     IAccessListsAuthorizationClient accessListsAuthorizationClient,
     IPolicyRetrievalPoint policyRetrievalPoint,
     IRoleService roleService,
-    IResourceService resourceService,
-    ITranslationService translationService) : IConnectionService
+    ITranslationService translationService,
+    ISingleRightsService singleRightsService) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -1068,6 +1069,33 @@ public partial class ConnectionService(
                 }
             }
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, ActionKeyListDto actionKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, ConfigureConnections, cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem;
+        }
+
+        foreach (var actionKey in actionKeys.ActionKeys)
+        {
+            if (!canDelegate.Value.Actions.Any(a => a.ActionKey == actionKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest;
+            }
+        }
+
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, actionKeys, by, cancellationToken);
+
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
+        return true;
     }
 
     private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<ActionDto.Reason> reasons)
