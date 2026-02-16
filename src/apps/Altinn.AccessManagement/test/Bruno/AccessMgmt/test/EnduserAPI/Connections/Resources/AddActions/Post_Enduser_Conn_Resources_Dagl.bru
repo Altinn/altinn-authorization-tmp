@@ -1,11 +1,11 @@
 meta {
   name: Post_Enduser_Conn_Resources_Dagl
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources?party={{party}}&from={{from}}&to={{to}}&resource={{resource}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rules?party={{party}}&from={{from}}&to={{to}}&resource={{resource}}
   body: json
   auth: inherit
 }
@@ -61,6 +61,6 @@ tests {
     const body = res.getBody();
     const actions = body.actions;
     
-    expect(res.status).to.equal(204);  
+    expect(res.status).to.equal(201);  
   });
 }
