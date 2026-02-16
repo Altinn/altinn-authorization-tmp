@@ -1,16 +1,16 @@
 ﻿{
-    "CreatedTime": "2025-10-30T12:00:00+01:00",
-    "ConsentGuid": "d5b861c8-8e3b-44cd-9952-5315e5990cf1",
+    "CreatedTime": "2025-10-20T12:00:00+01:00",
+    "ConsentGuid": "4a73a516-7a91-435c-8a0e-0f4659588594",
     "OfferedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
     "RequiredDelegatorUUID": "8ef5e5fa-94e1-4869-8635-df86b6219181",
     "CoveredByPartyUUID": "8ef5e5fa-94e1-4869-8635-df86b6219181",
-    "HandledByPartyUUID": "8ef5e5fa-94e1-4869-8635-df86b6219181",
-    "ValidTo": "2026-10-30T00:00:00+01:00",
+    "HandledByPartyUUIDx": "8ef5e5fa-94e1-4869-8635-df86b6219181",
+    "ValidTo": "2025-10-30T00:00:00+01:00",
     "RequestMessage": {
         "NorwegianNO": "Dette er teksten"
     },
     "ConsentRequestStatus": "accepted",
-    "Consented": "2026-01-30T10:00:00+01:00",
+    "Consented": "2025-10-22T12:00:00+01:00",
     "RequestResources": [
         {
             "RoleTypeID": null,
@@ -47,22 +47,10 @@
     ],
     "ConsentHistoryEvents": [
         {
-            "Created": "2026-01-01T00:00:00+01:00",
+            "Created": "2025-10-22T12:00:00+01:00",
             "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
             "EventType": "Accepted",
-            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
-        },
-        {
-            "Created": "2026-01-20T00:00:00+01:00",
-            "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
-            "EventType": "Used",
-            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
-        },
-        {
-            "Created": "2026-01-22T00:00:00+01:00",
-            "PerformedByPartyUUID": "d5b861c8-8e3b-44cd-9952-5315e5990cf5",
-            "EventType": "Used",
-            "ConsentRequestID": "d5b861c8-8e3b-44cd-9952-5315e5990cf1"
+            "ConsentRequestID": "4a73a516-7a91-435c-8a0e-0f4659588594"
         }
     ],
     "RedirectUrl": "https://www.vg.no",
