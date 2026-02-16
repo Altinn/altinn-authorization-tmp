@@ -9,7 +9,7 @@ namespace Altinn.AccessMgmt.Core.Models
 {
     public class RuleAccess
     {
-        public string RuleKey { get; set; }
+        public string Key { get; set; }
 
         public IEnumerable<string> AccessorUrns { get; set; }
 
@@ -17,11 +17,11 @@ namespace Altinn.AccessMgmt.Core.Models
 
         public List<AccessPackageDto.AccessPackageDtoCheck> PackageAllowAccess { get; set; }
 
-        public HashSet<RuleDto.Reason> PackageDenyAccess { get; set; }
+        public HashSet<RuleCheckDto.Permision> PackageDenyAccess { get; set; }
 
         public List<RoleDtoCheck> RoleAllowAccess { get; set; }
 
-        public HashSet<RuleDto.Reason> RoleDenyAccess { get; set; }
+        public HashSet<RuleCheckDto.Permision> RoleDenyAccess { get; set; }
 
         public List<RulePermission> ResourceAllowAccess { get; set; }
     }
