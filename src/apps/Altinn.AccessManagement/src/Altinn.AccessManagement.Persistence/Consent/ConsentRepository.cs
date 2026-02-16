@@ -97,7 +97,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, status, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, consented, requestMessage, templateId, templateVersion, redirectUrl, portalviewmode)
+                INSERT INTO consent.consentrequest (consentRequestId, status, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, consented, requestMessage, created, templateId, templateVersion, redirectUrl, portalviewmode)
                 VALUES (
                 @consentRequestId, 
                 @status,
@@ -108,6 +108,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @validTo, 
                 @consentedTime,
                 @requestMessage,
+                @created,
                 @templateId, 
                 @templateVersion, 
                 @redirectUrl,
@@ -132,6 +133,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
             else
             {
                 command.Parameters.Add<DateTimeOffset?>("consentedTime", NpgsqlDbType.TimestampTz).TypedValue = null;
+            }
+
+            if (consentRequest.CreatedTime != null)
+            {
+                command.Parameters.Add<DateTimeOffset?>("created", NpgsqlDbType.TimestampTz).TypedValue = consentRequest.CreatedTime?.ToOffset(TimeSpan.Zero);
+            }
+            else
+            {
+                command.Parameters.Add<DateTimeOffset?>("created", NpgsqlDbType.TimestampTz).TypedValue = null;
             }
 
             // command.Parameters.Add<ConsentRequestStatusType>("status", NpgsqlDbType.Integer).TypedValue = consentRequest.ConsentRequestStatus;
