@@ -816,13 +816,13 @@ public partial class ConnectionService(
         ProcessTheAccessToTheRuleKeys(ruleAccesses, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RuleDto> actions = await MapFromInternalToExternalActions(ruleAccesses, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
+        IEnumerable<RuleDto> rules = await MapFromInternalToExternalRule(ruleAccesses, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
         {
             Resource = resource,
-            Actions = actions
+            Rules = rules
         };
         
         return resourceCheckDto;
@@ -874,11 +874,11 @@ public partial class ConnectionService(
         return char.ToUpper(input[0]) + input.Substring(1);
     }
 
-    private async Task<RuleDto> MapFromInternalToExternalAction(RuleAccess actionAccess, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken)
+    private async Task<RuleDto> MapFromInternalToExternalRule(RuleAccess ruleAccess, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken)
     {
         if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
         {
-            string actionValue = actionAccess.RuleKey.Substring(actionAccess.RuleKey.LastIndexOf(":") + 1);
+            string actionValue = ruleAccess.RuleKey.Substring(ruleAccess.RuleKey.LastIndexOf(":") + 1);
             AccessListAuthorizationRequest accessListAuthorizationRequest = new AccessListAuthorizationRequest
             {
                 Subject = PartyUrn.PartyUuid.Create(fromParty.PartyUuid),
@@ -890,25 +890,25 @@ public partial class ConnectionService(
             AccessListAuthorizationResult accessListAuthorizationResult = accessListAuthorizationResponse.Result;
             if (accessListAuthorizationResult != AccessListAuthorizationResult.Authorized)
             {
-                actionAccess.AccessListDenied = true;
+                ruleAccess.AccessListDenied = true;
             }
         }
 
         RuleDto currentAction = new RuleDto
         {
-            RuleKey = actionAccess.RuleKey,
-            Name = GetActionNameFromRuleKey(actionAccess.RuleKey, resourceId),
+            RuleKey = ruleAccess.RuleKey,
+            Name = GetActionNameFromRuleKey(ruleAccess.RuleKey, resourceId),
             Result = false,
         };
 
         List<RuleDto.Reason> reasons = [];
 
-        if (actionAccess.PackageAllowAccess.Count == 0 && actionAccess.RoleAllowAccess.Count == 0 && actionAccess.ResourceAllowAccess.Count == 0)
+        if (ruleAccess.PackageAllowAccess.Count == 0 && ruleAccess.RoleAllowAccess.Count == 0 && ruleAccess.ResourceAllowAccess.Count == 0)
         {
             currentAction.Result = false;
 
-            reasons.AddRange(actionAccess.PackageDenyAccess);
-            reasons.AddRange(actionAccess.RoleDenyAccess);
+            reasons.AddRange(ruleAccess.PackageDenyAccess);
+            reasons.AddRange(ruleAccess.RoleDenyAccess);
 
             reasons.Add(new RuleDto.Reason
             {
@@ -920,9 +920,9 @@ public partial class ConnectionService(
         {
             currentAction.Result = true;
 
-            ProcessPackageAllowAccessReasons(actionAccess.PackageAllowAccess, reasons);
-            ProcessRoleAllowAccessReasons(actionAccess.RoleAllowAccess, reasons);
-            ProcessResourceAllowAccessReasons(actionAccess.ResourceAllowAccess, reasons);
+            ProcessPackageAllowAccessReasons(ruleAccess.PackageAllowAccess, reasons);
+            ProcessRoleAllowAccessReasons(ruleAccess.RoleAllowAccess, reasons);
+            ProcessResourceAllowAccessReasons(ruleAccess.ResourceAllowAccess, reasons);
         }
 
         if (!isResourceDelegable)
@@ -936,7 +936,7 @@ public partial class ConnectionService(
             reasons.Add(reason);
         }
 
-        if (actionAccess.AccessListDenied == true)
+        if (ruleAccess.AccessListDenied == true)
         {
             currentAction.Result = false;
             RuleDto.Reason reason = new RuleDto.Reason
@@ -993,7 +993,7 @@ public partial class ConnectionService(
 
         foreach (var ruleKey in ruleKeys.RuleKeys)
         {
-            if (!canDelegate.Value.Actions.Any(a => a.RuleKey == ruleKey && a.Result))
+            if (!canDelegate.Value.Rules.Any(a => a.RuleKey == ruleKey && a.Result))
             {
                 return Problems.NotAuthorizedForDelegationRequest;
             }
@@ -1071,16 +1071,16 @@ public partial class ConnectionService(
         }
     }
 
-    private async Task<IEnumerable<RuleDto>> MapFromInternalToExternalActions(List<RuleAccess> actionAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<RuleDto>> MapFromInternalToExternalRule(List<RuleAccess> ruleAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken = default)
     {
-        List<RuleDto> actions = [];
+        List<RuleDto> rules = [];
 
-        foreach (var actionAccess in actionAccesses)
+        foreach (var ruleAccess in ruleAccesses)
         {
-            actions.Add(await MapFromInternalToExternalAction(actionAccess, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken));
+            rules.Add(await MapFromInternalToExternalRule(ruleAccess, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken));
         }
 
-        return actions;
+        return rules;
     }
 
     private void ProcessTheAccessToTheRuleKeys(List<RuleAccess> actionAccesses, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRuleDto> resources)
