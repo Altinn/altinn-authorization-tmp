@@ -59,7 +59,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     public async Task<Entity?> GetEntityByIdPortenEmailId(string emailIdentifier, CancellationToken ct = default) =>
         await db.Entities
             .AsNoTracking()
-            .Where(e => e.EmailIdentifier == emailIdentifier)
+            .Where(e => e.EmailIdentifier.ToLower() == emailIdentifier.ToLower())
             .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
