@@ -239,7 +239,7 @@ public partial class ConnectionService(
         return DtoMapper.ConvertResources(resources);
     }
 
-    public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, List<string> ruleKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, IEnumerable<string> ruleKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, ConfigureConnections, cancellationToken);
         if (canDelegate.IsProblem)
@@ -255,7 +255,7 @@ public partial class ConnectionService(
             }
         }
 
-        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys, by, ignoreExistingPolicy: true, cancellationToken: cancellationToken);
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.ToList(), by, ignoreExistingPolicy: true, cancellationToken: cancellationToken);
 
         if (!result.All(r => r.CreatedSuccessfully))
         {
