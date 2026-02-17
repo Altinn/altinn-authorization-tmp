@@ -2,5 +2,5 @@
 
 public static class FeatureFlags
 {
-    public static bool IncludeSingleRightsImportedAssignments { get; set; } //$"AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments";
+    public static bool IncludeSingleRightsImportedAssignments { get; set; }
 }
