@@ -55,21 +55,44 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             .ToListAsync(cancellationToken);
 
         return query
-            .Select(i =>
-                new MyClientDto()
-                {
-                    Provider = DtoMapper.Convert(i.First().Provider),
-                    Clients = i.Where(j => j.Client is { }).GroupBy(j => j.Client.Id).Select(j => new ClientDto()
+            .Select(providerGroup =>
+            {
+                var provider = providerGroup.First().Provider;
+
+                var clients = providerGroup
+                    .Where(x => x.Client is not null)
+                    .GroupBy(x => x.Client!.Id)
+                    .Select(clientGroup =>
                     {
-                        Client = DtoMapper.Convert(j.First().Client),
-                        Access = j.Select(r => new ClientDto.RoleAccessPackages
+                        var client = clientGroup.First().Client!;
+
+                        var access = clientGroup
+                            .Where(x => x.Role is not null)
+                            .GroupBy(x => x.Role.Id)
+                            .Select(roleGroup => new ClientDto.RoleAccessPackages
+                            {
+                                Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role!),
+                                Packages = roleGroup
+                                    .Where(x => x.Package is not null)
+                                    .Select(x => DtoMapper.ConvertCompactPackage(x.Package!))
+                                    .DistinctBy(p => p.Id)
+                                    .ToArray(),
+                            })
+                            .ToList();
+
+                        return new ClientDto
                         {
-                            Role = DtoMapper.ConvertCompactRole(r.Role),
-                            Packages = j.Where(p => p.Package is { }).Select(p => DtoMapper.ConvertCompactPackage(p.Package)).DistinctBy(p => p.Id).ToArray(),
-                        }).ToList()
-                    })
-                }
-            )
+                            Client = DtoMapper.Convert(client),
+                            Access = access
+                        };
+                    });
+
+                return new MyClientDto
+                {
+                    Provider = DtoMapper.Convert(provider),
+                    Clients = clients
+                };
+            })
             .ToList();
     }
 
@@ -157,12 +180,14 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     x.Assignment.From,
                     x.Assignment.Role,
                     AssignmentPackage = x.AssignmentPackage.Package,
-                    RolePackage = rp.Package
+                    RolePackage = rp.Package,
+                    RolePackageEntityVariantId = rp.EntityVariantId
                 }
             )
             .Where(x =>
                 (x.AssignmentPackage == null || x.AssignmentPackage.IsDelegable) &&
-                (x.RolePackage == null || x.RolePackage.IsDelegable))
+                (x.RolePackage == null || x.RolePackage.IsDelegable) &&
+                (x.RolePackageEntityVariantId == null || x.RolePackageEntityVariantId == x.From.VariantId))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
