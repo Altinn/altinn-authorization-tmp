@@ -8,6 +8,9 @@ using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FeatureManagement;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -22,8 +25,21 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
+        var config = new ConfigurationBuilder()
+        .AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["FeatureManagement:AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"] = "false",
+        })
+        .Build();
+
+        var services = new ServiceCollection();
+        services.AddFeatureManagement(config);
+
+        var sp = services.BuildServiceProvider();
+        var featureManager = sp.GetRequiredService<IFeatureManager>();
+
         _db = new AppDbContext(options);
-        _query = new ConnectionQuery(_db);
+        _query = new ConnectionQuery(_db, featureManager);
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }
@@ -38,7 +54,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
         {
             await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
         }
@@ -67,7 +83,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
-        
+
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == TestDataSet.GetEntity("Baker Johnsen").Id);
 
         var baker = connections.Single(t => t.Party.Id == TestDataSet.GetEntity("Baker Johnsen").Id);
@@ -297,8 +313,8 @@ internal static class TestDataSet
         return Entities.First(x => x.Name == name);
     }
 
-    #pragma warning disable IDE0028 // Simplify collection initialization
-    #pragma warning disable SA1401 // Fields should be private
+#pragma warning disable IDE0028 // Simplify collection initialization
+#pragma warning disable SA1401 // Fields should be private
     internal static List<Entity> Entities = new()
     #pragma warning restore SA1401 // Fields should be private
     #pragma warning restore IDE0028 // Simplify collection initialization
@@ -323,7 +339,7 @@ internal static class TestDataSet
         new Entity() { Id = Guid.Parse("0195efb8-7c80-706b-9e0e-87f73c5b3ed0"), Name = "Terje", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "06018412345", RefId = "06018412345", DateOfBirth = DateOnly.Parse("1984-01-06") },
     };
 
-    #pragma warning disable SA1401 // Fields should be private
+#pragma warning disable SA1401 // Fields should be private
     internal static List<Assignment> Assignments = new()
     #pragma warning restore SA1401 // Fields should be private
     {
@@ -341,11 +357,11 @@ internal static class TestDataSet
     {
         var fromEntity = Entities.First(t => t.Name == fromName);
         var toEntity = Entities.First(t => t.Name == toName);
-        
+
         return Assignments.First(t => t.FromId == fromEntity.Id && t.ToId == toEntity.Id);
     }
 
-    #pragma warning disable SA1401 // Fields should be private
+#pragma warning disable SA1401 // Fields should be private
     internal static List<Delegation> Delegations = new()
     #pragma warning restore SA1401 // Fields should be private
     {

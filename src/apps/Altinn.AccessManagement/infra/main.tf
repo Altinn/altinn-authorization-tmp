@@ -205,12 +205,6 @@ module "appsettings" {
 
   feature_flags = [
     {
-      name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
-      description = "Includes imported single rights in connection."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
       name        = "AccessMgmt.Enduser.Controller.ClientDelegation"
       description = "Specifies Client Delegation should be enabled in enduser API."
       label       = "${lower(var.environment)}-access-management"
