@@ -148,14 +148,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Agent' role.
+    /// Represents the 'Supplier' role.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 961f6ebb-ecf7-4fc6-ab5a-ca0841db4931
-    /// - <c>URN:</c> urn:altinn:role:agent
+    /// - <c>URN:</c> urn:altinn:role:supplier
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Code:</c> agent
-    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for virksomheten
+    /// - <c>Code:</c> supplier
+    /// - <c>Description:</c> Gir mulighet til å motta delegerte api tilganger for virksomheten
     /// </remarks>
     public static ConstantDefinition<Role> Supplier { get; } = new ConstantDefinition<Role>("961f6ebb-ecf7-4fc6-ab5a-ca0841db4931")
     {
