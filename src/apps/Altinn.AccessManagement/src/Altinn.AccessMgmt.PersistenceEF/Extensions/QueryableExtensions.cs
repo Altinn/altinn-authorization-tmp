@@ -28,6 +28,21 @@ public static class QueryableExtensions
             : query.Where(x => ids.Contains(EF.Property<Guid>(x, ((MemberExpression)selector.Body).Member.Name)));
     }
 
+    public static IQueryable<T> WhereMatchIfSet<T, Y>(
+    this IQueryable<T> query,
+    HashSet<Y>? ids,
+    Expression<Func<T, Y>> selector)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return query;
+        }
+
+        return ids.Count == 1
+            ? query.Where(x => EF.Property<Y>(x, ((MemberExpression)selector.Body).Member.Name).Equals(ids.First()))
+            : query.Where(x => ids.Contains(EF.Property<Y>(x, ((MemberExpression)selector.Body).Member.Name)));
+    }
+
     public static IQueryable<T> WhereMatchIfSet<T>(
     this IQueryable<T> query,
     HashSet<Guid>? ids,

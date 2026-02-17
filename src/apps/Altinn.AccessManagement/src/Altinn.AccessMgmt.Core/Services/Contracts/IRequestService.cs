@@ -8,6 +8,11 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts;
 public interface IRequestService
 {
     /// <summary>
+    /// Retrieves the request associated with the specified request identifier.
+    /// </summary>
+    Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct);
+
+    /// <summary>
     /// Retrieves a collection of request data transfer objects (DTOs) that match the specified filtering criteria.
     /// </summary>
     /// <param name="fromId">The optional identifier of the first request to include in the results. Only requests with an ID greater than or
@@ -33,7 +38,7 @@ public interface IRequestService
     /// <param name="requestId">The unique identifier of the request for which the assignment is to be retrieved.</param>
     /// <returns>A task that represents the asynchronous operation, containing the request assignment associated with the
     /// specified request identifier.</returns>
-    Task<RequestAssignment> GetRequestAssignment(Guid requestId);
+    Task<RequestAssignment> GetRequestAssignment(Guid requestId, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves a collection of request assignments that match the specified filtering criteria.
@@ -65,7 +70,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created RequestAssignment
     /// object.</returns>
-    Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, Guid requestedBy);
+    Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment status of a request identified by the specified request ID.
@@ -76,7 +81,7 @@ public interface IRequestService
     /// <param name="status">The new status to assign to the request. Must be a valid value of the RequestStatus enumeration.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the updated RequestAssignment
     /// object.</returns>
-    Task<RequestAssignment> UpdateRequestAssignment(Guid requestId, RequestStatus status);
+    Task<RequestAssignment> UpdateRequestAssignment(Guid requestId, RequestStatus status, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves the assignment package associated with the specified request identifier.
@@ -87,7 +92,7 @@ public interface IRequestService
     /// cref="System.Guid"/>.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the <see
     /// cref="RequestAssignmentPackage"/> associated with the specified request identifier.</returns>
-    Task<RequestAssignmentPackage> GetRequestAssignmentPackage(Guid requestId);
+    Task<RequestAssignmentPackage> GetRequestAssignmentPackage(Guid requestId, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves a collection of request assignment packages that match the specified filtering criteria.
@@ -123,7 +128,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentPackage.</returns>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, Guid requestedBy);
+    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment package that associates the specified assignment with the given package on
@@ -136,7 +141,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user requesting the creation of the assignment package.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created RequestAssignmentPackage
     /// instance.</returns>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, Guid requestedBy);
+    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment package for the specified request with a new status.
@@ -147,7 +152,7 @@ public interface IRequestService
     /// <param name="status">The new status to assign to the request. The status determines how the request will be processed.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the updated request assignment
     /// package.</returns>
-    Task<RequestAssignmentPackage> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status);
+    Task<RequestAssignmentPackage> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves the assignment resource associated with the specified request identifier.
@@ -157,7 +162,7 @@ public interface IRequestService
     /// <param name="requestId">The unique identifier of the request for which to retrieve the assignment resource. Must be a valid GUID.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the request assignment resource
     /// associated with the specified request identifier.</returns>
-    Task<RequestAssignmentResource> GetRequestAssignmentResource(Guid requestId);
+    Task<RequestAssignmentResource> GetRequestAssignmentResource(Guid requestId, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves a collection of request assignment resources that match the specified filtering criteria.
@@ -195,7 +200,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentResource.</returns>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, Guid requestedBy);
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment resource with the specified assignment, resource, action, and requesting user.
@@ -209,7 +214,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user requesting the assignment of the resource.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentResource.</returns>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy);
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment status of a request identified by the specified request ID.
@@ -220,5 +225,5 @@ public interface IRequestService
     /// <param name="status">The new status to assign to the request. Must be a valid value of the RequestStatus enumeration.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the updated
     /// RequestAssignmentResource.</returns>
-    Task<RequestAssignmentResource> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status);
+    Task<RequestAssignmentResource> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status, CancellationToken ct = default);
 }
