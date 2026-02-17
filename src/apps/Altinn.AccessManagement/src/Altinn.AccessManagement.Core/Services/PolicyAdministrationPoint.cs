@@ -555,48 +555,6 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<string> DeleteRulesInPolicy(string policyPath, string policyVersion, IEnumerable<string> ruleIds, CancellationToken cancellationToken = default)
-        {
-            var policyClient = _policyFactory.Create(policyPath);
-            if (!await policyClient.PolicyExistsAsync(cancellationToken))
-            {
-                _logger.LogWarning("No blob was found for the expected path: {policyPath} this must be removed without updating the database", policyPath);
-                return null;
-            }
-
-            string leaseId = await policyClient.TryAcquireBlobLease(cancellationToken);
-            var policy = await _prp.GetPolicyVersionAsync(policyPath, policyVersion, cancellationToken);
-
-            foreach (string ruleId in ruleIds)
-            {
-                XacmlRule xacmlRuleToRemove = policy.Rules.FirstOrDefault(r => r.RuleId == ruleId);
-                if (xacmlRuleToRemove == null)
-                {
-                    _logger.LogWarning("The rule with id: {ruleId} does not exist in policy with path: {policyPath}", ruleId, policyPath);
-                    continue;
-                }
-
-                policy.Rules.Remove(xacmlRuleToRemove);
-            }
-
-            var isAllRulesDeleted = policy.Rules.Count == 0;
-
-            Response<BlobContentInfo> response;
-            try
-            {
-                MemoryStream dataStream = PolicyHelper.GetXmlMemoryStreamFromXacmlPolicy(policy);
-                response = await policyClient.WritePolicyConditionallyAsync(dataStream, leaseId, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Writing of delegation policy at path: {policyPath} failed. Is delegation blob storage account alive and well?", policyPath);
-                return null;
-            }
-
-            return response.Value.VersionId;
-        }
-
-        /// <inheritdoc/>
         public async Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default)
         {
             var policyClient = _policyFactory.Create(policyPath);

@@ -103,7 +103,5 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>VersionId</returns>
         Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default);
-
-        Task<string> DeleteRulesInPolicy(string policyPath, string policyVersion, RuleKeyListDto ruleKeys, CancellationToken cancellationToken = default);
     }
 }
