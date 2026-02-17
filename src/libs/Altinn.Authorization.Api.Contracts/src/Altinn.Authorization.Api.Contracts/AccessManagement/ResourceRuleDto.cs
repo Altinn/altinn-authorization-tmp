@@ -57,4 +57,3 @@ public class ExternalResourceRuleDto
     /// </summary>
     public List<RulePermission> IndirectRules { get; set; }
 }
-
