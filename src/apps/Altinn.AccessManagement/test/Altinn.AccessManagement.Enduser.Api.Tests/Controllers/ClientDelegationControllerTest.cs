@@ -209,7 +209,7 @@ public class ClientDelegationControllerTest
             Assert.Single(verdiqClients.Access);
             var verdiqAccess = verdiqClients.Access.FirstOrDefault();
 
-            Assert.Equal(2, verdiqAccess.Packages.Count());
+            Assert.Equal(2, verdiqAccess.Packages.Length);
             var verdiqPackageAccountantWithSigningRights = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantWithSigningRights);
             var verdiqPackageAccountantSalary = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantSalary);
 
