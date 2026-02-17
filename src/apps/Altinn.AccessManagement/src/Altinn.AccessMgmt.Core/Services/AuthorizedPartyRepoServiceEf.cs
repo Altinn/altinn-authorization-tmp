@@ -52,7 +52,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     public async Task<Entity?> GetEntityByUsername(string username, CancellationToken ct = default) =>
         await db.Entities
             .AsNoTracking()
-            .Where(e => e.Username == username)
+            .Where(e => e.Username.ToLower() == username.ToLower())
             .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
