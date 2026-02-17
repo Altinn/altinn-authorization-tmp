@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
-using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
-using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -25,10 +23,99 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
 [Tags("Client Delegation")]
 public class ClientDelegationController(
-    IClientDelegationService clientDelegationService,
-    IUserProfileLookupService UserProfileLookupService,
-    IEntityService EntityService) : ControllerBase
+    IHttpContextAccessor httpContextAccessor,
+    IInputValidation inputValidation,
+    IClientDelegationService clientDelegationService) : ControllerBase
 {
+    #region My
+ 
+    [HttpGet("my/clients")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
+    [ProducesResponseType<PaginatedResult<MyClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMyClients(
+        [FromQuery(Name = "provider")] List<Guid>? provider,
+        [FromQuery, FromHeader] PagingInput paging,
+        CancellationToken cancellationToken = default)
+    {
+        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
+        var result = await clientDelegationService.GetMyClients(useruuid, provider, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
+    }
+
+    [HttpGet("my/clientproviders")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
+    [ProducesResponseType<PaginatedResult<AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMyClientProviders(CancellationToken cancellationToken = default)
+    {
+        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
+        var result = await clientDelegationService.GetMyProviders(useruuid, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
+    }
+
+    [HttpDelete("my/clientproviders")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteMyAgentViaParty(
+        [FromQuery(Name = "provider")][Required] Guid provider,
+        CancellationToken cancellationToken = default)
+    {
+        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
+        var result = await clientDelegationService.DeleteMyProvider(useruuid, provider, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("my/clients")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteMyClientViaParty(
+        [FromQuery(Name = "provider")][Required] Guid provider,
+        [FromQuery(Name = "from")][Required] Guid from,
+        [FromBody][Required] DelegationBatchInputDto payload,
+        CancellationToken cancellationToken = default)
+    {
+        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
+        var result = await clientDelegationService.DeleteMyClient(useruuid, provider, from, payload, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(result.Value);
+    }
+
+    #endregion
+
+    #region Provider
+
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
@@ -38,7 +125,7 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetClients(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name ="roles")] List<string>? roles,
+        [FromQuery(Name = "roles")] List<string>? roles,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +141,7 @@ public class ClientDelegationController(
     [HttpGet("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -86,32 +173,23 @@ public class ClientDelegationController(
         [FromBody] PersonInput? person,
         CancellationToken cancellationToken = default)
     {
-        bool hasPersonInputParameter = person is { };
+        var entity = await inputValidation.SanitizeToInput(
+            party,
+            to,
+            person,
+            options =>
+            {
+                options.AllowedToEntityTypes = [EntityTypeConstants.Person, EntityTypeConstants.SystemUser];
+                options.EntitiesToValidateForAnyConnections = [EntityTypeConstants.Person];
+            },
+            cancellationToken);
 
-        var validationErrors = ValidationComposer.Validate(
-            ValidationComposer.Any(
-                ConnectionValidation.ValidateAddAssignmentWithPersonInput(person?.PersonIdentifier, person?.LastName),
-                ParameterValidation.ToIsGuid(to)
-            )
-        );
-
-        if (validationErrors is { })
+        if (entity.IsProblem)
         {
-            return validationErrors.ToActionResult();
+            return entity.Problem.ToActionResult();
         }
 
-        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = hasPersonInputParameter
-            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
-            : await resolver.ResolveWithConnectionInputAsync((Guid)to, false, cancellationToken);
-
-        if (!resolveResult.Success)
-        {
-            return resolveResult.ErrorResult!;
-        }
-
-        var result = await clientDelegationService.AddAgent(party, resolveResult.ToUuid, cancellationToken);
-
+        var result = await clientDelegationService.AddAgent(party, entity.Value.Id, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -187,9 +265,9 @@ public class ClientDelegationController(
     }
 
     [HttpPost("agents/accesspackages")]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -211,9 +289,9 @@ public class ClientDelegationController(
     }
 
     [HttpDelete("agents/accesspackages")]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -234,4 +312,6 @@ public class ClientDelegationController(
 
         return Ok(result.Value);
     }
+
+    #endregion
 }

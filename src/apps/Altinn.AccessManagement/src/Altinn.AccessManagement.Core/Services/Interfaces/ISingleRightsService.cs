@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
@@ -15,8 +16,9 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="authenticatedUserId">The user id of the authenticated user performing the delegation</param>
         /// <param name="authenticatedUserAuthlevel">The authentication level of the authenticated user performing the delegation</param>
         /// <param name="request">The model describing the right delegation check to perform</param>
+        /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The result of the delegation status check</returns>
-        public Task<DelegationCheckResponse> RightsDelegationCheck(int authenticatedUserId, int authenticatedUserAuthlevel, RightsDelegationCheckRequest request);
+        public Task<DelegationCheckResponse> RightsDelegationCheck(int authenticatedUserId, int authenticatedUserAuthlevel, RightsDelegationCheckRequest request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Takes a List of rules and enrich it with uuids and try to write the rules as delegation policy rules
@@ -36,7 +38,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="performedBy">Performed by</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
-        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken);
+        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, RuleKeyListDto actionIds, Entity performedBy, CancellationToken cancellationToken);
 
         /// <summary>
         /// Enrich delete request with Performed by uuid and call PAP to delete rules

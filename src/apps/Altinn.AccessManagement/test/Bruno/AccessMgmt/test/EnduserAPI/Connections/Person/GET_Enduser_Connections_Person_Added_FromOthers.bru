@@ -1,11 +1,11 @@
 meta {
   name: GET_Enduser_Connections_Person_Added_FromOthers
   type: http
-  seq: 3
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&to={{party}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&to={{party}}&from={{FromOrg}}
   body: json
   auth: inherit
 }
@@ -13,14 +13,11 @@ get {
 params:query {
   party: {{party}}
   to: {{party}}
-  ~to: {{toPerson}}
+  from: {{FromOrg}}
 }
 
 body:json {
-   {
-    "personidentifier": "{{toPerson}}", // fnr or username
-    "lastName": "{{toPersonLastName}}"
-  }
+   
 }
 
 script:pre-request {
@@ -28,7 +25,7 @@ script:pre-request {
   const testdata = require(`./testdata/person-accesspackage-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   
   bru.setVar("party", testdata.vassen_riktig_tiger_as.person1.partyuuid);
-  bru.setVar("toPersonLastName", testdata.vassen_riktig_tiger_as.person1.lastname);
+  bru.setVar("FromOrg", testdata.vassen_riktig_tiger_as.partyuuid);
   
   var getTokenParameters = {
     auth_userId: testdata.vassen_riktig_tiger_as.person1.userid,
@@ -40,8 +37,8 @@ script:pre-request {
   }
   
   
-const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
-const token = await testTokenGenerator.getToken(getTokenParameters);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken",  token);
 }
 
