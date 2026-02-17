@@ -20,6 +20,7 @@
           </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="System.IO.Hashing" />
+    <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations\" />
