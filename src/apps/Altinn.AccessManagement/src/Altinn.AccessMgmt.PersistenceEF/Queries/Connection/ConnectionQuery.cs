@@ -230,7 +230,7 @@ public class ConnectionQuery(AppDbContext db, IFeatureManager featureManager)
             RoleConstants.A0237.Id
         };
 
-        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeenableSingleRightsImportedAssignments);
+        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeSingleRightsImportedAssignments);
         var direct =
             db.Assignments
                 .Where(a1 => a1.ToId == toId)
@@ -442,7 +442,7 @@ public class ConnectionQuery(AppDbContext db, IFeatureManager featureManager)
         var viaSet = filter.ViaIds?.Count > 0 ? new HashSet<Guid>(filter.ViaIds) : null;
         var viaRoleSet = filter.ViaRoleIds?.Count > 0 ? new HashSet<Guid>(filter.ViaRoleIds) : null;
 
-        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeenableSingleRightsImportedAssignments);
+        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeSingleRightsImportedAssignments);
 
         #region Find all direct KeyRole assignments
         var keyRoleAssignments =
@@ -682,7 +682,7 @@ public class ConnectionQuery(AppDbContext db, IFeatureManager featureManager)
         /*
         Direct Assignments
         */
-        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeenableSingleRightsImportedAssignments);
+        var enableSingleRightsImportedAssignments = await featureManager.IsEnabledAsync(AccessMgmtPersistanceEFFeatureFlags.IncludeSingleRightsImportedAssignments);
 
         var direct =
             from childAss in db.Assignments.WhereIf(!enableSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
