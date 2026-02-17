@@ -21,9 +21,10 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Trys to sort and store the set of rules as delegation policy files in blob storage.
         /// </summary>
         /// <param name="rules">The set of rules to be delegated</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The list of rules with created Id and result status</returns>
-        Task<List<Rule>> TryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken = default);
+        Task<List<Rule>> TryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Trys to sort and store the set of rules as delegation policy files in blob storage.

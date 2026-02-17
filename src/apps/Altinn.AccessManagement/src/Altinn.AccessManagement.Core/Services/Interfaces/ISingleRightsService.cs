@@ -24,9 +24,10 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Takes a List of rules and enrich it with uuids and try to write the rules as delegation policy rules
         /// </summary>
         /// <param name="rules">Listy of rules</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
-        public Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken);
+        public Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Takes entities and a list of actionKeys and tries to write delegation policy
@@ -34,11 +35,12 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="from">From (OfferedBy)</param>
         /// <param name="to">To (CoveredBy)</param>
         /// <param name="resource">Resource to delegate</param>
-        /// <param name="actionIds">Actions on resource to delegsate</param>
+        /// <param name="ruleKeys">Rules on resource to delegate</param>
         /// <param name="performedBy">Performed by</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
-        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, RuleKeyListDto actionIds, Entity performedBy, CancellationToken cancellationToken);
+        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> ruleKeys, Entity performedBy, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Enrich delete request with Performed by uuid and call PAP to delete rules

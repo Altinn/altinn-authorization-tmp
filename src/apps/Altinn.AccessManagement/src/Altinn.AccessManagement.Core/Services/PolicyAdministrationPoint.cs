@@ -493,7 +493,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<Rule>> TryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken = default)
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy, CancellationToken cancellationToken = default)
         {
             List<Rule> result = new List<Rule>();
             Dictionary<string, List<Rule>> delegationDict = DelegationHelper.SortRulesByDelegationPolicyPath(rules, out List<Rule> unsortables);
@@ -504,7 +504,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 try
                 {
-                    writePolicySuccess = await WriteDelegationPolicyInternal(delegationPolicypath, delegationDict[delegationPolicypath], cancellationToken);
+                    writePolicySuccess = await WriteDelegationPolicyInternal(delegationPolicypath, delegationDict[delegationPolicypath], ignoreExistingPolicy, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -660,7 +660,7 @@ namespace Altinn.AccessManagement.Core.Services
             return result;
         }
 
-        private async Task<bool> WriteDelegationPolicyInternal(string policyPath, List<Rule> rules, CancellationToken cancellationToken = default)
+        private async Task<bool> WriteDelegationPolicyInternal(string policyPath, List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
             if (!DelegationHelper.TryGetDelegationParamsFromRule(rules[0], out ResourceAttributeMatchType resourceMatchType, out string resourceId, out string org, out string app, out int offeredByPartyId, out Guid? fromUuid, out UuidType fromUuidType, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out int? delegatedByUserId, out int? delegatedByPartyId, out Guid? performedByUuid, out UuidType performedByUuidType, out DateTime delegatedDateTime)
                 || resourceMatchType == ResourceAttributeMatchType.None)
@@ -729,7 +729,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                     // Build delegation XacmlPolicy either as a new policy or add rules to existing
                     XacmlPolicy delegationPolicy;
-                    if (existingDelegationPolicy != null)
+                    if (existingDelegationPolicy != null && !ignoreExistingPolicy)
                     {
                         delegationPolicy = existingDelegationPolicy;
                         foreach (Rule rule in rules)
