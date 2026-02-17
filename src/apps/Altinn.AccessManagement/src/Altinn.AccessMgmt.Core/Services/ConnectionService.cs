@@ -1037,7 +1037,7 @@ public partial class ConnectionService(
             return canDelegate.Problem;
         }
 
-        foreach (var ruleKey in ruleKeys.RuleKeys)
+        foreach (var ruleKey in ruleKeys.DirectRuleKeys)
         {
             if (!canDelegate.Value.Rules.Any(a => a.Rule.Key == ruleKey && a.Result))
             {
@@ -1045,7 +1045,7 @@ public partial class ConnectionService(
             }
         }
 
-        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.RuleKeys.ToList(), by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.DirectRuleKeys.ToList(), by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
 
         if (!result.All(r => r.CreatedSuccessfully))
         {
