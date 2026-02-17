@@ -8,9 +8,6 @@ using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.FeatureManagement;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -25,21 +22,8 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
-        var config = new ConfigurationBuilder()
-        .AddInMemoryCollection(new Dictionary<string, string?>
-        {
-            ["FeatureManagement:AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"] = "false",
-        })
-        .Build();
-
-        var services = new ServiceCollection();
-        services.AddFeatureManagement(config);
-
-        var sp = services.BuildServiceProvider();
-        var featureManager = sp.GetRequiredService<IFeatureManager>();
-
         _db = new AppDbContext(options);
-        _query = new ConnectionQuery(_db, featureManager);
+        _query = new ConnectionQuery(_db);
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }
