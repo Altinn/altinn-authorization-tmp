@@ -206,7 +206,7 @@ module "appsettings" {
   feature_flags = [
     {
       name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
-      description = "Ignores single rights."
+      description = "Includes imported single rights in connection."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
