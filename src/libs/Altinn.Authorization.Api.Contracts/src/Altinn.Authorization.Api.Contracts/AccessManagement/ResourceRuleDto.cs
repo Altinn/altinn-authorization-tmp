@@ -22,19 +22,9 @@ public class ResourceRuleDto
 public class RulePermission
 {
     /// <summary>
-    /// Unique key for action
+    /// Gets or sets the rule associated with this instance.
     /// </summary>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Concatenated key for subresources from policy rule
-    /// </summary>
-    public string SubResource { get; set; }
-
-    /// <summary>
-    /// Action
-    /// </summary>
-    public string Action { get; set; }
+    public RuleDto Rule { get; set; }
 
     /// <summary>
     /// Reason
@@ -45,4 +35,41 @@ public class RulePermission
     /// Permissions
     /// </summary>
     public List<PermissionDto> Permissions { get; set; }
+}
+
+/// <summary>
+/// Resource rules
+/// </summary>
+public class ExternalResourceRuleDto
+{
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public ResourceDto Resource { get; set; }
+
+    /// <summary>
+    /// Rules
+    /// </summary>
+    public List<RulePermission> DirectRules { get; set; }
+
+    /// <summary>
+    /// Rules
+    /// </summary>
+    public List<RulePermission> IndirectRules { get; set; }
+}
+
+/// <summary>
+/// Resource rules
+/// </summary>
+public class ExternalResourceRuleUpdateDto
+{
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public string Resource { get; set; }
+
+    /// <summary>
+    /// Rules
+    /// </summary>
+    public List<string> DirectRuleKeys { get; set; }
 }

@@ -73,6 +73,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RequestAssignmentPackage> RequestAssignmentPackages => Set<RequestAssignmentPackage>();
 
     public DbSet<RequestAssignmentResource> RequestAssignmentResources => Set<RequestAssignmentResource>();
+    
+    public DbSet<ErrorQueue> ErrorQueue => Set<ErrorQueue>();
 
     #endregion
 
@@ -218,6 +220,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RequestAssignment>(new RequestAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentPackage>(new RequestAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentResource>(new RequestAssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ErrorQueue>(new ErrorQueueConfiguration());
     }
 
     #region Extensions

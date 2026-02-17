@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
@@ -23,9 +24,10 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Takes a List of rules and enrich it with uuids and try to write the rules as delegation policy rules
         /// </summary>
         /// <param name="rules">Listy of rules</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
-        public Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken);
+        public Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Takes entities and a list of actionKeys and tries to write delegation policy
@@ -33,11 +35,12 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="from">From (OfferedBy)</param>
         /// <param name="to">To (CoveredBy)</param>
         /// <param name="resource">Resource to delegate</param>
-        /// <param name="actionIds">Actions on resource to delegsate</param>
+        /// <param name="ruleKeys">Rules on resource to delegate</param>
         /// <param name="performedBy">Performed by</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToken</param>
         /// <returns>The stored rules</returns>
-        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken);
+        Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> ruleKeys, Entity performedBy, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Enrich delete request with Performed by uuid and call PAP to delete rules
@@ -91,5 +94,37 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <returns>The result of the deletion</returns>
         /// <param name="cancellationToken">http context token</param>
         Task<ValidationProblemDetails> RevokeRightsDelegation(int authenticatedUserId, Guid authenticatedUserPartyUuid, DelegationLookup delegation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes all rules from policy and returns new versionId
+        /// </summary>
+        /// <param name="policyPath">Path to policy blob</param>
+        /// <param name="policyVersion">Blob version</param>
+        /// <param name="cancellationToken">CancellationToken</param>
+        /// <returns>VersionId</returns>
+        Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+        
+        /// Gets the next page of delegation changes from the app right feed
+        /// </summary>
+        /// <param name="appRightFeedId">The current position in the feed</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the next page of delegation changes from the resource right feed
+        /// </summary>
+        /// <param name="resourceRightFeedId">The current position in the feed</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long resourceRightFeedId = 1, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the next page of delegation changes from the instance right feed
+        /// </summary>
+        /// <param name="instanceRightFeedId">The current position in the feed</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long instanceRightFeedId = 1, CancellationToken cancellationToken = default);
     }
 }
