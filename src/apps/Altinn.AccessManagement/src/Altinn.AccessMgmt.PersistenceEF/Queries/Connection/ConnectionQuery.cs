@@ -1160,7 +1160,7 @@ public class ConnectionQuery(AppDbContext db)
         return index;
     }
 
-    private async Task<ConnectionIndex<ConnectionQueryResource>> LoadResourcesByKeyAsync(IQueryable<ConnectionQueryBaseRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    private async Task<ConnectionIndex<ResourceDto>> LoadResourcesByKeyAsync(IQueryable<ConnectionQueryBaseRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
@@ -1175,25 +1175,76 @@ public class ConnectionQuery(AppDbContext db)
             .Join(db.Resources, x => x.ResourceId, r => r.Id, (x, r) => new
             {
                 Key = new ConnectionCompositeKey(x.c.FromId, x.c.ToId, x.c.RoleId, x.c.AssignmentId, x.c.DelegationId, x.c.ViaId, x.c.ViaRoleId),
-                Resource = r
+
+                Resource = new
+                {
+                    r.Id,
+                    r.Name,
+                    r.RefId,
+                    r.Description,
+                    r.ProviderId,
+                    r.Provider,
+                    r.TypeId,
+                    r.Type
+                }
             })
+            .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
             .AsNoTracking()
             .ToListAsync(ct);
 
-        var index = new ConnectionIndex<ConnectionQueryResource>();
+        var index = new ConnectionIndex<ResourceDto>();
         foreach (var g in rows.GroupBy(x => x.Key))
         {
-            var mapped = g.Select(z => new ConnectionQueryResource
+            var mapped = g.Select(z => new ResourceDto
             {
                 Id = z.Resource.Id,
                 Name = z.Resource.Name,
                 RefId = z.Resource.RefId,
+                Description = z.Resource.Description,
+                Provider = ConvertProvider(z.Resource.Provider),
+                ProviderId = z.Resource.ProviderId,
+                Type = ConvertResourceType(z.Resource.Type),
+                TypeId = z.Resource.TypeId,
             }).DistinctBy(p => p.Id);
 
             index.AddRange(g.Key, mapped);
         }
 
         return index;
+    }
+
+    private ResourceTypeDto ConvertResourceType(ResourceType resourceType)
+    {
+        return new ResourceTypeDto()
+        {
+            Id = resourceType.Id,
+            Name = resourceType.Name,
+        };
+    }
+
+    private ProviderDto ConvertProvider(Provider provider)
+    {
+        return new ProviderDto()
+        {
+            Id = provider.Id,
+            Name = provider.Name,
+            RefId = provider.RefId,
+            LogoUrl = provider.LogoUrl,
+            Code = provider.Code,
+            TypeId = provider.TypeId,
+            Type = ConvertProviderType(provider.TypeId)
+        };
+    }
+
+    private ProviderTypeDto ConvertProviderType(Guid id)
+    {
+        ProviderTypeConstants.TryGetById(id, out var providerObj);
+        return new ProviderTypeDto()
+        {
+            Id = providerObj.Entity.Id,
+            Name = providerObj.Entity.Name,
+        };
     }
 
     private async Task EnrichPackageResourcesAsync(ConnectionIndex<ConnectionQueryPackage> packageIndex, ConnectionQueryFilter filter, CancellationToken ct = default)
@@ -1219,7 +1270,17 @@ public class ConnectionQuery(AppDbContext db)
             .Join(db.Resources, pr => pr.ResourceId, r => r.Id, (pr, r) => new
             {
                 pr.PackageId,
-                Resource = new ConnectionQueryResource { Id = r.Id, Name = r.Name }
+                Resource = new
+                {
+                    r.Id,
+                    r.Name,
+                    r.RefId,
+                    r.Description,
+                    r.ProviderId,
+                    r.Provider,
+                    r.TypeId,
+                    r.Type
+                }
             })
             .AsNoTracking()
             .ToListAsync(ct);
@@ -1239,11 +1300,11 @@ public class ConnectionQuery(AppDbContext db)
             {
                 if (resourcesByPackage.TryGetValue(pkg.Id, out var list))
                 {
-                    pkg.Resources = list.ToList();
+                    pkg.Resources = ((IEnumerable<Resource>)list).ToList();
                 }
                 else
                 {
-                    pkg.Resources = new List<ConnectionQueryResource>(capacity: 0);
+                    pkg.Resources = new List<Resource>(capacity: 0);
                 }
             }
 

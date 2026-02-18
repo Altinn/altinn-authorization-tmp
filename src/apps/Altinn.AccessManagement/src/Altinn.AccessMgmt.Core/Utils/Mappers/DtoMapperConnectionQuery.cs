@@ -32,7 +32,7 @@ public partial class DtoMapper : IDtoMapper
             {
                 Party = Convert(connection.To),
                 Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).Where(ro => ro is not null).DistinctBy(t => t.Id)],
-                Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).Where(re => re is not null).DistinctBy(t => t.Id)],
+                Resources = [.. c.SelectMany(c => c.Resources).Select(r => r).Where(re => re is not null).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).Where(pa => pa is not null).DistinctBy(t => t.Id)],
                 Connections = ConvertSubConnectionsToOthers(subconnections),
             };
@@ -65,7 +65,7 @@ public partial class DtoMapper : IDtoMapper
             {
                 Party = Convert(connection.From),
                 Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).Where(ro => ro is not null).DistinctBy(t => t.Id)],
-                Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).Where(re => re is not null).DistinctBy(t => t.Id)],
+                Resources = [.. c.SelectMany(c => c.Resources).Select(r => r).Where(re => re is not null).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).Where(pa => pa is not null).DistinctBy(t => t.Id)],
                 Connections = ConvertSubConnectionsFromOthers(subconnections),
             };
@@ -112,7 +112,7 @@ public partial class DtoMapper : IDtoMapper
             .DistinctBy(p => p.Id)
             .Select(res => new ResourcePermissionDto
             {
-                Resource = Convert(res),
+                Resource = res,
                 Permissions = records
                     .Where(r => r.Resources.Any(p => p.Id == res.Id))
                     .Select(ConvertToPermission)
@@ -157,7 +157,7 @@ public partial class DtoMapper : IDtoMapper
                 Resources = res
                     .Where(t => t.FromId == connection.FromId && t.Resources != null)
                     .SelectMany(t => t.Resources)
-                    .Select(r => Convert(r))
+                    .Select(r => r)
                     .Where(re => re is not null)
                     .DistinctBy(t => t.Id)
                     .ToList(),
@@ -196,7 +196,7 @@ public partial class DtoMapper : IDtoMapper
                 Resources = res
                     .Where(t => t.ToId == connection.ToId && t.Resources != null)
                     .SelectMany(t => t.Resources)
-                    .Select(r => Convert(r))
+                    .Select(r => r)
                     .Where(r => r is not null)
                     .DistinctBy(t => t.Id)
                     .ToList(),
@@ -215,15 +215,6 @@ public partial class DtoMapper : IDtoMapper
             Id = package.Id,
             Urn = package.Urn,
             AreaId = package.AreaId,
-        };
-    }
-
-    public static ResourceDto Convert(ConnectionQueryResource resource)
-    {
-        return new ResourceDto()
-        {
-            Id = resource.Id,
-            Name = resource.Name,
         };
     }
 
