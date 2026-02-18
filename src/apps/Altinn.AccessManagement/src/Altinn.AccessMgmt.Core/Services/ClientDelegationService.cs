@@ -527,8 +527,8 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             }
 
             // check ass must exist
-            var rolePackages = await db.RolePackages.AsNoTracking().Where(t => t.RoleId == input.Role.Id && pkgIds.Contains(t.PackageId)).ToListAsync(cancellationToken);
-            var assignmentPackages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == clientAssignment.Id && pkgIds.Contains(t.PackageId)).ToListAsync(cancellationToken);
+            var rolePackages = await db.RolePackages.AsNoTracking().Where(rp => rp.RoleId == input.Role.Id && rp.EntityVariantId == entities[fromId].VariantId && pkgIds.Contains(rp.PackageId) ).ToListAsync(cancellationToken);
+            var assignmentPackages = await db.AssignmentPackages.AsNoTracking().Where(ap => ap.AssignmentId == clientAssignment.Id && pkgIds.Contains(ap.PackageId)).ToListAsync(cancellationToken);
 
             var delegation = await db.Delegations.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == partyId, cancellationToken);
             if (delegation is null)
