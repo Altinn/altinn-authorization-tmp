@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
 /// <summary>
 /// Extended Connection with Packages and Resources
@@ -13,5 +15,5 @@ public class ConnectionQueryExtendedRecord : ConnectionQueryRecord
     /// <summary>
     /// Resources
     /// </summary>
-    public List<ConnectionQueryResource> Resources { get; set; } = new();
+    public List<ResourceDto> Resources { get; set; } = new();
 }

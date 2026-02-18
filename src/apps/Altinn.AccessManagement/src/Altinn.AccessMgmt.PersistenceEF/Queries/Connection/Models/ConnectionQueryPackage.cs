@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
 /// <summary>
 /// Basic Package refrence for Connection Query
@@ -28,5 +30,5 @@ public sealed class ConnectionQueryPackage
     /// <summary>
     /// Package resources
     /// </summary>
-    public List<ConnectionQueryResource> Resources { get; set; }
+    public List<Resource> Resources { get; set; }
 }
