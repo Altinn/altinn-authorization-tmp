@@ -537,6 +537,9 @@ public class ConnectionsController(
             IndirectRules = result?.Rules?.Where(t => !t.Reason.Contains(AccessReasonFlag.Direct)).ToList(),
         };
 
+        externalResult.DirectRules.ForEach(r => r.Reason = AccessReasonFlag.Direct);
+        externalResult.IndirectRules.ForEach(r => r.Reason.Remove(AccessReasonFlag.Direct));
+
         return Ok(externalResult);
     }
 
