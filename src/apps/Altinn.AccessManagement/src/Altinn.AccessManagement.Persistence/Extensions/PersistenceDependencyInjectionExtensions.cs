@@ -1,10 +1,12 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessManagement.Integration.Clients;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
@@ -46,9 +48,6 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
 
-        // Add FeatureFlag or Config
-        AccessMgmt.PersistenceEF.Features.PersistenceFeatures.IgnoreSingleRightsImportedAssignments = true;
-
         builder.Services.AddSingleton<ILegacyRoutingPolicy, FeatureFlagLegacyRoutingPolicy>();
         builder.Services.AddScoped<DelegationMetadataEF>();
         builder.Services.AddScoped<DelegationMetadataRepo>();
@@ -57,6 +56,7 @@ public static class PersistenceDependencyInjectionExtensions
         builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
         builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();
+        builder.Services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClient>();
 
         builder.AddDatabase();
         builder.Services.AddDelegationPolicyRepository(builder.Configuration);

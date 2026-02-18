@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.TestUtils.Data;
+﻿using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -28,6 +28,7 @@ public static class TestDataSeeds
             TestEntities.OrganizationVerdiqAS,
             TestEntities.SystemUserClient,
             TestEntities.SystemUserStandard,
+            TestEntities.OrganizationOkernBorettslag
         ]);
         #endregion
         

@@ -52,7 +52,14 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     public async Task<Entity?> GetEntityByUsername(string username, CancellationToken ct = default) =>
         await db.Entities
             .AsNoTracking()
-            .Where(e => e.Username == username)
+            .Where(e => e.Username.ToLower() == username.ToLower())
+            .FirstOrDefaultAsync(ct);
+
+    /// <inheritdoc/>
+    public async Task<Entity?> GetEntityByIdPortenEmailId(string emailIdentifier, CancellationToken ct = default) =>
+        await db.Entities
+            .AsNoTracking()
+            .Where(e => e.EmailIdentifier.ToLower() == emailIdentifier.ToLower())
             .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
@@ -112,7 +119,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
             IncludePackages = filters?.IncludeAccessPackages == true || filters?.PackageFilter?.Keys?.Count > 0,
-            IncludeResource = false,
+            IncludeResources = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false
         },
@@ -139,7 +146,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
             IncludePackages = filters?.IncludeAccessPackages ?? true,
-            IncludeResource = false,
+            IncludeResources = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false
         },

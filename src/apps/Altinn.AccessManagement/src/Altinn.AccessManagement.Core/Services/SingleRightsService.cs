@@ -18,6 +18,7 @@ using Altinn.AccessManagement.Core.Resolvers.Extensions;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -66,7 +67,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<DelegationCheckResponse> RightsDelegationCheck(int authenticatedUserId, int authenticatedUserAuthlevel, RightsDelegationCheckRequest request)
+        public async Task<DelegationCheckResponse> RightsDelegationCheck(int authenticatedUserId, int authenticatedUserAuthlevel, RightsDelegationCheckRequest request, CancellationToken cancellationToken = default)
         {
             (DelegationCheckResponse result, ServiceResource resource, Party fromParty) = await ValidateRightDelegationCheckRequest(request);
             if (!result.IsValid)
@@ -83,7 +84,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             rightsQuery = RightsHelper.GetRightsQuery(authenticatedUserId, fromParty.PartyId, resource);
 
-            List<Right> allDelegableRights = await _pip.GetRights(rightsQuery, getDelegableRights: true, returnAllPolicyRights: true);
+            List<Right> allDelegableRights = await _pip.GetRights(rightsQuery, getDelegableRights: true, returnAllPolicyRights: true, cancellationToken: cancellationToken);
             if (allDelegableRights == null || allDelegableRights.Count == 0)
             {
                 result.Errors.Add("right[0].Resource", $"No delegable rights could be found for the resource: {resource}");
@@ -109,7 +110,7 @@ namespace Altinn.AccessManagement.Core.Services
                         Action = ActionUrn.ActionId.Create(ActionIdentifier.CreateUnchecked(right.Action.Value))
                     };
 
-                    AccessListAuthorizationResponse accessListAuthorizationResponse = await _accessListsAuthorizationClient.AuthorizePartyForAccessList(accessListAuthorizationRequest);
+                    AccessListAuthorizationResponse accessListAuthorizationResponse = await _accessListsAuthorizationClient.AuthorizePartyForAccessList(accessListAuthorizationRequest, cancellationToken);
                     accessListAuthorizationResult = accessListAuthorizationResponse.Result;
                 }
 
@@ -129,56 +130,82 @@ namespace Altinn.AccessManagement.Core.Services
             return result;
         }
 
-        public async Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken)
+        public async Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
             rules = await EnrichRulesWithUuidInformation(rules, cancellationToken);
-            return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
+            return await _pap.TryWriteDelegationPolicyRules(rules: rules, ignoreExistingPolicy: ignoreExistingPolicy, cancellationToken: cancellationToken);
         }
 
-        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy, CancellationToken cancellationToken)
+        public async Task<List<Rule>> TryWriteDelegationPolicyRules(Entity from, Entity to, Resource resource, List<string> ruleKeys, Entity performedBy, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
-            var rules = GenerateRules(from, to, resource, actionIds, performedBy).ToList();
-            return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
+            var rules = GenerateRules(from, to, resource, ruleKeys, performedBy).ToList();
+            return await _pap.TryWriteDelegationPolicyRules(rules: rules, ignoreExistingPolicy: ignoreExistingPolicy, cancellationToken: cancellationToken);
         }
 
-        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, List<string> actionIds, Entity performedBy)
+        private IEnumerable<Rule> GenerateRules(Entity from, Entity to, Resource resource, List<string> ruleKeys, Entity performedBy)
         {
             var coveredBy = to;
             var offeredBy = from;
 
-            var coveredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(coveredBy.TypeId);
             var offeredByUuidType = DelegationHelper.GetUuidTypeFromEntityType(offeredBy.TypeId);
-            var performedByUuidType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId);
+            
+            List<Rule> rules = [];
 
-            var result = actionIds.Select(action =>
-                new Rule
+            foreach (string ruleKey in ruleKeys)
+            {
+                (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = SplitActionKey(ruleKey);
+
+                rules.Add(new Rule
                 {
-                    RuleId = Guid.NewGuid().ToString(),
+                    RuleId = Guid.CreateVersion7().ToString(),
                     Type = RuleType.None,
-
                     CoveredBy = ConvertEntityToAttributeMatch(coveredBy),
-                    Resource = ConvertResourceToAttributeMatches(resource),
-                    Action = ConvertActionToAttributeMatch(action),
-
+                    Resource = resourceAndAction.Resource,
+                    Action = resourceAndAction.Action,
                     OfferedByPartyId = offeredBy.PartyId.HasValue ? offeredBy.PartyId.Value : 0,
                     OfferedByPartyUuid = offeredBy.Id,
                     OfferedByPartyType = offeredByUuidType,
-
                     PerformedBy = ConvertEntityToAttributeMatch(performedBy),
                     DelegatedByUserId = performedBy.UserId,
-                    DelegatedByPartyId = performedBy.PartyId,
+                    DelegatedByPartyId = performedBy.PartyId
                 });
+            }            
 
-            return result;
+            return rules;
         }
 
-        private static AttributeMatch ConvertActionToAttributeMatch(string action)
+        private static (List<AttributeMatch> Resource, AttributeMatch Action) SplitActionKey(string actionKey)
         {
-            return new AttributeMatch
+            List<AttributeMatch> resourceList = [];
+            List<AttributeMatch> actionList = [];
+
+            string[] urns = actionKey.Split("urn:", StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string part in urns)
             {
-                Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId,
-                Value = action
-            };
+                string current = "urn:" + part;
+
+                if (current.EndsWith(':'))
+                {
+                    current = current.Remove(current.Length - 1);
+                }
+
+                int index = current.LastIndexOf(':');
+                string currentKey = current.Substring(0, index);
+                string currentValue = current.Substring(index + 1);
+                AttributeMatch currentAttributeMatch = new(currentKey, currentValue);
+
+                if (currentAttributeMatch.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    actionList.Add(currentAttributeMatch);
+                }
+                else
+                {
+                    resourceList.Add(currentAttributeMatch);
+                }
+            }
+
+            return (resourceList, actionList.FirstOrDefault());
         }
 
         private static List<AttributeMatch> ConvertEntityToAttributeMatch(Entity entity)
@@ -194,17 +221,15 @@ namespace Altinn.AccessManagement.Core.Services
             });
 
             // User
-            if (!matches.Any() && entity.UserId.HasValue)
+            if (entity.UserId.HasValue)
             {
                 matches.Add(new AttributeMatch
                 {
                     Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute,
                     Value = entity.UserId.Value.ToString()
                 });
-            }
-
-            // Party
-            if (!matches.Any() && entity.PartyId.HasValue)
+            }            
+            else if (entity.PartyId.HasValue) // Party
             {
                 matches.Add(new AttributeMatch
                 {
@@ -654,7 +679,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            List<Rule> delegationResult = await _pap.TryWriteDelegationPolicyRules(rulesToDelegate);
+            List<Rule> delegationResult = await _pap.TryWriteDelegationPolicyRules(rulesToDelegate, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
             result.Rights = DelegationHelper.GetRightDelegationResultsFromRules(delegationResult);
 
             if (rightsUserCantDelegate.Any())
@@ -678,6 +703,12 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
+        public async Task<string> ClearPolicyRules(string policyPath, string policyVersion, CancellationToken cancellationToken = default)
+        {
+            return await _pap.ClearPolicyRules(policyPath, policyVersion, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<ValidationProblemDetails> RevokeRightsDelegation(int authenticatedUserId, Guid authenticatedUserPartyUuid, DelegationLookup delegation, CancellationToken cancellationToken)
         {
             var assertion = AssertRevokeDelegationInput(delegation);
@@ -696,6 +727,24 @@ namespace Altinn.AccessManagement.Core.Services
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
             return assertion;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageAppDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageResourceDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageInstanceDelegationChanges(appRightFeedId, cancellationToken);
         }
 
         /// <summary>

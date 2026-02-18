@@ -119,7 +119,6 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
-            .Where(t => t.Id == id)
             .SingleAsync(t => t.Id == id)
             );
     }
@@ -130,14 +129,13 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
-            .Where(t => t.Id == id)
             .SingleAsync(t => t.Id == id)
             );
     }
 
     private async Task<Resource> GetResource(string resourceIdentifier, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == resourceIdentifier, cancellationToken);
+        return await DbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceIdentifier, cancellationToken);
     }
 
     public AppDbContext DbContext { get; }
@@ -248,20 +246,26 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             throw new ArgumentException($"All params: {nameof(coveredByUserId)}, {nameof(coveredByPartyId)}, {nameof(toUuid)} cannot be null.");
         }
 
-        var resourceUuid = Guid.Parse(resourceId);
-
-        var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == offeredByPartyId, cancellationToken);
+        var from = await DbContext.Entities.AsNoTracking().FirstOrDefaultAsync(t => t.PartyId == offeredByPartyId, cancellationToken);
+        
+        if (from == null)
+        {
+            throw new Exception($"OfferedBy not found with partyId '{offeredByPartyId}'");
+        }
 
         var result = await DbContext.AssignmentResources.AsNoTracking()
             .Include(t => t.Assignment).ThenInclude(t => t.To)
-            .Where(t => t.ResourceId == resourceUuid)
+            .Include(t => t.Resource)
+            .Where(t => t.Resource.RefId == resourceId)
             .Where(t => t.Assignment.FromId == from.Id)
             .WhereIf(coveredByPartyId != null, t => t.Assignment.To.PartyId == coveredByPartyId)
-            .WhereIf(coveredByPartyId != null, t => t.Assignment.To.UserId == coveredByUserId)
+            .WhereIf(coveredByUserId != null, t => t.Assignment.To.UserId == coveredByUserId)
             .WhereIf(toUuid.HasValue, t => t.Assignment.ToId == toUuid.Value)
-            .SingleAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return Convert(result);
+        return result == null 
+            ? null
+            : Convert(result);
     }
 
     /// <inheritdoc/>
@@ -283,26 +287,69 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 RoleId = role.Id
             };
             DbContext.Assignments.Add(assignment);
+            await DbContext.SaveChangesAsync();
         }
 
         var assignmentResource = await DbContext.AssignmentResources.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id, cancellationToken);
+
         if (assignmentResource == null)
         {
-            assignmentResource = new AssignmentResource()
+            if (delegationChange.DelegationChangeType != DelegationChangeType.RevokeLast)
             {
-                Id = Guid.CreateVersion7(),
-                AssignmentId = assignment.Id,
-                ResourceId = resource.Id,
-                PolicyPath = delegationChange.BlobStoragePolicyPath,
-                PolicyVersion = delegationChange.BlobStorageVersionId,
-                DelegationChangeId = delegationChange.DelegationChangeId,
-            };
-            DbContext.AssignmentResources.Add(assignmentResource);
-        }
+                assignmentResource = new AssignmentResource()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    PolicyPath = delegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = delegationChange.BlobStorageVersionId,
+                    DelegationChangeId = delegationChange.DelegationChangeId,
+                };
+                DbContext.AssignmentResources.Add(assignmentResource);
+                await DbContext.SaveChangesAsync();
+            }
 
-        if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            /*
+            // If we want audit log
+            else
+            {
+                assignmentResource = new AssignmentResource()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    PolicyPath = delegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = delegationChange.BlobStorageVersionId,
+                    DelegationChangeId = delegationChange.DelegationChangeId,
+                };
+                DbContext.AssignmentResources.Add(assignmentResource);
+                await DbContext.SaveChangesAsync();
+
+                DbContext.AssignmentResources.Remove(assignmentResource);
+                await DbContext.SaveChangesAsync();
+            }
+            */
+        }
+        else
         {
-            DbContext.AssignmentResources.Remove(assignmentResource);
+            if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            {
+                /*
+                // If we want audit log
+                assignmentResource.PolicyPath = delegationChange.BlobStoragePolicyPath;
+                assignmentResource.PolicyVersion = delegationChange.BlobStorageVersionId;
+                assignmentResource.DelegationChangeId = delegationChange.DelegationChangeId;
+                await DbContext.SaveChangesAsync();
+                */
+
+                DbContext.AssignmentResources.Remove(assignmentResource);
+            }
+            else
+            {
+                assignmentResource.PolicyPath = delegationChange.BlobStoragePolicyPath;
+                assignmentResource.PolicyVersion = delegationChange.BlobStorageVersionId;
+                assignmentResource.DelegationChangeId = delegationChange.DelegationChangeId;
+            }
         }
 
         await DbContext.SaveChangesAsync();
@@ -364,27 +411,69 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 RoleId = role.Id
             };
             DbContext.Assignments.Add(assignment);
+            await DbContext.SaveChangesAsync();
         }
 
         var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == instanceDelegationChange.InstanceId, cancellationToken);
+
         if (assignmentInstance == null)
         {
-            assignmentInstance = new AssignmentInstance()
+            if (instanceDelegationChange.DelegationChangeType != DelegationChangeType.RevokeLast)
             {
-                Id = Guid.CreateVersion7(),
-                AssignmentId = assignment.Id,
-                ResourceId = resource.Id,
-                InstanceId = instanceDelegationChange.InstanceId,
-                PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
-                PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
-                DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
-            };
-            DbContext.AssignmentInstances.Add(assignmentInstance);
-        }
+                assignmentInstance = new AssignmentInstance()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    InstanceId = instanceDelegationChange.InstanceId,
+                    PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                    DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+                };
+                DbContext.AssignmentInstances.Add(assignmentInstance);
+            }
+            //// If we want audit log
+            /*
+            else
+            {
+                assignmentInstance = new AssignmentInstance()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    InstanceId = instanceDelegationChange.InstanceId,
+                    PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                    DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+                };
+                DbContext.AssignmentInstances.Add(assignmentInstance);
+                await DbContext.SaveChangesAsync();
 
-        if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+                DbContext.AssignmentInstances.Remove(assignmentInstance);
+                await DbContext.SaveChangesAsync();
+            }
+            */
+        }
+        else
         {
-            DbContext.AssignmentInstances.Remove(assignmentInstance);
+            if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            {
+                /*
+                // If we want audit log
+                assignmentInstance.PolicyPath = instanceDelegationChange.BlobStoragePolicyPath;
+                assignmentInstance.PolicyVersion = instanceDelegationChange.BlobStorageVersionId;
+                assignmentInstance.DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId;
+                await DbContext.SaveChangesAsync();
+                */
+
+                DbContext.AssignmentInstances.Remove(assignmentInstance);
+            }
+            else
+            {
+                assignmentInstance.PolicyPath = instanceDelegationChange.BlobStoragePolicyPath;
+                assignmentInstance.PolicyVersion = instanceDelegationChange.BlobStorageVersionId;
+                assignmentInstance.DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId;
+            }
         }
 
         await DbContext.SaveChangesAsync();
@@ -403,6 +492,12 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             {
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
+
+                if (assignment == null || resource == null)
+                {
+                    throw new Exception("Assignment or resource not found for given policy  ");
+                }
+
                 var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == policy.Rules.InstanceId, cancellationToken);
 
                 if (assignmentInstance is null)
@@ -604,5 +699,20 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
           .ToListAsync(cancellationToken);
 
         return result.Select(Convert).ToList();
+    }
+
+    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageAppDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageResourceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<List<InstanceDelegationChange>> IDelegationMetadataRepository.GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -50,10 +52,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         var seen = new HashSet<string>();
         var ingestEntities = new List<Entity>();
+        var ingestAssignments = new List<Assignment>();
+        var seenAssignments = new HashSet<(Guid FromId, Guid ToId, Guid RoleId)>();
+        HashSet<Guid> seenDeadPeople = [];
 
-        using var scope = _serviceProvider.CreateEFScope(options);
+        using IServiceScope scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
+        IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
@@ -77,12 +83,28 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
 
+                Assignment assignment = item switch
+                {
+                    Person person => MapAssignmentForPerson(person),
+                    SelfIdentifiedUser selfIdentifiedUser => MapAssignmentForSelfIdentifiedUser(selfIdentifiedUser),
+                    _ => null
+                };
+
                 if (!seen.Add(entity.RefId))
                 {
                     await Flush();
                 }
 
+                if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath.HasValue)
+                {
+                    seenDeadPeople.Add(entity.Id);
+                }
+
                 ingestEntities.Add(entity);
+                if (assignment != null && seenAssignments.Add((assignment.FromId, assignment.ToId, assignment.RoleId)))
+                {
+                    ingestAssignments.Add(assignment);
+                }
             }
 
             var flushed = await Flush();
@@ -101,8 +123,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         async Task<int> Flush()
         {
-            var batchId = Guid.CreateVersion7();
-            var batchName = batchId.ToString("N");
+            var batchIdEntity = Guid.CreateVersion7();
+            var batchNameEntity = batchIdEntity.ToString("N");
+
+            var batchIdAssignment = Guid.CreateVersion7();
+            var batchNameAssignment = batchIdAssignment.ToString("N");
 
             if (ingestEntities.Count == 0)
             {
@@ -111,29 +136,46 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             try
             {
-                _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchName);
+                _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchNameEntity);
 
-                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchIdEntity, cancellationToken);
+                int ingestedAssignments = await ingestService.IngestTempData(ingestAssignments, batchIdAssignment, cancellationToken);
+
+                if (seenDeadPeople.Count > 0)
+                {
+                    foreach (Guid refId in seenDeadPeople)
+                    {
+                        await assignmentService.ClearAssignmentsInAfterLife(refId, options,  cancellationToken);
+                    }
+                }
 
                 if (ingestedEntities != ingestEntities.Count)
                 {
                     _logger.LogWarning("Ingest partial complete: Entity ({0}/{1})", ingestedEntities, ingestEntities.Count);
                 }
 
-                var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, matchColumns: ["id"], ignoreColumns: ["parentid"], cancellationToken);
+                if (ingestedAssignments != ingestAssignments.Count)
+                {
+                    _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingestedAssignments, ingestAssignments.Count);
+                }
+
+                var mergedEntities = await ingestService.MergeTempData<Entity>(batchIdEntity, options, matchColumns: ["id"], ignoreColumnsToUpdate: ["parentid"], cancellationToken: cancellationToken);
+                int mergedAssignments = await ingestService.MergeTempData<Assignment>(batchIdAssignment, options, matchColumns: ["fromid","toid","roleid"], ignoreColumnsToUpdate: ["id", "audit_validfrom"], cancellationToken: cancellationToken);
 
                 _logger.LogInformation("Merge complete: Entity ({0}/{1})", mergedEntities, ingestedEntities);
                 return mergedEntities;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to ingest and/or merge Entity batch {0} to db", batchName);
+                _logger.LogError(ex, "Failed to ingest and/or merge Entity batch {0} to db", batchNameEntity);
                 await Task.Delay(2000, cancellationToken);
             }
             finally
             {
                 ingestEntities.Clear();
+                ingestAssignments.Clear();
                 seen.Clear();
+                seenDeadPeople.Clear();
             }
 
             return 0;
@@ -153,6 +195,38 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         });
 
         return entity;
+    }
+
+    private Assignment MapAssignmentForPerson(Person person)
+    {
+        if ((person.IsDeleted.HasValue && person.IsDeleted.Value) || (person.DateOfDeath.HasValue && person.DateOfDeath.Value > DateOnly.MinValue))
+        {
+            // Dead or deleted
+            return null;
+        }
+
+        return new Assignment()
+        {
+            FromId = person.Uuid,
+            ToId = person.Uuid,
+            RoleId = RoleConstants.PrivatePerson.Id
+        };
+    }
+
+    private Assignment MapAssignmentForSelfIdentifiedUser(SelfIdentifiedUser user)
+    {
+        if (user.IsDeleted.HasValue && user.IsDeleted.Value)
+        {
+            // Deleted
+            return null;
+        }
+
+        return new Assignment()
+        {
+            FromId = user.Uuid,
+            ToId = user.Uuid,
+            RoleId = RoleConstants.SelfRegisteredUser.Id
+        };
     }
 
     private Entity MapOrganization(Organization organization)

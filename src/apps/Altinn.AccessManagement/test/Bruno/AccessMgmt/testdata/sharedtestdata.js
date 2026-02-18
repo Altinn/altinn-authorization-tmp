@@ -1,4 +1,4 @@
-module.exports = 
+﻿module.exports = 
 {
     "scopes": {
         "read": "altinn:instances:read",
@@ -19,7 +19,8 @@ module.exports =
         "enterpriseUser": "EnterpriseUser",
         "platformAccess": "PlatformAccess",
         "platformToken": "PlatformToken",
-        "systemUser": "SystemUser"
+        "systemUser": "SystemUser",
+        "selfRegisteredEmailUser": "SelfRegisteredEmailUser"
     },
     "serviceOwners": {
         "ttd": {
@@ -31,5 +32,5 @@ module.exports =
             "orgno": "991825827"
         }
     },
-    "expectedDaglAccessPackageCount": 125
+    "expectedDaglAccessPackageCount": 126
 };
