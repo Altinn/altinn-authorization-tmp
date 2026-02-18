@@ -291,25 +291,65 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
         }
 
         var assignmentResource = await DbContext.AssignmentResources.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id, cancellationToken);
+
         if (assignmentResource == null)
         {
-            assignmentResource = new AssignmentResource()
+            if (delegationChange.DelegationChangeType != DelegationChangeType.RevokeLast)
             {
-                Id = Guid.CreateVersion7(),
-                AssignmentId = assignment.Id,
-                ResourceId = resource.Id,
-                PolicyPath = delegationChange.BlobStoragePolicyPath,
-                PolicyVersion = delegationChange.BlobStorageVersionId,
-                DelegationChangeId = delegationChange.DelegationChangeId,
-            };
-            DbContext.AssignmentResources.Add(assignmentResource);
-            await DbContext.SaveChangesAsync();
-        }
+                assignmentResource = new AssignmentResource()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    PolicyPath = delegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = delegationChange.BlobStorageVersionId,
+                    DelegationChangeId = delegationChange.DelegationChangeId,
+                };
+                DbContext.AssignmentResources.Add(assignmentResource);
+                await DbContext.SaveChangesAsync();
+            }
 
-        if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            /*
+            // If we want audit log
+            else
+            {
+                assignmentResource = new AssignmentResource()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    PolicyPath = delegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = delegationChange.BlobStorageVersionId,
+                    DelegationChangeId = delegationChange.DelegationChangeId,
+                };
+                DbContext.AssignmentResources.Add(assignmentResource);
+                await DbContext.SaveChangesAsync();
+
+                DbContext.AssignmentResources.Remove(assignmentResource);
+                await DbContext.SaveChangesAsync();
+            }
+            */
+        }
+        else
         {
-            DbContext.AssignmentResources.Remove(assignmentResource);
-            await DbContext.SaveChangesAsync();
+            if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            {
+                /*
+                // If we want audit log
+                assignmentResource.PolicyPath = delegationChange.BlobStoragePolicyPath;
+                assignmentResource.PolicyVersion = delegationChange.BlobStorageVersionId;
+                assignmentResource.DelegationChangeId = delegationChange.DelegationChangeId;
+                await DbContext.SaveChangesAsync();
+                */
+
+                DbContext.AssignmentResources.Remove(assignmentResource);
+            }
+            else
+            {
+                assignmentResource.PolicyPath = delegationChange.BlobStoragePolicyPath;
+                assignmentResource.PolicyVersion = delegationChange.BlobStorageVersionId;
+                assignmentResource.DelegationChangeId = delegationChange.DelegationChangeId;
+            }
         }
 
         await DbContext.SaveChangesAsync();
@@ -375,26 +415,65 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
         }
 
         var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == instanceDelegationChange.InstanceId, cancellationToken);
+
         if (assignmentInstance == null)
         {
-            assignmentInstance = new AssignmentInstance()
+            if (instanceDelegationChange.DelegationChangeType != DelegationChangeType.RevokeLast)
             {
-                Id = Guid.CreateVersion7(),
-                AssignmentId = assignment.Id,
-                ResourceId = resource.Id,
-                InstanceId = instanceDelegationChange.InstanceId,
-                PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
-                PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
-                DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
-            };
-            DbContext.AssignmentInstances.Add(assignmentInstance);
-            await DbContext.SaveChangesAsync();
-        }
+                assignmentInstance = new AssignmentInstance()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    InstanceId = instanceDelegationChange.InstanceId,
+                    PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                    DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+                };
+                DbContext.AssignmentInstances.Add(assignmentInstance);
+            }
+            //// If we want audit log
+            /*
+            else
+            {
+                assignmentInstance = new AssignmentInstance()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    InstanceId = instanceDelegationChange.InstanceId,
+                    PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                    PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                    DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+                };
+                DbContext.AssignmentInstances.Add(assignmentInstance);
+                await DbContext.SaveChangesAsync();
 
-        if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+                DbContext.AssignmentInstances.Remove(assignmentInstance);
+                await DbContext.SaveChangesAsync();
+            }
+            */
+        }
+        else
         {
-            DbContext.AssignmentInstances.Remove(assignmentInstance);
-            await DbContext.SaveChangesAsync();
+            if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            {
+                /*
+                // If we want audit log
+                assignmentInstance.PolicyPath = instanceDelegationChange.BlobStoragePolicyPath;
+                assignmentInstance.PolicyVersion = instanceDelegationChange.BlobStorageVersionId;
+                assignmentInstance.DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId;
+                await DbContext.SaveChangesAsync();
+                */
+
+                DbContext.AssignmentInstances.Remove(assignmentInstance);
+            }
+            else
+            {
+                assignmentInstance.PolicyPath = instanceDelegationChange.BlobStoragePolicyPath;
+                assignmentInstance.PolicyVersion = instanceDelegationChange.BlobStorageVersionId;
+                assignmentInstance.DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId;
+            }
         }
 
         await DbContext.SaveChangesAsync();
@@ -416,7 +495,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
 
                 if (assignment == null || resource == null)
                 {
-                    throw new Exception("Assignment or resource not found for given policy");
+                    throw new Exception("Assignment or resource not found for given policy  ");
                 }
 
                 var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == policy.Rules.InstanceId, cancellationToken);
