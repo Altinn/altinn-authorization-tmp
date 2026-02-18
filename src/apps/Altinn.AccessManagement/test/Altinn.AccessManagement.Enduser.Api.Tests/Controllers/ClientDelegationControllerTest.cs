@@ -49,6 +49,20 @@ public class ClientDelegationControllerTest
                     RoleId = RoleConstants.Accountant,
                 };
 
+                var forretningsforerFromOkernBrlToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationOkernBorettslag.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.BusinessManager,
+                };
+
+                var forretningsforerFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.MainUnitNordis.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.BusinessManager,
+                };
+
                 var agentFromVerdiqToPaula = new Assignment()
                 {
                     FromId = TestEntities.OrganizationVerdiqAS.Id,
@@ -90,6 +104,12 @@ public class ClientDelegationControllerTest
                     RolePackageId = rppaula.Id,
                     PackageId = PackageConstants.AccountantWithSigningRights,
                 };
+                var delegationPackageAccountantSalaryToPaula = new DelegationPackage()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    RolePackageId = rppaula.Id,
+                    PackageId = PackageConstants.AccountantSalary,
+                };
 
                 var delegationPackageAccountantWithSigningRightsToOrjan = new DelegationPackage()
                 {
@@ -100,6 +120,8 @@ public class ClientDelegationControllerTest
 
                 db.Assignments.Add(rightholderFromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(forretningsforerFromOkernBrlToVerdiq);
+                db.Assignments.Add(forretningsforerFromNordisToVerdiq);
                 db.Assignments.Add(agentFromVerdiqToPaula);
                 db.Assignments.Add(agentFromVerdiqToOrjan);
                 db.Assignments.Add(agentFromNordisToPaula);
@@ -109,6 +131,7 @@ public class ClientDelegationControllerTest
 
                 db.DelegationPackages.Add(delegationPackageAccountantWithSigningRightsToPaula);
                 db.DelegationPackages.Add(delegationPackageAccountantWithSigningRightsToOrjan);
+                db.DelegationPackages.Add(delegationPackageAccountantSalaryToPaula);
                 db.AssignmentPackages.Add(new()
                 {
                     AssignmentId = rightholderFromNordisToVerdiq.Id,
@@ -186,11 +209,16 @@ public class ClientDelegationControllerTest
             Assert.Single(verdiqClients.Access);
             var verdiqAccess = verdiqClients.Access.FirstOrDefault();
 
-            Assert.Single(verdiqAccess.Packages);
-            var verdiqClientPackages = verdiqAccess.Packages.FirstOrDefault();
+            Assert.Equal(2, verdiqAccess.Packages.Length);
+            var verdiqPackageAccountantWithSigningRights = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantWithSigningRights);
+            var verdiqPackageAccountantSalary = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantSalary);
+
+            Assert.NotNull(verdiqPackageAccountantWithSigningRights);
+            Assert.NotNull(verdiqPackageAccountantSalary);
 
             Assert.Equal(RoleConstants.Accountant.Id, verdiqAccess.Role.Id);
-            Assert.Equal(PackageConstants.AccountantWithSigningRights, verdiqClientPackages.Id);
+            Assert.Equal(PackageConstants.AccountantWithSigningRights, verdiqPackageAccountantWithSigningRights.Id);
+            Assert.Equal(PackageConstants.AccountantSalary, verdiqPackageAccountantSalary.Id);
 
             Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, verdiq.Provider.Id);
             Assert.Equal(TestEntities.OrganizationNordisAS.Id, verdiqClients.Client.Id);
@@ -224,6 +252,21 @@ public class ClientDelegationControllerTest
                     ToId = TestEntities.OrganizationVerdiqAS.Id,
                     RoleId = RoleConstants.Accountant,
                 };
+
+                var forretningsforerFromOkernBrlToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationOkernBorettslag.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.BusinessManager,
+                };
+
+                var forretningsforerNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.MainUnitNordis.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.BusinessManager,
+                };
+
                 var agentFromPaulaToNordis = new Assignment()
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
@@ -233,6 +276,8 @@ public class ClientDelegationControllerTest
 
                 db.Assignments.Add(rightholderfromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(forretningsforerFromOkernBrlToVerdiq);
+                db.Assignments.Add(forretningsforerNordisToVerdiq);
                 db.Assignments.Add(agentFromPaulaToNordis);
 
                 db.AssignmentPackages.Add(new()
@@ -340,6 +385,37 @@ public class ClientDelegationControllerTest
             Assert.Equal(PackageConstants.Customs.Id, access.Packages.First().Id);
             Assert.Equal(PackageConstants.Customs.Entity.Urn, access.Packages.First().Urn);
             Assert.Equal(PackageConstants.Customs.Entity.AreaId, access.Packages.First().AreaId);
+        }
+
+        [Fact]
+        public async Task ListClient_ForOrganizationWithForretningsforerFilter_ReturnsOk()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=forretningsforer", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
+            Assert.NotEmpty(result.Items);
+            foreach (var item in result.Items)
+            {
+                if (item.Client.Id == TestEntities.MainUnitNordis.Id)
+                {
+                    Assert.Fail("Result should not include MainUnitNordis, as no valid forretningsforer client-assignment exists. Note: unless this is changed in the future to add other packages to forretningsforer than forretningsforer-eiendom (limited to ESEK and BRL)");
+                }
+
+                Assert.NotEmpty(item.Access);
+                foreach (var role in item.Access)
+                {
+                    Assert.Equal(RoleConstants.BusinessManager.Id, role.Role.Id);
+
+                    if (item.Client.Id == TestEntities.OrganizationOkernBorettslag.Id)
+                    {
+                        Assert.Contains(PackageConstants.BusinessManagerRealEstate.Id, role.Packages.Select(p => p.Id));
+                    }
+                }
+            }
         }
     }
     #endregion
