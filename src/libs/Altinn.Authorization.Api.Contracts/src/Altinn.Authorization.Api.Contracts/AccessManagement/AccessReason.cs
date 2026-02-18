@@ -89,7 +89,7 @@ public static class AccessReasonMapping
             },
             {
                 AccessReasonFlag.ClientDelegation,
-                new("client-delegation", "Access granted via delegation")
+                new("client-delegation", "Access granted via client delegation")
             },
             {
                 AccessReasonFlag.KeyRole,
@@ -101,7 +101,7 @@ public static class AccessReasonMapping
             },
             {
                 AccessReasonFlag.Parent,
-                new("parent", "Access granted through parent/child relation")
+                new("parent", "Access granted through parent party")
             }
         };
 
