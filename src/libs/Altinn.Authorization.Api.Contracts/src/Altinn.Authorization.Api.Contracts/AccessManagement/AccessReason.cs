@@ -101,7 +101,7 @@ public static class AccessReasonMapping
             },
             {
                 AccessReasonFlag.Parent,
-                new("parent", "Access granted through parent/child relation")
+                new("parent", "Access granted through parent party")
             }
         };
 
