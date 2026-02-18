@@ -547,10 +547,11 @@ public class ConnectionsController(
                     Reason = AccessReasonFlag.Direct,
                     Permissions = rule.Permissions.Where(p => p.Reason == AccessReasonFlag.Direct).ToList()
                 };
-
                 externalResult.DirectRules.Add(rulePermission);
             }
-            else
+
+            // if the rule contains any other reason than Direct, we consider it an indirect rule and include it in the IndirectRules list
+            if (rule.Reason != AccessReasonFlag.Direct)
             {
                 RulePermission rulePermission = new RulePermission
                 {
