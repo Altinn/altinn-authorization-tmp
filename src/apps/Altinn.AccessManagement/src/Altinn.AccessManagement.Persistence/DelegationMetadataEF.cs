@@ -287,6 +287,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 RoleId = role.Id
             };
             DbContext.Assignments.Add(assignment);
+            await DbContext.SaveChangesAsync();
         }
 
         var assignmentResource = await DbContext.AssignmentResources.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id, cancellationToken);
@@ -302,11 +303,13 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 DelegationChangeId = delegationChange.DelegationChangeId,
             };
             DbContext.AssignmentResources.Add(assignmentResource);
+            await DbContext.SaveChangesAsync();
         }
 
         if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
         {
             DbContext.AssignmentResources.Remove(assignmentResource);
+            await DbContext.SaveChangesAsync();
         }
 
         await DbContext.SaveChangesAsync();
@@ -368,6 +371,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 RoleId = role.Id
             };
             DbContext.Assignments.Add(assignment);
+            await DbContext.SaveChangesAsync();
         }
 
         var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == instanceDelegationChange.InstanceId, cancellationToken);
@@ -384,11 +388,13 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
             };
             DbContext.AssignmentInstances.Add(assignmentInstance);
+            await DbContext.SaveChangesAsync();
         }
 
         if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
         {
             DbContext.AssignmentInstances.Remove(assignmentInstance);
+            await DbContext.SaveChangesAsync();
         }
 
         await DbContext.SaveChangesAsync();
@@ -407,6 +413,12 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             {
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
+
+                if (assignment == null || resource == null)
+                {
+                    throw new Exception("Assignment or resource not found for given policy");
+                }
+
                 var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == policy.Rules.InstanceId, cancellationToken);
 
                 if (assignmentInstance is null)
