@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -66,10 +68,21 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         {
                             await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();                            
-
-                            if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid))
+                            
+                            if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid) || performedByGuid == Guid.Empty)
                             {
-                                performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                                if (item.PerformedByUserId != null && item.PerformedByUserId != 0)
+                                {
+                                    IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                                    MinimalParty party = await partyService.GetByUserId(item.PerformedByUserId.Value, cancellationToken);
+                                    performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                                }
+                                else if (item.PerformedByPartyId != null && item.PerformedByPartyId != 0)
+                                {
+                                    IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                                    MinimalParty party = await partyService.GetByPartyId(item.PerformedByPartyId.Value, cancellationToken);
+                                    performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                                }
                             }
 
                             AuditValues values = new AuditValues(
@@ -183,9 +196,20 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                     var element = JsonSerializer.Deserialize<DelegationChange>(item.ErrorItem);
 
-                    if (!Guid.TryParse(element.PerformedByUuid, out Guid performedByGuid))
+                    if (!Guid.TryParse(element.PerformedByUuid, out Guid performedByGuid) || performedByGuid == Guid.Empty)
                     {
-                        performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                        if (element.PerformedByUserId != null && element.PerformedByUserId != 0)
+                        {
+                            IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                            MinimalParty party = await partyService.GetByUserId(element.PerformedByUserId.Value, cancellationToken);
+                            performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                        }
+                        else if (element.PerformedByPartyId != null && element.PerformedByPartyId != 0)
+                        {
+                            IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                            MinimalParty party = await partyService.GetByPartyId(element.PerformedByPartyId.Value, cancellationToken);
+                            performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                        }
                     }
 
                     AuditValues values = new AuditValues(
@@ -251,6 +275,16 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
 
             if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_fromid\"", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.Message.StartsWith("Resource '", StringComparison.InvariantCultureIgnoreCase) && ex.Message.EndsWith("' not found", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.Message.Equals("Audit fields are required.", StringComparison.InvariantCultureIgnoreCase))
             {
                 return true;
             }
