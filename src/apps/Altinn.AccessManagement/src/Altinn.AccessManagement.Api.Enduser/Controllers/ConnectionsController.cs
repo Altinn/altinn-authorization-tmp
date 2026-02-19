@@ -135,8 +135,6 @@ public class ConnectionsController(
 
         var toUuid = resolveResult.ToUuid;
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
@@ -169,8 +167,6 @@ public class ConnectionsController(
 
         var fromUuid = Guid.Parse(connection.From);
         var toUuid = Guid.Parse(connection.To);
-
-        //ToDo: Add scope authorization based on direction
 
         var problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, cascade, ConfigureConnections, cancellationToken);
         if (problem is { })
@@ -259,8 +255,6 @@ public class ConnectionsController(
 
         var toUuid = resolveResult.ToUuid;
 
-        //ToDo: Add scope authorization based on direction
-
         async Task<Result<AssignmentPackageDto>> AddPackage()
         {
             if (packageId.HasValue)
@@ -303,8 +297,6 @@ public class ConnectionsController(
 
         var fromUuid = Guid.Parse(connection.From);
         var toUuid = Guid.Parse(connection.To);
-
-        //ToDo: Add scope authorization based on direction
 
         async Task<ValidationProblemInstance> RemovePackage()
         {
@@ -349,8 +341,6 @@ public class ConnectionsController(
             return await ConnectionService.CheckPackage(party, packageIds, ConfigureConnections, cancellationToken);
         }
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await CheckPackage();
         if (result.IsProblem)
         {
@@ -389,8 +379,6 @@ public class ConnectionsController(
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await ConnectionService.GetRoles(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
@@ -422,8 +410,6 @@ public class ConnectionsController(
         {
             return await Task.FromResult<ValidationProblemInstance>(null); // ToDo: Implement when role service is ready
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var problem = await RemoveRole();
 
@@ -692,8 +678,6 @@ public class ConnectionsController(
         {
             return validationErrors.ToActionResult();
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var byId = AuthenticationHelper.GetPartyUuid(this.HttpContext);
         if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
