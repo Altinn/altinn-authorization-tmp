@@ -77,7 +77,7 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
 
             builder.ConfigureServices(services =>
             {
-                services.AddSingleton<RepositoryContainer>();
+                services.AddScoped<RepositoryContainer>();
             });
 
             builder.ConfigureTestServices(services =>
