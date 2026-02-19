@@ -496,7 +496,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
         {
             errorBuilder.Add(ValidationErrors.MissingAssignment, $"$QUERY/to", [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]);
         }
-    
+
         var to = entities[toId];
         if (!SupportedToTypes.Any(e => e.Id == to.TypeId))
         {
@@ -527,7 +527,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             }
 
             // check ass must exist
-            var rolePackages = await db.RolePackages.AsNoTracking().Where(rp => rp.RoleId == input.Role.Id && (rp.EntityVariantId == entities[fromId].VariantId || rp.EntityVariantId == null ) && pkgIds.Contains(rp.PackageId) ).ToListAsync(cancellationToken);
+            var rolePackages = await db.RolePackages.AsNoTracking().Where(rp => rp.RoleId == input.Role.Id && (rp.EntityVariantId == null || rp.EntityVariantId == entities[fromId].VariantId) && pkgIds.Contains(rp.PackageId)).ToListAsync(cancellationToken);
             var assignmentPackages = await db.AssignmentPackages.AsNoTracking().Where(ap => ap.AssignmentId == clientAssignment.Id && pkgIds.Contains(ap.PackageId)).ToListAsync(cancellationToken);
 
             var delegation = await db.Delegations.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == partyId, cancellationToken);
@@ -741,7 +741,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 });
             }
         }
-        
+
         // Get all delegation from client to agent via party.
         var uniqueRoleIds = inputs.Select(p => p.Role.Id).Distinct();
         var delegations = await db.Delegations
