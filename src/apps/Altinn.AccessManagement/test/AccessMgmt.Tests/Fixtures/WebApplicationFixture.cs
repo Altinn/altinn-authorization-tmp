@@ -100,9 +100,9 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
         services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
 
         services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-        services.AddSingleton<IPDP, PdpPermitMock>();
-        services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-        services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
+        services.AddScoped<IPDP, PdpPermitMock>();
+        services.AddScoped<IAltinn2RightsClient, Altinn2RightsClientMock>();
+        services.AddScoped<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
         services.AddSingleton<IDelegationChangeEventQueue>(new DelegationChangeEventQueueMock());
     }
 
