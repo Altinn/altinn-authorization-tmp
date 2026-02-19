@@ -275,12 +275,15 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     public async Task<DelegationChange> InsertDelegation(ResourceAttributeMatchType resourceMatchType, DelegationChange delegationChange, CancellationToken cancellationToken = default)
     {
         delegationChange.DelegationChangeId = delegationChange.DelegationChangeId == 0 ? 1 : delegationChange.DelegationChangeId;
+
         if (AuditAccessor.AuditValues.ChangedBySystem == SystemEntityConstants.Altinn2AddRulesApi)
         {
-            if (Guid.TryParse(delegationChange.PerformedByUuid, out var performedById))
-            {                
-                AuditAccessor.AuditValues = new AuditValues(performedById, SystemEntityConstants.Altinn2AddRulesApi);
-            }
+            var performedByValid = Guid.TryParse(delegationChange.PerformedByUuid, out var performedById);
+            var changedBy = performedByValid ? performedById : AuditAccessor.AuditValues.ChangedBy;
+            var validFrom = delegationChange.Created.HasValue ? delegationChange.Created.Value : AuditAccessor.AuditValues.ValidFrom;
+            var operationId = AuditAccessor.AuditValues.OperationId; // delegationChange.DelegationChangeId > 1 ? delegationChange.DelegationChangeId.ToString() : AuditAccessor.AuditValues.OperationId;
+
+            AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
 
         var role = delegationChange.ResourceType == "MaskinportenSchema" 
