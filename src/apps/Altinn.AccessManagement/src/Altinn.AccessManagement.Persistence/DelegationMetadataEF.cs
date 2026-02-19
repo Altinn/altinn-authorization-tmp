@@ -257,6 +257,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
 
         var result = await DbContext.AssignmentResources.AsNoTracking()
             .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Resource).ThenInclude(t => t.Type)
             .Where(t => t.Resource.RefId == resourceId)
             .Where(t => t.Assignment.FromId == from.Id)
