@@ -128,8 +128,10 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
 /// <summary>
 /// Container for the test server API and HTTP Client for sending requests 
 /// </summary>
-public class Host(WebApplicationFactory<Program> api, HttpClient client, MockContext mock)
+public class Host(WebApplicationFactory<Program> api, HttpClient client, MockContext mock) : IDisposable
 {
+    private readonly IServiceScope scope = api.Services.CreateScope();
+
     public MockContext Mock { get; set; } = mock;
 
     /// <summary>
@@ -145,5 +147,10 @@ public class Host(WebApplicationFactory<Program> api, HttpClient client, MockCon
     /// <summary>
     /// Repository Container that contains database implementation
     /// </summary>
-    public RepositoryContainer Repository => Api.Services.GetRequiredService<RepositoryContainer>();
+    public RepositoryContainer Repository => scope.ServiceProvider.GetRequiredService<RepositoryContainer>();
+
+    public void Dispose()
+    {
+        scope.Dispose();
+    }
 }
