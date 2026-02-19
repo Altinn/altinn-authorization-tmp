@@ -444,7 +444,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok();
         }
 
-        ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
         [ActionName(nameof(SingleAppRightsFeed))]
         [HttpGet("internal/singleright/appdelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -474,7 +474,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
         [ActionName(nameof(SingleResourceRightsFeed))]
         [HttpGet("internal/singleright/resourcedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -504,7 +504,7 @@ namespace Altinn.AccessManagement.Controllers
             return Ok(result);
         }
 
-        ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
         [ActionName(nameof(SingleInstanceRightsFeed))]
         [HttpGet("internal/singleright/instancedelegation/stream")]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]

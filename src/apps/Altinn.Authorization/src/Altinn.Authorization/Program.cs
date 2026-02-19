@@ -265,7 +265,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
 
     services.AddTransient<IAuthorizationHandler, ClaimAccessHandler>();
     services.AddTransient<IAuthorizationHandler, ScopeAccessHandler>();
-    ////services.AddSingleton<IAuthorizationHandler, AccessTokenHandler>();
+    services.AddSingleton<IAuthorizationHandler, AccessTokenHandler>();
 
     services.AddPlatformAccessTokenSupport(config, builder.Environment.IsDevelopment());
 

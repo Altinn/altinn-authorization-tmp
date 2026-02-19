@@ -53,10 +53,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
             
             PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
-            PerformedByUuidType = UuidType.Party,
-
-            DelegationChangeType = DelegationChangeType.Grant,
-
+            
             ToUuid = assignmentResource.Assignment.ToId,
             ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
             CoveredByPartyId = assignmentResource.Assignment.To.PartyId,
