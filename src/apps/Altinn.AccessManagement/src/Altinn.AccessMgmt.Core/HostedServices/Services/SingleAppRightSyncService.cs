@@ -4,8 +4,8 @@ using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
-using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -138,7 +138,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                         catch (Exception ex)
                         {
-                            bool addToErrorQueue = CheckIfErrorShouldBePushedToErrorQueue(ex, item, cancellationToken);
+                            bool addToErrorQueue = DelegationCheckHelper.CheckIfErrorShouldBePushedToErrorQueue(ex);
 
                             if (addToErrorQueue)
                             {
@@ -266,31 +266,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     return;
                 }
             }
-        }
-
-        private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, DelegationChange item, CancellationToken cancellationToken)
-        {
-            if (ex.Message.StartsWith("Resource '", StringComparison.InvariantCultureIgnoreCase) && ex.Message.EndsWith("' not found", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_toid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_fromid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.Message.Equals("Audit fields are required.", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        }        
     }
 }
