@@ -13,15 +13,12 @@ public class ScopeConditionAuthorizationHandler(IHttpContextAccessor accessor, I
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ScopeConditionAuthorizationRequirement requirement)
     {
-        foreach (var access in requirement.Access)
+        foreach (var access in requirement.Access.Where(condition => condition.GiveAccess(accessor)))
         {
-            if (access.GiveAccess(accessor))
+            if (scopeProvider.GetScopeStrings(context).Any(access.Scopes.Contains))
             {
-                if (scopeProvider.GetScopeStrings(context).Any(access.Scopes.Contains))
-                {
-                    context.Succeed(requirement);
-                    return Task.CompletedTask;
-                }
+                context.Succeed(requirement);
+                return Task.CompletedTask;
             }
         }
 
