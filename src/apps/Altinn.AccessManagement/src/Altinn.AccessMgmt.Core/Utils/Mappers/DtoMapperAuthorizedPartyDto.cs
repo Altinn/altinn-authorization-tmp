@@ -22,6 +22,7 @@ public partial class DtoMapper : IDtoMapper
             DateOfBirth = authorizedParty.DateOfBirth,
             PartyId = authorizedParty.PartyId,
             Type = (AuthorizedPartyTypeDto)authorizedParty.Type,
+            EmailId = authorizedParty.EmailId,
             UnitType = authorizedParty.UnitType,
             IsDeleted = authorizedParty.IsDeleted,
             OnlyHierarchyElementWithNoAccess = authorizedParty.OnlyHierarchyElementWithNoAccess,

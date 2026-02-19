@@ -204,6 +204,12 @@ module "appsettings" {
   ]
 
   feature_flags = [
+     {
+      name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
+      description = "Ignores single rights."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
     {
       name        = "AccessMgmt.Enduser.Controller.ClientDelegation"
       description = "Specifies Client Delegation should be enabled in enduser API."
@@ -249,6 +255,42 @@ module "appsettings" {
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnAdminRoleSync"
       description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync"
+      description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleResourceRightsSync"
+      description = "Specifies if the single resource right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleInstanceRightsSync"
+      description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync.FromErrorQueue"
+      description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleResourceRightsSync.FromErrorQueue"
+      description = "Specifies if the single resource right delegation should be read into the new database and connected to an assignment"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue"
+      description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
