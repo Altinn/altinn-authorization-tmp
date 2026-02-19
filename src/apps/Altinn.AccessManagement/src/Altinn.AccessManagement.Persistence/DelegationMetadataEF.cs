@@ -274,6 +274,8 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     /// <inheritdoc/>
     public async Task<DelegationChange> InsertDelegation(ResourceAttributeMatchType resourceMatchType, DelegationChange delegationChange, CancellationToken cancellationToken = default)
     {
+        delegationChange.DelegationChangeId = delegationChange.DelegationChangeId == 0 ? 1 : delegationChange.DelegationChangeId;
+
         var role = RoleConstants.Rightholder;
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
@@ -374,11 +376,13 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     {
         return new AuditValues(SystemEntityConstants.EnduserApi, SystemEntityConstants.EnduserApi);
     }
+
     private AuditValues GetAuditValues(DelegationChange change)
     {
         //OperationId: change.DelegationChangeId ?? Guid.CreateVersion7().ToString()
         return new AuditValues(Guid.Parse(change.PerformedByUuid), SystemEntityConstants.EnduserApi);
     }
+
     private AuditValues GetAuditValues(InstanceDelegationChange change)
     {
         //OperationId: change.DelegationChangeId ?? Guid.CreateVersion7().ToString()
@@ -423,6 +427,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     /// <inheritdoc />
     public async Task<InstanceDelegationChange> InsertInstanceDelegation(InstanceDelegationChange instanceDelegationChange, CancellationToken cancellationToken = default)
     {
+        instanceDelegationChange.InstanceDelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId == 0 ? 1 : instanceDelegationChange.InstanceDelegationChangeId;
         var role = RoleConstants.Rightholder;
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.FromUuid, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.ToUuid, cancellationToken);
