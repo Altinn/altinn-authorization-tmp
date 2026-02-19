@@ -46,7 +46,10 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
             OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
             
-            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
+            PerformedByUuid = assignmentResource.ChangedBy.Id.ToString(),
+            PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
+            PerformedByUserId = assignmentResource.ChangedBy.UserId,
+            PerformedByUuidType = ConvertEntityTypeToUuidType(assignmentResource.ChangedBy.TypeId),
 
             ToUuid = assignmentResource.Assignment.ToId,
             ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
@@ -119,6 +122,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
             );
     }
