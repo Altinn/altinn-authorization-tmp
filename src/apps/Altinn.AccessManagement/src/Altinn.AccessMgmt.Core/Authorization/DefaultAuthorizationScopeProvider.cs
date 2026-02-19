@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 
+namespace Altinn.AccessMgmt.Core.Authorization;
+
 /// <summary>
 /// Default implementation of <see cref="IAuthorizationScopeProvider"/> that retrieves scopes from user claims.
 /// </summary>

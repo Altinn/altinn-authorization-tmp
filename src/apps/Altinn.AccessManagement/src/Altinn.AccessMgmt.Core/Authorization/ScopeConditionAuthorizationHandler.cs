@@ -17,13 +17,10 @@ public class ScopeConditionAuthorizationHandler(IHttpContextAccessor accessor, I
         {
             if (access.GiveAccess(accessor))
             {
-                foreach (string scope in scopeProvider.GetScopeStrings(context))
+                if (scopeProvider.GetScopeStrings(context).Any(access.Scopes.Contains))
                 {
-                    if (access.Scopes.Contains(scope))
-                    {
-                        context.Succeed(requirement);
-                        return Task.CompletedTask;
-                    }
+                    context.Succeed(requirement);
+                    return Task.CompletedTask;
                 }
             }
         }
