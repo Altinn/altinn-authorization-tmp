@@ -15,6 +15,30 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         INpgsqlSingletonOptions npgsqlOptions)
         : base(dependencies, npgsqlOptions) { }
 
+    protected override void Generate(AddColumnOperation operation, IModel? model, MigrationCommandListBuilder builder, bool terminate = true)
+    {
+        base.Generate(operation, model, builder);
+        builder.EndCommand();
+
+        var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
+           et.GetTableName() == operation.Name &&
+           et.GetSchema() == operation.Schema);
+
+        GenerateScripts(entityType, model, builder);
+    }
+
+    protected override void Generate(DropColumnOperation operation, IModel? model, MigrationCommandListBuilder builder, bool terminate = true)
+    {
+        base.Generate(operation, model, builder);
+        builder.EndCommand();
+
+        var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
+           et.GetTableName() == operation.Name &&
+           et.GetSchema() == operation.Schema);
+
+        GenerateScripts(entityType, model, builder);
+    }
+
     protected override void Generate(CreateTableOperation operation, IModel? model, MigrationCommandListBuilder builder, bool terminate = true)
     {
         base.Generate(operation, model, builder, terminate);
@@ -24,62 +48,49 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             et.GetTableName() == operation.Name &&
             et.GetSchema() == operation.Schema);
 
+        GenerateScripts(entityType, model, builder);
+    }
+
+    private void GenerateScripts(IEntityType entityType, IModel model, MigrationCommandListBuilder builder)
+    {
         if (entityType?.FindAnnotation("EnableAudit")?.Value as bool? == true)
         {
-            var columns = GetDataColumnNames(operation, model);
-            
-            builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(operation.Schema, operation.Name, columns));
+            var schema = entityType.GetSchema();
+            var table = entityType.GetTableName();
+            var columns = GetDataColumnNames(model, table, schema);
+
+            builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(schema, table, columns));
             builder.EndCommand();
 
-            builder.AppendLine(GenerateAuditUpdateFunctionAndTrigger(operation.Schema, operation.Name, columns));
+            builder.AppendLine(GenerateAuditUpdateFunctionAndTrigger(schema, table, columns));
             builder.EndCommand();
 
-            builder.AppendLine(GenerateAuditDeleteFunctionAndTrigger(operation.Schema, operation.Name, columns));
+            builder.AppendLine(GenerateAuditDeleteFunctionAndTrigger(schema, table, columns));
             builder.EndCommand();
-        }
-
-        if (entityType?.FindAnnotation("EnableTranslation")?.Value as bool? == true)
-        {
-            // Find all properties with annotation "Translate"
-            // Moved to TranslationService
         }
     }
 
-    private static List<string> GetDataColumnNames(CreateTableOperation op, IModel? model)
+    private static List<string> GetDataColumnNames(IModel model, string table, string? schema)
     {
-        var cols = new List<string>();
-        if (model is null)
+        var entityType = model.GetEntityTypes()
+            .FirstOrDefault(et =>
+                et.GetTableName() == table &&
+                et.GetSchema() == schema);
+
+        if (entityType is null)
         {
-            return cols;
+            return new List<string>();
         }
 
-        var et = model.GetEntityTypes()
-            .FirstOrDefault(x => x.GetTableName() == op.Name && x.GetSchema() == op.Schema);
+        var storeObject = StoreObjectIdentifier.Table(table, schema);
 
-        if (et is null)
-        {
-            return cols;
-        }
-
-        var storeObject = StoreObjectIdentifier.Table(op.Name, op.Schema);
-
-        cols = et.GetProperties()
+        return entityType.GetProperties()
             .Select(p => p.GetColumnName(storeObject))
-            .Where(n => n != null && !n.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
+            .Where(columnName =>
+                columnName != null &&
+                !columnName.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
             .Distinct()
             .ToList()!;
-
-        // Fallback til operation.Columns hvis noe ikke var mappet:
-        if (cols.Count == 0)
-        {
-            cols = op.Columns
-                .Select(c => c.Name)
-                .Where(n => !n.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
-                .Distinct()
-                .ToList();
-        }
-
-        return cols;
     }
 
     private string GenerateAuditInsertFunctionAndTrigger(string schema, string name, List<string> columns)
@@ -114,7 +125,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     }
 
     private string GenerateAuditUpdateFunctionAndTrigger(string schema, string name, List<string> columns)
-    {        
+    {
         var sb = new StringBuilder();
 
         sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{name}_update_fn()");
