@@ -2,17 +2,19 @@
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using static Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceIdUrn;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
 /// <inheritdoc/>
-public class DelegationMetadataEF : IDelegationMetadataRepository
+public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbContext) : IDelegationMetadataRepository
 {
     private string ConvertFromAppResourceId(string resourceId)
     {
@@ -145,18 +147,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
 
     private async Task<Resource> GetResource(string resourceIdentifier, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resourceIdentifier, cancellationToken);
-    }
-
-    public AppDbContext DbContext { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DelegationMetadataEF"/> class
-    /// </summary>
-    /// <param name="dbContext">AppDbContext</param>
-    public DelegationMetadataEF(AppDbContext dbContext)
-    {
-        DbContext = dbContext;
+        return await DbContext.Resources.AsNoTracking().Include(t => t.Type).FirstOrDefaultAsync(t => t.RefId == resourceIdentifier, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -284,8 +275,18 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     public async Task<DelegationChange> InsertDelegation(ResourceAttributeMatchType resourceMatchType, DelegationChange delegationChange, CancellationToken cancellationToken = default)
     {
         delegationChange.DelegationChangeId = delegationChange.DelegationChangeId == 0 ? 1 : delegationChange.DelegationChangeId;
+        if (AuditAccessor.AuditValues.ChangedBySystem == SystemEntityConstants.Altinn2AddRulesApi)
+        {
+            if (Guid.TryParse(delegationChange.PerformedByUuid, out var performedById))
+            {                
+                AuditAccessor.AuditValues = new AuditValues(performedById, SystemEntityConstants.Altinn2AddRulesApi);
+            }
+        }
 
-        var role = RoleConstants.Rightholder;
+        var role = delegationChange.ResourceType == "MaskinportenSchema" 
+            ? RoleConstants.Supplier
+            : RoleConstants.Rightholder;
+
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
         var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == delegationChange.ResourceId, cancellationToken);
@@ -511,11 +512,14 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     {
         try
         {
-            var role = RoleConstants.Rightholder;
-
             foreach (var policy in policyWriteOutputs)
             {
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
+
+                var role = resource.Type.Name == "MaskinportenSchema"
+                    ? RoleConstants.Supplier
+                    : RoleConstants.Rightholder;
+
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
 
                 if (assignment == null || resource == null)
