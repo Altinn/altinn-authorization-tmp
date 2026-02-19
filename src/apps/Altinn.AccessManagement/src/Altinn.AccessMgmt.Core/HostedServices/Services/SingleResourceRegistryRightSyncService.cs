@@ -69,7 +69,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         {
                             await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();                            
-                            
+
                             if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid) || performedByGuid == Guid.Empty)
                             {
                                 if (item.PerformedByUserId != null && item.PerformedByUserId != 0)

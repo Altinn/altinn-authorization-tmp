@@ -60,7 +60,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             ToUuid = assignmentResource.Assignment.ToId,
             ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
             CoveredByPartyId = assignmentResource.Assignment.To.PartyId,
-            CoveredByUserId = assignmentResource.Assignment.To.UserId,            
+            CoveredByUserId = assignmentResource.Assignment.To.UserId,
         };
     }
 
