@@ -53,7 +53,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
 
     private void GenerateScripts(IEntityType entityType, IModel model, MigrationCommandListBuilder builder)
     {
-        if (entityType?.FindAnnotation("EnableAudit")?.Value as bool? == true)
+        if (entityType?.FindAnnotation(AuditExtensions.AnnotationName) != null)
         {
             var schema = entityType.GetSchema();
             var table = entityType.GetTableName();
