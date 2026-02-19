@@ -424,6 +424,17 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     public async Task<InstanceDelegationChange> InsertInstanceDelegation(InstanceDelegationChange instanceDelegationChange, CancellationToken cancellationToken = default)
     {
         instanceDelegationChange.InstanceDelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId == 0 ? 1 : instanceDelegationChange.InstanceDelegationChangeId;
+
+        if (AuditAccessor.AuditValues.ChangedBySystem == SystemEntityConstants.Altinn2AddRulesApi)
+        {
+            var performedByValid = Guid.TryParse(instanceDelegationChange.PerformedBy, out var performedById);
+            var changedBy = performedByValid ? performedById : AuditAccessor.AuditValues.ChangedBy;
+            var validFrom = instanceDelegationChange.Created.HasValue ? instanceDelegationChange.Created.Value : AuditAccessor.AuditValues.ValidFrom;
+            var operationId = AuditAccessor.AuditValues.OperationId; // delegationChange.DelegationChangeId > 1 ? delegationChange.DelegationChangeId.ToString() : AuditAccessor.AuditValues.OperationId;
+
+            AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
+        }
+
         var role = RoleConstants.Rightholder;
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.FromUuid, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.ToUuid, cancellationToken);
