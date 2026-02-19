@@ -133,7 +133,6 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
-            .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
             );
     }
