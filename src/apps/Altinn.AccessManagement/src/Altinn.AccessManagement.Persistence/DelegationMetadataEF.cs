@@ -133,6 +133,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
             );
     }
@@ -181,6 +182,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource)
+            .Include(t => t.ChangedBy)
             .Where(t => altinnAppIds.Contains(t.Resource.RefId))
             .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
             .WhereIf(coveredByPartyIds != null && coveredByPartyIds.Any(), t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value))
@@ -224,6 +226,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
         var result = await DbContext.AssignmentResources.AsNoTracking()
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.ChangedBy)
             .Where(t => resourceUuids.Contains(t.ResourceId))
             .Where(t => t.Assignment.From.PartyId.HasValue && fromPartyIds.Contains(t.Assignment.From.PartyId.Value))
             .Where(t => t.Assignment.ToId == toUuid)
@@ -260,6 +263,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
         var result = await DbContext.AssignmentResources.AsNoTracking()
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource)
+            .Include(t => t.ChangedBy)
             .Where(t => t.Resource.RefId == resourceId)
             .Where(t => t.Assignment.FromId == from.Id)
             .WhereIf(coveredByPartyId != null, t => t.Assignment.To.PartyId == coveredByPartyId)
@@ -607,6 +611,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
            .ToListAsync(cancellationToken);
@@ -621,6 +626,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value))
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
            .WhereIf(offeredByPartyIds != null && offeredByPartyIds.Any(), t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
@@ -636,6 +642,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.To.UserId.HasValue && t.Assignment.To.UserId.Value == coveredByUserId)
            .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
@@ -651,6 +658,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
            .Where(t => t.Assignment.To.PartyId.HasValue && t.Assignment.To.PartyId.Value == coveredByPartyId)
            .Where(t => resourceIds.Contains(t.Resource.RefId))
@@ -666,6 +674,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
            .ToListAsync(cancellationToken);
 
@@ -679,12 +688,14 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
           .Include(t => t.Assignment).ThenInclude(t => t.From)
           .Include(t => t.Assignment).ThenInclude(t => t.To)
           .Include(t => t.Resource)
+          .Include(t => t.ChangedBy)
           .Where(t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value));
 
         var userChanges = DbContext.AssignmentResources.AsNoTracking()
           .Include(t => t.Assignment).ThenInclude(t => t.From)
           .Include(t => t.Assignment).ThenInclude(t => t.To)
           .Include(t => t.Resource)
+          .Include(t => t.ChangedBy)
           .Where(t => t.Assignment.To.UserId.HasValue && coveredByUserIds.Contains(t.Assignment.To.UserId.Value));
 
         var result = await partyChanges.Union(userChanges).ToListAsync(cancellationToken);
