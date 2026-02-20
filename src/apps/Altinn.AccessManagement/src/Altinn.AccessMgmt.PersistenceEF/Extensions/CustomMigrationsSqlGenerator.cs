@@ -21,10 +21,16 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         builder.EndCommand();
 
         var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
-           et.GetTableName() == operation.Name &&
+           et.GetTableName() == operation.Table &&
            et.GetSchema() == operation.Schema);
 
-        GenerateScripts(entityType, model, builder);
+        var columns = GetDataColumnNames(
+        model,
+        operation.Table,
+        operation.Schema,
+        addedColumn: operation.Name);
+
+        GenerateScripts(entityType, model, builder, columns);
     }
 
     protected override void Generate(DropColumnOperation operation, IModel? model, MigrationCommandListBuilder builder, bool terminate = true)
@@ -33,10 +39,66 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         builder.EndCommand();
 
         var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
-           et.GetTableName() == operation.Name &&
+           et.GetTableName() == operation.Table &&
            et.GetSchema() == operation.Schema);
 
-        GenerateScripts(entityType, model, builder);
+        var columns = GetDataColumnNames(
+        model,
+        operation.Table,
+        operation.Schema,
+        removedColumn: operation.Name);
+
+        GenerateScripts(entityType, model, builder, columns);
+    }
+
+    protected override void Generate(AlterColumnOperation operation, IModel? model, MigrationCommandListBuilder builder)
+    {
+        base.Generate(operation, model, builder);
+        builder.EndCommand();
+
+        var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
+           et.GetTableName() == operation.Table &&
+           et.GetSchema() == operation.Schema);
+
+        var columns = GetDataColumnNames(
+        model,
+        operation.Table,
+        operation.Schema);
+
+        GenerateScripts(entityType, model, builder, columns);
+    }
+
+    protected override void Generate(
+    RenameColumnOperation operation,
+    IModel? model,
+    MigrationCommandListBuilder builder)
+    {
+        base.Generate(operation, model, builder);
+        builder.EndCommand();
+
+        if (model is null)
+        {
+            return;
+        }
+
+        var entityType = model.GetEntityTypes()
+            .FirstOrDefault(et =>
+                et.GetTableName() == operation.Table &&
+                et.GetSchema() == operation.Schema);
+
+        if (entityType == null)
+        {
+            return;
+        }
+
+        var columns = GetDataColumnNames(
+            model,
+            operation.Table,
+            operation.Schema,
+            addedColumn: operation.NewName,
+            removedColumn: operation.Name);
+
+        GenerateScripts(entityType, model, builder, columns);
     }
 
     protected override void Generate(CreateTableOperation operation, IModel? model, MigrationCommandListBuilder builder, bool terminate = true)
@@ -48,16 +110,59 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             et.GetTableName() == operation.Name &&
             et.GetSchema() == operation.Schema);
 
-        GenerateScripts(entityType, model, builder);
+        var columns = GetDataColumnNames(operation);
+
+        GenerateScripts(entityType, model, builder, columns);
     }
 
-    private void GenerateScripts(IEntityType entityType, IModel model, MigrationCommandListBuilder builder)
+    protected override void Generate(
+    AlterDatabaseOperation operation,
+    IModel? model,
+    MigrationCommandListBuilder builder)
     {
+        base.Generate(operation, model, builder);
+        builder.EndCommand();
+
+        if (model is null)
+        {
+            return;
+        }
+
+        foreach (var entityType in model.GetEntityTypes())
+        {
+            if (entityType.FindAnnotation(AuditExtensions.AnnotationName) == null)
+            {
+                continue;
+            }
+
+            var table = entityType.GetTableName();
+            var schema = entityType.GetSchema();
+
+            var columns = GetDataColumnNames(
+                model,
+                table,
+                schema);
+
+            GenerateScripts(entityType, model, builder, columns);
+        }
+    }
+
+    private void GenerateScripts(IEntityType? entityType, IModel model, MigrationCommandListBuilder builder, List<string> columns)
+    {
+        if (entityType == null)
+        {
+            return;
+        }
+
+        if (columns == null || columns.Count == 0)
+        {
+            return;
+        }
+
         if (entityType?.FindAnnotation(AuditExtensions.AnnotationName) != null)
         {
             var schema = entityType.GetSchema();
             var table = entityType.GetTableName();
-            var columns = GetDataColumnNames(model, table, schema);
 
             builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(schema, table, columns));
             builder.EndCommand();
@@ -70,8 +175,32 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         }
     }
 
-    private static List<string> GetDataColumnNames(IModel model, string table, string? schema)
+    private static List<string> GetDataColumnNames(CreateTableOperation operation)
     {
+        var columns = new List<string>();
+        foreach (var column in operation.Columns)
+        {
+            if (!column.Name.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
+            {
+                columns.Add(column.Name);
+            }
+        }
+
+        return columns;
+    }
+
+    private static List<string> GetDataColumnNames(
+    IModel? model,
+    string table,
+    string? schema,
+    string? addedColumn = null,
+    string? removedColumn = null)
+    {
+        if (model == null)
+        {
+            return null;
+        }
+
         var entityType = model.GetEntityTypes()
             .FirstOrDefault(et =>
                 et.GetTableName() == table &&
@@ -79,18 +208,29 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
 
         if (entityType is null)
         {
-            return new List<string>();
+            return new();
         }
 
         var storeObject = StoreObjectIdentifier.Table(table, schema);
 
-        return entityType.GetProperties()
+        var columns = entityType.GetProperties()
             .Select(p => p.GetColumnName(storeObject))
-            .Where(columnName =>
-                columnName != null &&
-                !columnName.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
-            .Distinct()
+            .Where(n =>
+                n != null &&
+                !n.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
             .ToList()!;
+
+        if (addedColumn != null && !columns.Contains(addedColumn))
+        {
+            columns.Add(addedColumn);
+        }
+
+        if (removedColumn != null)
+        {
+            columns.Remove(removedColumn);
+        }
+
+        return columns.Distinct().ToList();
     }
 
     private string GenerateAuditInsertFunctionAndTrigger(string schema, string name, List<string> columns)
