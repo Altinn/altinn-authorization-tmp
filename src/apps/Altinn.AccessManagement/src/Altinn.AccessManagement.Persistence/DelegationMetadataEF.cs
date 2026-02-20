@@ -57,12 +57,10 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
             OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
             
-            //PerformedByUuid = assignmentResource.ChangedBy.Id.ToString(),
+            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
             PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
             PerformedByUserId = assignmentResource.ChangedBy.UserId,
-            //PerformedByUuidType = ConvertEntityTypeToUuidType(assignmentResource.ChangedBy.TypeId),
-            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
-            PerformedByUuidType = UuidType.Party,
+            PerformedByUuidType = ConvertEntityTypeToUuidType(assignmentResource.ChangedBy.TypeId),
 
             DelegationChangeType = DelegationChangeType.Grant,
 
