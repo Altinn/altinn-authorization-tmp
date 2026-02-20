@@ -44,18 +44,23 @@ namespace Altinn.AccessManagement.Models
                 Type = RightsQueryType.User,
                 From = mapper.Map<List<AttributeMatch>>(From),
                 To = mapper.Map<List<AttributeMatch>>(To),
-                Resource = new ServiceResource
-                {
-                    Identifier = GetResourceIdentifier(Resource),
-                    AuthorizationReference = mapper.Map<List<AttributeMatch>>(Resource)
-                }
+                Resource = GetResource(Resource, mapper)
             };
         }
 
-        private static string GetResourceIdentifier(List<AttributeMatchExternal> resource)
+        private ServiceResource GetResource(List<AttributeMatchExternal> resource, IMapper mapper)
         {
-            return resource.Find(r => r.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute)?.Value ??
+            var id = resource.Find(r => r.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute)?.Value ??
                 $"app_{resource.Find(r => r.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value}_{resource.Find(r => r.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute)?.Value}";
+
+            var serviceResource = new ServiceResource
+            {
+                Identifier = id,
+                ResourceType = id.StartsWith("app_") ? ResourceType.AltinnApp : ResourceType.Default,
+                AuthorizationReference = mapper.Map<List<AttributeMatch>>(resource)
+            };
+
+            return serviceResource;
         }
     }
 }
