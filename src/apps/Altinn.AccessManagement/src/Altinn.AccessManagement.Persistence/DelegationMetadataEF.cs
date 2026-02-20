@@ -292,7 +292,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         var resource = await DbContext.Resources.AsNoTracking().Include(t => t.Type).SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
 
         var role = RoleConstants.Rightholder;
-        if (delegationChange.ResourceType == "MaskinportenSchema" || resource.Type.Name == "MaskinportenSchema")
+        if (resource.Type.Name == "MaskinportenSchema")
         {
             role = RoleConstants.Supplier;
         }
