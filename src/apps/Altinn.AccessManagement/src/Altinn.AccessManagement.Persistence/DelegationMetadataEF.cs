@@ -289,8 +289,10 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
 
+        var resource = await DbContext.Resources.AsNoTracking().Include(t => t.Type).SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
+
         var role = RoleConstants.Rightholder;
-        if (delegationChange.ResourceType == "MaskinportenSchema")
+        if (delegationChange.ResourceType == "MaskinportenSchema" || resource.Type.Name == "MaskinportenSchema")
         {
             role = RoleConstants.Supplier;
         }
@@ -299,7 +301,6 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         var to = delegationChange.CoveredByUserId.HasValue ?
             await DbContext.Entities.AsNoTracking().SingleAsync(t => t.UserId == delegationChange.CoveredByUserId, cancellationToken) :
             await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
-        var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
 
         var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == from.Id && t.ToId == to.Id && t.RoleId == role.Id, cancellationToken);
         if (assignment == null)
