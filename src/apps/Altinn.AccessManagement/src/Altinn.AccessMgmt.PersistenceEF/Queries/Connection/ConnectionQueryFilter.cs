@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
 /// <summary>
 /// Represents a filter for querying connections based on various criteria.
@@ -36,7 +38,7 @@ public sealed class ConnectionQueryFilter
     /// <summary>
     /// Gets the collection of role identifiers.
     /// </summary>
-    public IReadOnlyCollection<Guid> ExcludeRoleIds { get; init; }
+    public IReadOnlyCollection<Guid> ExcludeRoleIds { get; init; } = [RoleConstants.Supplier];
 
     /// <summary>
     /// Gets the collection of package identifiers.
