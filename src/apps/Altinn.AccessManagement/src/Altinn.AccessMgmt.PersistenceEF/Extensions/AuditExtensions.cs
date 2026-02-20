@@ -16,7 +16,7 @@ public static class AuditExtensions
         builder.Property("ValidFrom").HasColumnName("audit_validfrom");
         */
 
-        builder.HasAnnotation(AnnotationName, AuditConfiguration.Version);
+        builder.HasAnnotation(AnnotationName, AuditEFConfiguration.Version);
 
         return builder;
     }
@@ -27,10 +27,10 @@ public static class AuditExtensions
     }
 }
 
-public static class AuditConfiguration
+public static class AuditEFConfiguration
 {
     /// <summary>
     /// Increment this when audit SQL changes
     /// </summary>
-    public const int Version = 1;
+    public const int Version = 3;
 }
