@@ -12,6 +12,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Configurations
             builder.ToDefaultTable();
 
             builder.HasKey(p => p.Id);
+
+            builder.HasIndex(p => new { p.DelegationChangeId, p.OriginType })
+                .IsUnique();
         }
     }
 }

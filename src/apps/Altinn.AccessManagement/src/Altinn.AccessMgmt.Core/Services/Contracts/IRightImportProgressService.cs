@@ -24,8 +24,9 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         /// </summary>
         /// <param name="delegationChangeId">The identificator unique for the delegation change inside the same origin</param>
         /// <param name="originType">the origin (ResourceRegistry, App or Instanse</param>
+        /// <param name="audit">required to call Savechanges not used</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns></returns>
-        Task<bool> MarkImportAsProcessed(long delegationChangeId, string originType, CancellationToken cancellationToken);
+        Task<bool> MarkImportAsProcessed(long delegationChangeId, string originType, AuditValues audit, CancellationToken cancellationToken);
     }
 }

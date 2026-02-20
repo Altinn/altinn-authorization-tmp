@@ -41,8 +41,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public async Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken)
         {
-            var leaseData = await lease.Get<SingleAppRightLease>(cancellationToken);
-            var singleResourceRightDelegations = await _singleRights.StreamResourceRegistryRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
+            var leaseData = await lease.Get<SingleInstanceRightLease>(cancellationToken);
+            var singleResourceRightDelegations = await _singleRights.StreamResourceRegistryRightDelegations(leaseData.SingleInstanceRightStreamNextPageLink, cancellationToken);
 
             await foreach (var page in singleResourceRightDelegations)
             {
@@ -139,7 +139,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 }
                             }
 
-                            await rightImportProgressService.MarkImportAsProcessed(item.ResourceRegistryDelegationChangeId, "ResourceRegistry", cancellationToken);
+                            await rightImportProgressService.MarkImportAsProcessed(item.ResourceRegistryDelegationChangeId, "ResourceRegistry", values, cancellationToken);
                         }
                         catch (OperationCanceledException)
                         {
@@ -185,7 +185,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     return;
                 }
 
-                await lease.Update<SingleAppRightLease>(d => d.SingleAppRightStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+                await lease.Update<SingleInstanceRightLease>(d => d.SingleInstanceRightStreamNextPageLink = page.Content.Links.Next, cancellationToken);
             }            
         }
 

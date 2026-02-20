@@ -139,7 +139,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 }
                             }
 
-                            await rightImportProgressService.MarkImportAsProcessed(item.DelegationChangeId, "App", cancellationToken);
+                            await rightImportProgressService.MarkImportAsProcessed(item.DelegationChangeId, "App", values, cancellationToken);
                         }
                         catch (OperationCanceledException)
                         {
