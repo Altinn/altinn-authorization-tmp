@@ -16,6 +16,7 @@ public static class AuditExtensions
         builder.Property("ValidFrom").HasColumnName("audit_validfrom");
         */
 
+        // Use this to regenerate all audit functions and triggers in the database.
         builder.HasAnnotation(AnnotationName, AuditEFConfiguration.Version);
 
         return builder;
