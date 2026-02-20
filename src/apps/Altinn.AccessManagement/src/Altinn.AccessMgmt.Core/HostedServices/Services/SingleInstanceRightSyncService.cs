@@ -66,6 +66,13 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         {
                             await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+                            IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
+
+                            bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.InstanceDelegationChangeId, "Instance", cancellationToken);
+                            if (alreadyProcessed)
+                            {
+                                continue;
+                            }
 
                             if (!Guid.TryParse(item.PerformedBy, out Guid performedByGuid))
                             {
@@ -121,6 +128,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                         item.InstanceId);
                                 }
                             }
+
+                            await rightImportProgressService.MarkImportAsProcessed(item.InstanceDelegationChangeId, "Instance", cancellationToken);
                         }
                         catch (OperationCanceledException)
                         {
