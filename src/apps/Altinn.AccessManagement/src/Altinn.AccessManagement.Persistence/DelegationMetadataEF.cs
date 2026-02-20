@@ -289,9 +289,11 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
 
-        var role = delegationChange.ResourceType == "MaskinportenSchema" 
-            ? RoleConstants.Supplier
-            : RoleConstants.Rightholder;
+        var role = RoleConstants.Rightholder;
+        if (delegationChange.ResourceType == "MaskinportenSchema")
+        {
+            role = RoleConstants.Supplier;
+        }
 
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
         var to = delegationChange.CoveredByUserId.HasValue ?
