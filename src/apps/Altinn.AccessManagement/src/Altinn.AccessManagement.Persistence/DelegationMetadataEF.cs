@@ -22,11 +22,15 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         return resourceId.Replace("app_", string.Empty).Replace('_', '/');
     }
 
-    private string ConvertToAppResourceId(Resource resource)
+    private string CheckAndConvertIfAppResourceId(string delegationChangeResourceId)
     {
-        // TODO: Verify
-        //// skattemelding => app_skd_skattemelding
-        return $"app_{resource.Provider.Code}_{resource.RefId}";
+        var resourceParts = delegationChangeResourceId.Split("/");
+        if (resourceParts.Length == 2)
+        {
+            return $"app_{resourceParts[0]}_{resourceParts[1]}";
+        }
+
+        return delegationChangeResourceId;
     }
 
     private DelegationChange Convert(AssignmentResource assignmentResource)
@@ -293,7 +297,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         var to = delegationChange.CoveredByUserId.HasValue ?
             await DbContext.Entities.AsNoTracking().SingleAsync(t => t.UserId == delegationChange.CoveredByUserId, cancellationToken) :
             await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
-        var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == delegationChange.ResourceId, cancellationToken);
+        var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
 
         var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == from.Id && t.ToId == to.Id && t.RoleId == role.Id, cancellationToken);
         if (assignment == null)
