@@ -177,20 +177,6 @@ public static class BuilderExtensions
         return builder;
     }
 
-    public static EntityTypeBuilder<T> EnableAudit<T>(this EntityTypeBuilder<T> builder, bool includeChangedByEntity = false) where T : BaseAudit
-    {
-        /*
-        builder.Property("ChangedBy").HasColumnName("audit_changedby");
-        builder.Property("ChangedBySystem").HasColumnName("audit_changedbysystem");
-        builder.Property("ChangeOperation").HasColumnName("audit_changeoperation");
-        builder.Property("ValidFrom").HasColumnName("audit_validfrom");
-        */
-
-        builder.Property(x => x.Audit_ChangedBy).HasColumnName("audit_changedby");
-
-        return builder.HasAnnotation("EnableAudit", true);
-    }
-
     public static EntityTypeBuilder<T> ConfigureAsView<T>(
         this EntityTypeBuilder<T> builder,
         string viewName,
