@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
@@ -1868,9 +1868,9 @@ internal class AssignmentResourceQueryResult
 
     internal Entity Via { get; set; }
 
-    internal PersistenceEF.Models.Role ViaRole { get; set; }
+    internal Role ViaRole { get; set; }
 
-    internal PersistenceEF.Models.Role Role { get; set; }
+    internal Role Role { get; set; }
 
     internal string PolicyPath { get; set; }
 

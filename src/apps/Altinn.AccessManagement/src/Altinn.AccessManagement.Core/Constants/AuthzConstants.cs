@@ -41,6 +41,11 @@
         public const string POLICY_ACCESS_MANAGEMENT_READ = "AccessManagementRead";
 
         /// <summary>
+        /// Policy tag for writing access management delegations
+        /// </summary>
+        public const string POLICY_ACCESS_MANAGEMENT_WRITE = "AccessManagementWrite";
+
+        /// <summary>
         /// Policy tag for reading enduser access management information for the authorized party
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH = "AccessManagementEndUserReadOrAuthorizedParty";
@@ -54,11 +59,6 @@
         /// Policy tag for reading enduser access management information
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE = "AccessManagementEndUserWrite";
-
-        /// <summary>
-        /// Policy tag for writing access management delegations
-        /// </summary>
-        public const string POLICY_ACCESS_MANAGEMENT_WRITE = "AccessManagementWrite";
 
         /// <summary>
         /// Policy tag for scope authorization on the proxy API from Altinn II for the maskinporten integration API
@@ -106,6 +106,16 @@
         public const string POLICY_CONSENTREQUEST_READ = "CONSENTREQUEST_READ";
 
         /// <summary>
+        /// Policy tag for authorizing enduser connections API read access
+        /// </summary>
+        public const string POLICY_ENDUSER_CONNECTIONS_READ = "ENDUSER_CONNECTIONS_READ";
+
+        /// <summary>
+        /// Policy tag for authorizing enduser connections API write access
+        /// </summary>
+        public const string POLICY_ENDUSER_CONNECTIONS_WRITE = "ENDUSER_CONNECTIONS_WRITE";
+
+        /// <summary>
         /// Portal enduser scope giving access to most of the end user APIs
         /// </summary>
         public const string SCOPE_PORTAL_ENDUSER = "altinn:portal/enduser";
@@ -129,6 +139,26 @@
         /// Client-Administration Write enduser scope giving access to write operations on behalf of Client-Administrators
         /// </summary>
         public const string SCOPE_ENDUSER_CLIENTDELEGATION_WRITE = "altinn:clientdelegations.write";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on received connections aka from others
+        /// </summary>
+        public const string SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ = "altinn:accmgmt/enduser:connections:from-others.read";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations on received connections aka from others
+        /// </summary>
+        public const string SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE = "altinn:accmgmt/enduser:connections:from-others.write";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on provided connections aka to others
+        /// </summary>
+        public const string SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ = "altinn:accmgmt/enduser:connections:to-others.read";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations on provided connections aka to others
+        /// </summary>
+        public const string SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE = "altinn:accmgmt/enduser:connections:to-others.write";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
