@@ -2,11 +2,8 @@
 using System.Diagnostics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Helpers;
-using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Party;
@@ -239,7 +236,7 @@ public partial class ConnectionService(
         return DtoMapper.ConvertResources(resources);
     }
 
-    public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, List<string> ruleKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, IEnumerable<string> ruleKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, ConfigureConnections, cancellationToken);
         if (canDelegate.IsProblem)
@@ -255,7 +252,7 @@ public partial class ConnectionService(
             }
         }
 
-        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys, by, ignoreExistingPolicy: true, cancellationToken: cancellationToken);
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.ToList(), by, ignoreExistingPolicy: true, cancellationToken: cancellationToken);
 
         if (!result.All(r => r.CreatedSuccessfully))
         {
@@ -314,7 +311,6 @@ public partial class ConnectionService(
         
         var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, cancellationToken);
         existingAssignmentResources.PolicyVersion = newVersion;
-        await dbContext.SaveChangesAsync(cancellationToken);
 
         dbContext.Remove(existingAssignmentResources);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -1037,7 +1033,7 @@ public partial class ConnectionService(
             return canDelegate.Problem;
         }
 
-        foreach (var ruleKey in ruleKeys.RuleKeys)
+        foreach (var ruleKey in ruleKeys.DirectRuleKeys)
         {
             if (!canDelegate.Value.Rules.Any(a => a.Rule.Key == ruleKey && a.Result))
             {
@@ -1045,7 +1041,7 @@ public partial class ConnectionService(
             }
         }
 
-        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.RuleKeys.ToList(), by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, ruleKeys.DirectRuleKeys.ToList(), by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
 
         if (!result.All(r => r.CreatedSuccessfully))
         {
@@ -1644,7 +1640,11 @@ public partial class ConnectionService
                 Rules = new List<RulePermission>()
             };
 
-            var resourcePolicy = await policyRetrievalPoint.GetPolicyAsync(resource.RefId, cancellationToken);
+            bool isApp = DelegationCheckHelper.IsAppResourceId(resource.RefId, out string org, out string app);
+            var resourcePolicy = isApp ? 
+                await policyRetrievalPoint.GetPolicyAsync(org, app, cancellationToken) :
+                await policyRetrievalPoint.GetPolicyAsync(resource.RefId, cancellationToken);
+
             var validRuleActions = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateActionKey(t, resource.RefId));
 
             foreach (var assignmentResource in res)

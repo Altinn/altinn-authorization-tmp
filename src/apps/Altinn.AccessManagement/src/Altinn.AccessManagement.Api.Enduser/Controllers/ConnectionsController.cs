@@ -3,12 +3,12 @@ using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -507,7 +507,7 @@ public class ConnectionsController(
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        var resourceObj = await resourceService.GetResource(resource, cancellationToken) ?? null;
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
             return NotFound($"Resource '{resource}' not found.");
@@ -531,15 +531,36 @@ public class ConnectionsController(
 
         var externalResult = new ExternalResourceRuleDto
         {
-            Resource = new ResourceDto
-            {
-                Id = resourceObj.Id,
-                Name = resourceObj.Name,
-                Description = resourceObj.Description
-            },
-            DirectRules = result.Rules.Where(t => t.Reason.Equals(AccessReasonFlag.Direct)).ToList(),
-            IndirectRules = result.Rules.Where(t => !t.Reason.Equals(AccessReasonFlag.Direct)).ToList(),
+            Resource = DtoMapper.Convert(resourceObj),
+            DirectRules = [],
+            IndirectRules = []
         };
+
+        foreach (var rule in result?.Rules ?? [])
+        {
+            if (rule.Reason.Contains(AccessReasonFlag.Direct))
+            {
+                RulePermission rulePermission = new RulePermission
+                {
+                    Rule = rule.Rule,
+                    Reason = AccessReasonFlag.Direct,
+                    Permissions = rule.Permissions.Where(p => p.Reason == AccessReasonFlag.Direct).ToList()
+                };
+                externalResult.DirectRules.Add(rulePermission);
+            }
+
+            // if the rule contains any other reason than Direct, we consider it an indirect rule and include it in the IndirectRules list
+            if (rule.Reason != AccessReasonFlag.Direct)
+            {
+                RulePermission rulePermission = new RulePermission
+                {
+                    Rule = rule.Rule,
+                    Reason = rule.Reason & ~AccessReasonFlag.Direct, // Remove Direct flag from reason for indirect rules
+                    Permissions = rule.Permissions.Where(p => p.Reason != AccessReasonFlag.Direct).ToList()
+                };
+                externalResult.IndirectRules.Add(rulePermission);
+            }
+        }
 
         return Ok(externalResult);
     }
@@ -597,7 +618,7 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status500InternalServerError, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> UpdateResourceRules([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] ExternalResourceRuleUpdateDto updateDto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdateResourceRules([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] RuleKeyListDto updateDto, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
 

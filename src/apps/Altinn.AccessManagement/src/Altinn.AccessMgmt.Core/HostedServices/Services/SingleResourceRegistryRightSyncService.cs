@@ -1,8 +1,11 @@
 ﻿using System.Text.Json;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -38,8 +41,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public async Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken)
         {
-            var leaseData = await lease.Get<SingleAppRightLease>(cancellationToken);
-            var singleResourceRightDelegations = await _singleRights.StreamResourceRegistryRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
+            var leaseData = await lease.Get<SingleResourceRegistryRightLease>(cancellationToken);
+            var singleResourceRightDelegations = await _singleRights.StreamResourceRegistryRightDelegations(leaseData.SingleResourceRegistryRightStreamNextPageLink, cancellationToken);
 
             await foreach (var page in singleResourceRightDelegations)
             {
@@ -66,10 +69,28 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         {
                             await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();                            
+                            IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
 
-                            if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid))
+                            bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.ResourceRegistryDelegationChangeId, "ResourceRegistry", cancellationToken);
+                            if (alreadyProcessed)
                             {
-                                performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                                continue;
+                            }
+
+                            if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid) || performedByGuid == Guid.Empty)
+                            {
+                                if (item.PerformedByUserId != null && item.PerformedByUserId != 0)
+                                {
+                                    IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                                    MinimalParty party = await partyService.GetByUserId(item.PerformedByUserId.Value, cancellationToken);
+                                    performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                                }
+                                else if (item.PerformedByPartyId != null && item.PerformedByPartyId != 0)
+                                {
+                                    IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                                    MinimalParty party = await partyService.GetByPartyId(item.PerformedByPartyId.Value, cancellationToken);
+                                    performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                                }
                             }
 
                             AuditValues values = new AuditValues(
@@ -117,6 +138,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                         item.ResourceId);
                                 }
                             }
+
+                            await rightImportProgressService.MarkImportAsProcessed(item.ResourceRegistryDelegationChangeId, "ResourceRegistry", values, cancellationToken);
                         }
                         catch (OperationCanceledException)
                         {
@@ -124,7 +147,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                         catch (Exception ex)
                         {
-                            bool addToErrorQueue = CheckIfErrorShouldBePushedToErrorQueue(ex, item, cancellationToken);
+                            bool addToErrorQueue = DelegationCheckHelper.CheckIfErrorShouldBePushedToErrorQueue(ex);
 
                             if (addToErrorQueue)
                             {
@@ -162,7 +185,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     return;
                 }
 
-                await lease.Update<SingleAppRightLease>(d => d.SingleAppRightStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+                await lease.Update<SingleResourceRegistryRightLease>(d => d.SingleResourceRegistryRightStreamNextPageLink = page.Content.Links.Next, cancellationToken);
             }            
         }
 
@@ -183,9 +206,20 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                     var element = JsonSerializer.Deserialize<DelegationChange>(item.ErrorItem);
 
-                    if (!Guid.TryParse(element.PerformedByUuid, out Guid performedByGuid))
+                    if (!Guid.TryParse(element.PerformedByUuid, out Guid performedByGuid) || performedByGuid == Guid.Empty)
                     {
-                        performedByGuid = SystemEntityConstants.SingleRightImportSystem.Id;
+                        if (element.PerformedByUserId != null && element.PerformedByUserId != 0)
+                        {
+                            IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                            MinimalParty party = await partyService.GetByUserId(element.PerformedByUserId.Value, cancellationToken);
+                            performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                        }
+                        else if (element.PerformedByPartyId != null && element.PerformedByPartyId != 0)
+                        {
+                            IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                            MinimalParty party = await partyService.GetByPartyId(element.PerformedByPartyId.Value, cancellationToken);
+                            performedByGuid = party?.PartyUuid ?? Guid.Empty;
+                        }
                     }
 
                     AuditValues values = new AuditValues(
@@ -241,21 +275,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     return;
                 }                
             }
-        }
-
-        private bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex, DelegationChange item, CancellationToken cancellationToken)
-        {
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_toid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_fromid\"", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
         }
     }
 }

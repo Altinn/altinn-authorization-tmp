@@ -204,6 +204,12 @@ module "appsettings" {
   ]
 
   feature_flags = [
+     {
+      name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
+      description = "Ignores single rights."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
     {
       name        = "AccessMgmt.Enduser.Controller.ClientDelegation"
       description = "Specifies Client Delegation should be enabled in enduser API."
@@ -269,7 +275,7 @@ module "appsettings" {
       description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"
       value       = false
-    },    
+    },
     {
       name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync.FromErrorQueue"
       description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
@@ -287,7 +293,7 @@ module "appsettings" {
       description = "Specifies if the single instance right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"
       value       = false
-    },    
+    },
     {
       name        = "AccessManagement.HostedServices.ResourceRegistrySync"
       description = "Specifies if the resource register data should streamed from resource register service to access management database."

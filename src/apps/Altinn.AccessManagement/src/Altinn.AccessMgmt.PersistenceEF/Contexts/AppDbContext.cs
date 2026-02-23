@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -76,6 +77,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     
     public DbSet<ErrorQueue> ErrorQueue => Set<ErrorQueue>();
 
+    public DbSet<RightImportProgress> RightImportProgress => Set<RightImportProgress>();
+
     #endregion
 
     #region Audit
@@ -140,6 +143,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ApplyConfiguration(modelBuilder);
         ApplyViewConfiguration(modelBuilder);
         modelBuilder.UseLowerCaseNamingConvention();
+        modelBuilder.HasAnnotation(AuditExtensions.AnnotationName, AuditEFConfiguration.Version);
     }
 
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
@@ -221,6 +225,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RequestAssignmentPackage>(new RequestAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentResource>(new RequestAssignmentResourceConfiguration());
         modelBuilder.ApplyConfiguration<ErrorQueue>(new ErrorQueueConfiguration());
+        modelBuilder.ApplyConfiguration<RightImportProgress>(new RightImportProgressConfiguration());
     }
 
     #region Extensions
