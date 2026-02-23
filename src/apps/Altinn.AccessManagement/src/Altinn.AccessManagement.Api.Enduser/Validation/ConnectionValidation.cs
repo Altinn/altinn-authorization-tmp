@@ -27,7 +27,8 @@ internal static class ConnectionValidation
             ParameterValidation.Party(party),
             ParameterValidation.PartyFrom(from),
             ParameterValidation.PartyTo(to),
-            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+            ConnectionCombinationRules.PartyEqualsFrom(party, from),
+            ConnectionCombinationRules.FromAndToMustBeDifferent(from, to)
         );
 
     /// <summary>
@@ -58,7 +59,8 @@ internal static class ConnectionValidation
             ParameterValidation.PartyFrom(from),
             ParameterValidation.PartyTo(to),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
-            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+            ConnectionCombinationRules.PartyEqualsFrom(party, from),
+            ConnectionCombinationRules.FromAndToMustBeDifferent(from, to)
         );
 
     /// <summary>
@@ -104,7 +106,8 @@ internal static class ConnectionValidation
             ParameterValidation.Party(party),
             ParameterValidation.PartyFrom(from),
             ParameterValidation.PartyTo(to),
-            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+            ConnectionCombinationRules.PartyEqualsFrom(party, from),
+            ConnectionCombinationRules.FromAndToMustBeDifferent(from, to)
         );
 
     /// <summary>
