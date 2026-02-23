@@ -35,6 +35,7 @@ provider "registry.terraform.io/tiwood/static" {
   version     = "0.1.0"
   constraints = "0.1.0"
   hashes = [
+    "h1:5JaRKiUnip+l7YzQCfo7aENBSJrCkCPG/nKSe4IT8ks=",
     "h1:PDOZMt4yZC+9z51qiUsXm9x368v0oYIT2UGTzK6EWR4=",
     "zh:032b6b69dbab44c75fe503ee67495cf2c1957b59c1d295a096e2aaeeca782c5c",
     "zh:1cdad7da12922fda82b160128258999e1867f5cf591fde9e89b280751b12ed71",
