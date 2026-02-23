@@ -163,7 +163,7 @@ internal static class ConnectionCombinationRules
         {
             foreach (var failedRule in failedRules)
             {
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"/ruleKeys/{failedRule}", [new("ruleKey", ValidationErrorMessageTexts.NotAuthorizedToDelegateRules)]);
+                errors.Add(ValidationErrors.UserNotAuthorized, $"$BODY/directRuleKeys/{failedRule}", [new("ruleKey", ValidationErrorMessageTexts.NotAuthorizedToDelegateRule)]);
             }
         };
     };
