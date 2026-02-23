@@ -24,11 +24,11 @@ public class ConnectionsControllerTest
     #region GET accessmanagement/api/v1/enduser/connections
 
     /// <summary>
-    /// <see cref="ConnectionsController."
+    /// <see cref="ConnectionsController.GetConnections(AccessManagement.Api.Enduser.Models.ConnectionInput, AccessManagement.Api.Enduser.Models.PagingInput, bool, bool, CancellationToken)"
     /// </summary>
-    public class GetMyClients : IClassFixture<ApiFixture>
+    public class GetConnections : IClassFixture<ApiFixture>
     {
-        public GetMyClients(ApiFixture fixture)
+        public GetConnections(ApiFixture fixture)
         {
             Fixture = fixture;
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
