@@ -582,6 +582,7 @@ public class ConnectionsController(
     /// </summary>
     [HttpPost("resources/rules")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]

@@ -7,9 +7,8 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
-using static Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceIdUrn;
+using ResourceRegistryResourceType = Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
@@ -23,11 +22,15 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         return resourceId.Replace("app_", string.Empty).Replace('_', '/');
     }
 
-    private string ConvertToAppResourceId(Resource resource)
+    private string CheckAndConvertIfAppResourceId(string delegationChangeResourceId)
     {
-        // TODO: Verify
-        //// skattemelding => app_skd_skattemelding
-        return $"app_{resource.Provider.Code}_{resource.RefId}";
+        var resourceParts = delegationChangeResourceId.Split("/");
+        if (resourceParts.Length == 2)
+        {
+            return $"app_{resourceParts[0]}_{resourceParts[1]}";
+        }
+
+        return delegationChangeResourceId;
     }
 
     private DelegationChange Convert(AssignmentResource assignmentResource)
@@ -55,14 +58,16 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
             
             PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
-            PerformedByUuidType = UuidType.Party,
+            PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
+            PerformedByUserId = assignmentResource.ChangedBy.UserId,
+            PerformedByUuidType = ConvertEntityTypeToUuidType(assignmentResource.ChangedBy.TypeId),
 
             DelegationChangeType = DelegationChangeType.Grant,
 
             ToUuid = assignmentResource.Assignment.ToId,
             ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
-            CoveredByPartyId = assignmentResource.Assignment.To.PartyId,
             CoveredByUserId = assignmentResource.Assignment.To.UserId,
+            CoveredByPartyId = assignmentResource.Assignment.To.UserId.HasValue ? null : assignmentResource.Assignment.To.PartyId, // If CoveredByUserId already has value skip setting CoveredByPartyId as old logic expects only one of these
         };
     }
 
@@ -130,6 +135,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Type)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
             );
     }
@@ -178,6 +184,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Include(t => t.ChangedBy)
             .Where(t => altinnAppIds.Contains(t.Resource.RefId))
             .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
             .WhereIf(coveredByPartyIds != null && coveredByPartyIds.Any(), t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value))
@@ -222,6 +229,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Include(t => t.ChangedBy)
             .Where(t => resourceUuids.Contains(t.ResourceId))
             .Where(t => t.Assignment.From.PartyId.HasValue && fromPartyIds.Contains(t.Assignment.From.PartyId.Value))
             .Where(t => t.Assignment.ToId == toUuid)
@@ -259,12 +267,13 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Resource).ThenInclude(t => t.Type)
-            .Where(t => t.Resource.RefId == resourceId)
+            .Include(t => t.ChangedBy)
+            .Where(t => t.Resource.RefId == CheckAndConvertIfAppResourceId(resourceId))
             .Where(t => t.Assignment.FromId == from.Id)
             .WhereIf(coveredByPartyId != null, t => t.Assignment.To.PartyId == coveredByPartyId)
             .WhereIf(coveredByUserId != null, t => t.Assignment.To.UserId == coveredByUserId)
             .WhereIf(toUuid.HasValue, t => t.Assignment.ToId == toUuid.Value)
-            .FirstOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(cancellationToken);
 
         return result == null 
             ? null
@@ -286,17 +295,29 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
 
-        var role = delegationChange.ResourceType == "MaskinportenSchema" 
-            ? RoleConstants.Supplier
-            : RoleConstants.Rightholder;
+        var resource = await DbContext.Resources.AsNoTracking().Include(t => t.Type).SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
+
+        var role = RoleConstants.Rightholder;
+        if (resource.Type.Name == "MaskinportenSchema")
+        {
+            role = RoleConstants.Supplier;
+        }
 
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
-        var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
-        var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == delegationChange.ResourceId, cancellationToken);
+        var to = delegationChange.CoveredByUserId.HasValue ?
+            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.UserId == delegationChange.CoveredByUserId, cancellationToken) :
+            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
 
         var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == from.Id && t.ToId == to.Id && t.RoleId == role.Id, cancellationToken);
+        AssignmentResource assignmentResource = null;
+
         if (assignment == null)
         {
+            if (delegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
+            {
+                return null;
+            }
+
             assignment = new Assignment()
             {
                 Id = Guid.CreateVersion7(),
@@ -307,8 +328,10 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             DbContext.Assignments.Add(assignment);
             await DbContext.SaveChangesAsync(cancellationToken);
         }
-
-        var assignmentResource = await DbContext.AssignmentResources.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id, cancellationToken);
+        else
+        {
+            assignmentResource = await DbContext.AssignmentResources.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id, cancellationToken);
+        }
 
         if (assignmentResource == null)
         {
@@ -351,8 +374,6 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 await DbContext.SaveChangesAsync(cancellationToken);
             }
             */
-
-
         }
         else
         {
@@ -367,6 +388,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 */
 
                 DbContext.AssignmentResources.Remove(assignmentResource);
+                await DbContext.SaveChangesAsync(cancellationToken);
 
                 return null;
             }
@@ -381,8 +403,6 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 return await GetAssignmentResource(assignmentResource.Id);
             }
         }
-
-        return null;
     }
 
     /// <summary>
@@ -640,59 +660,71 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetOfferedResourceRegistryDelegations(int offeredByPartyId, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetOfferedResourceRegistryDelegations(int offeredByPartyId, List<string> resourceRegistryIds = null, List<ResourceRegistryResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
+        var resourceTypeNames = resourceTypes?.Select(MapResourceTypeToResourceTypeName).ToList();
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
+           .WhereIf(resourceTypes != null && resourceTypes.Any(), t => resourceTypeNames.Contains(t.Resource.Type.Name))
            .ToListAsync(cancellationToken);
 
         return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByPartys(List<int> coveredByPartyIds, List<int> offeredByPartyIds = null, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByPartys(List<int> coveredByPartyIds, List<int> offeredByPartyIds = null, List<string> resourceRegistryIds = null, List<ResourceRegistryResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
+        var resourceTypeNames = resourceTypes?.Select(MapResourceTypeToResourceTypeName).ToList();
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value))
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
            .WhereIf(offeredByPartyIds != null && offeredByPartyIds.Any(), t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
+           .WhereIf(resourceTypes != null && resourceTypes.Any(), t => resourceTypeNames.Contains(t.Resource.Type.Name))
            .ToListAsync(cancellationToken);
 
         return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByUser(int coveredByUserId, List<int> offeredByPartyIds, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByUser(int coveredByUserId, List<int> offeredByPartyIds, List<string> resourceRegistryIds = null, List<ResourceRegistryResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
+        var resourceTypeNames = resourceTypes?.Select(MapResourceTypeToResourceTypeName).ToList();
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.To.UserId.HasValue && t.Assignment.To.UserId.Value == coveredByUserId)
            .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
            .WhereIf(resourceRegistryIds != null && resourceRegistryIds.Any(), t => resourceRegistryIds.Contains(t.Resource.RefId))
+           .WhereIf(resourceTypes != null && resourceTypes.Any(), t => resourceTypeNames.Contains(t.Resource.Type.Name))
            .ToListAsync(cancellationToken);
 
         return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, int offeredByPartyId, int coveredByPartyId, AccessManagement.Core.Models.ResourceRegistry.ResourceType resourceType, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, int offeredByPartyId, int coveredByPartyId, ResourceRegistryResourceType resourceType, CancellationToken cancellationToken = default)
     {
+        var resourceTypeName = MapResourceTypeToResourceTypeName(resourceType);
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
            .Where(t => t.Assignment.To.PartyId.HasValue && t.Assignment.To.PartyId.Value == coveredByPartyId)
            .Where(t => resourceIds.Contains(t.Resource.RefId))
+           .Where(t => t.Resource.Type.Name == resourceTypeName)
            .ToListAsync(cancellationToken);
 
         return result.Select(Convert).ToList();
@@ -705,6 +737,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
            .Include(t => t.Assignment).ThenInclude(t => t.From)
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
+           .Include(t => t.ChangedBy)
            .Where(t => t.Assignment.From.PartyId.HasValue && offeredByPartyIds.Contains(t.Assignment.From.PartyId.Value))
            .ToListAsync(cancellationToken);
 
@@ -718,12 +751,14 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
           .Include(t => t.Assignment).ThenInclude(t => t.From)
           .Include(t => t.Assignment).ThenInclude(t => t.To)
           .Include(t => t.Resource).ThenInclude(t => t.Type)
+          .Include(t => t.ChangedBy)
           .Where(t => t.Assignment.To.PartyId.HasValue && coveredByPartyIds.Contains(t.Assignment.To.PartyId.Value));
 
         var userChanges = DbContext.AssignmentResources.AsNoTracking()
           .Include(t => t.Assignment).ThenInclude(t => t.From)
           .Include(t => t.Assignment).ThenInclude(t => t.To)
           .Include(t => t.Resource).ThenInclude(t => t.Type)
+          .Include(t => t.ChangedBy)
           .Where(t => t.Assignment.To.UserId.HasValue && coveredByUserIds.Contains(t.Assignment.To.UserId.Value));
 
         var result = await partyChanges.Union(userChanges).ToListAsync(cancellationToken);
@@ -757,5 +792,21 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     Task<List<InstanceDelegationChange>> IDelegationMetadataRepository.GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
+    }
+
+    private static string MapResourceTypeToResourceTypeName(ResourceRegistryResourceType resourceType)
+    {
+        return resourceType switch
+        {
+            ResourceRegistryResourceType.AltinnApp => "AltinnApp",
+            ResourceRegistryResourceType.MaskinportenSchema => "MaskinportenSchema",
+            ResourceRegistryResourceType.Systemresource => "SystemResource",
+            ResourceRegistryResourceType.GenericAccessResource => "GenericAccessResource",
+            ResourceRegistryResourceType.Altinn2Service => "Altinn2Service",
+            ResourceRegistryResourceType.BrokerService => "BrokerService",
+            ResourceRegistryResourceType.CorrespondenceService => "CorrespondenceService",
+            ResourceRegistryResourceType.Consent => "Consent",
+            _ => throw new ArgumentOutOfRangeException(nameof(resourceType), $"Not expected resource type value: {resourceType}"),
+        };
     }
 }
