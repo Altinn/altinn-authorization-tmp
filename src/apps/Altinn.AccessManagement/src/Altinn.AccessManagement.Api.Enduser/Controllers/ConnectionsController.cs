@@ -592,6 +592,22 @@ public class ConnectionsController(
             return Problem();
         }
 
+        // Perform delegation check before attempting to add resources
+        var delegationCheck = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
+        if (delegationCheck.IsProblem)
+        {
+            return delegationCheck.Problem.ToActionResult();
+        }
+
+        // Validate that user is authorized to delegate all requested rules
+        var delegationValidationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateDelegationAuthorization(actionKeys.DirectRuleKeys, delegationCheck.Value));
+
+        if (delegationValidationErrors is { })
+        {
+            return delegationValidationErrors.ToActionResult();
+        }
+
         var from = await EntityService.GetEntity(fromId, cancellationToken);
         var to = await EntityService.GetEntity(toId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
@@ -632,6 +648,22 @@ public class ConnectionsController(
         if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
         {
             return Problem();
+        }
+
+        // Perform delegation check before attempting to update resources
+        var delegationCheck = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
+        if (delegationCheck.IsProblem)
+        {
+            return delegationCheck.Problem.ToActionResult();
+        }
+
+        // Validate that user is authorized to delegate all requested rules
+        var delegationValidationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateDelegationAuthorization(updateDto.DirectRuleKeys, delegationCheck.Value));
+
+        if (delegationValidationErrors is { })
+        {
+            return delegationValidationErrors.ToActionResult();
         }
 
         var from = await EntityService.GetEntity(fromId, cancellationToken);
