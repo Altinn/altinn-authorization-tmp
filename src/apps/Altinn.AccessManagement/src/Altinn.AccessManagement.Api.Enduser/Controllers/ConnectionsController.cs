@@ -494,7 +494,7 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetResources([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetResourceRights([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
 
@@ -700,23 +700,6 @@ public class ConnectionsController(
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
         var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, cancellationToken);
-        if (result.IsProblem)
-        {
-            return result.Problem.ToActionResult();
-        }
-
-        return Ok(result.Value);
-    }
-
-    /// <summary>
-    /// Just decompose rights for a resource without checking delegation
-    /// </summary>
-    [HttpGet("resources/rights/decomposepolicy")]
-    [ProducesResponseType<ResourceDecomposedDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    public async Task<IActionResult> DecomposeResource([FromQuery] string resource, CancellationToken cancellationToken = default)
-    {
-        var result = await ConnectionService.DecomposeResource(resource, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
