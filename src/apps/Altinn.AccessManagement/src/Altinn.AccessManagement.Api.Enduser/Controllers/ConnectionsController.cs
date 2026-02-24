@@ -576,7 +576,7 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status500InternalServerError, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddResourceRights([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] RightKeyListDto actionKeys, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddResourceRights([FromQuery] ConnectionInput connection, [FromQuery] string resource, [FromBody] RightKeyListDto rightKeys, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateAddResourceToConnectionWithConnectionInput(connection.Party, connection.From, connection.To));
 
@@ -597,7 +597,7 @@ public class ConnectionsController(
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
 
-        var result = await ConnectionService.AddResource(from, to, resourceObj, actionKeys, by, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.AddResource(from, to, resourceObj, rightKeys, by, ConfigureConnections, cancellationToken);
 
         if (result.IsProblem)
         {
@@ -711,13 +711,11 @@ public class ConnectionsController(
     /// <summary>
     /// Just decompose rights for a resource without checking delegation
     /// </summary>
-    [HttpGet("resources/rights")]
+    [HttpGet("resources/rights/decomposepolicy")]
     [ProducesResponseType<ResourceCheckDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     public async Task<IActionResult> DecomposeResource([FromQuery] string resource, CancellationToken cancellationToken = default)
     {
-        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
-
         var result = await ConnectionService.DecomposeResource(resource, cancellationToken);
         if (result.IsProblem)
         {
