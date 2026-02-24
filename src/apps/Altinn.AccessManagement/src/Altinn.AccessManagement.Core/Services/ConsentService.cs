@@ -259,7 +259,7 @@ namespace Altinn.AccessManagement.Core.Services
                 else
                 {
                     logger.LogWarning(
-                        "Consent with id {consentRequestId} exist in Altinn2 but failed to migrate to Altinn3 with error {error}.",
+                        "Consent with id {ConsentRequestId} exist in Altinn2 but failed to migrate to Altinn3 with error {Error}.",
                         consentRequestId,
                         string.Join(Environment.NewLine, ((ValidationProblemInstance)result.Problem).Errors.Select(e => $"{e.ErrorCode}: {e.Detail}")));
                 }
