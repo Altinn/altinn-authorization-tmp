@@ -192,7 +192,7 @@ public interface IConnectionService
     /// </summary>
     /// <param name="resourceId">The resource id to check</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-    /// <returns>The result on all the resource/action that is delegable on the resource and a reason behinf if the user can or can not delegate a given action</returns>
+    /// <returns>The result on all the resource/action that is delegable on the resource and a reason behind if the user can or can not delegate a given action</returns>
     Task<Result<ResourceDecomposedDto>> DecomposeResource(string resourceId, CancellationToken cancellationToken = default);
 
     /// <summary>

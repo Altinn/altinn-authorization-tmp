@@ -825,7 +825,7 @@ public partial class ConnectionService(
         // Map to result
         IEnumerable<RightDecomposedDto> decomposedRights = await MapFromInternalToDecomposedRights(rights, resourceId, cancellationToken);
 
-        // build reult with reason based on roles, packages, resource rights and users delegable
+        // build result with reason based on roles, packages, resource rights and users delegable
         ResourceDecomposedDto resourceDecomposedDto = new ResourceDecomposedDto
         {
             Resource = resource,
