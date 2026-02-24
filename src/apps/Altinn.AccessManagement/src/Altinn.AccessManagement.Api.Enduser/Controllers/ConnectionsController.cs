@@ -712,7 +712,7 @@ public class ConnectionsController(
     /// Just decompose rights for a resource without checking delegation
     /// </summary>
     [HttpGet("resources/rights/decomposepolicy")]
-    [ProducesResponseType<ResourceCheckDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<ResourceDecomposedDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     public async Task<IActionResult> DecomposeResource([FromQuery] string resource, CancellationToken cancellationToken = default)
     {
