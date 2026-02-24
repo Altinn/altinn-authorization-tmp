@@ -50,12 +50,9 @@ public static class RequestStatusMapping
             }
         };
 
-    private static readonly Dictionary<int, RequestStatusDto> IdMap =
-        Map.ToDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly Dictionary<int, RequestStatusDto> IdMap = Map.ToDictionary(x => (int)x.Key, x => x.Value);
 
-    public static RequestStatusDto ToDto(RequestStatus status)
-        => Map[status];
+    public static RequestStatusDto ToDto(RequestStatus status) => Map[status];
 
-    public static IReadOnlyCollection<RequestStatusDto> All =>
-        Map.Values;
+    public static IReadOnlyCollection<RequestStatusDto> All => Map.Values;
 }
