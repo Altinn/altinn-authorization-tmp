@@ -106,14 +106,19 @@
         public const string POLICY_CONSENTREQUEST_READ = "CONSENTREQUEST_READ";
 
         /// <summary>
-        /// Policy tag for authorizing enduser connections API read access
+        /// Policy tag for authorizing enduser connections API read access to and from others.
         /// </summary>
-        public const string POLICY_ENDUSER_CONNECTIONS_READ = "ENDUSER_CONNECTIONS_READ";
+        public const string POLICY_ENDUSER_CONNECTIONS_BIDRECTIONAL_READ = "POLICY_ENDUSER_CONNECTIONS_CONDITIONAL_BIDRECTIONAL";
 
         /// <summary>
-        /// Policy tag for authorizing enduser connections API write access
+        /// Policy tag for authorizing enduser connections API writes access to and from others.
         /// </summary>
-        public const string POLICY_ENDUSER_CONNECTIONS_WRITE = "ENDUSER_CONNECTIONS_WRITE";
+        public const string POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE = "POLICY_ENDUSER_CONNECTIONS_WRITE_BIDIRECTIONAL";
+
+        /// <summary>
+        /// Policy tag for authorizing enduser connections API write access only to others.
+        /// </summary>
+        public const string POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS = "POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS";
 
         /// <summary>
         /// Portal enduser scope giving access to most of the end user APIs
