@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessManagement.Core.Models.Consent
+﻿using System.Text.Json.Serialization;
+
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.
@@ -64,5 +66,12 @@
         /// Defines the portal view mode for the consent request. Hide is default
         /// </summary>
         public ConsentPortalViewMode PortalViewMode { get; set; } = ConsentPortalViewMode.Hide;
+
+        /// <summary>
+        /// Migration status for tracking consent migration (not part of domain model)
+        /// </summary>
+        [JsonPropertyName("migrationStatus")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string MigrationStatus { get; set; }
     }
 }

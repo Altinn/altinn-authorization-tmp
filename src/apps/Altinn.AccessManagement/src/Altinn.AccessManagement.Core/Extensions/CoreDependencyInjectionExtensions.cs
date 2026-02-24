@@ -1,4 +1,7 @@
-using Altinn.AccessManagement.Core.Asserters;
+﻿using Altinn.AccessManagement.Core.Asserters;
+using Altinn.AccessManagement.Core.Clients;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Services;

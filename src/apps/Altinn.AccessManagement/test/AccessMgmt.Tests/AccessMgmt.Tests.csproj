@@ -23,6 +23,12 @@
         <None Update="appsettings.test.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="Data\Consent\MockConsentData.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Data\Consent\MockConsentFeed.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
         <None Update="Data\RolesForDelegation\user_20001337\party_50003899\roles.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>

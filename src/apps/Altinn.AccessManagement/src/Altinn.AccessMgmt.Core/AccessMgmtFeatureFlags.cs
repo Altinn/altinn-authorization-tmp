@@ -1,7 +1,15 @@
 ﻿namespace Altinn.AccessMgmt.Core;
 
+/// <summary>
+/// Feature flags for Access Management
+/// </summary>
 public static class AccessMgmtFeatureFlags
 {
+  /// <summary>
+  /// Feature flag for enabling consent migration from old application
+  /// </summary>
+  public const string HostedServicesConsentMigration = "AccessMgmt.Core.HostedServices.ConsentMigration";
+
     /// <summary>
     /// Specifies if the register data should streamed from register service to access management database
     /// </summary>

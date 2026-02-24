@@ -1,7 +1,11 @@
-﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Configuration;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.HealthChecks;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
@@ -20,7 +24,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
-        services.AddScoped<RegisterHostedService>();
+        services.AddHostedService<ConsentMigrationHostedService>();
+        services.AddScoped<RegisterHostedService>();       
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -45,6 +50,18 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesService>();
         }
 
+        // Consent Migration - Configuration
+        services.Configure<ConsentMigrationSettings>(
+            configuration.GetSection("ConsentMigration"));
+
+        // Consent Migration - Services (Core - Scoped)
+        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
+        services.AddScoped<IConsentMigrationClient, MockConsentMigrationClient>();
+
+        // Health check
+        services.AddHealthChecks()
+            .AddCheck<ConsentMigrationHealthCheck>("consent_migration");
+
         AddJobs(services);
         return services;
     }
@@ -57,5 +74,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
         services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
         services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
     }
 }

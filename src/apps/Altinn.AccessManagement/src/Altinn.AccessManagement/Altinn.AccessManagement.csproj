@@ -6,6 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Remove="Clients\Testdata\Consent\MockConsentData.json" />
+      <Content Remove="Clients\Testdata\Consent\MockConsentFeed.json" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Altinn.Authorization.ProblemDetails" />
         <PackageReference Include="Altinn.Authorization.ServiceDefaults" />
         <PackageReference Include="Altinn.Common.AccessToken" />
@@ -56,6 +61,15 @@
         <None Update="appsettings.*.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Clients\Testdata\Consent\MockConsentData.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Include="Clients\Testdata\Consent\MockConsentFeed.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 

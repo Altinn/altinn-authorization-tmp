@@ -1,0 +1,196 @@
+﻿{
+  "consents": [
+    {
+      "id": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+      "from": "urn:altinn:person:identifier-no:31855697168",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2027-12-31T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-banking"
+            }
+          ],
+          "action": [ "read", "write" ]
+        }
+      ]
+    },
+    {
+      "id": "b2c3d4e5-f6a7-4b5c-8d9e-0f1a2b3c4d5e",
+      "from": "urn:altinn:person:identifier-no:70876500319",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2026-06-30T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-tax"
+            }
+          ],
+          "action": [ "read" ]
+        }
+      ]
+    },
+    {
+      "id": "c3d4e5f6-a7b8-4c5d-8e9f-0a1b2c3d4e5f",
+      "from": "urn:altinn:person:identifier-no:11885999079",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "requiredDelegator": "urn:altinn:person:identifier-no:31855697168",
+      "validTo": "2025-03-15T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-health"
+            }
+          ],
+          "action": [ "read", "write", "delete" ]
+        }
+      ]
+    },
+    {
+      "id": "d4e5f6a7-b8c9-4d5e-8f9a-0b1c2d3e4f5a",
+      "from": "urn:altinn:person:identifier-no:05884995347",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "handledBy": "urn:altinn:organization:identifier-no:974761076",
+      "validTo": "2027-09-20T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-education"
+            }
+          ],
+          "action": [ "read", "write" ]
+        }
+      ]
+    },
+    {
+      "id": "e5f6a7b8-c9d0-4e5f-8a9b-0c1d2e3f4a5b",
+      "from": "urn:altinn:person:identifier-no:46925700908",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2026-11-11T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/redirect",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-pension"
+            }
+          ],
+          "action": [ "read" ]
+        }
+      ]
+    },
+    {
+      "id": "f6a7b8c9-d0e1-4f5a-8b9c-0d1e2f3a4b5c",
+      "from": "urn:altinn:person:identifier-no:12849396917",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2028-01-01T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-employment"
+            }
+          ],
+          "action": [ "read", "write" ]
+        }
+      ]
+    },
+    {
+      "id": "a7b8c9d0-e1f2-4a5b-8c9d-0e1f2a3b4c5d",
+      "from": "urn:altinn:person:identifier-no:14878897715",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2027-05-15T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/employment-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-insurance"
+            }
+          ],
+          "action": [ "read" ]
+        }
+      ]
+    },
+    {
+      "id": "b8c9d0e1-f2a3-4b5c-8d9e-0f1a2b3c4d5e",
+      "from": "urn:altinn:person:identifier-no:13830648458",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2026-08-20T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-property"
+            }
+          ],
+          "action": [ "read", "write", "delete" ]
+        }
+      ]
+    },
+    {
+      "id": "c9d0e1f2-a3b4-4c5d-8e9f-0a1b2c3d4e5f",
+      "from": "urn:altinn:person:identifier-no:11881998949",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2025-12-31T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-vehicle"
+            }
+          ],
+          "action": [ "read" ]
+        }
+      ]
+    },
+    {
+      "id": "d0e1f2a3-b4c5-4d5e-8f9a-0b1c2d3e4f5a",
+      "from": "urn:altinn:person:identifier-no:20866496936",
+      "to": "urn:altinn:organization:identifier-no:991825827",
+      "validTo": "2027-07-10T23:59:59Z",
+      "redirectUrl": "https://example.com/consent/property-callback",
+      "migrationStatus": "pending",
+      "consentRights": [
+        {
+          "resource": [
+            {
+              "type": "urn:altinn:resource",
+              "value": "test-resource-utility"
+            }
+          ],
+          "action": [ "read", "write" ]
+        }
+      ]
+    }
+  ]
+}
