@@ -1,8 +1,8 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -19,7 +19,6 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -449,7 +448,7 @@ public class ConnectionsController(
     /// Gets all resources between the authenticated user's selected party and the specified target party.
     /// </summary>
     [HttpGet("resources")]
-    ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<IEnumerable<ResourcePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -489,7 +488,7 @@ public class ConnectionsController(
     /// Gets all resources between the authenticated user's selected party and the specified target party.
     /// </summary>
     [HttpGet("resources/rules")]
-    ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<ExternalResourceRuleDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -508,7 +507,7 @@ public class ConnectionsController(
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        var resourceObj = await resourceService.GetResource(resource, cancellationToken) ?? null;
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
             return NotFound($"Resource '{resource}' not found.");
@@ -533,9 +532,35 @@ public class ConnectionsController(
         var externalResult = new ExternalResourceRuleDto
         {
             Resource = DtoMapper.Convert(resourceObj),
-            DirectRules = result?.Rules?.Where(t => t.Reason.Equals(AccessReasonFlag.Direct)).ToList(),
-            IndirectRules = result?.Rules?.Where(t => !t.Reason.Equals(AccessReasonFlag.Direct)).ToList(),
+            DirectRules = [],
+            IndirectRules = []
         };
+
+        foreach (var rule in result?.Rules ?? [])
+        {
+            if (rule.Reason.Contains(AccessReasonFlag.Direct))
+            {
+                RulePermission rulePermission = new RulePermission
+                {
+                    Rule = rule.Rule,
+                    Reason = AccessReasonFlag.Direct,
+                    Permissions = rule.Permissions.Where(p => p.Reason == AccessReasonFlag.Direct).ToList()
+                };
+                externalResult.DirectRules.Add(rulePermission);
+            }
+
+            // if the rule contains any other reason than Direct, we consider it an indirect rule and include it in the IndirectRules list
+            if (rule.Reason != AccessReasonFlag.Direct)
+            {
+                RulePermission rulePermission = new RulePermission
+                {
+                    Rule = rule.Rule,
+                    Reason = rule.Reason & ~AccessReasonFlag.Direct, // Remove Direct flag from reason for indirect rules
+                    Permissions = rule.Permissions.Where(p => p.Reason != AccessReasonFlag.Direct).ToList()
+                };
+                externalResult.IndirectRules.Add(rulePermission);
+            }
+        }
 
         return Ok(externalResult);
     }

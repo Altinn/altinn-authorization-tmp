@@ -2,10 +2,9 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Features;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.AccessMgmt.PersistenceEF.Utils.Settings;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
@@ -187,29 +186,6 @@ public class ConnectionQuery(AppDbContext db)
         }
     }
 
-    /// <summary>
-    /// Slightly optimized connection packages lookup for PIP API
-    /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionPackagesAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
-    {
-        try
-        {
-            var baseQuery = BuildBaseQueryFromOthersNew(db, filter, filter.IncludeSubConnections, true);
-            var queryString = baseQuery.ToQueryString();
-
-            var query = EnrichFromEntities(filter, baseQuery);
-            var data = await query.AsNoTracking().ToListAsync(ct);
-            var result = data.Select(ToDtoEmpty).ToList();
-
-            var pkgs = await LoadPackagesByKeyAsync(result, filter, ct);
-            return Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Failed to get pip connection packages with filter: {JsonSerializer.Serialize(filter)}", ex);
-        }
-    }
-
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(AppDbContext db, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter)
     {
         var toId = filter.ToIds.First();
@@ -234,7 +210,7 @@ public class ConnectionQuery(AppDbContext db)
         var direct =
             db.Assignments
                 .Where(a1 => a1.ToId == toId)
-                .WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
+                .WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
                 .Select(a1 => new ConnectionQueryBaseRecord
                 {
                     AssignmentId = a1.Id,
@@ -260,7 +236,7 @@ public class ConnectionQuery(AppDbContext db)
                 )
                 .Where(x => x.r.IsKeyRole)
                 .Join(
-                    db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem),
+                    db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem),
                     x => x.d.FromId,
                     a2 => a2.ToId,
                     (x, a2) => new ConnectionQueryBaseRecord
@@ -307,7 +283,7 @@ public class ConnectionQuery(AppDbContext db)
             db.Assignments
                 .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
-                .WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
+                .WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
                 .Join(
                     db.Delegations,
                     dkr => dkr.Id,
@@ -315,7 +291,7 @@ public class ConnectionQuery(AppDbContext db)
                     (dkr, d) => new { dkr, d }
                 )
                 .Join(
-                    db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem),
+                    db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem),
                     x => x.d.FromId,
                     fa => fa.Id,
                     (x, fa) => new ConnectionQueryBaseRecord
@@ -337,7 +313,6 @@ public class ConnectionQuery(AppDbContext db)
             ? a1.Concat(rolemap).Concat(delegations)
             : a1.Concat(rolemap);
 
-        // Temporary until GetPipConnectionPackagesAsync is removed
         var fromChildren = !doChildNesting ? a2 :
         a2
         .Join(
@@ -361,7 +336,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var innehaverConnections =
             from reviRegnConnection in a2
-            join innehaverConnection in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
+            join innehaverConnection in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
             join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where reviRegnRoleSet.Contains(reviRegnConnection.RoleId)
@@ -396,20 +371,12 @@ public class ConnectionQuery(AppDbContext db)
             : filter.IncludeSubConnections ? a2.Concat(innehaverConnections) : a2;
 
         return
-            applyFromFilter
-            ?
-                query
-                .FromIdContains(fromSet)
-                .ViaIdContains(viaSet)
-                .ViaRoleIdContains(viaRoleSet)
-                .RoleIdContains(roleSet)
-                .RoleIdExcludes(roleSetExclude)
-            :
-                query
-                .ViaIdContains(viaSet)
-                .ViaRoleIdContains(viaRoleSet)
-                .RoleIdContains(roleSet)
-                .RoleIdExcludes(roleSetExclude);
+            query
+            .FromIdContains(fromSet, applyFromFilter)
+            .ViaIdContains(viaSet)
+            .ViaRoleIdContains(viaRoleSet)
+            .RoleIdContains(roleSet)
+            .RoleIdExcludes(roleSetExclude);
     }
 
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthers(AppDbContext db, ConnectionQueryFilter filter)
@@ -445,7 +412,7 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find all direct KeyRole assignments
         var keyRoleAssignments =
-            from keyRoleAssignment in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
+            from keyRoleAssignment in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
             select new ConnectionQueryBaseRecord()
@@ -496,7 +463,7 @@ public class ConnectionQuery(AppDbContext db)
         #region Find KeyRole assignments to ToParty
         var inheritedKeyRoleAssignments =
             from keyRoleAssignment in allKeyRoleAssignments
-            join inheritedAssignment in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on keyRoleAssignment.FromId equals inheritedAssignment.ToId
+            join inheritedAssignment in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on keyRoleAssignment.FromId equals inheritedAssignment.ToId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = inheritedAssignment.Id,
@@ -515,7 +482,7 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find direct assignments to ToParty
         var directAssignments =
-            from assignments in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
+            from assignments in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = assignments.Id,
@@ -566,7 +533,7 @@ public class ConnectionQuery(AppDbContext db)
         var delegations =
             from toAssignment in allAssignments
             join delegation in db.Delegations on toAssignment.AssignmentId equals delegation.ToId
-            join fromAssignment in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on delegation.FromId equals fromAssignment.Id
+            join fromAssignment in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on delegation.FromId equals fromAssignment.Id
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = null,
@@ -612,7 +579,7 @@ public class ConnectionQuery(AppDbContext db)
         #region Include all Innehavere connections through Revisor/Regnskapsfører connections to Enkeltpersonforetak
         var innehaverConnections =
             from reviRegnConnection in allBaseConnections
-            join innehaverConnection in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
+            join innehaverConnection in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
             join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id)
@@ -682,8 +649,9 @@ public class ConnectionQuery(AppDbContext db)
         /*
         Direct Assignments
         */
+
         var direct =
-            from childAss in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
+            from childAss in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
             where childAss.FromId == fromId && childAss.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem
             select new ConnectionQueryBaseRecord()
             {
@@ -706,7 +674,7 @@ public class ConnectionQuery(AppDbContext db)
         var mainAssignments =
             from e in db.Entities
             where e.Id == fromId
-            join ass in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on e.ParentId equals ass.FromId
+            join ass in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on e.ParentId equals ass.FromId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = ass.Id,
@@ -754,7 +722,7 @@ public class ConnectionQuery(AppDbContext db)
         var directDelegations =
            from delegation in db.Delegations
            join fromAssignment in allAssignments on delegation.FromId equals fromAssignment.AssignmentId
-           join toAssignment in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on delegation.ToId equals toAssignment.Id
+           join toAssignment in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on delegation.ToId equals toAssignment.Id
            select new ConnectionQueryBaseRecord()
            {
                AssignmentId = null,
@@ -775,7 +743,7 @@ public class ConnectionQuery(AppDbContext db)
         */
         var keyRoleAssignments =
             from all in allAssignments.Concat(roleMapAssignments) // Must include RoleMap assignments
-            join keyRoleAssignment in db.Assignments.WhereIf(PersistenceFeatures.IgnoreSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on all.ToId equals keyRoleAssignment.FromId
+            join keyRoleAssignment in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem) on all.ToId equals keyRoleAssignment.FromId
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
             select new ConnectionQueryBaseRecord()
@@ -987,52 +955,33 @@ public class ConnectionQuery(AppDbContext db)
         return keysWithChildren;
     }
 
-    private IQueryable<ConnectionQueryRecord> EnrichFromEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
-    {
-        var entities = db.Entities.AsQueryable();
-
-        var query = allKeys
-            .Join(entities, c => c.FromId, e => e.Id, (c, f) => new { c, f })
-            .WhereIf(filter.ExcludeDeleted, x => !x.f.IsDeleted)
-            .Select(x => new ConnectionQueryRecord
-            {
-                FromId = x.c.FromId,
-                ToId = x.c.ToId,
-                RoleId = x.c.RoleId,
-                AssignmentId = x.c.AssignmentId,
-                DelegationId = x.c.DelegationId,
-                ViaId = x.c.ViaId,
-                ViaRoleId = x.c.ViaRoleId,
-                From = x.f,
-                Reason = x.c.Reason,
-            });
-
-        return query;
-    }
-
     private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(IEnumerable<ConnectionQueryExtendedRecord> keys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
         var apKeys = keys.Where(k => k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
-        var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
-            .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
-            .Select(ap => new { ap.PackageId, ap.AssignmentId })
-            .ToListAsync(ct);
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
         SortedSet<Guid> apPackageIds = [];
-        foreach (var assignmentPackage in assignmentPackagesRaw)
+        if (apKeys.Count > 0)
         {
-            apPackageIds.Add(assignmentPackage.PackageId);
-            if (assignmentPackages.TryGetValue(assignmentPackage.AssignmentId, out var ids))
+            var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
+                .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
+                .Select(ap => new { ap.PackageId, ap.AssignmentId })
+                .ToListAsync(ct);
+
+            foreach (var assignmentPackage in assignmentPackagesRaw)
             {
-                ids.Add(assignmentPackage.PackageId);
-            }
-            else
-            {
-                assignmentPackages.Add(assignmentPackage.AssignmentId, [assignmentPackage.PackageId]);
+                apPackageIds.Add(assignmentPackage.PackageId);
+                if (assignmentPackages.TryGetValue(assignmentPackage.AssignmentId, out var ids))
+                {
+                    ids.Add(assignmentPackage.PackageId);
+                }
+                else
+                {
+                    assignmentPackages.Add(assignmentPackage.AssignmentId, [assignmentPackage.PackageId]);
+                }
             }
         }
 
@@ -1077,14 +1026,17 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        var entityKeys = keys.Where(k => rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
-        var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
-            .Select(e => new { e.Id, e.VariantId })
-            .ToListAsync(ct);
         SortedList<Guid, Guid> entityVariants = [];
-        foreach (var entityVariant in entityVariantsRaw)
+        var entityKeys = keys.Where(k => rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
+        if (entityKeys.Count > 0)
         {
-            entityVariants[entityVariant.Id] = entityVariant.VariantId;
+            var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
+                .Select(e => new { e.Id, e.VariantId })
+                .ToListAsync(ct);
+            foreach (var entityVariant in entityVariantsRaw)
+            {
+                entityVariants[entityVariant.Id] = entityVariant.VariantId;
+            }
         }
 
         var delegationIds = keys.Select(k => k.DelegationId).Where(id => id != null).Distinct().ToList();
@@ -1266,23 +1218,6 @@ public class ConnectionQuery(AppDbContext db)
         return results is List<ConnectionQueryExtendedRecord> list ? list : results.ToList();
     }
 
-    private static ConnectionQueryExtendedRecord ToDtoEmpty(ConnectionQueryRecord x) => new()
-    {
-        FromId = x.FromId,
-        ToId = x.ToId,
-        RoleId = x.RoleId,
-        AssignmentId = x.AssignmentId,
-        DelegationId = x.DelegationId,
-        ViaId = x.ViaId,
-        ViaRoleId = x.ViaRoleId,
-        From = x.From,
-        To = x.To,
-        Role = x.Role,
-        Via = x.Via,
-        ViaRole = x.ViaRole,
-        Reason = x.Reason,
-    };
-
     private static ConnectionQueryExtendedRecord ToDtoEmpty(ConnectionQueryBaseRecord x) => new()
     {
         FromId = x.FromId,
@@ -1344,9 +1279,9 @@ internal static class ConnectionQueryExtensions
         return query.Where(t => ids.Contains(t.ToId));
     }
 
-    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid> ids)
+    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid> ids, bool applyFromFilter = true)
     {
-        if (ids is null || ids.Count == 0)
+        if (!applyFromFilter || ids is null || ids.Count == 0)
         {
             return query;
         }
