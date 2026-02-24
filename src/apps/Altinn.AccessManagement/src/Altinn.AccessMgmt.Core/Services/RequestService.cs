@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -37,7 +36,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, List<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
         {
@@ -71,7 +70,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, List<RequestStatus>? status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
         {
@@ -160,7 +159,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string? action, Guid? requestedBy, List<RequestStatus>? status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string? action, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
         {
@@ -179,7 +178,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(resourceId.HasValue, r => r.ResourceId == resourceId.Value)
             .WhereIf(!string.IsNullOrEmpty(action), r => r.Action == action)
             .WhereIf(requestedBy.HasValue, r => r.RequestedById == requestedBy.Value)
-            .WhereIf(status.HasValue, r => r.Status == status.Value)
+            .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync();
     }
@@ -257,7 +256,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, List<RequestStatus>? status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
         {
@@ -275,7 +274,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(roleId.HasValue, r => r.Assignment.RoleId == roleId.Value)
             .WhereIf(packageId.HasValue, r => r.PackageId == packageId.Value)
             .WhereIf(requestedBy.HasValue, r => r.RequestedById == requestedBy.Value)
-            .WhereIf(status.HasValue, r => r.Status == status.Value)
+            .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync();
     }
@@ -332,35 +331,4 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
 
         return request;
     }
-}
-
-/// <summary>
-/// Common request dto for request assignment, request assignment resource and request assignment package
-/// </summary>
-public class RequestDto
-{
-    /// <summary>
-    /// Request identifier
-    /// </summary>
-    public Guid RequestId { get; set; }
-
-    /// <summary>
-    /// The party that is the source of the request (the one that has the role assignment that is being requested for assignment)
-    /// </summary>
-    public CompactEntityDto From { get; set; }
-
-    /// <summary>
-    /// The party that is the target of the request (the one that is being requested to be assigned the role)
-    /// </summary>
-    public CompactEntityDto To { get; set; }
-
-    /// <summary>
-    /// The user that requested the assignment
-    /// </summary>
-    public CompactEntityDto By { get; set; }
-
-    /// <summary>
-    /// The status of the request (e.g., pending, approved, rejected)
-    /// </summary>
-    public RequestStatus Status { get; set; }
 }

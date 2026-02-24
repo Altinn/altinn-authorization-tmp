@@ -7,56 +7,35 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
+/// <summary>
+/// Request access
+/// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/serviceowner/request")]
-//[Authorize(Policy = AuthzConstants.SCOPE_SYSTEMOWNER)]
 public class RequestController : ControllerBase
 {
-    [HttpGet("_meta/status")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<RequestStatusDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMetaStatuses(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Get valid urn prefixes for party identification
+    /// </summary>
+    [HttpGet("_meta/urns/party")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<RequestStatus>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetValidUrns(CancellationToken cancellationToken = default)
     {
-        return Ok(RequestStatusMapping.All);
+        return Ok(ValidUrns);
     }
 
-    [HttpGet("{id}/status")]
-    //[Authorize(Policy = AuthzConstants.SYSTEMOWNER_REQUEST_GET)]
-    [ProducesResponseType<RequestStatusDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetRequestStatus([FromQuery] Guid id, [FromQuery] RequestQueryInput input, CancellationToken cancellationToken = default)
-    {
-        return Ok();
-    }
+    private static string[] ValidUrns =>
+    [
+        "urn:altinn:person:identifier-no",
+        "urn:altinn:organization:identifier-no",
+        "urn:altinn:systemuser:uuid",
+        "urn:altinn:party:uuid"
+    ];
 
-    #region Packages
-    [HttpGet("package")]
-    //[Authorize(Policy = AuthzConstants.SYSTEMOWNER_REQUEST_GET)]
-    [ProducesResponseType<RequestPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> FindPackageRequests([FromQuery] RequestQueryInput input, CancellationToken cancellationToken = default)
-    {
-        return Ok();
-    }
-
-    [HttpPost("package")]
-    //[Authorize(Policy = AuthzConstants.SYSTEMOWNER_REQUEST_POST)]
-    [ProducesResponseType<RequestPackageDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RequestPackage([FromBody] RequestPackageInput input, CancellationToken cancellationToken = default)
-    {
-        return Accepted();
-    }
-    #endregion
-
-    #region Resources
-    [HttpGet("resource")]
-    //[Authorize(Policy = AuthzConstants.SYSTEMOWNER_REQUEST_GET)]
+    /// <summary>
+    /// Get resourc requests for a given party
+    /// </summary>
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [ProducesResponseType<RequestResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -66,8 +45,11 @@ public class RequestController : ControllerBase
         return Ok();
     }
 
+    /// <summary>
+    /// Create a resource request for a given party and resource
+    /// </summary>
     [HttpPost("resource")]
-    //[Authorize(Policy = AuthzConstants.SYSTEMOWNER_REQUEST_POST)]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
     [ProducesResponseType<RequestResourceDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,5 +58,4 @@ public class RequestController : ControllerBase
     {
         return Accepted();
     }
-    #endregion
 }

@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -28,7 +29,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of request
     /// DTOs that match the specified filters.</returns>
-    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, RequestStatus? status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Retrieves the request assignment associated with the specified request identifier.
@@ -57,7 +58,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of request
     /// assignments that match the specified filters.</returns>
-    Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, RequestStatus? status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment that links the specified entities with the given role.
@@ -114,7 +115,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of request assignment
     /// packages that match the specified filters. The collection is empty if no packages meet the criteria.</returns>
-    Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, RequestStatus? status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment package with the specified source, target, role, and package identifiers.
@@ -184,7 +185,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of request assignment
     /// resources that match the specified criteria.</returns>
-    Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string action, Guid? requestedBy, RequestStatus? status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string action, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment resource that represents an assignment action between two resources with a

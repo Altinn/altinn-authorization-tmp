@@ -18,12 +18,6 @@ public class RequestQueryInput
     /// </summary>
     [FromQuery(Name = "to")]
     public string To { get; set; }
-
-    /// <summary>
-    /// Urn describing the party
-    /// </summary>
-    [FromQuery(Name = "party")]
-    public string Party { get; set; }
 }
 
 /// <summary>
@@ -40,11 +34,6 @@ public class RequestInput
     /// Urn describing the party
     /// </summary>
     public string To { get; set; }
-
-    /// <summary>
-    /// Urn describing the party
-    /// </summary>
-    public string Party { get; set; }
 }
 
 /// <summary>
@@ -75,9 +64,9 @@ public class RequestResourceInput : RequestInput
 public class ResourceRefrenceDto
 {
     /// <summary>
-    /// Urn identifying the resource
+    /// Identifying the resource
     /// </summary>
-    public string Resource { get; set; }
+    public string ResourceId { get; set; }
 }
 
 /// <summary>
@@ -104,17 +93,17 @@ public class RequestDto
     /// <summary>
     /// Request status (e.g. pending, approved, rejected, withdrawn)
     /// </summary>
-    public string Status { get; set; }
+    public RequestStatus Status { get; set; }
 
     /// <summary>
     /// Party that is requested to grant access
     /// </summary>
-    public EntityDto From { get; set; }
+    public PartyEntityDto From { get; set; }
 
     /// <summary>
     /// Party that is access is requested for
     /// </summary>
-    public EntityDto To { get; set; }
+    public PartyEntityDto To { get; set; }
 }
 
 /// <summary>
@@ -142,7 +131,7 @@ public class RequestPackageDto : RequestDto
 /// <summary>
 /// Party entity refrence
 /// </summary>
-public class EntityDto
+public class PartyEntityDto
 {
     /// <summary>
     /// Unique identifier
@@ -160,7 +149,17 @@ public class EntityDto
     public string Type { get; set; }
 
     /// <summary>
-    /// Variant of entity (e.g. for organization: AS, ENK, DA)
+    /// SubType of entity (e.g. for organization: AS, ENK, DA)
     /// </summary>
-    public string Variant { get; set; }
+    public string SubType { get; set; }
+
+    /// <summary>
+    /// OrganizationIdentifier
+    /// </summary>
+    public string? OrganizationIdentifier { get; set; }
+
+    /// <summary>
+    /// PersonIdentifier
+    /// </summary>
+    public string? PersonIdentifier { get; set; }
 }

@@ -1,3 +1,6 @@
+﻿using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi.Any;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();

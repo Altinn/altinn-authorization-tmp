@@ -15,10 +15,9 @@ public partial class DtoMapper : IDtoMapper
     {
         return new RequestDto
         {
-            RequestId = request.Id,
-            From = Convert(request.From),
-            To = Convert(request.To),
-            By = Convert(request.RequestedBy),
+            Id = request.Id,
+            From = ConvertToPartyEntityDto(request.From),
+            To = ConvertToPartyEntityDto(request.To),
             Status = request.Status
         };
     }
@@ -27,10 +26,9 @@ public partial class DtoMapper : IDtoMapper
     {
         return new RequestDto
         {
-            RequestId = request.Id,
-            From = Convert(request.Assignment.From),
-            To = Convert(request.Assignment.To),
-            By = Convert(request.RequestedBy),
+            Id = request.Id,
+            From = ConvertToPartyEntityDto(request.Assignment.From),
+            To = ConvertToPartyEntityDto(request.Assignment.To),
             Status = request.Status
         };
     }
@@ -39,11 +37,23 @@ public partial class DtoMapper : IDtoMapper
     {
         return new RequestDto
         {
-            RequestId = request.Id,
-            From = Convert(request.Assignment.From),
-            To = Convert(request.Assignment.To),
-            By = Convert(request.RequestedBy),
+            Id = request.Id,
+            From = ConvertToPartyEntityDto(request.Assignment.From),
+            To = ConvertToPartyEntityDto(request.Assignment.To),
             Status = request.Status
+        };
+    }
+
+    public static PartyEntityDto ConvertToPartyEntityDto(Entity entity)
+    {
+        return new PartyEntityDto
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Type = entity.Type?.ToString(),
+            SubType = entity.Variant?.ToString(),
+            OrganizationIdentifier = entity.OrganizationIdentifier?.ToString(),
+            PersonIdentifier = entity.PersonIdentifier?.ToString()
         };
     }
 }
