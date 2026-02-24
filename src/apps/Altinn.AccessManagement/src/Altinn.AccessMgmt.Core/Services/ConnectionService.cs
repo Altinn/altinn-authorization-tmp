@@ -246,7 +246,7 @@ public partial class ConnectionService(
 
         foreach (var ruleKey in ruleKeys)
         {
-            if (!canDelegate.Value.Rules.Any(a => a.Rule.Key == ruleKey && a.Result))
+            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == ruleKey && a.Result))
             {
                 return Problems.NotAuthorizedForDelegationRequest;
             }
@@ -829,7 +829,7 @@ public partial class ConnectionService(
         bool isResourceDelegable = resourceMetadata.Delegable;
 
         // Decompose policy into resource/tasks
-        List<RuleAccess> ruleAccesses = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
+        List<Rights> rights = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
 
         // Fetch packages
         var packages = await CheckPackageForResource(party, null, ConfigureConnections, cancellationToken);
@@ -842,16 +842,16 @@ public partial class ConnectionService(
         // Fetch resource rights
         var resources = await GetResourcesRules(party, authenticatedUserUuid, resource.Id, null, cancellationToken);
 
-        ProcessTheAccessToTheRuleKeys(ruleAccesses, packages.Value, roles.Value, resources);
+        ProcessTheAccessToTheRuleKeys(rights, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RuleCheckDto> rules = await MapFromInternalToExternalRule(ruleAccesses, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
+        IEnumerable<RightCheckDto> rules = await MapFromInternalToExternalRule(rights, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
         {
             Resource = resource,
-            Rules = rules
+            Rights = rules
         };
         
         return resourceCheckDto;
@@ -903,7 +903,7 @@ public partial class ConnectionService(
         return char.ToUpper(input[0]) + input.Substring(1);
     }
 
-    private async Task<RuleCheckDto> MapFromInternalToExternalRule(RuleAccess ruleAccess, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken)
+    private async Task<RightCheckDto> MapFromInternalToExternalRule(Rights ruleAccess, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken)
     {
         if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
         {
@@ -925,9 +925,9 @@ public partial class ConnectionService(
 
         ResourceAndAction resourceAndAction = DelegationCheckHelper.SplitRuleKey(ruleAccess.Key);
 
-        RuleCheckDto currentAction = new RuleCheckDto
+        RightCheckDto currentAction = new RightCheckDto
         {
-            Rule = new RuleDto { 
+            Right = new RightDto { 
                 Key = ruleAccess.Key,
                 Name = GetActionNameFromRuleKey(ruleAccess.Key, resource),
                 Resource = resourceAndAction.Resource,
@@ -936,7 +936,7 @@ public partial class ConnectionService(
             Result = false
         };
 
-        List<RuleCheckDto.Permision> permisions = [];
+        List<RightCheckDto.Permision> permisions = [];
         if (ruleAccess.PackageAllowAccess.Count == 0 && ruleAccess.RoleAllowAccess.Count == 0 && ruleAccess.ResourceAllowAccess.Count == 0)
         {
             currentAction.Result = false;
@@ -944,7 +944,7 @@ public partial class ConnectionService(
             permisions.AddRange(ruleAccess.PackageDenyAccess);
             permisions.AddRange(ruleAccess.RoleDenyAccess);
 
-            permisions.Add(new RuleCheckDto.Permision
+            permisions.Add(new RightCheckDto.Permision
             {
                 Description = "Missing-Resource",
                 PermisionKey = DelegationCheckReasonCode.MissingDelegationAccess
@@ -962,7 +962,7 @@ public partial class ConnectionService(
         if (!isResourceDelegable)
         {
             currentAction.Result = false;
-            RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+            RightCheckDto.Permision permision = new RightCheckDto.Permision
             {
                 Description = $"Resource-NotDelegable",
                 PermisionKey = DelegationCheckReasonCode.ResourceNotDelegable,
@@ -973,7 +973,7 @@ public partial class ConnectionService(
         if (ruleAccess.AccessListDenied == true)
         {
             currentAction.Result = false;
-            RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+            RightCheckDto.Permision permision = new RightCheckDto.Permision
             {
                 Description = "Resource-AccessList-Enabled-NotListed",
                 PermisionKey = DelegationCheckReasonCode.AccessListValidationFail,
@@ -993,7 +993,7 @@ public partial class ConnectionService(
         return currentAction;
     }
 
-    private void ProcessResourceAllowAccessReasons(List<RulePermission> resourceRulesAllowAccess, List<RuleCheckDto.Permision> permisions)
+    private void ProcessResourceAllowAccessReasons(List<RulePermission> resourceRulesAllowAccess, List<RightCheckDto.Permision> permisions)
     {
         if (resourceRulesAllowAccess.Count > 0)
         {
@@ -1001,7 +1001,7 @@ public partial class ConnectionService(
             {
                 foreach (var resourceRulePermission in resourceRuleAllowAccess.Permissions)
                 {
-                    RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+                    RightCheckDto.Permision permision = new RightCheckDto.Permision
                     {
                         Description = "Access-Resource",
                         PermisionKey = DelegationCheckReasonCode.DelegationAccess,
@@ -1035,7 +1035,7 @@ public partial class ConnectionService(
 
         foreach (var ruleKey in ruleKeys.DirectRuleKeys)
         {
-            if (!canDelegate.Value.Rules.Any(a => a.Rule.Key == ruleKey && a.Result))
+            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == ruleKey && a.Result))
             {
                 return Problems.NotAuthorizedForDelegationRequest;
             }
@@ -1051,7 +1051,7 @@ public partial class ConnectionService(
         return true;
     }
 
-    private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<RuleCheckDto.Permision> permisions)
+    private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<RightCheckDto.Permision> permisions)
     {
         if (rolesAllowAccess.Count > 0)
         {
@@ -1059,7 +1059,7 @@ public partial class ConnectionService(
             {
                 foreach (var roleReason in roleAllowAccess.Reasons)
                 {
-                    RuleCheckDto.Permision permison = new RuleCheckDto.Permision
+                    RightCheckDto.Permision permison = new RightCheckDto.Permision
                     {
                         Description = roleReason.Description,
                         PermisionKey = DelegationCheckReasonCode.RoleAccess,
@@ -1081,7 +1081,7 @@ public partial class ConnectionService(
         }
     }
 
-    private void ProcessPackageAllowAccessReasons(List<AccessPackageDto.AccessPackageDtoCheck> packagesAllowAccess, List<RuleCheckDto.Permision> reasons)
+    private void ProcessPackageAllowAccessReasons(List<AccessPackageDto.AccessPackageDtoCheck> packagesAllowAccess, List<RightCheckDto.Permision> reasons)
     {
         if (packagesAllowAccess.Count > 0)
         {
@@ -1089,7 +1089,7 @@ public partial class ConnectionService(
             {
                 foreach (var packageReason in packageAllowAccess.Reasons)
                 {
-                    RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+                    RightCheckDto.Permision permision = new RightCheckDto.Permision
                     {
                         Description = packageReason.Description,
                         PermisionKey = DelegationCheckReasonCode.PackageAccess,
@@ -1113,9 +1113,9 @@ public partial class ConnectionService(
         }
     }
 
-    private async Task<IEnumerable<RuleCheckDto>> MapFromInternalToExternalRule(List<RuleAccess> ruleAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRule(List<Rights> ruleAccesses, string resourceId, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken = default)
     {
-        List<RuleCheckDto> rules = [];
+        List<RightCheckDto> rules = [];
 
         foreach (var ruleAccess in ruleAccesses)
         {
@@ -1125,7 +1125,7 @@ public partial class ConnectionService(
         return rules;
     }
 
-    private void ProcessTheAccessToTheRuleKeys(List<RuleAccess> actionAccesses, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRuleDto> resources)
+    private void ProcessTheAccessToTheRuleKeys(List<Rights> actionAccesses, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRuleDto> resources)
     {
         foreach (var actionAccess in actionAccesses)
         {
@@ -1146,7 +1146,7 @@ public partial class ConnectionService(
                     }
                     else
                     {
-                        RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+                        RightCheckDto.Permision permision = new RightCheckDto.Permision
                         {
                             Description = $"Missing-Package",
                             PermisionKey = DelegationCheckReasonCode.MissingPackageAccess,
@@ -1166,7 +1166,7 @@ public partial class ConnectionService(
                     }
                     else
                     {
-                        RuleCheckDto.Permision permision = new RuleCheckDto.Permision
+                        RightCheckDto.Permision permision = new RightCheckDto.Permision
                         {
                             Description = $"Missing-Role",
                             PermisionKey = DelegationCheckReasonCode.MissingRoleAccess,
@@ -1662,7 +1662,7 @@ public partial class ConnectionService
                         var splitAction = DelegationCheckHelper.SplitRuleKey(actionKey);
                         rule = new RulePermission()
                         {
-                            Rule = new RuleDto
+                            Rule = new RightDto
                             {
                                 Key = actionKey,
                                 Resource = splitAction.Resource,

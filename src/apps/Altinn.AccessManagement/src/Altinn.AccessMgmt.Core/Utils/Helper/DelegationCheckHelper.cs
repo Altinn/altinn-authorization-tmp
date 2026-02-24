@@ -93,7 +93,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
         /// <param name="policy">the policy to process</param>
         /// <param name="resourceId">the resource id the subjects must point to</param>
         /// <returns></returns>
-        public static List<RuleAccess> DecomposePolicy(XacmlPolicy policy, string resourceId)
+        public static List<Rights> DecomposePolicy(XacmlPolicy policy, string resourceId)
         {
             Dictionary<string, List<string>> rules = new Dictionary<string, List<string>>();
 
@@ -117,11 +117,11 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 }
             }
 
-            List<RuleAccess> result = [];
+            List<Rights> result = [];
 
             foreach (KeyValuePair<string, List<string>> action in rules)
             {
-                RuleAccess current = new RuleAccess();
+                Rights current = new Rights();
                 current.Key = action.Key;
                 current.AccessorUrns = action.Value;
                 current.PackageAllowAccess = [];

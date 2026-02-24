@@ -24,7 +24,7 @@ public class RulePermission
     /// <summary>
     /// Gets or sets the rule associated with this instance.
     /// </summary>
-    public RuleDto Rule { get; set; }
+    public RightDto Rule { get; set; }
 
     /// <summary>
     /// Reason
