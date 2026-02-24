@@ -6,4 +6,8 @@
     <PackageReference Include="Altinn.Urn.Swashbuckle" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\apps\Altinn.Authorization\src\Altinn.Authorization\Altinn.Authorization.csproj" />
+  </ItemGroup>
+
 </Project>

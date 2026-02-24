@@ -13,10 +13,10 @@ using System.Net.Mime;
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
 {
     [ApiController]
-    [Route("accessmanagement/api/v1/resourceowner/connections")]
+    [Route("accessmanagement/api/v1/serviceowner/connections")]
     [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
     public class ConnectionsController(
-    IConnectionService ConnectionService,
+    IConnectionServiceServiceOwner connectionService,
     IUserProfileLookupService UserProfileLookupService,
     IEntityService EntityService,
     IResourceService resourceService
@@ -30,9 +30,12 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> AddPackages([FromBody]  CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AddPackages([FromBody] ServiceOwnerAccessPackageDelegation packageDelegation, CancellationToken cancellationToken = default)
         {
+            
+            if(packageDelegation.From.)
 
+            EntityService.GetByPersNo
         }
     }
 }
