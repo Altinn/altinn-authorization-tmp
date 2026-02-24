@@ -17,6 +17,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasAnnotation("Altinn:AuditVersion", 3)
                 .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -80,7 +81,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("area", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AreaGroup", b =>
@@ -136,7 +137,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("areagroup", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Assignment", b =>
@@ -194,7 +195,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("assignment", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentInstance", b =>
@@ -259,7 +260,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("assignmentinstance", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
@@ -308,7 +309,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("assignmentpackage", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentResource", b =>
@@ -360,8 +361,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignmentresource_assignmentid");
 
-                    b.HasIndex("ResourceId")
-                        .HasDatabaseName("ix_assignmentresource_resourceid");
+                b.HasIndex("Audit_ChangedBy")
+                    .HasDatabaseName("ix_assignmentresource_audit_changedby");
+
+                b.HasIndex("ResourceId")
+                    .HasDatabaseName("ix_assignmentresource_resourceid");
 
                     b.HasIndex("AssignmentId", "ResourceId")
                         .IsUnique()
@@ -369,7 +373,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("assignmentresource", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditArea", b =>
@@ -1975,7 +1979,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("delegation", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.DelegationPackage", b =>
@@ -2020,6 +2024,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_delegationpackage");
 
+                    b.HasIndex("AssignmentPackageId")
+                        .HasDatabaseName("ix_delegationpackage_assignmentpackageid");
+
                     b.HasIndex("DelegationId")
                         .HasDatabaseName("ix_delegationpackage_delegationid");
 
@@ -2032,7 +2039,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("delegationpackage", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.DelegationResource", b =>
@@ -2081,7 +2088,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("delegationresource", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Entity", b =>
@@ -2226,7 +2233,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("entity", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.EntityLookup", b =>
@@ -2286,7 +2293,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("entitylookup", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.EntityType", b =>
@@ -2333,7 +2340,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("entitytype", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.EntityVariant", b =>
@@ -2385,7 +2392,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("entityvariant", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.EntityVariantRole", b =>
@@ -2434,7 +2441,44 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("entityvariantrole", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.ErrorQueue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("delegationchangeid");
+
+                    b.Property<string>("ErrorItem")
+                        .HasColumnType("text")
+                        .HasColumnName("erroritem");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("errormessage");
+
+                    b.Property<string>("OriginType")
+                        .HasColumnType("text")
+                        .HasColumnName("origintype");
+
+                    b.Property<bool>("Processed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("processed");
+
+                    b.Property<bool>("ReProcess")
+                        .HasColumnType("boolean")
+                        .HasColumnName("reprocess");
+
+                    b.HasKey("Id")
+                        .HasName("pk_errorqueue");
+
+                    b.ToTable("errorqueue", "dbo");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Package", b =>
@@ -2465,6 +2509,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("code");
 
@@ -2507,6 +2552,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("providerid");
 
                     b.Property<string>("Urn")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
@@ -2516,11 +2562,19 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AreaId")
                         .HasDatabaseName("ix_package_areaid");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_package_code");
+
                     b.HasIndex("EntityTypeId")
                         .HasDatabaseName("ix_package_entitytypeid");
 
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_package_providerid");
+
+                    b.HasIndex("Urn")
+                        .IsUnique()
+                        .HasDatabaseName("ix_package_urn");
 
                     b.HasIndex("ProviderId", "Name", "EntityTypeId")
                         .IsUnique()
@@ -2528,7 +2582,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("package", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.PackageResource", b =>
@@ -2577,7 +2631,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("packageresource", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Provider", b =>
@@ -2636,7 +2690,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("provider", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.ProviderType", b =>
@@ -2676,7 +2730,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("providertype", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Resource", b =>
@@ -2717,6 +2771,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("providerid");
 
                     b.Property<string>("RefId")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("refid");
 
@@ -2730,12 +2785,16 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("ProviderId")
                         .HasDatabaseName("ix_resource_providerid");
 
+                    b.HasIndex("RefId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_resource_refid");
+
                     b.HasIndex("TypeId")
                         .HasDatabaseName("ix_resource_typeid");
 
                     b.ToTable("resource", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.ResourceType", b =>
@@ -2775,7 +2834,32 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("resourcetype", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RightImportProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long>("DelegationChangeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("delegationchangeid");
+
+                    b.Property<string>("OriginType")
+                        .HasColumnType("text")
+                        .HasColumnName("origintype");
+
+                    b.HasKey("Id")
+                        .HasName("pk_rightimportprogress");
+
+                    b.HasIndex("DelegationChangeId", "OriginType")
+                        .IsUnique()
+                        .HasDatabaseName("ix_rightimportprogress_delegationchangeid_origintype");
+
+                    b.ToTable("rightimportprogress", "dbo");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Role", b =>
@@ -2858,6 +2942,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_role");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_role_code");
+
                     b.HasIndex("EntityTypeId")
                         .HasDatabaseName("ix_role_entitytypeid");
 
@@ -2868,17 +2956,13 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_role_urn");
 
-                    b.HasIndex("ProviderId", "Code")
-                        .IsUnique()
-                        .HasDatabaseName("ix_role_providerid_code");
-
                     b.HasIndex("ProviderId", "Name")
                         .IsUnique()
                         .HasDatabaseName("ix_role_providerid_name");
 
                     b.ToTable("role", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RoleMap", b =>
@@ -2927,7 +3011,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("rolemap", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RolePackage", b =>
@@ -3005,7 +3089,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("rolepackage", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RoleResource", b =>
@@ -3054,7 +3138,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("roleresource", "dbo");
 
-                    b.HasAnnotation("EnableAudit", true);
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Utils.TranslationEntry", b =>
@@ -3190,16 +3274,24 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_assignmentresource_assignment_assignmentid");
 
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Resource", "Resource")
-                        .WithMany()
-                        .HasForeignKey("ResourceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_assignmentresource_resource_resourceid");
+                b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "ChangedBy")
+                    .WithMany()
+                    .HasForeignKey("Audit_ChangedBy")
+                    .OnDelete(DeleteBehavior.NoAction)
+                    .HasConstraintName("fk_assignmentresource_entity_audit_changedby");
+
+                b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Resource", "Resource")
+                    .WithMany()
+                    .HasForeignKey("ResourceId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired()
+                    .HasConstraintName("fk_assignmentresource_resource_resourceid");
 
                     b.Navigation("Assignment");
 
-                    b.Navigation("Resource");
+                b.Navigation("ChangedBy");
+
+                b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Connection", b =>
@@ -3304,6 +3396,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.DelegationPackage", b =>
                 {
+                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", "AssignmentPackage")
+                        .WithMany("DelegationPackages")
+                        .HasForeignKey("AssignmentPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_delegationpackage_assignmentpackage_assignmentpackageid");
+
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
                         .WithMany()
                         .HasForeignKey("DelegationId")
@@ -3317,6 +3415,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_delegationpackage_package_packageid");
+
+                    b.Navigation("AssignmentPackage");
 
                     b.Navigation("Delegation");
 
@@ -3603,6 +3703,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Navigation("Resource");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
+                {
+                    b.Navigation("DelegationPackages");
                 });
 #pragma warning restore 612, 618
         }

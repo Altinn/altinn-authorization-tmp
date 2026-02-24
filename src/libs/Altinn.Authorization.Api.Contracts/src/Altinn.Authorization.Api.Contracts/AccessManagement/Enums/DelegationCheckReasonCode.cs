@@ -1,5 +1,8 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Enums
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DelegationCheckReasonCode
     {
         /// <summary>
@@ -26,11 +29,6 @@
         /// Has not access by direct delegation
         /// </summary>
         MissingDelegationAccess = 5,
-
-        /// <summary>
-        /// The service requires explicit authentication level and the reportee is missing this
-        /// </summary>
-        InsufficientAuthenticationLevel = 7,
 
         /// <summary>
         ///  The receiver does not have the right based on Access List delegation

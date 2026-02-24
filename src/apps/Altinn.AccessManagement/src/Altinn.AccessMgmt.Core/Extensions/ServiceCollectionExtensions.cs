@@ -24,6 +24,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
+        services.AddHostedService<SingleRightsHostedService>();
+        services.AddScoped<RegisterHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
         services.AddScoped<RegisterHostedService>();       
         services.AddScoped<IIngestService, IngestService>();
@@ -37,6 +39,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProviderService, ProviderService>();
         services.AddScoped<IEntityService, EntityService>();
         services.AddScoped<IAmPartyRepository, AMPartyService>();
+        services.AddScoped<IErrorQueueService, ErrorQueueService>();
+        services.AddScoped<IRightImportProgressService, RightImportProgressService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
@@ -74,6 +78,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
         services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
         services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        services.AddSingleton<ISingleAppRightSyncService, SingleAppRightSyncService>();
+        services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();
+        services.AddSingleton<ISingleInstanceRightSyncService, SingleInstanceRightSyncService>();
         services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
     }
 }

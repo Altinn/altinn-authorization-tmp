@@ -91,14 +91,15 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
         /// Decompose a policyfile into a list of resource/action keys and a list of packages and roles giving acces to the actual key
         /// </summary>
         /// <param name="policy">the policy to process</param>
+        /// <param name="resourceId">the resource id the subjects must point to</param>
         /// <returns></returns>
-        public static List<ActionAccess> DecomposePolicy(XacmlPolicy policy)
+        public static List<RuleAccess> DecomposePolicy(XacmlPolicy policy, string resourceId)
         {
             Dictionary<string, List<string>> rules = new Dictionary<string, List<string>>();
 
             foreach (XacmlRule rule in policy.Rules)
             {
-                IEnumerable<string> keys = DelegationCheckHelper.CalculateActionKey(rule);
+                IEnumerable<string> keys = DelegationCheckHelper.CalculateActionKey(rule, resourceId);
                 IEnumerable<string> ruleSubjects = DelegationCheckHelper.GetFirstAccessorValuesFromPolicy(rule, XacmlConstants.MatchAttributeCategory.Subject);
                 ruleSubjects = RemoveNonUserRules(ruleSubjects);
 
@@ -116,19 +117,18 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 }
             }
 
-            List<ActionAccess> result = [];
+            List<RuleAccess> result = [];
 
             foreach (KeyValuePair<string, List<string>> action in rules)
             {
-                ActionAccess current = new ActionAccess();
-                current.ActionKey = action.Key;
+                RuleAccess current = new RuleAccess();
+                current.Key = action.Key;
                 current.AccessorUrns = action.Value;
                 current.PackageAllowAccess = [];
                 current.PackageDenyAccess = [];
                 current.RoleAllowAccess = [];
                 current.RoleDenyAccess = [];
                 current.ResourceAllowAccess = [];
-                current.ResourceDenyAccess = [];
 
                 result.Add(current);
             }
@@ -151,16 +151,126 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             return false;
         }
 
+        public static IEnumerable<ResourceAndAction> SplitRuleKeys(IEnumerable<string> actionKeys)
+        {
+            List<ResourceAndAction> result = [];
+
+            foreach (string key in actionKeys)
+            {
+                result.Add(SplitRuleKey(key));
+            }
+
+            return result;
+        }
+
+        public static ResourceAndAction SplitRuleKey(string actionKey)
+        {
+            List<string> resourceList = [];
+            List<string> actionList = [];
+
+            string[] urns = actionKey.Split("urn:", StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string part in urns)
+            {
+                string current = "urn:" + part;
+
+                if (current.EndsWith(':'))
+                {
+                    current = current.Remove(current.Length - 1);
+                }
+
+                if (current.StartsWith(AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId))
+                {
+                    actionList.Add(current);
+                }
+                else
+                {
+                    resourceList.Add(current);
+                }
+            }
+
+            return new ResourceAndAction { Resource = resourceList, Action = actionList.FirstOrDefault() };
+        }
+
+        public static IEnumerable<XacmlRule> ConvertActionKeysToRules(IEnumerable<string> actionKeys, Guid toId)
+        {
+            List<XacmlRule> result = [];
+            foreach (string key in actionKeys)
+            {
+                XacmlRule currentRule = new XacmlRule(Guid.CreateVersion7().ToString(), XacmlEffectType.Permit);
+
+                var resourceAction = SplitRuleKey(key);
+
+                currentRule.Target = BuildDelegationRuleTarget(toId.ToString(), resourceAction.Resource, resourceAction.Action);
+
+                result.Add(currentRule);
+            }
+
+            return result;
+        }
+
+        public static XacmlTarget BuildDelegationRuleTarget(string toId, IEnumerable<string> resourceList, string action)
+        {
+            List<XacmlAnyOf> targetList = new List<XacmlAnyOf>();
+
+            // Build Subject
+            List<XacmlAllOf> subjectAllOfs = new List<XacmlAllOf>();
+
+            subjectAllOfs.Add(new XacmlAllOf(new List<XacmlMatch>
+            {
+                new XacmlMatch(
+                    new Uri(XacmlConstants.AttributeMatchFunction.StringEqualIgnoreCase),
+                    new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), toId),
+                    new XacmlAttributeDesignator(new Uri(XacmlConstants.MatchAttributeCategory.Subject), new Uri(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute), new Uri(XacmlConstants.DataTypes.XMLString), false))
+            }));
+
+            // Build Resource
+            List<XacmlMatch> resourceMatches = new List<XacmlMatch>();
+            foreach (string resource in resourceList)
+            {
+                string resourceId = resource.Substring(0, resource.LastIndexOf(':'));
+                string resourceValue = resource.Substring(resource.LastIndexOf(':') + 1);
+
+                resourceMatches.Add(
+                    new XacmlMatch(
+                        new Uri(XacmlConstants.AttributeMatchFunction.StringEqualIgnoreCase),
+                        new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), resourceValue),
+                        new XacmlAttributeDesignator(new Uri(XacmlConstants.MatchAttributeCategory.Resource), new Uri(resourceId), new Uri(XacmlConstants.DataTypes.XMLString), false)));
+            }
+
+            List<XacmlAllOf> resourceAllOfs = new List<XacmlAllOf> { new XacmlAllOf(resourceMatches) };
+
+            // Build Action
+            List<XacmlAllOf> actionAllOfs = new List<XacmlAllOf>();
+            string actionId = action.Substring(0, action.LastIndexOf(':'));
+            string actionValue = action.Substring(action.LastIndexOf(':') + 1);
+
+            actionAllOfs.Add(new XacmlAllOf(new List<XacmlMatch>
+            {
+                new XacmlMatch(
+                        new Uri(XacmlConstants.AttributeMatchFunction.StringEqualIgnoreCase),
+                        new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), actionValue),
+                        new XacmlAttributeDesignator(new Uri(XacmlConstants.MatchAttributeCategory.Action), new Uri(actionId), new Uri(XacmlConstants.DataTypes.XMLString), false))
+            }));
+
+            targetList.Add(new XacmlAnyOf(subjectAllOfs));
+            targetList.Add(new XacmlAnyOf(resourceAllOfs));
+            targetList.Add(new XacmlAnyOf(actionAllOfs));
+
+            return new XacmlTarget(targetList);
+        }
+
         /// <summary>
         /// Returns a list of resource/action keys based on a given policy rule
         /// </summary>
         /// <param name="rule">the rule to analyze</param>
+        /// <param name="resourceId">the resourceid subjects must contain</param>
         /// <returns>list of resource/action keys</returns>
-        public static IEnumerable<string> CalculateActionKey(XacmlRule rule)
+        public static IEnumerable<string> CalculateActionKey(XacmlRule rule, string resourceId)
         {
             List<string> result = [];
 
-            //Use policy to calculate the rest of the key
+            // Use policy to calculate the rest of the key
             var resources = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Resource).ToList();
             var actions = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Action);
             List<string> resourceKeys = new List<string>();
@@ -179,15 +289,21 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                     resource.Add(new PolicyAttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute, Value = resourceAppId });
                 }
 
+                // Just throw away resources not matching the resourceid we are looking for
+                if (resource.Any(r => r.Id.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute) && r.Value.Equals(resourceId, StringComparison.OrdinalIgnoreCase)) == false)
+                {
+                    continue;
+                }
+
                 StringBuilder resourceKey = new();
 
                 resource.Sort((a, b) => string.Compare(a.Id, b.Id, StringComparison.InvariantCultureIgnoreCase));
                 foreach (var item in resource)
                 {
                     resourceKey.Append(item.Id);
-                    resourceKey.Append(":");
+                    resourceKey.Append(':');
                     resourceKey.Append(item.Value);
-                    resourceKey.Append(":");
+                    resourceKey.Append(':');
                 }
 
                 if (resourceKey.Length > 0)
@@ -206,9 +322,9 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 foreach (var item in action)
                 {
                     actionKey.Append(item.Id);
-                    actionKey.Append(":");
+                    actionKey.Append(':');
                     actionKey.Append(item.Value);
-                    actionKey.Append(":");
+                    actionKey.Append(':');
                 }
 
                 if (actionKey.Length > 0)
@@ -255,6 +371,41 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             }
 
             return isApp;
+        }
+
+        /// <summary>
+        /// Check to verify if a given exception should be pushed to the error queue for later handling.
+        /// </summary>
+        /// <param name="ex">the exception to check</param>
+        /// <returns>verdict to add to error queue</returns>
+        public static bool CheckIfErrorShouldBePushedToErrorQueue(Exception ex)
+        {
+            if (ex.Message.StartsWith("Resource '", StringComparison.InvariantCultureIgnoreCase) && ex.Message.EndsWith("' not found", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_toid\"", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.InnerException != null && ex.InnerException.Message.StartsWith("23503: insert or update on table \"assignment\" violates foreign key constraint \"fk_assignment_entity_fromid\"", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.Message.StartsWith("Resource '", StringComparison.InvariantCultureIgnoreCase) && ex.Message.EndsWith("' not found", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            if (ex.Message.Equals("Audit fields are required.", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

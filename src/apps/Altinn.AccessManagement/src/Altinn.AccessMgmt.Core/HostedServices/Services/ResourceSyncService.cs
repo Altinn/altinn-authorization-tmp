@@ -67,7 +67,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
 
         // IngestService will map in Id property and update properties not matchaed
-        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], cancellationToken: cancellationToken);
+        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], ignoreColumnsToUpdate: ["audit_validfrom"], cancellationToken: cancellationToken);
 
         return true;
     }
@@ -233,7 +233,7 @@ public partial class ResourceSyncService : IResourceSyncService
             return null;
         }
 
-        var resource = await dbContext.Resources.FirstOrDefaultAsync(t => t.RefId == convertedResource.RefId && t.ProviderId == convertedResource.ProviderId, cancellationToken);
+        var resource = await dbContext.Resources.FirstOrDefaultAsync(t => t.RefId == convertedResource.RefId, cancellationToken);
         if (resource is null)
         {
             dbContext.Resources.Add(convertedResource);
@@ -244,6 +244,7 @@ public partial class ResourceSyncService : IResourceSyncService
         resource.Name = convertedResource.Name;
         resource.Description = convertedResource.Description;
         resource.TypeId = convertedResource.TypeId;
+        resource.ProviderId = convertedResource.ProviderId;
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
