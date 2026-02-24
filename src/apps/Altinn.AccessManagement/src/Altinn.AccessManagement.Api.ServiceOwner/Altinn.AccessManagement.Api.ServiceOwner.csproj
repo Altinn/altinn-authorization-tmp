@@ -4,4 +4,8 @@
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
+    </ItemGroup>
+
 </Project>
