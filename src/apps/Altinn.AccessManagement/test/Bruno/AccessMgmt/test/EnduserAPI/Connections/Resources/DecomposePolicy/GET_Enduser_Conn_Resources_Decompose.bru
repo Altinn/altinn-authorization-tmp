@@ -1,17 +1,16 @@
 meta {
-  name: GET_Enduser_Conn_Resources_DelgCheck_Dagl
+  name: GET_Enduser_Conn_Resources_Decompose
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/delegationcheck?party={{party}}&resource={{resource}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights/decomposepolicy?resource={{resource}}
   body: json
   auth: inherit
 }
 
 params:query {
-  party: {{party}}
   resource: {{resource}}
 }
 
@@ -23,9 +22,8 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/resource-delegationcheck/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_Resources_DelgCheck_Dagl");
+  bru.setVar("requestName", "GET_Enduser_Conn_Resources_Decompose");
   
-  bru.setVar("party", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
   bru.setVar("resource", testdata.resources.packageResourceId);
   
   var getTokenParameters = {
@@ -54,9 +52,5 @@ tests {
     
     const expectedNumPackages = 6;
     assert.lengthOf(actions, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages giving access to the resource`);
-    
-    for (let i = 0; i < actions.Length; i++) {
-      assert.isTrue(actions[i].result, "expected all actions to be available");
-    }
   });
 }
