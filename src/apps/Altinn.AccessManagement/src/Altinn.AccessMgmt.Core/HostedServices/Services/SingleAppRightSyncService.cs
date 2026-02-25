@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Altinn.AccessManagement.Core.Models;
+﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
@@ -13,6 +12,8 @@ using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -197,6 +198,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
             var items = await errorQueueService.RetrieveItemsForReProcessing("App", cancellationToken);
+            AuditValues values = null;
 
             foreach (var item in items)
             {
@@ -222,7 +224,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                     }
 
-                    AuditValues values = new AuditValues(
+                    values = new AuditValues(
                         performedByGuid,
                         SystemEntityConstants.SingleRightImportSystem.Id,
                         batchId.ToString(),
@@ -268,11 +270,16 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                     }
 
-                    var result = errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
+                    var result = await errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
                     return;
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = ex.InnerException is null ? ex.Message : ex.InnerException.Message;
+                    await errorQueueService.UpdateErrorMessage(item.Id, values, errorMessage, cancellationToken);
                 }
             }
         }        

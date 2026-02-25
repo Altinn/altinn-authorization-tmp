@@ -24,7 +24,8 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<List<ErrorQueue>> RetrieveItemsForReProcessing(string type, CancellationToken cancellationToken)
         {
             var items = await db.ErrorQueue.AsNoTracking()
-            .Where(t => t.OriginType == type && t.ReProcess)
+            .Where(t => t.OriginType == type && t.ReProcess && !t.Processed)
+            .OrderBy(t => t.Id)
             .ToListAsync(cancellationToken);
             
             return items;
@@ -34,10 +35,25 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<bool> MarkErrorQueueElementProcessed(Guid id, AuditValues values, CancellationToken cancellationToken)
         {
             var res = await db.ErrorQueue.AsTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-
+                            
             if (res != null)
             {
                 res.Processed = true;
+            }
+
+            var result = await db.SaveChangesAsync(values, cancellationToken);
+
+            return result > 0;            
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> UpdateErrorMessage(Guid id, AuditValues values, string errorMessage, CancellationToken cancellationToken)
+        {
+            var res = await db.ErrorQueue.AsTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+            if (res != null)
+            {
+                res.ErrorMessage = errorMessage;
             }
 
             var result = await db.SaveChangesAsync(values, cancellationToken);
