@@ -123,11 +123,13 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             }).ToList();
     }
 
+    /// <inheritdoc/>
     public async Task<Result<ValidationProblemInstance>> DeleteMyProvider(Guid useruuid, Guid provider, CancellationToken cancellationToken = default)
     {
         return await RemoveAgent(provider, useruuid, true, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<Result<List<DelegationDto>>> DeleteMyClient(Guid useruuid, Guid provider, Guid from, DelegationBatchInputDto payload, CancellationToken cancellationToken = default)
     {
         return await RemoveAgentDelegation(provider, from, useruuid, payload, cancellationToken);
@@ -189,8 +191,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 }
             )
             .Where(x =>
-                (x.AssignmentPackage == null || x.AssignmentPackage.IsDelegable) &&
-                (x.RolePackage == null || x.RolePackage.IsDelegable) &&
+                (x.RolePackage == null || x.AssignmentPackage == null) &&
                 (x.RolePackageEntityVariantId == null || x.RolePackageEntityVariantId == x.From.VariantId))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
@@ -204,8 +205,8 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
-                        .. r.Where(p => p.AssignmentPackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id),
-                        .. r.Where(p => p.RolePackage is { }).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id),
+                        .. r.Where(p => p.AssignmentPackage is { } && p.AssignmentPackage.IsDelegable).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id),
+                        .. r.Where(p => p.RolePackage is { } && p.RolePackage.IsDelegable).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id),
                     ],
                 }).ToList(),
             }).ToList();
