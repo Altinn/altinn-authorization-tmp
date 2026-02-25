@@ -208,7 +208,6 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
                         .. r.Where(p => p.AssignmentPackage is { } && p.AssignmentPackage.IsDelegable)
-                            .Where(p => p.RolePackageEntityVariantId == null || p.RolePackageEntityVariantId == p.From.VariantId)
                             .Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage))
                             .DistinctBy(p => p.Id),
                         .. r.Where(p => p.RolePackage is { } && p.RolePackage.IsDelegable)
