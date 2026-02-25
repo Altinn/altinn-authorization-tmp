@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Models;
+﻿using System.Text.Json;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -10,8 +11,6 @@ using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
-using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {

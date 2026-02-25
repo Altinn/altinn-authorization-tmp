@@ -1,12 +1,8 @@
-﻿using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessMgmt.Core.Services.Contracts;
+﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Platform.Storage.Interface.Models;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
