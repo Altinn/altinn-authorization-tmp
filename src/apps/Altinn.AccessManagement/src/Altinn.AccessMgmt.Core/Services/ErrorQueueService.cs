@@ -31,7 +31,7 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<bool> MarkErrorQueueElementProcessed(Guid id, AuditValues values, CancellationToken cancellationToken)
         {
             var res = await db.ErrorQueue.AsTracking().FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
-                            
+
             if (res != null)
             {
                 res.Processed = true;
