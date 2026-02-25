@@ -20,13 +20,17 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
         EntityTypeConstants.SystemUser
     ];
 
+    private IEnumerable<Guid> ExcludeClientRoles { get; } = [
+        RoleConstants.Supplier.Id,
+    ];
+
     /// <inheritdoc/>
     public async Task<Result<List<MyClientDto>>> GetMyClients(Guid partyId, List<Guid> provider, CancellationToken cancellationToken = default)
     {
         provider ??= [];
         var query = await db.Assignments
             .AsNoTracking()
-            .Where(a => a.ToId == partyId && a.RoleId == RoleConstants.Agent)
+            .Where(a => a.ToId == partyId && !ExcludeClientRoles.Contains(a.RoleId))
             .WhereIf(provider.Count > 0, a => provider.Contains(a.FromId))
             .GroupJoin(
                 db.Delegations,
@@ -159,7 +163,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
 
         var query = await db.Assignments
             .AsNoTracking()
-            .Where(a => a.ToId == partyId)
+            .Where(a => a.ToId == partyId && a.RoleId != RoleConstants.Supplier)
             .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId))
             .Include(a => a.From)
             .GroupJoin(
