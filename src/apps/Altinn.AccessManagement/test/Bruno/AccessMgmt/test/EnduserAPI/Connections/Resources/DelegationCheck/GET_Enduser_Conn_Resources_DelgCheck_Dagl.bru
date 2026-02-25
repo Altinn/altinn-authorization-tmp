@@ -47,16 +47,16 @@ tests {
   
   test(bru.getVar("requestName"), function() {
     const body = res.getBody();
-    const rules = body.rules;
+    const rights = body.rights;
     
     expect(res.status).to.equal(200);
-    assert.isNotEmpty(rules, "Expected data in response body to NOT be empty array");
+    assert.isNotEmpty(rights, "Expected data in response body to NOT be empty array");
     
     const expectedNumPackages = 6;
-    assert.lengthOf(rules, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages giving access to the resource`);
+    assert.lengthOf(rights, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages giving access to the resource`);
     
-    for (let i = 0; i < rules.Length; i++) {
-      assert.isTrue(rules[i].result, "expected all rules to be available");
+    for (let i = 0; i < rights.Length; i++) {
+      assert.isTrue(rights[i].result, "expected all rights to be available");
     }
   });
 }
