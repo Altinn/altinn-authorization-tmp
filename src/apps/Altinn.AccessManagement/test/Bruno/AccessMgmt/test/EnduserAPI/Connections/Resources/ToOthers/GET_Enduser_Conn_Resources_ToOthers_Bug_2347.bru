@@ -1,43 +1,35 @@
 meta {
-  name: Post_Enduser_Conn_Resources_Dagl
+  name: GET_Enduser_Conn_Resources_ToOthers_Bug_2347
   type: http
-  seq: 1
+  seq: 3
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{party}}&from={{from}}&to={{to}}&resource={{resource}}
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rules?party=2c0fe83d-f4f7-4cf4-9e83-cfa0b2e677d5&from=2c0fe83d-f4f7-4cf4-9e83-cfa0b2e677d5&to=2ef6656c-ae55-40b8-aa68-d796d511c20b&resource=altinn2-link-service-with-srr-and-consent-gui-test
   body: json
   auth: inherit
 }
 
 params:query {
-  party: {{party}}
-  from: {{from}}
-  to: {{to}}
-  resource: {{resource}}
+  party: 2c0fe83d-f4f7-4cf4-9e83-cfa0b2e677d5
+  from: 2c0fe83d-f4f7-4cf4-9e83-cfa0b2e677d5
+  to: 2ef6656c-ae55-40b8-aa68-d796d511c20b
+  resource: altinn2-link-service-with-srr-and-consent-gui-test
+  ~resource: {{resource}}
+  ~to: {{party}}
 }
 
 headers {
   Accept: application/json
 }
 
-body:json {
-  {
-    "DirectRightKeys": [
-      "urn:altinn:resource:tilgangspakke_delegering_ressurs:urn:oasis:names:tc:xacml:1.0:action:action-id:read"
-    ]
-  }
-}
-
 script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/resource-delegationcheck/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_Resources_DelgCheck_Dagl");
+  bru.setVar("requestName", "GET_Enduser_Conn_Resources_ToOthers_Dagl_GetAll");
   
   bru.setVar("party", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
-  bru.setVar("from", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
-  bru.setVar("to", "59f27618-428c-4f1b-af3a-ce9677b1ecc5");
   bru.setVar("resource", testdata.resources.packageResourceId);
   
   var getTokenParameters = {
@@ -59,8 +51,11 @@ tests {
   
   test(bru.getVar("requestName"), function() {
     const body = res.getBody();
-    const actions = body.actions;
+    const data = body.data;
     
-    expect(res.status).to.equal(201);  
+    expect(res.status).to.equal(200);
+    
+    // ToDo: Actual test asserts  
+    
   });
 }
