@@ -65,20 +65,20 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
 
                 var clients = providerGroup
                     .Where(x => x.Client is not null)
-                    .GroupBy(x => x.Client!.Id)
+                    .GroupBy(x => x.Client.Id)
                     .Select(clientGroup =>
                     {
-                        var client = clientGroup.First().Client!;
+                        var client = clientGroup.First().Client;
 
                         var access = clientGroup
                             .Where(x => x.Role is not null)
                             .GroupBy(x => x.Role.Id)
                             .Select(roleGroup => new ClientDto.RoleAccessPackages
                             {
-                                Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role!),
+                                Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role),
                                 Packages = roleGroup
                                     .Where(x => x.Package is not null)
-                                    .Select(x => DtoMapper.ConvertCompactPackage(x.Package!))
+                                    .Select(x => DtoMapper.ConvertCompactPackage(x.Package))
                                     .DistinctBy(p => p.Id)
                                     .ToArray(),
                             })
@@ -190,9 +190,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     RolePackageEntityVariantId = rp.EntityVariantId
                 }
             )
-            .Where(x =>
-                (x.RolePackage != null || x.AssignmentPackage != null) &&
-                (x.RolePackageEntityVariantId == null || x.RolePackageEntityVariantId == x.From.VariantId))
+            .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
@@ -205,8 +203,14 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
-                        .. r.Where(p => p.AssignmentPackage is { } && p.AssignmentPackage.IsDelegable).Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage)).DistinctBy(p => p.Id),
-                        .. r.Where(p => p.RolePackage is { } && p.RolePackage.IsDelegable).Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage)).DistinctBy(p => p.Id),
+                        .. r.Where(p => p.AssignmentPackage is { } && p.AssignmentPackage.IsDelegable)
+                            .Where(p => p.RolePackageEntityVariantId == null || p.RolePackageEntityVariantId == p.From.VariantId)
+                            .Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage))
+                            .DistinctBy(p => p.Id),
+                        .. r.Where(p => p.RolePackage is { } && p.RolePackage.IsDelegable)
+                            .Where(p => p.RolePackageEntityVariantId == null || p.RolePackageEntityVariantId == p.From.VariantId)
+                            .Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage))
+                            .DistinctBy(p => p.Id),
                     ],
                 }).ToList(),
             }).ToList();
