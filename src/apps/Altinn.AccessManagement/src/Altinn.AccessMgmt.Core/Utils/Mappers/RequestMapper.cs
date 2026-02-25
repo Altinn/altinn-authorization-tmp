@@ -16,8 +16,11 @@ public partial class DtoMapper : IDtoMapper
         return new RequestDto
         {
             Id = request.Id,
-            From = ConvertToPartyEntityDto(request.From),
-            To = ConvertToPartyEntityDto(request.To),
+            Connection = new ConnectionRequestDto
+            {
+                From = ConvertToPartyEntityDto(request.From),
+                To = ConvertToPartyEntityDto(request.To),
+            },
             Status = request.Status
         };
     }
@@ -27,8 +30,11 @@ public partial class DtoMapper : IDtoMapper
         return new RequestDto
         {
             Id = request.Id,
-            From = ConvertToPartyEntityDto(request.Assignment.From),
-            To = ConvertToPartyEntityDto(request.Assignment.To),
+            Connection = new ConnectionRequestDto
+            {
+                From = ConvertToPartyEntityDto(request.Assignment.From),
+                To = ConvertToPartyEntityDto(request.Assignment.To),
+            },
             Status = request.Status
         };
     }
@@ -38,8 +44,11 @@ public partial class DtoMapper : IDtoMapper
         return new RequestDto
         {
             Id = request.Id,
-            From = ConvertToPartyEntityDto(request.Assignment.From),
-            To = ConvertToPartyEntityDto(request.Assignment.To),
+            Connection = new ConnectionRequestDto
+            {
+                From = ConvertToPartyEntityDto(request.Assignment.From),
+                To = ConvertToPartyEntityDto(request.Assignment.To),
+            },
             Status = request.Status
         };
     }

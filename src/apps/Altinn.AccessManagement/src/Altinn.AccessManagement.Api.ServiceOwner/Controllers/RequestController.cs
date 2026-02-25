@@ -11,7 +11,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 /// Request access
 /// </summary>
 [ApiController]
-[Route("accessmanagement/api/v1/serviceowner/request")]
+[Route("accessmanagement/api/v1/serviceowner/delegationrequests")]
 public class RequestController : ControllerBase
 {
     /// <summary>
@@ -55,7 +55,7 @@ public class RequestController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RequestResource([FromBody] RequestResourceInput input, CancellationToken cancellationToken = default)
-    {
-        return Accepted();
+    {        
+        return Accepted("deeplink.....");
     }
 }

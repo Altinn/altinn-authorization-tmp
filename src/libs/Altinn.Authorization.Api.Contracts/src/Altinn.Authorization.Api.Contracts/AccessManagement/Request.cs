@@ -91,10 +91,39 @@ public class RequestDto
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Request status (e.g. pending, approved, rejected, withdrawn)
+    /// Request status (e.g. draft, pending, approved, rejected, withdrawn)
     /// </summary>
     public RequestStatus Status { get; set; }
 
+    /// <summary>
+    /// Relevant links for the request (e.g. confirm, check status)
+    /// </summary>
+    public RequestLinks Links { get; set; }
+
+    /// <summary>
+    /// Connection from one party to another that is requested
+    /// </summary>
+    public ConnectionRequestDto Connection { get; set; }   
+}
+
+public class RequestLinks
+{
+    /// <summary>
+    /// Link for user to confirm request (change status from draft to pending)
+    /// </summary>
+    public string EnduserLink { get; set; }
+
+    /// <summary>
+    /// Link to check status of request
+    /// </summary>
+    public string StatusLink { get; set; }
+}
+
+/// <summary>
+/// Definition of connection from one party to another
+/// </summary>
+public class ConnectionRequestDto
+{
     /// <summary>
     /// Party that is requested to grant access
     /// </summary>

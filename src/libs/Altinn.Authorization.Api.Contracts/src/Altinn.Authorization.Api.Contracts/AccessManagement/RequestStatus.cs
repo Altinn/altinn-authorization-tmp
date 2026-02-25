@@ -15,7 +15,7 @@ public enum RequestStatus
     /// <summary>
     /// Not ready to be processed
     /// </summary>
-    Drafted = 1,
+    Draft = 1,
 
     /// <summary>
     /// Waiting for processing
