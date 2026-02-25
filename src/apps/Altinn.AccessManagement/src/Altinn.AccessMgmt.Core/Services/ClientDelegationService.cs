@@ -191,7 +191,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                 }
             )
             .Where(x =>
-                (x.RolePackage == null || x.AssignmentPackage == null) &&
+                (x.RolePackage != null || x.AssignmentPackage != null) &&
                 (x.RolePackageEntityVariantId == null || x.RolePackageEntityVariantId == x.From.VariantId))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
@@ -567,7 +567,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                     $"/values[{input.RoleIdx}]/role",
                     [new($"{input.Role.Entity.Urn}", $"Role is not assigned to '{partyId}' from '{fromId}'.")]
                 );
-                
+
                 continue;
             }
 
@@ -623,7 +623,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                         $"/values[{input.RoleIdx}]/packages[{pkg.PackageIdx}]",
                         [new($"{pkg.Package.Entity.Urn}", $"Can't delegate package from client '{fromId}' as they haven't been assigned to '{partyId}' through role '{input.Role.Entity.Urn}'.")]
                     );
-                    
+
                     continue;
                 }
 
@@ -724,7 +724,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
                         $"/values[{input.RoleIdx}]/packages[{inputPackage.PackageIdx}]",
                         [new($"{inputPackage.InputPackage}", "package do not exist.")]
                     );
-                    
+
                     continue;
                 }
             }
