@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -267,19 +268,8 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static string BuildProblemErrorMessage(ProblemInstance problem)
         {
-            var sb = new System.Text.StringBuilder();
-
-            // Base message for the provided problem
-            sb.Append($"{problem.ErrorCode}: {problem.Detail}");
-
-            // Helper to append validation errors (if any) from a ValidationProblemInstance
-            static void AppendValidationErrors(System.Text.StringBuilder builder, ValidationProblemInstance vpi)
-            {
-                if (vpi.Errors != null && vpi.Errors.Any())
-                {
-                    builder.Append(string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}")));
-                }
-            }
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{problem.ErrorCode}: {problem.Detail}: {AppendExtensions(problem)}");
 
             // Handle top-level ValidationProblemInstance
             if (problem is ValidationProblemInstance vpiTop)
@@ -296,9 +286,30 @@ namespace Altinn.AccessManagement.Core.Services
                     }
                     else
                     {
-                        sb.Append($", {subProblem.ErrorCode}: {subProblem.Detail}");
+                        sb.Append($", {subProblem.ErrorCode}: {subProblem.Detail} {AppendExtensions(subProblem)}");
                     }
                 }
+            }
+
+            // Helper to append validation errors (if any) from a ValidationProblemInstance
+            static void AppendValidationErrors(System.Text.StringBuilder builder, ValidationProblemInstance vpi)
+            {
+                if (vpi.Errors != null && vpi.Errors.Any())
+                {
+                    builder.Append(string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}")));
+                }
+            }
+
+            // Helper to append Extensions texts (if any) from a ProblemInstance
+            static string AppendExtensions(ProblemInstance problem)
+            {
+                StringBuilder sbExtensions = new StringBuilder();
+                foreach (KeyValuePair<string, string> extension in problem.Extensions)
+                {
+                    sbExtensions.Append($", {extension.Key}: {extension.Value}");
+                }
+
+                return sbExtensions.ToString();
             }
 
             return sb.ToString();
