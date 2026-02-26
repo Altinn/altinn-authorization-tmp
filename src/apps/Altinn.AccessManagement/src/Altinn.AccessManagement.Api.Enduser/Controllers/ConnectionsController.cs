@@ -432,8 +432,8 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "party")] Guid party,
         [FromQuery(Name = "from")] Guid? from,
         [FromQuery(Name = "to")] Guid? to,
-        [FromQuery] string? resource = null,
         [FromQuery, FromHeader] PagingInput paging,
+        [FromQuery] string? resource = null,
         CancellationToken cancellationToken = default)
     {
         Resource resourceObj = null;
@@ -488,17 +488,17 @@ public class ConnectionsController(
             return NotFound($"Resource '{resource}' not found.");
         }
 
-        var result = connection.Direction == ConnectionQueryDirection.ToOthers
+        var result = party == from
             ? await ConnectionService.GetResourceRightsToOthers(
-                partyId: partyUuid,
-                toId: toUuid,
+                partyId: party,
+                toId: to,
                 resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
                 )
             : await ConnectionService.GetResourceRightsFromOthers(
-                partyId: partyUuid,
-                fromId: fromUuid,
+                partyId: party,
+                fromId: from,
                 resourceId: resourceObj.Id,
                 configureConnection: ConfigureConnections,
                 cancellationToken: cancellationToken
