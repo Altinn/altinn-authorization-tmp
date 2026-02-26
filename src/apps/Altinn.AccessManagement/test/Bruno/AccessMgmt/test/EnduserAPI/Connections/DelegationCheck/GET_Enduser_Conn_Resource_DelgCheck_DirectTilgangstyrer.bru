@@ -56,7 +56,7 @@ tests {
     assert.lengthOf(rights, expectedNumPackages, `Expected response data to contain all ${expectedNumPackages} available packages giving access to the resource`);
     
     for (let i = 0; i < rights.Length; i++) {
-      assert.isTrue(rights[i].result, "expected all rules to be available");
+      assert.isTrue(rights[i].result, "expected all rights to be available");
     }
   });
 }
