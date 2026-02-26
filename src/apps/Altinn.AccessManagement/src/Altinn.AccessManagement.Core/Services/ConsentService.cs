@@ -16,6 +16,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -26,7 +27,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
+    public class ConsentService(ILogger<ConsentService> logger, IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
         IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
@@ -255,10 +256,49 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
                 }
+                else
+                {
+                    logger.LogWarning("Consent with id {ConsentRequestId} exist in Altinn2 but failed to migrate to Altinn3 with error {Error}. ", consentRequestId, BuildProblemErrorMessage(result.Problem));
+                }
             }
 
             return consentRequest;
         }
+
+        private static string BuildProblemErrorMessage(ProblemInstance problem)
+        {
+            string errorMessage = $"{problem.ErrorCode}: {problem.Detail}";
+
+            if (typeof(ValidationProblemInstance).IsInstanceOfType(problem))
+            {
+                ValidationProblemInstance vpi = (ValidationProblemInstance)problem;
+                if (vpi.Errors != null && vpi.Errors.Any())
+                {
+                    errorMessage += string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}"));
+                }
+            }
+
+            if (typeof(MultipleProblemInstance).IsInstanceOfType(problem))
+            {
+                MultipleProblemInstance mpi = (MultipleProblemInstance)problem;
+                foreach (ProblemInstance subProblem in mpi.Problems)
+                {
+                    if (typeof(ValidationProblemInstance).IsInstanceOfType(subProblem))
+                    {
+                        ValidationProblemInstance vpi = (ValidationProblemInstance)subProblem;
+                        if (vpi.Errors != null && vpi.Errors.Any())
+                        {
+                            errorMessage += string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}"));
+                        }
+                    }
+                    else
+                    {
+                        errorMessage += $"{subProblem.ErrorCode}: {subProblem.Detail}";
+                    }
+                }
+            }
+
+            return errorMessage;        }
 
         private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ref MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
@@ -949,7 +989,8 @@ namespace Altinn.AccessManagement.Core.Services
                 ConsentRights = await MapAltinn2ResourcesToConsentRights(altinn2Consent.RequestResources, cancellationToken),
                 ConsentRequestEvents = await MapA2ConsentEventsToA3ConsentEvents(altinn2Consent, altinn2Consent.ConsentHistoryEvents, cancellationToken),
                 RedirectUrl = altinn2Consent.RedirectUrl,
-                TemplateId = altinn2Consent.TemplateId
+                TemplateId = altinn2Consent.TemplateId,
+                PortalViewMode = altinn2Consent.PortalViewMode != null ? Enum.Parse<ConsentPortalViewMode>(altinn2Consent.PortalViewMode, true) : ConsentPortalViewMode.Hide
             };
 
             return consent;
