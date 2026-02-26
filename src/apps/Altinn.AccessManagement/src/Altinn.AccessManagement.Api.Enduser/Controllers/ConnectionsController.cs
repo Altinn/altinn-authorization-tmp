@@ -603,6 +603,13 @@ public class ConnectionsController(
             return Problem();
         }
 
+        // Validate delegation authorization
+        var delegationAuthorizationError = await ValidateResourceDelegationAuthorization(fromId, resource, actionKeys.DirectRuleKeys, cancellationToken);
+        if (delegationAuthorizationError is { })
+        {
+            return delegationAuthorizationError;
+        }
+
         var from = await EntityService.GetEntity(fromId, cancellationToken);
         var to = await EntityService.GetEntity(toId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
@@ -643,6 +650,13 @@ public class ConnectionsController(
         if (!Guid.TryParse(connection.From, out var fromId) || !Guid.TryParse(connection.To, out var toId) || byId == Guid.Empty)
         {
             return Problem();
+        }
+
+        // Validate delegation authorization
+        var delegationAuthorizationError = await ValidateResourceDelegationAuthorization(fromId, resource, updateDto.DirectRuleKeys, cancellationToken);
+        if (delegationAuthorizationError is { })
+        {
+            return delegationAuthorizationError;
         }
 
         var from = await EntityService.GetEntity(fromId, cancellationToken);
@@ -717,6 +731,42 @@ public class ConnectionsController(
         }
 
         return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Validates that the authenticated user has permission to delegate all requested rules for a resource.
+    /// </summary>
+    /// <param name="fromId">The party delegating from.</param>
+    /// <param name="resource">The resource identifier.</param>
+    /// <param name="requestedRuleKeys">The rule keys that should be delegated.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing validation errors if delegation is not authorized,
+    /// or <c>null</c> if all rules can be delegated.
+    /// </returns>
+    private async Task<IActionResult?> ValidateResourceDelegationAuthorization(
+        Guid fromId,
+        string resource,
+        IEnumerable<string> requestedRuleKeys,
+        CancellationToken cancellationToken)
+    {
+        var byId = AuthenticationHelper.GetPartyUuid(this.HttpContext);
+
+        var delegationCheck = await ConnectionService.ResourceDelegationCheck(byId, fromId, resource, ConfigureConnections, cancellationToken);
+        if (delegationCheck.IsProblem)
+        {
+            return delegationCheck.Problem.ToActionResult();
+        }
+
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateDelegationAuthorization(requestedRuleKeys, delegationCheck.Value));
+
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        return null;
     }
 
     #endregion

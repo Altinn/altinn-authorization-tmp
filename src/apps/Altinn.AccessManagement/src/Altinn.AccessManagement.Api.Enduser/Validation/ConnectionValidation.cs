@@ -1,5 +1,8 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Validation;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Api.Enduser.Validation;
 
@@ -127,5 +130,15 @@ internal static class ConnectionValidation
             ParameterValidation.PartyFrom(from),
             ParameterValidation.PartyTo(to),
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
+        );
+
+    /// <summary>
+    /// Validation rule for delegation check - validates that user is authorized to delegate all requested rules.
+    /// </summary>
+    /// <param name="requestedRules">The rule keys that the user wants to delegate.</param>
+    /// <param name="delegationCheckResult">The result from ResourceDelegationCheck indicating which rules can be delegated.</param>
+    internal static RuleExpression ValidateDelegationAuthorization(IEnumerable<string> requestedRules, ResourceCheckDto delegationCheckResult) =>
+        ValidationComposer.All(
+            ConnectionCombinationRules.DelegationAuthorization(requestedRules, delegationCheckResult)
         );
 }
