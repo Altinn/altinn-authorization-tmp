@@ -44,9 +44,9 @@ namespace Altinn.AccessManagement.Core.Services
         private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken, bool fromAltinn2)
+        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, bool fromAltinn2, CancellationToken cancellationToken)
         {
-            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken, fromAltinn2);
+            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, fromAltinn2, cancellationToken);
 
             if (result.IsProblem)
             {
@@ -248,7 +248,7 @@ namespace Altinn.AccessManagement.Core.Services
             if (altinn2ConsentRequest != null)
             {
                 ConsentRequest mappedConsentFromA2 = await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
-                Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, cancellationToken, true);
+                Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, true, cancellationToken);
 
                 await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
 
@@ -720,7 +720,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// - Validates that resources requested in consent is valid
         /// - Validates that valid to time is valid
         /// </summary>
-        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken, bool fromAltinn2)
+        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, bool fromAltinn2, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder validationErrorsBuilder = default;
             MultipleProblemBuilder problemsBuilder = default;
@@ -783,7 +783,7 @@ namespace Altinn.AccessManagement.Core.Services
                 templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
-                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, cancelactionToken, fromAltinn2);
+                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, fromAltinn2, cancelactionToken);
                 }
             }
 
@@ -818,7 +818,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken, bool fromAltinn2)
+        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, bool fromAltinn2, CancellationToken cancelactionToken)
         {
             ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
             ValidationErrorBuilder validationErrors = default;

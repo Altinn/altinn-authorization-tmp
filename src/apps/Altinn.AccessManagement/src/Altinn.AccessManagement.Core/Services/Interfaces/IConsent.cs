@@ -39,7 +39,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Creates a consent requests and return info about the created one. Available for enteprises. 
         /// </summary>
-        Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken, bool fromAltinn2);
+        Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, bool fromAltinn2, CancellationToken cancellationToken);
 
         /// <summary>
         /// Rejects a consent request. For end user
