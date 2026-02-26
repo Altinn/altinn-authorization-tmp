@@ -44,9 +44,9 @@ namespace Altinn.AccessManagement.Core.Services
         private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken, bool fromAltinn2)
         {
-            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
+            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken, fromAltinn2);
 
             if (result.IsProblem)
             {
@@ -248,7 +248,7 @@ namespace Altinn.AccessManagement.Core.Services
             if (altinn2ConsentRequest != null)
             {
                 ConsentRequest mappedConsentFromA2 = await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
-                Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, cancellationToken);
+                Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, cancellationToken, true);
 
                 await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
 
@@ -267,38 +267,42 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static string BuildProblemErrorMessage(ProblemInstance problem)
         {
-            string errorMessage = $"{problem.ErrorCode}: {problem.Detail}";
+            var sb = new System.Text.StringBuilder();
 
-            if (typeof(ValidationProblemInstance).IsInstanceOfType(problem))
+            // Base message for the provided problem
+            sb.Append($"{problem.ErrorCode}: {problem.Detail}");
+
+            // Helper to append validation errors (if any) from a ValidationProblemInstance
+            static void AppendValidationErrors(System.Text.StringBuilder builder, ValidationProblemInstance vpi)
             {
-                ValidationProblemInstance vpi = (ValidationProblemInstance)problem;
                 if (vpi.Errors != null && vpi.Errors.Any())
                 {
-                    errorMessage += string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}"));
+                    builder.Append(string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}")));
                 }
             }
 
-            if (typeof(MultipleProblemInstance).IsInstanceOfType(problem))
+            // Handle top-level ValidationProblemInstance
+            if (problem is ValidationProblemInstance vpiTop)
             {
-                MultipleProblemInstance mpi = (MultipleProblemInstance)problem;
+                AppendValidationErrors(sb, vpiTop);
+            }
+            else if (problem is MultipleProblemInstance mpi)
+            {
                 foreach (ProblemInstance subProblem in mpi.Problems)
                 {
-                    if (typeof(ValidationProblemInstance).IsInstanceOfType(subProblem))
+                    if (subProblem is ValidationProblemInstance vpiSub)
                     {
-                        ValidationProblemInstance vpi = (ValidationProblemInstance)subProblem;
-                        if (vpi.Errors != null && vpi.Errors.Any())
-                        {
-                            errorMessage += string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}"));
-                        }
+                        AppendValidationErrors(sb, vpiSub);
                     }
                     else
                     {
-                        errorMessage += $"{subProblem.ErrorCode}: {subProblem.Detail}";
+                        sb.Append($", {subProblem.ErrorCode}: {subProblem.Detail}");
                     }
                 }
             }
 
-            return errorMessage;        }
+            return sb.ToString();
+        }
 
         private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ref MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
@@ -516,7 +520,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             return consentRequests;
         }
-        
+
         /// <inheritdoc/>
         public async Task<Result<bool>> UpdateAltinn2ConsentMigrateStatus(string consentId, int status, CancellationToken cancellationToken = default)
         {
@@ -716,7 +720,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// - Validates that resources requested in consent is valid
         /// - Validates that valid to time is valid
         /// </summary>
-        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
+        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken, bool fromAltinn2)
         {
             ValidationErrorBuilder validationErrorsBuilder = default;
             MultipleProblemBuilder problemsBuilder = default;
@@ -779,7 +783,7 @@ namespace Altinn.AccessManagement.Core.Services
                 templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
-                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, cancelactionToken);
+                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, cancelactionToken, fromAltinn2);
                 }
             }
 
@@ -814,7 +818,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken)
+        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken, bool fromAltinn2)
         {
             ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
             ValidationErrorBuilder validationErrors = default;
@@ -842,7 +846,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
                 else
                 {
-                    ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
+                    ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails, fromAltinn2);
                     consentResourceAttribute.Version = resourceDetails.VersionId.ToString();
                 }
 
@@ -864,13 +868,13 @@ namespace Altinn.AccessManagement.Core.Services
             return (problemsBuilder, templateId);
         }
 
-        private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails, bool fromAltinn2)
         {
             if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
             {
                 foreach (KeyValuePair<string, string> metaData in consentRight.Metadata)
                 {
-                    if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                    if (resourceDetails.ConsentMetadata == null || (!resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()) && !fromAltinn2))
                     {
                         problemsBuilder.Add(Problems.UnknownConsentMetadata.Create([new("key", metaData.Key.ToLower())]));
                     }
