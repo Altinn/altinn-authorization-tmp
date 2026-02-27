@@ -11,8 +11,8 @@ public interface IConsentMigrationService
     /// <summary>
     /// Migrates a consent request to the new system
     /// </summary>
-    /// <param name="consentRequest">The consent request from the old application</param>
+    /// <param name="consentId">The Altinn2 consent guid</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result indicating success, failure, or duplicate</returns>
-    Task<ConsentMigrationResult> MigrateConsentRequest(ConsentRequest consentRequest, CancellationToken cancellationToken);
+    Task<ConsentMigrationResult> MigrateConsent(Guid consentId, CancellationToken cancellationToken);
 }

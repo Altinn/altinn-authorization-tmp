@@ -13,7 +13,7 @@ public class ConsentMigrationSettings
   /// <summary>
   /// Status of consents to migrate (e.g., "expired", "active")
   /// </summary>
-  public string ConsentStatus { get; set; } = "expired";
+  public int ConsentStatus { get; set; } = 1;
 
   /// <summary>
   /// Delay in milliseconds between processing batches (when GUIDs are available)
@@ -31,7 +31,7 @@ public class ConsentMigrationSettings
   public DateTime EndDate { get; set; }
 
   /// <summary>
-  /// Base URL for the old application API
+  /// Indicates whether only expired consents should be migrated
   /// </summary>
-  public string OldAppBaseUrl { get; set; } = string.Empty;
+  public bool OnlyExpiredConsents { get; set; } = true;
 }

@@ -1,11 +1,12 @@
-﻿using System.Diagnostics.Metrics;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 
@@ -59,20 +60,24 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
     /// <inheritdoc/>
     public async Task<int> ProcessBatch(CancellationToken cancellationToken)
     {
-        var startTime = _timeProvider.GetUtcNow();
+        var batchStopwatch = Stopwatch.StartNew();
+        List<Guid> consentIds = null;
+        int successCount = 0;
+        int failedCount = 0;
 
         try
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
-            var migrationClient = scope.ServiceProvider.GetRequiredService<IConsentMigrationClient>();
+            var migrationClient = scope.ServiceProvider.GetRequiredService<IAltinn2ConsentClient>();
             var migrationService = scope.ServiceProvider.GetRequiredService<IConsentMigrationService>();
 
-            List<Guid> consentIds = await migrationClient.GetConsentIdsForMigration(
+            consentIds = await migrationClient.GetAltinn2ConsentListForMigration(
                 _settings.BatchSize,
                 _settings.ConsentStatus,
+                _settings.OnlyExpiredConsents,
                 cancellationToken);
 
-            if (consentIds.Count == 0)
+            if (consentIds == null || consentIds.Count == 0)
             {
                 return 0;
             }
@@ -81,69 +86,77 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
 
             foreach (Guid consentId in consentIds)
             {
-                await ProcessSingleConsent(migrationClient, migrationService, consentId, cancellationToken);
+                bool success = await ProcessSingleConsent(migrationService, consentId, cancellationToken);
+                if (success)
+                {
+                    successCount++;
+                }
+                else
+                {
+                    failedCount++;
+                }
             }
 
             _lastRunTime = _timeProvider.GetUtcNow();
+            batchStopwatch.Stop();
+
+            var totalProcessed = successCount + failedCount;
+            var successRate = totalProcessed > 0 ? (double)successCount / totalProcessed * 100 : 0;
+
+            _logger.LogInformation(
+                    "Batch completed: {Success}/{Total} succeeded ({SuccessRate:F1}%), {Failed} failed, Duration: {Duration}ms",
+                    successCount, totalProcessed, successRate, failedCount, batchStopwatch.ElapsedMilliseconds);
 
             return consentIds.Count;
         }
+        catch (HttpRequestException httpEx)
+        {
+            _logger.LogWarning(httpEx, "Network error in batch processing. Will retry in next cycle.");
+            return 0;
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogInformation("Batch processing cancelled. Processed: {Success} succeeded, {Failed} failed",
+              successCount, failedCount);
+            return successCount + failedCount;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in batch processing. Processed: {Success} succeeded, {Failed} failed",
+              successCount, failedCount);
+            return successCount + failedCount;
+        }
         finally
         {
-            var duration = (_timeProvider.GetUtcNow() - startTime).TotalMilliseconds;
-            _batchDurationHistogram.Record(duration);
+            _batchDurationHistogram.Record(batchStopwatch.Elapsed.TotalMilliseconds);
         }
     }
 
-    private async Task ProcessSingleConsent(
-        IConsentMigrationClient migrationClient,
+    private async Task<bool> ProcessSingleConsent(
         IConsentMigrationService migrationService,
         Guid consentId,
         CancellationToken cancellationToken)
     {
         try
         {
-            // Fetch consent details from old application
-            var consentRequest = await migrationClient.GetConsentDetails(consentId, cancellationToken);
-
-            if (consentRequest == null)
-            {
-                _totalProcessed++;
-                _processedCounter.Add(1);
-                _totalFailed++;
-                _failedCounter.Add(1);
-                await migrationClient.UpdateMigrationStatus(consentId, "failed", cancellationToken);
-                _logger.LogWarning("Consent {ConsentId} not found in old application", consentId);
-                return;
-            }
-
             // Migrate the consent request
-            var result = await migrationService.MigrateConsentRequest(consentRequest, cancellationToken);
+            var result = await migrationService.MigrateConsent(consentId, cancellationToken);
 
             _totalProcessed++;
             _processedCounter.Add(1);
 
             if (result.Success)
             {
-                await migrationClient.UpdateMigrationStatus(consentId, "migrated", cancellationToken);
                 _totalMigrated++;
                 _migratedCounter.Add(1);
-
-                if (result.AlreadyExisted)
-                {
-                    _logger.LogInformation("Consent {ConsentId} already existed (duplicate), marked as migrated", consentId);
-                }
-                else
-                {
-                    _logger.LogInformation("Successfully migrated consent {ConsentId}", consentId);
-                }
+                return true;
             }
             else
             {
-                await migrationClient.UpdateMigrationStatus(consentId, "failed", cancellationToken);
                 _totalFailed++;
                 _failedCounter.Add(1);
                 _logger.LogWarning("Failed to migrate consent {ConsentId}: {Error}", consentId, result.ErrorMessage);
+                return false;
             }
         }
         catch (Exception ex)
@@ -153,16 +166,13 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
             _totalFailed++;
             _failedCounter.Add(1);
 
-            try
+            // Only log unexpected errors
+            if (ex is not HttpRequestException and not TaskCanceledException)
             {
-                await migrationClient.UpdateMigrationStatus(consentId, "failed", cancellationToken);
-            }
-            catch (Exception updateEx)
-            {
-                _logger.LogError(updateEx, "Failed to update migration status for consent {ConsentId}", consentId);
+                _logger.LogError(ex, "Unexpected error migrating consent {ConsentId}", consentId);
             }
 
-            _logger.LogError(ex, "Exception while processing consent {ConsentId}", consentId);
+            return false;
         }
     }
 }

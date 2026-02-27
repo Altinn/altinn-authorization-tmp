@@ -1,5 +1,4 @@
-﻿using Altinn.AccessManagement.Core.Clients;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
@@ -59,8 +58,7 @@ public static class ServiceCollectionExtensions
             configuration.GetSection("ConsentMigration"));
 
         // Consent Migration - Services (Core - Scoped)
-        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
-        services.AddScoped<IConsentMigrationClient, MockConsentMigrationClient>();
+        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
 
         // Health check
         services.AddHealthChecks()
