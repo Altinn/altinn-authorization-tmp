@@ -393,10 +393,10 @@ namespace Altinn.AccessManagement.Core.Services
                 return delegations;
             }
 
-            return await BuildDelegationsResponse(delegationChanges, resources);
+            return await BuildDelegationsResponseUsingUuids(delegationChanges, resources);
         }
 
-        private async Task<List<Delegation>> BuildDelegationsResponse(List<DelegationChange> delegationChanges, IEnumerable<ServiceResource> resources = null)
+        private async Task<List<Delegation>> BuildDelegationsResponseUsingUuids(List<DelegationChange> delegationChanges, IEnumerable<ServiceResource> resources = null)
         {
             List<Delegation> delegations = new List<Delegation>();
             List<Guid> parties = delegationChanges.Select(d => (Guid)d.FromUuid).ToList();
@@ -408,6 +408,25 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 Party offeredByParty = partyList[delegationChange.FromUuid.ToString()];
                 Party coveredByParty = partyList[delegationChange.ToUuid.ToString()];
+                ServiceResource resource = resources?.FirstOrDefault(r => r.Identifier == delegationChange.ResourceId);
+                delegations.Add(BuildDelegationModel(delegationChange, offeredByParty, coveredByParty, resource));
+            }
+
+            return delegations;
+        }
+
+        private async Task<List<Delegation>> BuildDelegationsResponse(List<DelegationChange> delegationChanges, IEnumerable<ServiceResource> resources = null)
+        {
+            List<Delegation> delegations = new List<Delegation>();
+            List<int> parties = delegationChanges.Select(d => d.OfferedByPartyId).ToList();
+            parties.AddRange(delegationChanges.Select(d => d.CoveredByPartyId).Select(ds => Convert.ToInt32(ds)).ToList());
+
+            List<Party> partyList = await _contextRetrievalService.GetPartiesAsync(parties);
+
+            foreach (DelegationChange delegationChange in delegationChanges)
+            {
+                Party offeredByParty = partyList.Find(p => p.PartyId == delegationChange.OfferedByPartyId);
+                Party coveredByParty = partyList.Find(p => p.PartyId == delegationChange.CoveredByPartyId);
                 ServiceResource resource = resources?.FirstOrDefault(r => r.Identifier == delegationChange.ResourceId);
                 delegations.Add(BuildDelegationModel(delegationChange, offeredByParty, coveredByParty, resource));
             }
