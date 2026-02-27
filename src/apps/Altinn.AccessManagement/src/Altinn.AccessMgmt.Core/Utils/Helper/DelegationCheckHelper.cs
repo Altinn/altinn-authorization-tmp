@@ -1,10 +1,8 @@
 ﻿using System.Text;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.ABAC.Constants;
@@ -260,9 +258,9 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 resource.Sort((a, b) => string.Compare(a.Id, b.Id, StringComparison.InvariantCultureIgnoreCase));
                 foreach (var item in resource)
                 {
-                    resourceKey.Append(item.Id);
+                    resourceKey.Append(item.Id.ToLowerInvariant());
                     resourceKey.Append(':');
-                    resourceKey.Append(item.Value);
+                    resourceKey.Append(item.Value.ToLowerInvariant());
                     resourceKey.Append(':');
                 }
 
@@ -281,9 +279,9 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
                 action.Sort((a, b) => string.Compare(a.Id, b.Id, StringComparison.InvariantCultureIgnoreCase));
                 foreach (var item in action)
                 {
-                    actionKey.Append(item.Id);
+                    actionKey.Append(item.Id.ToLowerInvariant());
                     actionKey.Append(':');
-                    actionKey.Append(item.Value);
+                    actionKey.Append(item.Value.ToLowerInvariant());
                     actionKey.Append(':');
                 }
 
@@ -299,7 +297,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             {
                 foreach (var action in actionKeys)
                 {
-                    result.Add(resource.ToLower() + ":" + action.ToLower());
+                    result.Add(resource + ":" + action);
                 }
             }
 
