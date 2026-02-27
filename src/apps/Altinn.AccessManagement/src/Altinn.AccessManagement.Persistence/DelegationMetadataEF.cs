@@ -726,20 +726,47 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     /// <inheritdoc/>
     public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, int offeredByPartyId, int coveredByPartyId, ResourceRegistryResourceType resourceType, CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException("This method is no longer implemented.");
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, Guid? offeredByPartyUuid, Guid? coveredByPartyUuid, ResourceRegistryResourceType resourceType, CancellationToken cancellationToken = default)
+    {
         var resourceTypeName = MapResourceTypeToResourceTypeName(resourceType);
         var resourceRefIds = resourceIds.Select(CheckAndConvertIfAppResourceId);
-        var result = await DbContext.AssignmentResources.AsNoTracking()
-           .Include(t => t.Assignment).ThenInclude(t => t.From)
-           .Include(t => t.Assignment).ThenInclude(t => t.To)
-           .Include(t => t.Resource).ThenInclude(t => t.Type)
-           .Include(t => t.ChangedBy)
-           .WhereIf(offeredByPartyId != 0, t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
-           .WhereIf(coveredByPartyId != 0, t => t.Assignment.To.PartyId.HasValue && t.Assignment.To.PartyId.Value == coveredByPartyId)
-           .WhereIf(resourceRefIds?.Count() > 0, t => resourceRefIds.Contains(t.Resource.RefId))
-           .Where(t => t.Resource.Type.Name == resourceTypeName)
+
+        var resourceKeys = await DbContext.Resources.AsNoTracking()
+            .Include(t => t.Type)
+            .Where(t => t.Type.Name == resourceTypeName)
+            .WhereIf(resourceRefIds?.Count() > 0, t => resourceRefIds.Contains(t.RefId))
+            .Select(t => new
+            {
+                t.Id,
+                RefId = resourceTypeName == "AltinnApp"
+                    ? t.RefId.Replace("app_", string.Empty).Replace('_', '/')
+                    : t.RefId
+            })
+            .ToListAsync(cancellationToken);
+
+        var assignmentResources = await DbContext.AssignmentResources.AsNoTracking()
+           .WhereIf(offeredByPartyUuid.HasValue, t => t.Assignment.FromId == offeredByPartyUuid)
+           .WhereIf(coveredByPartyUuid.HasValue, t => t.Assignment.ToId == coveredByPartyUuid)
+           .Where(t => resourceKeys.Select(r => r.Id).Contains(t.ResourceId))
+           .Select(t => new DelegationChange
+           {
+               ToUuid = t.Assignment.ToId,
+               FromUuid = t.Assignment.FromId,
+               Created = t.Audit_ValidFrom.UtcDateTime,
+               ResourceId = t.ResourceId.ToString(),
+           })
            .ToListAsync(cancellationToken);
 
-        return result.Select(Convert).ToList();
+        foreach (var assignmentResource in assignmentResources)
+        {
+            assignmentResource.ResourceId = resourceKeys.Find(r => r.Id == Guid.Parse(assignmentResource.ResourceId)).RefId;
+        }
+
+        return assignmentResources;
     }
 
     /// <inheritdoc/>
