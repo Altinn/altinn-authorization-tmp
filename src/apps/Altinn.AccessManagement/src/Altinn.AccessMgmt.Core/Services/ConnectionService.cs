@@ -895,9 +895,10 @@ public partial class ConnectionService(
     private string GetActionNameFromRightKey(string key, string resourceId)
     {
         string[] parts = key.Split("urn:", options: StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
 
-        foreach (string part in parts)
+        bool actionAdded = false;
+        foreach (string part in parts.OrderDescending())
         {
             string currentPart = part;
             if (currentPart.Substring(currentPart.Length - 1, 1) == ":")
@@ -914,6 +915,15 @@ public partial class ConnectionService(
             if (currentPart.Equals(resourceId, StringComparison.InvariantCultureIgnoreCase))
             {
                 continue;
+            }
+
+            if (part.StartsWith("oasis:names:tc:xacml:1.0:action:action-id"))
+            {
+                actionAdded = true;
+            }
+            else if (actionAdded)
+            {
+                currentPart = "(" + currentPart + ")";
             }
 
             sb.Append(UppercaseFirstLetter(currentPart));
