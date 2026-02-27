@@ -59,7 +59,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
 
             foreach (XacmlRule rule in policy.Rules)
             {
-                IEnumerable<string> keys = DelegationCheckHelper.CalculateActionKey(rule, resourceId);
+                IEnumerable<string> keys = DelegationCheckHelper.CalculateRightKeys(rule, resourceId);
                 IEnumerable<string> ruleSubjects = DelegationCheckHelper.GetFirstAccessorValuesFromPolicy(rule, XacmlConstants.MatchAttributeCategory.Subject);
                 ruleSubjects = RemoveNonUserRules(ruleSubjects);
 
@@ -152,10 +152,10 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             return new ResourceAndAction { Resource = resourceList, Action = actionList.FirstOrDefault() };
         }
 
-        public static IEnumerable<XacmlRule> ConvertActionKeysToRules(IEnumerable<string> actionKeys, Guid toId)
+        public static IEnumerable<XacmlRule> ConvertRightKeysToRules(IEnumerable<string> rightKeys, Guid toId)
         {
             List<XacmlRule> result = [];
-            foreach (string key in actionKeys)
+            foreach (string key in rightKeys)
             {
                 XacmlRule currentRule = new XacmlRule(Guid.CreateVersion7().ToString(), XacmlEffectType.Permit);
 
@@ -226,7 +226,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
         /// <param name="rule">the rule to analyze</param>
         /// <param name="resourceId">the resourceid subjects must contain</param>
         /// <returns>list of resource/action keys</returns>
-        public static IEnumerable<string> CalculateActionKey(XacmlRule rule, string resourceId)
+        public static IEnumerable<string> CalculateRightKeys(XacmlRule rule, string resourceId)
         {
             List<string> result = [];
 
@@ -299,7 +299,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             {
                 foreach (var action in actionKeys)
                 {
-                    result.Add(resource + ":" + action);
+                    result.Add(resource.ToLower() + ":" + action.ToLower());
                 }
             }
 
@@ -402,22 +402,6 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Converts a list of policy attribute matches into a list of attribute matches
-        /// </summary>
-        /// <param name="policySubjects">a list of policy attribute matches</param>
-        /// <returns>a list of attribute matches</returns>
-        private static List<AttributeMatch> GetAttributeMatches(IEnumerable<List<PolicyAttributeMatch>> policySubjects)
-        {
-            List<AttributeMatch> attributeMatches = new List<AttributeMatch>();
-            foreach (List<PolicyAttributeMatch> attributeMatch in policySubjects)
-            {
-                attributeMatches.AddRange(attributeMatch);
-            }
-
-            return attributeMatches;
         }
     }
 }
