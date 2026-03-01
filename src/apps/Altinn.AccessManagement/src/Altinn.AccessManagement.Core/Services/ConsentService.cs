@@ -892,7 +892,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                     if (string.IsNullOrEmpty(metaData.Value) && !fromAltinn2)
                     {
-                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new("key", metaData.Key.ToLower())]));
+                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new($"ConsentRight index: {rightIndex}, key", metaData.Key.ToLower())]));
                     }
                 }
             }
