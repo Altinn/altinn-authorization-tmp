@@ -110,7 +110,8 @@ module.exports =
       "pid": "27920898721",
       "userId": 20013157,
       "partyId": 50382857,
-      "partyUuid": "f489878a-927f-4789-9dab-ff73c36c2f26"
+      "partyUuid": "f489878a-927f-4789-9dab-ff73c36c2f26",
+      "notAllowedToDelegatePackage": "oppforing-bygg-anlegg"
     },
     "revisor": {
       "name": "OVERFLADISK LANG TIGER AS",
