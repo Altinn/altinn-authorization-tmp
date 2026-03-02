@@ -816,7 +816,7 @@ public partial class ConnectionService(
         }
         catch (ValidationException)
         {
-            return Problems.InvallidResource;
+            return Problems.InvalidResource;
         }
 
         // Decompose policy into resource/tasks
@@ -854,7 +854,7 @@ public partial class ConnectionService(
         }
         catch (ValidationException)
         {
-            return Problems.InvallidResource;
+            return Problems.InvalidResource;
         }
 
         // Fetch Resourcemetadata
@@ -862,7 +862,7 @@ public partial class ConnectionService(
         
         if (resourceMetadata is null)
         {
-            return Problems.InvallidResource;
+            return Problems.InvalidResource;
         }
         
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
