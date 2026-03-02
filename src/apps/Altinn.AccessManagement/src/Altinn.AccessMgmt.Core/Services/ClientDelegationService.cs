@@ -104,12 +104,12 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             .ToList();
     }
 
-    public async Task<Result<List<AgentDto>>> GetMyProviders(Guid useruuid, CancellationToken cancellationToken = default)
+    public async Task<Result<List<AgentDto>>> GetMyProviders(Guid partyId, CancellationToken cancellationToken = default)
     {
         var query = await db.Assignments
             .AsNoTracking()
             .Include(a => a.From)
-            .Where(a => a.ToId == useruuid && a.RoleId == RoleConstants.Agent)
+            .Where(a => a.ToId == partyId && a.RoleId == RoleConstants.Agent)
             .ToListAsync(cancellationToken);
 
         return query
@@ -128,15 +128,15 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<ValidationProblemInstance>> DeleteMyProvider(Guid useruuid, Guid provider, CancellationToken cancellationToken = default)
+    public async Task<Result<ValidationProblemInstance>> DeleteMyProvider(Guid partyId, Guid provider, CancellationToken cancellationToken = default)
     {
-        return await RemoveAgent(provider, useruuid, true, cancellationToken);
+        return await RemoveAgent(provider, partyId, true, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<DelegationDto>>> DeleteMyClient(Guid useruuid, Guid provider, Guid from, DelegationBatchInputDto payload, CancellationToken cancellationToken = default)
+    public async Task<Result<List<DelegationDto>>> DeleteMyClient(Guid partyId, Guid provider, Guid from, DelegationBatchInputDto payload, CancellationToken cancellationToken = default)
     {
-        return await RemoveAgentDelegation(provider, from, useruuid, payload, cancellationToken);
+        return await RemoveAgentDelegation(provider, from, partyId, payload, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -913,14 +913,14 @@ public interface IClientDelegationService
     /// Gets providers that have assigned the Agent role to the given user/party.
     /// </summary>
     Task<Result<List<AgentDto>>> GetMyProviders(
-        Guid useruuid,
+        Guid partyId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes an agent assignment from the specified provider to the user.
     /// </summary>
     Task<Result<ValidationProblemInstance?>> DeleteMyProvider(
-        Guid useruuid,
+        Guid partyId,
         Guid provider,
         CancellationToken cancellationToken = default);
 
@@ -928,7 +928,7 @@ public interface IClientDelegationService
     /// Removes delegated packages from a client relationship.
     /// </summary>
     Task<Result<List<DelegationDto>>> DeleteMyClient(
-        Guid useruuid,
+        Guid partyId,
         Guid provider,
         Guid from,
         DelegationBatchInputDto payload,

@@ -40,8 +40,13 @@ public class ClientDelegationController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
-        var result = await clientDelegationService.GetMyClients(useruuid, provider, cancellationToken);
+        var partyId = GetPartyUuid();
+        if (partyId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var result = await clientDelegationService.GetMyClients(partyId, provider, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -58,8 +63,13 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetMyClientProviders(CancellationToken cancellationToken = default)
     {
-        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
-        var result = await clientDelegationService.GetMyProviders(useruuid, cancellationToken);
+        var partyId = GetPartyUuid();
+        if (partyId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var result = await clientDelegationService.GetMyProviders(partyId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -79,8 +89,13 @@ public class ClientDelegationController(
         [FromQuery(Name = "provider")][Required] Guid provider,
         CancellationToken cancellationToken = default)
     {
-        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
-        var result = await clientDelegationService.DeleteMyProvider(useruuid, provider, cancellationToken);
+        var partyId = GetPartyUuid();
+        if (partyId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var result = await clientDelegationService.DeleteMyProvider(partyId, provider, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -102,8 +117,13 @@ public class ClientDelegationController(
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
-        var useruuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
-        var result = await clientDelegationService.DeleteMyClient(useruuid, provider, from, payload, cancellationToken);
+        var partyId = GetPartyUuid();
+        if (partyId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var result = await clientDelegationService.DeleteMyClient(partyId, provider, from, payload, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -314,4 +334,15 @@ public class ClientDelegationController(
     }
 
     #endregion
+
+    private Guid GetPartyUuid()
+    {
+        var partyuuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
+        if (partyuuid == Guid.Empty)
+        {
+            return AuthenticationHelper.GetSystemUserUuid(httpContextAccessor.HttpContext);
+        }
+
+        return partyuuid;
+    }
 }
