@@ -191,6 +191,13 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
+    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, CancellationToken ct = default)
+    {
+        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
+        return await CreateRequestAssignmentResource(assignment.Id, resourceId);
+    }
+
+    /// <inheritdoc/>
     public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default)
     {
         var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.RequestedById == requestedBy && r.Status == RequestStatus.Pending);
@@ -204,6 +211,32 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
                 ResourceId = resourceId,
                 Action = action,
                 RequestedById = requestedBy,
+            };
+            db.RequestAssignmentResources.Add(request);
+
+            var res = await db.SaveChangesAsync();
+
+            if (res == 0)
+            {
+                throw new Exception("Failed to create request");
+            }
+        }
+
+        return await GetRequestAssignmentResource(request.Id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, CancellationToken ct = default)
+    {
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == RequestStatus.Pending);
+        if (request == null)
+        {
+            request = new RequestAssignmentResource
+            {
+                Id = Guid.NewGuid(),
+                Status = RequestStatus.Pending,
+                AssignmentId = assignmentId,
+                ResourceId = resourceId
             };
             db.RequestAssignmentResources.Add(request);
 

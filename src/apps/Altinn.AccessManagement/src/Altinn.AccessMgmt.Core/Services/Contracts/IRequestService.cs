@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -204,6 +205,20 @@ public interface IRequestService
     Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
 
     /// <summary>
+    /// Creates a new request assignment resource that represents an assignment action between two resources with a
+    /// specified role and action.
+    /// </summary>
+    /// <remarks>An exception is thrown if any of the provided identifiers are invalid or if the assignment
+    /// action cannot be performed.</remarks>
+    /// <param name="fromId">The unique identifier of the resource from which the assignment originates.</param>
+    /// <param name="toId">The unique identifier of the resource to which the assignment is made.</param>
+    /// <param name="roleId">The unique identifier of the role associated with the assignment.</param>
+    /// <param name="resourceId">The unique identifier of the resource being assigned.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created
+    /// RequestAssignmentResource.</returns>
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, CancellationToken ct = default);
+
+    /// <summary>
     /// Creates a new request assignment resource with the specified assignment, resource, action, and requesting user.
     /// </summary>
     /// <remarks>Throws an exception if any of the provided identifiers are invalid or if the specified action
@@ -216,6 +231,17 @@ public interface IRequestService
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentResource.</returns>
     Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a new request assignment resource with the specified assignment, resource, action, and requesting user.
+    /// </summary>
+    /// <remarks>Throws an exception if any of the provided identifiers are invalid or if the specified action
+    /// cannot be performed.</remarks>
+    /// <param name="assignmentId">The unique identifier of the assignment to which the resource will be associated.</param>
+    /// <param name="resourceId">The unique identifier of the resource to assign to the request.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created
+    /// RequestAssignmentResource.</returns>
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment status of a request identified by the specified request ID.

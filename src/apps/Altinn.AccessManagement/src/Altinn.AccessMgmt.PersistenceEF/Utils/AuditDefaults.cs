@@ -38,6 +38,11 @@ public static class AuditDefaults
     /// <summary>
     /// EnduserApi
     /// </summary>
+    public const string ServiceOwnerApi = "006cd1fb-fb60-7892-ab1c-9228e00618d6";
+
+    /// <summary>
+    /// EnduserApi
+    /// </summary>
     public const string InternalApi = "b2b7dd36-8de5-40fb-a6ce-c7a4020f9ddc";
 
     /// <summary>
