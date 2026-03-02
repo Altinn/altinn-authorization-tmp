@@ -89,8 +89,8 @@ public class AuthorizedPartiesController(
                 return Ok(PaginatedResult.Create(DtoMapper.ConvertToAuthorizedPartiesDto(result), null));
             }
 
-            Guid systemUserUuid = AuthenticationHelper.GetSystemUserUuidString(HttpContext);
-            if (systemUserUuid != Guid.Empty)
+            string systemUserUuid = AuthenticationHelper.GetSystemUserUuidString(HttpContext);
+            if (!string.IsNullOrWhiteSpace(systemUserUuid))
             {
                 var result = await authorizedPartiesService.GetAuthorizedPartiesBySystemUserUuid(systemUserUuid, filters, cancellationToken);
                 return Ok(PaginatedResult.Create(DtoMapper.ConvertToAuthorizedPartiesDto(result), null));
