@@ -1,9 +1,9 @@
 ﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
-/// Delegation check model for a resource
+/// Decompose model for a resource
 /// </summary>
-public class ResourceCheckDto
+public class ResourceDecomposedDto
 {
     /// <summary>
     /// Resource the delegation check is regarding
@@ -13,5 +13,5 @@ public class ResourceCheckDto
     /// <summary>
     /// Actions for which access is being checked on the resource.
     /// </summary>
-    public required IEnumerable<RightCheckDto> Rights { get; set; }
+    public required IEnumerable<RightDecomposedDto> Rights { get; set; }
 }
