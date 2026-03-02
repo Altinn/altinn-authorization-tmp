@@ -40,7 +40,7 @@ public class ClientDelegationController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var partyId = GetPartyUuid();
+        var partyId = GetMyPartyUuid();
         if (partyId == Guid.Empty)
         {
             return Unauthorized();
@@ -63,7 +63,7 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetMyClientProviders(CancellationToken cancellationToken = default)
     {
-        var partyId = GetPartyUuid();
+        var partyId = GetMyPartyUuid();
         if (partyId == Guid.Empty)
         {
             return Unauthorized();
@@ -89,7 +89,7 @@ public class ClientDelegationController(
         [FromQuery(Name = "provider")][Required] Guid provider,
         CancellationToken cancellationToken = default)
     {
-        var partyId = GetPartyUuid();
+        var partyId = GetMyPartyUuid();
         if (partyId == Guid.Empty)
         {
             return Unauthorized();
@@ -117,7 +117,7 @@ public class ClientDelegationController(
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
-        var partyId = GetPartyUuid();
+        var partyId = GetMyPartyUuid();
         if (partyId == Guid.Empty)
         {
             return Unauthorized();
@@ -335,7 +335,7 @@ public class ClientDelegationController(
 
     #endregion
 
-    private Guid GetPartyUuid()
+    private Guid GetMyPartyUuid()
     {
         var partyuuid = AuthenticationHelper.GetPartyUuid(httpContextAccessor.HttpContext);
         if (partyuuid == Guid.Empty)
