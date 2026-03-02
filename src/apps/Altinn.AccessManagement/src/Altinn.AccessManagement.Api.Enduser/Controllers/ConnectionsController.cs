@@ -474,7 +474,7 @@ public class ConnectionsController(
             resourceObj = await resourceService.GetResource(resource, cancellationToken);
             if (resourceObj is null)
             {
-                ProblemDetails problem = Core.Errors.Problems.InvallidResource.ToProblemDetails();
+                ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
                 return problem.ToActionResult();
             }
@@ -523,7 +523,7 @@ public class ConnectionsController(
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
-            ProblemDetails problem = Core.Errors.Problems.InvallidResource.ToProblemDetails();
+            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
             problem.Extensions["resource"] = resource;
             return problem.ToActionResult();
         }
@@ -636,7 +636,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvallidResource))
+            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -704,7 +704,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvallidResource))
+            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -790,7 +790,7 @@ public class ConnectionsController(
         var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvallidResource))
+            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;

@@ -119,7 +119,7 @@ public static class Problems
     = _factory.Create(26, HttpStatusCode.TooManyRequests, "There has been too many failed lookups");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor InvallidResource { get; }
+    public static ProblemDescriptor InvalidResource { get; }
     = _factory.Create(27, HttpStatusCode.BadRequest, "The resource is invalid");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>

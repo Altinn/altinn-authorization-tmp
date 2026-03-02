@@ -238,7 +238,7 @@ public partial class ConnectionService(
 
     public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, IEnumerable<string> rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, ConfigureConnections, cancellationToken);
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, ConfigureConnections, cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;
@@ -816,7 +816,7 @@ public partial class ConnectionService(
         }
         catch (ValidationException)
         {
-            return Problems.InvallidResource;
+            return Problems.InvalidResource;
         }
 
         // Decompose policy into resource/tasks
@@ -854,7 +854,7 @@ public partial class ConnectionService(
         }
         catch (ValidationException)
         {
-            return Problems.InvallidResource;
+            return Problems.InvalidResource;
         }
 
         // Fetch Resourcemetadata
@@ -1092,7 +1092,7 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, ConfigureConnections, cancellationToken);
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, ConfigureConnections, cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;
