@@ -858,7 +858,7 @@ public partial class ConnectionService(
         }
 
         // Fetch Resourcemetadata
-        bool isApp = DelegationCheckHelper.IsAppResourceId(resource, out string org, out string app);
+        bool isApp = DelegationCheckHelper.IsAppResource(resource, out string org, out string app);
         ServiceResource resourceMetadata = await contextRetrievalService.GetResourceFromResourceList(resource, isApp ? org : null, isApp ? app : null);
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
         bool isResourceDelegable = resourceMetadata.Delegable;
@@ -892,7 +892,7 @@ public partial class ConnectionService(
         return resourceCheckDto;
     }
 
-    private string GetActionNameFromRightKey(string key, string resourceId)
+    private string GetActionNameFromRightKey(string key, string resource)
     {
         string[] parts = key.Split("urn:", options: StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         StringBuilder sb = new StringBuilder();
@@ -911,7 +911,7 @@ public partial class ConnectionService(
                 currentPart = currentPart.Substring(currentPart.LastIndexOf(':') + 1);
             }
 
-            if (currentPart.Equals(resourceId, StringComparison.InvariantCultureIgnoreCase))
+            if (currentPart.Equals(resource, StringComparison.InvariantCultureIgnoreCase))
             {
                 continue;
             }
@@ -1264,18 +1264,18 @@ public partial class ConnectionService(
         options.FilterToEntityTypes = [];
     };
 
-    private async Task<ResourceDto> FetchResource(string resourceId, CancellationToken cancellationToken)
+    private async Task<ResourceDto> FetchResource(string resource, CancellationToken cancellationToken)
     {
-        Resource resource = await dbContext.Resources.AsNoTracking().SingleOrDefaultAsync(r => r.RefId == resourceId, cancellationToken);
+        Resource resourceObj = await dbContext.Resources.AsNoTracking().SingleOrDefaultAsync(r => r.RefId == resource, cancellationToken);
 
-        if (resource is null)
+        if (resourceObj is null)
         {
-            throw new ValidationException($"Resource with id '{resourceId}' not found");
+            throw new ValidationException($"Resource with id '{resource}' not found");
         }
 
-        Provider provider = await dbContext.Providers.AsNoTracking().SingleOrDefaultAsync(p => p.Id == resource.ProviderId, cancellationToken);
+        Provider provider = await dbContext.Providers.AsNoTracking().SingleOrDefaultAsync(p => p.Id == resourceObj.ProviderId, cancellationToken);
         ProviderTypeConstants.TryGetById(provider.TypeId, out var providerType);
-        PersistenceEF.Models.ResourceType resourceType = await dbContext.ResourceTypes.SingleOrDefaultAsync(rt => rt.Id == resource.TypeId, cancellationToken);
+        PersistenceEF.Models.ResourceType resourceType = await dbContext.ResourceTypes.SingleOrDefaultAsync(rt => rt.Id == resourceObj.TypeId, cancellationToken);
 
         ProviderDto providerDto = new ProviderDto
         {
@@ -1290,29 +1290,29 @@ public partial class ConnectionService(
 
         ResourceDto resourceDto = new ResourceDto
         {
-            Id = resource.Id,
-            Name = resource.Name,
-            Description = resource.Description,
+            Id = resourceObj.Id,
+            Name = resourceObj.Name,
+            Description = resourceObj.Description,
             Provider = providerDto,
             ProviderId = provider.Id,
-            RefId = resource.RefId,
-            TypeId = resource.TypeId,
+            RefId = resourceObj.RefId,
+            TypeId = resourceObj.TypeId,
             Type = new ResourceTypeDto { Id = resourceType.Id, Name = resourceType.Name }
         };
 
         return resourceDto;
     }
 
-    private async Task<XacmlPolicy> GetPolicy(string resourceId, CancellationToken cancellationToken = default)
+    private async Task<XacmlPolicy> GetPolicy(string resource, CancellationToken cancellationToken = default)
     {
         XacmlPolicy policy = null;
 
-        if (string.IsNullOrEmpty(resourceId))
+        if (string.IsNullOrEmpty(resource))
         {
-            throw new ValidationException($"ResourceId cannot be null or empty");
+            throw new ValidationException($"Resource cannot be null or empty");
         }
 
-        bool isApp = DelegationCheckHelper.IsAppResourceId(resourceId, out string org, out string app);
+        bool isApp = DelegationCheckHelper.IsAppResource(resource, out string org, out string app);
 
         if (isApp)
         {
@@ -1320,7 +1320,7 @@ public partial class ConnectionService(
         }
         else
         {
-            policy = await policyRetrievalPoint.GetPolicyAsync(resourceId, cancellationToken);
+            policy = await policyRetrievalPoint.GetPolicyAsync(resource, cancellationToken);
         }
 
         if (policy == null)
@@ -1705,7 +1705,7 @@ public partial class ConnectionService
                 Rights = new List<RightPermission>()
             };
 
-            bool isApp = DelegationCheckHelper.IsAppResourceId(resource.RefId, out string org, out string app);
+            bool isApp = DelegationCheckHelper.IsAppResource(resource.RefId, out string org, out string app);
             var resourcePolicy = isApp ? 
                 await policyRetrievalPoint.GetPolicyAsync(org, app, cancellationToken) :
                 await policyRetrievalPoint.GetPolicyAsync(resource.RefId, cancellationToken);
