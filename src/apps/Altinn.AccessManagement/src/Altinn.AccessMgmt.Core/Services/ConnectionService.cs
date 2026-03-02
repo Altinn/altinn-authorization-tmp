@@ -801,18 +801,18 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceDecomposedDto>> DecomposeResource(string resourceId, CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceDecomposedDto>> DecomposeResource(string resource, CancellationToken cancellationToken = default)
     {
-        ResourceDto resource;
+        ResourceDto resourceDto;
         XacmlPolicy policy;
 
         try
         {
             // Fetch resource
-            resource = await FetchResource(resourceId, cancellationToken);
+            resourceDto = await FetchResource(resource, cancellationToken);
 
             // Fetch policy for the resource
-            policy = await GetPolicy(resourceId, cancellationToken);
+            policy = await GetPolicy(resource, cancellationToken);
         }
         catch (ValidationException)
         {
@@ -820,15 +820,15 @@ public partial class ConnectionService(
         }
 
         // Decompose policy into resource/tasks
-        List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
+        List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         // Map to result
-        IEnumerable<RightDecomposedDto> decomposedRights = await MapFromInternalToDecomposedRights(rights, resourceId, cancellationToken);
+        IEnumerable<RightDecomposedDto> decomposedRights = await MapFromInternalToDecomposedRights(rights, resource, cancellationToken);
 
         // build result with reason based on roles, packages, resource rights and users delegable
         ResourceDecomposedDto resourceDecomposedDto = new ResourceDecomposedDto
         {
-            Resource = resource,
+            Resource = resourceDto,
             Rights = decomposedRights
         };
 
@@ -836,21 +836,21 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);
 
-        ResourceDto resource;
+        ResourceDto resourceDto;
         XacmlPolicy policy;
 
         try
         {
             // Fetch resource
-            resource = await FetchResource(resourceId, cancellationToken);
+            resourceDto = await FetchResource(resource, cancellationToken);
 
             // Fetch policy for the resource
-            policy = await GetPolicy(resourceId, cancellationToken);
+            policy = await GetPolicy(resource, cancellationToken);
         }
         catch (ValidationException)
         {
@@ -858,13 +858,13 @@ public partial class ConnectionService(
         }
 
         // Fetch Resourcemetadata
-        bool isApp = DelegationCheckHelper.IsAppResourceId(resourceId, out string org, out string app);
-        ServiceResource resourceMetadata = await contextRetrievalService.GetResourceFromResourceList(resourceId, isApp ? org : null, isApp ? app : null);
+        bool isApp = DelegationCheckHelper.IsAppResourceId(resource, out string org, out string app);
+        ServiceResource resourceMetadata = await contextRetrievalService.GetResourceFromResourceList(resource, isApp ? org : null, isApp ? app : null);
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
         bool isResourceDelegable = resourceMetadata.Delegable;
 
         // Decompose policy into resource/tasks
-        List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resourceId);
+        List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         // Fetch packages
         var packages = await CheckPackageForResource(party, null, ConfigureConnections, cancellationToken);
@@ -875,17 +875,17 @@ public partial class ConnectionService(
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
         // Fetch resource rights
-        var resources = await GetResourceRights(party, authenticatedUserUuid, resource.Id, null, cancellationToken);
+        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
 
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resourceId, accessListMode, fromParty, isResourceDelegable, cancellationToken);
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, isResourceDelegable, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
         {
-            Resource = resource,
+            Resource = resourceDto,
             Rights = checkRights
         };
         
