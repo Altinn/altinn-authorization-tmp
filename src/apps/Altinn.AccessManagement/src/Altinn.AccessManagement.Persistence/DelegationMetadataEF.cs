@@ -734,19 +734,14 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     /// <inheritdoc/>
     public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, Guid? offeredByPartyUuid, Guid? coveredByPartyUuid, ResourceRegistryResourceType resourceType, CancellationToken cancellationToken = default)
     {
-        var resourceTypeName = MapResourceTypeToResourceTypeName(resourceType);
         var resourceRefIds = resourceIds.Select(CheckAndConvertIfAppResourceId);
 
         var resourceKeys = await DbContext.Resources.AsNoTracking()
-            .Include(t => t.Type)
-            .Where(t => t.Type.Name == resourceTypeName)
-            .WhereIf(resourceRefIds?.Count() > 0, t => resourceRefIds.Contains(t.RefId))
+            .Where(t => resourceRefIds.Contains(t.RefId))
             .Select(t => new
             {
                 t.Id,
-                RefId = resourceTypeName == "AltinnApp"
-                    ? t.RefId.Replace("app_", string.Empty).Replace('_', '/')
-                    : t.RefId
+                t.RefId
             })
             .ToListAsync(cancellationToken);
 
