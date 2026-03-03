@@ -259,6 +259,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },    
+    {
       name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync"
       description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"

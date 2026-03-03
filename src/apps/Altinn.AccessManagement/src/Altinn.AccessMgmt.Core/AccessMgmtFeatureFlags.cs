@@ -33,6 +33,11 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
 
     /// <summary>
+    /// Specifies if the altinn BankruptcyEstate roles data should streamed from sblbridge service to access management database
+    /// </summary>
+    public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
+
+    /// <summary>
     /// Specifies if AuthorizedPartiesServiceEf should be used
     /// </summary>
     public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
