@@ -4,7 +4,6 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Core.HealthChecks;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
@@ -59,10 +58,6 @@ public static class ServiceCollectionExtensions
 
         // Consent Migration - Services (Core - Scoped)
         services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
-
-        // Health check
-        services.AddHealthChecks()
-            .AddCheck<ConsentMigrationHealthCheck>("consent_migration");
 
         AddJobs(services);
         return services;

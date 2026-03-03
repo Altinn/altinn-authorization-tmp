@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Altinn.AccessManagement.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.
@@ -86,12 +84,5 @@ namespace Altinn.AccessManagement.Core.Models.Consent
         /// The status of the consent request
         /// </summary>
         public ConsentRequestStatusType ConsentRequestStatus { get; set; }
-
-        /// <summary>
-        /// Migration status for tracking consent migration (not part of domain model)
-        /// </summary>
-        [JsonPropertyName("migrationStatus")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string MigrationStatus { get; set; }
     }
 }
