@@ -72,7 +72,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
 
                         AuditValues values = new AuditValues(
-                            item.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
+                            item.PerformedByUserUuid ?? item.PerformedByPartyUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
                             SystemEntityConstants.Altinn2RoleImportSystem,
                             batchId.ToString(),
                             item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
