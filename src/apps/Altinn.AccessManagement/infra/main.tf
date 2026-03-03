@@ -265,6 +265,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync"
+      description = "Specifies if the Altinn II admin roles should be streamed from SBLBridge service to access management database as assignments with skatteforhold privatperson packages"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.HostedServices.SingleAppRightsSync"
       description = "Specifies if the single app right delegation should be read into the new database and connected to an assignment"
       label       = "${lower(var.environment)}-access-management"

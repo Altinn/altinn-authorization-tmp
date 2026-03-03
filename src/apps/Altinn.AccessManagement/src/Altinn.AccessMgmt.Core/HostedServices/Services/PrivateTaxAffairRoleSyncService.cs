@@ -38,7 +38,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         public async Task SyncPrivateTaxAffairRoles(ILease lease, CancellationToken cancellationToken)
         {
             var leaseData = await lease.Get<PrivateTaxAffairRoleLease>(cancellationToken);
-            var adminDelegations = await _role.StreamRoles("13", leaseData.PrivateTaxAffairRoleStreamNextPageLink, cancellationToken);
+            var adminDelegations = await _role.StreamRoles("14", leaseData.PrivateTaxAffairRoleStreamNextPageLink, cancellationToken);
 
             await foreach (var page in adminDelegations)
             {
@@ -61,14 +61,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
-                        // Do not process admin roles for EC-Users
-                        if (item.ToUserType == UserType.EnterpriseIdentified)
+                        await using var scope = _serviceProivider.CreateAsyncScope();
+                        IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+                        IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
+
+                        bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.AltinnRoleDelegationEventId, "Skatteforhold", cancellationToken);
+                        if (alreadyProcessed)
                         {
                             continue;
                         }
-
-                        await using var scope = _serviceProivider.CreateAsyncScope();
-                        IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
 
                         AuditValues values = new AuditValues(
                             item.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
@@ -91,7 +92,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 continue;
                             }
 
-                            int revokes = await assignmentService.RevokeAssignmentPackages(
+                            int revokes = await assignmentService.RevokeImportedAssignmentPackages(
                                 item.FromPartyUuid,
                                 item.ToUserPartyUuid.Value,
                                 packageUrns,
@@ -141,6 +142,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             }
                         }
 
+                        await rightImportProgressService.MarkImportAsProcessed(item.AltinnRoleDelegationEventId, "Skatteforhold", values, cancellationToken);
                     }
                 }
 
@@ -160,7 +162,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             switch (roleTypeCode.ToUpper())
             {
                 case "A0282":
-                    packages.Add("urn:altinn:accesspackage:tilgangsstyrer");
+                    packages.Add(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Urn);
                     break;
             }
 
