@@ -1,17 +1,21 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 
 /// <summary>
-/// Service for synchronizing/migrating consents from old application
+/// Migrates consents from Altinn2 to Altinn3 in batches.
+/// - Processes consents with configurable status filter
+/// - Updates Altinn2 migration status after processing
+/// - Exports metrics for monitoring
+/// - Stops automatically when EndDate is reached
 /// </summary>
 public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyncService
 {
@@ -104,8 +108,7 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
             var successRate = totalProcessed > 0 ? (double)successCount / totalProcessed * 100 : 0;
 
             _logger.LogInformation(
-                    "Batch completed: {Success}/{Total} succeeded ({SuccessRate:F1}%), {Failed} failed, Duration: {Duration}ms",
-                    successCount, totalProcessed, successRate, failedCount, batchStopwatch.ElapsedMilliseconds);
+                    "Batch completed: {Success}/{Total} succeeded ({SuccessRate:F1}%), {Failed} failed, Duration: {Duration}ms", successCount, totalProcessed, successRate, failedCount, batchStopwatch.ElapsedMilliseconds);
 
             return consentIds.Count;
         }
@@ -116,14 +119,12 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
         }
         catch (TaskCanceledException)
         {
-            _logger.LogInformation("Batch processing cancelled. Processed: {Success} succeeded, {Failed} failed",
-              successCount, failedCount);
+            _logger.LogInformation("Batch processing cancelled. Processed: {Success} succeeded, {Failed} failed", successCount, failedCount);
             return successCount + failedCount;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in batch processing. Processed: {Success} succeeded, {Failed} failed",
-              successCount, failedCount);
+            _logger.LogError(ex, "Error in batch processing. Processed: {Success} succeeded, {Failed} failed",successCount, failedCount);
             return successCount + failedCount;
         }
         finally

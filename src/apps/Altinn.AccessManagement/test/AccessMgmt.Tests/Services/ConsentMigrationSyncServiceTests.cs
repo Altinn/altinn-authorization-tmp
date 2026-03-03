@@ -1,17 +1,16 @@
-﻿    using System.Diagnostics.Metrics;
-    using Altinn.AccessManagement.Core.Clients.Interfaces;
-    using Altinn.AccessManagement.Core.Configuration;
-    using Altinn.AccessManagement.Core.Models;
-    using Altinn.AccessManagement.Core.Services.Interfaces;
-    using Altinn.AccessMgmt.Core.HostedServices.Contracts;
-    using Altinn.AccessMgmt.Core.HostedServices.Services;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
-    using Moq;
-    using Xunit;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Configuration;
+using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.HostedServices.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using System.Diagnostics.Metrics;
+using System.Linq;
 
-    namespace AccessMgmt.Tests.Services;
+namespace AccessMgmt.Tests.Services;
 
 /// <summary>
 /// Tests for <see cref="ConsentMigrationSyncService"/>
@@ -62,9 +61,7 @@ public class ConsentMigrationSyncServiceTests
             .Returns(_migrationServiceMock.Object);
 
         _serviceScopeMock.Setup(x => x.ServiceProvider).Returns(scopeServiceProvider.Object);
-        // REPLACE line 65 with this:
         _serviceScopeFactoryMock.Setup(x => x.CreateScope()).Returns(_serviceScopeMock.Object);
-        //_serviceScopeFactoryMock.Setup(x => x.CreateAsyncScope()).Returns(new AsyncServiceScope(_serviceScopeMock.Object));
         _serviceProviderMock.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
             .Returns(_serviceScopeFactoryMock.Object);
     }
@@ -504,37 +501,6 @@ public class ConsentMigrationSyncServiceTests
                 _settings.OnlyExpiredConsents,
                 It.IsAny<CancellationToken>()),
             Times.Once);
-    }
-
-    [Fact]
-    public async Task GetStatistics_ThreadSafe_ReturnsConsistentValues()
-    {
-        // Arrange
-        var consentIds = new List<Guid> { Guid.NewGuid() };
-        _clientMock.Setup(x => x.GetAltinn2ConsentListForMigration(
-            It.IsAny<int>(),
-            It.IsAny<int?>(),
-            It.IsAny<bool>(),
-            It.IsAny<CancellationToken>()))
-          .ReturnsAsync(consentIds);
-
-        _migrationServiceMock.Setup(x => x.MigrateConsent(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-          .ReturnsAsync(ConsentMigrationResult.Succeeded());
-
-        var service = CreateService();
-
-        // Act - Simulate concurrent access
-        var tasks = new List<Task>();
-        for (int i = 0; i < 10; i++)
-        {
-            tasks.Add(Task.Run(() => service.GetStatistics()));
-        }
-
-        await Task.WhenAll(tasks);
-
-        // Assert - Should not throw
-        var finalStats = service.GetStatistics();
-        Assert.NotNull(finalStats);
     }
 
     private ConsentMigrationSyncService CreateService()

@@ -55,6 +55,7 @@ public partial class ConsentMigrationHostedService : BackgroundService
                 bool isEnabled = await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration);
                 if (!isEnabled)
                 {
+                    Log.FeatureDisabled(_logger);
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                     continue;
                 }
@@ -93,20 +94,23 @@ public partial class ConsentMigrationHostedService : BackgroundService
     }
 
     static partial class Log
-  {
-    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Consent Migration Service starting")]
-    internal static partial void StartConsentMigration(ILogger logger);
+    {
+        [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Consent migration feature flag is disabled. Waiting before rechecking.")]
+        internal static partial void FeatureDisabled(ILogger logger);
 
-    [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Consent migration end date {endDate} reached. Stopping service.")]
-    internal static partial void EndDateReached(ILogger logger, DateTime endDate);
+        [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Consent Migration Service starting")]
+        internal static partial void StartConsentMigration(ILogger logger);
 
-    [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Consent migration service is stopping")]
-    internal static partial void StoppingConsentMigration(ILogger logger);
+        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Consent migration end date {endDate} reached. Stopping service.")]
+        internal static partial void EndDateReached(ILogger logger, DateTime endDate);
 
-    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Consent Migration Service stopped. Total processed: {processed}, Migrated: {migrated}, Failed: {failed}")]
-    internal static partial void StoppedConsentMigration(ILogger logger, int processed, int migrated, int failed);
+        [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Consent migration service is stopping")]
+        internal static partial void StoppingConsentMigration(ILogger logger);
 
-    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Unexpected error in consent migration loop")]
-    internal static partial void SyncError(ILogger logger, Exception ex);
-  }
+        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Consent Migration Service stopped. Total processed: {processed}, Migrated: {migrated}, Failed: {failed}")]
+        internal static partial void StoppedConsentMigration(ILogger logger, int processed, int migrated, int failed);
+
+        [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Unexpected error in consent migration loop")]
+        internal static partial void SyncError(ILogger logger, Exception ex);
+    }
 }
