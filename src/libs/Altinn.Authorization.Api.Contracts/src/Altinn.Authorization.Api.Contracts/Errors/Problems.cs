@@ -120,7 +120,7 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor InvalidResource { get; }
-    = _factory.Create(27, HttpStatusCode.BadRequest, "The resourceid is invalid");
+    = _factory.Create(27, HttpStatusCode.BadRequest, "The resource is invalid");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor NotAuthorizedForDelegationRequest { get; }

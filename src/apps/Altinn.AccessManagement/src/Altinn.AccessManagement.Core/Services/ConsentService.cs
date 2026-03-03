@@ -317,7 +317,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ref MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
-            if (!to.Equals(consentRequest.To))
+            if (!to.Equals(consentRequest.To) && !to.Equals(consentRequest.HandledBy))
             {
                 problemsBUilders.Add(Problems.ConsentNotFound);
             }
@@ -890,9 +890,9 @@ namespace Altinn.AccessManagement.Core.Services
                         problemsBuilder.Add(Problems.UnknownConsentMetadata.Create([new("key", metaData.Key.ToLower())]));
                     }
 
-                    if (string.IsNullOrEmpty(metaData.Value))
+                    if (string.IsNullOrEmpty(metaData.Value) && !fromAltinn2)
                     {
-                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new("rightindex", rightIndex.ToString())]));
+                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new($"ConsentRight index: {rightIndex}, key", metaData.Key.ToLower())]));
                     }
                 }
             }
