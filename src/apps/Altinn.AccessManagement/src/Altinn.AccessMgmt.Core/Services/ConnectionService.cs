@@ -858,7 +858,7 @@ public partial class ConnectionService(
         }
 
         // Fetch Resourcemetadata
-        ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resourceId, cancellationToken);
+        ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
         
         if (resourceMetadata is null)
         {
