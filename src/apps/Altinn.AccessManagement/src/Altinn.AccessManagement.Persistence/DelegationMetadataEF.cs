@@ -305,10 +305,15 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             role = RoleConstants.Supplier;
         }
 
-        var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
-        var to = delegationChange.CoveredByUserId.HasValue ?
-            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.UserId == delegationChange.CoveredByUserId, cancellationToken) :
-            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken);
+        var from = delegationChange.FromUuid.HasValue ?
+            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == delegationChange.FromUuid.Value, cancellationToken) :
+            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.OfferedByPartyId, cancellationToken);
+        var to = delegationChange.ToUuid.HasValue ?
+            await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == delegationChange.ToUuid.Value, cancellationToken) :
+            (delegationChange.CoveredByUserId.HasValue ?
+                await DbContext.Entities.AsNoTracking().SingleAsync(t => t.UserId == delegationChange.CoveredByUserId, cancellationToken) :
+                await DbContext.Entities.AsNoTracking().SingleAsync(t => t.PartyId == delegationChange.CoveredByPartyId, cancellationToken)
+            );
 
         var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == from.Id && t.ToId == to.Id && t.RoleId == role.Id, cancellationToken);
         AssignmentResource assignmentResource = null;
@@ -728,9 +733,9 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
            .Include(t => t.Assignment).ThenInclude(t => t.To)
            .Include(t => t.Resource).ThenInclude(t => t.Type)
            .Include(t => t.ChangedBy)
-           .Where(t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
-           .Where(t => t.Assignment.To.PartyId.HasValue && t.Assignment.To.PartyId.Value == coveredByPartyId)
-           .Where(t => resourceRefIds.Contains(t.Resource.RefId))
+           .WhereIf(offeredByPartyId != 0, t => t.Assignment.From.PartyId.HasValue && t.Assignment.From.PartyId.Value == offeredByPartyId)
+           .WhereIf(coveredByPartyId != 0, t => t.Assignment.To.PartyId.HasValue && t.Assignment.To.PartyId.Value == coveredByPartyId)
+           .WhereIf(resourceRefIds?.Count() > 0, t => resourceRefIds.Contains(t.Resource.RefId))
            .Where(t => t.Resource.Type.Name == resourceTypeName)
            .ToListAsync(cancellationToken);
 

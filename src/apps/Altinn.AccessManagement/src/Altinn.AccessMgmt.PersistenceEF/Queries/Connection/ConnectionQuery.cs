@@ -121,11 +121,11 @@ public class ConnectionQuery(AppDbContext db)
 
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(
-                    db,
-                    filter,
-                    filter.IncludeSubConnections && !delayChildNesting,
-                    !filter.IncludeSubConnections || !delayFromFilter)
-                : BuildBaseQueryFromOthers(db, filter)
+                        db,
+                        filter,
+                        filter.IncludeSubConnections && !delayChildNesting,
+                        !filter.IncludeSubConnections || !delayFromFilter)
+                    : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
             var result = baseQuery.Select(ToDtoEmpty).ToList();
@@ -652,7 +652,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var direct =
             from childAss in db.Assignments.WhereIf(!FeatureFlags.IncludeSingleRightsImportedAssignments, t => t.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem)
-            where childAss.FromId == fromId && childAss.Audit_ChangedBySystem != SystemEntityConstants.SingleRightImportSystem
+            where childAss.FromId == fromId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = childAss.Id,
@@ -729,9 +729,9 @@ public class ConnectionQuery(AppDbContext db)
                DelegationId = delegation.Id,
                FromId = fromAssignment.FromId,
                ToId = toAssignment.ToId,
-               RoleId = fromAssignment.RoleId,
+               RoleId = toAssignment.RoleId,
                ViaId = fromAssignment.ToId,
-               ViaRoleId = toAssignment.RoleId,
+               ViaRoleId = fromAssignment.RoleId,
                IsRoleMap = false,
                IsKeyRoleAccess = false,
                IsMainUnitAccess = false,
