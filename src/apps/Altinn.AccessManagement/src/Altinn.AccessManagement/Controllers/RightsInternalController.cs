@@ -10,6 +10,8 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Utilities;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -187,6 +189,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE)]
+        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.LegacySingleRightsApi)]
         [Route("internal/{party}/rights/delegation/offered")]
         [ApiExplorerSettings(IgnoreApi = false)]
         [Produces("application/json")]
@@ -201,6 +204,12 @@ namespace Altinn.AccessManagement.Controllers
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
             int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
             Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+
+            if (authenticatedUserPartyUuid == Guid.Empty)
+            {
+                ModelState.AddModelError("Unauthorized", "User Authentication token is missing uuid for the user");
+                return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState, (int)HttpStatusCode.Unauthorized));
+            }
 
             try
             {
@@ -289,6 +298,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE)]
+        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.LegacySingleRightsApi)]
         [ActionName(nameof(RevokeReceivedDelegation))]
         [HttpPost("internal/{party}/rights/delegation/received/revoke")]
         [Produces(MediaTypeNames.Application.Json, Type = typeof(void))]
@@ -304,6 +314,13 @@ namespace Altinn.AccessManagement.Controllers
             {
                 int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
                 Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+                
+                if (authenticatedUserPartyUuid == Guid.Empty)
+                {
+                    ModelState.AddModelError("Unauthorized", "User Authentication token is missing uuid for the user");
+                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState, (int)HttpStatusCode.Unauthorized));
+                }
+
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
                 var delegation = _mapper.Map<DelegationLookup>(body);
 
@@ -347,6 +364,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE)]
+        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.LegacySingleRightsApi)]
         [ActionName(nameof(RevokeOfferedDelegation))]
         [HttpPost("internal/{party}/rights/delegation/offered/revoke")]
         [Produces(MediaTypeNames.Application.Json, Type = typeof(void))]
@@ -362,6 +380,13 @@ namespace Altinn.AccessManagement.Controllers
             {
                 int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
                 Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+
+                if (authenticatedUserPartyUuid == Guid.Empty)
+                {
+                    ModelState.AddModelError("Unauthorized", "User Authentication token is missing uuid for the user");
+                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState, (int)HttpStatusCode.Unauthorized));
+                }
+
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
                 var delegation = _mapper.Map<DelegationLookup>(body);
 
@@ -422,6 +447,96 @@ namespace Altinn.AccessManagement.Controllers
             }
 
             return Ok();
+        }
+
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [ActionName(nameof(SingleAppRightsFeed))]
+        [HttpGet("internal/singleright/appdelegation/stream")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> SingleAppRightsFeed([FromQuery]long singleAppDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageAppDelegationChanges(singleAppDelegationEventId);
+            
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().DelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleAppDelegationEventId={nextEventId}";
+            }
+
+            // create result
+            Paginated<DelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<DelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
+        }
+
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [ActionName(nameof(SingleResourceRightsFeed))]
+        [HttpGet("internal/singleright/resourcedelegation/stream")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> SingleResourceRightsFeed([FromQuery] long singleResourceDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageResourceDelegationChanges(singleResourceDelegationEventId);
+
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().ResourceRegistryDelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleResourceDelegationEventId={nextEventId}";
+            }
+
+            // create result
+            Paginated<DelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<DelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
+        }
+
+        [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+        [ActionName(nameof(SingleInstanceRightsFeed))]
+        [HttpGet("internal/singleright/instancedelegation/stream")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> SingleInstanceRightsFeed([FromQuery] long singleInstanceDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageInstanceDelegationChanges(singleInstanceDelegationEventId);
+
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().InstanceDelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleInstanceDelegationEventId={nextEventId}";
+            }
+
+            // create result
+            Paginated<InstanceDelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<InstanceDelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
         }
     }
 }

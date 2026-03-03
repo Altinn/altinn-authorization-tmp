@@ -63,6 +63,21 @@ variable "appconfiguration" {
   type = object({
     platform_resource_registry_endpoint = string
     platform_register_endpoint          = string
+    platform_accessmanagement_endpoint  = string
     platform_sbl_bridge_endpoint        = string
+    maskinporten_endpoint               = string
+  })
+}
+
+variable "services" {
+  type = map(object({
+    protocol = optional(string, "https")
+    host     = string
+  }))
+}
+
+variable "logging" {
+  type = object({
+    min_level = map(string)
   })
 }

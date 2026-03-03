@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -58,34 +57,28 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAllAltinnRoleSync))
                 {
                     await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_allaltinnrole_sync", cancellationToken);
-                    if (lease is null || cancellationToken.IsCancellationRequested)
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        return;
+                        await SyncAllAltinnRoles(lease, cancellationToken);
                     }
-
-                    await SyncAllAltinnRoles(lease, cancellationToken);
                 }
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnClientRoleSync))
                 {
                     await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnclientrole_sync", cancellationToken);
-                    if (lease is null || cancellationToken.IsCancellationRequested)
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        return;
+                        await SyncAltinnClientRoles(lease, cancellationToken);
                     }
-
-                    await SyncAltinnClientRoles(lease, cancellationToken);
                 }
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnAdminRoleSync))
                 {
                     await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnadminrole_sync", cancellationToken);
-                    if (lease is null || cancellationToken.IsCancellationRequested)
+                    if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        return;
+                        await SyncAltinnAdminRoles(lease, cancellationToken);
                     }
-
-                    await SyncAltinnAdminRoles(lease, cancellationToken);
                 }
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesPrivateTaxAffairRoleSync))
@@ -119,7 +112,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             {
                 Log.SyncError(_logger, ex);
             }
-
         }
 
         private async Task SyncAltinnClientRoles(ILease lease, CancellationToken cancellationToken)
@@ -180,7 +172,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             GC.SuppressFinalize(this);
         }
 
-        /// <inheritdoc/>
         public void Dispose(bool disposing)
         {
             if (disposing)

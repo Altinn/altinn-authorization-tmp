@@ -19,9 +19,24 @@ public sealed class ConnectionQueryFilter
     public IReadOnlyCollection<Guid> ToIds { get; init; }
 
     /// <summary>
+    /// Gets the collection of via identifiers.
+    /// </summary>
+    public IReadOnlyCollection<Guid> ViaIds { get; init; }
+
+    /// <summary>
+    /// Gets the collection of via role identifiers.
+    /// </summary>
+    public IReadOnlyCollection<Guid> ViaRoleIds { get; init; }
+
+    /// <summary>
     /// Gets the collection of role identifiers.
     /// </summary>
     public IReadOnlyCollection<Guid> RoleIds { get; init; }
+
+    /// <summary>
+    /// Gets the collection of role identifiers.
+    /// </summary>
+    public IReadOnlyCollection<Guid> ExcludeRoleIds { get; init; }
 
     /// <summary>
     /// Gets the collection of package identifiers.
@@ -51,7 +66,7 @@ public sealed class ConnectionQueryFilter
     /// <summary>
     /// Gets or sets a value indicating whether to include resources.
     /// </summary>
-    public bool IncludeResource { get; init; } = false;
+    public bool IncludeResources { get; init; } = false;
 
     /// <summary>
     /// Gets or sets a value indicating whether to include resources connected to packages.

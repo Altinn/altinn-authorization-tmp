@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
@@ -17,6 +17,7 @@ using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
 await app.DefineAccessMgmtDbModels();
+await PersistenceFeatures();
 
 if (appsettings.RunInitOnly)
 {
@@ -54,8 +55,9 @@ async Task Init()
 {
     if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbEf))
     {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>().Database; 
-        await db.MigrateAsync();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await dbContext.Database.MigrateAsync();
+        await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
     }
     else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
     {
@@ -78,6 +80,12 @@ async Task Init()
 
     var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
     await registerImport.EnsureDbIsIngestWithRegisterData(cts.Token);
+}
+
+async Task PersistenceFeatures()
+{
+    // Delete me after next prod release
+    Altinn.AccessMgmt.PersistenceEF.Utils.Settings.FeatureFlags.IncludeSingleRightsImportedAssignments = await featureManager.IsEnabledAsync("AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments");
 }
 
 /// <summary>

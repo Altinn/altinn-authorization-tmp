@@ -59,5 +59,30 @@
         /// Redirect url for the user to be redirected after consent is given or denied.
         /// </summary>
         public required string RedirectUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Defines the portal view mode for the consent request. Hide is default
+        /// </summary>
+        public ConsentPortalViewMode PortalViewMode { get; set; } = ConsentPortalViewMode.Hide;
+
+        /// <summary>
+        /// Defines when the concent was created (used for Altinn2 consents).
+        /// </summary>
+        public DateTimeOffset? CreatedTime { get; set; }
+
+        /// <summary>
+        /// Defines when the consent was given.
+        /// </summary>
+        public DateTimeOffset? Consented { get; set; }
+
+        /// <summary>
+        /// A list of all the consent events.
+        /// </summary>
+        public List<ConsentRequestEvent> ConsentRequestEvents { get; set; }
+
+        /// <summary>
+        /// The status of the consent request
+        /// </summary>
+        public ConsentRequestStatusType ConsentRequestStatus { get; set; }
     }
 }

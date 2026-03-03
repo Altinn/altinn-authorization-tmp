@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
-
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
@@ -16,15 +16,17 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRoleService roleService;
-        private readonly AppDbContext dbContext;
+        private readonly ITranslationService translationService;
 
         /// <summary>
         /// Initialiserer en ny instans av <see cref="RolesController"/>.
         /// </summary>
         /// <param name="roleService">Service for håndtering av roller.</param>
-        public RolesController(IRoleService roleService)
+        /// <param name="translationService">Service for translation of entities.</param>
+        public RolesController(IRoleService roleService, ITranslationService translationService)
         {
             this.roleService = roleService;
+            this.translationService = translationService;
         }
 
         /// <summary>
@@ -41,7 +43,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound();
             }
 
-            return Ok(res);
+            // Translate the collection with deep translation for nested Provider
+            var translated = await res.TranslateDeepAsync(
+                translationService, 
+                this.GetLanguageCode(), 
+                this.AllowPartialTranslation());
+
+            return Ok(translated.ToList());
         }
 
         /// <summary>
@@ -52,47 +60,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<RoleDto>> GetId(Guid id)
         {
-            var res = await roleService.GetById(id);
+            var res = await roleService.GetById([id]);
             if (res == null)
             {
                 return NotFound();
             }
 
-            return Ok(res);
-        }
+            // Translate the role with deep translation for nested Provider
+            var translated = await res.TranslateDeepAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
 
-        /// <summary>
-        /// Gets <see cref="RoleDto"/> with a key/pair value
-        /// </summary>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Route("lookup")]
-        [HttpGet]
-        public async Task<ActionResult<RoleDto>> GetKeyPairValue([FromQuery] string key, [FromQuery] string value)
-        {
-            var res = await roleService.GetByKeyValue(key, value);
-            if (res == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(res);
-        }
-
-        /// <summary>
-        /// Gets possible lookup keys for roles
-        /// </summary>
-        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Route("lookup/keys")]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<string>>> GetKeys()
-        {
-            var res = await roleService.GetLookupKeys();
-            if (res == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(res);
+            return Ok(translated);
         }
 
         /// <summary>
@@ -112,7 +92,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources));
+            var packages = await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources);
+            
+            // Translate the packages with deep translation for nested Area and Resources
+            var translated = await packages.TranslateDeepAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -132,7 +120,16 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResources));
+            var resources = await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResources);
+            
+            // Translate the resources with deep translation for nested Provider and Type
+            var translated = await resources.TranslateDeepAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -147,7 +144,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRolePackages(id, variantDef.Id, includeResources));
+            var packages = await roleService.GetRolePackages(id, variantDef.Id, includeResources);
+            
+            // Translate the packages with deep translation for nested Area and Resources
+            var translated = await packages.TranslateDeepAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -162,7 +167,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRoleResources(id, variantDef.Id, includePackageResources));
+            var resources = await roleService.GetRoleResources(id, variantDef.Id, includePackageResources);
+            
+            // Translate the resources with deep translation for nested Provider and Type
+            var translated = await resources.TranslateDeepAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
     }
 }

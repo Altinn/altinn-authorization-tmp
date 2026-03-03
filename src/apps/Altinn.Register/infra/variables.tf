@@ -72,8 +72,18 @@ variable "enable_high_availability" {
   default = false
 }
 
+variable "key_vault_rbac" {
+  type = list(object({
+    id       = string
+    rolename = string
+  }))
+
+  default = []
+}
+
 variable "features" {
   type = object({
+    maskinporten = optional(bool, false),
     a2_party_import = optional(object({
       parties  = optional(bool, false),
       user_ids = optional(bool, false),
@@ -81,6 +91,9 @@ variable "features" {
     }), {})
     party_import = optional(object({
       system_users = optional(bool, false),
+      npr = optional(object({
+        guardianships = optional(bool, false),
+      }), {})
     }), {})
   })
   default = {}
@@ -89,8 +102,12 @@ variable "features" {
 variable "config" {
   type = object({
     a2_party_import = optional(object({
-      max_db_size_in_gib = optional(number, 20),
+      max_db_size_in_gib = optional(number, 20)
     }), {})
+    maskinporten = optional(object({
+      client_id = string
+      scope     = string
+    }))
   })
   default = {}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -7,6 +8,7 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -15,6 +17,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -25,7 +28,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
+    public class ConsentService(ILogger<ConsentService> logger, IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
         IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
@@ -37,13 +40,14 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IProfileClient _profileClient = profileClient;
         private readonly TimeProvider _timeProvider = timeProvider;
         private readonly GeneralSettings _generalSettings = generalSettings.Value;
+        private readonly IAltinn2ConsentClient _altinn2ConsentClient = altinn2ConsentClient;
 
         private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, bool fromAltinn2, CancellationToken cancellationToken)
         {
-            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
+            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, fromAltinn2, cancellationToken);
 
             if (result.IsProblem)
             {
@@ -168,6 +172,11 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest == null)
             {
+                consentRequest = (await GetAndStoreAltinn2Consent(consentRequestId, cancellationToken)).Value;
+            }
+
+            if (consentRequest == null)
+            {
                 return Problems.ConsentNotFound;
             }
             else
@@ -219,7 +228,10 @@ namespace Altinn.AccessManagement.Core.Services
                     From = consentRequest.From,
                     To = consentRequest.To,
                     ValidTo = consentRequest.ValidTo,
-                    ConsentRights = consentRequest.ConsentRights
+                    ConsentRights = consentRequest.ConsentRights,
+                    ConsentRequestEvents = consentRequest.ConsentRequestEvents,
+                    TemplateId = consentRequest.TemplateId,
+                    HandledBy = consentRequest.HandledBy,
                 };
 
                 consent.Context = await _consentRepository.GetConsentContext(consentRequestId, cancellationToken);
@@ -228,9 +240,84 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<Result<ConsentRequestDetails>> GetAndStoreAltinn2Consent(Guid consentRequestId, CancellationToken cancellationToken)
+        {
+            ConsentRequestDetails consentRequest = null;
+            Altinn2ConsentRequest altinn2ConsentRequest = await _altinn2ConsentClient.GetAltinn2Consent(consentRequestId, cancellationToken);
+
+            if (altinn2ConsentRequest != null)
+            {
+                ConsentRequest mappedConsentFromA2 = await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
+                Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, true, cancellationToken);
+
+                await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+
+                if (!result.IsProblem)
+                {
+                    consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+                }
+                else
+                {
+                    logger.LogWarning("Consent with id {ConsentRequestId} exist in Altinn2 but failed to migrate to Altinn3 with error {Error}. ", consentRequestId, BuildProblemErrorMessage(result.Problem));
+                }
+            }
+
+            return consentRequest;
+        }
+
+        private static string BuildProblemErrorMessage(ProblemInstance problem)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{problem.ErrorCode}: {problem.Detail}: {AppendExtensions(problem)}");
+
+            // Handle top-level ValidationProblemInstance
+            if (problem is ValidationProblemInstance vpiTop)
+            {
+                AppendValidationErrors(sb, vpiTop);
+            }
+            else if (problem is MultipleProblemInstance mpi)
+            {
+                foreach (ProblemInstance subProblem in mpi.Problems)
+                {
+                    if (subProblem is ValidationProblemInstance vpiSub)
+                    {
+                        AppendValidationErrors(sb, vpiSub);
+                    }
+                    else
+                    {
+                        sb.Append($", {subProblem.ErrorCode}: {subProblem.Detail} {AppendExtensions(subProblem)}");
+                    }
+                }
+            }
+
+            // Helper to append validation errors (if any) from a ValidationProblemInstance
+            static void AppendValidationErrors(System.Text.StringBuilder builder, ValidationProblemInstance vpi)
+            {
+                if (vpi.Errors != null && vpi.Errors.Any())
+                {
+                    builder.Append(string.Join(", ", vpi.Errors.Select(e => $"{e.ErrorCode}: {e.Detail}")));
+                }
+            }
+
+            // Helper to append Extensions texts (if any) from a ProblemInstance
+            static string AppendExtensions(ProblemInstance problem)
+            {
+                StringBuilder sbExtensions = new StringBuilder();
+                foreach (KeyValuePair<string, string> extension in problem.Extensions)
+                {
+                    sbExtensions.Append($", {extension.Key}: {extension.Value}");
+                }
+
+                return sbExtensions.ToString();
+            }
+
+            return sb.ToString();
+        }
+
         private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ref MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
-            if (!to.Equals(consentRequest.To))
+            if (!to.Equals(consentRequest.To) && !to.Equals(consentRequest.HandledBy))
             {
                 problemsBUilders.Add(Problems.ConsentNotFound);
             }
@@ -425,6 +512,33 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
+        public async Task<Result<List<Guid>>> GetAltinn2ConsentListForMigration(int numberOfConsentsToReturn, int? status, bool onlyGetExpired, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.GetAltinn2ConsentListForMigration(numberOfConsentsToReturn, status, onlyGetExpired, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<List<ConsentRequest>>> GetMultipleAltinn2Consents(List<string> consentList, CancellationToken cancellationToken = default)
+        {
+            List<Altinn2ConsentRequest> a2List = await _altinn2ConsentClient.GetMultipleAltinn2Consents(consentList, cancellationToken);
+
+            List<ConsentRequest> consentRequests = new();
+
+            foreach (Altinn2ConsentRequest altinn2Consent in a2List)
+            {
+                consentRequests.Add(await MapA2ConsentToA3Consent(altinn2Consent, cancellationToken));
+            }
+
+            return consentRequests;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<bool>> UpdateAltinn2ConsentMigrateStatus(string consentId, int status, CancellationToken cancellationToken = default)
+        {
+            return await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentId, status, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<string> GetRequestRedirectUrl(Guid consentRequestId, CancellationToken cancellationToken)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
@@ -541,7 +655,7 @@ namespace Altinn.AccessManagement.Core.Services
             List<Party> parties = await _partiesClient.GetPartiesAsync([fromParty], cancellationToken: cancellationToken);
             Party party = parties[0];
 
-            UserProfile profile = await _profileClient.GetUser(new Models.Profile.UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
+            NewUserProfile profile = await _profileClient.GetUser(new UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
             if (profile == null)
             {
                 return false;
@@ -558,7 +672,7 @@ namespace Altinn.AccessManagement.Core.Services
             return true;
         }
 
-        private async Task<bool> AuthorizeForConsentRight(Party party, UserProfile profile, ConsentRight consentRight)
+        private async Task<bool> AuthorizeForConsentRight(Party party, NewUserProfile profile, ConsentRight consentRight)
         {
             DelegationCheckResponse response = await GetDelegatableRightsForConsentResource(party, profile, consentRight);
 
@@ -590,7 +704,7 @@ namespace Altinn.AccessManagement.Core.Services
             return true;
         }
 
-        private async Task<DelegationCheckResponse> GetDelegatableRightsForConsentResource(Party party, UserProfile profile, ConsentRight consentRight)
+        private async Task<DelegationCheckResponse> GetDelegatableRightsForConsentResource(Party party, NewUserProfile profile, ConsentRight consentRight)
         {
             RightsDelegationCheckRequest rightsDelegationCheckRequest = new()
             {
@@ -617,7 +731,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// - Validates that resources requested in consent is valid
         /// - Validates that valid to time is valid
         /// </summary>
-        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
+        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, bool fromAltinn2, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder validationErrorsBuilder = default;
             MultipleProblemBuilder problemsBuilder = default;
@@ -680,7 +794,7 @@ namespace Altinn.AccessManagement.Core.Services
                 templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
-                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, cancelactionToken);
+                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, fromAltinn2, cancelactionToken);
                 }
             }
 
@@ -715,7 +829,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken)
+        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, bool fromAltinn2, CancellationToken cancelactionToken)
         {
             ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
             ValidationErrorBuilder validationErrors = default;
@@ -731,7 +845,8 @@ namespace Altinn.AccessManagement.Core.Services
             }
             else
             {
-                ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
+                ConsentResourceAttribute consentResourceAttribute = consentRight.Resource[0];
+                ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentResourceAttribute.Value, cancelactionToken);
                 if (resourceDetails == null)
                 {
                     problemsBuilder.Add(Problems.InvalidConsentResource);
@@ -742,7 +857,8 @@ namespace Altinn.AccessManagement.Core.Services
                 }
                 else
                 {
-                    ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
+                    ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails, fromAltinn2);
+                    consentResourceAttribute.Version = resourceDetails.VersionId.ToString();
                 }
 
                 if (resourceDetails != null && string.IsNullOrEmpty(templateId))
@@ -763,20 +879,20 @@ namespace Altinn.AccessManagement.Core.Services
             return (problemsBuilder, templateId);
         }
 
-        private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails, bool fromAltinn2)
         {
             if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
             {
                 foreach (KeyValuePair<string, string> metaData in consentRight.Metadata)
                 {
-                    if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                    if (resourceDetails.ConsentMetadata == null || (!resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()) && !fromAltinn2))
                     {
                         problemsBuilder.Add(Problems.UnknownConsentMetadata.Create([new("key", metaData.Key.ToLower())]));
                     }
 
-                    if (string.IsNullOrEmpty(metaData.Value))
+                    if (string.IsNullOrEmpty(metaData.Value) && !fromAltinn2)
                     {
-                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new("rightindex", rightIndex.ToString())]));
+                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new($"ConsentRight index: {rightIndex}, key", metaData.Key.ToLower())]));
                     }
                 }
             }
@@ -800,7 +916,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static ValidationErrorBuilder ValidateValidTo(ConsentRequest consentRequest, ValidationErrorBuilder errors)
         {
-            if (consentRequest.ValidTo < DateTime.UtcNow)
+            if (consentRequest.ValidTo < DateTime.UtcNow && consentRequest.CreatedTime == null)
             {
                 errors.Add(ValidationErrors.TimeNotInFuture, "ValidTo");
             }
@@ -872,6 +988,94 @@ namespace Altinn.AccessManagement.Core.Services
                     PerformedBy = consentRequest.To
                 });
             }
+        }
+
+        private async Task<ConsentRequest> MapA2ConsentToA3Consent(Altinn2ConsentRequest altinn2Consent, CancellationToken cancellationToken)
+        {
+            ConsentRequest consent = new ConsentRequest
+            {
+                Id = altinn2Consent.ConsentGuid,
+                ConsentRequestStatus = Enum.Parse<ConsentRequestStatusType>(altinn2Consent.ConsentRequestStatus, true),
+                Consented = altinn2Consent.Consented,
+                CreatedTime = altinn2Consent.CreatedTime,
+                From = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.OfferedByPartyUUID),
+                To = ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.CoveredByPartyUUID),
+                ValidTo = altinn2Consent.ValidTo,
+                ConsentRights = await MapAltinn2ResourcesToConsentRights(altinn2Consent.RequestResources, cancellationToken),
+                ConsentRequestEvents = await MapA2ConsentEventsToA3ConsentEvents(altinn2Consent, altinn2Consent.ConsentHistoryEvents, cancellationToken),
+                RedirectUrl = altinn2Consent.RedirectUrl,
+                TemplateId = altinn2Consent.TemplateId,
+                PortalViewMode = altinn2Consent.PortalViewMode != null ? Enum.Parse<ConsentPortalViewMode>(altinn2Consent.PortalViewMode, true) : ConsentPortalViewMode.Hide
+            };
+
+            return consent;
+        }
+
+        private async Task<List<ConsentRight>> MapAltinn2ResourcesToConsentRights(List<AuthorizationRequestResourceBE> resources, CancellationToken cancellationToken)
+        {
+            List<ConsentRight> consentRights = new();
+
+            foreach (AuthorizationRequestResourceBE resource in resources)
+            {
+                ConsentRight consentRight = new()
+                {
+                    Action = resource.Operations,
+                    Resource = new List<ConsentResourceAttribute>(),
+                    Metadata = new MetadataDictionary()
+                };
+
+                Dictionary<string, string> tempResourceMetadata = resource.Metadata?.ToDictionary(kv => kv.Key.ToLower(), kv => kv.Value) ?? new Dictionary<string, string>();
+
+                consentRight.AddMetadataValues(tempResourceMetadata);
+
+                string searchParam = $"reference={resource.ServiceEditionVersionID}&ResourceType=Consent&id={resource.ServiceCode}_{resource.ServiceEditionCode}";
+                List<ServiceResource> resourceDetails = await _resourceRegistryClient.GetResources(cancellationToken, searchParam);
+
+                if (resourceDetails != null)
+                {
+                    ConsentResourceAttribute consentResourceAttribute = new()
+                    {
+                        Type = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute,
+                        Value = resourceDetails.FirstOrDefault()?.Identifier,
+                        Version = resourceDetails.FirstOrDefault()?.VersionId.ToString()
+                    };
+                    consentRight.Resource.Add(consentResourceAttribute);
+                }
+
+                consentRights.Add(consentRight);
+            }
+
+            return await Task.FromResult(consentRights);
+        }
+
+        private async Task<List<ConsentRequestEvent>> MapA2ConsentEventsToA3ConsentEvents(Altinn2ConsentRequest altinn2Consent, List<Altinn2ConsentRequestEvent> a2Events, CancellationToken cancellationToken)
+        {
+            List<ConsentRequestEvent> consentEvents = new();
+
+            ConsentRequestEvent consentEventCreated = new()
+            {
+                ConsentRequestID = altinn2Consent.ConsentGuid,
+                Created = (DateTimeOffset)altinn2Consent.CreatedTime,
+                EventType = ConsentRequestEventType.Created,
+                PerformedBy = ConsentPartyUrn.PartyUuid.Create(altinn2Consent.HandledByPartyUUID ?? altinn2Consent.CoveredByPartyUUID ?? Guid.Empty)
+            };
+
+            consentEvents.Add(consentEventCreated);
+
+            foreach (Altinn2ConsentRequestEvent a2Event in a2Events)
+            {
+                ConsentRequestEvent consentEvent = new()
+                {
+                    ConsentRequestID = a2Event.ConsentRequestID,
+                    Created = a2Event.Created,
+                    EventType = Enum.Parse<ConsentRequestEventType>(a2Event.EventType),
+                    PerformedBy = ConsentPartyUrn.PartyUuid.Create(a2Event.PerformedByPartyUUID ?? Guid.Empty)
+                };
+
+                consentEvents.Add(consentEvent);
+            }
+
+            return await Task.FromResult(consentEvents);
         }
     }
 }

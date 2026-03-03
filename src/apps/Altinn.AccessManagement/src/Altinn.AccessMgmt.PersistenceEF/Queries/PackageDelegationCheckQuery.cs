@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
@@ -18,7 +18,8 @@ public static class PackageDelegationCheckQuery
         Guid fromId,
         Guid toId,
         IEnumerable<Guid> packageIds,
-        CancellationToken cancellationToken = default)
+        bool isForResourceDelegationCheck = false,
+        CancellationToken ct = default)
     {
         var ids = packageIds?.ToArray();
 
@@ -32,7 +33,7 @@ public static class PackageDelegationCheckQuery
                     Value = (ids != null && ids.Length > 0) ? ids : DBNull.Value
                 })
             .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .ToListAsync(ct);
 
         // Project rows back into your nested model
         return rows.Select(r => new PackageDelegationCheck
@@ -43,7 +44,7 @@ public static class PackageDelegationCheckQuery
                 Urn = r.PackageUrn,
                 AreaId = r.AreaId
             },
-            Result = r.IsAssignable == true && r.CanDelegate == true,
+            Result = isForResourceDelegationCheck ? r.CanDelegate == true : r.IsAssignable && r.CanDelegate == true, // For resource delegation check through packages, only whether the user CanDelegate the package matters and not if the package itself is assignable
             Reason = new PackageDelegationCheck.DelegationCheckReason
             {
                 Description = r.Reason,
@@ -79,6 +80,8 @@ public static class PackageDelegationCheckQuery
                 p.isassignable,
                 p.isdelegable
             FROM dbo.package p
+                JOIN dbo.entity e ON p.entitytypeid = e.typeid
+            AND e.id = @fromId
         ),
         mainAdminPackages AS (
             -- Get all packages for main administrator
@@ -346,8 +349,8 @@ public static class PackageDelegationCheckQuery
                 toid,
                 viaid,
                 viaroleid,      
-                hasaccess,
-                candelegate,
+                false AS hasaccess,
+                true AS candelegate,
                 isassignmentpackage,
                 isrolepackage,
                 iskeyrolepackage,
@@ -357,7 +360,6 @@ public static class PackageDelegationCheckQuery
             FROM userpackages up
                 CROSS JOIN mainAdminPackages admp
             WHERE up.packageurn = 'urn:altinn:accesspackage:hovedadministrator'
-                AND admp.isassignable = true
         )
         SELECT
             p.packageid,

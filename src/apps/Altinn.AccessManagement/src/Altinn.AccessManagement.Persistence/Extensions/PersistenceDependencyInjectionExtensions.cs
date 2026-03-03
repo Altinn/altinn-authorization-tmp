@@ -1,13 +1,16 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessManagement.Integration.Clients;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
+using Altinn.AccessMgmt.Core.Services.Legacy;
 using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Altinn.Platform.Register.Enums;
 using Azure.Core;
@@ -45,18 +48,15 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
 
-        if (builder.Configuration.GetSection("FeatureManagement").GetValue<bool>("UseNewQueryRepo"))
-        {
-            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepo>();
-            builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
-        }
-        else
-        {
-            builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepository>();
-            builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepository>();
-        }
+        builder.Services.AddSingleton<ILegacyRoutingPolicy, FeatureFlagLegacyRoutingPolicy>();
+        builder.Services.AddScoped<DelegationMetadataEF>();
+        builder.Services.AddScoped<DelegationMetadataRepo>();
+        builder.Services.AddScoped<IDelegationMetadataRepository, DelegationMetadataRouter>();
+
+        builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
         builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();
+        builder.Services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClient>();
 
         builder.AddDatabase();
         builder.Services.AddDelegationPolicyRepository(builder.Configuration);
@@ -162,6 +162,12 @@ public static class PersistenceDependencyInjectionExtensions
                 ConsentRequestEventType.Deleted => "deleted",
                 ConsentRequestEventType.Expired => "expired",
                 ConsentRequestEventType.Used => "used",
+                _ => null,
+            }))
+            .MapEnum<ConsentPortalViewMode>("consent.portal_view_mode", new EnumNameTranslator<ConsentPortalViewMode>(static value => value switch
+            {
+                ConsentPortalViewMode.Hide => "hide",
+                ConsentPortalViewMode.Show => "show",
                 _ => null,
             }))
             .AddYuniqlMigrations(cfg =>

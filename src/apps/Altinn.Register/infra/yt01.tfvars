@@ -17,6 +17,7 @@ db_storage_tier  = "P40"
 sbl_endpoint     = "https://ai-yt01-vip-sblbridge.ai.basefarm.net/sblbridge/"
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
@@ -30,5 +31,10 @@ features = {
 config = {
   a2_party_import = {
     max_db_size_in_gib = 100
+  }
+
+  maskinporten = {
+    client_id = "6b3069e2-bc65-42ce-9aab-413e405dd5fe"
+    scope     = "folkeregister:deling/offentligmedhjemmel"
   }
 }

@@ -7,9 +7,9 @@ using Altinn.AccessManagement.Core.Models.Authentication;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
-using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn.Json;
@@ -327,8 +327,15 @@ namespace Altinn.AccessManagement.Core.Helpers
 
             if (resourceRegistryMatch != null && orgMatch == null && appMatch == null)
             {
-                resourceMatchType = ResourceAttributeMatchType.ResourceRegistry;
+                if (IsAppResourceId(resourceRegistryMatch.Value, out org, out app))
+                {
+                    resourceId = $"{org}/{app}";
+                    resourceMatchType = ResourceAttributeMatchType.AltinnAppId;
+                    return true;
+                }
+
                 resourceId = resourceRegistryMatch.Value;
+                resourceMatchType = ResourceAttributeMatchType.ResourceRegistry;
                 return true;
             }
 
@@ -350,6 +357,33 @@ namespace Altinn.AccessManagement.Core.Helpers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Method to check if a resourceid is an app and decompose it into org/app values
+        /// </summary>
+        /// <param name="resourceId">the resourceid to check</param>
+        /// <param name="org">the org part of the resourceid if it is an app</param>
+        /// <param name="app">the app part of the resourceid if it is an app</param>
+        /// <returns>true if app false if not</returns>
+        public static bool IsAppResourceId(string resourceId, out string org, out string app)
+        {
+            org = null;
+            app = null;
+            bool isApp = false;
+
+            if (resourceId.StartsWith("app_"))
+            {
+                isApp = true;
+                string[] parts = resourceId.Split('_', 3);
+                if (parts.Length == 3)
+                {
+                    org = parts[1];
+                    app = parts[2];
+                }
+            }
+
+            return isApp;
         }
 
         /// <summary>
@@ -1059,6 +1093,31 @@ namespace Altinn.AccessManagement.Core.Helpers
                 default:
                     return UuidType.Party;
             }
+        }
+            
+        public static UuidType GetUuidTypeFromEntityType(Guid entityType)
+        {
+            if (entityType == EntityTypeConstants.Person.Id)
+            {
+                return UuidType.Person;
+            }
+
+            if (entityType == EntityTypeConstants.Organization.Id)
+            {
+                return UuidType.Organization;
+            }
+
+            if (entityType == EntityTypeConstants.SystemUser.Id)
+            {
+                return UuidType.SystemUser;
+            }
+
+            if (entityType == EntityTypeConstants.EnterpriseUser.Id)
+            {
+                return UuidType.EnterpriseUser;
+            }
+
+            return UuidType.Party;
         }
 
         private static void SetTypeForSingleRule(List<int> keyRolePartyIds, int offeredByPartyId, List<AttributeMatch> coveredBy, int parentPartyId, Rule rule, int? coveredByPartyId, int? coveredByUserId)

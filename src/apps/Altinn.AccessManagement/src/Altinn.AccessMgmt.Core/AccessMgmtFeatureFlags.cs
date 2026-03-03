@@ -36,4 +36,39 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if AuthorizedPartiesServiceEf should be used
     /// </summary>
     public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
+
+    /// <summary>
+    /// Specifies Client Delegation should be enabled in enduser API.
+    /// </summary>
+    public const string EnduserControllerClientDelegation = $"AccessMgmt.Enduser.Controller.ClientDelegation";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
+    /// </summary>
+    public const string HostedServicesSingleAppRightSync = $"AccessMgmt.Core.HostedServices.SingleAppRightsSync";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single resourceregistry rights.
+    /// </summary>
+    public const string HostedServicesSingleResourceRightSync = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
+    /// </summary>
+    public const string HostedServicesSingleInstanceRightSync = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
+    /// </summary>
+    public const string HostedServicesSingleAppRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleAppRightsSync.FromErrorQueue";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single resourceregistry rights.
+    /// </summary>
+    public const string HostedServicesSingleResourceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync.FromErrorQueue";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
+    /// </summary>
+    public const string HostedServicesSingleInstanceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue";
 }

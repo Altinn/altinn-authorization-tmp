@@ -1,3 +1,5 @@
+﻿using Altinn.AccessMgmt.Core.Utils;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -12,6 +14,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add translation middleware to extract language preferences from headers
+app.UseTranslation();
 
 app.UseAuthorization();
 

@@ -8,7 +8,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ClientDto = Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto;
 using CreateSystemDelegationRequestDto = Altinn.Authorization.Api.Contracts.AccessManagement.CreateSystemDelegationRequestDto;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers;
@@ -34,11 +33,11 @@ public class SystemUserClientDelegationController(
     /// <param name="roles"> The list of role codes to filter the connections by</param>
     /// <param name="packages"> The list of package identifiers to filter the connections by</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-    /// <returns>List of Clients<seealso cref="ClientDto"/></returns>
+    /// <returns>List of Clients<seealso cref="SystemuserClientDto"/></returns>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<IEnumerable<ClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<SystemuserClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, CancellationToken cancellationToken = default)
     {
         if (roles != null && roles.Length > 0)
         {
@@ -178,7 +177,7 @@ public class SystemUserClientDelegationController(
             return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}', only '{RoleConstants.Agent.Entity.Code}'");
         }
 
-        var result = await assignmentService.DeleteAssignment(assignment.Id, cascade, cancellationToken);
+        var result = await assignmentService.DeleteAssignment(assignment.Id, cascade, cancellationToken: cancellationToken);
         if (result != null)
         {
             return Problem("Assignment is active in one or more delegations and cascadeflag is false.");

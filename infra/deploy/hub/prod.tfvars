@@ -11,6 +11,13 @@ client_certs = [
   "andreasisnes",
   "havardandersen",
   "aleksanderh",
+  "runetlarsen",
+  "simenr",
+  "dhanalakshimi",
+  "snehas",
+  "vegardn",
+  "ivart",
+  "marting",
   "github",
 ]
 hub_principal_ids = [
@@ -39,6 +46,15 @@ vpn_owners_principal_ids = [
 vpn_routes = {
   AuthorizationInfrastructure = [
     "10.202.0.0/16"
+  ],
+  AccesssManagementDb = [
+    "20.100.174.95/32" #at22
+  ],
+  AuditlogsDb = [
+    "20.100.186.204/32" #at22
+  ],
+  AuthenticationDb = [
+    "51.13.60.10/32" # at22
   ],
 
   # Use  "name": "ServiceBus.NorwayEast"
