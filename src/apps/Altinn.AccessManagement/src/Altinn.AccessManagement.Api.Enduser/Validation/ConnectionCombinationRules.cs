@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Validation;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Api.Enduser.Validation;
@@ -162,6 +163,36 @@ internal static class ConnectionCombinationRules
         {
             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{idName}", [new(idName, ValidationErrorMessageTexts.RequireOnePackageRef)]);
             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{urnName}", [new(urnName, ValidationErrorMessageTexts.RequireOnePackageRef)]);
+        };
+    };
+
+    /// <summary>
+    /// Validates that user is authorized to delegate all requested rules based on delegation check results.
+    /// </summary>
+    /// <param name="requestedRules">The rule keys that the user wants to delegate.</param>
+    /// <param name="delegationCheckResult">The result from ResourceDelegationCheck indicating which rules can be delegated.</param>
+    internal static RuleExpression DelegationAuthorization(IEnumerable<string> requestedRules, ResourceCheckDto delegationCheckResult) => () =>
+    {
+        var failedRules = new List<string>();
+        foreach (var ruleKey in requestedRules)
+        {
+            if (!delegationCheckResult.Rules.Any(r => r.Rule.Key == ruleKey && r.Result))
+            {
+                failedRules.Add(ruleKey);
+            }
+        }
+
+        if (failedRules.Count == 0)
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+        {
+            foreach (var failedRule in failedRules)
+            {
+                errors.Add(ValidationErrors.UserNotAuthorized, $"$BODY/directRuleKeys/{failedRule}", [new("ruleKey", ValidationErrorMessageTexts.NotAuthorizedToDelegateRule)]);
+            }
         };
     };
 }
