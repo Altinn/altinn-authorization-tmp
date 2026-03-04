@@ -132,26 +132,21 @@ public class RequestController(IRequestService requestService, IEntityService en
 
     private async Task<Entity> GetEntityByUrn(string urn, CancellationToken ct = default)
     {
-        var s = urn.Split(":");
-        var value = s.Last();
-        var key = urn.Substring(0, urn.Length - value.Length + 1);
+        var urnSegments = urn.Split(":");
+        var urnSuffix = urnSegments.Last();
+        var key = urn[..(urn.Length - urnSuffix.Length + 1)];
 
         if (!RequestValidation.ValidUrns.Contains(key))
         {
             return null;
         }
 
-        switch (key)
+        return key switch
         {
-            case "urn:altinn:person:identifier-no":
-                return await entityService.GetByPersNo(value, ct);
-            case "urn:altinn:organization:identifier-no":
-                return await entityService.GetByOrgNo(value, ct);
-            case "urn:altinn:systemuser:uuid":
-            case "urn:altinn:party:uuid":
-                return await entityService.GetEntity(Guid.Parse(value), ct);
-            default:
-                return null;
-        }
+            "urn:altinn:person:identifier-no" => await entityService.GetByPersNo(urnSuffix, ct),
+            "urn:altinn:organization:identifier-no" => await entityService.GetByOrgNo(urnSuffix, ct),
+            "urn:altinn:systemuser:uuid" or "urn:altinn:party:uuid" => await entityService.GetEntity(Guid.Parse(urnSuffix), ct),
+            _ => null,
+        };
     }
 }

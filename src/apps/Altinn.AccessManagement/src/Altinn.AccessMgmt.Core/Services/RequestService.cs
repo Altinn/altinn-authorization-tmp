@@ -59,8 +59,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(a => a.From)
             .Include(a => a.To)
             .Include(a => a.Role)
-            .FirstOrDefaultAsync(r => r.Id == requestId);
-        if (request == null)
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken: ct);
+        
+        if (request is null)
         {
             throw new Exception("Request not found");
         }
@@ -87,7 +88,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(roleId.HasValue, r => r.RoleId == roleId.Value)
             .WhereMatchIfSet(statusSet, r => r.Status)
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
     /// <inheritdoc/>
@@ -106,7 +107,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             };
             db.RequestAssignments.Add(request);
 
-            var res = await db.SaveChangesAsync();
+            var res = await db.SaveChangesAsync(ct);
 
             if (res == 0)
             {
@@ -114,15 +115,14 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             }
         }
 
-        return await GetRequestAssignment(request.Id);
+        return await GetRequestAssignment(request.Id, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignment> UpdateRequestAssignment(Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
-        var request = await GetRequestAssignment(requestId);
-
-        if (request == null)
+        var request = await GetRequestAssignment(requestId, ct);
+        if (request is null)
         {
             throw new Exception("Request not found");
         }
@@ -144,7 +144,8 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
-            .FirstOrDefaultAsync(r => r.Id == requestId);
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken: ct);
+        
         if (request == null)
         {
             throw new Exception("Request not found");
@@ -173,27 +174,27 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(!string.IsNullOrEmpty(action), r => r.Action == action)
             .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, CancellationToken ct = default)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
-        return await CreateRequestAssignmentResource(assignment.Id, resourceId, action);
+        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId, cancellationToken: ct);
+        return await CreateRequestAssignmentResource(assignment.Id, resourceId, action, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, CancellationToken ct = default)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
-        return await CreateRequestAssignmentResource(assignment.Id, resourceId);
+        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId, cancellationToken: ct);
+        return await CreateRequestAssignmentResource(assignment.Id, resourceId, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == RequestStatus.Pending);
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == RequestStatus.Pending, cancellationToken: ct);
         if (request == null)
         {
             request = new RequestAssignmentResource
@@ -214,7 +215,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             }
         }
 
-        return await GetRequestAssignmentResource(request.Id);
+        return await GetRequestAssignmentResource(request.Id, ct);
     }
 
     /// <inheritdoc/>
@@ -232,7 +233,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             };
             db.RequestAssignmentResources.Add(request);
 
-            var res = await db.SaveChangesAsync();
+            var res = await db.SaveChangesAsync(ct);
 
             if (res == 0)
             {
@@ -240,15 +241,14 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             }
         }
 
-        return await GetRequestAssignmentResource(request.Id);
+        return await GetRequestAssignmentResource(request.Id, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentResource> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
-        var request = await GetRequestAssignmentResource(requestId);
-
-        if (request == null)
+        var request = await GetRequestAssignmentResource(requestId, ct);
+        if (request is null)
         {
             throw new Exception("Request not found");
         }
@@ -256,7 +256,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         if (request.Status != status)
         {
             request.Status = status;
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
         }
 
         return request;
@@ -270,8 +270,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
-            .FirstOrDefaultAsync(r => r.Id == requestId);
-        if (request == null)
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken: ct);
+
+        if (request is null)
         {
             throw new Exception("Request not found");
         }
@@ -298,21 +299,21 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(packageId.HasValue, r => r.PackageId == packageId.Value)
             .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, CancellationToken ct = default)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
-        return await CreateRequestAssignmentPackage(assignment.Id, packageId);
+        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId, cancellationToken: ct);
+        return await CreateRequestAssignmentPackage(assignment.Id, packageId, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == RequestStatus.Pending);
-        if (request == null)
+        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == RequestStatus.Pending, cancellationToken: ct);
+        if (request is null)
         {
             request = new RequestAssignmentPackage
             {
@@ -323,23 +324,21 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             };
             db.RequestAssignmentPackages.Add(request);
 
-            var res = await db.SaveChangesAsync();
-
+            var res = await db.SaveChangesAsync(ct);
             if (res == 0)
             {
                 throw new Exception("Failed to create request");
             }
         }
 
-        return await GetRequestAssignmentPackage(request.Id);
+        return await GetRequestAssignmentPackage(request.Id, ct);
     }
 
     /// <inheritdoc/>
     public async Task<RequestAssignmentPackage> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
-        var request = await GetRequestAssignmentPackage(requestId);
-
-        if (request == null)
+        var request = await GetRequestAssignmentPackage(requestId, ct);
+        if (request is null)
         {
             throw new Exception("Request not found");
         }
@@ -347,7 +346,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         if (request.Status != status)
         {
             request.Status = status;
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
         }
 
         return request;
