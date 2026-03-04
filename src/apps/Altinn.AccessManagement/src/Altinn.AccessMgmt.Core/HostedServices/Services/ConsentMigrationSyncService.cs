@@ -53,7 +53,7 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
         try
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
-            return await ProcessBatchWithScope(scope.ServiceProvider, cancellationToken);
+            return await ProcessBatchWithScope(scope.ServiceProvider, _settings.CurrentValue, cancellationToken);
         }
         catch (HttpRequestException httpEx)
         {
@@ -73,15 +73,16 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
 
     private async Task<int> ProcessBatchWithScope(
         IServiceProvider scopedServices,
+        ConsentMigrationSettings migrationSettings,
         CancellationToken cancellationToken)
     {
         var migrationClient = scopedServices.GetRequiredService<IAltinn2ConsentClient>();
         var migrationService = scopedServices.GetRequiredService<IConsentMigrationService>();
 
         var consentIds = await migrationClient.GetAltinn2ConsentListForMigration(
-            _settings.CurrentValue.BatchSize,
-            _settings.CurrentValue.ConsentStatus,
-            _settings.CurrentValue.OnlyExpiredConsents,
+            migrationSettings.BatchSize,
+            migrationSettings.ConsentStatus,
+            migrationSettings.OnlyExpiredConsents,
             cancellationToken);
 
         if (consentIds == null || consentIds.Count == 0)

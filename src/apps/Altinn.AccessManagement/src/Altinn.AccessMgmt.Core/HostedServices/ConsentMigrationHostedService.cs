@@ -14,7 +14,7 @@ public partial class ConsentMigrationHostedService : BackgroundService
 {
     private readonly IConsentMigrationSyncService _syncService;
     private readonly IFeatureManager _featureManager;
-    private readonly ConsentMigrationSettings _settings;
+    private readonly IOptionsMonitor<ConsentMigrationSettings> _settings;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<ConsentMigrationHostedService> _logger;
 
@@ -24,13 +24,13 @@ public partial class ConsentMigrationHostedService : BackgroundService
     public ConsentMigrationHostedService(
         IConsentMigrationSyncService syncService,
         IFeatureManager featureManager,
-        IOptions<ConsentMigrationSettings> settings,
+        IOptionsMonitor<ConsentMigrationSettings> settings,
         TimeProvider timeProvider,
         ILogger<ConsentMigrationHostedService> logger)
     {
         _syncService = syncService;
         _featureManager = featureManager;
-        _settings = settings.Value;
+        _settings = settings;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -44,11 +44,12 @@ public partial class ConsentMigrationHostedService : BackgroundService
         {
             try
             {
+                var migrationSettings = _settings.CurrentValue;
                 bool isEnabled = await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration);
                 if (!isEnabled)
                 {
                     Log.FeatureDisabled(_logger);
-                    await Task.Delay(_settings.FeatureDisabledDelayMs, stoppingToken);
+                    await Task.Delay(migrationSettings.FeatureDisabledDelayMs, stoppingToken);
                     continue;
                 }
 
@@ -56,11 +57,11 @@ public partial class ConsentMigrationHostedService : BackgroundService
 
                 if (processedCount == 0)
                 {
-                    await Task.Delay(_settings.EmptyFeedDelayMs, stoppingToken);
+                    await Task.Delay(migrationSettings.EmptyFeedDelayMs, stoppingToken);
                 }
                 else
                 {
-                    await Task.Delay(_settings.NormalDelayMs, stoppingToken);
+                    await Task.Delay(migrationSettings.NormalDelayMs, stoppingToken);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
