@@ -1,7 +1,7 @@
 meta {
-  name: Post_Enduser_Conn_Resources_Dagl
+  name: Post_Enduser_Conn_Resources_Dagl_ToUser_WithoutConnection
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -33,11 +33,11 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/resource-delegationcheck/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_Resources_DelgCheck_Dagl");
+  bru.setVar("requestName", "GET_Enduser_Conn_Resources_DelgCheck_Dagl_WithoutConnection");
   
   bru.setVar("party", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
   bru.setVar("from", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
-  bru.setVar("to", testdata.KOMPLEKS_LOJAL_TIGER.dagligleder.partyUuid);
+  bru.setVar("to", testdata.TROFAS_SOLID_TIGER.dagligleder.partyUuid);
   bru.setVar("resource", testdata.resources.packageResourceId);
   
   var getTokenParameters = {
@@ -61,6 +61,6 @@ tests {
     const body = res.getBody();
     const actions = body.actions;
     
-    expect(res.status).to.equal(201);  
+    expect(res.status).to.equal(400);  
   });
 }
