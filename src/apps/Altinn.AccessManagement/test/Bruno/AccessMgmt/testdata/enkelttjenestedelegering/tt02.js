@@ -9,7 +9,7 @@
   },
   Bruker_A_delegates :
   {
-    "name": "FLOTT ENERGI",
+    "lastname": "ENERGI",
     "pid": "19911999652",
     "partyid": 51059891,
     "userid": 1884447,
@@ -17,7 +17,7 @@
   }, 
   Bruker_B_delegates : 
   {
-    "name": "STILLE FELTSENG",
+    "lastname": "FELTSENG",
     "pid": "12857399321",
     "partyid": 50630763,
     "userid": 2234872,

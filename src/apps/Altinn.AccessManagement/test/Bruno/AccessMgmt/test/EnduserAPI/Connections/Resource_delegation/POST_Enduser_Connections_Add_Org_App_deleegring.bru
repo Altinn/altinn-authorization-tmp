@@ -1,29 +1,19 @@
 meta {
-  name: Delete_Delegated_rules_For _App
+  name: POST_Enduser_Connections_Add_Org_App_deleegring
   type: http
-  seq: 17
+  seq: 11
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{party}}&to={{to}}&from={{party}}&resource={{resource}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  to: {{to}}
   from: {{party}}
-  resource: {{resource}}
-}
-
-body:json {
-  {
-    "DirectRightKeys": [
-      "urn:altinn:resource:app_ttd_test-bruno-app-for-delegation:urn:oasis:names:tc:xacml:1.0:action:action-id:instantiate"
-      
-    ]
-  }
+  to: {{toOrg}}
 }
 
 script:pre-request {
@@ -31,8 +21,7 @@ script:pre-request {
   const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
   
   bru.setVar("party", testdata.orgA_delegates.partyuuid);
-  bru.setVar("to", testdata.orgB_delegates.partyuuid);
-  bru.setVar("resource", testdata.resource_to_delegate.app_id);
+  bru.setVar("toOrg", testdata.orgB_delegates.partyuuid);
   
   var getTokenParameters = {
     auth_userId: testdata.orgA_delegates.innehaver.userid,
@@ -50,18 +39,20 @@ script:pre-request {
 }
 
 tests {
-  test("Update Apps actions which was delegated  ", function() {
-    
   const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
-    
+  test("Add Org as rettighetshaver for App delegation", function() {
     const data = res.getBody();
-    expect(res.status).to.equal(201);
-  
+    
+    expect(res.status).to.equal(200);
+    assert.isOk(data, "Expected response body to return created assignment");
+    
+    assert.equal(data.fromId, bru.getVar("party").toLowerCase());
+    assert.equal(data.toId, testdata.orgB_delegates.partyuuid.toLowerCase());
+    assert.equal(data.roleId, "42cae370-2dc1-4fdc-9c67-c2f4b0f0f829"); // rettighetshaver uuid
     
   });
 }
 
-settings {
-  encodeUrl: true
-  timeout: 0
+docs {
+  Lager connection til person
 }
