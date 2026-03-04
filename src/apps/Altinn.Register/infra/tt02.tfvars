@@ -17,6 +17,7 @@ sbl_endpoint             = "https://ai-tt02-vip-sblbridge.ai.basefarm.net/sblbri
 enable_high_availability = true
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
@@ -24,6 +25,9 @@ features = {
   }
   party_import = {
     system_users = true
+    npr = {
+      guardianships = true
+    }
   }
 }
 
