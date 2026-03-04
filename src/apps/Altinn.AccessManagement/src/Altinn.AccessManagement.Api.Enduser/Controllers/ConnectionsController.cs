@@ -586,7 +586,7 @@ public class ConnectionsController(
     /// <summary>
     /// Update resource to an existing rightholder connection
     /// </summary>
-    [HttpPut("resources/rules")]
+    [HttpPut("resources/rights")]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
