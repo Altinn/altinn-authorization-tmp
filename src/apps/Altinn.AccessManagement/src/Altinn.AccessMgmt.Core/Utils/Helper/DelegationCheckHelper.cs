@@ -239,7 +239,9 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
             {
                 foreach (var action in actionKeys)
                 {
-                    result.Add(resource + ":" + action);
+                    string rightKeyPlain = resource + ":" + action;
+                    string rightKeyHashed = "01" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(rightKeyPlain))).ToLowerInvariant();
+                    result.Add(rightKeyHashed);
                 }
             }
 

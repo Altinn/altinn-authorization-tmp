@@ -864,62 +864,6 @@ public partial class ConnectionService(
         return resourceCheckDto;
     }
 
-    private string GetActionNameFromRightKey(string key, string resource)
-    {
-        string[] parts = key.Split("urn:", options: StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        StringBuilder sb = new();
-
-        bool actionAdded = false;
-        foreach (string part in parts.OrderDescending())
-        {
-            string currentPart = part;
-            if (currentPart.Substring(currentPart.Length - 1, 1) == ":")
-            {
-                currentPart = currentPart.Substring(0, currentPart.Length - 1);
-            }
-
-            int removeBefore = currentPart.LastIndexOf(':');
-            if (removeBefore > -1)
-            {
-                currentPart = currentPart.Substring(currentPart.LastIndexOf(':') + 1);
-            }
-
-            if (currentPart.Equals(resource, StringComparison.InvariantCultureIgnoreCase))
-            {
-                continue;
-            }
-
-            if (part.StartsWith("oasis:names:tc:xacml:1.0:action:action-id"))
-            {
-                actionAdded = true;
-            }
-            else if (actionAdded)
-            {
-                currentPart = "(" + currentPart + ")";
-            }
-
-            sb.Append(UppercaseFirstLetter(currentPart));
-            sb.Append(' ');
-        }
-
-        if (sb.Length > 0)
-        {
-            sb.Remove(sb.Length - 1, 1);
-        }
-
-        return sb.ToString();
-    }
-
-    private string UppercaseFirstLetter(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-        {
-            return input;
-        }
-
-        return char.ToUpper(input[0]) + input.Substring(1);
-    }
-
     private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken)
     {
         if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
@@ -940,7 +884,15 @@ public partial class ConnectionService(
             }
         }
 
-        RightDto rightKey = rightKeys.First(r => r.Key == right.Key);
+        RightDto rightKey = rightKeys.FirstOrDefault(r => r.Key == right.Key);
+
+        if (rightKey is null) 
+        {
+            rightKey = new RightDto
+            {
+                Key = right.Key
+            };
+        }
 
         RightCheckDto currentAction = new RightCheckDto
         {
