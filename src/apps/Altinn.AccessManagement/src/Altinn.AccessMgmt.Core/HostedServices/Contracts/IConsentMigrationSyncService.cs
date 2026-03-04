@@ -11,10 +11,4 @@ public interface IConsentMigrationSyncService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Number of consents processed in the batch</returns>
     Task<int> ProcessBatch(CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Gets migration statistics
-    /// </summary>
-    /// <returns>Tuple of processed, migrated, failed counts and last run time</returns>
-    (int Processed, int Migrated, int Failed, DateTimeOffset LastRun) GetStatistics();
 }

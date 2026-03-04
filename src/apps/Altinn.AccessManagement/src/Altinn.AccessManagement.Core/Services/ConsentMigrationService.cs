@@ -1,7 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Microsoft.Extensions.Logging;
-using static System.Net.WebRequestMethods;
 
 namespace Altinn.AccessManagement.Core.Services;
 
@@ -40,10 +39,6 @@ public class ConsentMigrationService : IConsentMigrationService
         catch (HttpRequestException httpEx)
         {
             return ConsentMigrationResult.Failed($"Network error: {httpEx.Message}");
-        }
-        catch (TaskCanceledException tcEx)
-        {
-            return ConsentMigrationResult.Failed($"Timeout: {tcEx.Message}");
         }
         catch (Exception ex)
         {

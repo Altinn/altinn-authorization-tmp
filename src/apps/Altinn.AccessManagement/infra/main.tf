@@ -342,6 +342,12 @@ module "appsettings" {
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
+	{
+      name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
+      description = "Specifies if consent migration service should start"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
   ]
   providers = {
     azurerm.hub = azurerm.hub

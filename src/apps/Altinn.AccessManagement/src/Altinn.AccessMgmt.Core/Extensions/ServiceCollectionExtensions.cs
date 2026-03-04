@@ -23,9 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
-        services.AddScoped<RegisterHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
-        services.AddScoped<RegisterHostedService>();       
+        services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -53,8 +52,10 @@ public static class ServiceCollectionExtensions
         }
 
         // Consent Migration - Configuration
-        services.Configure<ConsentMigrationSettings>(
-            configuration.GetSection("ConsentMigration"));
+        services.AddOptions<ConsentMigrationSettings>()
+                .ValidateDataAnnotations()
+                .ValidateOnStart()
+                .BindConfiguration("ConsentMigration");
 
         // Consent Migration - Services (Core - Scoped)
         services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
