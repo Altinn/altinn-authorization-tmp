@@ -22,9 +22,4 @@ public class RequestAssignment : BaseRequestAssignment
     /// The role that is being requested assigned
     /// </summary>
     public Role Role { get; set; }
-
-    /// <summary>
-    /// The user that requested the assignment
-    /// </summary>
-    public Entity RequestedBy { get; set; }
 }

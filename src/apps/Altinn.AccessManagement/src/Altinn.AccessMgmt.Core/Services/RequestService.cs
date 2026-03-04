@@ -36,16 +36,16 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
+        if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
 
-        var r1 = await GetRequestAssignment(fromId, toId, null, requestedBy, status, after, ct);
-        var r3 = await GetRequestAssignmentPackage(fromId, toId, null, null, requestedBy, status, after, ct);
-        var r2 = await GetRequestAssignmentResource(fromId, toId, null, null, null, requestedBy, status, after, ct);
+        var r1 = await GetRequestAssignment(fromId, toId, null, status, after, ct);
+        var r3 = await GetRequestAssignmentPackage(fromId, toId, null, null, status, after, ct);
+        var r2 = await GetRequestAssignmentResource(fromId, toId, null, null, null, status, after, ct);
 
         return r1.Select(DtoMapper.Convert)
             .Union(r2.Select(DtoMapper.Convert))
@@ -59,7 +59,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(a => a.From)
             .Include(a => a.To)
             .Include(a => a.Role)
-            .Include(r => r.RequestedBy)
             .FirstOrDefaultAsync(r => r.Id == requestId);
         if (request == null)
         {
@@ -70,9 +69,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
+        if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
@@ -83,20 +82,18 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(a => a.From)
             .Include(a => a.To)
             .Include(a => a.Role)
-            .Include(r => r.RequestedBy)
             .WhereIf(fromId.HasValue, r => r.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.RoleId == roleId.Value)
-            .WhereIf(requestedBy.HasValue, r => r.RequestedById == requestedBy.Value)
             .WhereMatchIfSet(statusSet, r => r.Status)
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync();
     }
 
     /// <inheritdoc/>
-    public async Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, Guid requestedBy, CancellationToken ct = default)
+    public async Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId && r.RequestedById == requestedBy && r.Status == RequestStatus.Pending);
+        var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId && r.Status == RequestStatus.Pending);
         if (request == null)
         {
             request = new RequestAssignment
@@ -106,7 +103,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
                 FromId = fromId,
                 ToId = toId,
                 RoleId = roleId,
-                RequestedById = requestedBy
             };
             db.RequestAssignments.Add(request);
 
@@ -148,7 +144,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
-            .Include(r => r.RequestedBy)
             .FirstOrDefaultAsync(r => r.Id == requestId);
         if (request == null)
         {
@@ -159,9 +154,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string? action, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string? action, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
+        if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
@@ -171,23 +166,21 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
-            .Include(r => r.RequestedBy)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, r => r.ResourceId == resourceId.Value)
             .WhereIf(!string.IsNullOrEmpty(action), r => r.Action == action)
-            .WhereIf(requestedBy.HasValue, r => r.RequestedById == requestedBy.Value)
             .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync();
     }
 
     /// <inheritdoc/>
-    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default)
+    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, CancellationToken ct = default)
     {
         var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
-        return await CreateRequestAssignmentResource(assignment.Id, resourceId, action, requestedBy);
+        return await CreateRequestAssignmentResource(assignment.Id, resourceId, action);
     }
 
     /// <inheritdoc/>
@@ -198,9 +191,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default)
+    public async Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.RequestedById == requestedBy && r.Status == RequestStatus.Pending);
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == RequestStatus.Pending);
         if (request == null)
         {
             request = new RequestAssignmentResource
@@ -210,7 +203,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
                 AssignmentId = assignmentId,
                 ResourceId = resourceId,
                 Action = action,
-                RequestedById = requestedBy,
             };
             db.RequestAssignmentResources.Add(request);
 
@@ -278,7 +270,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
-            .Include(r => r.RequestedBy)
             .FirstOrDefaultAsync(r => r.Id == requestId);
         if (request == null)
         {
@@ -289,9 +280,9 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
+    public async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue && !requestedBy.HasValue)
+        if (!fromId.HasValue && !toId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
@@ -301,28 +292,26 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
-            .Include(r => r.RequestedBy)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.Assignment.RoleId == roleId.Value)
             .WhereIf(packageId.HasValue, r => r.PackageId == packageId.Value)
-            .WhereIf(requestedBy.HasValue, r => r.RequestedById == requestedBy.Value)
             .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync();
     }
 
     /// <inheritdoc/>
-    public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, Guid requestedBy, CancellationToken ct = default)
+    public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, CancellationToken ct = default)
     {
         var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId);
-        return await CreateRequestAssignmentPackage(assignment.Id, packageId, requestedBy);
+        return await CreateRequestAssignmentPackage(assignment.Id, packageId);
     }
 
     /// <inheritdoc/>
-    public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, Guid requestedBy, CancellationToken ct = default)
+    public async Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.RequestedById == requestedBy && r.Status == RequestStatus.Pending);
+        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == RequestStatus.Pending);
         if (request == null)
         {
             request = new RequestAssignmentPackage
@@ -331,7 +320,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
                 Status = RequestStatus.Pending,
                 AssignmentId = assignmentId,
                 PackageId = packageId,
-                RequestedById = requestedBy
             };
             db.RequestAssignmentPackages.Add(request);
 

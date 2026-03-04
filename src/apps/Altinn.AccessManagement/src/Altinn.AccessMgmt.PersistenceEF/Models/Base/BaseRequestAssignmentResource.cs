@@ -30,11 +30,6 @@ public class BaseRequestAssignmentResource : BaseAudit, IEntityId
     public string Action { get; set; }
 
     /// <summary>
-    /// Identify the user that requested the assignment
-    /// </summary>
-    public Guid RequestedById { get; set; }
-
-    /// <summary>
     /// The status of the request (e.g., pending, approved, rejected)
     /// </summary>
     public RequestStatus Status { get; set; }

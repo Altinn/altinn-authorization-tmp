@@ -16,9 +16,4 @@ public class RequestAssignmentPackage : BaseRequestAssignmentPackage
     /// The package associated with this request
     /// </summary>
     public Package Package { get; set; }
-
-    /// <summary>
-    /// The user that requested the package to be assignmened
-    /// </summary>
-    public Entity RequestedBy { get; set; }
 }

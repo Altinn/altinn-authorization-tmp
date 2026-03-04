@@ -8,6 +8,11 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Validation;
 
 internal static class RequestValidation
 {
+    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to) =>
+        ValidationComposer.All(
+            ParameterValidation.IEntityHasId(from, "from"),
+            ParameterValidation.IEntityHasId(to, "to")
+        );
     internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role) =>
         ValidationComposer.All(
             ParameterValidation.IEntityHasId(from, "from"),
@@ -23,9 +28,15 @@ internal static class RequestValidation
 
     internal static RuleExpression ValidateRequestInput(RequestInput input) =>
         ValidationComposer.All(
-            ParameterValidation.ValidFromUrnInput(input.From, ValidUrns),
-            ParameterValidation.ValidToUrnInput(input.To, ValidUrns)
+            ParameterValidation.ValidFromUrnInput(input.Connection.From, ValidUrns),
+            ParameterValidation.ValidToUrnInput(input.Connection.To, ValidUrns)
         );
+
+    internal static RuleExpression ValidateRequestInput(RequestQueryInput input) =>
+       ValidationComposer.All(
+           ParameterValidation.ValidFromUrnInput(input.From, ValidUrns),
+           ParameterValidation.ValidToUrnInput(input.To, ValidUrns)
+       );
 
     internal static RuleExpression ValidateRequestResource(RequestResourceInput input) =>
        ValidationComposer.All(

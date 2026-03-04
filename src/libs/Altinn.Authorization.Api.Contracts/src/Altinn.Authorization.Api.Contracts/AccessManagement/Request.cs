@@ -26,6 +26,14 @@ public class RequestQueryInput
 public class RequestInput
 {
     /// <summary>
+    /// Request connection
+    /// </summary>
+    public ConnectionRequestInputDto Connection { get; set; }
+}
+
+public class ConnectionRequestInputDto
+{
+    /// <summary>
     /// Urn describing the party
     /// </summary>
     public string From { get; set; }

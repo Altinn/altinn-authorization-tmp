@@ -20,9 +20,8 @@ public class RequestAssignmentConfiguration : IEntityTypeConfiguration<RequestAs
         builder.PropertyWithReference(navKey: t => t.From, foreignKey: t => t.FromId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.To, foreignKey: t => t.ToId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Role, foreignKey: t => t.RoleId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
-        builder.PropertyWithReference(navKey: t => t.RequestedBy, foreignKey: t => t.RequestedById, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
 
-        builder.HasIndex(["FromId", "ToId", "RoleId", "RequestedById", "Status"]).IsUnique();
+        builder.HasIndex(["FromId", "ToId", "RoleId", "Status"]).IsUnique();
     }
 }
 

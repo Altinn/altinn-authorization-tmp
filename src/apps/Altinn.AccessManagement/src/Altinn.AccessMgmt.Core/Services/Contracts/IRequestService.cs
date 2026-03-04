@@ -30,7 +30,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of request
     /// DTOs that match the specified filters.</returns>
-    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Retrieves the request assignment associated with the specified request identifier.
@@ -59,7 +59,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an enumerable collection of request
     /// assignments that match the specified filters.</returns>
-    Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment that links the specified entities with the given role.
@@ -72,7 +72,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created RequestAssignment
     /// object.</returns>
-    Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, Guid requestedBy, CancellationToken ct = default);
+    Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment status of a request identified by the specified request ID.
@@ -116,7 +116,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of request assignment
     /// packages that match the specified filters. The collection is empty if no packages meet the criteria.</returns>
-    Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment package with the specified source, target, role, and package identifiers.
@@ -130,7 +130,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentPackage.</returns>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, Guid requestedBy, CancellationToken ct = default);
+    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment package that associates the specified assignment with the given package on
@@ -143,7 +143,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user requesting the creation of the assignment package.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created RequestAssignmentPackage
     /// instance.</returns>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, Guid requestedBy, CancellationToken ct = default);
+    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the assignment package for the specified request with a new status.
@@ -186,7 +186,7 @@ public interface IRequestService
     /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of request assignment
     /// resources that match the specified criteria.</returns>
-    Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string action, Guid? requestedBy, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, string action, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
 
     /// <summary>
     /// Creates a new request assignment resource that represents an assignment action between two resources with a
@@ -202,7 +202,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user who is requesting the assignment.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentResource.</returns>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, string action, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment resource that represents an assignment action between two resources with a
@@ -230,7 +230,7 @@ public interface IRequestService
     /// <param name="requestedBy">The unique identifier of the user requesting the assignment of the resource.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created
     /// RequestAssignmentResource.</returns>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action, Guid requestedBy, CancellationToken ct = default);
+    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, string action,CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment resource with the specified assignment, resource, action, and requesting user.

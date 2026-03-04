@@ -19,9 +19,8 @@ public class RequestAssignmentPackageConfiguration : IEntityTypeConfiguration<Re
 
         builder.PropertyWithReference(navKey: t => t.Assignment, foreignKey: t => t.AssignmentId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Package, foreignKey: t => t.PackageId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
-        builder.PropertyWithReference(navKey: t => t.RequestedBy, foreignKey: t => t.RequestedById, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
 
-        builder.HasIndex(["AssignmentId", "PackageId", "RequestedById", "Status"]).IsUnique();
+        builder.HasIndex(["AssignmentId", "PackageId", "Status"]).IsUnique();
     }
 }
 

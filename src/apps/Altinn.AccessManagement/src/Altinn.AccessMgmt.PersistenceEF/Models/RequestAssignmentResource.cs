@@ -16,9 +16,4 @@ public class RequestAssignmentResource : BaseRequestAssignmentResource
     /// The package associated with this request
     /// </summary>
     public Resource Resource { get; set; }
-
-    /// <summary>
-    /// The user that requested the package to be assignmened
-    /// </summary>
-    public Entity RequestedBy { get; set; }
 }

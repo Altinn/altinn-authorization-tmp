@@ -45,6 +45,22 @@ public class RequestController(IRequestService requestService, IEntityService en
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> FindResourceRequests([FromQuery] RequestQueryInput input, CancellationToken ct = default)
     {
+        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var from = await GetEntityByUrn(input.From, ct);
+        var to = await GetEntityByUrn(input.To, ct);
+        
+        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to));
+        if (serviceValidationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var requests = await requestService.GetRequests(fromId: from.Id, toId: to.Id, status: [RequestStatus.None, RequestStatus.Approved, RequestStatus.Pending], after: DateTimeOffset.UtcNow, ct: ct);
         return Ok();
     }
 
@@ -66,8 +82,8 @@ public class RequestController(IRequestService requestService, IEntityService en
             return validationErrors.ToActionResult();
         }
 
-        var from = await GetEntityByUrn(input.From, ct);
-        var to = await GetEntityByUrn(input.To, ct);
+        var from = await GetEntityByUrn(input.Connection.From, ct);
+        var to = await GetEntityByUrn(input.Connection.To, ct);
         var role = RoleConstants.Rightholder;
         var resource = await resourceService.GetResource(input.Resource.ResourceId, ct);
 
@@ -120,7 +136,7 @@ public class RequestController(IRequestService requestService, IEntityService en
         var value = s.Last();
         var key = urn.Substring(0, urn.Length - value.Length + 1);
 
-        if (!Validation.RequestValidation.ValidUrns.Contains(key))
+        if (!RequestValidation.ValidUrns.Contains(key))
         {
             return null;
         }
