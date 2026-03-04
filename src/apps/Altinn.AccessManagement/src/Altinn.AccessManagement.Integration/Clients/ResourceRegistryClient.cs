@@ -3,7 +3,9 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Configuration;
+using Altinn.AccessMgmt.Core.Constants.Translation;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -162,13 +164,15 @@ namespace Altinn.AccessManagement.Integration.Clients
         }
 
         /// <inheritdoc/>
-        public async Task<List<RightDto>> GetPolicyRightsV2(string resource, CancellationToken cancellationToken)
+        public async Task<List<RightDto>> GetPolicyRightsV2(string resource, string languageCode = "nb", CancellationToken cancellationToken = default)
         {
             try
             {
                 string endpointUrl = $"resource/{resource}/policy/rights";
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
+                request.Headers.Add(TranslationConstants.AcceptLanguageHeader, languageCode);
 
-                HttpResponseMessage response = await _httpClientV2.GetAsync(endpointUrl, cancellationToken);
+                HttpResponseMessage response = await _httpClientV2.SendAsync(request, cancellationToken);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string content = await response.Content.ReadAsStringAsync(cancellationToken);

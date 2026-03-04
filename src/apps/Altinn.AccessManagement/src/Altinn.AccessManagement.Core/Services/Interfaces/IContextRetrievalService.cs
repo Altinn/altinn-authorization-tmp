@@ -197,7 +197,8 @@ public interface IContextRetrievalService
     /// Gets all RighhtKeys for a given Resource
     /// </summary>
     /// <param name="resourceRegistryId">the resource registry identifier</param>
+    /// <param name="languageCode">the requested language code, default is "nb"</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns></returns>
-    Task<List<RightDto>> GetResourcePolicyV2(string resourceRegistryId, CancellationToken cancellationToken = default);
+    Task<List<RightDto>> GetResourcePolicyV2(string resourceRegistryId, string languageCode = "nb", CancellationToken cancellationToken = default);
 }

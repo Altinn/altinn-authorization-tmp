@@ -38,7 +38,7 @@ public class ResourceRegistryMock(MockContext context) : IResourceRegistryClient
     public Task<IDictionary<string, IEnumerable<BaseAttribute>>> GetSubjectResources(IEnumerable<string> subjects, CancellationToken cancellationToken = default) =>
         Task.FromResult(Context.SubjectResources);
 
-    Task<List<RightDto>> IResourceRegistryClient.GetPolicyRightsV2(string resource, CancellationToken cancellationToken)
+    public Task<List<RightDto>> GetPolicyRightsV2(string resource, string languageCode, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

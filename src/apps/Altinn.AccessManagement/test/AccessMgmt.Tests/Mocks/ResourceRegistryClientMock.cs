@@ -122,7 +122,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
             return Path.Combine(unitTestFolder, "Data", "Resources");
         }
 
-        Task<List<RightDto>> IResourceRegistryClient.GetPolicyRightsV2(string resource, CancellationToken cancellationToken)
+        public async Task<List<RightDto>> GetPolicyRightsV2(string resource, string languageCode, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

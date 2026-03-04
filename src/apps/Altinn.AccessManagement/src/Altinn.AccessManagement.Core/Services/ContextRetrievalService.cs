@@ -352,13 +352,13 @@ public class ContextRetrievalService : IContextRetrievalService
     }
 
     /// <inheritdoc/>
-    public async Task<List<RightDto>> GetResourcePolicyV2(string resourceRegistryId, CancellationToken cancellationToken = default)
+    public async Task<List<RightDto>> GetResourcePolicyV2(string resourceRegistryId, string languageCode = "nb", CancellationToken cancellationToken = default)
     {
-        string cacheKey = $"rrRkId:{resourceRegistryId}";
+        string cacheKey = $"rrRkId:{resourceRegistryId}:{languageCode}";
 
         if (!_memoryCache.TryGetValue(cacheKey, out List<RightDto> resourceKeys))
         {
-            resourceKeys = await _resourceRegistryClient.GetPolicyRightsV2(resourceRegistryId, cancellationToken);
+            resourceKeys = await _resourceRegistryClient.GetPolicyRightsV2(resourceRegistryId, languageCode, cancellationToken);
 
             if (resourceKeys != null)
             {
