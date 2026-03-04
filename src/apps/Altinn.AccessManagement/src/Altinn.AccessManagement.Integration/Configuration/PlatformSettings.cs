@@ -32,6 +32,11 @@
         public string? ApiResourceRegistryEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the resource registry api V2 endpoint.
+        /// </summary>
+        public string? ApiResourceRegistryEndpointV2 { get; set; }
+
+        /// <summary>
         /// Gets or sets the subscriptionkey.
         /// </summary>
         public string? SubscriptionKey { get; set; }

@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Models.Authentication;
 using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Models.SblBridge;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Platform.Register.Models;
 using Authorization.Platform.Authorization.Models;
 
@@ -191,4 +192,12 @@ public interface IContextRetrievalService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>The user profile</returns>
     Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all RighhtKeys for a given Resource
+    /// </summary>
+    /// <param name="resourceRegistryId">the resource registry identifier</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns></returns>
+    Task<List<RightDto>> GetResourcePolicyV2(string resourceRegistryId, CancellationToken cancellationToken = default);
 }

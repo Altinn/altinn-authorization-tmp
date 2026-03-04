@@ -10,6 +10,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Clients;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessManagement.Tests.Mocks
 {
@@ -119,6 +120,11 @@ namespace Altinn.AccessManagement.Tests.Mocks
         {
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(ResourceRegistryClientMock).Assembly.Location).LocalPath);
             return Path.Combine(unitTestFolder, "Data", "Resources");
+        }
+
+        Task<List<RightDto>> IResourceRegistryClient.GetPolicyRightsV2(string resource, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

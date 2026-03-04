@@ -1,16 +1,18 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Configuration;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Altinn.AccessManagement.Integration.Clients
 {
@@ -21,6 +23,7 @@ namespace Altinn.AccessManagement.Integration.Clients
     public class ResourceRegistryClient : IResourceRegistryClient
     {
         private readonly HttpClient _httpClient = new();
+        private readonly HttpClient _httpClientV2 = new();
         private readonly ILogger<IResourceRegistryClient> _logger;
         private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase, WriteIndented = true };
@@ -39,6 +42,12 @@ namespace Altinn.AccessManagement.Integration.Clients
             _httpClient.Timeout = new TimeSpan(0, 0, 30);
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            _httpClientV2.BaseAddress = new Uri(platformSettings.ApiResourceRegistryEndpointV2);
+            _httpClientV2.Timeout = new TimeSpan(0, 0, 30);
+            _httpClientV2.DefaultRequestHeaders.Clear();
+            _httpClientV2.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
             _memoryCache = memoryCache;
             _logger = logger;
         }
@@ -152,6 +161,29 @@ namespace Altinn.AccessManagement.Integration.Clients
             return consentTemplate;
         }
 
+        /// <inheritdoc/>
+        public async Task<List<RightDto>> GetPolicyRightsV2(string resource, CancellationToken cancellationToken)
+        {
+            try
+            {
+                string endpointUrl = $"resource/{resource}/policy/rights";
+
+                HttpResponseMessage response = await _httpClientV2.GetAsync(endpointUrl, cancellationToken);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string content = await response.Content.ReadAsStringAsync(cancellationToken);
+                    return JsonSerializer.Deserialize<List<RightDto>>(content, options);
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AccessManagement // ResourceRegistryClient // GetPolicyRights // Exception");
+                throw;
+            }
+        }
+
         private async Task<List<ConsentTemplate>> GetConsentTemplates()
         {
             // Temp location. Will be moved to CDN
@@ -182,6 +214,6 @@ namespace Altinn.AccessManagement.Integration.Clients
             {
                 throw new Exception($"Something went wrong when retrieving consent templates", ex);
             }
-        }
+        }        
     }
 }

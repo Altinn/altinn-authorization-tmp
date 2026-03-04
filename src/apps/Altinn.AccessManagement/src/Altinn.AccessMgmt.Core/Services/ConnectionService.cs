@@ -859,8 +859,10 @@ public partial class ConnectionService(
 
         // Fetch Resourcemetadata
         ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
+
+        List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource, cancellationToken);
         
-        if (resourceMetadata is null)
+        if (resourceMetadata is null || rightKeys is null)
         {
             return Problems.InvalidResource;
         }
@@ -885,7 +887,7 @@ public partial class ConnectionService(
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, isResourceDelegable, cancellationToken);
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
@@ -953,7 +955,7 @@ public partial class ConnectionService(
         return char.ToUpper(input[0]) + input.Substring(1);
     }
 
-    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken)
+    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken)
     {
         if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
         {
@@ -973,16 +975,11 @@ public partial class ConnectionService(
             }
         }
 
-        ResourceAndAction resourceAndAction = DelegationCheckHelper.SplitRightKey(right.Key);
+        RightDto rightKey = rightKeys.First(r => r.Key == right.Key);
 
         RightCheckDto currentAction = new RightCheckDto
         {
-            Right = new RightDto { 
-                Key = right.Key,
-                Name = GetActionNameFromRightKey(right.Key, resource),
-                Resource = resourceAndAction.Resource,
-                Action = resourceAndAction.Action
-            },
+            Right = rightKey,
             Result = false
         };
 
@@ -1199,13 +1196,13 @@ public partial class ConnectionService(
         }
     }
 
-    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, bool isResourceDelegable, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken = default)
     {
         List<RightCheckDto> result = [];
 
         foreach (var right in rights)
         {
-            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, isResourceDelegable, cancellationToken));
+            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, cancellationToken));
         }
 
         return result;
