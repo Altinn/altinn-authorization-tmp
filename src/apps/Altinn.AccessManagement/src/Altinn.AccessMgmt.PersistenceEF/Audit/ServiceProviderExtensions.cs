@@ -1,7 +1,5 @@
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Microsoft.AspNetCore.Builder;
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Audit;
 
@@ -13,16 +11,5 @@ public static class ServiceProviderExtensions
         var accessor = scope.ServiceProvider.GetRequiredService<IAuditAccessor>();
         accessor.AuditValues = auditValues;
         return scope;
-    }
-
-    public static IServiceScope CreateEFScope(this IServiceProvider provider, Guid systemEntity)
-    {
-        return provider.CreateEFScope(new AuditValues(systemEntity));
-    }
-
-    public static IApplicationBuilder UseEfAudit(this IApplicationBuilder builder)
-    {
-        builder.UseMiddleware<AuditMiddleware>();
-        return builder;
     }
 }

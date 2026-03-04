@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Altinn.AccessMgmt.PersistenceEF.Models.Claims
+namespace Altinn.AccessMgmt.Core.Models.Claims
 {
     public class SystemUserClaim
     {

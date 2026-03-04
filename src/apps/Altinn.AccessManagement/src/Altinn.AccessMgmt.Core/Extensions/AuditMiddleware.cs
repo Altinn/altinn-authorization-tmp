@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
-using Altinn.AccessMgmt.PersistenceEF.Models.Claims;
+using Altinn.AccessMgmt.Core.Models.Claims;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Altinn.AccessMgmt.PersistenceEF.Audit;
+namespace Altinn.AccessMgmt.Core.Extensions;
 
 public class AuditMiddleware : IMiddleware
 {
@@ -64,5 +66,14 @@ public class AuditMiddleware : IMiddleware
         }
 
         return null;
+    }
+}
+
+public static class ServiceProviderExtensions
+{
+    public static IApplicationBuilder UseEfAudit(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<AuditMiddleware>();
+        return builder;
     }
 }
