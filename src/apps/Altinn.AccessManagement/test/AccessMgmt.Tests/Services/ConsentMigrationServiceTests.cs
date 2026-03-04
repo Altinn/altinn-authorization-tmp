@@ -94,25 +94,6 @@ public class ConsentMigrationServiceTests
     }
 
     [Fact]
-    public async Task MigrateConsent_Timeout_ReturnsFailed()
-    {
-        // Arrange
-        var consentId = Guid.NewGuid();
-
-        _consentServiceMock.Setup(x => x.GetAndStoreAltinn2Consent(consentId, It.IsAny<CancellationToken>()))
-          .ThrowsAsync(new TaskCanceledException("Timeout"));
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.MigrateConsent(consentId, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("Timeout", result.ErrorMessage);
-    }
-
-    [Fact]
     public async Task MigrateConsent_UnexpectedException_LogsAndReturnsFailed()
     {
         // Arrange
@@ -141,22 +122,44 @@ public class ConsentMigrationServiceTests
     }
 
     [Fact]
-    public async Task MigrateConsent_Cancelled_ReturnsFailed()
+    public async Task MigrateConsent_Cancelled_ThrowsOperationCanceledException()
     {
         // Arrange
         var consentId = Guid.NewGuid();
-
+        using CancellationTokenSource cts = new CancellationTokenSource();
         _consentServiceMock.Setup(x => x.GetAndStoreAltinn2Consent(consentId, It.IsAny<CancellationToken>()))
-          .ThrowsAsync(new OperationCanceledException());
+            .Callback(() => 
+            { 
+                cts.Cancel();
+                cts.Token.ThrowIfCancellationRequested();
+            });
+        
+        var service = CreateService();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            async () => await service.MigrateConsent(consentId, cts.Token));
+    }
+
+    [Fact]
+    public async Task MigrateConsent_TaskCancelledWithoutTokenCancellation_ReturnsFailed()
+    {
+        // Arrange - TaskCanceledException thrown but token NOT cancelled
+        var consentId = Guid.NewGuid();
+        using CancellationTokenSource cts = new CancellationTokenSource();
+
+        // Mock throws TaskCanceledException but token is still active
+        _consentServiceMock.Setup(x => x.GetAndStoreAltinn2Consent(consentId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException("Operation timed out"));
 
         var service = CreateService();
 
         // Act
-        var result = await service.MigrateConsent(consentId, CancellationToken.None);
+        var result = await service.MigrateConsent(consentId, cts.Token);
 
-        // Assert
+        // Assert - Should be handled as an exception since token wasn't cancelled
         Assert.False(result.Success);
-        Assert.Contains("The operation was canceled", result.ErrorMessage);
+        Assert.Contains("Operation timed out", result.ErrorMessage);
     }
 
     [Fact]

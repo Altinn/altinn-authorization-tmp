@@ -19,7 +19,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyncService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ConsentMigrationSettings _settings;
+    private readonly IOptionsMonitor<ConsentMigrationSettings> _settings;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<ConsentMigrationSyncService> _logger;
     private readonly Counter<long> _processedCounter;
@@ -31,13 +31,13 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
     /// </summary>
     public ConsentMigrationSyncService(
         IServiceProvider serviceProvider,
-        IOptions<ConsentMigrationSettings> settings,
+        IOptionsMonitor<ConsentMigrationSettings> settings,
         TimeProvider timeProvider,
         IMeterFactory meterFactory,
         ILogger<ConsentMigrationSyncService> logger)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings.Value;
+        _settings = settings;
         _timeProvider = timeProvider;
         _logger = logger;
 
@@ -60,6 +60,10 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
             _logger.LogWarning(httpEx, "Network error in batch processing. Will retry in next cycle.");
             return 0;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in batch processing");
@@ -75,9 +79,9 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
         var migrationService = scopedServices.GetRequiredService<IConsentMigrationService>();
 
         var consentIds = await migrationClient.GetAltinn2ConsentListForMigration(
-            _settings.BatchSize,
-            _settings.ConsentStatus,
-            _settings.OnlyExpiredConsents,
+            _settings.CurrentValue.BatchSize,
+            _settings.CurrentValue.ConsentStatus,
+            _settings.CurrentValue.OnlyExpiredConsents,
             cancellationToken);
 
         if (consentIds == null || consentIds.Count == 0)
@@ -85,7 +89,7 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
             return 0;
         }
 
-        _logger.LogInformation("Processing batch of {Count} consents with status '{Status}'", consentIds.Count, _settings.ConsentStatus);
+        _logger.LogInformation("Processing batch of {Count} consents with status '{Status}'", consentIds.Count, _settings.CurrentValue.ConsentStatus);
 
         int successCount = 0;
         int failedCount = 0;
@@ -132,6 +136,10 @@ public class ConsentMigrationSyncService : BaseSyncService, IConsentMigrationSyn
                 _logger.LogWarning("Failed to migrate consent {ConsentId}: {Error}", consentId, result.ErrorMessage);
                 return false;
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

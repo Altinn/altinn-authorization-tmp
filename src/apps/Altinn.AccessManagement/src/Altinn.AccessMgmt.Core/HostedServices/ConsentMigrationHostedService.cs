@@ -63,6 +63,10 @@ public partial class ConsentMigrationHostedService : BackgroundService
                     await Task.Delay(_settings.NormalDelayMs, stoppingToken);
                 }
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);

@@ -23,6 +23,7 @@ public class ConsentMigrationSyncServiceTests
     private readonly Mock<IConsentMigrationService> _migrationServiceMock;
     private readonly Mock<ILogger<ConsentMigrationSyncService>> _loggerMock;
     private readonly Mock<IMeterFactory> _meterFactoryMock;
+    private readonly Mock<IOptionsMonitor<ConsentMigrationSettings>> _settingsMonitorMock;
     private readonly ConsentMigrationSettings _settings;
     private readonly TimeProvider _timeProvider;
 
@@ -35,6 +36,7 @@ public class ConsentMigrationSyncServiceTests
         _migrationServiceMock = new Mock<IConsentMigrationService>();
         _loggerMock = new Mock<ILogger<ConsentMigrationSyncService>>();
         _meterFactoryMock = new Mock<IMeterFactory>();
+        _settingsMonitorMock = new Mock<IOptionsMonitor<ConsentMigrationSettings>>();
         _timeProvider = TimeProvider.System;
 
         _settings = new ConsentMigrationSettings
@@ -45,6 +47,9 @@ public class ConsentMigrationSyncServiceTests
             NormalDelayMs = 1000,
             EmptyFeedDelayMs = 5000
         };
+
+        _settingsMonitorMock = new Mock<IOptionsMonitor<ConsentMigrationSettings>>();        
+        _settingsMonitorMock.Setup(x => x.CurrentValue).Returns(_settings);
 
         // Setup meter factory
         var meterMock = new Mock<Meter>("Test", null);
@@ -98,7 +103,7 @@ public class ConsentMigrationSyncServiceTests
             .ReturnsAsync(consentIds);
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ConsentMigrationResult.Succeeded());
+            .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         var service = CreateService();
 
@@ -143,13 +148,13 @@ public class ConsentMigrationSyncServiceTests
             .ReturnsAsync(consentIds);
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[0], It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ConsentMigrationResult.Succeeded());
+            .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[1], It.IsAny<CancellationToken>()))
             .ReturnsAsync(ConsentMigrationResult.Failed("Test error"));
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[2], It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ConsentMigrationResult.Succeeded());
+            .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         var service = CreateService();
 
@@ -177,7 +182,7 @@ public class ConsentMigrationSyncServiceTests
             .ThrowsAsync(new Exception("Test exception"));
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[1], It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ConsentMigrationResult.Succeeded());
+            .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         var service = CreateService();
 
@@ -213,13 +218,13 @@ public class ConsentMigrationSyncServiceTests
                     cts.Cancel(); // Cancel after first consent
                 }
 
-                return Task.FromResult(ConsentMigrationResult.Succeeded());
+                return Task.FromResult(ConsentMigrationResult.Succeeded);
             });
 
         var service = CreateService();
 
         // Act
-        var result = await service.ProcessBatch(cts.Token);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.ProcessBatch(cts.Token));
 
         // Assert
         _migrationServiceMock.Verify(x => x.MigrateConsent(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -238,7 +243,7 @@ public class ConsentMigrationSyncServiceTests
           .ReturnsAsync(consentIds);
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[0], It.IsAny<CancellationToken>()))
-          .ReturnsAsync(ConsentMigrationResult.Succeeded());
+          .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[1], It.IsAny<CancellationToken>()))
           .ThrowsAsync(new HttpRequestException("Network error"));
@@ -247,7 +252,7 @@ public class ConsentMigrationSyncServiceTests
           .ReturnsAsync(ConsentMigrationResult.Failed("Migration failed"));
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(consentIds[3], It.IsAny<CancellationToken>()))
-          .ReturnsAsync(ConsentMigrationResult.Succeeded());
+          .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         var service = CreateService();
 
@@ -273,7 +278,7 @@ public class ConsentMigrationSyncServiceTests
             .ReturnsAsync(largeConsentList.Take(_settings.BatchSize).ToList());
 
         _migrationServiceMock.Setup(x => x.MigrateConsent(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ConsentMigrationResult.Succeeded());
+            .ReturnsAsync(ConsentMigrationResult.Succeeded);
 
         var service = CreateService();
 
@@ -295,7 +300,7 @@ public class ConsentMigrationSyncServiceTests
     {
         return new ConsentMigrationSyncService(
             _serviceProviderMock.Object,
-            Options.Create(_settings),
+            _settingsMonitorMock.Object,
             _timeProvider,
             _meterFactoryMock.Object,
             _loggerMock.Object);

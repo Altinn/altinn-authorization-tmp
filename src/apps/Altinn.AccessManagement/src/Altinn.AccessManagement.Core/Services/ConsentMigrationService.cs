@@ -34,11 +34,15 @@ public class ConsentMigrationService : IConsentMigrationService
                 return ConsentMigrationResult.Failed("Migration failed");
             }
 
-            return ConsentMigrationResult.Succeeded();
+            return ConsentMigrationResult.Succeeded;
         }
         catch (HttpRequestException httpEx)
         {
             return ConsentMigrationResult.Failed($"Network error: {httpEx.Message}");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

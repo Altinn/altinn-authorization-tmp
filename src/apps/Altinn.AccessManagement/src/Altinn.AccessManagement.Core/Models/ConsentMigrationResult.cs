@@ -18,7 +18,7 @@ public record ConsentMigrationResult
   /// <summary>
   /// Creates a successful result
   /// </summary>
-  public static ConsentMigrationResult Succeeded() => new() { Success = true };
+  public static ConsentMigrationResult Succeeded { get; } = new() { Success = true };
 
   /// <summary>
   /// Creates a failed result with error message
