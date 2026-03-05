@@ -826,12 +826,12 @@ public partial class ConnectionService(
         // Fetch Resourcemetadata
         ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
 
-        List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource, languageCode, cancellationToken);
-        
         if (resourceMetadata is null)
         {
             return Problems.InvalidResource;
         }
+
+        List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource, languageCode, cancellationToken);
 
         if (rightKeys is null)
         {
