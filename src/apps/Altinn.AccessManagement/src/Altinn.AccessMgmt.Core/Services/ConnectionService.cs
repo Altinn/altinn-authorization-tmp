@@ -95,7 +95,8 @@ public partial class ConnectionService(
             : DtoMapper.ConvertToOthers(connections, getSingle: toId.HasValue);
     }
 
-    public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<Result<AssignmentDto>> AddRightholder(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
@@ -556,11 +557,11 @@ public partial class ConnectionService(
         }).ToList();
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, Guid authenticatedUserUuid, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await dbContext.GetAssignableAccessPackages(
             party,
-            auditAccessor.AuditValues.ChangedBy,
+            authenticatedUserUuid,
             packageIds,
             true,
             cancellationToken
@@ -844,7 +845,7 @@ public partial class ConnectionService(
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         // Fetch packages
-        var packages = await CheckPackageForResource(party, null, ConfigureConnections, cancellationToken);
+        var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, ConfigureConnections, cancellationToken);
 
         bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
 
@@ -1847,9 +1848,9 @@ internal class AssignmentResourceQueryResult
 
     internal Entity Via { get; set; }
 
-    internal PersistenceEF.Models.Role ViaRole { get; set; }
+    internal Role ViaRole { get; set; }
 
-    internal PersistenceEF.Models.Role Role { get; set; }
+    internal Role Role { get; set; }
 
     internal string PolicyPath { get; set; }
 

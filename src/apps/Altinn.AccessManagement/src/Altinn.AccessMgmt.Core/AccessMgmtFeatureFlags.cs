@@ -33,11 +33,6 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
 
     /// <summary>
-    /// Specifies if AuthorizedPartiesServiceEf should be used
-    /// </summary>
-    public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
-
-    /// <summary>
     /// Specifies Client Delegation should be enabled in enduser API.
     /// </summary>
     public const string EnduserControllerClientDelegation = $"AccessMgmt.Enduser.Controller.ClientDelegation";
@@ -71,4 +66,9 @@ public static class AccessMgmtFeatureFlags
     /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
     /// </summary>
     public const string HostedServicesSingleInstanceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue";
+
+    /// <summary>
+    /// Feature flag for Controller Enduser Connections
+    /// </summary>
+    public const string EnduserControllerConnections = "AccessManagement.Enduser.Connections";
 }

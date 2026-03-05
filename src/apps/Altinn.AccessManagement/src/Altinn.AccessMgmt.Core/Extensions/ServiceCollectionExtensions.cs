@@ -1,13 +1,14 @@
 ﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
-using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AMPartyService = Altinn.AccessMgmt.Core.Services.AMPartyService;
@@ -35,18 +36,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IErrorQueueService, ErrorQueueService>();
         services.AddScoped<IRightImportProgressService, RightImportProgressService>();
-        services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
+        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
-        if (configuration.GetValue<bool>("FeatureManagement:AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"))
-        {
-            services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
-        }
-        else
-        {
-            services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesService>();
-        }
+        services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
+        services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
         AddJobs(services);
         return services;

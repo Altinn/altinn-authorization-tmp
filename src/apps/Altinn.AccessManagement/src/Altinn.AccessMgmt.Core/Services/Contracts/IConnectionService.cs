@@ -27,7 +27,7 @@ public interface IConnectionService
     /// <returns>
     /// A <see cref="Result{T}"/> containing the newly created <see cref="Assignment"/>.
     /// </returns>
-    Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<AssignmentDto>> AddRightholder(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a specific role assignment between two entities.
@@ -192,6 +192,7 @@ public interface IConnectionService
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.
     /// </summary>
     /// <param name="party">ID of the person.</param>
+    /// <param name="authenticatedUserUuid">ID of the authenticated user.</param>
     /// <param name="packageIds">Filter param using unique package identifiers.</param>
     /// <param name="configureConnection">ConnectionOptions</param>
     /// <param name="cancellationToken">
@@ -200,7 +201,7 @@ public interface IConnectionService
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
-    Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<AccessPackageDto.AccessPackageDtoCheck>>> CheckPackageForResource(Guid party, Guid authenticatedUserUuid, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
