@@ -5,11 +5,9 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessMgmt.Core.Constants.Translation;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
@@ -25,7 +23,6 @@ namespace Altinn.AccessManagement.Integration.Clients
     public class ResourceRegistryClient : IResourceRegistryClient
     {
         private readonly HttpClient _httpClient = new();
-        private readonly HttpClient _httpClientV2 = new();
         private readonly ILogger<IResourceRegistryClient> _logger;
         private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase, WriteIndented = true };
@@ -45,11 +42,6 @@ namespace Altinn.AccessManagement.Integration.Clients
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _httpClientV2.BaseAddress = new Uri(platformSettings.ApiResourceRegistryEndpointV2);
-            _httpClientV2.Timeout = new TimeSpan(0, 0, 30);
-            _httpClientV2.DefaultRequestHeaders.Clear();
-            _httpClientV2.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
             _memoryCache = memoryCache;
             _logger = logger;
         }
@@ -57,7 +49,7 @@ namespace Altinn.AccessManagement.Integration.Clients
         /// <inheritdoc/>
         public async Task<ServiceResource> GetResource(string resourceId, CancellationToken cancellationToken = default)
         {
-            string endpointUrl = $"resource/{resourceId}";
+            string endpointUrl = $"v1/resource/{resourceId}";
 
             HttpResponseMessage response = await _httpClient.GetAsync(endpointUrl, cancellationToken);
             if (response.StatusCode == HttpStatusCode.OK)
@@ -76,7 +68,7 @@ namespace Altinn.AccessManagement.Integration.Clients
 
             try
             {
-                string endpointUrl = "resource/search";
+                string endpointUrl = "v1/resource/search";
 
                 if (!string.IsNullOrWhiteSpace(searchParams))
                 {
@@ -107,7 +99,7 @@ namespace Altinn.AccessManagement.Integration.Clients
 
             try
             {
-                string endpointUrl = $"resource/resourcelist";
+                string endpointUrl = $"v1/resource/resourcelist";
 
                 HttpResponseMessage response = await _httpClient.GetAsync(endpointUrl, cancellationToken);
                 if (response.StatusCode == HttpStatusCode.OK)
@@ -128,7 +120,7 @@ namespace Altinn.AccessManagement.Integration.Clients
         /// <inheritdoc/>
         public async Task<IDictionary<string, IEnumerable<BaseAttribute>>> GetSubjectResources(IEnumerable<string> subjects, CancellationToken cancellationToken = default)
         {
-            string endpointUrl = $"resource/bysubjects";
+            string endpointUrl = $"v1/resource/bysubjects";
             Dictionary<string, IEnumerable<BaseAttribute>> subjectResources = new Dictionary<string, IEnumerable<BaseAttribute>>();
             StringContent requestBody = new StringContent(JsonSerializer.Serialize(subjects), Encoding.UTF8, "application/json");
 
@@ -168,11 +160,11 @@ namespace Altinn.AccessManagement.Integration.Clients
         {
             try
             {
-                string endpointUrl = $"resource/{resource}/policy/rights";
+                string endpointUrl = $"v2/resource/{resource}/policy/rights";
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
                 request.Headers.Add(TranslationConstants.AcceptLanguageHeader, languageCode);
 
-                HttpResponseMessage response = await _httpClientV2.SendAsync(request, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string content = await response.Content.ReadAsStringAsync(cancellationToken);
