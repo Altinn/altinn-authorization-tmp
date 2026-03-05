@@ -202,6 +202,12 @@ module "appsettings" {
       label               = "${var.environment}-access-management"
     }
   ]
+  
+  key_value = [{
+	key = "ConsentMigration:BatchSize"
+	value = "5"
+	label = "${lower(var.environment)}-access-management"
+  }]
 
   feature_flags = [
     {
