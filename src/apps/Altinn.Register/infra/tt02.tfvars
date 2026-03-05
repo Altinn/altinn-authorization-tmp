@@ -16,7 +16,7 @@ db_compute_sku           = "D2"
 sbl_endpoint             = "https://ai-tt02-vip-sblbridge.ai.basefarm.net/sblbridge/"
 enable_high_availability = true
 key_vault_rbac = [{
-  id       = "48587eaa-8f33-43ed-a0c3-108c3681e84b" # Andreas
+  id       = "3863fbc0-a24b-42bf-af3d-f45111814457" # Altinn Product Authorization: Admins Prod
   rolename = "Key Vault Secrets Officer"
 }]
 
