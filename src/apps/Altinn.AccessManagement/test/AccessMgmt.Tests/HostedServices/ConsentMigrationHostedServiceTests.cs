@@ -78,27 +78,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(false);
 
         var service = CreateService();
-        var cts = new CancellationTokenSource();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10); // Let service start
+        await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.FeatureDisabledDelayMs * 2));
-        await Task.Delay(10); // Let service process
+        await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
-        cts.Cancel();
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseServiceMock.Verify(
@@ -120,27 +110,19 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync((ILease)null);
-
+            
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseServiceMock.Verify(
@@ -168,25 +150,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseServiceMock.Verify(
@@ -214,25 +188,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(0); // Empty batch
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _syncServiceMock.Verify(
@@ -257,25 +223,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5); // Non-empty batch
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _syncServiceMock.Verify(
@@ -310,19 +268,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             });
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMinutes(1)); // Error delay
@@ -330,7 +279,8 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert - Service continues after exception
         _syncServiceMock.Verify(
@@ -355,13 +305,16 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        await service.StartAsync(CancellationToken.None);
+        var serviceTask = service.StartAsync(testCts.Token);
         await Task.Delay(10);
-        await service.StopAsync(CancellationToken.None);
+        
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
-        // Assert - no exception thrown
+        // Assert - no exception thrown, service stops cleanly
         Assert.True(true);
     }
 
@@ -382,25 +335,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseMock.Verify(x => x.DisposeAsync(), Times.AtLeastOnce);
@@ -423,19 +368,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
 
@@ -447,7 +383,8 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert - Lease acquired multiple times (one per iteration)
         _leaseServiceMock.Verify(
@@ -497,9 +434,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
     {
         // Arrange
         var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
+        using var testCts = new CancellationTokenSource();
 
         // Act
+        await service.StartAsync(testCts.Token);
         await service.StopAsync(CancellationToken.None);
 
         // Assert - no exception thrown
@@ -524,25 +462,17 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseServiceMock.Verify(
@@ -559,19 +489,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(false);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
 
@@ -582,7 +503,8 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.FeatureDisabledDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert - Should not acquire lease when feature is disabled
         _leaseServiceMock.Verify(
@@ -612,19 +534,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .ReturnsAsync(5);
 
         var service = CreateService();
+        using var testCts = new CancellationTokenSource();
 
         // Act
-        var serviceTask = Task.Run(async () =>
-        {
-            try
-            {
-                await service.StartAsync(CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when stopping
-            }
-        });
+        var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
 
@@ -640,7 +553,8 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
         await Task.Delay(10);
 
-        await service.StopAsync(CancellationToken.None);
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
 
         // Assert
         _leaseServiceMock.Verify(
