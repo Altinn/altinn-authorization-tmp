@@ -13,3 +13,6 @@ platform_workflow_principal_ids = [
 ]
 db_max_pool_size = 10
 db_compute_sku   = "D2"
+consent_migration = {
+  batch_size = 5
+ }

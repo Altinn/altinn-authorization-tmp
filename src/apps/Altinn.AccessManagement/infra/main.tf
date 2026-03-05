@@ -190,6 +190,17 @@ data "azurerm_key_vault_secret" "postgres_app" {
 module "appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
+  
+  labels = {
+  "${var.environment}-accessmanagement" = {
+    values = merge(
+      {       
+        "ConsentMigration:BatchSize" = { value = tostring(var.consent_migration.batch_size) }       
+      }
+    )
+  }
+}
+
   key_vault_reference = [
     {
       key                 = "Database:Postgres:AppConnectionString"
@@ -203,12 +214,6 @@ module "appsettings" {
     }
   ]
   
-  key_value = [{
-	key = "ConsentMigration:BatchSize"
-	value = "5"
-	label = "${lower(var.environment)}-access-management"
-  }]
-
   feature_flags = [
     {
       name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
@@ -412,3 +417,8 @@ resource "null_resource" "bootstrap_database" {
   EOT
   }
 }
+
+// config
+ConsentMigration:BatchSize" = { value = var.config.a2_party_import.max_db_size_in_gib }
+
+
