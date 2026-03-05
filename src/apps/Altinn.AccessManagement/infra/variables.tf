@@ -88,7 +88,7 @@ variable "consent_migration" {
     batch_size = optional(number, 100)
   })
   default = {
-    batch_size = 100
+    batch_size = 5
   }
   description = "Configuration settings for consent migration"
 }

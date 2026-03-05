@@ -193,11 +193,10 @@ module "appsettings" {
   
   labels = {
   "${var.environment}-accessmanagement" = {
-    values = merge(
+    values =
       {       
         "ConsentMigration:BatchSize" = { value = tostring(var.consent_migration.batch_size) }       
       }
-    )
   }
 }
 
@@ -417,8 +416,3 @@ resource "null_resource" "bootstrap_database" {
   EOT
   }
 }
-
-// config
-ConsentMigration:BatchSize" = { value = var.config.a2_party_import.max_db_size_in_gib }
-
-
