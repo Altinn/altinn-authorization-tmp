@@ -190,15 +190,14 @@ data "azurerm_key_vault_secret" "postgres_app" {
 module "appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
-  
+
   labels = {
-  "${var.environment}-accessmanagement" = {
-    values =
-      {       
-        "ConsentMigration:BatchSize" = { value = tostring(var.consent_migration.batch_size) }       
+    "${var.environment}-accessmanagement" = {
+      values = {
+        "ConsentMigration:BatchSize" = { value = tostring(var.consent_migration.batch_size) }
       }
+    }
   }
-}
 
   key_vault_reference = [
     {
@@ -212,7 +211,7 @@ module "appsettings" {
       label               = "${var.environment}-access-management"
     }
   ]
-  
+
   feature_flags = [
     {
       name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
@@ -352,7 +351,7 @@ module "appsettings" {
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
-	{
+    {
       name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
       description = "Specifies if consent migration service should start"
       label       = "${lower(var.environment)}-access-management"
