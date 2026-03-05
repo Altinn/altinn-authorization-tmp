@@ -22,7 +22,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Services;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -156,7 +155,12 @@ namespace Altinn.AccessManagement.Core.Services
 
             foreach (string ruleKey in ruleKeys)
             {
-                var rightKey = rightKeys.FirstOrDefault(r => r.Key.Equals(ruleKey, StringComparison.InvariantCultureIgnoreCase));
+                var rightKey = rightKeys?.FirstOrDefault(r => r.Key.Equals(ruleKey, StringComparison.InvariantCultureIgnoreCase));
+
+                if (rightKey is null)
+                {
+                    throw new KeyNotFoundException($"The key: '{ruleKey}' did not exist in the keyset for the resource: '{resource.RefId}'");
+                }
 
                 (List<AttributeMatch> Resource, AttributeMatch Action) resourceAndAction = MapRightDtoToResourceListAndAction(rightKey);
 
