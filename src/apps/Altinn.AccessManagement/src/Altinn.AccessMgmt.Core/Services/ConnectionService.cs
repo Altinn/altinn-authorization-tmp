@@ -809,6 +809,7 @@ public partial class ConnectionService(
 
         ResourceDto resourceDto;
         XacmlPolicy policy;
+        bool isMaskinPortenSchema = false;
 
         try
         {
@@ -821,6 +822,11 @@ public partial class ConnectionService(
         catch (ValidationException)
         {
             return Problems.InvalidResource;
+        }
+
+        if (resourceDto.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase))
+        {
+            isMaskinPortenSchema = true;
         }
 
         // Fetch Resourcemetadata
@@ -858,7 +864,7 @@ public partial class ConnectionService(
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, cancellationToken);
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
@@ -870,7 +876,7 @@ public partial class ConnectionService(
         return resourceCheckDto;
     }
 
-    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken)
+    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, CancellationToken cancellationToken)
     {
         RightDto rightKey = rightKeys.FirstOrDefault(r => r.Key == right.Key);
         if (rightKey is null)
@@ -941,6 +947,17 @@ public partial class ConnectionService(
             {
                 Description = $"Resource-NotDelegable",
                 PermisionKey = DelegationCheckReasonCode.ResourceNotDelegable,
+            };
+            permisions.Add(permision);
+        }
+
+        if (isMaskinPortenSchema)
+        {
+            currentAction.Result = false;
+            RightCheckDto.Permision permision = new RightCheckDto.Permision
+            {
+                Description = $"Resource-MaskinportenSchema",
+                PermisionKey = DelegationCheckReasonCode.ResourceIsMaskinPortenSchema,
             };
             permisions.Add(permision);
         }
@@ -1094,13 +1111,13 @@ public partial class ConnectionService(
         }
     }
 
-    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinportenSchema, CancellationToken cancellationToken = default)
     {
         List<RightCheckDto> result = [];
 
         foreach (var right in rights)
         {
-            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, cancellationToken));
+            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinportenSchema, cancellationToken));
         }
 
         return result;
