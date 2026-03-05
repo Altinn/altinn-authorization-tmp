@@ -16,6 +16,10 @@ db_compute_sku           = "D4"
 db_storage_tier          = "P15"
 sbl_endpoint             = "https://ai-pr-vip-sblbridge.ai.basefarm.net/sblbridge/"
 enable_high_availability = true
+key_vault_rbac = [{
+  id       = "48587eaa-8f33-43ed-a0c3-108c3681e84b" # Andreas
+  rolename = "Key Vault Secrets Officer"
+}]
 
 features = {
   a2_party_import = {
