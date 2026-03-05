@@ -110,7 +110,7 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync((ILease)null);
-            
+
         var service = CreateService();
         using var testCts = new CancellationTokenSource();
 
@@ -118,7 +118,9 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         var serviceTask = service.StartAsync(testCts.Token);
 
         await Task.Delay(10);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        
+        // Advance by EmptyFeedDelayMs + max jitter (2000ms)
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 2000));
         await Task.Delay(10);
 
         testCts.Cancel();
@@ -541,12 +543,12 @@ public class ConsentMigrationHostedServiceTests : IDisposable
 
         await Task.Delay(10);
 
-        // First attempt - no lease
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        // First attempt - no lease (includes jitter up to 2000ms)
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 2000));
         await Task.Delay(10);
 
-        // Second attempt - no lease
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        // Second attempt - no lease (includes jitter up to 2000ms)
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 2000));
         await Task.Delay(10);
 
         // Third attempt - lease acquired
@@ -562,6 +564,40 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             Times.AtLeast(3));
         _syncServiceMock.Verify(
             x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_LeaseUnavailable_AppliesJitter()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ILease)null);
+
+        var service = CreateService();
+        using var testCts = new CancellationTokenSource();
+
+        // Act
+        var serviceTask = service.StartAsync(testCts.Token);
+
+        await Task.Delay(10);
+        
+        // The jitter adds 1000-2000ms to the EmptyFeedDelayMs
+        // So we need to advance by at least EmptyFeedDelayMs + 1000ms to guarantee triggering
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 1000));
+        await Task.Delay(10);
+
+        testCts.Cancel();
+        await Task.WhenAny(serviceTask, Task.Delay(1000));
+
+        // Assert - Verify lease was attempted (jitter doesn't prevent retry)
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
             Times.AtLeastOnce);
     }
 

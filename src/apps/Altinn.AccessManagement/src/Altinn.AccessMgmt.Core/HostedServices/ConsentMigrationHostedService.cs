@@ -62,7 +62,10 @@ public partial class ConsentMigrationHostedService : BackgroundService
                 if (lease is null)
                 {
                     Log.LeaseUnavailable(_logger);
-                    await _timeProvider.Delay(TimeSpan.FromMilliseconds(migrationSettings.EmptyFeedDelayMs), stoppingToken);
+                    
+                    // Add jitter to avoid thundering herd when multiple pods retry simultaneously
+                    var delayWithJitter = TimeSpan.FromMilliseconds(migrationSettings.EmptyFeedDelayMs) + RandomJitter();
+                    await _timeProvider.Delay(delayWithJitter, stoppingToken);
                     continue;
                 }
 
@@ -89,6 +92,13 @@ public partial class ConsentMigrationHostedService : BackgroundService
                 await _timeProvider.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
+    }
+
+    private static TimeSpan RandomJitter()
+    {
+        // Add between 1 and 2 seconds of random jitter to avoid thundering herd issues
+        var randomMs = Random.Shared.Next(1_000, 2_000);
+        return TimeSpan.FromMilliseconds(randomMs);
     }
 
     static partial class Log
