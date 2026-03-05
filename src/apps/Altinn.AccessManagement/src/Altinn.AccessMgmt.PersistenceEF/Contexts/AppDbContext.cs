@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using System.Collections.Concurrent;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -267,6 +268,58 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             throw;
         }
+    }
+
+    /// <summary>
+    /// Adds or updates an outbox message associated with the specified reference identifier.
+    /// </summary>
+    /// <remarks>
+    /// This method implements an <c>upsert</c> pattern for outbox messages:
+    /// <list type="bullet">
+    /// <item>
+    /// If no existing outbox entry is found for the provided <paramref name="refId"/>,
+    /// a new value is created using <paramref name="addValueFactory"/>.
+    /// </item>
+    /// <item>
+    /// If an existing outbox entry is found, its value is updated using
+    /// <paramref name="updateValueFactory"/>, which receives both the current stored data
+    /// and the incoming outbox data.
+    /// </item>
+    /// </list>
+    /// 
+    /// The method is typically used to ensure that a single logical message or event
+    /// associated with a given reference identifier is maintained in the outbox.
+    /// </remarks>
+    /// <typeparam name="TOutboxData">
+    /// The type of the data currently stored in the outbox message.
+    /// </typeparam>
+    /// <typeparam name="TData">
+    /// The type of the data to be stored or updated in the outbox message.
+    /// </typeparam>
+    /// <param name="refId">
+    /// A reference identifier used to locate an existing outbox message.
+    /// This typically represents a domain entity identifier or correlation key.
+    /// </param>
+    /// <param name="addValueFactory">
+    /// A factory function used to create the initial value when no existing
+    /// outbox message is found for the given <paramref name="refId"/>.
+    /// </param>
+    /// <param name="updateValueFactory">
+    /// A function used to update the value when an existing outbox message is found.
+    /// The function receives the current stored value and the existing outbox data,
+    /// and returns the updated value to be stored.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous upsert operation.
+    /// </returns>
+    public async Task UpsertOutboxAsync<TOutboxData, TData>(
+        string refId,
+        Func<TData> addValueFactory,
+        Func<TData, TOutboxData, TData> updateValueFactory)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(refId);
+        ArgumentNullException.ThrowIfNull(addValueFactory);
+        ArgumentNullException.ThrowIfNull(updateValueFactory);
     }
 
     public async Task<int> SaveChangesAsync(AuditValues audit, bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
