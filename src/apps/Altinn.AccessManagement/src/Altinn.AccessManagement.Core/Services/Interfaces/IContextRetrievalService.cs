@@ -194,7 +194,7 @@ public interface IContextRetrievalService
     Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all RighhtKeys for a given Resource
+    /// Gets all RightKeys for a given Resource
     /// </summary>
     /// <param name="resourceRegistryId">the resource registry identifier</param>
     /// <param name="languageCode">the requested language code, default is "nb"</param>
