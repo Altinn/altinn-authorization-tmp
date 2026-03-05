@@ -53,7 +53,7 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
         /// <returns></returns>
         public static List<Core.Models.Right> DecomposePolicy(XacmlPolicy policy, string resourceId)
         {
-            Dictionary<string, List<string>> rules = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> rights = new Dictionary<string, List<string>>();
 
             foreach (XacmlRule rule in policy.Rules)
             {
@@ -63,32 +63,35 @@ namespace Altinn.AccessMgmt.Core.Utils.Helper
 
                 foreach (string key in keys)
                 {
-                    if (!rules.ContainsKey(key))
+                    if (!rights.ContainsKey(key))
                     {
                         List<string> value = [.. ruleSubjects];
-                        rules.Add(key, value);
+                        rights.Add(key, value);
                     }
                     else
                     {
-                        rules[key].AddRange(ruleSubjects);
+                        rights[key].AddRange(ruleSubjects);
                     }
                 }
             }
 
             List<Core.Models.Right> result = [];
 
-            foreach (KeyValuePair<string, List<string>> action in rules)
+            foreach (KeyValuePair<string, List<string>> right in rights)
             {
-                Core.Models.Right current = new Core.Models.Right();
-                current.Key = action.Key;
-                current.AccessorUrns = action.Value;
-                current.PackageAllowAccess = [];
-                current.PackageDenyAccess = [];
-                current.RoleAllowAccess = [];
-                current.RoleDenyAccess = [];
-                current.ResourceAllowAccess = [];
+                if (right.Value.Count > 0)
+                {
+                    Core.Models.Right current = new Core.Models.Right();
+                    current.Key = right.Key;
+                    current.AccessorUrns = right.Value;
+                    current.PackageAllowAccess = [];
+                    current.PackageDenyAccess = [];
+                    current.RoleAllowAccess = [];
+                    current.RoleDenyAccess = [];
+                    current.ResourceAllowAccess = [];
 
-                result.Add(current);
+                    result.Add(current);
+                }                
             }
 
             return result;
