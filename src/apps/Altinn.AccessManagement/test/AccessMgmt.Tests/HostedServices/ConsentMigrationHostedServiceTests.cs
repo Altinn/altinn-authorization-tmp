@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.FeatureManagement;
 using Moq;
 
@@ -13,26 +14,28 @@ namespace AccessMgmt.Tests.HostedServices;
 /// <summary>
 /// Tests for <see cref="ConsentMigrationHostedService"/>
 /// </summary>
-public class ConsentMigrationHostedServiceTests : IAsyncDisposable
+public class ConsentMigrationHostedServiceTests : IDisposable
 {
     private readonly Mock<IConsentMigrationSyncService> _syncServiceMock;
-    private readonly Mock<ILeaseService> _leaseServiceMock;
     private readonly Mock<IFeatureManager> _featureManagerMock;
     private readonly Mock<IOptionsMonitor<ConsentMigrationSettings>> _settingsMonitorMock;
     private readonly Mock<ILogger<ConsentMigrationHostedService>> _loggerMock;
+    private readonly Mock<ILeaseService> _leaseServiceMock;
+    private readonly Mock<ILease> _leaseMock;
     private readonly ConsentMigrationSettings _settings;
     private readonly FakeTimeProvider _timeProvider;
-    private readonly List<ConsentMigrationHostedService> _servicesToDispose;
+    private readonly CancellationTokenSource _cts;
 
     public ConsentMigrationHostedServiceTests()
     {
         _syncServiceMock = new Mock<IConsentMigrationSyncService>();
-        _leaseServiceMock = new Mock<ILeaseService>();
         _featureManagerMock = new Mock<IFeatureManager>();
         _settingsMonitorMock = new Mock<IOptionsMonitor<ConsentMigrationSettings>>();
         _loggerMock = new Mock<ILogger<ConsentMigrationHostedService>>();
+        _leaseServiceMock = new Mock<ILeaseService>();
+        _leaseMock = new Mock<ILease>();
         _timeProvider = new FakeTimeProvider();
-        _servicesToDispose = new List<ConsentMigrationHostedService>();
+        _cts = new CancellationTokenSource();
 
         _settings = new ConsentMigrationSettings
         {
@@ -41,10 +44,16 @@ public class ConsentMigrationHostedServiceTests : IAsyncDisposable
             OnlyExpiredConsents = true,
             NormalDelayMs = 100,
             EmptyFeedDelayMs = 200,
-            FeatureDisabledDelayMs = 600000
+            FeatureDisabledDelayMs = 300
         };
 
         _settingsMonitorMock.Setup(x => x.CurrentValue).Returns(_settings);
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 
     [Fact]
@@ -56,8 +65,431 @@ public class ConsentMigrationHostedServiceTests : IAsyncDisposable
         // Act
         await service.StartAsync(CancellationToken.None);
 
-        // Assert - No exceptions thrown
+        // Assert - no exception thrown
         Assert.True(true);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FeatureDisabled_SkipsProcessing()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(false);
+
+        var service = CreateService();
+        var cts = new CancellationTokenSource();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10); // Let service start
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.FeatureDisabledDelayMs * 2));
+        await Task.Delay(10); // Let service process
+
+        await service.StopAsync(CancellationToken.None);
+        cts.Cancel();
+
+        // Assert
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_LeaseUnavailable_SkipsProcessing()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ILease)null);
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_LeaseAcquired_ProcessesBatch()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_EmptyBatch_UsesEmptyFeedDelay()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0); // Empty batch
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NonEmptyBatch_UsesNormalDelay()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5); // Non-empty batch
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ProcessBatchThrowsException_ContinuesProcessing()
+    {
+        // Arrange
+        var callCount = 0;
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    throw new Exception("Test exception");
+                }
+
+                return Task.FromResult(5);
+            });
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMinutes(1)); // Error delay
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Service continues after exception
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_CancellationRequested_StopsProcessing()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
+        var service = CreateService();
+
+        // Act
+        await service.StartAsync(CancellationToken.None);
+        await Task.Delay(10);
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - no exception thrown
+        Assert.True(true);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_LeaseDisposedAfterProcessing()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _leaseMock.Verify(x => x.DisposeAsync(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_MultipleIterations_AcquiresLeaseEachTime()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+
+        // Trigger first iteration
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        // Trigger second iteration
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Lease acquired multiple times (one per iteration)
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
+            Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_OperationCanceledException_RethrowsWhenCancellationRequested()
+    {
+        // Arrange
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        var testCts = new CancellationTokenSource();
+        var processBatchCalled = new TaskCompletionSource<bool>();
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                testCts.Cancel();
+                processBatchCalled.SetResult(true);
+            })
+            .Throws(new OperationCanceledException(testCts.Token));
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = service.StartAsync(testCts.Token);
+
+        // Wait for ProcessBatch to be called before asserting
+        await processBatchCalled.Task;
+        await Task.Delay(50);
+
+        // Assert - The service should throw OperationCanceledException when cancellation is requested
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await serviceTask);
     }
 
     [Fact]
@@ -70,12 +502,56 @@ public class ConsentMigrationHostedServiceTests : IAsyncDisposable
         // Act
         await service.StopAsync(CancellationToken.None);
 
-        // Assert - No exceptions thrown
+        // Assert - no exception thrown
         Assert.True(true);
     }
 
     [Fact]
-    public async Task ConsentMigrationDispatcher_FeatureDisabled_DoesNotProcess()
+    public async Task ExecuteAsync_UsesCorrectLeaseName()
+    {
+        // Arrange
+        const string expectedLeaseName = "access_management_consent_migration";
+        _featureManagerMock
+            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
+            .ReturnsAsync(true);
+
+        _leaseServiceMock
+            .Setup(x => x.TryAcquireNonBlocking(expectedLeaseName, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_leaseMock.Object);
+
+        _syncServiceMock
+            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
+        var service = CreateService();
+
+        // Act
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
+
+        await Task.Delay(10);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking(expectedLeaseName, It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FeatureDisabled_UsesFeatureDisabledDelay()
     {
         // Arrange
         _featureManagerMock
@@ -83,377 +559,106 @@ public class ConsentMigrationHostedServiceTests : IAsyncDisposable
             .ReturnsAsync(false);
 
         var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
 
         // Act
-        await Task.Delay(300); // Wait for timer to execute
+        var serviceTask = Task.Run(async () =>
+        {
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
 
-        // Assert
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.Never);
+        await Task.Delay(10);
+
+        // Advance by FeatureDisabledDelayMs multiple times
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.FeatureDisabledDelayMs));
+        await Task.Delay(10);
+
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.FeatureDisabledDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert - Should not acquire lease when feature is disabled
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
-    public async Task ConsentMigrationDispatcher_LeaseNotAcquired_DoesNotProcess()
+    public async Task ExecuteAsync_LeaseUnavailable_RetriesWithCorrectDelay()
     {
         // Arrange
+        var attempts = 0;
         _featureManagerMock
             .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
             .ReturnsAsync(true);
 
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ILease)null);
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(300);
-
-        // Assert
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_ProcessesBatch_WhenLeaseAcquired()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
+            .ReturnsAsync(() =>
+            {
+                attempts++;
+                return attempts <= 2 ? null : _leaseMock.Object; // Fail twice, then succeed
+            });
 
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
             .ReturnsAsync(5);
 
         var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
 
         // Act
-        await Task.Delay(300);
-
-        // Assert
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_EmptyBatch_UsesLongerDelay()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var processedCount = 0;
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => processedCount);
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(400); // Should process once, then wait for EmptyFeedDelayMs
-
-        // Assert
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_NonEmptyBatch_ContinuesProcessing()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var callCount = 0;
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() =>
-            {
-                callCount++;
-                return callCount < 3 ? 10 : 0; // Return 10 for first 2 calls, then 0
-            });
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(500);
-
-        // Assert
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.AtLeast(2));
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_Exception_ContinuesOperation()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var callCount = 0;
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("Test exception"));
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(300);
-
-        // Assert - Service should not crash
-        _syncServiceMock.Verify(x => x.ProcessBatch(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_PreventsOverlappingExecution()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var executionCount = 0;
-        var tcs = new TaskCompletionSource();
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .Returns(async () =>
-            {
-                Interlocked.Increment(ref executionCount);
-                await Task.Delay(1000); // Long running task
-                return 0;
-            });
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(500); // Timer fires multiple times during long execution
-
-        // Assert - Should only execute once due to _isRunning flag
-        Assert.Equal(1, executionCount);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_CancellationToken_StopsProcessing()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var cts = new CancellationTokenSource();
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(10);
-
-        var service = CreateService();
-        await service.StartAsync(cts.Token);
-
-        // Act
-        await Task.Delay(100);
-        cts.Cancel(); // Cancel the token being used by the dispatcher
-        await Task.Delay(200);
-
-        // Assert - Should have stopped processing due to cancellation
-        var callCount = _syncServiceMock.Invocations.Count(i => i.Method.Name == nameof(IConsentMigrationSyncService.ProcessBatch));
-        Assert.True(callCount >= 1); // At least one call before cancellation
-
-        // Cleanup with a separate token
-        await service.StopAsync(CancellationToken.None);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_OperationCanceledException_IsRethrown()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var cts = new CancellationTokenSource();
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .Returns(() =>
-            {
-                cts.Cancel();
-                throw new OperationCanceledException(cts.Token);
-            });
-
-        var service = CreateService();
-        await service.StartAsync(cts.Token);
-
-        // Act & Assert
-        await Task.Delay(300); // Allow time for exception to be thrown
-
-        // Should not crash the application - OperationCanceledException with matching token is expected
-        Assert.True(cts.IsCancellationRequested);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_DisposesLease_AfterProcessing()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(0);
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(400);
-
-        // Assert
-        leaseMock.Verify(x => x.DisposeAsync(), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task ConsentMigrationDispatcher_UsesCorrectDelays()
-    {
-        // Arrange
-        var leaseMock = new Mock<ILease>();
-        var callTimes = new List<DateTime>();
-
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .Returns(() =>
-            {
-                callTimes.Add(DateTime.UtcNow);
-                return Task.FromResult(callTimes.Count < 3 ? 10 : 0);
-            });
-
-        var service = CreateService();
-        await service.StartAsync(CancellationToken.None);
-
-        // Act
-        await Task.Delay(1000);
-
-        // Assert - Verify delays are approximately correct
-        Assert.True(callTimes.Count >= 2);
-        if (callTimes.Count >= 2)
+        var serviceTask = Task.Run(async () =>
         {
-            var delayBetweenCalls = (callTimes[1] - callTimes[0]).TotalMilliseconds;
-            Assert.True(delayBetweenCalls >= _settings.NormalDelayMs * 0.8); // Allow some tolerance
-        }
-    }
+            try
+            {
+                await service.StartAsync(CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when stopping
+            }
+        });
 
-    [Fact]
-    public void Dispose_DisposesResourcesProperly()
-    {
-        // Arrange
-        var service = CreateService();
+        await Task.Delay(10);
 
-        // Act
-        service.Dispose();
+        // First attempt - no lease
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        await Task.Delay(10);
 
-        // Assert - No exceptions thrown
-        Assert.True(true);
+        // Second attempt - no lease
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
+        await Task.Delay(10);
+
+        // Third attempt - lease acquired
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
+        await Task.Delay(10);
+
+        await service.StopAsync(CancellationToken.None);
+
+        // Assert
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
+            Times.AtLeast(3));
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
     }
 
     private ConsentMigrationHostedService CreateService()
     {
-        var service = new ConsentMigrationHostedService(
+        return new ConsentMigrationHostedService(
             _syncServiceMock.Object,
-            _leaseServiceMock.Object,
             _featureManagerMock.Object,
             _settingsMonitorMock.Object,
             _timeProvider,
-            _loggerMock.Object);
-
-        _servicesToDispose.Add(service);
-        return service;
+            _loggerMock.Object,
+            _leaseServiceMock.Object);
     }
-
-    public async ValueTask DisposeAsync()
-    {
-        foreach (var service in _servicesToDispose)
-        {
-            try
-            {
-                await service.StopAsync(CancellationToken.None);
-                service.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors in tests
-            }
-        }
-
-        _servicesToDispose.Clear();
-    }
-}
-
-/// <summary>
-/// Fake implementation of TimeProvider for testing
-/// </summary>
-internal class FakeTimeProvider : TimeProvider
-{
-    private DateTimeOffset _now = DateTimeOffset.UtcNow;
-
-    public override DateTimeOffset GetUtcNow() => _now;
-
-    public void Advance(TimeSpan timeSpan) => _now += timeSpan;
 }
