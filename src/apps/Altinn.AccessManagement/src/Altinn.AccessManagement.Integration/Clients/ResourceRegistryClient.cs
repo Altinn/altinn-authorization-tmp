@@ -1,4 +1,9 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
@@ -8,11 +13,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 
 namespace Altinn.AccessManagement.Integration.Clients
 {
@@ -170,7 +170,8 @@ namespace Altinn.AccessManagement.Integration.Clients
                     string content = await response.Content.ReadAsStringAsync(cancellationToken);
                     return JsonSerializer.Deserialize<List<RightDto>>(content, options);
                 }
-                
+
+                _logger.LogError("AccessManagement // ResourceRegistryClient // GetPolicyRights // NonOkHttpResult");
                 return null;
             }
             catch (Exception ex)

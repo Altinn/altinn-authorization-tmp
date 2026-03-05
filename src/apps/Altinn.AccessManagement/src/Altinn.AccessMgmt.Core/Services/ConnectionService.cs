@@ -827,11 +827,16 @@ public partial class ConnectionService(
 
         List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource, languageCode, cancellationToken);
         
-        if (resourceMetadata is null || rightKeys is null)
+        if (resourceMetadata is null)
         {
             return Problems.InvalidResource;
         }
-        
+
+        if (rightKeys is null)
+        {
+            return Problems.MissingMetadata;
+        }        
+
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
         bool isResourceDelegable = resourceMetadata.Delegable;
 
@@ -866,32 +871,37 @@ public partial class ConnectionService(
 
     private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, CancellationToken cancellationToken)
     {
-        if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
-        {
-            string actionValue = right.Key.Substring(right.Key.LastIndexOf(":") + 1);
-            AccessListAuthorizationRequest accessListAuthorizationRequest = new AccessListAuthorizationRequest
-            {
-                Subject = PartyUrn.PartyUuid.Create(fromParty.PartyUuid),
-                Resource = ResourceIdUrn.ResourceId.Create(ResourceIdentifier.CreateUnchecked(resource)),
-                Action = ActionUrn.ActionId.Create(ActionIdentifier.CreateUnchecked(actionValue))
-            };
-
-            AccessListAuthorizationResponse accessListAuthorizationResponse = await accessListsAuthorizationClient.AuthorizePartyForAccessList(accessListAuthorizationRequest, cancellationToken);
-            AccessListAuthorizationResult accessListAuthorizationResult = accessListAuthorizationResponse.Result;
-            if (accessListAuthorizationResult != AccessListAuthorizationResult.Authorized)
-            {
-                right.AccessListDenied = true;
-            }
-        }
-
         RightDto rightKey = rightKeys.FirstOrDefault(r => r.Key == right.Key);
-
-        if (rightKey is null) 
+        if (rightKey is null)
         {
             rightKey = new RightDto
             {
                 Key = right.Key
             };
+        }
+
+        if (DelegationCheckHelper.IsAccessListModeEnabledAndApplicable(accessListMode, fromParty.PartyType))
+        {
+            if (rightKey.Action is not null)
+            {
+                AccessListAuthorizationRequest accessListAuthorizationRequest = new AccessListAuthorizationRequest
+                {
+                    Subject = PartyUrn.PartyUuid.Create(fromParty.PartyUuid),
+                    Resource = ResourceIdUrn.ResourceId.Create(ResourceIdentifier.CreateUnchecked(resource)),
+                    Action = ActionUrn.ActionId.Create(ActionIdentifier.Parse(rightKey.Action))
+                };
+
+                AccessListAuthorizationResponse accessListAuthorizationResponse = await accessListsAuthorizationClient.AuthorizePartyForAccessList(accessListAuthorizationRequest, cancellationToken);
+                AccessListAuthorizationResult accessListAuthorizationResult = accessListAuthorizationResponse.Result;
+                if (accessListAuthorizationResult != AccessListAuthorizationResult.Authorized)
+                {
+                    right.AccessListDenied = true;
+                }
+            }
+            else
+            {
+                right.AccessListDenied = true;
+            }            
         }
 
         RightCheckDto currentAction = new RightCheckDto
@@ -1623,8 +1633,8 @@ public partial class ConnectionService
             foreach (var assignmentResource in res)
             {
                 var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
-                var avaialableRights = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, resource.RefId));
-                var validRights = policyRights.Intersect(avaialableRights); // Only valid actions
+                var availableRights = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, assignmentResource.Resource.RefId));
+                var validRights = policyRights.Intersect(availableRights); // Only valid actions
 
                 foreach (var rightKey in validRights)
                 {
@@ -1638,8 +1648,8 @@ public partial class ConnectionService
                             Right = new RightDto
                             {
                                 Key = rightKey,
-                                Resource = rightKeyMetadata.Resource,
-                                Action = rightKeyMetadata.Action,
+                                Resource = rightKeyMetadata?.Resource,
+                                Action = rightKeyMetadata?.Action,
                             },
                             Reason = assignmentResource.Reason,
                             Permissions = new List<PermissionDto>(),
