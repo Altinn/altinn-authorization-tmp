@@ -556,14 +556,13 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddResourceRules(
         [Required][FromQuery(Name = "party")] Guid party,
-        [Required][FromQuery(Name = "from")] Guid from,
         [Required][FromQuery(Name = "to")] Guid to,
         [FromQuery(Name = "resource")] string resource,
         [FromBody] RightKeyListDto rightKeys,
         CancellationToken cancellationToken = default)
     {
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        var fromEntity = await EntityService.GetEntity(from, cancellationToken);
+        var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
@@ -598,14 +597,13 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> UpdateResourceRules(
         [Required][FromQuery(Name = "party")] Guid party,
-        [Required][FromQuery(Name = "from")] Guid from,
         [Required][FromQuery(Name = "to")] Guid to,
         [FromQuery(Name = "resource")] string resource,
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        var fromEntity = await EntityService.GetEntity(from, cancellationToken);
+        var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var byEntity = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
