@@ -41,7 +41,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Extensions
                 To = to,
                 Consented = consent.Consented,
                 ValidTo = consent.ValidTo,
-                
+                HandledBy = handledBy,
                 ConsentRights = [.. consent.ConsentRights.Select(static x => x.ToConsentRightExternal())]
             };
         }
