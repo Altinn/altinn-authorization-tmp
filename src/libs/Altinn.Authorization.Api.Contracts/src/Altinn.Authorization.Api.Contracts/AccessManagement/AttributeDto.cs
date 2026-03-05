@@ -37,15 +37,11 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the attribute value for the match
+        /// returns the type and value as a urn in the format '{type}:{value}'
         /// </summary>
-        [JsonPropertyName("urn")]
-        public string Urn
+        public string Urn()
         {
-            get
-            {
-                return $"{Type}:{Value}";
-            }
+            return $"{Type}:{Value}";            
         }
     }
 }
