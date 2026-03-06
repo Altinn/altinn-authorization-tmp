@@ -83,12 +83,11 @@ variable "db_storage_tier" {
   default = "P10"
 }
 
-variable "consent_migration" {
+variable "configuration" {
   type = object({
-    batch_size = optional(number, 100)
+    consent = optional(object({
+      batch_size = optional(number, 5)
+    }), {})
   })
-  default = {
-    batch_size = 5
-  }
-  description = "Configuration settings for consent migration"
+  default = {}
 }

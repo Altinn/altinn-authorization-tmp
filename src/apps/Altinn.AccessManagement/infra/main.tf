@@ -194,7 +194,7 @@ module "appsettings" {
   labels = {
     "${var.environment}-accessmanagement" = {
       values = {
-        "ConsentMigration:BatchSize" = { value = tostring(var.consent_migration.batch_size) }
+        "ConsentMigration:BatchSize" = { value = tostring(var.configuration.consent.batch_size) }
       }
     }
   }
