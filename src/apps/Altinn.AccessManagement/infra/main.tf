@@ -355,7 +355,7 @@ module "appsettings" {
       name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
       description = "Specifies if consent migration service should start"
       label       = "${lower(var.environment)}-access-management"
-      value       = false
+      value       = var.features.consent_migration
     },
   ]
   providers = {

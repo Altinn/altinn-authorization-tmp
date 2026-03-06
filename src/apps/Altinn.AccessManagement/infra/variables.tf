@@ -91,3 +91,10 @@ variable "configuration" {
   })
   default = {}
 }
+
+variable "features" {
+  type = object({
+    consent_migration = optional(bool, false)
+  })
+  default = {}
+}

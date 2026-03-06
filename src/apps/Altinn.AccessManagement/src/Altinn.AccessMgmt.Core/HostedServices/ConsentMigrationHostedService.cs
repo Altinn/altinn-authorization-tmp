@@ -103,7 +103,7 @@ public partial class ConsentMigrationHostedService : BackgroundService
 
     static partial class Log
     {
-        [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Consent migration feature flag is disabled. Waiting before rechecking.")]
+        [LoggerMessage(EventId = 6, Level = LogLevel.Information, Message = "Consent migration feature flag is disabled. Waiting before rechecking.")]
         internal static partial void FeatureDisabled(ILogger logger);
 
         [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Consent Migration Service starting")]
@@ -112,7 +112,7 @@ public partial class ConsentMigrationHostedService : BackgroundService
         [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Unexpected error in consent migration loop")]
         internal static partial void SyncError(ILogger logger, Exception ex);
 
-        [LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = "Lease unavailable, another pod is processing consent migration")]
+        [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Lease unavailable, another pod is processing consent migration")]
         internal static partial void LeaseUnavailable(ILogger logger);
 
         [LoggerMessage(EventId = 8, Level = LogLevel.Information, Message = "Lease acquired successfully for consent migration")]
