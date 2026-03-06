@@ -12,10 +12,14 @@
         "authorizedParties": "altinn:accessmanagement/authorizedparties",
         "authorizedPartiesResourceOwner": "altinn:accessmanagement/authorizedparties.resourceowner",
         "authorizedPartiesAdmin": "altinn:accessmanagement/authorizedparties.admin",
-        "sluttbrukersystemsopesReadToOthers": "altinn:accmgmt/enduser:connections:to-others.read",
-        "sluttbrukersystemsopesReadFromOthers": "altinn:accmgmt/enduser:connections:from-others.read",
-        "sluttbrukersystemsopesWriteToOrganizations": "altinn:accmgmt/enduser:connections:to-others.write",
-        "sluttbrukersystemsopesWriteFromOrganizations": "altinn:accmgmt/enduser:connections:from-others.write",
+        "enduserSystemToOthers.read": "altinn:accessmanagement/enduser:connections:toothers.read",
+        "enduserSystemToOthers.write": "altinn:accessmanagement/enduser:connections:toothers.write",
+        "enduserSystemFromOthers.read": "altinn:accessmanagement/enduser:connections:fromothers.read",
+        "enduserSystemFromOthers.write": "altinn:accessmanagement/enduser:connections:fromothers.write",
+        "clientdelegations.read": "altinn:clientdelegations.read",
+        "clientdelegations.write": "altinn:clientdelegations.write",
+        "myclients.read": "altinn:clientdelegations/myclients.read",
+        "myclients.write": "altinn:clientdelegations/myclients.write"
     },
     "authTokenType": {
         "personal": "Personal",
