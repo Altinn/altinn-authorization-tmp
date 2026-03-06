@@ -1,4 +1,4 @@
-﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -10,10 +10,8 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -22,28 +20,33 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/serviceowner/delegationrequests")]
-public class RequestController(IRequestService requestService, IEntityService entityService, IResourceService resourceService) : ControllerBase
+public class RequestController(
+    IRequestService requestService,
+    IEntityService entityService,
+    IResourceService resourceService,
+    IPackageService packageService) : ControllerBase
 {
     /// <summary>
     /// Get valid urn prefixes for party identification
     /// </summary>
     [HttpGet("_meta/urns/party")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<RequestStatus>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetValidUrns(CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(IReadOnlyCollection<string>), StatusCodes.Status200OK)]
+    public IActionResult GetValidUrns()
     {
         return Ok(Validation.RequestValidation.ValidUrns);
-    }  
+    }
 
     /// <summary>
-    /// Get resourc requests for a given party
+    /// Get resource requests for a given party
     /// </summary>
+    [HttpGet("resource")]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<RequestResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<IEnumerable<RequestResourceDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> FindResourceRequests([FromQuery] RequestQueryInput input, CancellationToken ct = default)
+    public async Task<IActionResult> FindResourceRequests([FromQuery] RequestServiceOwnerQuery input, CancellationToken ct = default)
     {
         var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
         if (validationErrors is { })
@@ -53,15 +56,62 @@ public class RequestController(IRequestService requestService, IEntityService en
 
         var from = await GetEntityByUrn(input.From, ct);
         var to = await GetEntityByUrn(input.To, ct);
-        
+
         var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to));
         if (serviceValidationErrors is { })
+        {
+            return serviceValidationErrors.ToActionResult();
+        }
+
+        var requests = await requestService.GetRequestAssignmentResource(
+            fromId: from.Id,
+            toId: to.Id,
+            roleId: null,
+            resourceId: null,
+            status: [RequestStatus.None, RequestStatus.Pending, RequestStatus.Approved],
+            after: null,
+            ct: ct);
+
+        return Ok(requests.Select(r => DtoMapper.Convert(r)));
+    }
+
+    /// <summary>
+    /// Get package requests for a given party
+    /// </summary>
+    [HttpGet("package")]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
+    [ProducesResponseType<IEnumerable<RequestPackageDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> FindPackageRequests([FromQuery] RequestServiceOwnerQuery input, CancellationToken ct = default)
+    {
+        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
+        if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
         }
 
-        var requests = await requestService.GetRequests(fromId: from.Id, toId: to.Id, status: [RequestStatus.None, RequestStatus.Approved, RequestStatus.Pending], after: DateTimeOffset.UtcNow, ct: ct);
-        return Ok();
+        var from = await GetEntityByUrn(input.From, ct);
+        var to = await GetEntityByUrn(input.To, ct);
+
+        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to));
+        if (serviceValidationErrors is { })
+        {
+            return serviceValidationErrors.ToActionResult();
+        }
+
+        var requests = await requestService.GetRequestAssignmentPackage(
+            fromId: from.Id,
+            toId: to.Id,
+            roleId: null,
+            packageId: null,
+            status: [RequestStatus.None, RequestStatus.Pending, RequestStatus.Approved],
+            after: null,
+            ct: ct);
+
+        return Ok(requests.Select(r => DtoMapper.Convert(r)));
     }
 
     /// <summary>
@@ -74,7 +124,7 @@ public class RequestController(IRequestService requestService, IEntityService en
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RequestResource([FromBody] RequestResourceInput input, CancellationToken ct = default)
+    public async Task<IActionResult> RequestResource([FromBody] CreateResourceRequestInput input, CancellationToken ct = default)
     {
         var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestResource(input));
         if (validationErrors is { })
@@ -90,11 +140,11 @@ public class RequestController(IRequestService requestService, IEntityService en
         var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, resource));
         if (serviceValidationErrors is { })
         {
-            return validationErrors.ToActionResult();
+            return serviceValidationErrors.ToActionResult();
         }
 
-        var request = await requestService.CreateRequestAssignmentResource(from.Id, to.Id, role.Id, resource.Id, ct);
-        var result = Convert(request, "at22", "api/request");
+        var request = await requestService.CreateRequestAssignmentResource(from.Id, to.Id, role.Id, resource.Id, ct: ct);
+        var result = ConvertResource(request);
 
         if (result.IsProblem)
         {
@@ -104,7 +154,47 @@ public class RequestController(IRequestService requestService, IEntityService en
         return Accepted(result.Value);
     }
 
-    private Result<RequestResourceDto> Convert(RequestAssignmentResource request, string enduserLinkPrefix, string statusLinkPrefix)
+    /// <summary>
+    /// Create a package request for a given party and access package
+    /// </summary>
+    [HttpPost("package")]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
+    [ProducesResponseType<RequestPackageDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RequestPackage([FromBody] CreatePackageRequestInput input, CancellationToken ct = default)
+    {
+        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestPackage(input));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var from = await GetEntityByUrn(input.Connection.From, ct);
+        var to = await GetEntityByUrn(input.Connection.To, ct);
+        var role = RoleConstants.Rightholder;
+        var package = await packageService.GetPackageByUrnValue(input.Package.Urn, ct);
+
+        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, package));
+        if (serviceValidationErrors is { })
+        {
+            return serviceValidationErrors.ToActionResult();
+        }
+
+        var request = await requestService.CreateRequestAssignmentPackage(from.Id, to.Id, role.Id, package.Id, ct: ct);
+        var result = ConvertPackage(request);
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Accepted(result.Value);
+    }
+
+    private Result<RequestResourceDto> ConvertResource(RequestAssignmentResource request)
     {
         var dtoValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestResourceDto(request));
         if (dtoValidationErrors is { })
@@ -112,23 +202,49 @@ public class RequestController(IRequestService requestService, IEntityService en
             return dtoValidationErrors;
         }
 
-        return new RequestResourceDto()
+        return new RequestResourceDto
         {
             Id = request.Id,
-            Resource = new ResourceRefrenceDto() { ResourceId = request.Resource.RefId },
+            RequestType = "resource",
+            Resource = new ResourceReferenceDto { ResourceId = request.Resource.RefId },
             Status = request.Status,
-            Links = new RequestLinks()
-            {
-                EnduserLink = $"{enduserLinkPrefix}/{request.Id}",
-                StatusLink = $"{statusLinkPrefix}/{request.Id}"
-            },
-            Connection = new ConnectionRequestDto()
+            Links = BuildLinks(request.Id),
+            Connection = new ConnectionRequestDto
             {
                 From = DtoMapper.ConvertToPartyEntityDto(request.Assignment.From),
                 To = DtoMapper.ConvertToPartyEntityDto(request.Assignment.To),
             }
         };
     }
+
+    private Result<RequestPackageDto> ConvertPackage(RequestAssignmentPackage request)
+    {
+        var dtoValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestPackageDto(request));
+        if (dtoValidationErrors is { })
+        {
+            return dtoValidationErrors;
+        }
+
+        return new RequestPackageDto
+        {
+            Id = request.Id,
+            RequestType = "package",
+            Package = new PackageReferenceDto { Urn = request.Package.Urn },
+            Status = request.Status,
+            Links = BuildLinks(request.Id),
+            Connection = new ConnectionRequestDto
+            {
+                From = DtoMapper.ConvertToPartyEntityDto(request.Assignment.From),
+                To = DtoMapper.ConvertToPartyEntityDto(request.Assignment.To),
+            }
+        };
+    }
+
+    private static RequestLinks BuildLinks(Guid requestId) => new()
+    {
+        ConfirmLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
+        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
+    };
 
     private async Task<Entity> GetEntityByUrn(string urn, CancellationToken ct = default)
     {

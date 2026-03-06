@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
-/// Properties for querying requests
+/// Properties for querying requests (service owner)
 /// </summary>
-public class RequestQueryInput
+public class RequestServiceOwnerQuery
 {
     /// <summary>
     /// Urn describing the party
@@ -21,9 +21,33 @@ public class RequestQueryInput
 }
 
 /// <summary>
+/// Properties for querying requests (end user)
+/// </summary>
+public class RequestEnduserQuery
+{
+    /// <summary>
+    /// Party acting on behalf of (uuid)
+    /// </summary>
+    [FromQuery(Name = "party")]
+    public string Party { get; set; }
+
+    /// <summary>
+    /// From party (uuid)
+    /// </summary>
+    [FromQuery(Name = "from")]
+    public string From { get; set; }
+
+    /// <summary>
+    /// To party (uuid)
+    /// </summary>
+    [FromQuery(Name = "to")]
+    public string To { get; set; }
+}
+
+/// <summary>
 /// Base input dto for creating a new request
 /// </summary>
-public class RequestInput
+public class CreateRequestInput
 {
     /// <summary>
     /// Request connection
@@ -45,31 +69,31 @@ public class ConnectionRequestInputDto
 }
 
 /// <summary>
-/// Extension of RequestInput for creating a new request for access package
+/// Input for creating a new request for an access package
 /// </summary>
-public class RequestPackageInput : RequestInput
+public class CreatePackageRequestInput : CreateRequestInput
 {
     /// <summary>
-    /// Urn describing the package
+    /// Reference to the access package
     /// </summary>
-    public PackageRefrenceDto Package { get; set; }
+    public PackageReferenceDto Package { get; set; }
 }
 
 /// <summary>
-/// Extension of RequestInput for creating a new request for resource
+/// Input for creating a new request for a resource
 /// </summary>
-public class RequestResourceInput : RequestInput
+public class CreateResourceRequestInput : CreateRequestInput
 {
     /// <summary>
-    /// Urn describing the package
+    /// Reference to the resource
     /// </summary>
-    public ResourceRefrenceDto Resource { get; set; }
+    public ResourceReferenceDto Resource { get; set; }
 }
 
 /// <summary>
 /// Resource reference
 /// </summary>
-public class ResourceRefrenceDto
+public class ResourceReferenceDto
 {
     /// <summary>
     /// Identifying the resource
@@ -80,12 +104,12 @@ public class ResourceRefrenceDto
 /// <summary>
 /// Access package reference
 /// </summary>
-public class PackageRefrenceDto
+public class PackageReferenceDto
 {
     /// <summary>
     /// Urn identifying the package
     /// </summary>
-    public string Package { get; set; }
+    public string Urn { get; set; }
 }
 
 /// <summary>
@@ -97,6 +121,11 @@ public class RequestDto
     /// Request id
     /// </summary>
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// Discriminator indicating the request type: "resource", "package", or "assignment"
+    /// </summary>
+    public string RequestType { get; set; }
 
     /// <summary>
     /// Request status (e.g. draft, pending, approved, rejected, withdrawn)
@@ -111,15 +140,15 @@ public class RequestDto
     /// <summary>
     /// Connection from one party to another that is requested
     /// </summary>
-    public ConnectionRequestDto Connection { get; set; }   
+    public ConnectionRequestDto Connection { get; set; }
 }
 
 public class RequestLinks
 {
     /// <summary>
-    /// Link for user to confirm request (change status from draft to pending)
+    /// Link for the end user to confirm the request (change status from draft to pending)
     /// </summary>
-    public string EnduserLink { get; set; }
+    public string ConfirmLink { get; set; }
 
     /// <summary>
     /// Link to check status of request
@@ -138,35 +167,35 @@ public class ConnectionRequestDto
     public PartyEntityDto From { get; set; }
 
     /// <summary>
-    /// Party that is access is requested for
+    /// Party that access is requested for
     /// </summary>
     public PartyEntityDto To { get; set; }
 }
 
 /// <summary>
-/// Extension of RequestDto for resource request
+/// Response dto for a resource request
 /// </summary>
 public class RequestResourceDto : RequestDto
 {
     /// <summary>
     /// Resource that is requested
     /// </summary>
-    public ResourceRefrenceDto Resource { get; set; }
+    public ResourceReferenceDto Resource { get; set; }
 }
 
 /// <summary>
-/// Extension of RequestDto for access package request
+/// Response dto for an access package request
 /// </summary>
 public class RequestPackageDto : RequestDto
 {
     /// <summary>
     /// Access package that is requested
     /// </summary>
-    public PackageRefrenceDto Package { get; set; }
+    public PackageReferenceDto Package { get; set; }
 }
 
 /// <summary>
-/// Party entity refrence
+/// Party entity reference
 /// </summary>
 public class PartyEntityDto
 {

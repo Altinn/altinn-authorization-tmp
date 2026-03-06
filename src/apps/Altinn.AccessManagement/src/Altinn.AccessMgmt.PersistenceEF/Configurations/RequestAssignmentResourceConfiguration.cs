@@ -16,7 +16,7 @@ public class RequestAssignmentResourceConfiguration : IEntityTypeConfiguration<R
 
         builder.HasKey(p => p.Id);
         builder.Property(t => t.Status).IsRequired();
-        builder.Property(t => t.Action).IsRequired();
+        builder.Property(t => t.Action);
 
         builder.PropertyWithReference(navKey: t => t.Assignment, foreignKey: t => t.AssignmentId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);

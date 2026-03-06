@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -16,6 +16,7 @@ public partial class DtoMapper : IDtoMapper
         return new RequestDto
         {
             Id = request.Id,
+            RequestType = "assignment",
             Connection = new ConnectionRequestDto
             {
                 From = ConvertToPartyEntityDto(request.From),
@@ -25,31 +26,35 @@ public partial class DtoMapper : IDtoMapper
         };
     }
 
-    public static RequestDto Convert(RequestAssignmentPackage request)
+    public static RequestPackageDto Convert(RequestAssignmentPackage request)
     {
-        return new RequestDto
+        return new RequestPackageDto
         {
             Id = request.Id,
+            RequestType = "package",
             Connection = new ConnectionRequestDto
             {
                 From = ConvertToPartyEntityDto(request.Assignment.From),
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
-            Status = request.Status
+            Status = request.Status,
+            Package = new PackageReferenceDto { Urn = request.Package?.Urn },
         };
     }
 
-    public static RequestDto Convert(RequestAssignmentResource request)
+    public static RequestResourceDto Convert(RequestAssignmentResource request)
     {
-        return new RequestDto
+        return new RequestResourceDto
         {
             Id = request.Id,
+            RequestType = "resource",
             Connection = new ConnectionRequestDto
             {
                 From = ConvertToPartyEntityDto(request.Assignment.From),
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
-            Status = request.Status
+            Status = request.Status,
+            Resource = new ResourceReferenceDto { ResourceId = request.Resource?.RefId },
         };
     }
 

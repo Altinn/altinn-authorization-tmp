@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Validation;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -13,6 +13,7 @@ internal static class RequestValidation
             ParameterValidation.IEntityHasId(from, "from"),
             ParameterValidation.IEntityHasId(to, "to")
         );
+
     internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role) =>
         ValidationComposer.All(
             ParameterValidation.IEntityHasId(from, "from"),
@@ -26,34 +27,56 @@ internal static class RequestValidation
             ParameterValidation.IEntityHasId(resource, "resource")
         );
 
-    internal static RuleExpression ValidateRequestInput(RequestInput input) =>
+    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role, PackageDto package) =>
+        ValidationComposer.All(
+            ValidateRequestServiceInput(from, to, role),
+            ParameterValidation.IPackageDtoHasId(package, "package")
+        );
+
+    internal static RuleExpression ValidateRequestInput(CreateRequestInput input) =>
         ValidationComposer.All(
             ParameterValidation.ValidFromUrnInput(input.Connection.From, ValidUrns),
             ParameterValidation.ValidToUrnInput(input.Connection.To, ValidUrns)
         );
 
-    internal static RuleExpression ValidateRequestInput(RequestQueryInput input) =>
+    internal static RuleExpression ValidateRequestInput(RequestServiceOwnerQuery input) =>
        ValidationComposer.All(
            ParameterValidation.ValidFromUrnInput(input.From, ValidUrns),
            ParameterValidation.ValidToUrnInput(input.To, ValidUrns)
        );
 
-    internal static RuleExpression ValidateRequestResource(RequestResourceInput input) =>
+    internal static RuleExpression ValidateRequestResource(CreateResourceRequestInput input) =>
        ValidationComposer.All(
            ValidateRequestInput(input),
            ValidateResourceInput(input.Resource)
        );
 
-    internal static RuleExpression ValidateResourceInput(ResourceRefrenceDto input) =>
+    internal static RuleExpression ValidateResourceInput(ResourceReferenceDto input) =>
       ValidationComposer.All(
           ParameterValidation.ValidResourceId(input.ResourceId)
-
       );
 
     internal static RuleExpression ValidateRequestResourceDto(RequestAssignmentResource input) =>
         ValidationComposer.All(
             ValidateAssignment(input.Assignment),
             ParameterValidation.IEntityHasId(input.Resource, "resource")
+        );
+
+    internal static RuleExpression ValidateRequestPackage(CreatePackageRequestInput input) =>
+       ValidationComposer.All(
+           ValidateRequestInput(input),
+           ValidatePackageInput(input.Package)
+       );
+
+    internal static RuleExpression ValidatePackageInput(PackageReferenceDto input) =>
+        ValidationComposer.All(
+            ParameterValidation.ValidPackageUrn(input.Urn)
+        );
+
+    internal static RuleExpression ValidateRequestPackageDto(RequestAssignmentPackage input) =>
+        ValidationComposer.All(
+            ValidateAssignment(input.Assignment),
+            ParameterValidation.IEntityHasId(input.Package, "package")
         );
 
     internal static RuleExpression ValidateAssignment(Assignment input) =>
@@ -107,9 +130,31 @@ internal static class ParameterValidation
         return null;
     };
 
+    internal static RuleExpression ValidPackageUrn(string urn) => () =>
+    {
+        if (string.IsNullOrEmpty(urn))
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidPackageUrn, "package/urn", [new("package/urn", ValidationErrorMessageTexts.PackageUrnValid)]);
+        }
+
+        return null;
+    };
+
     internal static RuleExpression IEntityHasId(IEntityId entity, string paramPath) => () =>
     {
         if (entity == null || entity.Id == Guid.Empty)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.NotFound, paramPath, [new(paramPath, ValidationErrorMessageTexts.NotFound)]);
+        }
+
+        return null;
+    };
+
+    internal static RuleExpression IPackageDtoHasId(PackageDto package, string paramPath) => () =>
+    {
+        if (package == null || package.Id == Guid.Empty)
         {
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.NotFound, paramPath, [new(paramPath, ValidationErrorMessageTexts.NotFound)]);
@@ -132,6 +177,8 @@ public static class ValidationErrors
     public static ValidationErrorDescriptor InvalidResourceId { get; } = _factory.Create(2, "Invalid ResourceId");
 
     public static ValidationErrorDescriptor NotFound { get; } = _factory.Create(3, "Object not found");
+
+    public static ValidationErrorDescriptor InvalidPackageUrn { get; } = _factory.Create(4, "Invalid Package URN");
 }
 
 internal static class ValidationErrorMessageTexts
@@ -139,5 +186,6 @@ internal static class ValidationErrorMessageTexts
     internal const string FromValidUrn = "From must be identified by valid urn";
     internal const string ToValidUrn = "To must be identified by valid urn";
     internal const string ResourceIdValid = "ResourceId must be valid";
+    internal const string PackageUrnValid = "Package must be identified by valid urn";
     internal const string NotFound = "Object not found";
 }
