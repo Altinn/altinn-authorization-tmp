@@ -12,14 +12,14 @@
         "authorizedParties": "altinn:accessmanagement/authorizedparties",
         "authorizedPartiesResourceOwner": "altinn:accessmanagement/authorizedparties.resourceowner",
         "authorizedPartiesAdmin": "altinn:accessmanagement/authorizedparties.admin",
-        "enduserSystemToOthers.read": "altinn:accessmanagement/enduser:connections:toothers.read",
-        "enduserSystemToOthers.write": "altinn:accessmanagement/enduser:connections:toothers.write",
-        "enduserSystemFromOthers.read": "altinn:accessmanagement/enduser:connections:fromothers.read",
-        "enduserSystemFromOthers.write": "altinn:accessmanagement/enduser:connections:fromothers.write",
-        "clientdelegations.read": "altinn:clientdelegations.read",
-        "clientdelegations.write": "altinn:clientdelegations.write",
-        "myclients.read": "altinn:clientdelegations/myclients.read",
-        "myclients.write": "altinn:clientdelegations/myclients.write"
+        "enduserSystemToOthersRead": "altinn:accessmanagement/enduser:connections:toothers.read",
+        "enduserSystemToOthersWrite": "altinn:accessmanagement/enduser:connections:toothers.write",
+        "enduserSystemFromOthersRead": "altinn:accessmanagement/enduser:connections:fromothers.read",
+        "enduserSystemFromOthersWrite": "altinn:accessmanagement/enduser:connections:fromothers.write",
+        "clientdelegationsRead": "altinn:clientdelegations.read",
+        "clientdelegationsWrite": "altinn:clientdelegations.write",
+        "myclientsRead": "altinn:clientdelegations/myclients.read",
+        "myclientsWrite": "altinn:clientdelegations/myclients.write"
     },
     "authTokenType": {
         "personal": "Personal",
