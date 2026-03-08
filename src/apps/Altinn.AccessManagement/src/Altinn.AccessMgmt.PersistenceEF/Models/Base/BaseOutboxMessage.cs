@@ -18,7 +18,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// Implementations typically extend this class to add table mappings or additional fields.
 /// </remarks>
 [NotMapped]
-public class BaseOutboxMessage : BaseAudit
+public class BaseOutboxMessage
 {
     private Guid _id;
 
