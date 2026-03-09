@@ -269,7 +269,7 @@ module "appsettings" {
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync"
-      description = "Specifies if the Altinn II admin roles should be streamed from SBLBridge service to access management database as assignments with skatteforhold privatperson packages"
+      description = "Specifies if the Altinn II private tax affair roles should be streamed from SBLBridge service to access management database as assignments with skatteforhold privatperson packages"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
