@@ -1,5 +1,7 @@
-﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
@@ -11,7 +13,8 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -20,7 +23,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/serviceowner/delegationrequests")]
-//[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_SERVICEOWNER)]
+//// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_SERVICEOWNER)]
 public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
@@ -31,6 +34,7 @@ public class RequestController(
     /// Get valid urn prefixes for party identification
     /// </summary>
     [HttpGet("_meta/urns/party")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [ProducesResponseType(typeof(IReadOnlyCollection<string>), StatusCodes.Status200OK)]
     public IActionResult GetValidUrns()
     {
@@ -41,6 +45,7 @@ public class RequestController(
     /// Get resource requests for a given party
     /// </summary>
     [HttpGet("resource")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
     [ProducesResponseType<IEnumerable<RequestResourceDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -80,6 +85,7 @@ public class RequestController(
     /// Get package requests for a given party
     /// </summary>
     [HttpGet("package")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
     [ProducesResponseType<IEnumerable<RequestPackageDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -119,6 +125,7 @@ public class RequestController(
     /// Create a resource request for a given party and resource
     /// </summary>
     [HttpPost("resource")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
     [ProducesResponseType<RequestResourceDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
@@ -159,6 +166,7 @@ public class RequestController(
     /// Create a package request for a given party and access package
     /// </summary>
     [HttpPost("package")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
     [ProducesResponseType<RequestPackageDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]

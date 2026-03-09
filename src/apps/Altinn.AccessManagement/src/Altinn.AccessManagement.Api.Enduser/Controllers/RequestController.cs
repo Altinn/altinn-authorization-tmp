@@ -1,8 +1,10 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.AccessList;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -15,14 +17,14 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/request")]
-//[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+//// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class RequestController(
     IRequestService requestService,
     IConnectionService connectionService,
@@ -43,6 +45,7 @@ public class RequestController(
     /// Get all requests for a party (as sender or receiver)
     /// </summary>
     [HttpGet]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<PaginatedResult<RequestDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -75,6 +78,7 @@ public class RequestController(
     /// Create a package request on behalf of a party
     /// </summary>
     [HttpPost("package")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -104,6 +108,7 @@ public class RequestController(
     /// Create a resource request on behalf of a party
     /// </summary>
     [HttpPost("resource")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -133,6 +138,7 @@ public class RequestController(
     /// Accept (approve) a pending request — runs the same delegation logic as AddPackages/AddResourceRights
     /// </summary>
     [HttpPut("{id}/accept")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -160,6 +166,7 @@ public class RequestController(
     /// Confirm a draft request (transitions Draft → Pending)
     /// </summary>
     [HttpPut("{id}/confirm")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
@@ -171,6 +178,7 @@ public class RequestController(
     /// Reject a pending request
     /// </summary>
     [HttpPut("{id}/reject")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]

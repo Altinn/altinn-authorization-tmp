@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -43,7 +44,8 @@ public class RequestControllerTest
         public CreatePackageRequest(ApiFixture fixture)
         {
             Fixture = fixture;
-            //Fixture.WithEnabledFeatureFlag(FeatureFlag);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
         }
 
         public ApiFixture Fixture { get; }
@@ -89,7 +91,8 @@ public class RequestControllerTest
         public PackageRequestLifecycle(ApiFixture fixture)
         {
             Fixture = fixture;
-            //Fixture.WithEnabledFeatureFlag(FeatureFlag);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
                 var assignment = new Assignment
@@ -180,6 +183,8 @@ public class RequestControllerTest
         public CreateResourceRequest(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -238,6 +243,8 @@ public class RequestControllerTest
         public PackageRequestAcceptLifecycle(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
                 var assignment = new Assignment
@@ -308,6 +315,8 @@ public class RequestControllerTest
         public ResourceRequestRejectLifecycle(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -385,6 +394,8 @@ public class RequestControllerTest
         public ResourceRequestAcceptLifecycle(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -458,6 +469,8 @@ public class RequestControllerTest
         public ReceiverSeesPackageRequest(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
                 var assignment = new Assignment
@@ -542,6 +555,8 @@ public class RequestControllerTest
         public ReceiverSeesResourceRequest(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);

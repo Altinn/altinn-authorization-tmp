@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -55,6 +56,8 @@ public class RequestControllerTest
         public GetValidUrnsTest(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
         }
 
         [Fact]
@@ -115,6 +118,8 @@ public class RequestControllerTest
         public CreateResourceRequestTest(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             _fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -224,6 +229,8 @@ public class RequestControllerTest
         public CreatePackageRequestTest(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
         }
 
         [Fact]
@@ -323,6 +330,8 @@ public class RequestControllerTest
         public GetValidUrnsThenCreateRequestTest(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             _fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);

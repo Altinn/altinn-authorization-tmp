@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -64,6 +65,8 @@ public class RequestEndToEndTest
         public PackageRequest_EndToEnd_RejectLifecycle(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
         }
 
         [Fact]
@@ -165,6 +168,8 @@ public class RequestEndToEndTest
         public ResourceRequest_EndToEnd_RejectLifecycle(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             _fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -276,6 +281,8 @@ public class RequestEndToEndTest
         public PackageRequest_EndToEnd_AcceptLifecycle(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
         }
 
         [Fact]
@@ -366,6 +373,8 @@ public class RequestEndToEndTest
         public ResourceRequest_EndToEnd_AcceptLifecycle(ApiFixture fixture)
         {
             _fixture = fixture;
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             _fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
