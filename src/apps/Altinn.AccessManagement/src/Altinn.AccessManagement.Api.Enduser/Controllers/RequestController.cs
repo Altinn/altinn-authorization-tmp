@@ -157,6 +157,17 @@ public class RequestController(
     }
 
     /// <summary>
+    /// Confirm a draft request (transitions Draft → Pending)
+    /// </summary>
+    [HttpPut("{id}/confirm")]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmRequest([FromRoute] Guid id, CancellationToken ct = default)
+        => await UpdateRequestStatus(id, RequestStatus.Pending, ct);
+
+    /// <summary>
     /// Reject a pending request
     /// </summary>
     [HttpPut("{id}/reject")]
