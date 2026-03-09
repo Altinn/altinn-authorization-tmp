@@ -828,7 +828,7 @@ public partial class ConnectionService(
         {
             return Problems.InvalidResource;
         }
-
+        
         if (resourceDto.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase))
         {
             isMaskinPortenSchema = true;
