@@ -50,6 +50,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<EntityVariantRole> EntityVariantRoles => Set<EntityVariantRole>();
 
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
     public DbSet<Package> Packages => Set<Package>();
 
     public DbSet<PackageResource> PackageResources => Set<PackageResource>();
@@ -165,6 +167,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditEntityType>(new AuditEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditEntityVariant>(new AuditEntityVariantConfiguration());
         modelBuilder.ApplyConfiguration<AuditEntityVariantRole>(new AuditEntityVariantRoleConfiguration());
+        modelBuilder.ApplyConfiguration<OutboxMessage>(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration<AuditPackage>(new AuditPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditPackageResource>(new AuditPackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditProvider>(new AuditProviderConfiguration());
@@ -317,6 +320,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         Func<TData> addValueFactory,
         Func<TData, TOutboxData, TData> updateValueFactory)
     {
+        
         ArgumentException.ThrowIfNullOrEmpty(refId);
         ArgumentNullException.ThrowIfNull(addValueFactory);
         ArgumentNullException.ThrowIfNull(updateValueFactory);

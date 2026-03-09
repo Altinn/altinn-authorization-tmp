@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
+        services.AddKeyedSingleton("handlers", options.Handlers);
         _configureTracing = options.AppConnectionString.Contains("database=authorizationdb", StringComparison.OrdinalIgnoreCase);
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
@@ -226,5 +228,14 @@ public static class ServiceCollectionExtensions
         public string MigrationConnectionString { get; set; } = string.Empty;
 
         public string AppConnectionString { get; set; } = string.Empty;
+
+        internal Dictionary<string, Type> Handlers { get; set; } = [];
+
+        public AccessManagementDatabaseOptions AddOutboxHandler<T>(string handlerName)
+            where T : IOutboxHandler
+        {
+            Handlers[handlerName] = typeof(T);
+            return this;
+        }
     }
 }
