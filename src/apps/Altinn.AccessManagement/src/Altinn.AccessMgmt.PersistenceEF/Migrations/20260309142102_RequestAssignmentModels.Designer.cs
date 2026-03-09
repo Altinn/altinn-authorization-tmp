@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260306092332_AddMissingRequestAuditColumns")]
-    partial class AddMissingRequestAuditColumns
+    [Migration("20260309142102_RequestAssignmentModels")]
+    partial class RequestAssignmentModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3033,7 +3033,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("Action")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("action");
 

@@ -28,7 +28,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     fromid = table.Column<Guid>(type: "uuid", nullable: false),
                     toid = table.Column<Guid>(type: "uuid", nullable: false),
                     roleid = table.Column<Guid>(type: "uuid", nullable: false),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -52,7 +51,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     audit_changeoperation = table.Column<string>(type: "text", nullable: true),
                     assignmentid = table.Column<Guid>(type: "uuid", nullable: false),
                     packageid = table.Column<Guid>(type: "uuid", nullable: false),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -77,7 +75,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     assignmentid = table.Column<Guid>(type: "uuid", nullable: false),
                     resourceid = table.Column<Guid>(type: "uuid", nullable: false),
                     action = table.Column<string>(type: "text", nullable: true),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -98,7 +95,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     fromid = table.Column<Guid>(type: "uuid", nullable: false),
                     toid = table.Column<Guid>(type: "uuid", nullable: false),
                     roleid = table.Column<Guid>(type: "uuid", nullable: false),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -107,13 +103,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     table.ForeignKey(
                         name: "fk_requestassignment_entity_fromid",
                         column: x => x.fromid,
-                        principalSchema: "dbo",
-                        principalTable: "entity",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_requestassignment_entity_requestedbyid",
-                        column: x => x.requestedbyid,
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
@@ -146,7 +135,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     assignmentid = table.Column<Guid>(type: "uuid", nullable: false),
                     packageid = table.Column<Guid>(type: "uuid", nullable: false),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -157,13 +145,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         column: x => x.assignmentid,
                         principalSchema: "dbo",
                         principalTable: "assignment",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_requestassignmentpackage_entity_requestedbyid",
-                        column: x => x.requestedbyid,
-                        principalSchema: "dbo",
-                        principalTable: "entity",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -187,8 +168,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     assignmentid = table.Column<Guid>(type: "uuid", nullable: false),
                     resourceid = table.Column<Guid>(type: "uuid", nullable: false),
-                    action = table.Column<string>(type: "text", nullable: false),
-                    requestedbyid = table.Column<Guid>(type: "uuid", nullable: false),
+                    action = table.Column<string>(type: "text", nullable: true),
                     status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -199,13 +179,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         column: x => x.assignmentid,
                         principalSchema: "dbo",
                         principalTable: "assignment",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_requestassignmentresource_entity_requestedbyid",
-                        column: x => x.requestedbyid,
-                        principalSchema: "dbo",
-                        principalTable: "entity",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -224,17 +197,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 column: "fromid");
 
             migrationBuilder.CreateIndex(
-                name: "ix_requestassignment_fromid_toid_roleid_requestedbyid_status",
+                name: "ix_requestassignment_fromid_toid_roleid_status",
                 schema: "dbo",
                 table: "requestassignment",
-                columns: new[] { "fromid", "toid", "roleid", "requestedbyid", "status" },
+                columns: new[] { "fromid", "toid", "roleid", "status" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_requestassignment_requestedbyid",
-                schema: "dbo",
-                table: "requestassignment",
-                column: "requestedbyid");
 
             migrationBuilder.CreateIndex(
                 name: "ix_requestassignment_roleid",
@@ -255,10 +222,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 column: "assignmentid");
 
             migrationBuilder.CreateIndex(
-                name: "ix_requestassignmentpackage_assignmentid_packageid_requestedby~",
+                name: "ix_requestassignmentpackage_assignmentid_packageid_status",
                 schema: "dbo",
                 table: "requestassignmentpackage",
-                columns: new[] { "assignmentid", "packageid", "requestedbyid", "status" },
+                columns: new[] { "assignmentid", "packageid", "status" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -268,29 +235,17 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 column: "packageid");
 
             migrationBuilder.CreateIndex(
-                name: "ix_requestassignmentpackage_requestedbyid",
-                schema: "dbo",
-                table: "requestassignmentpackage",
-                column: "requestedbyid");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_requestassignmentresource_assignmentid",
                 schema: "dbo",
                 table: "requestassignmentresource",
                 column: "assignmentid");
 
             migrationBuilder.CreateIndex(
-                name: "ix_requestassignmentresource_assignmentid_resourceid_action_re~",
+                name: "ix_requestassignmentresource_assignmentid_resourceid_action_st~",
                 schema: "dbo",
                 table: "requestassignmentresource",
-                columns: new[] { "assignmentid", "resourceid", "action", "requestedbyid", "status" },
+                columns: new[] { "assignmentid", "resourceid", "action", "status" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_requestassignmentresource_requestedbyid",
-                schema: "dbo",
-                table: "requestassignmentresource",
-                column: "requestedbyid");
 
             migrationBuilder.CreateIndex(
                 name: "ix_requestassignmentresource_resourceid",
