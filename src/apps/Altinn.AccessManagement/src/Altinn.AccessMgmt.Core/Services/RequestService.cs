@@ -77,7 +77,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(fromId.HasValue, r => r.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.RoleId == roleId.Value)
-            .WhereIf(status.Any(), r => status.Contains(r.Status))
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
@@ -155,7 +155,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, r => r.ResourceId == resourceId.Value)
-            .WhereIf(status.Any(), r => status.Contains(r.Status))
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
@@ -239,7 +239,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.Assignment.RoleId == roleId.Value)
             .WhereIf(packageId.HasValue, r => r.PackageId == packageId.Value)
-            .WhereIf(status.Any(), r => status.Contains(r.Status))
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
