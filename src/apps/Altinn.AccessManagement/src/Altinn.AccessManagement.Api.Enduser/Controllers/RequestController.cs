@@ -97,8 +97,13 @@ public class RequestController(
             return BadRequest("packageId must be specified");
         }
 
-        var request = await requestService.CreateRequestAssignmentPackage(fromId, toId, RoleConstants.Rightholder.Id, packageId, RequestStatus.Pending, ct);
-        return Ok(DtoMapper.Convert(request));
+        var result = await requestService.CreateRequestAssignmentPackage(fromId, toId, RoleConstants.Rightholder.Id, packageId, RequestStatus.Pending, ct);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(DtoMapper.Convert(result.Value));
     }
 
     /// <summary>
@@ -127,8 +132,13 @@ public class RequestController(
             return BadRequest("resourceId must be specified");
         }
 
-        var request = await requestService.CreateRequestAssignmentResource(fromId, toId, RoleConstants.Rightholder.Id, resourceId, RequestStatus.Pending, ct);
-        return Ok(DtoMapper.Convert(request));
+        var result = await requestService.CreateRequestAssignmentResource(fromId, toId, RoleConstants.Rightholder.Id, resourceId, RequestStatus.Pending, ct);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(DtoMapper.Convert(result.Value));
     }
 
     /// <summary>
@@ -203,7 +213,12 @@ public class RequestController(
             return result.Problem.ToActionResult();
         }
 
-        await requestService.UpdateRequestAssignmentPackage(requestId, RequestStatus.Approved, ct);
+        var updateResult = await requestService.UpdateRequestAssignmentPackage(requestId, RequestStatus.Approved, ct);
+        if (updateResult.IsProblem)
+        {
+            return updateResult.Problem.ToActionResult();
+        }
+
         return Ok(DtoMapper.Convert(request));
     }
 
@@ -247,7 +262,12 @@ public class RequestController(
             return result.Problem.ToActionResult();
         }
 
-        await requestService.UpdateRequestAssignmentResource(requestId, RequestStatus.Approved, ct);
+        var updateResult = await requestService.UpdateRequestAssignmentResource(requestId, RequestStatus.Approved, ct);
+        if (updateResult.IsProblem)
+        {
+            return updateResult.Problem.ToActionResult();
+        }
+
         return Ok(DtoMapper.Convert(request));
     }
 
@@ -259,18 +279,28 @@ public class RequestController(
             return NotFound();
         }
 
-        RequestDto result = existing.RequestType switch
+        switch (existing.RequestType)
         {
-            "package" => DtoMapper.Convert(await requestService.UpdateRequestAssignmentPackage(id, status, ct)),
-            "resource" => DtoMapper.Convert(await requestService.UpdateRequestAssignmentResource(id, status, ct)),
-            _ => null
-        };
+            case "package":
+                var packageResult = await requestService.UpdateRequestAssignmentPackage(id, status, ct);
+                if (packageResult.IsProblem)
+                {
+                    return packageResult.Problem.ToActionResult();
+                }
 
-        if (result is null)
-        {
-            return BadRequest($"Unknown request type: {existing.RequestType}");
+                return Ok(DtoMapper.Convert(packageResult.Value));
+
+            case "resource":
+                var resourceResult = await requestService.UpdateRequestAssignmentResource(id, status, ct);
+                if (resourceResult.IsProblem)
+                {
+                    return resourceResult.Problem.ToActionResult();
+                }
+
+                return Ok(DtoMapper.Convert(resourceResult.Value));
+
+            default:
+                return BadRequest($"Unknown request type: {existing.RequestType}");
         }
-
-        return Ok(result);
     }
 }

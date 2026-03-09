@@ -152,9 +152,13 @@ public class RequestController(
             return serviceValidationErrors.ToActionResult();
         }
 
-        var request = await requestService.CreateRequestAssignmentResource(from.Id, to.Id, role.Id, resource.Id, ct: ct);
-        var result = ConvertResource(request);
+        var createResult = await requestService.CreateRequestAssignmentResource(from.Id, to.Id, role.Id, resource.Id, ct: ct);
+        if (createResult.IsProblem)
+        {
+            return createResult.Problem.ToActionResult();
+        }
 
+        var result = ConvertResource(createResult.Value);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -193,9 +197,13 @@ public class RequestController(
             return serviceValidationErrors.ToActionResult();
         }
 
-        var request = await requestService.CreateRequestAssignmentPackage(from.Id, to.Id, role.Id, package.Id, ct: ct);
-        var result = ConvertPackage(request);
+        var createResult = await requestService.CreateRequestAssignmentPackage(from.Id, to.Id, role.Id, package.Id, ct: ct);
+        if (createResult.IsProblem)
+        {
+            return createResult.Problem.ToActionResult();
+        }
 
+        var result = ConvertPackage(createResult.Value);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

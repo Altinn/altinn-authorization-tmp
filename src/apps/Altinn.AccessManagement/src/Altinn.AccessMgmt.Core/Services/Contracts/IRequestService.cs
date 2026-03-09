@@ -32,12 +32,12 @@ public interface IRequestService
     /// <summary>
     /// Creates a new request assignment linking the specified entities with the given role.
     /// </summary>
-    Task<RequestAssignment> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default);
+    Task<Result<RequestAssignment>> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the status of a request assignment.
     /// </summary>
-    Task<RequestAssignment> UpdateRequestAssignment(Guid requestId, RequestStatus status, CancellationToken ct = default);
+    Task<Result<RequestAssignment>> UpdateRequestAssignment(Guid requestId, RequestStatus status, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves the assignment package associated with the specified request identifier.
@@ -52,17 +52,17 @@ public interface IRequestService
     /// <summary>
     /// Creates a new request assignment package for the given from/to/role/package combination.
     /// </summary>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
+    Task<Result<RequestAssignmentPackage>> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment package attached to an existing assignment.
     /// </summary>
-    Task<RequestAssignmentPackage> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
+    Task<Result<RequestAssignmentPackage>> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the status of a request assignment package.
     /// </summary>
-    Task<RequestAssignmentPackage> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status, CancellationToken ct = default);
+    Task<Result<RequestAssignmentPackage>> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves the assignment resource associated with the specified request identifier.
@@ -77,15 +77,15 @@ public interface IRequestService
     /// <summary>
     /// Creates a new request assignment resource for the given from/to/role/resource combination.
     /// </summary>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
+    Task<Result<RequestAssignmentResource>> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request assignment resource attached to an existing assignment.
     /// </summary>
-    Task<RequestAssignmentResource> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
+    Task<Result<RequestAssignmentResource>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the status of a request assignment resource.
     /// </summary>
-    Task<RequestAssignmentResource> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status, CancellationToken ct = default);
+    Task<Result<RequestAssignmentResource>> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status, CancellationToken ct = default);
 }
