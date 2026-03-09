@@ -218,6 +218,7 @@ internal static partial class AccessManagementHost
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();
             options.EnableAnnotations();
+            options.DocumentFilter<Swagger.FeatureGateDocumentFilter>();
 
             var originalIdSelector = options.SchemaGeneratorOptions.SchemaIdSelector;
             options.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>

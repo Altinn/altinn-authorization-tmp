@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
+
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
 /// <summary>
