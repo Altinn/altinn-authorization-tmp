@@ -216,7 +216,7 @@ public class RequestController(
             request.Assignment.FromId,
             request.Resource.RefId,
             ConfigureConnections,
-            ct);
+            cancellationToken: ct);
 
         if (delegationCheck.IsProblem)
         {
