@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -20,6 +20,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/serviceowner/delegationrequests")]
+//[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_SERVICEOWNER)]
 public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
@@ -250,7 +251,7 @@ public class RequestController(
     {
         var urnSegments = urn.Split(":");
         var urnSuffix = urnSegments.Last();
-        var key = urn[..(urn.Length - urnSuffix.Length + 1)];
+        var key = urn[..(urn.Length - urnSuffix.Length - 1)];
 
         if (!RequestValidation.ValidUrns.Contains(key))
         {

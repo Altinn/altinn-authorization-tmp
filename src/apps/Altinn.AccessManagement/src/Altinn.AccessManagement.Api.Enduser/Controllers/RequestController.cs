@@ -1,5 +1,4 @@
-using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
@@ -7,21 +6,23 @@ using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/request")]
-[FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+//[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class RequestController(
     IRequestService requestService,
     IConnectionService connectionService,
@@ -43,6 +44,7 @@ public class RequestController(
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<PaginatedResult<RequestDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -63,6 +65,8 @@ public class RequestController(
             return BadRequest("Party must be either from or to");
         }
 
+        status = status == null ? new List<RequestStatus>() : status;
+
         var result = await requestService.GetRequests(fromId, toId, status, after, ct);
         return Ok(PaginatedResult.Create(result, null));
     }
@@ -71,7 +75,8 @@ public class RequestController(
     /// Create a package request on behalf of a party
     /// </summary>
     [HttpPost("package")]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -99,7 +104,8 @@ public class RequestController(
     /// Create a resource request on behalf of a party
     /// </summary>
     [HttpPost("resource")]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -127,7 +133,8 @@ public class RequestController(
     /// Accept (approve) a pending request — runs the same delegation logic as AddPackages/AddResourceRights
     /// </summary>
     [HttpPut("{id}/accept")]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -153,7 +160,8 @@ public class RequestController(
     /// Reject a pending request
     /// </summary>
     [HttpPut("{id}/reject")]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

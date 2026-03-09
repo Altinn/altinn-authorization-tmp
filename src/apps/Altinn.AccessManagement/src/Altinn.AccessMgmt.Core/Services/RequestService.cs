@@ -70,8 +70,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
 
-        HashSet<RequestStatus> statusSet = status.Select(e => (RequestStatus)e).ToHashSet();
-
         return await db.RequestAssignments
             .Include(a => a.From)
             .Include(a => a.To)
@@ -79,7 +77,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .WhereIf(fromId.HasValue, r => r.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.ToId == toId.Value)
             .WhereIf(roleId.HasValue, r => r.RoleId == roleId.Value)
-            .WhereMatchIfSet(statusSet, r => r.Status)
+            .WhereIf(status.Any(), r => status.Contains(r.Status))
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
