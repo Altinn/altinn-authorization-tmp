@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
@@ -7,6 +8,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -51,21 +53,17 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetRequests([FromQuery] RequestEnduserQuery input, List<RequestStatus>? status, DateTimeOffset? after, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
     {
-        var validParty = Guid.TryParse(input.Party, out var partyId);
-        var validFrom = Guid.TryParse(input.From, out var fromId);
-        var validTo = Guid.TryParse(input.To, out var toId);
-
-        if (!validFrom && !validTo)
+        var validationErrors = ValidationComposer.Validate(
+            RequestValidation.ValidateGetRequests(input.Party, input.From, input.To));
+        if (validationErrors is { })
         {
-            return BadRequest("Either from or to must be specified");
+            return validationErrors.ToActionResult();
         }
 
-        if (partyId != fromId && partyId != toId)
-        {
-            return BadRequest("Party must be either from or to");
-        }
+        Guid.TryParse(input.From, out var fromId);
+        Guid.TryParse(input.To, out var toId);
 
-        status = status == null ? new List<RequestStatus>() : status;
+        status ??= new List<RequestStatus>();
 
         var result = await requestService.GetRequests(fromId, toId, status, after, ct);
         return Ok(PaginatedResult.Create(result, null));
@@ -84,18 +82,15 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreatePackageRequest([FromQuery] RequestEnduserQuery input, [FromQuery] Guid packageId, CancellationToken ct = default)
     {
-        var validFrom = Guid.TryParse(input.From, out var fromId);
-        var validTo = Guid.TryParse(input.To, out var toId);
-
-        if (!validFrom || !validTo)
+        var validationErrors = ValidationComposer.Validate(
+            RequestValidation.ValidateCreatePackageRequest(input.From, input.To, packageId));
+        if (validationErrors is { })
         {
-            return BadRequest("Both from and to must be specified");
+            return validationErrors.ToActionResult();
         }
 
-        if (packageId == Guid.Empty)
-        {
-            return BadRequest("packageId must be specified");
-        }
+        Guid.TryParse(input.From, out var fromId);
+        Guid.TryParse(input.To, out var toId);
 
         var result = await requestService.CreateRequestAssignmentPackage(fromId, toId, RoleConstants.Rightholder.Id, packageId, RequestStatus.Pending, ct);
         if (result.IsProblem)
@@ -119,18 +114,15 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateResourceRequest([FromQuery] RequestEnduserQuery input, [FromQuery] Guid resourceId, CancellationToken ct = default)
     {
-        var validFrom = Guid.TryParse(input.From, out var fromId);
-        var validTo = Guid.TryParse(input.To, out var toId);
-
-        if (!validFrom || !validTo)
+        var validationErrors = ValidationComposer.Validate(
+            RequestValidation.ValidateCreateResourceRequest(input.From, input.To, resourceId));
+        if (validationErrors is { })
         {
-            return BadRequest("Both from and to must be specified");
+            return validationErrors.ToActionResult();
         }
 
-        if (resourceId == Guid.Empty)
-        {
-            return BadRequest("resourceId must be specified");
-        }
+        Guid.TryParse(input.From, out var fromId);
+        Guid.TryParse(input.To, out var toId);
 
         var result = await requestService.CreateRequestAssignmentResource(fromId, toId, RoleConstants.Rightholder.Id, resourceId, RequestStatus.Pending, ct);
         if (result.IsProblem)

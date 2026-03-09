@@ -99,6 +99,34 @@ internal static class ParameterValidation
         return null;
     };
 
+    /// <summary>
+    /// packageId must be a non-empty Guid.
+    /// </summary>
+    internal static RuleExpression PackageIdNotEmpty(Guid value) => () =>
+    {
+        if (value != Guid.Empty)
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/packageId", [new("packageId", ValidationErrorMessageTexts.PackageIdMustNotBeEmpty)]);
+    };
+
+    /// <summary>
+    /// resourceId must be a non-empty Guid.
+    /// </summary>
+    internal static RuleExpression ResourceIdNotEmpty(Guid value) => () =>
+    {
+        if (value != Guid.Empty)
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/resourceId", [new("resourceId", ValidationErrorMessageTexts.ResourceIdMustNotBeEmpty)]);
+    };
+
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
     {
         if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
