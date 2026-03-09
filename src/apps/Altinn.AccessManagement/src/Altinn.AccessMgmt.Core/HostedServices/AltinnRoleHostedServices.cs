@@ -83,7 +83,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnBankruptcyEstateRoleSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_altinnbankruptcyestaterole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnbankruptcyestaterole_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncAltinnBankruptcyEstateRoles(lease, cancellationToken);

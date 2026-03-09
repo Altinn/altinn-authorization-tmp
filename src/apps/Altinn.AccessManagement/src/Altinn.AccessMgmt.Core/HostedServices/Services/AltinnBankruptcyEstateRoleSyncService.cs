@@ -51,7 +51,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+                _logger.LogInformation("Starting processing role page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
@@ -59,7 +59,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     {
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
-                        IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
                         IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
 
                         bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.AltinnRoleDelegationEventId, "Bankruptcy", cancellationToken);
@@ -74,9 +73,17 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             batchId.ToString(),
                             item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                        MinimalParty fromParty = await partyService.GetByUid(item.FromPartyUuid, cancellationToken);
-
                         List<string> packageUrns = GetBankruptcyEstatePackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
+
+                        if (packageUrns == null || packageUrns.Count == 0)
+                        {
+                            _logger.LogWarning(
+                                "No package URNs mapped for delegation FromParty: {FromParty}, ToParty: {ToParty}. RoleType: {RoleTypeCode} Skipping import.",
+                                item.FromPartyUuid,
+                                item.ToUserPartyUuid,
+                                item.RoleTypeCode);
+                            continue;
+                        }
 
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
@@ -84,7 +91,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (item.ToUserPartyUuid == null)
                             {
                                 _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
+                                    "The delegation is missing ToUserPartyUuid so it is not a valid bankruptcy estate delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));
