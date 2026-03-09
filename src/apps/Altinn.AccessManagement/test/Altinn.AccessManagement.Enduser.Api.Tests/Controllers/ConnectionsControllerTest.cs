@@ -31,6 +31,7 @@ public class ConnectionsControllerTest
         public GetConnections(ApiFixture fixture)
         {
             Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
             Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderFromNordisToVerdiq = new Assignment()
@@ -98,7 +99,7 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task ListConnections_WithDirectionFromOthersUsingFromOthersScope_ReturnsOk()
         {
-            var client = CreateClient(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, "some:other/scope.read");
+            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ, "some:other/scope.read");
 
             var response = await client.GetAsync($"{Route}?party={TestEntities.OrganizationVerdiqAS.Id}&to={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
@@ -111,7 +112,7 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task ListConnections_WithDirectionFromOthersUsingToOthersScope_ReturnsForbidden()
         {
-            var client = CreateClient(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ);
+            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
             var response = await client.GetAsync($"{Route}?party={TestEntities.OrganizationVerdiqAS.Id}&to={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
@@ -121,7 +122,7 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingToOthersScope_ReturnsOk()
         {
-            var client = CreateClient("some:other/scope.read", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ);
+            var client = CreateClient("some:other/scope.read", AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
             var response = await client.GetAsync($"{Route}?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
@@ -134,7 +135,7 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingFromOthersScope_ReturnsForbidden()
         {
-            var client = CreateClient(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ);
+            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
             var response = await client.GetAsync($"{Route}?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
@@ -144,7 +145,7 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingToOtherScopeWithPartyNotEqualFromOrTo_ReturnsForbidden()
         {
-            var client = CreateClient(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ);
+            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
             var response = await client.GetAsync($"{Route}?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.PersonPaula.Id}&to={TestEntities.PersonOrjan.Id}", TestContext.Current.CancellationToken);
 
