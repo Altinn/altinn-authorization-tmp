@@ -828,7 +828,7 @@ public partial class ConnectionService(
         {
             return Problems.InvalidResource;
         }
-        
+
         if (resourceDto.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase))
         {
             isMaskinPortenSchema = true;
@@ -836,7 +836,7 @@ public partial class ConnectionService(
 
         // Fetch Resourcemetadata
         ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
-        
+
         if (resourceMetadata is null)
         {
             return Problems.InvalidResource;
