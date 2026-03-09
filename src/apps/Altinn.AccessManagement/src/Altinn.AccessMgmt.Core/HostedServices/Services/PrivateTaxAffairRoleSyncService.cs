@@ -55,7 +55,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+                _logger.LogInformation("Starting processing role page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
@@ -85,7 +85,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (item.ToUserPartyUuid == null)
                             {
                                 _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
+                                    "The delegation is missing ToUserPartyUuid so it is not a valid private tax affair delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));
@@ -151,7 +151,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     return;
                 }
 
-                await lease.Update<AltinnAdminRoleLease>(d => d.AltinnAdminRoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+                await lease.Update<PrivateTaxAffairRoleLease>(d => d.PrivateTaxAffairRoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
             }
         }
 

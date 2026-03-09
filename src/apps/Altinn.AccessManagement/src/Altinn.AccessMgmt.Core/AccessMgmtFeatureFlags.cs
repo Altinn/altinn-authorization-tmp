@@ -41,7 +41,7 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
 
     /// <summary>
-    /// Specifies if the altinn admin roles data should streamed from sblbridge service to access management database
+    /// Specifies if the altinn private tax affair roles data should streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesPrivateTaxAffairRoleSync = $"AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync";
     

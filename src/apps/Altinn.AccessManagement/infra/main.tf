@@ -257,13 +257,7 @@ module "appsettings" {
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnClientRoleSync"
-      description = "Specifies if the Altinn II client roles should be streamed from SBLBridge service to access management database as agent assignment with assoisiated delegation and packages"
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessMgmt.Core.HostedServices.PrivateTaxAffairRoleSync"
-      description = "Specifies if the Altinn II privatetaxaffair role should be streamed from SBLBridge service to access management database as assignment with privatetaxaffair package"
+      description = "Specifies if the Altinn II client roles should be streamed from SBLBridge service to access management database as agent assignment with associated delegation and packages"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

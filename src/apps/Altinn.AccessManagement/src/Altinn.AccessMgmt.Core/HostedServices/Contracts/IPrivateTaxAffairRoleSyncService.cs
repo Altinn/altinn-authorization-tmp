@@ -3,12 +3,12 @@
 namespace Altinn.AccessMgmt.Core.HostedServices.Contracts
 {
     /// <summary>
-    /// Service for synchronizing Altinn client roles.
+    /// Service for synchronizing Altinn private tax affair roles.
     /// </summary>
     public interface IPrivateTaxAffairRoleSyncService
     {
         /// <summary>
-        /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
+        /// Synchronizes altinn private tax affair role data by first acquiring a remote lease and streaming altinn role entries.
         /// Returns if lease is already taken.
         /// </summary>
         /// <param name="lease">The lease result containing the lease data and status.</param>
