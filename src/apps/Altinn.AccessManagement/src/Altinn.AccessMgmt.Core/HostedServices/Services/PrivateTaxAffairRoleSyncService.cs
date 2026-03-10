@@ -3,12 +3,14 @@ using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -64,6 +66,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
                         IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
+                        IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
                         bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.AltinnRoleDelegationEventId, "Skatteforhold", cancellationToken);
                         if (alreadyProcessed)
@@ -84,11 +87,14 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             // If the action is Revoke, we should delete the assignmentPackages
                             if (item.ToUserPartyUuid == null)
                             {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid private tax affair delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Skatteforhold",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid private tax affair delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                                 continue;
                             }
 
@@ -113,32 +119,42 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         {
                             if (!item.DelegationChangeDateTime.HasValue || item.DelegationChangeDateTime.Value < new DateTimeOffset(2021, 3, 1, 0, 0, 0, new TimeSpan(1, 0, 0)))
                             {
-                                _logger.LogInformation(
-                                    "Skipping privatetaxaffair delegation FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn} since it is before the cut-off date",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Skatteforhold",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"Skipping privatetaxaffair delegation FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)} since it is before the cut-off date"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                                 continue;
                             }
                             
                             if (item.ToUserPartyUuid == null)
                             {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid privatetaxaffair delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Skatteforhold",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid privatetaxaffair delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                                 continue;
                             }
 
                             List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
                             if (adds.Count == 0)
                             {
-                                _logger.LogWarning(
-                                    "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Skatteforhold",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"Failed to import delegation for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;
                             }
                         }
 
