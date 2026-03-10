@@ -603,6 +603,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         {
             res.PolicyPath = policyPath;
             res.PolicyVersion = policyVersion;
+            res.DelegationChangeId = delegationChangeId;
         }
         else
         {
