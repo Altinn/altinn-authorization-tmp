@@ -52,9 +52,8 @@ internal class OutboxReaperJob(
                 }
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
-            // normal shutdown
         }
     }
 

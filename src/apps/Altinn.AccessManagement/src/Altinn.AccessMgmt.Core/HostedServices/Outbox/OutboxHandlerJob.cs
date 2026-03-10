@@ -67,9 +67,8 @@ internal class OutboxHandlerJob(
                 }
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
-            // normal shutdown
         }
     }
 
