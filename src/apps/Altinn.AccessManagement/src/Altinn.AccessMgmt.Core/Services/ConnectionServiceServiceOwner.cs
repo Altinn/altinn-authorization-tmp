@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Models;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,7 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <summary>
         /// Allows service owners to 
         /// </summary>
-        public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+        public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, AccessPackageUrn PackageUrn, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
             ConnectionOptions options = new(configureConnection);
             (Entity from, Entity to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
