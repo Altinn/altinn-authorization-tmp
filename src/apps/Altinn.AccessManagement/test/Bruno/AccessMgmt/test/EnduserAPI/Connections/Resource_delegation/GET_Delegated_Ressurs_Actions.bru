@@ -1,0 +1,105 @@
+meta {
+  name: GET_Delegated_Ressurs_Actions
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{party}}&from={{party}}&to={{to}}&resource={{resource}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  from: {{party}}
+  to: {{to}}
+  resource: {{resource}}
+}
+
+body:json {
+  {
+    "DirectRightsKeys": [
+      "urn:altinn:resource:ttd-test-bruno-enkelttjeneste-privatperson-ressurs:urn:oasis:names:tc:xacml:1.0:action:action-id:read",
+      
+      "urn:altinn:resource:ttd-test-bruno-enkelttjeneste-privatperson-ressurs:urn:oasis:names:tc:xacml:1.0:action:action-id:write"
+      
+    ]
+  }
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
+  
+  bru.setVar("party", testdata.Bruker_A_delegates.partyuuid);
+  bru.setVar("to", testdata.Bruker_B_delegates.partyuuid);
+  bru.setVar("resource", testdata.resource_to_delegate.resource_id_privatperson);
+  
+  var getTokenParameters = {
+    auth_userId: testdata.Bruker_A_delegates.userid,
+    auth_partyId: testdata.Bruker_A_delegates.partyid,
+    auth_partyUuid: testdata.Bruker_A_delegates.partyuuid,
+    auth_ssn: testdata.Bruker_A_delegates.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.enduserSystemToOthersRead
+  }
+  
+  
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  test("GET_Delegated actions on resources ", function() {
+    
+    const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
+    const data = res.getBody();
+    
+    expect(res.status).to.equal(200);
+    
+    // Resource check
+  expect(data.resource).to.exist;
+  expect(data.resource.refId).to.equal(testdata.resource_to_delegate.resource_id_privatperson);
+  
+  ///indirectRights empty
+  expect(data.indirectRights).to.be.an("array");
+  expect(data.indirectRights.length).to.equal(0);
+  
+  // directRights count
+  expect(data.directRights).to.be.an("array");
+  expect(data.directRights.length).to.equal(2);
+  
+  //Expected actions
+  const expectedActions = ["read", "write"];
+  const actualActions = data.directRights.map(r => r.right.action.value);
+  expect(actualActions).to.have.members(expectedActions);
+  
+  // Verify each right
+  data.directRights.forEach(d => {
+  
+    // reason check
+    expect(d.reason.items[0].name).to.equal("direct");
+  
+    // resource check
+    expect(d.right.resource[0]).to.have.property(
+      "value",
+     testdata.resource_to_delegate.resource_id_privatperson
+    );
+  
+    // permission check
+    const perm = d.permissions[0];
+  
+    expect(perm.from).to.have.property("id", testdata.Bruker_A_delegates.partyuuid);
+    expect(perm.to).to.have.property("id", testdata.Bruker_B_delegates.partyuuid);
+  });
+    
+    
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

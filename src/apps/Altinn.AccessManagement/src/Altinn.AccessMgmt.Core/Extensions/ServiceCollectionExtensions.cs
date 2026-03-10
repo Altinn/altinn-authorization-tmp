@@ -1,13 +1,16 @@
-﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Configuration;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
-using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AMPartyService = Altinn.AccessMgmt.Core.Services.AMPartyService;
@@ -21,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
+        services.AddHostedService<ConsentMigrationHostedService>();
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
@@ -35,18 +39,21 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IErrorQueueService, ErrorQueueService>();
         services.AddScoped<IRightImportProgressService, RightImportProgressService>();
-        services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
+        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
-        if (configuration.GetValue<bool>("FeatureManagement:AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"))
-        {
-            services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
-        }
-        else
-        {
-            services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesService>();
-        }
+        services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
+        services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
+
+        // Consent Migration - Configuration
+        services.AddOptions<ConsentMigrationSettings>()
+                .ValidateDataAnnotations()
+                .ValidateOnStart()
+                .BindConfiguration("ConsentMigration");
+
+        // Consent Migration - Services (Core - Scoped)
+        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
 
         AddJobs(services);
         return services;
@@ -63,5 +70,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISingleAppRightSyncService, SingleAppRightSyncService>();
         services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();
         services.AddSingleton<ISingleInstanceRightSyncService, SingleInstanceRightSyncService>();
+        services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
     }
 }

@@ -1,0 +1,87 @@
+meta {
+  name: GET_Delegated_Ressurs_App_Actions
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{party}}&from={{party}}&to={{to}}&resource={{resource}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  from: {{party}}
+  to: {{to}}
+  resource: {{resource}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
+  
+  bru.setVar("party", testdata.orgA_delegates.partyuuid);
+  bru.setVar("to", testdata.orgB_delegates.partyuuid);
+  bru.setVar("resource", testdata.resource_to_delegate.app_id);
+  
+  var getTokenParameters = {
+    auth_userId: testdata.orgA_delegates.innehaver.userid,
+    auth_partyId: testdata.orgA_delegates.innehaver.partyid,
+    auth_partyUuid: testdata.orgA_delegates.innehaver.partyuuid,
+    auth_ssn: testdata.orgA_delegates.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.enduserSystemToOthersRead
+  }
+  
+  
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  test("GET_Delegated actions on Apps ", function() {
+    
+    const testdata = require(`./testdata/enkelttjenestedelegering/${bru.getEnvVar("tokenEnv")}.js`);
+    const data = res.getBody();
+    
+    expect(res.status).to.equal(200);
+    
+    // Resource check
+  expect(data.resource).to.exist;
+  expect(data.resource.refId).to.equal(testdata.resource_to_delegate.app_id);
+  
+  // Expected actions
+  const expectedActions = ["read", "write"];
+  const actualActions = data.directRights.map(d => d.right.action.value);
+  expect(actualActions).to.have.members(expectedActions);
+  
+  // Verify each right
+  data.directRights.forEach(d => {
+  
+    // reason check
+    expect(d.reason.items[0].name).to.equal("direct");
+  
+    // resource check
+    expect(d.right.resource[0]).to.have.property(
+      "value",
+      testdata.resource_to_delegate.app_id
+    );
+  
+    // permission check
+    const perm = d.permissions[0];
+  
+    expect(perm.from).to.have.property("id", testdata.orgA_delegates.partyuuid);
+    expect(perm.to).to.have.property("id", testdata.orgB_delegates.partyuuid);
+    
+  })
+    
+    
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
