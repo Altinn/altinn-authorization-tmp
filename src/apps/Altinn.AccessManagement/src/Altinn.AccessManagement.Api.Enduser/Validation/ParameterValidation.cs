@@ -163,8 +163,8 @@ internal static class ParameterValidation
     [
         "urn:altinn:person:identifier-no",
         "urn:altinn:organization:identifier-no",
-        "urn:altinn:systemuser:uuid",
-        "urn:altinn:party:uuid"
+        //// "urn:altinn:systemuser:uuid",
+        //// "urn:altinn:party:uuid"
     ];
 
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>

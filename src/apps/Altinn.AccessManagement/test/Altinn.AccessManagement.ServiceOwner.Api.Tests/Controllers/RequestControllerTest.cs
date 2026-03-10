@@ -36,7 +36,6 @@ public class RequestControllerTest
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.OrganizationNordisAS.Id.ToString()));
-            claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_SERVICEOWNER));
             claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
