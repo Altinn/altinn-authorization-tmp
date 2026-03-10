@@ -23,7 +23,7 @@ public partial class DtoMapper : IDtoMapper
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
             Status = request.Status,
-            Package = new RequestRefrenceDto() { Urn = request.Package?.Urn },
+            Package = new RequestRefrenceDto() { Id = request.PackageId, Urn = request.Package?.Urn },
         };
     }
 
@@ -39,7 +39,7 @@ public partial class DtoMapper : IDtoMapper
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
             Status = request.Status,
-            Resource = new RequestRefrenceDto() { Urn = request.Resource?.RefId },
+            Resource = new RequestRefrenceDto() { Id = request.ResourceId, Urn = request.Resource?.RefId },
         };
     }
 

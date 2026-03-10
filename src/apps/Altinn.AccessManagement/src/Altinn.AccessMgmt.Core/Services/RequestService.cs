@@ -22,6 +22,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
             .FirstOrDefaultAsync(t => t.Id == requestId, ct);
+
         if (requestResource != null)
         {
             return DtoMapper.Convert(requestResource);
@@ -49,7 +50,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
 
-        bool usePackages = false; // Future feature
+        bool usePackages = true; // Future feature
 
         var requestResources = await GetRequestAssignmentResource(fromId, toId, status, after, ct);
         var requestPackages = usePackages ? await GetRequestAssignmentPackage(fromId, toId, status, after, ct) : null;
@@ -83,15 +84,20 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
-        var request = await GetRequest(requestId, ct);
-        if (request is null)
+        var resourceRequest = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == requestId);
+        if (resourceRequest is { })
         {
-            return Problems.RequestNotFound;
+            resourceRequest.Status = status;
+            await db.SaveChangesAsync();
+            return await GetRequest(requestId);
         }
 
-        if (status == RequestStatus.Approved && request.Status != RequestStatus.Pending)
+        var packageRequest = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == requestId);
+        if (packageRequest is { })
         {
-            // Validate --
+            packageRequest.Status = status;
+            await db.SaveChangesAsync();
+            return await GetRequest(requestId);
         }
 
         /*
@@ -102,21 +108,7 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         Pending->Accepted/Rejected
         */
 
-        if (request.Resource is { })
-        {
-            var req = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == requestId);
-            req.Status = status;
-            await db.SaveChangesAsync();
-        }
-
-        if (request.Package is { })
-        {
-            var req = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == requestId);
-            req.Status = status;
-            await db.SaveChangesAsync();
-        }
-
-        return request;
+        return await GetRequest(requestId);
     }
 
     #region privates
@@ -134,8 +126,8 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Resource)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
-            .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
+            //.WhereIf(status?.Any() == true, r => status.Contains(r.Status))
+            //.WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
     
@@ -153,8 +145,8 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Package)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
-            .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
+            //.WhereIf(status?.Any() == true, r => status.Contains(r.Status))
+            //.WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
 

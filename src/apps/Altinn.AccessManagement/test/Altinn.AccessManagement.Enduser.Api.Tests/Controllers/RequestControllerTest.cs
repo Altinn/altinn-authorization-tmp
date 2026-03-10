@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -18,9 +19,6 @@ public class RequestControllerTest
 {
     public const string Route = "accessmanagement/api/v1/enduser/request";
 
-    // AccessManagementEnduserFeatureFlags.ControllerConnections is internal — use the string value directly.
-    // private const string FeatureFlag = "AccessManagement.Enduser.Connections";
-
     private static HttpClient CreateClient(ApiFixture fixture, Guid partyUuid)
     {
         var client = fixture.Server.CreateClient();
@@ -34,10 +32,29 @@ public class RequestControllerTest
         return client;
     }
 
-    #region POST /package — Create a pending package request as enduser
+    private static string PartyUrn(Guid id) => $"urn:altinn:party:uuid:{id}";
+
+    private static StringContent CreateRequestBody(Guid from, Guid to, string packageUrn = null, string resourceId = null)
+    {
+        var body = new CreateRequestInput
+        {
+            Connection = new ConnectionRequestInputDto
+            {
+                From = PartyUrn(from),
+                To = PartyUrn(to),
+            },
+            Package = new PackageReferenceDto { Urn = packageUrn ?? string.Empty },
+            Resource = new ResourceReferenceDto { ResourceId = resourceId ?? string.Empty },
+        };
+
+        var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    #region POST — Create a pending package request as enduser
 
     /// <summary>
-    /// <see cref="Altinn.AccessManagement.Api.Enduser.Controllers.RequestController.CreatePackageRequest"/>
+    /// <see cref="Altinn.AccessManagement.Api.Enduser.Controllers.RequestController.CreateRequest"/>
     /// </summary>
     public class CreatePackageRequest : IClassFixture<ApiFixture>
     {
@@ -56,11 +73,11 @@ public class RequestControllerTest
             var client = CreateClient(Fixture, TestEntities.PersonPaula.Id);
             var from = TestEntities.OrganizationNordisAS.Id;
             var to = TestEntities.PersonPaula.Id;
-            var packageId = PackageConstants.Agriculture.Id;
+            var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
-                $"{Route}/package?party={to}&from={from}&to={to}&packageId={packageId}",
-                null,
+                $"{Route}?party={to}",
+                CreateRequestBody(from, to, packageUrn: packageUrn),
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -81,8 +98,6 @@ public class RequestControllerTest
 
     /// <summary>
     /// Full lifecycle: seeded Pending request → GET → PUT reject
-    /// Mirrors <c>PackageRequest_FullLifecycle_DraftToPendingToAccepted</c> from RequestServiceTests
-    /// but exercises the HTTP layer via ApiFixture.
     /// </summary>
     public class PackageRequestLifecycle : IClassFixture<ApiFixture>
     {
@@ -118,20 +133,20 @@ public class RequestControllerTest
         public ApiFixture Fixture { get; }
 
         [Fact]
-        public async Task PackageRequest_GetRequests_ContainsPendingRequest()
+        public async Task PackageRequest_GetSentRequests_ContainsPendingRequest()
         {
             var client = CreateClient(Fixture, TestEntities.OrganizationNordisAS.Id);
             var from = TestEntities.OrganizationNordisAS.Id;
             var to = TestEntities.PersonPaula.Id;
 
             var response = await client.GetAsync(
-                $"{Route}?from={from}&to={to}&party={from}",
+                $"{Route}/sent?party={from}&to={to}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var responseJson = await client.GetFromJsonAsync<PaginatedResult<RequestDto>>(
-                $"{Route}?from={from}&to={to}&party={from}",
+                $"{Route}/sent?party={from}&to={to}",
                 TestContext.Current.CancellationToken);
 
             Assert.Contains(responseJson.Items, item => item.Id == PendingPackageRequestId);
@@ -142,16 +157,16 @@ public class RequestControllerTest
         {
             var client = CreateClient(Fixture, TestEntities.OrganizationNordisAS.Id);
 
-            // 1. Enduser fetches the pending request
+            // 1. Enduser fetches the pending request via received endpoint
             var getResponse = await client.GetAsync(
-                $"{Route}?from={TestEntities.OrganizationNordisAS.Id}&to={TestEntities.PersonPaula.Id}&party={TestEntities.OrganizationNordisAS.Id}",
+                $"{Route}?party={TestEntities.OrganizationNordisAS.Id}&from={TestEntities.OrganizationNordisAS.Id}&to={TestEntities.PersonPaula.Id}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
-            // 2. Enduser rejects (party query param required by authorization)
+            // 2. Enduser rejects
             var rejectResponse = await client.PutAsync(
-                $"{Route}/{PendingPackageRequestId}/reject?party={TestEntities.OrganizationNordisAS.Id}",
+                $"{Route}/received/reject?party={TestEntities.OrganizationNordisAS.Id}&id={PendingPackageRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -165,10 +180,10 @@ public class RequestControllerTest
 
     #endregion
 
-    #region POST /resource — Create a pending resource request as enduser
+    #region POST — Create a pending resource request as enduser
 
     /// <summary>
-    /// <see cref="Altinn.AccessManagement.Api.Enduser.Controllers.RequestController.CreateResourceRequest"/>
+    /// <see cref="Altinn.AccessManagement.Api.Enduser.Controllers.RequestController.CreateRequest"/>
     /// </summary>
     public class CreateResourceRequest : IClassFixture<ApiFixture>
     {
@@ -179,6 +194,7 @@ public class RequestControllerTest
         };
 
         private static readonly Guid TestResourceId = Guid.Parse("01960010-0000-7000-8000-000000000002");
+        private const string TestResourceRefId = "enduser-create-test-resource-1";
 
         public CreateResourceRequest(ApiFixture fixture)
         {
@@ -195,7 +211,7 @@ public class RequestControllerTest
                     Id = TestResourceId,
                     Name = "EnduserCreateTestResource",
                     Description = "Test resource for enduser create resource request",
-                    RefId = "enduser-create-test-resource-1",
+                    RefId = TestResourceRefId,
                     ProviderId = ProviderConstants.ResourceRegistry,
                     TypeId = TestResourceType.Id,
                 });
@@ -213,8 +229,8 @@ public class RequestControllerTest
             var to = TestEntities.PersonPaula.Id;
 
             var response = await client.PostAsync(
-                $"{Route}/resource?party={to}&from={from}&to={to}&resourceId={TestResourceId}",
-                null,
+                $"{Route}?party={to}",
+                CreateRequestBody(from, to, resourceId: TestResourceRefId),
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -234,7 +250,7 @@ public class RequestControllerTest
     #region Package request accept lifecycle
 
     /// <summary>
-    /// Full lifecycle: seeded Pending package request → PUT accept → Approved
+    /// Full lifecycle: seeded Pending package request → PUT approve → Approved
     /// </summary>
     public class PackageRequestAcceptLifecycle : IClassFixture<ApiFixture>
     {
@@ -278,7 +294,7 @@ public class RequestControllerTest
             var client = CreateClient(Fixture, TestEntities.PersonPaula.Id);
 
             var acceptResponse = await client.PutAsync(
-                $"{Route}/{PendingPackageRequestId}/accept?party={TestEntities.PersonPaula.Id}",
+                $"{Route}/received/approve?party={TestEntities.PersonPaula.Id}&id={PendingPackageRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -361,15 +377,14 @@ public class RequestControllerTest
             var client = CreateClient(Fixture, TestEntities.OrganizationNordisAS.Id);
 
             var rejectResponse = await client.PutAsync(
-                $"{Route}/{PendingResourceRequestId}/reject?party={TestEntities.OrganizationNordisAS.Id}",
+                $"{Route}/received/reject?party={TestEntities.OrganizationNordisAS.Id}&id={PendingResourceRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, rejectResponse.StatusCode);
 
-            var json = await rejectResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            Assert.Equal((int)RequestStatus.Rejected, doc.RootElement.GetProperty("status").GetInt32());
+            var json = await rejectResponse.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Rejected, json.Status);
         }
     }
 
@@ -378,7 +393,7 @@ public class RequestControllerTest
     #region Resource request accept lifecycle
 
     /// <summary>
-    /// Full lifecycle: seeded Pending resource request → PUT accept → Approved
+    /// Full lifecycle: seeded Pending resource request → PUT approve → Approved
     /// </summary>
     public class ResourceRequestAcceptLifecycle : IClassFixture<ApiFixture>
     {
@@ -443,7 +458,7 @@ public class RequestControllerTest
             var client = CreateClient(Fixture, TestEntities.PersonPaula.Id);
 
             var acceptResponse = await client.PutAsync(
-                $"{Route}/{PendingResourceRequestId}/accept?party={TestEntities.PersonPaula.Id}",
+                $"{Route}/received/approve?id={PendingResourceRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -496,15 +511,15 @@ public class RequestControllerTest
         public ApiFixture Fixture { get; }
 
         [Fact]
-        public async Task Receiver_GetRequests_SeesPackageRequestWithCorrectDetails()
+        public async Task Receiver_GetReceivedRequests_SeesPackageRequestWithCorrectDetails()
         {
             var from = TestEntities.OrganizationNordisAS.Id;
             var to = TestEntities.PersonPaula.Id;
 
-            // Receiver (to=Paula) queries requests addressed to them
+            // Receiver (to=Paula) queries received requests
             var client = CreateClient(Fixture, to);
             var response = await client.GetAsync(
-                $"{Route}?from={from}&to={to}&party={to}",
+                $"{Route}/received?party={to}&from={from}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -527,7 +542,6 @@ public class RequestControllerTest
             Assert.True(match.HasValue, "Receiver should see the package request in their list");
 
             var request = match.Value;
-            Assert.Equal("package", request.GetProperty("requestType").GetString());
             Assert.Equal((int)RequestStatus.Pending, request.GetProperty("status").GetInt32());
             Assert.Equal(from.ToString(), request.GetProperty("connection").GetProperty("from").GetProperty("id").GetString());
             Assert.Equal(to.ToString(), request.GetProperty("connection").GetProperty("to").GetProperty("id").GetString());
@@ -596,15 +610,15 @@ public class RequestControllerTest
         public ApiFixture Fixture { get; }
 
         [Fact]
-        public async Task Receiver_GetRequests_SeesResourceRequestWithCorrectDetails()
+        public async Task Receiver_GetReceivedRequests_SeesResourceRequestWithCorrectDetails()
         {
             var from = TestEntities.OrganizationNordisAS.Id;
             var to = TestEntities.PersonPaula.Id;
 
-            // Receiver (to=Paula) queries requests addressed to them
+            // Receiver (to=Paula) queries received requests
             var client = CreateClient(Fixture, to);
             var response = await client.GetAsync(
-                $"{Route}?from={from}&to={to}&party={to}",
+                $"{Route}/received?party={to}&from={from}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -627,7 +641,6 @@ public class RequestControllerTest
             Assert.True(match.HasValue, "Receiver should see the resource request in their list");
 
             var request = match.Value;
-            Assert.Equal("resource", request.GetProperty("requestType").GetString());
             Assert.Equal((int)RequestStatus.Pending, request.GetProperty("status").GetInt32());
             Assert.Equal(from.ToString(), request.GetProperty("connection").GetProperty("from").GetProperty("id").GetString());
             Assert.Equal(to.ToString(), request.GetProperty("connection").GetProperty("to").GetProperty("id").GetString());

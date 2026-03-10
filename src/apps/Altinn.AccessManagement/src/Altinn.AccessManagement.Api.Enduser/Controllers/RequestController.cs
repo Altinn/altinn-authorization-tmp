@@ -51,7 +51,7 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetSentRequests([FromQuery] Guid party, [FromQuery] Guid to, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
+    public async Task<IActionResult> GetSentRequests([FromQuery] Guid party, [FromQuery] Guid? to, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
     {
         var validStatus = new List<RequestStatus>()
         {
@@ -64,7 +64,7 @@ public class RequestController(
 
         var afterTime = DateTimeOffset.UtcNow.AddDays(-30);
 
-        var result = await requestService.GetRequests(fromId: party, toId: to, status: validStatus, after: afterTime, ct);
+        var result = await requestService.GetRequests(fromId: party, toId: to, status: null, after: afterTime, ct);
 
         return Ok(PaginatedResult.Create(result, null));
     }
@@ -77,7 +77,7 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetReceivedRequests([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
+    public async Task<IActionResult> GetReceivedRequests([FromQuery] Guid party, [FromQuery] Guid? from, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
     {
         var validStatus = new List<RequestStatus>()
         {
@@ -90,7 +90,7 @@ public class RequestController(
 
         var afterTime = DateTimeOffset.UtcNow.AddDays(-30);
 
-        var result = await requestService.GetRequests(fromId: from, toId: party, status: validStatus, after: afterTime, ct);
+        var result = await requestService.GetRequests(fromId: from, toId: party, status: null, after: afterTime, ct);
         return Ok(PaginatedResult.Create(result, null));
     }
 
@@ -135,12 +135,12 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateRequest([FromQuery]string party, [FromBody]CreateRequestInput input, CancellationToken ct = default)
     {
-        var inputValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateCreateRequest(party, input));
+        //var inputValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateCreateRequest(party, input));
 
-        if (inputValidationErrors is { })
-        {
-            return inputValidationErrors.ToActionResult();
-        }
+        //if (inputValidationErrors is { })
+        //{
+        //    return inputValidationErrors.ToActionResult();
+        //}
 
         var from = await GetEntityByUrn(input.Connection.From, ct);
         var to = await GetEntityByUrn(input.Connection.To, ct);
@@ -184,7 +184,7 @@ public class RequestController(
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ConfirmRequest([FromRoute] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> ConfirmRequest([FromQuery] Guid id, CancellationToken ct = default)
     {
         return await UpdateRequestStatus(id, RequestStatus.Pending, ct);
     }
@@ -198,7 +198,7 @@ public class RequestController(
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> WithdrawRequest([FromRoute] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> WithdrawRequest([FromQuery] Guid id, CancellationToken ct = default)
     {
         return await UpdateRequestStatus(id, RequestStatus.Withdrawn, ct);
     }
@@ -215,7 +215,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectRequest([FromRoute] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> RejectRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
         return await UpdateRequestStatus(id, RequestStatus.Rejected, ct);
     }
@@ -232,7 +232,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ApproveRequest([FromRoute] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> ApproveRequest([FromQuery] Guid id, CancellationToken ct = default)
     {
         var existing = await requestService.GetRequest(id, ct);
         if (existing is null)
