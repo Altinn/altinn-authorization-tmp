@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
@@ -86,13 +87,13 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 batchId.ToString(),
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                            if (item.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
+                            if (item.DelegationChangeType == DelegationChangeType.RevokeLast)
                             {
                                 int revokes = await assignmentService.RevokeImportedInstanceAssignment(
                                     item.FromUuid,
                                     item.ToUuid,
-                                    item.ResourceId,
-                                    item.InstanceId,
+                                    item.ResourceId.ToLower(),
+                                    AddInstanceUrnPrefixToInstanceId(item.InstanceId),
                                     values,
                                     cancellationToken);
 
@@ -111,10 +112,10 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 int adds = await assignmentService.ImportInstanceAssignmentChange(
                                     item.FromUuid,
                                     item.ToUuid,
-                                    item.ResourceId,
+                                    item.ResourceId.ToLower(),
                                     item.BlobStoragePolicyPath,
                                     item.BlobStorageVersionId,
-                                    item.InstanceId,
+                                    AddInstanceUrnPrefixToInstanceId(item.InstanceId),
                                     item.InstanceDelegationChangeId,
                                     values,
                                     cancellationToken);
@@ -214,8 +215,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         int revokes = await assignmentService.RevokeImportedInstanceAssignment(
                             element.FromUuid,
                             element.ToUuid,
-                            element.ResourceId,
-                            element.InstanceId,
+                            element.ResourceId.ToLower(),
+                            AddInstanceUrnPrefixToInstanceId(element.InstanceId),
                             values,
                             cancellationToken);
 
@@ -234,10 +235,10 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         int adds = await assignmentService.ImportInstanceAssignmentChange(
                             element.FromUuid,
                             element.ToUuid,
-                            element.ResourceId,
+                            element.ResourceId.ToLower(),
                             element.BlobStoragePolicyPath,
                             element.BlobStorageVersionId,
-                            element.InstanceId,
+                            AddInstanceUrnPrefixToInstanceId(element.InstanceId),
                             element.InstanceDelegationChangeId,
                             values,
                             cancellationToken);
@@ -265,6 +266,11 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     await errorQueueService.UpdateErrorMessage(item.Id, values, errorMessage, cancellationToken);
                 }
             }
-        }        
+        }
+        
+        private string AddInstanceUrnPrefixToInstanceId(string instanceId)
+        {
+            return AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceInstanceAttribute + ":" + instanceId.ToLower();
+        }
     }
 }
