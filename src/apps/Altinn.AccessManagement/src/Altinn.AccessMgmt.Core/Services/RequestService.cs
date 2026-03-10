@@ -160,7 +160,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         {
             request = new RequestAssignment
             {
-                Id = Guid.NewGuid(),
                 FromId = fromId,
                 ToId = toId,
                 RoleId = roleId,
@@ -185,7 +184,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         {
             request = new RequestAssignmentResource
             {
-                Id = Guid.NewGuid(),
                 Status = initialStatus,
                 AssignmentId = assignmentId,
                 ResourceId = resourceId
@@ -210,7 +208,6 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         {
             request = new RequestAssignmentPackage
             {
-                Id = Guid.NewGuid(),
                 Status = initialStatus,
                 AssignmentId = assignmentId,
                 PackageId = packageId,

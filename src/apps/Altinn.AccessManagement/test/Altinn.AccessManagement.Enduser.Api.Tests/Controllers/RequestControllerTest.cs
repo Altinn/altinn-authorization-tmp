@@ -111,13 +111,13 @@ public class RequestControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
@@ -264,13 +264,13 @@ public class RequestControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
@@ -350,13 +350,13 @@ public class RequestControllerTest
                 });
                 db.SaveChanges();
 
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentResources.Add(new RequestAssignmentResource
@@ -428,13 +428,13 @@ public class RequestControllerTest
                 });
                 db.SaveChanges();
 
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentResources.Add(new RequestAssignmentResource
@@ -489,13 +489,13 @@ public class RequestControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
@@ -588,13 +588,13 @@ public class RequestControllerTest
                 });
                 db.SaveChanges();
 
-                var assignment = new Assignment
+                var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.Assignments.Add(assignment);
+                db.RequestAssignments.Add(assignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentResources.Add(new RequestAssignmentResource
