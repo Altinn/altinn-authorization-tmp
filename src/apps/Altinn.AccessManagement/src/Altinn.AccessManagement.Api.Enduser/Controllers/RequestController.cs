@@ -302,24 +302,4 @@ public class RequestController(
 
         return Ok(result.Value);
     }
-
-    private async Task<Entity> GetEntityByUrn(string urn, CancellationToken ct = default)
-    {
-        var urnSegments = urn.Split(":");
-        var urnSuffix = urnSegments.Last();
-        var key = urn[..(urn.Length - urnSuffix.Length - 1)];
-
-        if (!ParameterValidation.RequestValidUrns.Contains(key))
-        {
-            return null;
-        }
-
-        return key switch
-        {
-            "urn:altinn:person:identifier-no" => await entityService.GetByPersNo(urnSuffix, ct),
-            "urn:altinn:organization:identifier-no" => await entityService.GetByOrgNo(urnSuffix, ct),
-            "urn:altinn:systemuser:uuid" or "urn:altinn:party:uuid" => await entityService.GetEntity(Guid.Parse(urnSuffix), ct),
-            _ => null,
-        };
-    }
 }

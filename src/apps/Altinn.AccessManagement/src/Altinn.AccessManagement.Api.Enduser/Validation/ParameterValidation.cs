@@ -100,73 +100,6 @@ internal static class ParameterValidation
         return null;
     };
 
-    /// <summary>
-    /// packageId must be a non-empty Guid.
-    /// </summary>
-    internal static RuleExpression PackageIdNotEmpty(Guid value) => () =>
-    {
-        if (value != Guid.Empty)
-        {
-            return null;
-        }
-
-        return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/packageId", [new("packageId", ValidationErrorMessageTexts.PackageIdMustNotBeEmpty)]);
-    };
-
-    /// <summary>
-    /// resourceId must be a non-empty Guid.
-    /// </summary>
-    internal static RuleExpression ResourceIdNotEmpty(Guid value) => () =>
-    {
-        if (value != Guid.Empty)
-        {
-            return null;
-        }
-
-        return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/resourceId", [new("resourceId", ValidationErrorMessageTexts.ResourceIdMustNotBeEmpty)]);
-    };
-
-    /// <summary>
-    /// Resource must be a non-empty reference
-    /// </summary>
-    internal static RuleExpression ResourceRefNotEmpty(string value, string paramName = "resource") => () =>
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, paramName, [new(paramName, ValidationErrorMessageTexts.ResourceRefMustNotBeEmpty)]);
-        }
-
-        return null;
-    };
-
-    /// <summary>
-    /// Package must be a non-empty reference
-    /// </summary>
-    internal static RuleExpression PackageRefNotEmpty(string value, string paramName = "package") => () =>
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, paramName, [new(paramName, ValidationErrorMessageTexts.PackageRefMustNotBeEmpty)]);
-        }
-
-        return null;
-    };
-
-    /// <summary>
-    /// Valid request Urns
-    /// </summary>
-    internal static string[] RequestValidUrns =>
-    [
-        "urn:altinn:person:identifier-no",
-        "urn:altinn:organization:identifier-no",
-        //// "urn:altinn:systemuser:uuid",
-        //// "urn:altinn:party:uuid"
-    ];
-
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
     {
         if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
@@ -187,26 +120,4 @@ internal static class ParameterValidation
     private static bool IsKeyword(string? value, string[] keywords) =>
         !string.IsNullOrWhiteSpace(value) &&
         Array.Exists(keywords, k => string.Equals(value, k, StringComparison.OrdinalIgnoreCase));
-
-    internal static RuleExpression EntityHasId(IEntityId entity, string paramPath) => () =>
-    {
-        if (entity == null || entity.Id == Guid.Empty)
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.NotFound, paramPath, [new(paramPath, ValidationErrorMessageTexts.NotFound)]);
-        }
-
-        return null;
-    };
-
-    internal static RuleExpression EntityHasId(PackageDto entity, string paramPath) => () =>
-    {
-        if (entity == null || entity.Id == Guid.Empty)
-        {
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.NotFound, paramPath, [new(paramPath, ValidationErrorMessageTexts.NotFound)]);
-        }
-
-        return null;
-    };
 }
