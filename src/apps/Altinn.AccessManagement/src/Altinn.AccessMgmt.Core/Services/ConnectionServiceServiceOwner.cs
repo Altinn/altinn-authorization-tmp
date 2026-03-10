@@ -1,37 +1,40 @@
 ﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Altinn.Authorization.Models;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class ConnectionServiceServiceOwner(
-        AppDbContext dbContext,
-        ConnectionQuery connectionQuery,
-        IPackageService packageService
-        ) : IConnectionServiceServiceOwner
+        AppDbContext dbContext) : IConnectionServiceServiceOwner
     {
-
         /// <summary>
         /// Allows service owners to 
         /// </summary>
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
+            ConnectionOptions options = new(configureConnection);
+            (Entity from, Entity to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+            
+            // Validate entities exist
+            if (from is null || to is null)
+            {
+                return Problems.ConnectionEntitiesDoNotExist;
+            }
 
-
+            // Look for existing direct rightholder assignment
             var assignment = await dbContext.Assignments
-                .AsNoTracking()
                 .Where(a => a.FromId == fromId)
                 .Where(a => a.ToId == toId)
                 .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
                 .FirstOrDefaultAsync(cancellationToken);
+            
             if (assignment == null)
             {
                 assignment = new Assignment()
@@ -42,19 +45,19 @@ namespace Altinn.AccessMgmt.Core.Services
                 };
 
                 await dbContext.Assignments.AddAsync(assignment, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken); // Save to get the ID
             }
-            else
-            {
-                var existingAssignmentPackage = await dbContext.AssignmentPackages
-                    .AsNoTracking()
-                    .Where(a => a.AssignmentId == assignment.Id)
-                    .Where(a => a.PackageId == packageId)
-                    .FirstOrDefaultAsync(cancellationToken);
+            
+            // Check if package already assigned
+            var existingAssignmentPackage = await dbContext.AssignmentPackages
+                .AsNoTracking()
+                .Where(a => a.AssignmentId == assignment.Id)
+                .Where(a => a.PackageId == packageId)
+                .FirstOrDefaultAsync(cancellationToken);
 
-                if (existingAssignmentPackage is { })
-                {
-                    return DtoMapper.Convert(existingAssignmentPackage);
-                }
+            if (existingAssignmentPackage is { })
+            {
+                return DtoMapper.Convert(existingAssignmentPackage);
             }
 
             var newAssignmentPackage = new AssignmentPackage()
