@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -25,7 +26,8 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         IAssignmentService AssignmentService,
         IConnectionServiceServiceOwner connectionService,
         IUserProfileLookupService UserProfileLookupService,
-        IEntityService EntityService
+        IEntityService EntityService,
+        IPackageService packageService
     ) : ControllerBase
     {
         private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
@@ -47,9 +49,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AddPackages([FromBody] ServiceOwnerAccessPackageDelegation packageDelegation, CancellationToken cancellationToken = default)
         {
-
             Guid? fromPerson = null;
-
             Guid? toPerson = null;
 
             if (packageDelegation.From.IsPersonId(out PersonIdentifier person))
@@ -69,9 +69,21 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 return BadRequest("TODO");
             }
 
-            await connectionService.AddPackage(fromPerson.Value,toPerson.Value, packageDelegation.PackageUrn, cancellationToken);
+            PackageDto package = await packageService.GetPackageByUrnValue(packageDelegation.PackageUrn.ValueSpan.ToString(), cancellationToken);
 
-            return Ok();
+            if (package is null)
+            {
+                return Problems.PackageNotFound.ToActionResult();
+            }
+
+            Result<AssignmentPackageDto> result = await connectionService.AddPackage(fromPerson.Value, toPerson.Value, package.Id, ConfigureConnections, cancellationToken);
+
+            if (result.IsProblem)
+            {
+                return result.Problem.ToActionResult();
+            }
+
+            return Ok(result.Value);
         }
     }
 }

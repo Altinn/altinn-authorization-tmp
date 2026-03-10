@@ -14,19 +14,18 @@ namespace Altinn.AccessMgmt.Core.Services
 {
     public class ConnectionServiceServiceOwner(
         AppDbContext dbContext,
-        ConnectionQuery connectionQuery
+        ConnectionQuery connectionQuery,
+        IPackageService packageService
         ) : IConnectionServiceServiceOwner
     {
 
         /// <summary>
         /// Allows service owners to 
         /// </summary>
-        public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, AccessPackageUrn PackageUrn, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+        public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
-            ConnectionOptions options = new(configureConnection);
-            (Entity from, Entity to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
 
-            // Look for existing direct rightholder assignment
+
             var assignment = await dbContext.Assignments
                 .AsNoTracking()
                 .Where(a => a.FromId == fromId)
