@@ -97,7 +97,7 @@ public class BaseOutboxMessage
     /// <remarks>
     /// This value can be used to implement retry policies or dead-letter handling.
     /// </remarks>
-    public int Retries { get; set; }
+    public int Retries { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the maximum allowed processing duration for the message.
@@ -106,7 +106,7 @@ public class BaseOutboxMessage
     /// If processing exceeds this duration, the message may be considered abandoned
     /// and eligible for retry by another worker.
     /// </remarks>
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Gets or sets the timestamp when processing of the message started.
@@ -152,6 +152,16 @@ public enum OutboxStatus
     /// No handler was found for the message.
     /// </summary>
     NoHandler,
+
+    /// <summary>
+    /// The message timed out.
+    /// </summary>
+    TimedOut,
+
+    /// <summary>
+    /// The message timed out.
+    /// </summary>
+    Interrupted,
 
     /// <summary>
     /// The message processing failed.

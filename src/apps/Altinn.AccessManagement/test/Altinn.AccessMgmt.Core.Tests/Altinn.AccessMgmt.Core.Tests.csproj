@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-
+    
     <ProjectReference Include="..\Altinn.AccessManagement.TestUtils\Altinn.AccessManagement.TestUtils.csproj" />
-    <ProjectReference Include="..\..\src\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj" />
+    <ProjectReference Include="..\..\src\Altinn.AccessMgmt.Core\Altinn.AccessMgmt.Core.csproj" />
     
   </ItemGroup>
 

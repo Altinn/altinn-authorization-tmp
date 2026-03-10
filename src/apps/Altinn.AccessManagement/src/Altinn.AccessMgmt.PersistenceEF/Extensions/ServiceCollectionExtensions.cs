@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -23,9 +24,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
-        services.AddKeyedSingleton("handlers", options.Handlers);
+        services.Configure(configureOptions);
         _configureTracing = options.AppConnectionString.Contains("database=authorizationdb", StringComparison.OrdinalIgnoreCase);
         ConstantGuard.ConstantIdsAreUnique();
+        services.AddHostedService<OutboxHandlerJob>();
+        services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddMemoryCache(); // Add memory cache for translation service
@@ -214,28 +217,38 @@ public static class ServiceCollectionExtensions
         options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
     }
 
-    public class AccessManagementDatabaseOptions
+}
+
+public class AccessManagementDatabaseOptions
+{
+    public AccessManagementDatabaseOptions()
     {
-        public AccessManagementDatabaseOptions(Action<AccessManagementDatabaseOptions> configureOptions)
-        {
-            configureOptions(this);
-        }
-
-        public SourceType Source { get; set; } = SourceType.App;
-
-        public bool EnableEFPooling { get; set; } = false;
-
-        public string MigrationConnectionString { get; set; } = string.Empty;
-
-        public string AppConnectionString { get; set; } = string.Empty;
-
-        internal Dictionary<string, Type> Handlers { get; set; } = [];
-
-        public AccessManagementDatabaseOptions AddOutboxHandler<T>(string handlerName)
-            where T : IOutboxHandler
-        {
-            Handlers[handlerName] = typeof(T);
-            return this;
-        }
     }
+
+    public AccessManagementDatabaseOptions(Action<AccessManagementDatabaseOptions> configureOptions)
+    {
+        configureOptions(this);
+    }
+
+    public SourceType Source { get; set; } = SourceType.App;
+
+    public bool EnableEFPooling { get; set; } = false;
+
+    public string MigrationConnectionString { get; set; } = string.Empty;
+
+    public string AppConnectionString { get; set; } = string.Empty;
+
+    public Dictionary<string, Type> Handlers { get; set; } = [];
+
+    public AccessManagementDatabaseOptions AddOutboxHandler<T>(string handlerName)
+        where T : IOutboxHandler
+    {
+        Handlers[handlerName] = typeof(T);
+        return this;
+    }
+}
+
+public interface IOutboxHandler
+{
+    Task Handle(OutboxMessage message, CancellationToken cancellationToken);
 }
