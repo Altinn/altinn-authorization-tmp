@@ -4,29 +4,17 @@ using Altinn.Urn;
 namespace Altinn.Authorization.Api.Contracts.AccessManagement
 {
     /// <summary>
-    /// A unique reference to a party in the form of an URN.
+    /// A unique reference to an access package in the form of an URN.
     /// </summary>
     [KeyValueUrn]
     public abstract partial record AccessPackageUrn
     {
         /// <summary>
-        /// Try to get the urn as a party uuid.
+        /// Try to get the urn as an access package identifier.
         /// </summary>
-        /// <param name="packageId">The resulting party uuid.</param>
-        /// <returns><see langword="true"/> if this party reference is a party uuid, otherwise <see langword="false"/>.</returns>
+        /// <param name="packageId">The resulting access package identifier.</param>
+        /// <returns><see langword="true"/> if this is an access package URN, otherwise <see langword="false"/>.</returns>
         [UrnKey("altinn:accesspackage", Canonical = true)]
-        public partial bool IsAccessPackage(out string packageId);
-
-        // Manually overridden to disallow negative party ids
-        private static bool TryParseAccessPackage(ReadOnlySpan<char> segment, IFormatProvider? provider, out string value)
-        {
-            value = new(segment);
-            return true;
-        }
-
-        private static string FormatAccessPackage(string value, IFormatProvider? provider)
-        {
-            return value;
-        }   
+        public partial bool IsAccessPackage(out AccessPackageIdentifier packageId);
     }
 }
