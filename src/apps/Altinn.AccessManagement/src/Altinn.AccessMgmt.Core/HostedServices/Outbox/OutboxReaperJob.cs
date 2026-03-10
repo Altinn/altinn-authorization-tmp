@@ -24,7 +24,12 @@ internal class OutboxReaperJob(
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        ReaperTask = Job(CancellationTokenSource.Token);
+        var linked = CancellationTokenSource.CreateLinkedTokenSource(
+            CancellationTokenSource.Token,
+            cancellationToken);
+
+        ReaperTask = Job(linked.Token);
+
         return Task.CompletedTask;
     }
 

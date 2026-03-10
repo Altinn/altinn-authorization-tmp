@@ -34,7 +34,12 @@ internal class OutboxHandlerJob(
     /// <returns>A completed task</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        HandlerTask = Job(CancellationTokenSource.Token);
+        var linked = CancellationTokenSource.CreateLinkedTokenSource(
+            CancellationTokenSource.Token,
+            cancellationToken);
+
+        HandlerTask = Job(linked.Token);
+
         return Task.CompletedTask;
     }
 
