@@ -81,6 +81,20 @@ namespace Altinn.AccessManagement.Core.Helpers
         }
 
         /// <summary>
+        /// Gets the users PartyUuid or system user uuid.
+        /// </summary>
+        public static Guid GetAuthenticatedPartyUuid(HttpContext context)
+        {
+            var partyuuid = GetPartyUuid(context);
+            if (partyuuid == Guid.Empty)
+            {
+                return GetSystemUserUuid(context);
+            }
+
+            return partyuuid;
+        }
+
+        /// <summary>
         /// Gets the system user PartyUuid
         /// </summary>
         /// <param name="context">the http context</param>
