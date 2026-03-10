@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     /// <inheritdoc />
-    public partial class RequestAssignmentModels : Migration
+    public partial class RequestAssignment : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,10 +25,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
                     audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
                     audit_changeoperation = table.Column<string>(type: "text", nullable: true),
-                    fromid = table.Column<Guid>(type: "uuid", nullable: false),
-                    toid = table.Column<Guid>(type: "uuid", nullable: false),
                     roleid = table.Column<Guid>(type: "uuid", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false)
+                    fromid = table.Column<Guid>(type: "uuid", nullable: false),
+                    toid = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -92,10 +91,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
                     audit_changeoperation = table.Column<string>(type: "text", nullable: true),
                     audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    fromid = table.Column<Guid>(type: "uuid", nullable: false),
-                    toid = table.Column<Guid>(type: "uuid", nullable: false),
                     roleid = table.Column<Guid>(type: "uuid", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false)
+                    fromid = table.Column<Guid>(type: "uuid", nullable: false),
+                    toid = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -175,10 +173,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 {
                     table.PrimaryKey("pk_requestassignmentresource", x => x.id);
                     table.ForeignKey(
-                        name: "fk_requestassignmentresource_assignment_assignmentid",
+                        name: "fk_requestassignmentresource_requestassignment_assignmentid",
                         column: x => x.assignmentid,
                         principalSchema: "dbo",
-                        principalTable: "assignment",
+                        principalTable: "requestassignment",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -195,13 +193,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo",
                 table: "requestassignment",
                 column: "fromid");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_requestassignment_fromid_toid_roleid_status",
-                schema: "dbo",
-                table: "requestassignment",
-                columns: new[] { "fromid", "toid", "roleid", "status" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_requestassignment_roleid",
@@ -270,15 +261,15 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo_history");
 
             migrationBuilder.DropTable(
-                name: "requestassignment",
-                schema: "dbo");
-
-            migrationBuilder.DropTable(
                 name: "requestassignmentpackage",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
                 name: "requestassignmentresource",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "requestassignment",
                 schema: "dbo");
         }
     }
