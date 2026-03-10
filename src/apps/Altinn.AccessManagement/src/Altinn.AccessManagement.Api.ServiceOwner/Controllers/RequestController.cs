@@ -42,29 +42,6 @@ public class RequestController(
     /// <summary>
     /// Get resource requests for a given party
     /// </summary>
-    [HttpGet("{id}")]
-    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
-    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetRequest([FromQuery] string from, [FromQuery] string to, [FromRoute] Guid id, CancellationToken ct = default)
-    {
-        var result = await requestService.GetRequest(id, ct);
-
-        if (result is { })
-        {
-            return Ok(result);
-        }
-
-        return NotFound();
-    }
-
-    /// <summary>
-    /// Get resource requests for a given party
-    /// </summary>
     [HttpGet("{id}/status")]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
@@ -73,7 +50,7 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetRequestStatus([FromQuery] string from, [FromQuery] string to, [FromRoute] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> GetRequestStatus([FromRoute] Guid id, CancellationToken ct = default)
     {
         var result = await requestService.GetRequest(id, ct);
 
