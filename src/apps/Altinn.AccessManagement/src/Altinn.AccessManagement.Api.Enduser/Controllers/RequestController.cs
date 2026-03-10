@@ -7,8 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Utils;
-using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -25,7 +23,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/request")]
-//// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class RequestController(
     IRequestService requestService,
     IConnectionService connectionService,
@@ -96,24 +94,6 @@ public class RequestController(
     }
 
     /// <summary>
-    /// Get all requests for a party (as sender or receiver)
-    /// </summary>
-    [HttpGet]
-    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    [ProducesResponseType<PaginatedResult<RequestDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetAllRequests([FromQuery] Guid party, Guid from, Guid to, List<RequestStatus>? status, DateTimeOffset? after, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
-    {
-        status ??= new List<RequestStatus>();
-        var result = await requestService.GetRequests(from, to, status, after, ct);
-        return Ok(PaginatedResult.Create(result, null));
-    }
-
-    /// <summary>
     /// Create request on behalf of a party
     /// </summary>
     [HttpPost]
@@ -127,12 +107,16 @@ public class RequestController(
     public async Task<IActionResult> CreateRequest([FromQuery] Guid party, [FromQuery] Guid to, [FromBody]CreateRequestInput input, CancellationToken ct = default)
     {
         /*
-        Jeg vil be BDO om en rettighet, derav to i queryparam. 
-        Men da blir Assignment.From = BDO og Assignment.To = Party (meg)
+        Person1 vil be FirmaA om en rettighet, derfor er to = FirmaA i queryparam. 
+        Men da blir Assignment.From = FirmaA og Assignment.To = Party (Person1)
         GLHF
         */
 
-        // Check - Must have some sort of connection ... 
+        var connections = await connectionService.GetConnectionsFromOthers(partyId: to, fromId: party);
+        if (connections == null || !connections.Any())
+        {
+            return Forbid();
+        }
 
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
         var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
@@ -275,6 +259,11 @@ public class RequestController(
             .Where(r => r.Result)
             .Select(r => r.Right.Key)
             .ToList();
+
+        if (!rightKeys.Any())
+        {
+            return Forbid("Missing rights to give");
+        }
 
         var from = await entityService.GetEntity(request.Connection.From.Id, ct);
         var to = await entityService.GetEntity(request.Connection.To.Id, ct);
