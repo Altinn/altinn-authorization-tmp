@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Altinn.Urn;
 
-namespace Altinn.Authorization.Api.Contracts.Consent
+namespace Altinn.Authorization.Api.Contracts.AccessManagement
 {
     /// <summary>
     /// A unique reference to a party in the form of an URN.
@@ -23,5 +23,10 @@ namespace Altinn.Authorization.Api.Contracts.Consent
             value = new(segment);
             return true;
         }
+
+        private static string FormatAccessPackage(string value, IFormatProvider? provider)
+        {
+            return value;
+        }   
     }
 }
