@@ -277,6 +277,16 @@ public interface IConnectionService
     Task<ResourceRightDto> GetResourceRightsFromOthers(Guid partyId, Guid fromId, Guid resourceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get list of instance rights with a list of parties that have this permission
+    /// </summary>
+    Task<InstanceRightDto> GetInstanceRightsToOthers(Guid partyId, Guid toId, Guid resourceId, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of instance rights with a list of parties you have this permission at
+    /// </summary>
+    Task<InstanceRightDto> GetInstanceRightsFromOthers(Guid partyId, Guid fromId, Guid resourceId, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets all connections to an agent of the given service provider (viaId)
     /// </summary>
     /// <param name="viaId">The uuid of the service provider party</param>
