@@ -1,8 +1,10 @@
-﻿using System.Linq.Expressions;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Linq.Expressions;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
@@ -173,18 +175,6 @@ public static class BuilderExtensions
         }
 
         return builder;
-    }
-
-    public static EntityTypeBuilder EnableAudit(this EntityTypeBuilder builder)
-    {
-        /*
-        builder.Property("ChangedBy").HasColumnName("audit_changedby");
-        builder.Property("ChangedBySystem").HasColumnName("audit_changedbysystem");
-        builder.Property("ChangeOperation").HasColumnName("audit_changeoperation");
-        builder.Property("ValidFrom").HasColumnName("audit_validfrom");
-        */
-
-        return builder.HasAnnotation("EnableAudit", true);
     }
 
     public static EntityTypeBuilder<T> ConfigureAsView<T>(
