@@ -25,6 +25,10 @@ appconfiguration = {
 }
 
 services = {
+  altinn2 = {
+    host = "at24.altinn.cloud"
+  }
+
   altinn-authentication = {
     protocol = "http"
     host     = "altinn-authentication.default.svc.cluster.local"

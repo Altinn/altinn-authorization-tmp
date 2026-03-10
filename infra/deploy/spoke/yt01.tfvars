@@ -25,6 +25,10 @@ appconfiguration = {
 }
 
 services = {
+  altinn2 = {
+    host = "yt01.ai.basefarm.net"
+  }
+
   altinn-authentication = {
     protocol = "http"
     host     = "altinn-authentication.default.svc.cluster.local"
