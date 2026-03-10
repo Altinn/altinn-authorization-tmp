@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260310190953_RequestAssignment")]
-    partial class RequestAssignment
+    [Migration("20260310191710_Requests")]
+    partial class Requests
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3962,12 +3962,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignmentPackage", b =>
                 {
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Assignment", "Assignment")
+                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignment", "Assignment")
                         .WithMany()
                         .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_requestassignmentpackage_assignment_assignmentid");
+                        .HasConstraintName("fk_requestassignmentpackage_requestassignment_assignmentid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Package", "Package")
                         .WithMany()

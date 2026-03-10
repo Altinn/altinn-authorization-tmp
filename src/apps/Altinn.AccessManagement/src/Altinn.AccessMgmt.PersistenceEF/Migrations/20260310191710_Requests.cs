@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     /// <inheritdoc />
-    public partial class RequestAssignment : Migration
+    public partial class Requests : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -139,17 +139,17 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 {
                     table.PrimaryKey("pk_requestassignmentpackage", x => x.id);
                     table.ForeignKey(
-                        name: "fk_requestassignmentpackage_assignment_assignmentid",
-                        column: x => x.assignmentid,
-                        principalSchema: "dbo",
-                        principalTable: "assignment",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "fk_requestassignmentpackage_package_packageid",
                         column: x => x.packageid,
                         principalSchema: "dbo",
                         principalTable: "package",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_requestassignmentpackage_requestassignment_assignmentid",
+                        column: x => x.assignmentid,
+                        principalSchema: "dbo",
+                        principalTable: "requestassignment",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });

@@ -10,7 +10,7 @@ public class RequestAssignmentPackage : BaseRequestAssignmentPackage
     /// <summary>
     /// The assignment associated with this request
     /// </summary>
-    public Assignment Assignment { get; set; }
+    public RequestAssignment Assignment { get; set; }
 
     /// <summary>
     /// The package associated with this request

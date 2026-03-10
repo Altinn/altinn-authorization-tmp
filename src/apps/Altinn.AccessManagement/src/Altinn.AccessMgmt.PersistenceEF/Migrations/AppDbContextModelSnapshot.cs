@@ -3959,12 +3959,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignmentPackage", b =>
                 {
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Assignment", "Assignment")
+                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignment", "Assignment")
                         .WithMany()
                         .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_requestassignmentpackage_assignment_assignmentid");
+                        .HasConstraintName("fk_requestassignmentpackage_requestassignment_assignmentid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Package", "Package")
                         .WithMany()
