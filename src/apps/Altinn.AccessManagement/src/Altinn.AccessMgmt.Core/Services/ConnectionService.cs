@@ -26,6 +26,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -240,6 +241,91 @@ public partial class ConnectionService(
         );
 
         return DtoMapper.ConvertResources(resources);
+    }
+
+    public async Task<Result<IEnumerable<InstancePermissionDto>>> GetResourceInstances(Guid party, Guid? fromId, Guid? toId, Guid? resourceId, string instanceId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
+        if (problem is { })
+        {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<InstancePermissionDto>();
+            }
+
+            return problem;
+        }
+
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
+        var instances = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                RoleIds = [RoleConstants.Rightholder.Id],
+                ResourceIds = resourceId.HasValue ? [resourceId.Value] : null,
+                InstanceIds = !string.IsNullOrEmpty(instanceId) ? [instanceId] : null,
+                FromIds = from != null ? [from.Id] : null,
+                ToIds = to != null ? [to.Id] : null,
+                IncludeInstances = true,
+                IncludeResources = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeSubConnections = true,
+                IncludePackages = false,
+                EnrichPackageResources = false,
+                IncludeDelegation = false,
+            },
+            direction,
+            true,
+            cancellationToken
+        );
+
+        return await MapConnectionsToInstancePermissions(instances, cancellationToken);
+    }
+
+    private async Task<List<InstancePermissionDto>> MapConnectionsToInstancePermissions(IEnumerable<ConnectionQueryExtendedRecord> connections, CancellationToken cancellationToken)
+    {
+        var result = new List<InstancePermissionDto>();
+
+        // Group connections by resource and instance
+        var grouped = connections
+            .Where(c => c.Instances != null && c.Instances.Any())
+            .SelectMany(c => c.Instances, (connection, instance) => new { Connection = connection, Instance = instance })
+            .GroupBy(x => new { x.Instance.ResourceId, x.Instance.InstanceId });
+
+        foreach (var group in grouped)
+        {
+            var firstInstance = group.First().Instance;
+            var firstConnection = group.First().Connection;
+
+            // Get the resource from the Resources collection
+            var resource = firstConnection.Resources?.FirstOrDefault(r => r.Id == firstInstance.ResourceId);
+
+            if (resource == null)
+            {
+                continue; // Skip if resource not found
+            }
+
+            var dto = new InstancePermissionDto
+            {
+                Resource = DtoMapper.Convert(resource),
+                Instance = new InstanceDto
+                {
+                    Id = firstInstance.InstanceId,
+                    Urn = $"urn:altinn:instance-id:{firstInstance.InstanceId}",
+                    Type = null // TODO: InstanceType support to be added later
+                },
+                Permissions = group.Select(x => DtoMapper.ConvertToPermission(x.Connection)).ToList()
+            };
+
+            result.Add(dto);
+        }
+
+        return result;
     }
 
     public async Task<Result<bool>> UpdateResource(Entity from, Entity to, Resource resourceObj, IEnumerable<string> rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)

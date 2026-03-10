@@ -73,6 +73,12 @@ public interface IConnectionService
     Task<Result<IEnumerable<ResourcePermissionDto>>> GetResources(Guid party, Guid? fromId, Guid? toId, Guid? resourceId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get connection resource instances
+    /// </summary>
+    /// <returns></returns>
+    Task<Result<IEnumerable<InstancePermissionDto>>> GetResourceInstances(Guid party, Guid? fromId, Guid? toId, Guid? resourceId, string instanceId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Removes a resource (by resource unique name) from assignment based on a specific role between two entities.
     /// </summary>
     /// <param name="fromId">ID of the entity from which the assignment originates.</param>

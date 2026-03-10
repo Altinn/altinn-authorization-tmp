@@ -713,9 +713,12 @@ public class ConnectionsController(
         [FromQuery] string? instance = null,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
 
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as GetResources, but with the intention to include instance information in the result once supported in connection service.
         Resource resourceObj = null;
         if (resource != null)
         {
@@ -734,6 +737,7 @@ public class ConnectionsController(
             fromId: from,
             toId: to,
             resourceId: resourceObj?.Id,
+            instanceId: instance,
             configureConnections: ConfigureConnections,
             cancellationToken: cancellationToken
         );
@@ -743,8 +747,7 @@ public class ConnectionsController(
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result.Value);
-        */
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     /// <summary>
