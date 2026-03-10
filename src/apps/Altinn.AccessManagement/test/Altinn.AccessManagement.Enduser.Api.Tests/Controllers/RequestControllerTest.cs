@@ -12,6 +12,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -43,8 +44,8 @@ public class RequestControllerTest
                 From = PartyUrn(from),
                 To = PartyUrn(to),
             },
-            Package = new PackageReferenceDto { Urn = packageUrn ?? string.Empty },
-            Resource = new ResourceReferenceDto { ResourceId = resourceId ?? string.Empty },
+            Package = new RequestRefrenceDto { Urn = packageUrn ?? string.Empty },
+            Resource = new RequestRefrenceDto { Urn = resourceId ?? string.Empty },
         };
 
         var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -147,8 +147,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto { ResourceId = "test-resource-so-1" },
-                Package = new PackageReferenceDto(),
+                Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
+                Package = new RequestRefrenceDto(),
             };
 
             var response = await client.PostAsJsonAsync(
@@ -185,8 +185,8 @@ public class RequestControllerTest
                     From = "urn:invalid:prefix:12345",
                     To = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}"
                 },
-                Resource = new ResourceReferenceDto { ResourceId = "test-resource-so-1" },
-                Package = new PackageReferenceDto(),
+                Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
+                Package = new RequestRefrenceDto(),
             };
 
             var response = await client.PostAsJsonAsync(
@@ -207,8 +207,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto { ResourceId = string.Empty },
-                Package = new PackageReferenceDto(),
+                Resource = new RequestRefrenceDto { Urn = string.Empty },
+                Package = new RequestRefrenceDto(),
             };
 
             var response = await client.PostAsJsonAsync(
@@ -245,8 +245,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto(),
-                Package = new PackageReferenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Resource = new RequestRefrenceDto(),
+                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -283,8 +283,8 @@ public class RequestControllerTest
                     From = "urn:invalid:prefix:12345",
                     To = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}"
                 },
-                Resource = new ResourceReferenceDto(),
-                Package = new PackageReferenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Resource = new RequestRefrenceDto(),
+                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -305,8 +305,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto(),
-                Package = new PackageReferenceDto { Urn = string.Empty },
+                Resource = new RequestRefrenceDto(),
+                Package = new RequestRefrenceDto { Urn = string.Empty },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -382,8 +382,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto { ResourceId = "test-resource-e2e-1" },
-                Package = new PackageReferenceDto(),
+                Resource = new RequestRefrenceDto { Urn = "test-resource-e2e-1" },
+                Package = new RequestRefrenceDto(),
             };
 
             var response = await client.PostAsJsonAsync(
@@ -421,8 +421,8 @@ public class RequestControllerTest
             var body = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new ResourceReferenceDto(),
-                Package = new PackageReferenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Resource = new RequestRefrenceDto(),
+                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(

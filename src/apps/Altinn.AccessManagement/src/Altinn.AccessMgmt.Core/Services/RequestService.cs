@@ -4,7 +4,7 @@ using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,8 +126,8 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Resource)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            //.WhereIf(status?.Any() == true, r => status.Contains(r.Status))
-            //.WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
+            .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
     
@@ -145,8 +145,8 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .Include(r => r.Package)
             .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
             .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            //.WhereIf(status?.Any() == true, r => status.Contains(r.Status))
-            //.WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
+            .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
 

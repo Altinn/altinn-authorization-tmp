@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Definition of connection from one party to another

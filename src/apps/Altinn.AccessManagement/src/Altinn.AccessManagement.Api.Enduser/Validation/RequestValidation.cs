@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.Api.Enduser.Validation;
 
@@ -17,7 +18,7 @@ internal static class RequestValidation
             ConnectionCombinationRules.PartyMatchesFromOrTo(party, requestInput.Connection.From, requestInput.Connection.To),
             ValidationComposer.Any(
                 ParameterValidation.PackageRefNotEmpty(requestInput.Package.Urn, "package.urn"),
-                ParameterValidation.ResourceRefNotEmpty(requestInput.Resource.ResourceId, "resource.resourceId")
+                ParameterValidation.ResourceRefNotEmpty(requestInput.Resource.Urn, "resource.urn")
                 )
             );
 

@@ -14,6 +14,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -105,20 +106,10 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetAllRequests([FromQuery] string party, string from, string to, List<RequestStatus>? status, DateTimeOffset? after, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
+    public async Task<IActionResult> GetAllRequests([FromQuery] Guid party, Guid from, Guid to, List<RequestStatus>? status, DateTimeOffset? after, [FromQuery, FromHeader] PagingInput paging, CancellationToken ct = default)
     {
-        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateGetRequests(party, from, to));
-        if (validationErrors is { })
-        {
-            return validationErrors.ToActionResult();
-        }
-
-        Guid.TryParse(from, out var fromId);
-        Guid.TryParse(to, out var toId);
-
         status ??= new List<RequestStatus>();
-
-        var result = await requestService.GetRequests(fromId, toId, status, after, ct);
+        var result = await requestService.GetRequests(from, to, status, after, ct);
         return Ok(PaginatedResult.Create(result, null));
     }
 
@@ -133,19 +124,12 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateRequest([FromQuery]string party, [FromBody]CreateRequestInput input, CancellationToken ct = default)
+    public async Task<IActionResult> CreateRequest([FromQuery] Guid party, [FromBody]CreateRequestInput input, CancellationToken ct = default)
     {
-        //var inputValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateCreateRequest(party, input));
-
-        //if (inputValidationErrors is { })
-        //{
-        //    return inputValidationErrors.ToActionResult();
-        //}
-
         var from = await GetEntityByUrn(input.Connection.From, ct);
         var to = await GetEntityByUrn(input.Connection.To, ct);
-        var resource = string.IsNullOrEmpty(input.Resource.ResourceId) ? null : await resourceService.GetResource(input.Resource.ResourceId, ct);
-        var package = string.IsNullOrEmpty(input.Package.Urn) ? null : await packageService.GetPackageByUrnValue(input.Package.Urn, ct);
+        var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
+        var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
         var role = RoleConstants.Rightholder;
         var status = RequestStatus.Pending;
 
@@ -156,17 +140,17 @@ public class RequestController(
         }
 
         var result = await requestService.CreateRequest(
-                    new CreateRequestDto()
-                    {
-                        From = from.Id,
-                        To = to.Id,
-                        Role = role.Id,
-                        Status = status,
-                        Resource = resource?.Id,
-                        Package = package?.Id,
-                    },
-                    ct
-                );
+                new CreateRequestDto()
+                {
+                    From = from.Id,
+                    To = to.Id,
+                    Role = role.Id,
+                    Status = status,
+                    Resource = resource?.Id,
+                    Package = package?.Id,
+                },
+                ct
+            );
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -250,7 +234,7 @@ public class RequestController(
         var result = await connectionService.AddPackage(
             request.Connection.From.Id,
             request.Connection.To.Id,
-            request.Package.Id,
+            request.Package.Id.Value,
             ConfigureConnections,
             ct);
 
@@ -294,7 +278,7 @@ public class RequestController(
 
         var from = await entityService.GetEntity(request.Connection.From.Id, ct);
         var to = await entityService.GetEntity(request.Connection.To.Id, ct);
-        var resource = await resourceService.GetResource(request.Resource.Id, ct);
+        var resource = await resourceService.GetResource(request.Resource.Id.Value, ct);
 
         var result = await connectionService.AddResource(
             from,

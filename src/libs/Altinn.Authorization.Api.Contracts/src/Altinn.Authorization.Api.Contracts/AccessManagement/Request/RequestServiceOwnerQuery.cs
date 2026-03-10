@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Properties for querying requests (service owner)

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -10,6 +10,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.Api.Tests.Scenario;
 
@@ -77,14 +78,14 @@ public class RequestEndToEndTest
 
             // Step 1: SO creates a package request (status=Draft by default)
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var createBody = new CreatePackageRequestInput
+            var createBody = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Package = new PackageReferenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
+                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}/package",
+                $"{ServiceOwnerRoute}",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -293,14 +294,14 @@ public class RequestEndToEndTest
 
             // Step 1: SO creates a package request (status=Draft)
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var createBody = new CreatePackageRequestInput
+            var createBody = new CreateRequestInput
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Package = new PackageReferenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
+                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}/package",
+                $"{ServiceOwnerRoute}",
                 createBody,
                 TestContext.Current.CancellationToken);
 

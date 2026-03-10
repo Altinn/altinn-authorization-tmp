@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Base response dto for requests
@@ -53,7 +53,13 @@ public class CreateRequestDto
 
 public class RequestRefrenceDto
 {
-    public Guid Id { get; set; }
+    /// <summary>
+    /// Uniqueidentifier
+    /// </summary>
+    public Guid? Id { get; set; }
 
+    /// <summary>
+    /// URN
+    /// </summary>
     public string Urn { get; set; }
 }

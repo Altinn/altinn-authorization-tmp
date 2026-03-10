@@ -2,35 +2,18 @@
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Validation;
 
 internal static class RequestValidation
 {
-    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to) =>
-        ValidationComposer.All(
-            ParameterValidation.IEntityHasId(from, "from"),
-            ParameterValidation.IEntityHasId(to, "to")
-        );
-
     internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role) =>
         ValidationComposer.All(
             ParameterValidation.IEntityHasId(from, "from"),
             ParameterValidation.IEntityHasId(to, "to"),
             ParameterValidation.IEntityHasId(role, "role")
-        );
-
-    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role, Resource resource) =>
-        ValidationComposer.All(
-            ValidateRequestServiceInput(from, to, role),
-            ParameterValidation.IEntityHasId(resource, "resource")
-        );
-
-    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role, PackageDto package) =>
-        ValidationComposer.All(
-            ValidateRequestServiceInput(from, to, role),
-            ParameterValidation.IPackageDtoHasId(package, "package")
         );
 
     internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role, Resource resource, PackageDto package) =>
@@ -47,53 +30,6 @@ internal static class RequestValidation
             ParameterValidation.ValidFromUrnInput(input.Connection.From, ValidUrns),
             ParameterValidation.ValidToUrnInput(input.Connection.To, ValidUrns)
         );
-
-    internal static RuleExpression ValidateRequestInput(RequestServiceOwnerQuery input) =>
-       ValidationComposer.All(
-           ParameterValidation.ValidFromUrnInput(input.From, ValidUrns),
-           ParameterValidation.ValidToUrnInput(input.To, ValidUrns)
-       );
-
-    internal static RuleExpression ValidateRequestResource(CreateResourceRequestInput input) =>
-       ValidationComposer.All(
-           ValidateRequestInput(input),
-           ValidateResourceInput(input.Resource)
-       );
-
-    internal static RuleExpression ValidateResourceInput(ResourceReferenceDto input) =>
-      ValidationComposer.All(
-          ParameterValidation.ValidResourceId(input.ResourceId)
-      );
-
-    internal static RuleExpression ValidateRequestResourceDto(RequestAssignmentResource input) =>
-        ValidationComposer.All(
-            ValidateAssignment(input.Assignment),
-            ParameterValidation.IEntityHasId(input.Resource, "resource")
-        );
-
-    internal static RuleExpression ValidateRequestPackage(CreatePackageRequestInput input) =>
-       ValidationComposer.All(
-           ValidateRequestInput(input),
-           ValidatePackageInput(input.Package)
-       );
-
-    internal static RuleExpression ValidatePackageInput(PackageReferenceDto input) =>
-        ValidationComposer.All(
-            ParameterValidation.ValidPackageUrn(input.Urn)
-        );
-
-    internal static RuleExpression ValidateRequestPackageDto(RequestAssignmentPackage input) =>
-        ValidationComposer.All(
-            ValidateAssignment(input.Assignment),
-            ParameterValidation.IEntityHasId(input.Package, "package")
-        );
-
-    internal static RuleExpression ValidateAssignment(Assignment input) =>
-       ValidationComposer.All(
-           ParameterValidation.IEntityHasId(input.From, "assignment/from"),
-           ParameterValidation.IEntityHasId(input.To, "assignment/to"),
-           ParameterValidation.IEntityHasId(input.Role, "assignment/role")
-       );
 
     internal static string[] ValidUrns =>
     [

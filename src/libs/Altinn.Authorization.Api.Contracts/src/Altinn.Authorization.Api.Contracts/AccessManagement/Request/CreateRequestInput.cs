@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Base input dto for creating a new request
@@ -13,10 +13,10 @@ public class CreateRequestInput
     /// <summary>
     /// Reference to the resource
     /// </summary>
-    public ResourceReferenceDto Resource { get; set; }
+    public RequestRefrenceDto Resource { get; set; }
 
     /// <summary>
     /// Reference to the access package
     /// </summary>
-    public PackageReferenceDto Package { get; set; }
+    public RequestRefrenceDto Package { get; set; }
 }

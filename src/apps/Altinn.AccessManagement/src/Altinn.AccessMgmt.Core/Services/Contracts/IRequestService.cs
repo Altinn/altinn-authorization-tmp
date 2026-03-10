@@ -1,5 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
@@ -18,16 +18,6 @@ public interface IRequestService
     /// Retrieves a collection of request DTOs matching the specified filtering criteria.
     /// </summary>
     Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
-
-    ///// <summary>
-    ///// Retrieves a collection of request DTOs matching the specified filtering criteria.
-    ///// </summary>
-    //Task<IEnumerable<RequestDto>> GetSentRequests(Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
-
-    ///// <summary>
-    ///// Retrieves a collection of request DTOs matching the specified filtering criteria.
-    ///// </summary>
-    //Task<IEnumerable<RequestDto>> GetReceivedRequests(Guid? fromId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request
