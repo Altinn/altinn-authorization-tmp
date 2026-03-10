@@ -10,6 +10,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
