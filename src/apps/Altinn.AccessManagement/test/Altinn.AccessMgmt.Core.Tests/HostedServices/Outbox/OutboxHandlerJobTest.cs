@@ -6,8 +6,11 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Altinn.AccessMgmt.PersistenceEF.Tests.Outbox;
+namespace Altinn.AccessMgmt.Core.Tests.HostedServices.Outbox;
 
+/// <summary>
+/// <see cref="OutboxHandlerJob"/>
+/// </summary>
 public class OutboxHandlerJobTest : IClassFixture<ApiFixture>
 {
     public ApiFixture Fixture { get; }

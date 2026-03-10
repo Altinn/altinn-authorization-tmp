@@ -57,20 +57,6 @@ internal static class RequestComposer
     };
 
     /// <summary>
-    /// Sets the payload of the request and content-type to 'application/json'
-    /// </summary>
-    /// <param name="payload">The object to be serialized.</param>
-    /// <returns>An action to configure the request content.</returns>
-    public static Action<HttpRequestMessage> WithPayload<T>(T payload) => request =>
-    {
-        var content = JsonSerializer.Serialize(payload);
-        if (payload != null)
-        {
-            request.Content = JsonContent.Create(payload);
-        }
-    };
-
-    /// <summary>
     /// Sets the URI of the request with additional segments.
     /// </summary>
     /// <remarks>
@@ -84,6 +70,19 @@ internal static class RequestComposer
         if (uri != null)
         {
             request.RequestUri = new Uri(uri, string.Join("/", segments));
+        }
+    };
+
+    /// <summary>
+    /// Sets the payload of the request and content-type to 'application/json'
+    /// </summary>
+    /// <param name="payload">The object to be serialized.</param>
+    /// <returns>An action to configure the request content.</returns>
+    public static Action<HttpRequestMessage> WithPayload<T>(T payload) => request =>
+    {
+        if (payload is { })
+        {
+            request.Content = JsonContent.Create(payload);
         }
     };
 

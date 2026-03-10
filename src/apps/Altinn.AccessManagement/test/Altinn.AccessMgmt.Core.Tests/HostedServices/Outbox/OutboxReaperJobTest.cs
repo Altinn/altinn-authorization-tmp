@@ -5,10 +5,10 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Altinn.AccessMgmt.PersistenceEF.Tests.Outbox;
+namespace Altinn.AccessMgmt.Core.Tests.HostedServices.Outbox;
 
 /// <summary>
-/// a
+/// <see cref="OutboxReaperJob"/>
 /// </summary>
 public class OutboxReaperJobTest : IClassFixture<ApiFixture>
 {
