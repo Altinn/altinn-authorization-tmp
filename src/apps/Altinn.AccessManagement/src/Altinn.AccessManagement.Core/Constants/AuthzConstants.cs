@@ -221,11 +221,6 @@
         public const string CLAIM_MASKINPORTEN_CONSUMER_PREFIX = "consumer_prefix";
 
         /// <summary>
-        /// Portal serviceowner scope giving access to most of the serviceowner APIs
-        /// </summary>
-        public const string SCOPE_PORTAL_SERVICEOWNER = "altinn:portal/serviceowner";
-
-        /// <summary>
         /// Scope giving access to reading delegationrequests
         /// </summary>
         public const string ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ = "altinn:serviceowner/delegationrequests.read";
