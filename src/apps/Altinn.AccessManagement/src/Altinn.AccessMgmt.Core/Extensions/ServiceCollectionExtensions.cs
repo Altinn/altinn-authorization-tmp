@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+using Altinn.AccessMgmt.Core.HostedServices.Outbox;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -25,6 +26,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
+        services.AddHostedService<OutboxHandlerJob>();
+        services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();

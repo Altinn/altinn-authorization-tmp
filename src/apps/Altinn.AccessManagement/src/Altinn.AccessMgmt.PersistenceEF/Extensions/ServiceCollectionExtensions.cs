@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -27,8 +26,6 @@ public static class ServiceCollectionExtensions
         services.Configure(configureOptions);
         _configureTracing = options.AppConnectionString.Contains("database=authorizationdb", StringComparison.OrdinalIgnoreCase);
         ConstantGuard.ConstantIdsAreUnique();
-        services.AddHostedService<OutboxHandlerJob>();
-        services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddMemoryCache(); // Add memory cache for translation service
