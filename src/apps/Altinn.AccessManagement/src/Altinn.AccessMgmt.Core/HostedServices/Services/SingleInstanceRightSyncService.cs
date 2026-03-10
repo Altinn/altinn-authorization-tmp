@@ -164,7 +164,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             }
                             else
                             {
-                                _logger.LogError(ex, "Error processing single resource registry right delegation from {FromParty} to {ToParty} for resource {ResourceId}", item.FromUuid, item.ToUuid, item.ResourceId);
+                                _logger.LogError(ex, "Error processing single resource registry right delegation from {FromParty} to {ToParty} for resource {ResourceId} instance {InstanceId}", item.FromUuid, item.ToUuid, item.ResourceId, item.InstanceId);
                                 throw;
                             }
                         }
