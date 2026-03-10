@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -80,12 +81,11 @@ public class RequestEndToEndTest
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
             var createBody = new CreateRequestInput
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}",
+                $"{ServiceOwnerRoute}?party=&to=",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -102,7 +102,7 @@ public class RequestEndToEndTest
             // Step 2: EU confirms the draft request (Draft → Pending)
             var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonPaula.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/confirm?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -115,16 +115,13 @@ public class RequestEndToEndTest
             // Step 3: SO verifies the request is now Pending
             var soReadClient = CreateServiceOwnerReadClient(_fixture);
             var soGetResponse = await soReadClient.GetAsync(
-                $"{ServiceOwnerRoute}/package?from={from}&to={to}",
+                $"{ServiceOwnerRoute}/{requestId}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, soGetResponse.StatusCode);
 
-            var soGetJson = await soGetResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var soGetDoc = JsonDocument.Parse(soGetJson);
-            var soItems = soGetDoc.RootElement.EnumerateArray().ToList();
-            var soMatch = soItems.FirstOrDefault(i => i.GetProperty("id").GetString() == requestId);
-            Assert.Equal((int)RequestStatus.Pending, soMatch.GetProperty("status").GetInt32());
+            var soGetJson = await soGetResponse.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Pending, soGetJson.Status);
 
             // Step 4: EU sees the request in their list
             var enduserGetResponse = await enduserClient.GetAsync(
@@ -133,14 +130,12 @@ public class RequestEndToEndTest
 
             Assert.Equal(HttpStatusCode.OK, enduserGetResponse.StatusCode);
 
-            var enduserGetJson = await enduserGetResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var enduserGetDoc = JsonDocument.Parse(enduserGetJson);
-            var enduserItems = enduserGetDoc.RootElement.GetProperty("data").EnumerateArray().ToList();
-            Assert.Contains(enduserItems, i => i.GetProperty("id").GetString() == requestId);
+            var enduserGetJson = await enduserGetResponse.Content.ReadFromJsonAsync<PaginatedResult<RequestDto>>(TestContext.Current.CancellationToken);
+            Assert.Contains(requestId, enduserGetJson.Items.Select(t => t.Id.ToString()));
 
             // Step 5: EU rejects the request
             var rejectResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/reject?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/received/reject?id={requestId}&party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -199,12 +194,11 @@ public class RequestEndToEndTest
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
             var createBody = new CreateResourceRequestInput
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new ResourceReferenceDto { ResourceId = "e2e-reject-test-resource-1" }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}/resource",
+                $"{ServiceOwnerRoute}?party=&to=",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -221,7 +215,7 @@ public class RequestEndToEndTest
             // Step 2: EU confirms the draft request (Draft → Pending)
             var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonPaula.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/confirm?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/confirm?party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -296,12 +290,11 @@ public class RequestEndToEndTest
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
             var createBody = new CreateRequestInput
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}",
+                $"{ServiceOwnerRoute}?party=&to=",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -315,7 +308,7 @@ public class RequestEndToEndTest
             // Step 2: EU confirms (Draft → Pending)
             var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonPaula.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/confirm?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -324,16 +317,13 @@ public class RequestEndToEndTest
             // Step 3: SO verifies Pending
             var soReadClient = CreateServiceOwnerReadClient(_fixture);
             var soGetResponse = await soReadClient.GetAsync(
-                $"{ServiceOwnerRoute}/package?from={from}&to={to}",
+                $"{ServiceOwnerRoute}/{requestId}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, soGetResponse.StatusCode);
 
-            var soGetJson = await soGetResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var soGetDoc = JsonDocument.Parse(soGetJson);
-            var soItems = soGetDoc.RootElement.EnumerateArray().ToList();
-            var soMatch = soItems.FirstOrDefault(i => i.GetProperty("id").GetString() == requestId);
-            Assert.Equal((int)RequestStatus.Pending, soMatch.GetProperty("status").GetInt32());
+            var dto = await soGetResponse.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Pending, dto.Status);
 
             // Step 4: EU sees the request
             var enduserGetResponse = await enduserClient.GetAsync(
@@ -342,15 +332,15 @@ public class RequestEndToEndTest
 
             Assert.Equal(HttpStatusCode.OK, enduserGetResponse.StatusCode);
 
-            // Step 5: EU accepts — expect 400 (delegation auth failure proves routing works)
-            var acceptResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/accept?party={TestEntities.PersonPaula.Id}",
+            // Step 5: EU approves — expect 400 (delegation auth failure proves routing works)
+            var approveResponse = await enduserClient.PutAsync(
+                $"{EnduserRoute}/received/approve?id={requestId}&party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.BadRequest, acceptResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, approveResponse.StatusCode);
 
-            var acceptJson = await acceptResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var acceptJson = await approveResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             using var acceptDoc = JsonDocument.Parse(acceptJson);
             Assert.True(acceptDoc.RootElement.TryGetProperty("validationErrors", out var errors));
             Assert.True(errors.GetArrayLength() > 0);
@@ -404,12 +394,11 @@ public class RequestEndToEndTest
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
             var createBody = new CreateResourceRequestInput
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new ResourceReferenceDto { ResourceId = "e2e-accept-test-resource-1" }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}/resource",
+                $"{ServiceOwnerRoute}?party=&to=",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -423,7 +412,7 @@ public class RequestEndToEndTest
             // Step 2: EU confirms (Draft → Pending)
             var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonPaula.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/confirm?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -432,7 +421,7 @@ public class RequestEndToEndTest
             // Step 3: SO verifies Pending
             var soReadClient = CreateServiceOwnerReadClient(_fixture);
             var soGetResponse = await soReadClient.GetAsync(
-                $"{ServiceOwnerRoute}/resource?from={from}&to={to}",
+                $"{ServiceOwnerRoute}/{requestId}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, soGetResponse.StatusCode);
@@ -452,7 +441,7 @@ public class RequestEndToEndTest
 
             // Step 5: EU accepts — expect 500 (Azure storage unavailable proves routing works)
             var acceptResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/{requestId}/accept?party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/received/accept?id={requestId}party={TestEntities.PersonPaula.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 

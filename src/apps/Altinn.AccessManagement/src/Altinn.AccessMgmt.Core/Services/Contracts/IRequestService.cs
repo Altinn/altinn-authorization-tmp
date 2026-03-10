@@ -29,13 +29,3 @@ public interface IRequestService
     /// </summary>
     Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default);
 }
-
-
-/*
- 
-new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft }
-
-new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft }
- 
- 
- */

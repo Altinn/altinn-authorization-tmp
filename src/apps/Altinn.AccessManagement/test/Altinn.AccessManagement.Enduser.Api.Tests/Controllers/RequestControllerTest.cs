@@ -37,7 +37,7 @@ public class RequestControllerTest
 
     private static StringContent CreateRequestBody(Guid from, Guid to, string packageUrn = null, string resourceId = null)
     {
-        var body = new CreateRequestInput
+        var body = new CreateServiceOwnerRequest
         {
             Connection = new ConnectionRequestInputDto
             {

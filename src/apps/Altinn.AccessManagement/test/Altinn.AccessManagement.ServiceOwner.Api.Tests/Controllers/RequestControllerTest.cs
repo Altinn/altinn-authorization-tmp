@@ -145,7 +145,7 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
@@ -179,7 +179,7 @@ public class RequestControllerTest
         {
             var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto
                 {
@@ -205,7 +205,7 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto { Urn = string.Empty },
@@ -243,7 +243,7 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),
@@ -277,7 +277,7 @@ public class RequestControllerTest
         {
             var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto
                 {
@@ -303,7 +303,7 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),
@@ -380,11 +380,11 @@ public class RequestControllerTest
             var to = $"{personPrefix}:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
             // Step 3: Create request with resource
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto { Urn = "test-resource-e2e-1" },
-                Package = new RequestRefrenceDto(),
+                Package = new RequestRefrenceDto()
             };
 
             var response = await client.PostAsJsonAsync(
@@ -419,7 +419,7 @@ public class RequestControllerTest
             var to = $"{personPrefix}:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
 
             // Step 3: Create request with package
-            var body = new CreateRequestInput
+            var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),

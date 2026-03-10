@@ -131,6 +131,11 @@ public class PackageService : IPackageService
     /// <inheritdoc/>
     public async Task<PackageDto> GetPackage(RequestRefrenceDto refrence, CancellationToken cancellationToken = default)
     {
+        if (refrence.Id == null && string.IsNullOrEmpty(refrence.Urn))
+        {
+            return null;
+        }
+
         var package = await DbContext.Packages.AsNoTracking()
             .Include(t => t.Area)
             .Include(t => t.EntityType)

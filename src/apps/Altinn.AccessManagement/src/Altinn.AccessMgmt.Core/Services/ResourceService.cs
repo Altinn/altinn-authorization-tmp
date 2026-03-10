@@ -33,6 +33,11 @@ public class ResourceService : IResourceService
 
     public async ValueTask<Resource> GetResource(RequestRefrenceDto refrence, CancellationToken cancellationToken = default)
     {
+        if (refrence.Id == null && string.IsNullOrEmpty(refrence.Urn))
+        {
+            return null;
+        }
+
         return await Db.Resources.AsNoTracking()
             .Include(t => t.Type)
             .Include(t => t.Provider)

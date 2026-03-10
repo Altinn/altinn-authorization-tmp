@@ -124,26 +124,26 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateRequest([FromQuery] Guid party, [FromBody]CreateRequestInput input, CancellationToken ct = default)
+    public async Task<IActionResult> CreateRequest([FromQuery] Guid party, [FromQuery] Guid to, [FromBody]CreateRequestInput input, CancellationToken ct = default)
     {
-        var from = await GetEntityByUrn(input.Connection.From, ct);
-        var to = await GetEntityByUrn(input.Connection.To, ct);
+        /*
+        Jeg vil be BDO om en rettighet, derav to i queryparam. 
+        Men da blir Assignment.From = BDO og Assignment.To = Party (meg)
+        GLHF
+        */
+
+        // Check - Must have some sort of connection ... 
+
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
         var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
         var role = RoleConstants.Rightholder;
         var status = RequestStatus.Pending;
 
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, resource, package));
-        if (serviceValidationErrors is { })
-        {
-            return serviceValidationErrors.ToActionResult();
-        }
-
         var result = await requestService.CreateRequest(
                 new CreateRequestDto()
                 {
-                    From = from.Id,
-                    To = to.Id,
+                    From = to, // YES, this is correct
+                    To = party,
                     Role = role.Id,
                     Status = status,
                     Resource = resource?.Id,

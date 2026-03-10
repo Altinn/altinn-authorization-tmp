@@ -69,6 +69,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<RoleResource> RoleResources => Set<RoleResource>();
 
+    public DbSet<RequestAssignment> RequestAssignments => Set<RequestAssignment>();
+
     public DbSet<RequestAssignmentPackage> RequestAssignmentPackages => Set<RequestAssignmentPackage>();
 
     public DbSet<RequestAssignmentResource> RequestAssignmentResources => Set<RequestAssignmentResource>();
@@ -127,6 +129,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AuditRoleResource> AuditRoleResources => Set<AuditRoleResource>();
 
+    public DbSet<AuditRequestAssignment> AuditRequestAssignments => Set<AuditRequestAssignment>();
+
     public DbSet<AuditRequestAssignmentPackage> AuditRequestAssignmentPackages => Set<AuditRequestAssignmentPackage>();
 
     public DbSet<AuditRequestAssignmentResource> AuditRequestAssignmentResources => Set<AuditRequestAssignmentResource>();
@@ -182,6 +186,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditRoleMap>(new AuditRoleMapConfiguration());
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequestAssignment>(new AuditRequestAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestAssignmentPackage>(new AuditRequestAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestAssignmentResource>(new AuditRequestAssignmentResourceConfiguration());
     }
@@ -215,6 +220,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RoleMap>(new RoleMapConfiguration());
         modelBuilder.ApplyConfiguration<RolePackage>(new RolePackageConfiguration());
         modelBuilder.ApplyConfiguration<RoleResource>(new RoleResourceConfiguration());
+        modelBuilder.ApplyConfiguration<RequestAssignment>(new RequestAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentPackage>(new RequestAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentResource>(new RequestAssignmentResourceConfiguration());
         modelBuilder.ApplyConfiguration<ErrorQueue>(new ErrorQueueConfiguration());

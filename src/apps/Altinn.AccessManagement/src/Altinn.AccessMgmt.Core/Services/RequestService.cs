@@ -68,14 +68,17 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             throw new ArgumentException();
         }
 
+        var requestAssignmentResult = await GetOrCreateRequestAssignment(request.From, request.To, request.Role, ct);
+        var requestAssignment = requestAssignmentResult.Value;
+
         if (request.Resource.HasValue)
         {
-            return await CreateRequestAssignmentResource(request.From, request.To, request.Role, request.Resource.Value, request.Status, ct);
+            return await CreateRequestAssignmentResource(requestAssignment.Id, request.Resource.Value, request.Status, ct);
         }
 
         if (request.Package.HasValue)
         {
-            return await CreateRequestAssignmentPackage(request.From, request.To, request.Role, request.Package.Value, request.Status, ct);
+            return await CreateRequestAssignmentPackage(requestAssignment.Id, request.Package.Value, request.Status, ct);
         }
 
         throw new ArgumentException();
@@ -150,18 +153,41 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
             .ToListAsync(cancellationToken: ct);
     }
 
-    private async Task<Result<RequestDto>> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    private async Task<Result<RequestAssignment>> GetOrCreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId, cancellationToken: ct);
+        var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId);
+        if (request == null)
+        {
+            request = new RequestAssignment
+            {
+                Id = Guid.NewGuid(),
+                FromId = fromId,
+                ToId = toId,
+                RoleId = roleId,
+            };
+            db.RequestAssignments.Add(request);
 
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignment.Id && r.ResourceId == resourceId && r.Status == initialStatus);
+            var res = await db.SaveChangesAsync(ct);
+
+            if (res == 0)
+            {
+                return Problems.RequestCreationFailed;
+            }
+        }
+
+        return request;
+    }
+
+    private async Task<Result<RequestDto>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    {
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus);
         if (request == null)
         {
             request = new RequestAssignmentResource
             {
                 Id = Guid.NewGuid(),
                 Status = initialStatus,
-                AssignmentId = assignment.Id,
+                AssignmentId = assignmentId,
                 ResourceId = resourceId
             };
             db.RequestAssignmentResources.Add(request);
@@ -177,18 +203,16 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         return await GetRequest(request.Id, ct);
     }
 
-    private async Task<Result<RequestDto>> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    private async Task<Result<RequestDto>> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleId, cancellationToken: ct);
-
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignment.Id && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
+        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
         if (request is null)
         {
             request = new RequestAssignmentPackage
             {
                 Id = Guid.NewGuid(),
                 Status = initialStatus,
-                AssignmentId = assignment.Id,
+                AssignmentId = assignmentId,
                 PackageId = packageId,
             };
             db.RequestAssignmentPackages.Add(request);

@@ -96,7 +96,7 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateRequest([FromBody] CreateRequestInput input, CancellationToken ct = default)
+    public async Task<IActionResult> CreateRequest([FromBody] CreateServiceOwnerRequest input, CancellationToken ct = default)
     {
         var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
         if (validationErrors is { })
@@ -107,7 +107,7 @@ public class RequestController(
         var from = await GetEntityByUrn(input.Connection.From, ct);
         var to = await GetEntityByUrn(input.Connection.To, ct);
         var role = RoleConstants.Rightholder;
-        var status = RequestStatus.Pending;
+        var status = RequestStatus.Draft;
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
         var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
 

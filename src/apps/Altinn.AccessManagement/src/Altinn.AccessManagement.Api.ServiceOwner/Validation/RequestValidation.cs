@@ -25,7 +25,7 @@ internal static class RequestValidation
             )
        );
 
-    internal static RuleExpression ValidateRequestInput(CreateRequestInput input) =>
+    internal static RuleExpression ValidateRequestInput(CreateServiceOwnerRequest input) =>
         ValidationComposer.All(
             ParameterValidation.ValidFromUrnInput(input.Connection.From, ValidUrns),
             ParameterValidation.ValidToUrnInput(input.Connection.To, ValidUrns)
