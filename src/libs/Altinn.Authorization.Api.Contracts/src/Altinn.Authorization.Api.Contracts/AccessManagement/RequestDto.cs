@@ -1,4 +1,4 @@
-namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Base response dto for requests
@@ -11,14 +11,24 @@ public class RequestDto
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Discriminator indicating the request type: "resource", "package", or "assignment"
-    /// </summary>
-    public string RequestType { get; set; }
-
-    /// <summary>
     /// Request status (e.g. draft, pending, approved, rejected, withdrawn)
     /// </summary>
     public RequestStatus Status { get; set; }
+
+    /// <summary>
+    /// Type of request
+    /// </summary>
+    public string Type { get; set; }
+
+    /// <summary>
+    /// Requested resource
+    /// </summary>
+    public RequestRefrenceDto Resource { get; set; }
+
+    /// <summary>
+    /// Requested package
+    /// </summary>
+    public RequestRefrenceDto Package { get; set; }
 
     /// <summary>
     /// Relevant links for the request (e.g. confirm, check status)
@@ -28,5 +38,22 @@ public class RequestDto
     /// <summary>
     /// Connection from one party to another that is requested
     /// </summary>
-    public ConnectionRequestDto Connection { get; set; }
+    public RequestConnectionDto Connection { get; set; }
+}
+
+public class CreateRequestDto
+{
+    public Guid From { get; set; }
+    public Guid To { get; set; }
+    public Guid Role { get; set; }
+    public RequestStatus Status { get; set; }
+    public Guid? Resource { get; set; }
+    public Guid? Package { get; set; }
+}
+
+public class RequestRefrenceDto
+{
+    public Guid Id { get; set; }
+
+    public string Urn { get; set; }
 }

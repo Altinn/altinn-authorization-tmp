@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
@@ -12,80 +12,30 @@ public interface IRequestService
     /// <summary>
     /// Retrieves the request associated with the specified request identifier.
     /// </summary>
-    Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct);
+    Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves a collection of request DTOs matching the specified filtering criteria.
     /// </summary>
-    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
+    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
 
     /// <summary>
-    /// Retrieves the request assignment associated with the specified request identifier.
+    /// Creates a new request
     /// </summary>
-    Task<RequestAssignment> GetRequestAssignment(Guid requestId, CancellationToken ct = default);
+    Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default);
 
     /// <summary>
-    /// Retrieves a collection of request assignments matching the specified filtering criteria.
+    /// Updates the status of a request.
     /// </summary>
-    Task<IEnumerable<RequestAssignment>> GetRequestAssignment(Guid? fromId, Guid? toId, Guid? roleId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
-
-    /// <summary>
-    /// Creates a new request assignment linking the specified entities with the given role.
-    /// </summary>
-    Task<Result<RequestAssignment>> CreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Updates the status of a request assignment.
-    /// </summary>
-    Task<Result<RequestAssignment>> UpdateRequestAssignment(Guid requestId, RequestStatus status, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves the assignment package associated with the specified request identifier.
-    /// </summary>
-    Task<RequestAssignmentPackage> GetRequestAssignmentPackage(Guid requestId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a collection of request assignment packages matching the specified filtering criteria.
-    /// </summary>
-    Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, Guid? roleId, Guid? packageId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
-
-    /// <summary>
-    /// Creates a new request assignment package for the given from/to/role/package combination.
-    /// </summary>
-    Task<Result<RequestAssignmentPackage>> CreateRequestAssignmentPackage(Guid fromId, Guid toId, Guid roleId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
-
-    /// <summary>
-    /// Creates a new request assignment package attached to an existing assignment.
-    /// </summary>
-    Task<Result<RequestAssignmentPackage>> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
-
-    /// <summary>
-    /// Updates the status of a request assignment package.
-    /// </summary>
-    Task<Result<RequestAssignmentPackage>> UpdateRequestAssignmentPackage(Guid requestId, RequestStatus status, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves the assignment resource associated with the specified request identifier.
-    /// </summary>
-    Task<RequestAssignmentResource> GetRequestAssignmentResource(Guid requestId, CancellationToken ct = default);
-
-    /// <summary>
-    /// Retrieves a collection of request assignment resources matching the specified filtering criteria.
-    /// </summary>
-    Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, Guid? roleId, Guid? resourceId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct);
-
-    /// <summary>
-    /// Creates a new request assignment resource for the given from/to/role/resource combination.
-    /// </summary>
-    Task<Result<RequestAssignmentResource>> CreateRequestAssignmentResource(Guid fromId, Guid toId, Guid roleId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
-
-    /// <summary>
-    /// Creates a new request assignment resource attached to an existing assignment.
-    /// </summary>
-    Task<Result<RequestAssignmentResource>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Draft, CancellationToken ct = default);
-
-    /// <summary>
-    /// Updates the status of a request assignment resource.
-    /// </summary>
-    Task<Result<RequestAssignmentResource>> UpdateRequestAssignmentResource(Guid requestId, RequestStatus status, CancellationToken ct = default);
+    Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default);
 }
+
+
+/*
+ 
+new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft }
+
+new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft }
+ 
+ 
+ */

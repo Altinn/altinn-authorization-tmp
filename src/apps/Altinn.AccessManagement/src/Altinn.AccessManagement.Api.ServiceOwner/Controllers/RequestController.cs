@@ -3,7 +3,6 @@ using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
-
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
 /// <summary>
@@ -24,7 +22,6 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/serviceowner/delegationrequests")]
-//// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_SERVICEOWNER)]
 public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
@@ -39,21 +36,21 @@ public class RequestController(
     [ProducesResponseType(typeof(IReadOnlyCollection<string>), StatusCodes.Status200OK)]
     public IActionResult GetValidUrns()
     {
-        return Ok(Validation.RequestValidation.ValidUrns);
+        return Ok(RequestValidation.ValidUrns);
     }
 
     /// <summary>
     /// Get resource requests for a given party
     /// </summary>
-    [HttpGet("resource")]
+    [HttpGet("{id}")]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<IEnumerable<RequestResourceDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<RequestDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> FindResourceRequests([FromQuery] RequestServiceOwnerQuery input, CancellationToken ct = default)
+    public async Task<IActionResult> GetRequest([FromQuery] RequestServiceOwnerQuery input, [FromRoute] Guid id, CancellationToken ct = default)
     {
         var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
         if (validationErrors is { })
@@ -61,39 +58,28 @@ public class RequestController(
             return validationErrors.ToActionResult();
         }
 
-        var from = await GetEntityByUrn(input.From, ct);
-        var to = await GetEntityByUrn(input.To, ct);
+        var result = await requestService.GetRequest(id, ct);
 
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to));
-        if (serviceValidationErrors is { })
+        if (result is { })
         {
-            return serviceValidationErrors.ToActionResult();
+            return Ok(result);
         }
 
-        var requests = await requestService.GetRequestAssignmentResource(
-            fromId: from.Id,
-            toId: to.Id,
-            roleId: null,
-            resourceId: null,
-            status: [RequestStatus.None, RequestStatus.Pending, RequestStatus.Approved],
-            after: null,
-            ct: ct);
-
-        return Ok(requests.Select(r => DtoMapper.Convert(r)));
+        return NotFound();
     }
 
     /// <summary>
-    /// Get package requests for a given party
+    /// Get resource requests for a given party
     /// </summary>
-    [HttpGet("package")]
-    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
+    [HttpGet("{id}/status")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<IEnumerable<RequestPackageDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<RequestStatus>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> FindPackageRequests([FromQuery] RequestServiceOwnerQuery input, CancellationToken ct = default)
+    public async Task<IActionResult> GetRequestStatus([FromQuery] RequestServiceOwnerQuery input, [FromRoute] Guid id, CancellationToken ct = default)
     {
         var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
         if (validationErrors is { })
@@ -101,41 +87,30 @@ public class RequestController(
             return validationErrors.ToActionResult();
         }
 
-        var from = await GetEntityByUrn(input.From, ct);
-        var to = await GetEntityByUrn(input.To, ct);
+        var result = await requestService.GetRequest(id, ct);
 
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to));
-        if (serviceValidationErrors is { })
+        if (result is { })
         {
-            return serviceValidationErrors.ToActionResult();
+            return Ok(result.Status);
         }
 
-        var requests = await requestService.GetRequestAssignmentPackage(
-            fromId: from.Id,
-            toId: to.Id,
-            roleId: null,
-            packageId: null,
-            status: [RequestStatus.None, RequestStatus.Pending, RequestStatus.Approved],
-            after: null,
-            ct: ct);
-
-        return Ok(requests.Select(r => DtoMapper.Convert(r)));
+        return NotFound();
     }
 
     /// <summary>
     /// Create a resource request for a given party and resource
     /// </summary>
-    [HttpPost("resource")]
+    [HttpPost]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<RequestResourceDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<RequestDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RequestResource([FromBody] CreateResourceRequestInput input, CancellationToken ct = default)
+    public async Task<IActionResult> CreateRequest([FromBody] CreateRequestInput input, CancellationToken ct = default)
     {
-        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestResource(input));
+        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -144,118 +119,37 @@ public class RequestController(
         var from = await GetEntityByUrn(input.Connection.From, ct);
         var to = await GetEntityByUrn(input.Connection.To, ct);
         var role = RoleConstants.Rightholder;
-        var resource = await resourceService.GetResource(input.Resource.ResourceId, ct);
+        var status = RequestStatus.Pending;
+        var resource = string.IsNullOrEmpty(input.Resource.ResourceId) ? null : await resourceService.GetResource(input.Resource.ResourceId, ct);
+        var package = string.IsNullOrEmpty(input.Package.Urn) ? null : await packageService.GetPackageByUrnValue(input.Package.Urn, ct);
 
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, resource));
+        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, resource, package));
         if (serviceValidationErrors is { })
         {
             return serviceValidationErrors.ToActionResult();
         }
 
-        var createResult = await requestService.CreateRequestAssignmentResource(from.Id, to.Id, role.Id, resource.Id, ct: ct);
-        if (createResult.IsProblem)
-        {
-            return createResult.Problem.ToActionResult();
-        }
+        var result = await requestService.CreateRequest(
+            new CreateRequestDto()
+            {
+                From = from.Id,
+                To = to.Id,
+                Role = role.Id,
+                Status = status,
+                Resource = resource?.Id,
+                Package = package?.Id,
+            },
+            ct
+        );
 
-        var result = ConvertResource(createResult.Value);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
-        return Accepted(result.Value);
-    }
-
-    /// <summary>
-    /// Create a package request for a given party and access package
-    /// </summary>
-    [HttpPost("package")]
-    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
-    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
-    [ProducesResponseType<RequestPackageDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RequestPackage([FromBody] CreatePackageRequestInput input, CancellationToken ct = default)
-    {
-        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestPackage(input));
-        if (validationErrors is { })
-        {
-            return validationErrors.ToActionResult();
-        }
-
-        var from = await GetEntityByUrn(input.Connection.From, ct);
-        var to = await GetEntityByUrn(input.Connection.To, ct);
-        var role = RoleConstants.Rightholder;
-        var package = await packageService.GetPackageByUrnValue(input.Package.Urn, ct);
-
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, package));
-        if (serviceValidationErrors is { })
-        {
-            return serviceValidationErrors.ToActionResult();
-        }
-
-        var createResult = await requestService.CreateRequestAssignmentPackage(from.Id, to.Id, role.Id, package.Id, ct: ct);
-        if (createResult.IsProblem)
-        {
-            return createResult.Problem.ToActionResult();
-        }
-
-        var result = ConvertPackage(createResult.Value);
-        if (result.IsProblem)
-        {
-            return result.Problem.ToActionResult();
-        }
+        result.Value.Links = BuildLinks(result.Value.Id);
 
         return Accepted(result.Value);
-    }
-
-    private Result<RequestResourceDto> ConvertResource(RequestAssignmentResource request)
-    {
-        var dtoValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestResourceDto(request));
-        if (dtoValidationErrors is { })
-        {
-            return dtoValidationErrors;
-        }
-
-        return new RequestResourceDto
-        {
-            Id = request.Id,
-            RequestType = "resource",
-            Resource = new ResourceReferenceDto { ResourceId = request.Resource.RefId },
-            Status = request.Status,
-            Links = BuildLinks(request.Id),
-            Connection = new ConnectionRequestDto
-            {
-                From = DtoMapper.ConvertToPartyEntityDto(request.Assignment.From),
-                To = DtoMapper.ConvertToPartyEntityDto(request.Assignment.To),
-            }
-        };
-    }
-
-    private Result<RequestPackageDto> ConvertPackage(RequestAssignmentPackage request)
-    {
-        var dtoValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestPackageDto(request));
-        if (dtoValidationErrors is { })
-        {
-            return dtoValidationErrors;
-        }
-
-        return new RequestPackageDto
-        {
-            Id = request.Id,
-            RequestType = "package",
-            Package = new PackageReferenceDto { Urn = request.Package.Urn },
-            Status = request.Status,
-            Links = BuildLinks(request.Id),
-            Connection = new ConnectionRequestDto
-            {
-                From = DtoMapper.ConvertToPartyEntityDto(request.Assignment.From),
-                To = DtoMapper.ConvertToPartyEntityDto(request.Assignment.To),
-            }
-        };
     }
 
     private static RequestLinks BuildLinks(Guid requestId) => new()

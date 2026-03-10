@@ -1,9 +1,9 @@
-namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Definition of connection from one party to another
 /// </summary>
-public class ConnectionRequestDto
+public class RequestConnectionDto
 {
     /// <summary>
     /// Party that is requested to grant access

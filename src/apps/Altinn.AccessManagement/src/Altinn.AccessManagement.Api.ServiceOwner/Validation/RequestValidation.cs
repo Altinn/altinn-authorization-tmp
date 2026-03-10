@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.Core.Validation;
+﻿using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -32,6 +32,15 @@ internal static class RequestValidation
             ValidateRequestServiceInput(from, to, role),
             ParameterValidation.IPackageDtoHasId(package, "package")
         );
+
+    internal static RuleExpression ValidateRequestServiceInput(Entity from, Entity to, Role role, Resource resource, PackageDto package) =>
+       ValidationComposer.All(
+           ValidateRequestServiceInput(from, to, role),
+           ValidationComposer.Any(
+               ParameterValidation.IEntityHasId(resource, "resource"),
+               ParameterValidation.IPackageDtoHasId(package, "package")
+            )
+       );
 
     internal static RuleExpression ValidateRequestInput(CreateRequestInput input) =>
         ValidationComposer.All(

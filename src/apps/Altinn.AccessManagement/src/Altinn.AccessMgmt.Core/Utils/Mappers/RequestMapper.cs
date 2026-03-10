@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -11,50 +11,35 @@ namespace Altinn.AccessMgmt.Core.Utils;
 /// </summary>
 public partial class DtoMapper : IDtoMapper
 {
-    public static RequestDto Convert(RequestAssignment request)
+    public static RequestDto Convert(RequestAssignmentPackage request)
     {
         return new RequestDto
         {
             Id = request.Id,
-            RequestType = "assignment",
-            Connection = new ConnectionRequestDto
-            {
-                From = ConvertToPartyEntityDto(request.From),
-                To = ConvertToPartyEntityDto(request.To),
-            },
-            Status = request.Status
-        };
-    }
-
-    public static RequestPackageDto Convert(RequestAssignmentPackage request)
-    {
-        return new RequestPackageDto
-        {
-            Id = request.Id,
-            RequestType = "package",
-            Connection = new ConnectionRequestDto
+            Type = "package",
+            Connection = new RequestConnectionDto
             {
                 From = ConvertToPartyEntityDto(request.Assignment.From),
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
             Status = request.Status,
-            Package = new PackageReferenceDto { Urn = request.Package?.Urn },
+            Package = new RequestRefrenceDto() { Urn = request.Package?.Urn },
         };
     }
 
-    public static RequestResourceDto Convert(RequestAssignmentResource request)
+    public static RequestDto Convert(RequestAssignmentResource request)
     {
-        return new RequestResourceDto
+        return new RequestDto
         {
             Id = request.Id,
-            RequestType = "resource",
-            Connection = new ConnectionRequestDto
+            Type = "resource",
+            Connection = new RequestConnectionDto
             {
                 From = ConvertToPartyEntityDto(request.Assignment.From),
                 To = ConvertToPartyEntityDto(request.Assignment.To),
             },
             Status = request.Status,
-            Resource = new ResourceReferenceDto { ResourceId = request.Resource?.RefId },
+            Resource = new RequestRefrenceDto() { Urn = request.Resource?.RefId },
         };
     }
 
