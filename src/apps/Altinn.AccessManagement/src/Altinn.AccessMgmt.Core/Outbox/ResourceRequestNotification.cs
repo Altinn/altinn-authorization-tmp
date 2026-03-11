@@ -27,6 +27,8 @@ public class ResourceRequestNotification(IAltinnNotification notification) : IOu
             },
             Reminders = [],
         });
+
+        return Task.CompletedTask;
     }
 }
 
