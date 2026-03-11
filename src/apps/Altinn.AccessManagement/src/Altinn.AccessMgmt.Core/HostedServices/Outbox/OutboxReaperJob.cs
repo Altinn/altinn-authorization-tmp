@@ -21,6 +21,8 @@ internal partial class OutboxReaperJob(
     IFeatureManager featureManager
     ) : IHostedService
 {
+    private int _stopping = 0;
+
     private CancellationTokenSource CancellationTokenSource { get; set; } = new();
 
     private Task ReaperTask { get; set; } = Task.CompletedTask;
@@ -51,9 +53,9 @@ internal partial class OutboxReaperJob(
                 }
             }
         }
-        catch (Exception)
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
         {
-            Log.OutboxReaperShutDown(logger);
+            Log.OutboxReaperShutDownGracefully(logger);
         }
     }
 
@@ -132,6 +134,11 @@ internal partial class OutboxReaperJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        if (Interlocked.Exchange(ref _stopping, 1) == 1)
+        {
+            return;
+        }
+
         Log.OutboxReaperReceivedQuitSignal(logger);
         await CancellationTokenSource.CancelAsync();
         if (ReaperTask is { })
@@ -150,7 +157,7 @@ internal partial class OutboxReaperJob(
         [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Outbox reaper received quit signal.")]
         internal static partial void OutboxReaperReceivedQuitSignal(ILogger logger);
 
-        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox reaper shut down.")]
-        internal static partial void OutboxReaperShutDown(ILogger logger);
+        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox reaper shut down gracefully.")]
+        internal static partial void OutboxReaperShutDownGracefully(ILogger logger);
     }
 }

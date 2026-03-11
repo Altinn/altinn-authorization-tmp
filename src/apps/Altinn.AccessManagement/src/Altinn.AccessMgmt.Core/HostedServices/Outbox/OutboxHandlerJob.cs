@@ -26,6 +26,8 @@ internal partial class OutboxHandlerJob(
     IFeatureManager featureManager,
     IOptions<AccessManagementDatabaseOptions> options) : IHostedService
 {
+    private int _stopping = 0;
+
     private CancellationTokenSource CancellationTokenSource { get; set; } = new();
 
     private Task HandlerTask { get; set; } = Task.CompletedTask;
@@ -66,9 +68,9 @@ internal partial class OutboxHandlerJob(
                 }
             }
         }
-        catch (Exception)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            Log.OutboxHandlerShutDown(logger);
+            Log.OutboxHandlerShutDownGracefully(logger);
         }
     }
 
@@ -169,6 +171,11 @@ internal partial class OutboxHandlerJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        if (Interlocked.Exchange(ref _stopping, 1) == 1)
+        {
+            return;
+        }
+
         Log.OutboxHandlerReceivedQuitSignal(logger);
         await CancellationTokenSource.CancelAsync();
         if (HandlerTask is { })
@@ -187,7 +194,7 @@ internal partial class OutboxHandlerJob(
         [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Outbox handler received quit signal.")]
         internal static partial void OutboxHandlerReceivedQuitSignal(ILogger logger);
 
-        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox handler shut down.")]
-        internal static partial void OutboxHandlerShutDown(ILogger logger);
+        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox handler shut down gracefully.")]
+        internal static partial void OutboxHandlerShutDownGracefully(ILogger logger);
     }
 }
