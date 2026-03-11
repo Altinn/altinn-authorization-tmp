@@ -1242,6 +1242,32 @@ public partial class ConnectionService(
         return true;
     }
 
+    public async Task<Result<bool>> UpdateInstance(Entity from, Entity to, Resource resourceObj, string instanceId, IEnumerable<string> rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var canDelegate = await InstanceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, instanceId, ConfigureConnections, cancellationToken: cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem;
+        }
+
+        foreach (var rightKey in rightKeys)
+        {
+            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == rightKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest;
+            }
+        }
+
+        List<InstanceRule> result = await singleRightsService.TryWriteInstanceDelegationPolicyRules(from, to, resourceObj, instanceId, rightKeys.ToList(), by, ignoreExistingPolicy: true, cancellationToken: cancellationToken);
+
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
+        return true;
+    }
+
     private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<RightCheckDto.Permision> permisions)
     {
         if (rolesAllowAccess.Count > 0)
