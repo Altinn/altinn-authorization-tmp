@@ -387,7 +387,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         UpsertOutbox(refId, handler, addValueFactory, updateValueFactory, message);
     }
 
-    private OutboxMessage UpsertOutbox<T>(string refId, string handler, Func<OutboxMessage, T> addValueFactory, Func<OutboxMessage, T, T> updateValueFactory, OutboxMessage message)
+    private void UpsertOutbox<T>(string refId, string handler, Func<OutboxMessage, T> addValueFactory, Func<OutboxMessage, T, T> updateValueFactory, OutboxMessage message)
     {
         if (message is { })
         {
@@ -412,8 +412,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             message.Data = JsonSerializer.Serialize(data);
             OutboxMessages.Add(message);
         }
-
-        return message;
     }
 
     public async Task<int> SaveChangesAsync(AuditValues audit, bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)

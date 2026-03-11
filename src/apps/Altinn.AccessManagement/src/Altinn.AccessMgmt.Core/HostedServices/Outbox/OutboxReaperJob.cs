@@ -69,7 +69,7 @@ internal partial class OutboxReaperJob(
         await RemoveOldJobs(db, cancellationToken);
     }
 
-    private async Task RemoveOldJobs(AppDbContext db, CancellationToken cancellationToken)
+    private static async Task RemoveOldJobs(AppDbContext db, CancellationToken cancellationToken)
     {
         await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """
@@ -82,7 +82,7 @@ internal partial class OutboxReaperJob(
         .ToListAsync(cancellationToken);
     }
 
-    private async Task ProcessFailedJobs(AppDbContext db, CancellationToken cancellationToken)
+    private static async Task ProcessFailedJobs(AppDbContext db, CancellationToken cancellationToken)
     {
         await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """
@@ -105,7 +105,7 @@ internal partial class OutboxReaperJob(
         .ToListAsync(cancellationToken);
     }
 
-    private async Task ProcessTimedOutJobs(AppDbContext db, CancellationToken cancellationToken)
+    private static async Task ProcessTimedOutJobs(AppDbContext db, CancellationToken cancellationToken)
     {
         await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """

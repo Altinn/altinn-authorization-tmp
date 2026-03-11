@@ -213,7 +213,6 @@ public static class ServiceCollectionExtensions
     {
         options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
     }
-
 }
 
 public class AccessManagementDatabaseOptions
