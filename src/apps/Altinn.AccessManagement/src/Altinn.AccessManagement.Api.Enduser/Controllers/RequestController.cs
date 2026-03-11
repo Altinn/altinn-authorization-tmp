@@ -26,6 +26,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class RequestController(
     IRequestService requestService,
+    IAssignmentService assignmentService,
+    IDelegationService delegationService,
     IConnectionService connectionService,
     IResourceService resourceService,
     IPackageService packageService,
@@ -112,10 +114,12 @@ public class RequestController(
         GLHF
         */
 
-        var connections = await connectionService.GetConnectionsFromOthers(partyId: to, fromId: party);
-        if (connections == null || !connections.Any())
+        var assignments = await assignmentService.GetAssignments(fromId: to, toId: party);
+        var delegations = await delegationService.GetDelegations(fromId: to, toId: party);
+
+        if (!assignments.Any() && !delegations.Any())
         {
-            return Forbid();
+            return Forbid("No connection to party");
         }
 
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;

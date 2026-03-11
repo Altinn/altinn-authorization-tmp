@@ -6,11 +6,6 @@
 public class CreateRequestInput
 {
     /// <summary>
-    /// Request connection
-    /// </summary>
-    //public ConnectionRequestInputDto Connection { get; set; }
-
-    /// <summary>
     /// Reference to the resource
     /// </summary>
     public RequestRefrenceDto Resource { get; set; }

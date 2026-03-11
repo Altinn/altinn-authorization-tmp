@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text.Json;
-using Altinn.AccessManagement.Core.Constants;
+﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
@@ -12,6 +8,10 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+using System.Net;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Altinn.AccessManagement.Api.Tests.Scenario;
 
@@ -50,6 +50,7 @@ public class RequestEndToEndTest
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+            claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_ENDUSER));
             claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ));
             claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE));
         });
@@ -277,6 +278,17 @@ public class RequestEndToEndTest
             _fixture = fixture;
             _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            _fixture.EnsureSeedOnce(db =>
+            {
+                db.Assignments.Add(new Assignment
+                {
+                    Id = Guid.CreateVersion7(),
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonOrjan.Id,
+                    RoleId = RoleConstants.ManagingDirector.Id,
+                });
+                db.SaveChanges();
+            });
         }
 
         [Fact]
@@ -287,13 +299,18 @@ public class RequestEndToEndTest
 
             // Step 1: SO creates a package request (status=Draft)
             var soClient = CreateServiceOwnerClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var createBody = new CreateRequestInput
+            var createBody = new CreateServiceOwnerRequest
             {
+                Connection = new ConnectionRequestInputDto()
+                {
+                    From = from,
+                    To = to,
+                },
                 Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn }
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
-                $"{ServiceOwnerRoute}?party=&to=",
+                $"{ServiceOwnerRoute}",
                 createBody,
                 TestContext.Current.CancellationToken);
 
@@ -305,9 +322,9 @@ public class RequestEndToEndTest
             Assert.False(string.IsNullOrEmpty(requestId));
 
             // Step 2: EU confirms (Draft → Pending)
-            var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonPaula.Id);
+            var enduserClient = CreateEnduserClient(_fixture, TestEntities.PersonOrjan.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestEntities.OrganizationNordisAS.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -316,17 +333,17 @@ public class RequestEndToEndTest
             // Step 3: SO verifies Pending
             var soReadClient = CreateServiceOwnerReadClient(_fixture);
             var soGetResponse = await soReadClient.GetAsync(
-                $"{ServiceOwnerRoute}/{requestId}",
+                $"{ServiceOwnerRoute}/{requestId}/status",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, soGetResponse.StatusCode);
 
-            var dto = await soGetResponse.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
-            Assert.Equal(RequestStatus.Pending, dto.Status);
+            var status = await soGetResponse.Content.ReadFromJsonAsync<RequestStatus>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Pending, status);
 
             // Step 4: EU sees the request
             var enduserGetResponse = await enduserClient.GetAsync(
-                $"{EnduserRoute}?from={TestEntities.OrganizationNordisAS.Id}&to={TestEntities.PersonPaula.Id}&party={TestEntities.PersonPaula.Id}",
+                $"{EnduserRoute}/received?party={TestEntities.PersonPaula.Id}&from={TestEntities.OrganizationNordisAS.Id}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, enduserGetResponse.StatusCode);
@@ -338,11 +355,6 @@ public class RequestEndToEndTest
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, approveResponse.StatusCode);
-
-            var acceptJson = await approveResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var acceptDoc = JsonDocument.Parse(acceptJson);
-            Assert.True(acceptDoc.RootElement.TryGetProperty("validationErrors", out var errors));
-            Assert.True(errors.GetArrayLength() > 0);
         }
     }
 

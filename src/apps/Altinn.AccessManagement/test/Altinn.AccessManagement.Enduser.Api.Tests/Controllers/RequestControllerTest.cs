@@ -26,6 +26,7 @@ public class RequestControllerTest
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+            claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_ENDUSER));
             claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ));
             claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE));
         });
@@ -52,6 +53,18 @@ public class RequestControllerTest
         return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
+    private static StringContent CreateRequestBody(string packageUrn = null, string resourceId = null)
+    {
+        var body = new CreateServiceOwnerRequest
+        {
+            Package = new RequestRefrenceDto { Urn = packageUrn ?? string.Empty },
+            Resource = new RequestRefrenceDto { Urn = resourceId ?? string.Empty },
+        };
+
+        var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
     #region POST — Create a pending package request as enduser
 
     /// <summary>
@@ -64,6 +77,17 @@ public class RequestControllerTest
             Fixture = fixture;
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture.EnsureSeedOnce(db =>
+            {
+                var assignment = new Assignment
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula.Id,
+                    RoleId = RoleConstants.BoardMember,
+                };
+                db.Assignments.Add(assignment);
+                db.SaveChanges();
+            });
         }
 
         public ApiFixture Fixture { get; }
@@ -77,8 +101,8 @@ public class RequestControllerTest
             var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
-                $"{Route}?party={to}",
-                CreateRequestBody(from, to, packageUrn: packageUrn),
+                $"{Route}?party={to}&to={from}",
+                CreateRequestBody(packageUrn: packageUrn),
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -160,7 +184,7 @@ public class RequestControllerTest
 
             // 1. Enduser fetches the pending request via received endpoint
             var getResponse = await client.GetAsync(
-                $"{Route}?party={TestEntities.OrganizationNordisAS.Id}&from={TestEntities.OrganizationNordisAS.Id}&to={TestEntities.PersonPaula.Id}",
+                $"{Route}/received?party={TestEntities.OrganizationNordisAS.Id}&from={TestEntities.OrganizationNordisAS.Id}",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -204,6 +228,15 @@ public class RequestControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
             Fixture.EnsureSeedOnce(db =>
             {
+                var assignment = new Assignment
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula.Id,
+                    RoleId = RoleConstants.BoardMember,
+                };
+                db.Assignments.Add(assignment);
+                db.SaveChanges();
+
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
 
@@ -230,7 +263,7 @@ public class RequestControllerTest
             var to = TestEntities.PersonPaula.Id;
 
             var response = await client.PostAsync(
-                $"{Route}?party={to}",
+                $"{Route}?party={to}&to={from}",
                 CreateRequestBody(from, to, resourceId: TestResourceRefId),
                 TestContext.Current.CancellationToken);
 
@@ -264,6 +297,15 @@ public class RequestControllerTest
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
             Fixture.EnsureSeedOnce(db =>
             {
+                var a1 = new Assignment
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula.Id,
+                    RoleId = RoleConstants.BoardMember,
+                };
+                db.Assignments.Add(a1);
+                db.SaveChanges();
+
                 var assignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
@@ -350,19 +392,28 @@ public class RequestControllerTest
                 });
                 db.SaveChanges();
 
-                var assignment = new RequestAssignment
+                var assignment = new Assignment
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula.Id,
+                    RoleId = RoleConstants.BoardMember,
+                };
+                db.Assignments.Add(assignment);
+                db.SaveChanges();
+
+                var rassignment = new RequestAssignment
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
-                db.RequestAssignments.Add(assignment);
+                db.RequestAssignments.Add(rassignment);
                 db.SaveChanges();
 
                 db.RequestAssignmentResources.Add(new RequestAssignmentResource
                 {
                     Id = PendingResourceRequestId,
-                    AssignmentId = assignment.Id,
+                    AssignmentId = rassignment.Id,
                     ResourceId = TestResourceId,
                     Status = RequestStatus.Pending,
                 });
