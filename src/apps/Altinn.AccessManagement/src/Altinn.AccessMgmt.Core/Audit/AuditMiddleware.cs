@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -74,7 +75,7 @@ public class AuditMiddleware(AppDbContext db) : IMiddleware
         return Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
     }
 
-    private async Task<Entity> GetEntityFromConsumerClaim(HttpContext context, AccessManagement.Core.Models.Consent.ConsentPartyUrn party)
+    private async Task<Entity> GetEntityFromConsumerClaim(HttpContext context, ConsentPartyUrn party)
     {
         if (party.IsOrganizationId(out var organizationIdentifier))
         {
