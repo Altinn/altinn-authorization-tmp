@@ -48,13 +48,13 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
-        _db = new AppDbContext(options);
-        _db.AuditAccessor = new AuditAccessor { AuditValues = TestAudit };
+        _db = new AppDbContext(options)
+        {
+            AuditAccessor = new AuditAccessor { AuditValues = TestAudit }
+        };
 
         SeedSharedData(_db).GetAwaiter().GetResult();
 
-        var connectionQuery = new ConnectionQuery(_db);
-        var assignmentService = new AssignmentService(_db, connectionQuery);
         _requestService = new RequestService(_db);
     }
 
@@ -95,10 +95,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         return resource;
     }
 
-    // -----------------------------------------------------------------------
-    // CreateRequestAssignmentResource
-    // -----------------------------------------------------------------------
-
+    #region CreateRequestAssignmentResource
     [Fact]
     public async Task CreateRequestAssignmentResource_WithValidInput_CreatesDraftRequest()
     {
@@ -117,17 +114,14 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     {
         var resource = await SeedUniqueResource();
 
-        //
-
         var first = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
         var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
 
         Assert.Equal(first.Id, second.Id);
     }
+    #endregion
 
-    // -----------------------------------------------------------------------
-    // GetRequest (aggregate)
-    // -----------------------------------------------------------------------
+    #region GetRequest (aggregate)
 
     [Fact]
     public async Task GetRequest_WithResourceRequestId_ReturnsRequestDto()
@@ -161,10 +155,9 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         Assert.Null(result);
     }
+    #endregion
 
-    // -----------------------------------------------------------------------
-    // GetRequests
-    // -----------------------------------------------------------------------
+    #region GetRequests
 
     [Fact]
     public async Task GetRequests_FilterByFromId_ReturnsOnlyMatchingRequests()
@@ -209,11 +202,10 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _requestService.GetRequests(fromId: null, toId: null, status: [], after: null, ct: default));
     }
+    #endregion
 
-    // -----------------------------------------------------------------------
-    // CreateRequestAssignmentPackage
-    // -----------------------------------------------------------------------
-
+    #region CreateRequestAssignmentPackage
+    
     [Fact]
     public async Task CreateRequestAssignmentPackage_WithValidInput_CreatesDraftRequest()
     {
@@ -232,10 +224,9 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         Assert.Equal(first.Id, second.Id);
     }
+    #endregion
 
-    // -----------------------------------------------------------------------
-    // Full lifecycle scenarios
-    // -----------------------------------------------------------------------
+    #region Full lifecycle scenarios
 
     [Fact]
     public async Task ResourceRequest_EnduserCreate_CreatesPendingRequest()
@@ -329,4 +320,5 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var rejected = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Rejected)).Value;
         Assert.Equal(RequestStatus.Rejected, rejected.Status);
     }
+    #endregion
 }

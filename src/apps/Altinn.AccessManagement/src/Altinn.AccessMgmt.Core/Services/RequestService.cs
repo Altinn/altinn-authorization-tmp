@@ -126,7 +126,7 @@ public class RequestService(AppDbContext db) : IRequestService
                 break;
         }
 
-        return await GetRequest(requestId);
+        return await GetRequest(requestId, ct);
     }
 
     #region privates
@@ -197,7 +197,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private async Task<Result<RequestAssignment>> GetOrCreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId);
+        var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId, ct);
         if (request == null)
         {
             request = new RequestAssignment
@@ -221,7 +221,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private async Task<Result<RequestDto>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus);
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus, ct);
         if (request == null)
         {
             request = new RequestAssignmentResource

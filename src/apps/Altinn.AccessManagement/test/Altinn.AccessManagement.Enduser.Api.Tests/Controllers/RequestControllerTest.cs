@@ -42,9 +42,11 @@ public class RequestControllerTest
             Resource = new RequestRefrenceDto { Urn = resourceId ?? string.Empty },
         };
 
-        var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var json = JsonSerializer.Serialize(body, JsonSerializerOptions);
         return new StringContent(json, Encoding.UTF8, "application/json");
     }
+
+    private static JsonSerializerOptions JsonSerializerOptions => new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private static void EnableFeatureFlags(ApiFixture fixture)
     {

@@ -29,7 +29,6 @@ public class RequestController(
     IRequestService requestService,
     IAssignmentService assignmentService,
     IDelegationService delegationService,
-    ConnectionQuery connectionQuery,
     IConnectionService connectionService,
     IResourceService resourceService,
     IPackageService packageService,
@@ -67,7 +66,7 @@ public class RequestController(
 
         var afterTime = DateTimeOffset.UtcNow.AddDays(-30);
 
-        var result = await requestService.GetRequests(fromId: party, toId: to, status: null, after: afterTime, ct);
+        var result = await requestService.GetRequests(fromId: party, toId: to, status: validStatus, after: afterTime, ct);
 
         return Ok(PaginatedResult.Create(result, null));
     }
@@ -93,7 +92,7 @@ public class RequestController(
 
         var afterTime = DateTimeOffset.UtcNow.AddDays(-30);
 
-        var result = await requestService.GetRequests(fromId: from, toId: party, status: null, after: afterTime, ct);
+        var result = await requestService.GetRequests(fromId: from, toId: party, status: validStatus, after: afterTime, ct);
         return Ok(PaginatedResult.Create(result, null));
     }
 
@@ -117,8 +116,8 @@ public class RequestController(
         */
 
         // TODO: Replace with ConnectionQuery.
-        var assignments = await assignmentService.GetAssignments(fromId: to, toId: party);
-        var delegations = await delegationService.GetDelegations(fromId: to, toId: party);
+        var assignments = await assignmentService.GetAssignments(fromId: to, toId: party, ct);
+        var delegations = await delegationService.GetDelegations(fromId: to, toId: party, ct);
 
         if (!assignments.Any() && !delegations.Any())
         {
@@ -215,20 +214,17 @@ public class RequestController(
             return NotFound();
         }
 
-        switch (existing.Type)
+        return existing.Type switch
         {
-            case "resource":
-                return await ApproveResourceRequest(party, existing, ct);
-            case "package":
-                return await ApprovePackageRequest(party, existing, ct);
-            default:
-                return BadRequest();
-        }
+            "resource" => await ApproveResourceRequest(party, existing, ct),
+            "package" => await ApprovePackageRequest(party, existing, ct),
+            _ => BadRequest(),
+        };
     }
 
     private async Task<IActionResult> ApprovePackageRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
     {
-        var assignment = await assignmentService.GetOrCreateAssignment(request.Connection.From.Id, request.Connection.To.Id, RoleConstants.Rightholder);
+        var assignment = await assignmentService.GetOrCreateAssignment(request.Connection.From.Id, request.Connection.To.Id, RoleConstants.Rightholder, cancellationToken: ct);
         if (assignment is null)
         {
             return Problem("Unable to get or create rightholder assignment");
@@ -285,7 +281,7 @@ public class RequestController(
         var to = await entityService.GetEntity(request.Connection.To.Id, ct);
         var resource = await resourceService.GetResource(request.Resource.Id.Value, ct);
 
-        var assignment = await assignmentService.GetOrCreateAssignment(from.Id, to.Id, RoleConstants.Rightholder);
+        var assignment = await assignmentService.GetOrCreateAssignment(from.Id, to.Id, RoleConstants.Rightholder, cancellationToken: ct);
         if (assignment is null)
         {
             return Problem("Unable to get or create rightholder assignment");
