@@ -298,7 +298,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         
         private string CreateInstanceUrnFromInstanceIdAndPartyId(string instanceId, int partyid)
         {
-            return AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute + ":" + partyid + "/" + instanceId.ToLower();
+            return $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{partyid}/{instanceId.ToLower()}";
         }
     }
 }
