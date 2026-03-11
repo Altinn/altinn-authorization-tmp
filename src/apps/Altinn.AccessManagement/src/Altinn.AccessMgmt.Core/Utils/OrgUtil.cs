@@ -3,7 +3,7 @@ using System.Text.Json;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
 
-namespace Altinn.AccessMgmt.Api.Enterprise.Utils
+namespace Altinn.AccessMgmt.Core.Utils
 {
     /// <summary>
     /// Utility class for user related operations
