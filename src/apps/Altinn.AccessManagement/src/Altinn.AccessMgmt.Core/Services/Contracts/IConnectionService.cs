@@ -195,6 +195,19 @@ public interface IConnectionService
     Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Method to check if a resource instance is delegable by an authenticated user on behalf of a party
+    /// </summary>
+    /// <param name="authenticatedUserUuid">The authenticated user</param>
+    /// <param name="party">The party performing the check on behalf of</param>
+    /// <param name="resource">The resource id to check</param>
+    /// <param name="instanceId">The instance identifier to check</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="languageCode">the requested language code fallback "nb"</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>The result on all the resource/action that is delegable on the resource instance</returns>
+    Task<Result<InstanceCheckDto>> InstanceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to a specific access package for delegation of resources.
     /// </summary>
     /// <param name="party">ID of the person.</param>

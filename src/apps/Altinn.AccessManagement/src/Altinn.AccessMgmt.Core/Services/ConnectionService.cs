@@ -963,8 +963,77 @@ public partial class ConnectionService(
             Resource = resourceDto,
             Rights = checkRights
         };
-        
+
         return resourceCheckDto;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<InstanceCheckDto>> InstanceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", CancellationToken cancellationToken = default)
+    {
+        // Get fromParty
+        MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);
+
+        ResourceDto resourceDto;
+        XacmlPolicy policy;
+        bool isMaskinPortenSchema = false;
+
+        try
+        {
+            resourceDto = await FetchResource(resource, cancellationToken);
+            policy = await GetPolicy(resource, cancellationToken);
+        }
+        catch (ValidationException)
+        {
+            return Problems.InvalidResource;
+        }
+
+        if (resourceDto.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase))
+        {
+            isMaskinPortenSchema = true;
+        }
+
+        ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
+        if (resourceMetadata is null)
+        {
+            return Problems.InvalidResource;
+        }
+
+        List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource, languageCode, cancellationToken);
+        if (rightKeys is null)
+        {
+            return Problems.MissingMetadata;
+        }
+
+        ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
+        bool isResourceDelegable = resourceMetadata.Delegable;
+
+        List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
+
+        var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, configureConnection, cancellationToken);
+        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+
+        var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
+        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+
+        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
+
+        // Map to result
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
+
+        // build result with resource, instance and rights
+        InstanceCheckDto instanceCheckDto = new InstanceCheckDto
+        {
+            Resource = resourceDto,
+            Instance = new InstanceDto
+            {
+                Id = instanceId,
+                Urn = $"urn:altinn:instance-id:{instanceId}",
+                Type = null
+            },
+            Rights = checkRights
+        };
+
+        return instanceCheckDto;
     }
 
     private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, CancellationToken cancellationToken)
