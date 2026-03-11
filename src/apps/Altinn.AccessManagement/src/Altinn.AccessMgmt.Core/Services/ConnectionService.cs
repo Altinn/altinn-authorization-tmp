@@ -1268,6 +1268,63 @@ public partial class ConnectionService(
         return true;
     }
 
+    public async Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resourceObj = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resource, cancellationToken);
+        if (resourceObj == null)
+        {
+            return null;
+        }
+
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;
+        }
+
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignmentInstance = await dbContext.AssignmentInstances
+            .AsTracking()
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceObj.Id)
+            .Where(a => a.InstanceId == instanceId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentInstance is null)
+        {
+            return null;
+        }
+
+        var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentInstance.PolicyPath, existingAssignmentInstance.PolicyVersion, cancellationToken);
+        existingAssignmentInstance.PolicyVersion = newVersion;
+
+        dbContext.Remove(existingAssignmentInstance);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
+    }
+
     private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<RightCheckDto.Permision> permisions)
     {
         if (rolesAllowAccess.Count > 0)

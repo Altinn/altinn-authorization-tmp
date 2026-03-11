@@ -365,4 +365,20 @@ public interface IConnectionService
     /// <returns>A task that represents the asynchronous operation. The task result contains a Result object indicating whether
     /// the instance delegation was successfully updated.</returns>
     Task<Result<bool>> UpdateInstance(Entity from, Entity to, Resource resourceObj, string instanceId, IEnumerable<string> rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes a resource instance (by resource string and instance id) from assignment based on a specific role between two entities.
+    /// </summary>
+    /// <param name="fromId">ID of the entity from which the assignment originates.</param>
+    /// <param name="toId">ID of the entity to which the assignment was made.</param>
+    /// <param name="resource">Resource reference id</param>
+    /// <param name="instanceId">Instance identifier</param>
+    /// <param name="configureConnection">ConnectionOptions</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 }
