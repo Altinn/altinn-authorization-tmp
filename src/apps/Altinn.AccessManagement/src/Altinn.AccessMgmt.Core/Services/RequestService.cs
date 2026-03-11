@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(AppDbContext db, IAuditAccessor auditAccessor) : IRequestService
+public class RequestService(AppDbContext db) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -93,11 +93,12 @@ public class RequestService(AppDbContext db, IAuditAccessor auditAccessor) : IRe
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var party = auditAccessor.AuditValues.ChangedBy;
-        var request = await GetRequest(requestId, ct);
-        var canUpdateREquest = await CanUpdateRequest(request.Connection.From.Id, request.Connection.To.Id);
+        //var party = auditAccessor.AuditValues.ChangedBy;
 
-        if (!canUpdateREquest)
+        var request = await GetRequest(requestId, ct);
+        var canUpdateRequest = await CanUpdateRequest(request.Connection.From.Id, request.Connection.To.Id);
+
+        if (!canUpdateRequest)
         {
             errorBuilder.Add(ValidationErrors.UserNotAuthorized);
         }

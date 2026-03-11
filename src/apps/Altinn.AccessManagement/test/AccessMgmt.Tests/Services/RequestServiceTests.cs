@@ -55,7 +55,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         var connectionQuery = new ConnectionQuery(_db);
         var assignmentService = new AssignmentService(_db, connectionQuery);
-        _requestService = new RequestService(_db, assignmentService);
+        _requestService = new RequestService(_db);
     }
 
     private static async Task SeedSharedData(AppDbContext db)
