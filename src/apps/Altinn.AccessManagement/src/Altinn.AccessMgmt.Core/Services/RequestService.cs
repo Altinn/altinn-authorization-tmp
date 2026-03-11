@@ -1,6 +1,8 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -11,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(AppDbContext db, IAssignmentService assignmentService) : IRequestService
+public class RequestService(AppDbContext db, IAuditAccessor auditAccessor) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -84,37 +86,89 @@ public class RequestService(AppDbContext db, IAssignmentService assignmentServic
         throw new ArgumentException();
     }
 
+    private async Task<bool> CanUpdateRequest(Guid from, Guid to)
+    {
+        // TODO: Check Connection Query for ... Role? Package? Resource?
+        return true;
+    }
+
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
-        var resourceRequest = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == requestId);
-        if (resourceRequest is { })
+        ValidationErrorBuilder errorBuilder = default;
+
+        var party = auditAccessor.AuditValues.ChangedBy;
+        var request = await GetRequest(requestId, ct);
+        var canUpdateREquest = await CanUpdateRequest(request.Connection.From.Id, request.Connection.To.Id);
+
+        if (!canUpdateREquest)
         {
-            resourceRequest.Status = status;
-            await db.SaveChangesAsync();
-            return await GetRequest(requestId);
+            errorBuilder.Add(ValidationErrors.UserNotAuthorized);
         }
 
-        var packageRequest = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == requestId);
-        if (packageRequest is { })
+        var statusRules = new Dictionary<RequestStatus, List<RequestStatus>>
         {
-            packageRequest.Status = status;
-            await db.SaveChangesAsync();
-            return await GetRequest(requestId);
+            { RequestStatus.Draft, [RequestStatus.Pending, RequestStatus.Withdrawn] },
+            { RequestStatus.Pending, [RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn] },
+            { RequestStatus.Approved, [] },
+            { RequestStatus.Rejected, [] },
+            { RequestStatus.Withdrawn, [] }
+        };
+
+        foreach (var rule in statusRules)
+        {
+            if (request.Status == rule.Key && !rule.Value.Contains(status))
+            {
+                errorBuilder.Add(ValidationErrors.UserNotAuthorized);
+            }
         }
 
-        /*
-        //// TODO : Validate Status states
-        
-        Draft->Pending
-        Draft/Pending->Withdrawn
-        Pending->Accepted/Rejected
-        */
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
+        }
+
+        switch (request.Type)
+        {
+            case "resource":
+                await UpdateResourceRequestStatus(requestId, status);
+                break;
+            case "package":
+                await UpdatePackageRequestStatus(requestId, status);
+                break;
+        }
 
         return await GetRequest(requestId);
     }
 
     #region privates
+
+    private async Task<bool> UpdatePackageRequestStatus(Guid id, RequestStatus status)
+    {
+        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == id);
+        if (request is { })
+        {
+            request.Status = status;
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task<bool> UpdateResourceRequestStatus(Guid id, RequestStatus status)
+    {
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == id);
+        if (request is { })
+        {
+            request.Status = status;
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
+    }
+
     private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue)

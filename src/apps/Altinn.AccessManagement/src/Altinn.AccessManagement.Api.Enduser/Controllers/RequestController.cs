@@ -187,7 +187,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> RejectRequest([FromQuery] Guid id, CancellationToken ct = default)
     {
         return await UpdateRequestStatus(id, RequestStatus.Rejected, ct);
     }
@@ -204,7 +204,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ApproveRequest([FromQuery] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> ApproveRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
         var existing = await requestService.GetRequest(id, ct);
         if (existing is null)
@@ -218,6 +218,12 @@ public class RequestController(
     private async Task<IActionResult> ApprovePackageRequest(Guid requestId, CancellationToken ct)
     {
         var request = await requestService.GetRequest(requestId, ct);
+
+        var assignment = await assignmentService.GetOrCreateAssignment(request.Connection.From.Id, request.Connection.To.Id, RoleConstants.Rightholder);
+        if (assignment is null)
+        {
+            return Problem("Unable to get or create rightholder assignment");
+        }
 
         var result = await connectionService.AddPackage(
             request.Connection.From.Id,
@@ -272,6 +278,12 @@ public class RequestController(
         var from = await entityService.GetEntity(request.Connection.From.Id, ct);
         var to = await entityService.GetEntity(request.Connection.To.Id, ct);
         var resource = await resourceService.GetResource(request.Resource.Id.Value, ct);
+
+        var assignment = await assignmentService.GetOrCreateAssignment(from.Id, to.Id, RoleConstants.Rightholder);
+        if (assignment is null)
+        {
+            return Problem("Unable to get or create rightholder assignment");
+        }
 
         var result = await connectionService.AddResource(
             from,
