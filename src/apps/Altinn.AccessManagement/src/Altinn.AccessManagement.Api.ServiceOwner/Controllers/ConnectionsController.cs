@@ -21,7 +21,6 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
     /// </summary>
     [ApiController]
     [Route("accessmanagement/api/v1/serviceowner/connections")]
-    [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
     public class ConnectionsController(
         IConnectionServiceServiceOwner connectionService,
         IEntityService EntityService,
@@ -40,7 +39,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
 
         [HttpPost("accesspackages")]
         [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+        [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
         [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

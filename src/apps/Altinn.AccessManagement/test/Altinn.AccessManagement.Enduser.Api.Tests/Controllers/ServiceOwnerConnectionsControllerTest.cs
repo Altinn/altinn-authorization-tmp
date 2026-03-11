@@ -42,7 +42,7 @@ public class ServiceOwnerConnectionsControllerTest
             var client = Fixture.Server.CreateClient();
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
-                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.OrganizationVerdiqAS.Id.ToString()));
+                claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
                 claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -117,7 +117,8 @@ public class ServiceOwnerConnectionsControllerTest
             };
 
             // Act
-            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+            HttpResponseMessage response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+            string contentTExt = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
