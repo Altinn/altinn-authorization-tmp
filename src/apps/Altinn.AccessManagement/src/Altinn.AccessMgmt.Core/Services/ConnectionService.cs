@@ -1140,6 +1140,39 @@ public partial class ConnectionService(
         return true;
     }
 
+    /// <inheritdoc />
+    public async Task<Result<bool>> AddInstance(Entity from, Entity to, Resource resourceObj, string instanceId, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, ConfigureConnections, cancellationToken: cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem;
+        }
+
+        foreach (var rightKey in rightKeys.DirectRightKeys)
+        {
+            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == rightKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest;
+            }
+        }
+
+        var connection = await Get(from.Id, from.Id, to.Id, configureConnections: configureConnection, cancellationToken: cancellationToken);
+        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        {
+            return Problems.MissingConnection;
+        }
+
+        List<InstanceRule> result = await singleRightsService.TryWriteInstanceDelegationPolicyRules(from, to, resourceObj, instanceId, rightKeys.DirectRightKeys.ToList(), by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
+
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
+        return true;
+    }
+
     private void ProcessRoleAllowAccessReasons(List<RoleDtoCheck> rolesAllowAccess, List<RightCheckDto.Permision> permisions)
     {
         if (rolesAllowAccess.Count > 0)
@@ -1823,7 +1856,7 @@ public partial class ConnectionService
         return result;
     }
 
-    private async Task<List<InstanceRightDto>> GetInstanceRights(Guid? fromId, Guid? toId, Guid? resourceId, string instanceId, Guid? roleId, CancellationToken cancellationToken = default)
+    private async Task<List<InstanceRightDto>> GetInstanceRights(Guid? fromId, Guid? toId, Guid? resourceId, string? instanceId, Guid? roleId, CancellationToken cancellationToken = default)
     {
         if (!fromId.HasValue && !toId.HasValue)
         {
@@ -1844,7 +1877,7 @@ public partial class ConnectionService
             .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .Where(t => t.InstanceId == instanceId);
+            .WhereIf(!string.IsNullOrEmpty(instanceId), t => t.InstanceId == instanceId);
 
         // Direct
         var direct = baseQuery
@@ -1871,7 +1904,7 @@ public partial class ConnectionService
             .Include(t => t.Resource)
            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-           .Where(t => t.InstanceId == instanceId)
+           .WhereIf(!string.IsNullOrEmpty(instanceId), t => t.InstanceId == instanceId)
            .Join(
                dbContext.Assignments.AsNoTracking()
                    .Include(a => a.From)
@@ -1905,7 +1938,6 @@ public partial class ConnectionService
                PolicyVersion = t.PolicyVersion,
                Reason = AccessReasonFlag.KeyRole
            });
-
         var query = direct
             .Union(keyRoleResult);
 
@@ -1923,7 +1955,9 @@ public partial class ConnectionService
             var instanceRight = new InstanceRightDto()
             {
                 Resource = DtoMapper.Convert(internalResource),
-                Instance = new InstanceDto { Id = instanceId, Urn = $"urn:altinn:instance-id:{instanceId}" },
+                Instance = !string.IsNullOrEmpty(instanceId) 
+                    ? new InstanceDto { Id = instanceId, Urn = $"urn:altinn:instance-id:{instanceId}" }
+                    : null,
                 Rights = new List<RightPermission>()
             };
 
