@@ -6,8 +6,4 @@ namespace Altinn.AccessMgmt.Core.Audit;
 [AttributeUsage(AttributeTargets.Method)]
 public class AuditServiceOwnerConsumerAttribute : Attribute
 {
-    /// <summary>
-    /// Which system that initiates the request.
-    /// </summary>
-    public string System { get; set; }
 }

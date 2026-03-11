@@ -4,9 +4,11 @@ using System.Text.Json;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Claims;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,14 +56,7 @@ public class AuditMiddleware(AppDbContext db) : IMiddleware
                     var entity = await GetEntityFromConsumerClaim(context, party);
                     if (entity is { })
                     {
-                        if (serviceOwnerConsumer.System is { })
-                        {
-                            auditContextAccessor.AuditValues = new(entity.Id, Guid.Parse(serviceOwnerConsumer.System), TraceId(context));
-                        }
-                        else
-                        {
-                            auditContextAccessor.AuditValues = new(entity.Id, entity.Id, TraceId(context));
-                        }
+                        auditContextAccessor.AuditValues = new(entity.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
                     }
                 }
             }
