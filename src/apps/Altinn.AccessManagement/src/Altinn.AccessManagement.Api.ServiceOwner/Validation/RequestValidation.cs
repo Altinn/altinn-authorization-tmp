@@ -35,8 +35,6 @@ internal static class RequestValidation
     [
         "urn:altinn:person:identifier-no",
         "urn:altinn:organization:identifier-no",
-        "urn:altinn:systemuser:uuid",
-        "urn:altinn:party:uuid"
     ];
 }
 

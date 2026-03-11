@@ -52,14 +52,10 @@ public class RequestService(AppDbContext db, IAuditAccessor auditAccessor) : IRe
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
 
-        bool usePackages = true; // Future feature
-
         var requestResources = await GetRequestAssignmentResource(fromId, toId, status, after, ct);
-        var requestPackages = usePackages ? await GetRequestAssignmentPackage(fromId, toId, status, after, ct) : null;
+        var requestPackages = await GetRequestAssignmentPackage(fromId, toId, status, after, ct);
 
-        return usePackages
-            ? requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert))
-            : requestResources.Select(DtoMapper.Convert);
+        return requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert));
     }
 
     /// <inheritdoc/>
