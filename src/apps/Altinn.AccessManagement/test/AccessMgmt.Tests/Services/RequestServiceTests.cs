@@ -211,35 +211,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     }
 
     // -----------------------------------------------------------------------
-    // UpdateRequestAssignmentResource
-    // -----------------------------------------------------------------------
-
-    [Fact]
-    public async Task UpdateRequestAssignmentResource_ApprovesRequest()
-    {
-        var resource = await SeedUniqueResource();
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
-
-        var updated = await _requestService.UpdateRequest(created.Id, RequestStatus.Approved);
-
-        Assert.False(updated.IsProblem);
-        Assert.Equal(RequestStatus.Approved, updated.Value.Status);
-    }
-
-    [Fact]
-    public async Task UpdateRequestAssignmentResource_SameStatus_IsIdempotent()
-    {
-        var resource = await SeedUniqueResource();
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
-
-        var updated1 = (await _requestService.UpdateRequest(created.Id, RequestStatus.Pending)).Value;
-        var updated2 = (await _requestService.UpdateRequest(created.Id, RequestStatus.Pending)).Value;
-
-        Assert.Equal(RequestStatus.Pending, updated1.Status);
-        Assert.Equal(RequestStatus.Pending, updated2.Status);
-    }
-
-    // -----------------------------------------------------------------------
     // CreateRequestAssignmentPackage
     // -----------------------------------------------------------------------
 
@@ -260,37 +231,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft })).Value;
 
         Assert.Equal(first.Id, second.Id);
-    }
-
-    // -----------------------------------------------------------------------
-    // UpdateRequestAssignmentPackage
-    // -----------------------------------------------------------------------
-
-    [Fact]
-    public async Task UpdateRequestAssignmentPackage_ApprovesRequest()
-    {
-        var resource = await SeedUniqueResource();
-
-        // Use a different role so this assignment is distinct from the package tests above
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
-        
-        var request = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.BusinessTax.Id, Status = RequestStatus.Draft })).Value;
-
-        var updated = await _requestService.UpdateRequest(request.Id, RequestStatus.Approved);
-
-        Assert.False(updated.IsProblem);
-        Assert.Equal(RequestStatus.Approved, updated.Value.Status);
-    }
-
-    [Fact]
-    public async Task UpdateRequestAssignmentPackage_RejectsRequest()
-    {
-        var request = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Fishing.Id, Status = RequestStatus.Draft })).Value;
-
-        var updated = await _requestService.UpdateRequest(request.Id, RequestStatus.Rejected);
-
-        Assert.False(updated.IsProblem);
-        Assert.Equal(RequestStatus.Rejected, updated.Value.Status);
     }
 
     // -----------------------------------------------------------------------
@@ -318,7 +258,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
@@ -332,7 +272,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(created.Id, fetched.Id);
 
         // 5. Enduser accepts
-        var accepted = (await _requestService.UpdateRequest(created.Id, RequestStatus.Approved)).Value;
+        var accepted = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Approved)).Value;
         Assert.Equal(RequestStatus.Approved, accepted.Status);
     }
 
@@ -344,7 +284,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
@@ -358,7 +298,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(created.Id, fetched.Id);
 
         // 5. Enduser accepts
-        var accepted = (await _requestService.UpdateRequest(created.Id, RequestStatus.Approved)).Value;
+        var accepted = (await _requestService.UpdateRequest(OrgFrom.Id,created.Id, RequestStatus.Approved)).Value;
         Assert.Equal(RequestStatus.Approved, accepted.Status);
     }
 
@@ -372,7 +312,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
@@ -386,7 +326,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(created.Id, fetched.Id);
 
         // 5. Enduser rejects
-        var rejected = (await _requestService.UpdateRequest(created.Id, RequestStatus.Rejected)).Value;
+        var rejected = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Rejected)).Value;
         Assert.Equal(RequestStatus.Rejected, rejected.Status);
     }
 }

@@ -163,4 +163,16 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidExternalIdentifiers { get; }
         = _factory.Create(34, "Given external identifiers yielded empty result.");
+
+    /// <summary>
+    /// Request not found
+    /// </summary>
+    public static ValidationErrorDescriptor RequestNotFound { get; }
+        = _factory.Create(35, $"Request do not exists.");
+
+    /// <summary>
+    /// Request not found
+    /// </summary>
+    public static ValidationErrorDescriptor RequestUnsupportedStatusUpdate { get; }
+        = _factory.Create(36, $"Request does not support this status update.");
 }

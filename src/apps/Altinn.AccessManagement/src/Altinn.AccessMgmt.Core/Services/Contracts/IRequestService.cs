@@ -27,5 +27,5 @@ public interface IRequestService
     /// <summary>
     /// Updates the status of a request.
     /// </summary>
-    Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default);
+    Task<Result<RequestDto>> UpdateRequest(Guid partyUuid, Guid requestId, RequestStatus status, CancellationToken ct = default);
 }

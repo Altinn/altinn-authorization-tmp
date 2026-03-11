@@ -82,25 +82,16 @@ public class RequestService(AppDbContext db) : IRequestService
         throw new ArgumentException();
     }
 
-    private async Task<bool> CanUpdateRequest(Guid from, Guid to)
-    {
-        // TODO: Check Connection Query for ... Role? Package? Resource?
-        return true;
-    }
-
     /// <inheritdoc/>
-    public async Task<Result<RequestDto>> UpdateRequest(Guid requestId, RequestStatus status, CancellationToken ct = default)
+    public async Task<Result<RequestDto>> UpdateRequest(Guid partyUuid, Guid requestId, RequestStatus status, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        //var party = auditAccessor.AuditValues.ChangedBy;
-
         var request = await GetRequest(requestId, ct);
-        var canUpdateRequest = await CanUpdateRequest(request.Connection.From.Id, request.Connection.To.Id);
-
-        if (!canUpdateRequest)
+        
+        if (request.Connection.From.Id != partyUuid)
         {
-            errorBuilder.Add(ValidationErrors.UserNotAuthorized);
+            errorBuilder.Add(ValidationErrors.RequestNotFound, "$QUERY/requestId", [new("RequestId", $"Request {requestId} does not exists")]);
         }
 
         var statusRules = new Dictionary<RequestStatus, List<RequestStatus>>
@@ -116,7 +107,7 @@ public class RequestService(AppDbContext db) : IRequestService
         {
             if (request.Status == rule.Key && !rule.Value.Contains(status))
             {
-                errorBuilder.Add(ValidationErrors.UserNotAuthorized);
+                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, "$QUERY/status", [new("Status", $"Request cannot change from {request.Status} to {status}.")]);
             }
         }
 

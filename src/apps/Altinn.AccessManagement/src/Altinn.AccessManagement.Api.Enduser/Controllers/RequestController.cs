@@ -10,6 +10,7 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -28,6 +29,7 @@ public class RequestController(
     IRequestService requestService,
     IAssignmentService assignmentService,
     IDelegationService delegationService,
+    ConnectionQuery connectionQuery,
     IConnectionService connectionService,
     IResourceService resourceService,
     IPackageService packageService,
@@ -114,6 +116,7 @@ public class RequestController(
         GLHF
         */
 
+        // TODO: Replace with ConnectionQuery.
         var assignments = await assignmentService.GetAssignments(fromId: to, toId: party);
         var delegations = await delegationService.GetDelegations(fromId: to, toId: party);
 
@@ -156,9 +159,9 @@ public class RequestController(
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ConfirmRequest([FromQuery] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> ConfirmRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
-        return await UpdateRequestStatus(id, RequestStatus.Pending, ct);
+        return await UpdateRequestStatus(party, id, RequestStatus.Pending, ct);
     }
 
     /// <summary>
@@ -170,9 +173,9 @@ public class RequestController(
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<RequestDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> WithdrawRequest([FromQuery] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> WithdrawRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
-        return await UpdateRequestStatus(id, RequestStatus.Withdrawn, ct);
+        return await UpdateRequestStatus(party, id, RequestStatus.Withdrawn, ct);
     }
 
     /// <summary>
@@ -187,9 +190,9 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RejectRequest([FromQuery] Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> RejectRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
-        return await UpdateRequestStatus(id, RequestStatus.Rejected, ct);
+        return await UpdateRequestStatus(party, id, RequestStatus.Rejected, ct);
     }
 
     /// <summary>
@@ -207,18 +210,24 @@ public class RequestController(
     public async Task<IActionResult> ApproveRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
         var existing = await requestService.GetRequest(id, ct);
-        if (existing is null)
+        if (existing is null || existing.Connection.From.Id != party)
         {
             return NotFound();
         }
 
-        return existing.Resource is { } ? await ApproveResourceRequest(id, ct) : await ApprovePackageRequest(id, ct);
+        switch (existing.Type)
+        {
+            case "resource":
+                return await ApproveResourceRequest(party, existing, ct);
+            case "package":
+                return await ApprovePackageRequest(party, existing, ct);
+            default:
+                return BadRequest();
+        }
     }
 
-    private async Task<IActionResult> ApprovePackageRequest(Guid requestId, CancellationToken ct)
+    private async Task<IActionResult> ApprovePackageRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
     {
-        var request = await requestService.GetRequest(requestId, ct);
-
         var assignment = await assignmentService.GetOrCreateAssignment(request.Connection.From.Id, request.Connection.To.Id, RoleConstants.Rightholder);
         if (assignment is null)
         {
@@ -237,7 +246,7 @@ public class RequestController(
             return result.Problem.ToActionResult();
         }
 
-        var updateResult = await requestService.UpdateRequest(requestId, RequestStatus.Approved, ct);
+        var updateResult = await requestService.UpdateRequest(partyUuid, request.Id, RequestStatus.Approved, ct);
         if (updateResult.IsProblem)
         {
             return updateResult.Problem.ToActionResult();
@@ -246,15 +255,12 @@ public class RequestController(
         return Ok(request);
     }
 
-    private async Task<IActionResult> ApproveResourceRequest(Guid requestId, CancellationToken ct)
+    private async Task<IActionResult> ApproveResourceRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
     {
-        var request = await requestService.GetRequest(requestId, ct);
-
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        var by = await entityService.GetEntity(byId, ct);
+        var party = await entityService.GetEntity(partyUuid, ct);
 
         var delegationCheck = await connectionService.ResourceDelegationCheck(
-            byId,
+            partyUuid,
             request.Connection.From.Id,
             request.Resource.Urn,
             ConfigureConnections,
@@ -290,7 +296,7 @@ public class RequestController(
             to,
             resource,
             new RightKeyListDto { DirectRightKeys = rightKeys },
-            by,
+            party,
             ConfigureConnections,
             ct);
 
@@ -299,7 +305,7 @@ public class RequestController(
             return result.Problem.ToActionResult();
         }
 
-        var updateResult = await requestService.UpdateRequest(requestId, RequestStatus.Approved, ct);
+        var updateResult = await requestService.UpdateRequest(partyUuid, request.Id, RequestStatus.Approved, ct);
         if (updateResult.IsProblem)
         {
             return updateResult.Problem.ToActionResult();
@@ -308,9 +314,9 @@ public class RequestController(
         return Ok(request);
     }
 
-    private async Task<IActionResult> UpdateRequestStatus(Guid id, RequestStatus status, CancellationToken ct)
+    private async Task<IActionResult> UpdateRequestStatus(Guid partyUuid, Guid id, RequestStatus status, CancellationToken ct)
     {
-        var result = await requestService.UpdateRequest(id, status, ct);
+        var result = await requestService.UpdateRequest(partyUuid, id, status, ct);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
