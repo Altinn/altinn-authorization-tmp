@@ -271,10 +271,10 @@ public partial class ConnectionService(
                 FromIds = from != null ? [from.Id] : null,
                 ToIds = to != null ? [to.Id] : null,
                 IncludeInstances = true,
-                IncludeResources = true,
+                IncludeResources = false,
                 IncludeKeyRole = true,
-                IncludeMainUnitConnections = true,
-                IncludeSubConnections = true,
+                IncludeMainUnitConnections = false,
+                IncludeSubConnections = false,
                 IncludePackages = false,
                 EnrichPackageResources = false,
                 IncludeDelegation = false,
@@ -1858,48 +1858,6 @@ public partial class ConnectionService
                 PolicyPath = t.PolicyPath,
                 PolicyVersion = t.PolicyVersion,
                 Reason = AccessReasonFlag.Direct
-            });
-
-        // Hierarchy (Parent/Child)
-        var childResult = dbContext.AssignmentInstances.AsNoTracking()
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.From)
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.To)
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.Role)
-            .Include(t => t.Resource)
-            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .Where(t => t.InstanceId == instanceId)
-            .Join(
-                dbContext.Entities.AsNoTracking(),
-                ai => ai.Assignment.FromId,
-                c => c.ParentId,
-                (ai, c) => new AssignmentInstanceQueryResult
-                {
-                    Resource = ai.Resource,
-                    From = c,
-                    To = ai.Assignment.To,
-                    Role = ai.Assignment.Role,
-                    Via = null,
-                    ViaRole = null,
-                    InstanceId = ai.InstanceId,
-                    PolicyPath = ai.PolicyPath,
-                    PolicyVersion = ai.PolicyVersion
-                })
-            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
-            .Select(t => new AssignmentInstanceQueryResult()
-            {
-                Resource = t.Resource,
-                From = t.From,
-                To = t.To,
-                Role = t.Role,
-                InstanceId = t.InstanceId,
-                PolicyPath = t.PolicyPath,
-                PolicyVersion = t.PolicyVersion,
-                Reason = AccessReasonFlag.Parent
             });
 
         // KeyRole
