@@ -1,3 +1,4 @@
+using Altinn.Notifications.Models;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Integration.Platform.Notification;
@@ -31,5 +32,5 @@ public interface IAltinnNotification
     /// A task that represents the asynchronous operation. The task result contains the platform response
     /// with details about the created SMS notification order.
     /// </returns>
-    Task<PlatformResponse<NotificationResponseModel>> Send(NotificationRequestModel model,CancellationToken cancellationToken = default);
+    Task<PlatformResponse<NotificationOrderChainResponseExt>> Send(NotificationOrderChainRequestExt model,CancellationToken cancellationToken = default);
 }
