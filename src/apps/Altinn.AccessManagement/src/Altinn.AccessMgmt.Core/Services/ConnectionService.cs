@@ -2007,6 +2007,7 @@ public partial class ConnectionService
                PolicyVersion = t.PolicyVersion,
                Reason = AccessReasonFlag.KeyRole
            });
+
         var query = direct
             .Union(keyRoleResult);
 

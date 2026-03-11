@@ -6,12 +6,12 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -932,9 +932,9 @@ public class ConnectionsController(
     }
 
     /// <summary>
-    /// Remove resource from rightholder connection and all actions
+    /// Remove resource instance from rightholder connection and all actions
     /// </summary>
-    [HttpDelete("resources")]
+    [HttpDelete("resources/instances")]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
