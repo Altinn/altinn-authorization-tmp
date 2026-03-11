@@ -256,7 +256,7 @@ namespace Altinn.AccessManagement.Core.Services
                 ConsentRequest mappedConsentFromA2 = await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
                 Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, true, cancellationToken);
 
-                await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), result.IsProblem ? 2 : 1, cancellationToken);
+                await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), (result.IsProblem && result.Problem != Problems.ConsentWithIdAlreadyExist) ? 2 : 1, cancellationToken);
 
                 if (!result.IsProblem)
                 {
@@ -962,8 +962,18 @@ namespace Altinn.AccessManagement.Core.Services
 
         public static bool IsValidUrl(string url)
         {
-            return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
-                   && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult))
+            {
+                return false;
+            }
+
+            if (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
+            {
+                return true;
+            }
+
+            // Allow custom URI schemes for mobile app deep links (RFC 3986: letter followed by letters, digits, +, -, .)
+            return System.Text.RegularExpressions.Regex.IsMatch(uriResult.Scheme, @"^[a-z][a-z0-9+\-.]*$");
         }
 
         public async Task<Result<List<ConsentRequestDetails>>> GetRequestsForParty(Guid coveredByParty, bool useInternalIdenties, CancellationToken cancellationToken)
@@ -1012,7 +1022,8 @@ namespace Altinn.AccessManagement.Core.Services
                 ConsentRequestEvents = await MapA2ConsentEventsToA3ConsentEvents(altinn2Consent, altinn2Consent.ConsentHistoryEvents, cancellationToken),
                 RedirectUrl = altinn2Consent.RedirectUrl,
                 TemplateId = altinn2Consent.TemplateId,
-                PortalViewMode = altinn2Consent.PortalViewMode != null ? Enum.Parse<ConsentPortalViewMode>(altinn2Consent.PortalViewMode, true) : ConsentPortalViewMode.Hide
+                PortalViewMode = altinn2Consent.PortalViewMode != null ? Enum.Parse<ConsentPortalViewMode>(altinn2Consent.PortalViewMode, true) : ConsentPortalViewMode.Hide,
+                HandledBy = altinn2Consent.HandledByPartyUUID != null ? ConsentPartyUrn.PartyUuid.Create((Guid)altinn2Consent.HandledByPartyUUID) : null
             };
 
             return consent;
