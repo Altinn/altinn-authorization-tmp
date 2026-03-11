@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;

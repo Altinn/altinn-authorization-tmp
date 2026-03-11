@@ -40,26 +40,3 @@ public class RequestDto
     /// </summary>
     public RequestConnectionDto Connection { get; set; }
 }
-
-public class CreateRequestDto
-{
-    public Guid From { get; set; }
-    public Guid To { get; set; }
-    public Guid Role { get; set; }
-    public RequestStatus Status { get; set; }
-    public Guid? Resource { get; set; }
-    public Guid? Package { get; set; }
-}
-
-public class RequestRefrenceDto
-{
-    /// <summary>
-    /// Uniqueidentifier
-    /// </summary>
-    public Guid? Id { get; set; }
-
-    /// <summary>
-    /// URN
-    /// </summary>
-    public string Urn { get; set; }
-}
