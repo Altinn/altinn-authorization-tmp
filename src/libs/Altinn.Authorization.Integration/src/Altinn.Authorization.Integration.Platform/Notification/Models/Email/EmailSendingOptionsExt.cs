@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Email;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 
 /// <summary>
 /// Defines email configuration settings used in notification order requests.

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Sms;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
 /// <summary>
 /// Represents the content and sender information for an SMS (Short Message Service) message.

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Sms;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
 /// <summary>
 /// Represents the model for sending an SMS to a specific mobile number.

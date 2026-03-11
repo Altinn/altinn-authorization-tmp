@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Recipient;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 
 /// <summary>
 /// Represents a notification recipient identified by an external identity.
@@ -12,7 +12,6 @@ public class RecipientExternalIdentityExt : RecipientBaseExt
     /// <summary>
     /// The external identity of the recipient in URN format.
     /// </summary>
-    /// <seealso cref="ExternalIdentityUrn"/>
     [Required]
     [JsonPropertyName("externalIdentity")]
     public required string ExternalIdentity { get; set; }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Sms;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
 /// <summary>
 /// Defines SMS configuration settings used in notification order requests.

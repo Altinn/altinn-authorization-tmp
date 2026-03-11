@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Sms;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
 /// <summary>
 /// Class representing an SMS notification order request.

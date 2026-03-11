@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// Represents a contract between API clients and the server, defining the structure of notification order

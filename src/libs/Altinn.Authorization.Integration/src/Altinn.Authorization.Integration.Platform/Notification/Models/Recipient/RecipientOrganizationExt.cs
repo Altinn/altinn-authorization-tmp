@@ -1,8 +1,7 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models.Recipient;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 
 /// <summary>
 /// Defines a model for sending notifications to an organization's contact person.

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// A class representing a set of resource links of a notification 

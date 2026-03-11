@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Altinn.Notifications.Models.Email;
-using Altinn.Notifications.Models.Sms;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
-namespace Altinn.Notifications.Models.Recipient;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 
 /// <summary>
 /// Represents the base class for notification recipients.

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Altinn.Notifications.Models;
+using Altinn.Authorization.Integration.Platform.Notification.Models;
 
 namespace Altinn.Authorization.Integration.Platform.Notification;
 

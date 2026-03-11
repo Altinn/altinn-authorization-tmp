@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// An abstrct  class representing a status overview of a notification channels

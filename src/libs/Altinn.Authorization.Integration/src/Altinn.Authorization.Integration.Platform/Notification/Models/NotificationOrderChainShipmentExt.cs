@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Altinn.Notifications.Models;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// Represents the base information for a shipment in a notification order chain.

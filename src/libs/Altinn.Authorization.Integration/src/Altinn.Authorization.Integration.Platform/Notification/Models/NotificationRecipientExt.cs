@@ -1,10 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Sms;
 
-using Altinn.Notifications.Models.Email;
-using Altinn.Notifications.Models.Recipient;
-using Altinn.Notifications.Models.Sms;
-
-namespace Altinn.Notifications.Models;
+namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// Defines a container for specifying the recipient of a notification order.

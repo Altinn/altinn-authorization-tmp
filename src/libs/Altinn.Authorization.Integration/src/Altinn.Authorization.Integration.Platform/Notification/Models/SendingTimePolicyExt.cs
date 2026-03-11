@@ -1,4 +1,4 @@
-﻿namespace Altinn.Notifications.Models;
+﻿namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// Defines policies that govern when a notification message is scheduled for delivery.

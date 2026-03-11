@@ -1,4 +1,4 @@
-﻿namespace Altinn.Notifications.Models;
+﻿namespace Altinn.Authorization.Integration.Platform.Notification.Models;
 
 /// <summary>
 /// Enum describing available content types for an email.
