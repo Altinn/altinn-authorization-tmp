@@ -23,9 +23,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
     [Route("accessmanagement/api/v1/serviceowner/connections")]
     [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
     public class ConnectionsController(
-        IAssignmentService AssignmentService,
         IConnectionServiceServiceOwner connectionService,
-        IUserProfileLookupService UserProfileLookupService,
         IEntityService EntityService,
         IPackageService packageService
     ) : ControllerBase
