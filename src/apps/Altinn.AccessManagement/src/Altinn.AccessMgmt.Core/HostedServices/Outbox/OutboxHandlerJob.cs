@@ -169,22 +169,16 @@ internal partial class OutboxHandlerJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        try
+        Log.OutboxHandlerReceivedQuitSignal(logger);
+        await CancellationTokenSource.CancelAsync();
+        if (HandlerTask is { })
         {
-            Log.OutboxHandlerReceivedQuitSignal(logger);
-            await CancellationTokenSource.CancelAsync();
-            if (HandlerTask is { })
-            {
-                await HandlerTask;
-            }
+            await HandlerTask;
+        }
 
-            CancellationTokenSource?.Dispose();
-        }
-        catch (Exception)
-        {
-        }
+        CancellationTokenSource?.Dispose();
     }
-    
+
     static partial class Log
     {
         [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Outbox handler starting.")]
