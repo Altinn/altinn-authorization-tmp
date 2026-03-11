@@ -8,14 +8,13 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Claims;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.Core.Audit;
 
-public class AuditMiddleware(AppDbContext db) : IMiddleware
+public class AuditMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
@@ -53,7 +52,8 @@ public class AuditMiddleware(AppDbContext db) : IMiddleware
                 var party = OrgUtil.GetAuthenticatedParty(context.User);
                 if (party is { })
                 {
-                    var entity = await GetEntityFromConsumerClaim(context, party);
+                    var db = context.RequestServices.GetRequiredService<AppDbContext>();
+                    var entity = await GetEntityFromConsumerClaim(db, context, party);
                     if (entity is { })
                     {
                         auditContextAccessor.AuditValues = new(entity.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
@@ -70,7 +70,7 @@ public class AuditMiddleware(AppDbContext db) : IMiddleware
         return Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
     }
 
-    private async Task<Entity> GetEntityFromConsumerClaim(HttpContext context, ConsentPartyUrn party)
+    private async Task<Entity> GetEntityFromConsumerClaim(AppDbContext db, HttpContext context, ConsentPartyUrn party)
     {
         if (party.IsOrganizationId(out var organizationIdentifier))
         {
