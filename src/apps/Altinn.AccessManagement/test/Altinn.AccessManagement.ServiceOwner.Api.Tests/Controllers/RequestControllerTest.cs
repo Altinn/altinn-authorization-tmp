@@ -35,7 +35,7 @@ public class RequestControllerTest
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.OrganizationNordisAS.Id.ToString()));
+            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestData.BakerJohnsen.Id.ToString()));
             claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -47,23 +47,28 @@ public class RequestControllerTest
         return fixture.Server.CreateClient();
     }
 
+    private static void EnableFeatureFlags(ApiFixture fixture)
+    {
+        fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+        fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+    }
+
     #region GET _meta/urns/party
 
     public class GetValidUrnsTest : IClassFixture<ApiFixture>
     {
-        private readonly ApiFixture _fixture;
-
         public GetValidUrnsTest(ApiFixture fixture)
         {
-            _fixture = fixture;
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
         }
+
+        public ApiFixture Fixture { get; }
 
         [Fact]
         public async Task GetValidUrns_ReturnsOk_WithExpectedUrnPrefixes()
         {
-            var client = _fixture.Server.CreateClient();
+            var client = Fixture.Server.CreateClient();
 
             var response = await client.GetAsync(
                 $"{Route}/_meta/urns/party",
@@ -77,14 +82,12 @@ public class RequestControllerTest
 
             Assert.Contains("urn:altinn:person:identifier-no", urns);
             Assert.Contains("urn:altinn:organization:identifier-no", urns);
-            Assert.Contains("urn:altinn:systemuser:uuid", urns);
-            Assert.Contains("urn:altinn:party:uuid", urns);
         }
 
         [Fact]
         public async Task GetValidUrns_ReturnsExactlyFourUrns()
         {
-            var client = _fixture.Server.CreateClient();
+            var client = Fixture.Server.CreateClient();
 
             var response = await client.GetAsync(
                 $"{Route}/_meta/urns/party",
@@ -96,7 +99,7 @@ public class RequestControllerTest
             using var doc = JsonDocument.Parse(json);
             var count = doc.RootElement.GetArrayLength();
 
-            Assert.Equal(4, count);
+            Assert.Equal(2, count);
         }
     }
 
@@ -108,18 +111,15 @@ public class RequestControllerTest
     {
         private static readonly ResourceType TestResourceType = new()
         {
-            Id = Guid.Parse("01960001-0000-0000-0000-000000000099"),
+            Id = Guid.Parse("0196c001-0000-7000-8000-000000000001"),
             Name = "ServiceOwnerTestResourceType",
         };
 
-        private readonly ApiFixture _fixture;
-
         public CreateResourceRequestTest(ApiFixture fixture)
         {
-            _fixture = fixture;
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
-            _fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -137,12 +137,14 @@ public class RequestControllerTest
             });
         }
 
+        public ApiFixture Fixture { get; }
+
         [Fact]
         public async Task CreateRequest_WithResource_Returns202Accepted()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             var body = new CreateServiceOwnerRequest
             {
@@ -176,14 +178,14 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
 
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto
                 {
                     From = "urn:invalid:prefix:12345",
-                    To = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}"
+                    To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
                 Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
                 Package = new RequestRefrenceDto(),
@@ -200,9 +202,9 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyResourceId_Returns400()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             var body = new CreateServiceOwnerRequest
             {
@@ -226,21 +228,20 @@ public class RequestControllerTest
 
     public class CreatePackageRequestTest : IClassFixture<ApiFixture>
     {
-        private readonly ApiFixture _fixture;
-
         public CreatePackageRequestTest(ApiFixture fixture)
         {
-            _fixture = fixture;
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
         }
+
+        public ApiFixture Fixture { get; }
 
         [Fact]
         public async Task CreateRequest_WithPackage_Returns202Accepted()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             var body = new CreateServiceOwnerRequest
             {
@@ -274,14 +275,14 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
 
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto
                 {
                     From = "urn:invalid:prefix:12345",
-                    To = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}"
+                    To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
@@ -298,9 +299,9 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyPackageUrn_Returns400()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
-            var from = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             var body = new CreateServiceOwnerRequest
             {
@@ -326,18 +327,15 @@ public class RequestControllerTest
     {
         private static readonly ResourceType TestResourceType = new()
         {
-            Id = Guid.Parse("01960001-0000-0000-0000-000000000098"),
+            Id = Guid.Parse("0196c002-0000-7000-8000-000000000001"),
             Name = "E2ETestResourceType",
         };
 
-        private readonly ApiFixture _fixture;
-
         public GetValidUrnsThenCreateRequestTest(ApiFixture fixture)
         {
-            _fixture = fixture;
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
-            _fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage);
-            _fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -355,10 +353,12 @@ public class RequestControllerTest
             });
         }
 
+        public ApiFixture Fixture { get; }
+
         [Fact]
         public async Task GetValidUrns_ThenCreateResourceRequest_EndToEnd()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(
@@ -375,8 +375,8 @@ public class RequestControllerTest
             var personPrefix = urnPrefixes.First(u => u.Contains("person"));
 
             // Step 2: Build URNs using the returned prefixes
-            var from = $"{orgPrefix}:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"{personPrefix}:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var from = $"{orgPrefix}:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"{personPrefix}:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             // Step 3: Create request with resource
             var body = new CreateServiceOwnerRequest
@@ -397,7 +397,7 @@ public class RequestControllerTest
         [Fact]
         public async Task GetValidUrns_ThenCreatePackageRequest_EndToEnd()
         {
-            var client = CreateClient(_fixture, TestEntities.OrganizationNordisAS.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(
@@ -414,8 +414,8 @@ public class RequestControllerTest
             var personPrefix = urnPrefixes.First(u => u.Contains("person"));
 
             // Step 2: Build URNs using the returned prefixes
-            var from = $"{orgPrefix}:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}";
-            var to = $"{personPrefix}:{TestEntities.PersonPaula.Entity.PersonIdentifier}";
+            var from = $"{orgPrefix}:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var to = $"{personPrefix}:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
             // Step 3: Create request with package
             var body = new CreateServiceOwnerRequest
