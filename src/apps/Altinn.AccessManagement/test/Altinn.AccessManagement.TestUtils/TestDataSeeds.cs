@@ -77,7 +77,7 @@ public static class TestDataSeeds
 
         #region TestData Assignments and Delegations
         db.Assignments.AddRange(TestData.Assignments);
-        db.Delegations.AddRange(TestData.Delegations);
+        //db.Delegations.AddRange(TestData.Delegations);
         #endregion
 
         await db.SaveChangesAsync();
