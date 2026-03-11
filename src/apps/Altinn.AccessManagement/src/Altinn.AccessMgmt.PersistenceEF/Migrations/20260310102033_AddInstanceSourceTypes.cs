@@ -41,16 +41,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo_history",
                 table: "auditassignmentinstance",
                 type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("019cd6c4-a340-776e-a63a-2370a05db6c7"));
+                nullable: false);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "instancesourcetypeid",
                 schema: "dbo",
                 table: "assignmentinstance",
                 type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("019cd6c4-a340-776e-a63a-2370a05db6c7"));
+                nullable: false);
 
             migrationBuilder.AddForeignKey(
                 name: "fk_assignmentinstance_instancesourcetype_instancesourcetypeid",
