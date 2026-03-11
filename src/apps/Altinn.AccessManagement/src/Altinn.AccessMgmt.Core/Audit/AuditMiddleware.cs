@@ -76,18 +76,6 @@ public class AuditMiddleware(AppDbContext db) : IMiddleware
         {
             return await db.Entities.FirstOrDefaultAsync(e => e.OrganizationIdentifier == organizationIdentifier, context.RequestAborted);
         }
-        else if (party.IsPartyId(out var partyId))
-        {
-            return await db.Entities.FirstOrDefaultAsync(e => e.PartyId == partyId, context.RequestAborted);
-        }
-        else if (party.IsPartyUuid(out var partyUuid))
-        {
-            return await db.Entities.FirstOrDefaultAsync(e => e.Id == partyUuid, context.RequestAborted);
-        }
-        else if (party.IsPersonId(out var personId))
-        {
-            return await db.Entities.FirstOrDefaultAsync(e => e.PersonIdentifier == personId, context.RequestAborted);
-        }
 
         return null;
     }
