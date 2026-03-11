@@ -108,11 +108,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                             if (revokes == 0)
                             {
-                                _logger.LogWarning(
-                                    "Failed to delete assignmentpackages for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Skatteforhold",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"Failed to delete assignmentpackages for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;                                
                             }
                         }
                         else
