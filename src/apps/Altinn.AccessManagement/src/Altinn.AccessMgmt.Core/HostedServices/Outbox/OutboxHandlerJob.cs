@@ -66,7 +66,7 @@ internal partial class OutboxHandlerJob(
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception)
         {
             Log.OutboxHandlerShutDown(logger);
         }
@@ -169,14 +169,20 @@ internal partial class OutboxHandlerJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        Log.OutboxHandlerReceivedQuitSignal(logger);
-        await CancellationTokenSource.CancelAsync();
-        if (HandlerTask is { })
+        try
         {
-            await HandlerTask;
-        }
+            Log.OutboxHandlerReceivedQuitSignal(logger);
+            await CancellationTokenSource.CancelAsync();
+            if (HandlerTask is { })
+            {
+                await HandlerTask;
+            }
 
-        CancellationTokenSource?.Dispose();
+            CancellationTokenSource?.Dispose();
+        }
+        catch (Exception)
+        {
+        }
     }
     
     static partial class Log

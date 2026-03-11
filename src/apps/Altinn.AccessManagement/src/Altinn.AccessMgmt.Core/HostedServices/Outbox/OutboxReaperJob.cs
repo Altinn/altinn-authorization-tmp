@@ -51,7 +51,7 @@ internal partial class OutboxReaperJob(
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception)
         {
             Log.OutboxReaperShutDown(logger);
         }
@@ -132,14 +132,20 @@ internal partial class OutboxReaperJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        Log.OutboxReaperReceivedQuitSignal(logger);
-        await CancellationTokenSource.CancelAsync();
-        if (ReaperTask is { })
+        try
         {
-            await ReaperTask;
-        }
+            Log.OutboxReaperReceivedQuitSignal(logger);
+            await CancellationTokenSource.CancelAsync();
+            if (ReaperTask is { })
+            {
+                await ReaperTask;
+            }
 
-        CancellationTokenSource?.Dispose();
+            CancellationTokenSource?.Dispose();
+        }
+        catch (Exception)
+        {
+        }
     }
 
     static partial class Log
