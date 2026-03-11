@@ -32,8 +32,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 SET LOCAL app.changed_by = '0195efb8-7c80-7262-b616-7d9eb843bcaa';
                 SET LOCAL app.changed_by_system = 'f1be3999-68f6-4757-92b4-d3f3d33345e1';
                 SET LOCAL app.change_operation_id = 'Add Instance Source Type';
-                INSERT INTO dbo.instancesourcetype(id, name) values('019cd6c4-a340-776e-a63a-2370a05db6c7', 'Altinn App');
-                INSERT INTO dbo.instancesourcetype(id, name) values('019cd6c4-a340-7f7a-94af-f1181ec4a132', 'Sluttbruker');
+                INSERT INTO dbo.instancesourcetype(id, audit_validfrom, name) values('019cd6c4-a340-776e-a63a-2370a05db6c7', '2026-03-10 12:37:44.540 +0100', 'Altinn App');
+                INSERT INTO dbo.instancesourcetype(id, audit_validfrom, name) values('019cd6c4-a340-7f7a-94af-f1181ec4a132', '2026-03-10 12:37:44.540 +0100', 'Sluttbruker');
                 """);
 
             migrationBuilder.AddColumn<Guid>(
