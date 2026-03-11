@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Outbox;
@@ -11,9 +12,11 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Outbox;
 /// <summary>
 /// Background job for managing failed outbox messages
 /// </summary>
+/// <param name="logger"><see cref="ILogger"/></param>
 /// <param name="provider"><see cref="IServiceProvider"/></param>
 /// <param name="featureManager">for managing if job should be on or off.</param>
-internal class OutboxReaperJob(
+internal partial class OutboxReaperJob(
+    ILogger<OutboxHandlerJob> logger,
     IServiceProvider provider,
     IFeatureManager featureManager
     ) : IHostedService
@@ -24,12 +27,8 @@ internal class OutboxReaperJob(
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var linked = CancellationTokenSource.CreateLinkedTokenSource(
-            CancellationTokenSource.Token,
-            cancellationToken);
-
-        ReaperTask = Job(linked.Token);
-
+        Log.OutboxReaperStarting(logger);
+        ReaperTask = Job(CancellationTokenSource.Token);
         return Task.CompletedTask;
     }
 
@@ -54,6 +53,7 @@ internal class OutboxReaperJob(
         }
         catch (OperationCanceledException)
         {
+            Log.OutboxReaperShutDown(logger);
         }
     }
 
@@ -69,7 +69,7 @@ internal class OutboxReaperJob(
 
     private async Task RemoveOldJobs(AppDbContext db, CancellationToken cancellationToken)
     {
-        var messages = await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
+        await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """
             DELETE FROM dbo.outboxmessage
             WHERE
@@ -82,7 +82,7 @@ internal class OutboxReaperJob(
 
     private async Task ProcessFailedJobs(AppDbContext db, CancellationToken cancellationToken)
     {
-        var messages = await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
+        await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """
             WITH locked_rows AS (
                 SELECT id
@@ -105,7 +105,7 @@ internal class OutboxReaperJob(
 
     private async Task ProcessTimedOutJobs(AppDbContext db, CancellationToken cancellationToken)
     {
-        var messages = await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
+        await db.OutboxMessages.FromSqlRaw(/*strpgsql*/
         """
             WITH locked_rows AS (
                 SELECT id
@@ -132,6 +132,7 @@ internal class OutboxReaperJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        Log.OutboxReaperReceivedQuitSignal(logger);
         await CancellationTokenSource.CancelAsync();
         if (ReaperTask is { })
         {
@@ -139,5 +140,17 @@ internal class OutboxReaperJob(
         }
 
         CancellationTokenSource?.Dispose();
+    }
+
+    static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Outbox reaper starting.")]
+        internal static partial void OutboxReaperStarting(ILogger logger);
+
+        [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Outbox reaper received quit signal.")]
+        internal static partial void OutboxReaperReceivedQuitSignal(ILogger logger);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox reaper shut down.")]
+        internal static partial void OutboxReaperShutDown(ILogger logger);
     }
 }

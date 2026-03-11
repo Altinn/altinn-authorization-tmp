@@ -26,8 +26,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
-        services.AddSingleton<OutboxHandlerJob>();
-        services.AddSingleton<OutboxReaperJob>();
+        services.AddHostedService<OutboxHandlerJob>();
+        services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();

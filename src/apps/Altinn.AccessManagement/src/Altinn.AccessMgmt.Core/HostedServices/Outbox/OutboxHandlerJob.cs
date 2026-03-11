@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 
@@ -15,10 +16,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Outbox;
 /// <summary>
 /// Background job for managing pending outbox messages.
 /// </summary>
+/// <param name="logger"><see cref="ILogger"/></param>
 /// <param name="provider"><see cref="IServiceProvider"/></param>
 /// <param name="featureManager">for managing if job should be on or off.</param>
 /// <param name="options">Database options</param>
-internal class OutboxHandlerJob(
+internal partial class OutboxHandlerJob(
+    ILogger<OutboxHandlerJob> logger,
     IServiceProvider provider,
     IFeatureManager featureManager,
     IOptions<AccessManagementDatabaseOptions> options) : IHostedService
@@ -34,12 +37,8 @@ internal class OutboxHandlerJob(
     /// <returns>A completed task</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var linked = CancellationTokenSource.CreateLinkedTokenSource(
-            CancellationTokenSource.Token,
-            cancellationToken);
-
-        HandlerTask = Job(linked.Token);
-
+        Log.OutboxHandlerStarting(logger);
+        HandlerTask = Job(CancellationTokenSource.Token);
         return Task.CompletedTask;
     }
 
@@ -69,6 +68,7 @@ internal class OutboxHandlerJob(
         }
         catch (OperationCanceledException)
         {
+            Log.OutboxHandlerShutDown(logger);
         }
     }
 
@@ -169,6 +169,7 @@ internal class OutboxHandlerJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        Log.OutboxHandlerReceivedQuitSignal(logger);
         await CancellationTokenSource.CancelAsync();
         if (HandlerTask is { })
         {
@@ -176,5 +177,17 @@ internal class OutboxHandlerJob(
         }
 
         CancellationTokenSource?.Dispose();
+    }
+    
+    static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Outbox handler starting.")]
+        internal static partial void OutboxHandlerStarting(ILogger logger);
+
+        [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Outbox handler received quit signal.")]
+        internal static partial void OutboxHandlerReceivedQuitSignal(ILogger logger);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Outbox handler shut down.")]
+        internal static partial void OutboxHandlerShutDown(ILogger logger);
     }
 }
