@@ -355,7 +355,7 @@ public static class SystemEntityConstants
     /// - <c>TypeId:</c> Internal entity type
     /// - <c>VariantId:</c> Standard variant
     /// </remarks>
-    public static ConstantDefinition<Entity> ServiceOwnerApi { get; } = new ConstantDefinition<Entity>(AuditDefaults.InternalApi)
+    public static ConstantDefinition<Entity> ServiceOwnerApi { get; } = new ConstantDefinition<Entity>(AuditDefaults.ServiceOwnerApi)
     {
         Entity = new()
         {
