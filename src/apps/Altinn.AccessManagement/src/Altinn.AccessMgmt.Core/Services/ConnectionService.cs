@@ -1906,63 +1906,8 @@ public partial class ConnectionService
                Reason = AccessReasonFlag.KeyRole
            });
 
-        // KeyRole + Hierarchy
-        var keyRoleSubUnit = dbContext.AssignmentInstances.AsNoTracking()
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.From)
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.To)
-            .Include(t => t.Assignment)
-            .ThenInclude(t => t.Role)
-            .Include(t => t.Resource)
-            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .Where(t => t.InstanceId == instanceId)
-            .Join(
-                dbContext.Entities.AsNoTracking(),
-                ai => ai.Assignment.FromId,
-                e => e.ParentId,
-                (ai, fromChild) => new { ai, fromChild }
-            )
-            .Join(
-                dbContext.Assignments.AsNoTracking()
-                    .Include(a => a.From)
-                    .Include(a => a.To)
-                    .Include(a => a.Role)
-                    .Where(a => a.Role.IsKeyRole),
-                x => x.ai.Assignment.ToId,
-                kr => kr.FromId,
-                (x, kr) => new AssignmentInstanceQueryResult
-                {
-                    Resource = x.ai.Resource,
-                    From = x.fromChild,
-                    To = kr.To,
-                    Role = x.ai.Assignment.Role,
-                    Via = kr.From,
-                    ViaRole = kr.Role,
-                    InstanceId = x.ai.InstanceId,
-                    PolicyPath = x.ai.PolicyPath,
-                    PolicyVersion = x.ai.PolicyVersion
-                }
-            )
-            .WhereIf(fromId.HasValue, t => t.From.Id == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.To.Id == toId.Value)
-            .Select(t => new AssignmentInstanceQueryResult()
-            {
-                Resource = t.Resource,
-                From = t.From,
-                To = t.To,
-                Role = t.Role,
-                InstanceId = t.InstanceId,
-                PolicyPath = t.PolicyPath,
-                PolicyVersion = t.PolicyVersion,
-                Reason = AccessReasonFlag.Parent | AccessReasonFlag.KeyRole
-            });
-
         var query = direct
-            .Union(childResult)
-            .Union(keyRoleResult)
-            .Union(keyRoleSubUnit);
+            .Union(keyRoleResult);
 
         var res = await query.ToListAsync(cancellationToken);
 
