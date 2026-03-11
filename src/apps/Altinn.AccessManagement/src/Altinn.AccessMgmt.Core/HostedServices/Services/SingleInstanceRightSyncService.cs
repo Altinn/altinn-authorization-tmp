@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -69,6 +70,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             await using var scope = _serviceProvider.CreateAsyncScope();
                             IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
                             IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
+                            IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
+                            IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
                             bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.InstanceDelegationChangeId, "Instance", cancellationToken);
                             if (alreadyProcessed)
@@ -87,24 +90,44 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 batchId.ToString(),
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
+                            var party = await partyService.GetByUid(item.FromUuid);
+
+                            if (party == null)
+                            {
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.InstanceDelegationChangeId,
+                                    OriginType = "Instance",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"From party not found for uuid: {item.FromUuid}"
+                                };
+
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;
+                            }
+
                             if (item.DelegationChangeType == DelegationChangeType.RevokeLast)
                             {
                                 int revokes = await assignmentService.RevokeImportedInstanceAssignment(
                                     item.FromUuid,
                                     item.ToUuid,
                                     item.ResourceId.ToLower(),
-                                    AddInstanceUrnPrefixToInstanceId(item.InstanceId),
+                                    CreateInstanceUrnFromInstanceIdAndPartyId(item.InstanceId, party.PartyId),
                                     values,
                                     cancellationToken);
 
                                 if (revokes == 0)
                                 {
-                                    _logger.LogWarning(
-                                        "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
-                                        item.FromUuid,
-                                        item.ToUuid,
-                                        item.ResourceId,
-                                        item.InstanceId);
+                                    ErrorQueue error = new ErrorQueue
+                                    {
+                                        DelegationChangeId = item.InstanceDelegationChangeId,
+                                        OriginType = "Instance",
+                                        ErrorItem = JsonSerializer.Serialize(item),
+                                        ErrorMessage = $"Failed to delete assignmentresource for FromParty: {item.FromUuid}, ToParty: {item.ToUuid}, Resource: {item.ResourceId}, Instance: {item.InstanceId}"
+                                    };
+
+                                    await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                    continue;                                    
                                 }
                             }
                             else
@@ -115,19 +138,23 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     item.ResourceId.ToLower(),
                                     item.BlobStoragePolicyPath,
                                     item.BlobStorageVersionId,
-                                    AddInstanceUrnPrefixToInstanceId(item.InstanceId),
+                                    CreateInstanceUrnFromInstanceIdAndPartyId(item.InstanceId, party.PartyId),
                                     item.InstanceDelegationChangeId,
                                     values,
                                     cancellationToken);
 
                                 if (adds == 0)
                                 {
-                                    _logger.LogWarning(
-                                        "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
-                                        item.FromUuid,
-                                        item.ToUuid,
-                                        item.ResourceId,
-                                        item.InstanceId);
+                                    ErrorQueue error = new ErrorQueue
+                                    {
+                                        DelegationChangeId = item.InstanceDelegationChangeId,
+                                        OriginType = "Instance",
+                                        ErrorItem = JsonSerializer.Serialize(item),
+                                        ErrorMessage = $"Failed to import delegation for FromParty: {item.FromUuid}, ToParty: {item.ToUuid}, Resource: {item.ResourceId}, Instance: {item.InstanceId}"
+                                    };
+
+                                    await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                    continue;                                    
                                 }
                             }
 
@@ -196,6 +223,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 try
                 {
                     IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+                    IAMPartyService partyService = scope.ServiceProvider.GetRequiredService<IAMPartyService>();
 
                     var element = JsonSerializer.Deserialize<InstanceDelegationChange>(item.ErrorItem);
 
@@ -210,24 +238,28 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         batchId.ToString(),
                         element.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                    if (element.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
+                    var party = await partyService.GetByUid(element.FromUuid);
+
+                    if (party == null)
+                    {
+                        await errorQueueService.UpdateErrorMessage(item.Id, values, $"From party not found for uuid: {element.FromUuid}", cancellationToken);
+                        continue;
+                    }
+
+                    if (element.DelegationChangeType == DelegationChangeType.RevokeLast)
                     {
                         int revokes = await assignmentService.RevokeImportedInstanceAssignment(
                             element.FromUuid,
                             element.ToUuid,
                             element.ResourceId.ToLower(),
-                            AddInstanceUrnPrefixToInstanceId(element.InstanceId),
+                            CreateInstanceUrnFromInstanceIdAndPartyId(element.InstanceId, party.PartyId),
                             values,
                             cancellationToken);
 
                         if (revokes == 0)
                         {
-                            _logger.LogWarning(
-                                "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
-                                element.FromUuid,
-                                element.ToUuid,
-                                element.ResourceId,
-                                element.InstanceId);
+                            await errorQueueService.UpdateErrorMessage(item.Id, values, $"Failed to delete assignmentresource for FromParty: {element.FromUuid}, ToParty: {element.ToUuid}, Resource: {element.ResourceId}, Instance: {element.InstanceId}", cancellationToken);
+                            continue;
                         }
                     }
                     else
@@ -238,19 +270,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             element.ResourceId.ToLower(),
                             element.BlobStoragePolicyPath,
                             element.BlobStorageVersionId,
-                            AddInstanceUrnPrefixToInstanceId(element.InstanceId),
+                            CreateInstanceUrnFromInstanceIdAndPartyId(element.InstanceId, party.PartyId),
                             element.InstanceDelegationChangeId,
                             values,
                             cancellationToken);
 
                         if (adds == 0)
                         {
-                            _logger.LogWarning(
-                                "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}, Instance: {instance}",
-                                element.FromUuid,
-                                element.ToUuid,
-                                element.ResourceId,
-                                element.InstanceId);
+                            await errorQueueService.UpdateErrorMessage(item.Id, values, $"Failed to import delegation for FromParty: {element.FromUuid}, ToParty: {element.ToUuid}, Resource: {element.ResourceId}, Instance: {element.InstanceId}", cancellationToken);
+                            continue;                            
                         }
                     }
 
@@ -268,9 +296,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
         }
         
-        private string AddInstanceUrnPrefixToInstanceId(string instanceId)
+        private string CreateInstanceUrnFromInstanceIdAndPartyId(string instanceId, int partyid)
         {
-            return AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceInstanceAttribute + ":" + instanceId.ToLower();
+            return AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute + ":" + partyid + "/" + instanceId.ToLower();
         }
     }
 }
