@@ -2,14 +2,17 @@
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -60,6 +63,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
                         IRightImportProgressService rightImportProgressService = scope.ServiceProvider.GetRequiredService<IRightImportProgressService>();
+                        IErrorQueueService errorQueueService = scope.ServiceProvider.GetRequiredService<IErrorQueueService>();
 
                         bool alreadyProcessed = await rightImportProgressService.IsImportAlreadyProcessed(item.AltinnRoleDelegationEventId, "Bankruptcy", cancellationToken);
                         if (alreadyProcessed)
@@ -77,11 +81,14 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                         if (packageUrns == null || packageUrns.Count == 0)
                         {
-                            _logger.LogWarning(
-                                "No package URNs mapped for delegation FromParty: {FromParty}, ToParty: {ToParty}. RoleType: {RoleTypeCode} Skipping import.",
-                                item.FromPartyUuid,
-                                item.ToUserPartyUuid,
-                                item.RoleTypeCode);
+                            ErrorQueue error = new ErrorQueue
+                            {
+                                DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                OriginType = "Bankruptcy",
+                                ErrorItem = JsonSerializer.Serialize(item),
+                                ErrorMessage = $"No package URNs mapped for delegation FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}. RoleType: {item.RoleTypeCode} Skipping import."
+                            };
+                            await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                             continue;
                         }
 
@@ -90,12 +97,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             // If the action is Revoke, we should delete the assignmentPackages
                             if (item.ToUserPartyUuid == null)
                             {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid bankruptcy estate delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
-                                continue;
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Bankruptcy",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid bankruptcy estate delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;                                
                             }
 
                             int revokes = await assignmentService.RevokeImportedAssignmentPackages(
@@ -108,33 +118,44 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                             if (revokes == 0)
                             {
-                                _logger.LogWarning(
-                                    "Failed to delete assignmentpackages for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Bankruptcy",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"Failed to delete assignmentpackages for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;
                             }
                         }
                         else
                         {
                             if (item.ToUserPartyUuid == null)
                             {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Bankruptcy",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);                                 
                                 continue;
                             }
 
                             List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
                             if (adds.Count == 0)
                             {
-                                _logger.LogWarning(
-                                    "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                ErrorQueue error = new ErrorQueue
+                                {
+                                    DelegationChangeId = item.AltinnRoleDelegationEventId,
+                                    OriginType = "Bankruptcy",
+                                    ErrorItem = JsonSerializer.Serialize(item),
+                                    ErrorMessage = $"Failed to import delegation for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
+                                };
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
+                                continue;                                
                             }
                         }
 
