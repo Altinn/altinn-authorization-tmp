@@ -123,9 +123,9 @@ public class ServiceOwnerConnectionsControllerTest
                 await db.SaveChangesAsync(TestContext.Current.CancellationToken);
             });
 
-                ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
-                ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-                AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {

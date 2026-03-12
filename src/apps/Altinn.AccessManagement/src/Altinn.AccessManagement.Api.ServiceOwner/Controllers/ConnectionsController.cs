@@ -47,24 +47,29 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AddPackages([FromBody] ServiceOwnerAccessPackageDelegation packageDelegation, CancellationToken cancellationToken = default)
         {
-            Guid? fromPerson = null;
-            Guid? toPerson = null;
+            Guid? fromEntity = null;
+            Guid? toEntity = null;
 
             if (packageDelegation.From.IsPersonId(out PersonIdentifier person))
             {
-                Entity personFot = await EntityService.GetByPersNo(person.ToString(), cancellationToken);
-                fromPerson = personFot.Id;
+                Entity personFrom = await EntityService.GetByPersNo(person.ToString(), cancellationToken);
+                fromEntity = personFrom?.Id;
             }
 
             if (packageDelegation.To.IsPersonId(out PersonIdentifier personTo))
             {
-                Entity personFot = await EntityService.GetByPersNo(personTo.ToString(), cancellationToken);
-                toPerson = personFot.Id;
+                Entity personToEntity = await EntityService.GetByPersNo(personTo.ToString(), cancellationToken);
+                toEntity = personToEntity?.Id;
             }
 
-            if (fromPerson == null || toPerson == null)
+            if (fromEntity == null)
             {
-                return BadRequest("TODO");
+                return Problems.UnknownPartyFrom.ToActionResult();
+            }
+
+            if (toEntity == null)
+            {
+                return Problems.UnknownPartyTo.ToActionResult();
             }
 
             PackageDto package = await packageService.GetPackageByUrnValue(packageDelegation.PackageUrn.ValueSpan.ToString(), cancellationToken);
@@ -74,7 +79,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 return Problems.PackageNotFound.ToActionResult();
             }
 
-            Result<AssignmentPackageDto> result = await connectionService.AddPackage(fromPerson.Value, toPerson.Value, package.Id, ConfigureConnections, cancellationToken);
+            Result<AssignmentPackageDto> result = await connectionService.AddPackage(fromEntity.Value, toEntity.Value, package.Id, ConfigureConnections, cancellationToken);
 
             if (result.IsProblem)
             {

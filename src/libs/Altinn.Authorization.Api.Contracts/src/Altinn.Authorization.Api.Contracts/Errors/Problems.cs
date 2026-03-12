@@ -145,4 +145,12 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor PackageNotFound { get; }
     = _factory.Create(33, HttpStatusCode.BadRequest, "Unknown Access Package");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor UnknownPartyFrom { get; }
+    = _factory.Create(34, HttpStatusCode.BadRequest, "Unknown party from. Could not be found");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor UnknownPartyTo { get; }
+    = _factory.Create(35, HttpStatusCode.BadRequest, "Unknown party to. Could not be found");
 }
