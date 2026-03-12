@@ -1110,7 +1110,7 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        if (rightKeys.DirectRightKeys.Count() == 0)
+        if (!rightKeys.DirectRightKeys.Any())
         {
             return Problems.MissingRightKey;
         }
