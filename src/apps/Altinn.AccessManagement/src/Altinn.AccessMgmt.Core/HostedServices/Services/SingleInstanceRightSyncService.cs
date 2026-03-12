@@ -87,7 +87,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             AuditValues values = new AuditValues(
                                 performedByGuid,
                                 SystemEntityConstants.SingleRightImportSystem.Id,
-                                batchId.ToString(),
+                                item.PerformedBy,
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
                             var party = await partyService.GetByUid(item.FromUuid);
