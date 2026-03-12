@@ -167,7 +167,7 @@ public class RequestControllerTest
         public async Task PersonWithNoConnection_GetsNonSuccessResponse()
         {
             // BjornMoe er daglig leder i RegnskapNorge, men har ingen rolle i BakerJohnsen
-            var client = CreateClient(Fixture, TestData.BjornMoe.Id);
+            var client = CreateClient(Fixture, TestData.VegardSolberg.Id);
             var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
@@ -176,6 +176,21 @@ public class RequestControllerTest
                 TestContext.Current.CancellationToken);
 
             Assert.False(response.IsSuccessStatusCode, "Person without connection should not be able to create request");
+        }
+
+        [Fact]
+        public async Task PersonWithKeyConnection_GetsSuccessResponse()
+        {
+            // BjornMoe er daglig leder i RegnskapNorge, og har da nøkkel rolle til BakerJohnsen
+            var client = CreateClient(Fixture, TestData.BjornMoe.Id);
+            var packageUrn = PackageConstants.Agriculture.Entity.Urn;
+
+            var response = await client.PostAsync(
+                $"{Route}?party={TestData.BjornMoe.Id}&to={TestData.BakerJohnsen.Id}",
+                CreateRequestBody(packageUrn: packageUrn),
+                TestContext.Current.CancellationToken);
+
+            Assert.True(response.IsSuccessStatusCode, "Person without keyrole connection should be able to create request");
         }
     }
 

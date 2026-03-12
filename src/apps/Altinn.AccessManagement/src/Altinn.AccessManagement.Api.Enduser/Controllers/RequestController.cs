@@ -9,6 +9,8 @@ using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Migrations;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -30,6 +32,7 @@ public class RequestController(
     IAssignmentService assignmentService,
     IDelegationService delegationService,
     IConnectionService connectionService,
+    ConnectionQuery connectionQuery,
     IResourceService resourceService,
     IPackageService packageService,
     IEntityService entityService
@@ -117,13 +120,12 @@ public class RequestController(
         GLHF
         */
 
-        // TODO: Replace with ConnectionQuery.
-        var assignments = await assignmentService.GetAssignments(fromId: to, toId: party, ct);
-        var delegations = await delegationService.GetDelegations(fromId: to, toId: party, ct);
+        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var connections = await connectionQuery.HasConnection(to, authUserUuid);
 
-        if (!assignments.Any() && !delegations.Any())
+        if (!connections.Result)
         {
-            return Forbid("No connection to party");
+            return Forbid();
         }
 
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
