@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         IConnectionServiceServiceOwner connectionService,
         IEntityService EntityService,
         IPackageService packageService,
-        IOptions<ServiceOwnerDelegationSettings> resourceOwnerDelegationSettings
+        IOptions<ServiceOwnerDelegationSettings> serviceOwnerDelegationSettings
     ) : ControllerBase
     {
         private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
@@ -101,7 +101,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 return false;
             }
 
-            var whiteList = resourceOwnerDelegationSettings.Value.PackageWhiteList;
+            var whiteList = serviceOwnerDelegationSettings.Value.PackageWhiteList;
             if (whiteList.TryGetValue(organizationNumber.ToString(), out var allowedPackages))
             {
                 return allowedPackages.Contains(packageIdentifier, StringComparer.OrdinalIgnoreCase);

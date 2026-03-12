@@ -58,7 +58,7 @@ public static class ServiceCollectionExtensions
 
         // Resource Owner Delegation - Configuration
         services.AddOptions<ServiceOwnerDelegationSettings>()
-                .BindConfiguration("ResourceOwnerDelegation");
+                .BindConfiguration("ServiceOwnerDelegation");
 
         // Consent Migration - Services (Core - Scoped)
         services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
