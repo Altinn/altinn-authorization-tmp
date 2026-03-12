@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -38,7 +39,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         };
 
         [HttpPost("accesspackages")]
-        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.MaskinportenConsumer)]
+        [AuditServiceOwnerConsumer]
         [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
         [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]

@@ -18,7 +18,7 @@ public class AuditMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        var auditContextAccessor = context.RequestServices.GetRequiredService<IAuditAccessor>();
+        IAuditAccessor auditContextAccessor = context.RequestServices.GetRequiredService<IAuditAccessor>();
         if (context.GetEndpoint() is var endpoint && endpoint != null)
         {
             if (endpoint.Metadata.GetMetadata<AuditJWTClaimToDbAttribute>() is var jwtClaimToDb && jwtClaimToDb != null)
@@ -49,12 +49,12 @@ public class AuditMiddleware : IMiddleware
             }
             else if (endpoint.Metadata.GetMetadata<AuditServiceOwnerConsumerAttribute>() is var serviceOwnerConsumer && serviceOwnerConsumer is { })
             {
-                var party = OrgUtil.GetAuthenticatedParty(context.User);
-                if (party is { })
+                ConsentPartyUrn party = OrgUtil.GetAuthenticatedParty(context.User);
+                if (party is not null)
                 {
-                    var db = context.RequestServices.GetRequiredService<AppDbContext>();
-                    var entity = await GetEntityFromConsumerClaim(db, context, party);
-                    if (entity is { })
+                    AppDbContext db = context.RequestServices.GetRequiredService<AppDbContext>();
+                    Entity entity = await GetEntityFromConsumerClaim(db, context, party);
+                    if (entity is not null)
                     {
                         auditContextAccessor.AuditValues = new(entity.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
                     }

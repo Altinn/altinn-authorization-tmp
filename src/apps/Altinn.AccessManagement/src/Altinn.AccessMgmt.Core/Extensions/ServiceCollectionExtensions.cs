@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IConnectionServiceServiceOwner, ConnectionServiceServiceOwner>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
