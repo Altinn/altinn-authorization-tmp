@@ -1,11 +1,13 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Audit;
+
+//using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Validation;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Migrations;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -36,7 +39,7 @@ public class RequestController(
     [ProducesResponseType(typeof(IReadOnlyCollection<string>), StatusCodes.Status200OK)]
     public IActionResult GetValidUrns()
     {
-        return Ok(RequestValidation.ValidUrns);
+        return Ok(ValidUrns);
     }
 
     /// <summary>
@@ -45,7 +48,7 @@ public class RequestController(
     [HttpGet("{id}/status")]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
+    [AuditServiceOwnerConsumer]
     [ProducesResponseType<RequestStatus>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -68,30 +71,48 @@ public class RequestController(
     [HttpPost]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.ServiceOwnerApi)]
+    [AuditServiceOwnerConsumer]
     [ProducesResponseType<RequestDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateRequest([FromBody] CreateServiceOwnerRequest input, CancellationToken ct = default)
     {
-        var validationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestInput(input));
-        if (validationErrors is { })
+        ValidationErrorBuilder errorBuilder = default;
+
+        var fromResult = await GetEntity(input.Connection.From, "BODY/connection.from", ct);
+        if (fromResult.IsProblem)
         {
-            return validationErrors.ToActionResult();
+            return fromResult.Problem.ToActionResult();
         }
 
-        var from = await GetEntityByUrn(input.Connection.From, ct);
-        var to = await GetEntityByUrn(input.Connection.To, ct);
+        var toResult = await GetEntity(input.Connection.To, "BODY/connection.to", ct);
+        if (toResult.IsProblem) 
+        { 
+            return toResult.Problem.ToActionResult(); 
+        }
+
+        var from = fromResult.Value;
+        var to = toResult.Value;
+
         var role = RoleConstants.Rightholder;
         var status = RequestStatus.Draft;
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
         var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
 
-        var serviceValidationErrors = ValidationComposer.Validate(RequestValidation.ValidateRequestServiceInput(from, to, role, resource, package));
-        if (serviceValidationErrors is { })
+        if (resource == null && input.Resource is { })
         {
-            return serviceValidationErrors.ToActionResult();
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.Urn} is not valid")]);
+        }
+
+        if (package == null && input.Package is { })
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.Urn} is not valid")]);
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
         }
 
         var result = await requestService.CreateRequest(
@@ -117,29 +138,58 @@ public class RequestController(
         return Accepted(result.Value);
     }
 
-    private static RequestLinks BuildLinks(Guid requestId) => new()
+    private async Task<Result<Entity>> GetEntity(string urn, string paramName, CancellationToken ct = default)
     {
-        ConfirmLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
-        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
-    };
+        ValidationErrorBuilder errorBuilder = default;
 
-    private async Task<Entity> GetEntityByUrn(string urn, CancellationToken ct = default)
-    {
+        if (!ValidUrn(urn))
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, paramName, [new(paramName, $"Urn {urn} is not valid")]);
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
+        }
+
         var urnSegments = urn.Split(":");
         var urnSuffix = urnSegments.Last();
         var key = urn[..(urn.Length - urnSuffix.Length - 1)];
 
-        if (!RequestValidation.ValidUrns.Contains(key))
+        if (!ValidUrns.Contains(key))
         {
-            return null;
+            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, $"$QUERY/{paramName}", [new(paramName, $"Urn {urn} is not valid")]);
         }
 
-        return key switch
+        var entity = key switch
         {
             "urn:altinn:person:identifier-no" => await entityService.GetByPersNo(urnSuffix, ct),
             "urn:altinn:organization:identifier-no" => await entityService.GetByOrgNo(urnSuffix, ct),
             "urn:altinn:systemuser:uuid" or "urn:altinn:party:uuid" => await entityService.GetEntity(Guid.Parse(urnSuffix), ct),
             _ => null,
         };
+
+        if (entity == null)
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]);
+        }
+
+        if (errorBuilder.TryBuild(out var problem1))
+        {
+            return problem1;
+        }
+
+        return entity;
     }
+   
+    private static bool ValidUrn(string urn) => ValidUrns.Any(t => urn.StartsWith(t));
+
+    private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
+
+    private static RequestLinks BuildLinks(Guid requestId) => new()
+    {
+        ConfirmLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
+        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
+    };
+
 }
