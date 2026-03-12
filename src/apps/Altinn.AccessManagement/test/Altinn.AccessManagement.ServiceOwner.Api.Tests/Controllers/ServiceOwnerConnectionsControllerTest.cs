@@ -7,9 +7,12 @@ using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.Consent;
+using Altinn.Authorization.Api.Contracts.Register;
 using Microsoft.EntityFrameworkCore;
 
-namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
+namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
 /// <summary>
 /// Tests for <see cref="ConnectionsController"/> in the ServiceOwner API.
@@ -115,11 +118,14 @@ public class ServiceOwnerConnectionsControllerTest
                 await db.SaveChangesAsync(TestContext.Current.CancellationToken);
             });
 
-            var request = new
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}",
-                To = $"urn:altinn:person:identifier-no:{TestEntities.PersonOrjan.Entity.PersonIdentifier}",
-                PackageUrn = $"urn:altinn:accesspackage:{PackageConstants.Customs.Entity.Urn.Split(':').Last()}"
+                From = from,
+                To = to,
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(AccessPackageIdentifier.Parse("PackageConstants.Customs.Entity.Urn.Split(':').Last()", null))
             };
 
             // Act
