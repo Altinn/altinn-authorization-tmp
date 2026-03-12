@@ -23,7 +23,7 @@ public class AuditMiddleware : IMiddleware
         {
             if (endpoint.Metadata.GetMetadata<AuditJWTClaimToDbAttribute>() is var jwtClaimToDb && jwtClaimToDb != null)
             {
-                var claim = context.User?.Claims?
+                Claim claim = context.User?.Claims?
                     .FirstOrDefault(c => c.Type.Equals(jwtClaimToDb.Claim, StringComparison.OrdinalIgnoreCase));
 
                 if (claim == null && jwtClaimToDb.AllowSystemUser)
