@@ -132,8 +132,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var result = await _requestService.GetRequest(created.Id);
 
         Assert.NotNull(result);
-        Assert.Equal(created.Id, result.Id);
-        Assert.Equal(RequestStatus.Draft, result.Status);
+        Assert.Equal(created.Id, result.Value.Id);
+        Assert.Equal(RequestStatus.Draft, result.Value.Status);
     }
 
     [Fact]
@@ -144,8 +144,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var result = await _requestService.GetRequest(created.Id);
 
         Assert.NotNull(result);
-        Assert.Equal(created.Id, result.Id);
-        Assert.Equal(RequestStatus.Draft, result.Status);
+        Assert.Equal(created.Id, result.Value.Id);
+        Assert.Equal(RequestStatus.Draft, result.Value.Status);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     {
         var result = await _requestService.GetRequest(Guid.CreateVersion7());
 
-        Assert.Null(result);
+        Assert.Null(result.Value);
     }
     #endregion
 
@@ -167,8 +167,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         var results = await _requestService.GetRequests(fromId: OrgFrom.Id, toId: null, status: [], after: null, ct: default);
 
-        Assert.NotEmpty(results);
-        Assert.All(results, r => Assert.Equal(OrgFrom.Id, r.Connection.From.Id));
+        Assert.NotEmpty(results.Value);
+        Assert.All(results.Value, r => Assert.Equal(OrgFrom.Id, r.Connection.From.Id));
     }
 
     [Fact]
@@ -179,8 +179,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         var results = await _requestService.GetRequests(fromId: null, toId: PersonTo.Id, status: [], after: null, ct: default);
 
-        Assert.NotEmpty(results);
-        Assert.All(results, r => Assert.Equal(PersonTo.Id, r.Connection.To.Id));
+        Assert.NotEmpty(results.Value);
+        Assert.All(results.Value, r => Assert.Equal(PersonTo.Id, r.Connection.To.Id));
     }
 
     [Fact]
@@ -190,7 +190,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
 
         // Filter by Approved — newly created request is Pending, so result should be empty
-        var results = await _requestService.GetRequests(fromId: OrgFrom.Id, toId: null, status: [RequestStatus.Approved], after: null, ct: default);
+        var requestResults = await _requestService.GetRequests(fromId: OrgFrom.Id, toId: null, status: [RequestStatus.Approved], after: null, ct: default);
+        var results = requestResults.Value;
 
         Assert.DoesNotContain(results, r => r.Connection.From.Id == OrgFrom.Id
             && r.Status == RequestStatus.Pending);
@@ -254,13 +255,13 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 3. ServiceOwner checks that status has changed from Draft
         var afterPending = await _requestService.GetRequest(created.Id);
-        Assert.NotEqual(RequestStatus.Draft, afterPending.Status);
-        Assert.Equal(RequestStatus.Pending, afterPending.Status);
+        Assert.NotEqual(RequestStatus.Draft, afterPending.Value.Status);
+        Assert.Equal(RequestStatus.Pending, afterPending.Value.Status);
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
         Assert.NotNull(fetched);
-        Assert.Equal(created.Id, fetched.Id);
+        Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser accepts
         var accepted = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Approved)).Value;
@@ -280,13 +281,13 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 3. ServiceOwner checks that status has changed from Draft
         var afterPending = await _requestService.GetRequest(created.Id);
-        Assert.NotEqual(RequestStatus.Draft, afterPending.Status);
-        Assert.Equal(RequestStatus.Pending, afterPending.Status);
+        Assert.NotEqual(RequestStatus.Draft, afterPending.Value.Status);
+        Assert.Equal(RequestStatus.Pending, afterPending.Value.Status);
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
         Assert.NotNull(fetched);
-        Assert.Equal(created.Id, fetched.Id);
+        Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser accepts
         var accepted = (await _requestService.UpdateRequest(OrgFrom.Id,created.Id, RequestStatus.Approved)).Value;
@@ -308,13 +309,13 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 3. ServiceOwner checks that status has changed from Draft
         var afterPending = await _requestService.GetRequest(created.Id);
-        Assert.NotEqual(RequestStatus.Draft, afterPending.Status);
-        Assert.Equal(RequestStatus.Pending, afterPending.Status);
+        Assert.NotEqual(RequestStatus.Draft, afterPending.Value.Status);
+        Assert.Equal(RequestStatus.Pending, afterPending.Value.Status);
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
         Assert.NotNull(fetched);
-        Assert.Equal(created.Id, fetched.Id);
+        Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser rejects
         var rejected = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Rejected)).Value;

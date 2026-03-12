@@ -64,7 +64,7 @@ public class RequestController(
 
         var result = await requestService.GetRequests(fromId: party, toId: to, status: validStatus, after: afterTime, ct);
 
-        return Ok(PaginatedResult.Create(result, null));
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     [HttpGet("received")]
@@ -89,7 +89,7 @@ public class RequestController(
         var afterTime = DateTimeOffset.UtcNow.AddDays(-30);
 
         var result = await requestService.GetRequests(fromId: from, toId: party, status: validStatus, after: afterTime, ct);
-        return Ok(PaginatedResult.Create(result, null));
+        return result.IsSuccess ? Ok(PaginatedResult.Create(result.Value, null)) : result.Problem.ToActionResult();
     }
 
     /// <summary>
@@ -205,7 +205,16 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ApproveRequest([FromQuery] Guid party, [FromQuery] Guid id, CancellationToken ct = default)
     {
-        var existing = await requestService.GetRequest(id, ct);
+        ValidationErrorBuilder errorBuilder = default;
+
+        var existingResult = await requestService.GetRequest(id, ct);
+        if (existingResult.IsProblem)
+        {
+            return BadRequest(existingResult.Problem.ToProblemDetails());
+        }
+
+        var existing = existingResult.Value;
+
         if (existing is null || existing.Connection.From.Id != party)
         {
             return NotFound();

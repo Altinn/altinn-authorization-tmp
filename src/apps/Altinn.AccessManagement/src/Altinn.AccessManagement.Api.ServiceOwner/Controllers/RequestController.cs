@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 
@@ -56,13 +57,7 @@ public class RequestController(
     public async Task<IActionResult> GetRequestStatus([FromRoute] Guid id, CancellationToken ct = default)
     {
         var result = await requestService.GetRequest(id, ct);
-
-        if (result is { })
-        {
-            return Ok(result.Status);
-        }
-
-        return NotFound();
+        return result.IsSuccess ? Ok(result.Value.Status) : result.Problem.ToActionResult();
     }
 
     /// <summary>

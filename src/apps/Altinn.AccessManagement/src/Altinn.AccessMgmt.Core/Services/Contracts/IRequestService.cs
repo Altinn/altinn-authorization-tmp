@@ -12,12 +12,12 @@ public interface IRequestService
     /// <summary>
     /// Retrieves the request associated with the specified request identifier.
     /// </summary>
-    Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct = default);
+    Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves a collection of request DTOs matching the specified filtering criteria.
     /// </summary>
-    Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
+    Task<Result<IEnumerable<RequestDto>>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request

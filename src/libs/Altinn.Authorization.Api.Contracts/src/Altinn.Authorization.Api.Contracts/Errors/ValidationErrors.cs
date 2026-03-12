@@ -145,19 +145,19 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor DelegationHasActiveConnections { get; }
         = _factory.Create(31, "The delegation has one or more active access packages associated with it. Set cascade to true to remove the delegation and its active access packages.");
-    
+
     /// <summary>
     /// Delegation has active connections.
     /// </summary>
     public static ValidationErrorDescriptor MissingAssignment { get; }
         = _factory.Create(32, "Assignment of role do not exist.");
-    
+
     /// <summary>
     /// Delegation has active connections.
     /// </summary>
     public static ValidationErrorDescriptor PackageIsNotDelegable { get; }
         = _factory.Create(33, "Package is not delegable.");
-    
+
     /// <summary>
     /// Delegation has active connections.
     /// </summary>
@@ -175,4 +175,22 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor RequestUnsupportedStatusUpdate { get; }
         = _factory.Create(36, $"Request does not support this status update.");
+
+    /// <summary>
+    /// RequestMissingFromOrTo
+    /// </summary>
+    public static ValidationErrorDescriptor RequestMissingFromOrTo { get; }
+        = _factory.Create(37, $"Query must have either from or to defined.");
+
+    /// <summary>
+    /// RequestMissingFromOrTo
+    /// </summary>
+    public static ValidationErrorDescriptor RequestMissingResourceOrPackage { get; }
+        = _factory.Create(38, $"Either Resource og PAckage must be included in request.");
+
+    /// <summary>
+    /// RequestMissingFromOrTo
+    /// </summary>
+    public static ValidationErrorDescriptor RequestFailedToCreateRequest { get; }
+        = _factory.Create(39, $"Could not create request.");
 }

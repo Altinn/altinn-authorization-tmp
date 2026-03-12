@@ -258,7 +258,7 @@ public class RequestControllerTest
             using var doc = JsonDocument.Parse(json);
             var items = doc.RootElement.GetProperty("data");
 
-            Assert.Equal(0, items.GetArrayLength());
+            Assert.Null(items);
         }
     }
 

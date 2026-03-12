@@ -24,7 +24,7 @@ public class RequestControllerTest
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+            claims.Add(new Claim(AltinnCoreClaimTypes.Org, partyUuid.ToString()));
             claims.Add(new Claim("scope", $"{AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE}"));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");

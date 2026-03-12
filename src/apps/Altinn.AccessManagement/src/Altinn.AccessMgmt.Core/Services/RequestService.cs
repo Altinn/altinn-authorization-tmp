@@ -1,14 +1,13 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -16,8 +15,10 @@ namespace Altinn.AccessMgmt.Core.Services;
 public class RequestService(AppDbContext db) : IRequestService
 {
     /// <inheritdoc/>
-    public async Task<RequestDto> GetRequest(Guid requestId, CancellationToken ct = default)
+    public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
     {
+        ValidationErrorBuilder error = default;
+
         var requestResource = await db.RequestAssignmentResources.AsNoTracking()
             .Include(r => r.Assignment).ThenInclude(a => a.From)
             .Include(r => r.Assignment).ThenInclude(a => a.To)
@@ -36,34 +37,55 @@ public class RequestService(AppDbContext db) : IRequestService
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
             .FirstOrDefaultAsync(t => t.Id == requestId, ct);
+
         if (requestPackage != null)
         {
             return DtoMapper.Convert(requestPackage);
         }
 
-        return null;
+        error.Add(ValidationErrors.RequestNotFound);
+        error.TryBuild(out var problems);
+
+        return problems;
     }
     
     /// <inheritdoc/>
-    public async Task<IEnumerable<RequestDto>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RequestDto>>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default)
     {
+        ValidationErrorBuilder error = default;
+
         if (!fromId.HasValue && !toId.HasValue)
         {
-            throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
+            error.Add(ValidationErrors.RequestMissingFromOrTo);
         }
 
         var requestResources = await GetRequestAssignmentResource(fromId, toId, status, after, ct);
         var requestPackages = await GetRequestAssignmentPackage(fromId, toId, status, after, ct);
 
-        return requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert));
+        if (!requestResources.Any() && !requestPackages.Any())
+        {
+            error.Add(ValidationErrors.RequestNotFound);
+        }
+
+        if (error.TryBuild(out var problems))
+        {
+            return problems;
+        }
+
+        var result = requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert));
+        return result.ToList();
     }
 
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default)
     {
-        if (request.Resource.HasValue && request.Package.HasValue)
+        ValidationErrorBuilder error = default;
+
+        if (!request.Resource.HasValue && !request.Package.HasValue)
         {
-            throw new ArgumentException();
+            error.Add(ValidationErrors.RequestMissingResourceOrPackage);
+            error.TryBuild(out var inputProblems);
+            return inputProblems;
         }
 
         var requestAssignmentResult = await GetOrCreateRequestAssignment(request.From, request.To, request.Role, ct);
@@ -79,7 +101,9 @@ public class RequestService(AppDbContext db) : IRequestService
             return await CreateRequestAssignmentPackage(requestAssignment.Id, request.Package.Value, request.Status, ct);
         }
 
-        throw new ArgumentException();
+        error.Add(ValidationErrors.RequestFailedToCreateRequest);
+        error.TryBuild(out var problems);
+        return problems;
     }
 
     /// <inheritdoc/>
@@ -87,7 +111,13 @@ public class RequestService(AppDbContext db) : IRequestService
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var request = await GetRequest(requestId, ct);
+        var requestResult = await GetRequest(requestId, ct);
+        if (requestResult.IsProblem)
+        {
+            return requestResult;
+        }
+
+        var request = requestResult.Value;
         
         if (request.Connection.From.Id != partyUuid)
         {
