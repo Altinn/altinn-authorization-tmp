@@ -16,6 +16,7 @@ public partial class AltinnRegisterClient
         "display-name",
         "deleted",
         "deleted-at",
+        "modified",
         "user",
         "person.date-of-birth",
         "person.date-of-death",
