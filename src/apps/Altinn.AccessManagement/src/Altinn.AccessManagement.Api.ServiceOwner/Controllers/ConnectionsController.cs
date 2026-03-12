@@ -1,9 +1,11 @@
 ﻿using System.Net.Mime;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -11,6 +13,7 @@ using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
 {
@@ -22,7 +25,8 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
     public class ConnectionsController(
         IConnectionServiceServiceOwner connectionService,
         IEntityService EntityService,
-        IPackageService packageService
+        IPackageService packageService,
+        IOptions<ServiceOwnerDelegationSettings> resourceOwnerDelegationSettings
     ) : ControllerBase
     {
         private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
@@ -44,6 +48,13 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AddPackages([FromBody] ServiceOwnerAccessPackageDelegation packageDelegation, CancellationToken cancellationToken = default)
         {
+            // Validate service owner is authorized to delegate this package
+            string packageIdentifier = packageDelegation.PackageUrn.ValueSpan.ToString();
+            if (!IsServiceOwnerAuthorizedForPackage(packageIdentifier))
+            {
+                return Problems.PackageDelegationNotAuthorized.ToActionResult();
+            }
+
             Guid? fromEntity = null;
             Guid? toEntity = null;
 
@@ -59,13 +70,13 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 toEntity = personToEntity?.Id;
             }
 
-             // Validate entities exist
+            // Validate entities exist
             if (fromEntity is null || toEntity is null)
             {
                 return Problems.ConnectionEntitiesDoNotExist.ToActionResult();
             }
 
-            PackageDto package = await packageService.GetPackageByUrnValue(packageDelegation.PackageUrn.ValueSpan.ToString(), cancellationToken);
+            PackageDto package = await packageService.GetPackageByUrnValue(packageIdentifier, cancellationToken);
 
             if (package is null)
             {
@@ -80,6 +91,23 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
             }
 
             return Ok(result.Value);
+        }
+
+        private bool IsServiceOwnerAuthorizedForPackage(string packageIdentifier)
+        {
+            var consumerParty = OrgUtil.GetAuthenticatedParty(User);
+            if (consumerParty is null || !consumerParty.IsOrganizationId(out var organizationNumber))
+            {
+                return false;
+            }
+
+            var whiteList = resourceOwnerDelegationSettings.Value.PackageWhiteList;
+            if (whiteList.TryGetValue(organizationNumber.ToString(), out var allowedPackages))
+            {
+                return allowedPackages.Contains(packageIdentifier, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
     }
 }

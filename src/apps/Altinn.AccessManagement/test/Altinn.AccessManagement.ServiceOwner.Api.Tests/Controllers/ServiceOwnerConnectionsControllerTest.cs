@@ -11,6 +11,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
@@ -31,6 +32,14 @@ public class ServiceOwnerConnectionsControllerTest
         public AddPackages(ApiFixture fixture)
         {
             Fixture = fixture;
+
+            // Configure the whitelist for the test service owner
+            Fixture.WithInMemoryAppsettings(dict =>
+            {
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:0"] = "innbygger-skatteforhold-privatpersoner";
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:1"] = "another-allowed-package";
+            });
+
             Fixture.EnsureSeedOnce(db =>
             {
                 // Seed any initial data needed for tests
@@ -229,6 +238,92 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestData.MittRegnskap.Id.ToString()));
                 claims.Add(new Claim("scope", "some:other:scope")); // Wrong scope
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddPackage_WithPackageNotInWhitelist_ReturnsForbidden()
+        {
+            // Arrange
+            var client = CreateClient();
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("package-not-in-whitelist"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddPackage_WithServiceOwnerNotInWhitelist_ReturnsForbidden()
+        {
+            // Arrange - Create client with a different organization that's not in the whitelist
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.Org, "OTHER"));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
+                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.BakerJohnsen.Entity.OrganizationIdentifier))); // Not in whitelist
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddPackage_WithMissingConsumerClaim_ReturnsForbidden()
+        {
+            // Arrange - Create client without consumer claim
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
+                // No consumer claim
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
