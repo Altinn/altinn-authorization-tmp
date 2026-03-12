@@ -193,4 +193,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor RequestFailedToCreateRequest { get; }
         = _factory.Create(39, $"Could not create request.");
+
+    /// <summary>
+    /// Failed to Approve request
+    /// </summary>
+    public static ValidationErrorDescriptor RequestFailedToApprove { get; }
+        = _factory.Create(40, $"Failed to approve request.");
 }

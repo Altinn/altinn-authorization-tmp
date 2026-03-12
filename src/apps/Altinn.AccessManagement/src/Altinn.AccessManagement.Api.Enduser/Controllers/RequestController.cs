@@ -1,20 +1,24 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Models;
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Migrations;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -105,6 +109,8 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateRequest([FromQuery] Guid party, [FromQuery] Guid to, [FromBody]CreateRequestInput input, CancellationToken ct = default)
     {
+        ValidationErrorBuilder errorBuilder = default;
+
         /*
         Person1 vil be FirmaA om en rettighet, derfor er to = FirmaA i queryparam. 
         Men da blir Assignment.From = FirmaA og Assignment.To = Party (Person1)
@@ -220,9 +226,11 @@ public class RequestController(
             return NotFound();
         }
 
+        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+
         return existing.Type switch
         {
-            "resource" => await ApproveResourceRequest(party, existing, ct),
+            "resource" => await ApproveResourceRequest(party, authUserUuid, existing, ct),
             "package" => await ApprovePackageRequest(party, existing, ct),
             _ => BadRequest(),
         };
@@ -230,10 +238,14 @@ public class RequestController(
 
     private async Task<IActionResult> ApprovePackageRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
     {
+        ValidationErrorBuilder errorBuilder = default;
+
         var assignment = await assignmentService.GetOrCreateAssignment(request.Connection.From.Id, request.Connection.To.Id, RoleConstants.Rightholder, cancellationToken: ct);
         if (assignment is null)
         {
-            return Problem("Unable to get or create rightholder assignment");
+            errorBuilder.Add(ValidationErrors.RequestFailedToApprove, "Approve", [new("Approve", $"Unable to get or create rightholder assignment")]);
+            errorBuilder.TryBuild(out var problem);
+            return problem.ToActionResult();
         }
 
         var result = await connectionService.AddPackage(
@@ -257,15 +269,15 @@ public class RequestController(
         return Ok(request);
     }
 
-    private async Task<IActionResult> ApproveResourceRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
+    private async Task<IActionResult> ApproveResourceRequest(Guid partyUuid, Guid authUserId, RequestDto request, CancellationToken ct)
     {
-        var party = await entityService.GetEntity(partyUuid, ct);
+        var party = await entityService.GetEntity(partyUuid, ct); // valg avgiver
 
         var delegationCheck = await connectionService.ResourceDelegationCheck(
-            partyUuid,
-            request.Connection.From.Id,
-            request.Resource.Urn,
-            ConfigureConnections,
+            authenticatedUserUuid: authUserId,
+            party: partyUuid,
+            resource: request.Resource.Urn,
+            configureConnection: ConfigureConnections,
             cancellationToken: ct);
 
         if (delegationCheck.IsProblem)
