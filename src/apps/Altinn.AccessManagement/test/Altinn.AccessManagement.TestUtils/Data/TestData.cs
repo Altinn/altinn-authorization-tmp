@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessManagement.TestUtils.Data;
@@ -6,6 +6,20 @@ namespace Altinn.AccessManagement.TestUtils.Data;
 public static class TestData
 {
     #region Firmaer
+
+    /*
+    
+    
+
+123456785
+555555555
+777777777
+314159268
+625818281
+990123454
+100000016
+    
+    */
 
     public static ConstantDefinition<Entity> BakerJohnsen { get; } = new("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
     {
@@ -16,12 +30,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "Baker Johnsen",
-            OrganizationIdentifier = "310000001",
+            OrganizationIdentifier = "913456785",
             Parent = null,
             ParentId = null,
             PartyId = 50100001,
             PersonIdentifier = null,
-            RefId = "310000001",
+            RefId = "913456785",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -38,12 +52,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "Svendsen Automobil",
-            OrganizationIdentifier = "310000002",
+            OrganizationIdentifier = "876543214",
             Parent = null,
             ParentId = null,
             PartyId = 50100002,
             PersonIdentifier = null,
-            RefId = "310000002",
+            RefId = "876543214",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -60,12 +74,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "Fredriksons Fabrikk",
-            OrganizationIdentifier = "310000003",
+            OrganizationIdentifier = "246813574",
             Parent = null,
             ParentId = null,
             PartyId = 50100003,
             PersonIdentifier = null,
-            RefId = "310000003",
+            RefId = "246813574",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,

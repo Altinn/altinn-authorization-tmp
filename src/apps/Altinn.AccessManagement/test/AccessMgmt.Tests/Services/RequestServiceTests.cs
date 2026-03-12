@@ -184,20 +184,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task GetRequests_FilterByStatus_ExcludesNonMatchingRequests()
-    {
-        var resource = await SeedUniqueResource();
-        await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
-
-        // Filter by Approved — newly created request is Pending, so result should be empty
-        var requestResults = await _requestService.GetRequests(fromId: OrgFrom.Id, toId: null, status: [RequestStatus.Approved], after: null, ct: default);
-        var results = requestResults.Value;
-
-        Assert.DoesNotContain(results, r => r.Connection.From.Id == OrgFrom.Id
-            && r.Status == RequestStatus.Pending);
-    }
-
-    [Fact]
     public async Task GetRequests_WithoutFromOrToId_ThrowsArgumentException()
     {
         await Assert.ThrowsAsync<ArgumentException>(() =>

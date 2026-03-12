@@ -11,4 +11,9 @@ public class RequestRefrenceDto
     /// URN
     /// </summary>
     public string Urn { get; set; }
+
+    public bool HasValue()
+    {
+        return Id.HasValue || !string.IsNullOrEmpty(Urn);
+    }
 }

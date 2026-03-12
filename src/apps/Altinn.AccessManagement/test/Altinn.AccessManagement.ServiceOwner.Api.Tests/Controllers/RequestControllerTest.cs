@@ -19,24 +19,24 @@ public class RequestControllerTest
 {
     public const string Route = "accessmanagement/api/v1/serviceowner/delegationrequests";
 
-    private static HttpClient CreateClient(ApiFixture fixture, Guid partyUuid)
+    private static HttpClient CreateClient(ApiFixture fixture, string orgNo)
     {
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.Org, partyUuid.ToString()));
+            claims.Add(new Claim("consumer", JsonSerializer.Serialize(new { authority = "iso6523-actorid-upis", ID = $"0192:{orgNo}" })));
             claims.Add(new Claim("scope", $"{AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE}"));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         return client;
     }
 
-    private static HttpClient CreateReadOnlyClient(ApiFixture fixture)
+    private static HttpClient CreateReadOnlyClient(ApiFixture fixture, string orgNo)
     {
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestData.BakerJohnsen.Id.ToString()));
+            claims.Add(new Claim("consumer", JsonSerializer.Serialize(new { authority = "iso6523-actorid-upis", ID = $"0192:{orgNo}" })));
             claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -143,7 +143,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithResource_Returns202Accepted()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -179,7 +179,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
 
             var body = new CreateServiceOwnerRequest
             {
@@ -203,7 +203,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyResourceId_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -240,7 +240,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithPackage_Returns202Accepted()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -276,7 +276,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
 
             var body = new CreateServiceOwnerRequest
             {
@@ -300,7 +300,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyPackageUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -359,7 +359,7 @@ public class RequestControllerTest
         [Fact]
         public async Task GetValidUrns_ThenCreateResourceRequest_EndToEnd()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(
@@ -398,7 +398,7 @@ public class RequestControllerTest
         [Fact]
         public async Task GetValidUrns_ThenCreatePackageRequest_EndToEnd()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(

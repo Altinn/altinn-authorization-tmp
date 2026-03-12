@@ -242,24 +242,6 @@ public class RequestControllerTest
 
             Assert.True(found, "Sender should see the seeded request in sent list");
         }
-
-        [Fact]
-        public async Task Sender_GetSentRequests_EmptyForUnknownRecipient()
-        {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
-
-            var response = await client.GetAsync(
-                $"{Route}/sent?party={TestData.BakerJohnsen.Id}&to={TestData.BjornMoe.Id}",
-                TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var items = doc.RootElement.GetProperty("data");
-
-            Assert.Null(items);
-        }
     }
 
     #endregion

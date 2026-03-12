@@ -95,12 +95,12 @@ public class RequestController(
         var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
         var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
 
-        if (resource == null && input.Resource is { })
+        if (input.Resource.HasValue() && resource == null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.Urn} is not valid")]);
         }
 
-        if (package == null && input.Package is { })
+        if (input.Package.HasValue() && package == null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.Urn} is not valid")]);
         }

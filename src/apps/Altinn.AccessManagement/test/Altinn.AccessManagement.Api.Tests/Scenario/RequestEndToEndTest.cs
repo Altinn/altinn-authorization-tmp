@@ -19,26 +19,24 @@ public class RequestEndToEndTest
     private const string ServiceOwnerRoute = "accessmanagement/api/v1/serviceowner/delegationrequests";
     private const string EnduserRoute = "accessmanagement/api/v1/enduser/request";
 
-    private static HttpClient CreateServiceOwnerClient(ApiFixture fixture, Guid partyUuid)
+    private static HttpClient CreateServiceOwnerClient(ApiFixture fixture, string orgNo)
     {
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
-            claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE));
+            claims.Add(new Claim("consumer", JsonSerializer.Serialize(new { authority = "iso6523-actorid-upis", ID = $"0192:{orgNo}" })));
             claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         return client;
     }
 
-    private static HttpClient CreateServiceOwnerReadClient(ApiFixture fixture, Guid partyUuid)
+    private static HttpClient CreateServiceOwnerReadClient(ApiFixture fixture, string orgNo)
     {
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
-            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+            claims.Add(new Claim("consumer", JsonSerializer.Serialize(new { authority = "iso6523-actorid-upis", ID = $"0192:{orgNo}" })));
             claims.Add(new Claim("scope", AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -84,7 +82,7 @@ public class RequestEndToEndTest
             var to = $"urn:altinn:person:identifier-no:{TestData.SiljeHaugen.Entity.PersonIdentifier}";
 
             // Step 1: SO creates a package request (status=Draft)
-            var soClient = CreateServiceOwnerClient(Fixture, TestData.FredriksonsFabrikk.Id);
+            var soClient = CreateServiceOwnerClient(Fixture, TestData.FredriksonsFabrikk.Entity.OrganizationIdentifier);
             var createBody = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
@@ -115,7 +113,7 @@ public class RequestEndToEndTest
             Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
 
             // Step 3: SO verifies Pending
-            var soReadClient = CreateServiceOwnerReadClient(Fixture, TestData.FredriksonsFabrikk.Id);
+            var soReadClient = CreateServiceOwnerReadClient(Fixture, TestData.FredriksonsFabrikk.Entity.OrganizationIdentifier);
             var soGetResponse = await soReadClient.GetAsync(
                 $"{ServiceOwnerRoute}/{requestId}/status",
                 TestContext.Current.CancellationToken);
