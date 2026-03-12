@@ -40,6 +40,7 @@ public static class TestDataSeeds
             TestData.RegnskapNorge,
             TestData.MittRegnskap,
             TestData.RpcAS,
+            TestData.StorMektigTenesteeier,
             TestData.LarsBakke,
             TestData.HildeStrand,
             TestData.KnutVik,

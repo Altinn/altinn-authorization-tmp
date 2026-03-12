@@ -47,7 +47,7 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
                 claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
-                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.StorMektigTJenesteeier.Entity.OrganizationIdentifier)));
+                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier)));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
             return client;
@@ -64,8 +64,8 @@ public class ServiceOwnerConnectionsControllerTest
             // Arrange
             var client = CreateClient();
 
-            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
-            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.VegardSolberg.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.IngerNygard.Entity.PersonIdentifier));
             AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
 
             ServiceOwnerAccessPackageDelegation request = new()
@@ -87,9 +87,9 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 var assignmentPackage = await db.AssignmentPackages
                     .Include(ap => ap.Assignment)
-                    .Where(ap => ap.Assignment.FromId == TestData.BjornMoe.Id)
-                    .Where(ap => ap.Assignment.ToId == TestData.LarsBakke.Id)
-                    .Where(ap => ap.PackageId == PackageConstants.Customs.Id)
+                    .Where(ap => ap.Assignment.FromId == TestData.VegardSolberg.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.IngerNygard.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id)
                     .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
 
                 Assert.NotNull(assignmentPackage);
@@ -117,7 +117,7 @@ public class ServiceOwnerConnectionsControllerTest
                 var existingPackage = new AssignmentPackage()
                 {
                     AssignmentId = existingAssignment.Id,
-                    PackageId = PackageConstants.Customs.Id,
+                    PackageId = PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id,
                 };
                 db.AssignmentPackages.Add(existingPackage);
                 await db.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -173,7 +173,7 @@ public class ServiceOwnerConnectionsControllerTest
             var client = CreateClient();
 
             ServiceOwnerConnectionPartyUrn.OrganizationId from = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.MittRegnskap.Entity.OrganizationIdentifier));
-            ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.MittRegnskap.Entity.OrganizationIdentifier));
+            ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.RpcAS.Entity.OrganizationIdentifier));
             AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
 
             ServiceOwnerAccessPackageDelegation request = new()
