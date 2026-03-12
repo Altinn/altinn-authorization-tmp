@@ -3,13 +3,11 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -20,7 +18,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/authorizedparties")]
 public class AuthorizedPartiesController(
     ILogger<AuthorizedPartiesController> logger,
-    FeatureManager featureManager,
     IAuthorizedPartiesService authorizedPartiesService) : ControllerBase
 {
     /// <summary>
@@ -71,7 +68,7 @@ public class AuthorizedPartiesController(
                 AnyOfResourceIds = anyOfResourceIds
             };
 
-            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled, cancellationToken) && partyFilter?.Any() == true)
+            if (partyFilter?.Any() == true)
             {
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
                 filters.PartyFilter = new SortedDictionary<Guid, Guid>();
@@ -89,7 +86,7 @@ public class AuthorizedPartiesController(
                 return Ok(PaginatedResult.Create(DtoMapper.ConvertToAuthorizedPartiesDto(result), null));
             }
 
-            string systemUserUuid = AuthenticationHelper.GetSystemUserUuid(HttpContext);
+            string systemUserUuid = AuthenticationHelper.GetSystemUserUuidString(HttpContext);
             if (!string.IsNullOrWhiteSpace(systemUserUuid))
             {
                 var result = await authorizedPartiesService.GetAuthorizedPartiesBySystemUserUuid(systemUserUuid, filters, cancellationToken);

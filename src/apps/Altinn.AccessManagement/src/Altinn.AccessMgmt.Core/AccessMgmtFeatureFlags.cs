@@ -1,7 +1,15 @@
 ﻿namespace Altinn.AccessMgmt.Core;
 
+/// <summary>
+/// Feature flags for Access Management
+/// </summary>
 public static class AccessMgmtFeatureFlags
 {
+    /// <summary>
+    /// Feature flag for enabling consent migration from Altinn 2 to Altinn 3. This flag controls whether the hosted service responsible for migrating consents is active.
+    /// </summary>
+    public const string HostedServicesConsentMigration = "AccessMgmt.Core.HostedServices.ConsentMigration";
+
     /// <summary>
     /// Specifies if the register data should be streamed from register service to access management database
     /// </summary>
@@ -32,6 +40,11 @@ public static class AccessMgmtFeatureFlags
     /// </summary>
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
 
+    /// <summary>
+    /// Specifies if the altinn private tax affair roles data should streamed from sblbridge service to access management database
+    /// </summary>
+    public const string HostedServicesPrivateTaxAffairRoleSync = $"AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync";
+    
     /// <summary>
     /// Specifies if the altinn bankruptcyestate roles data should be streamed from sblbridge service to access management database
     /// </summary>
@@ -76,4 +89,19 @@ public static class AccessMgmtFeatureFlags
     /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
     /// </summary>
     public const string HostedServicesSingleInstanceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue";
+
+    /// <summary>
+    /// Feature flag for Controller Enduser Connections
+    /// </summary>
+    public const string EnduserControllerConnections = "AccessManagement.Enduser.Connections";
+
+    /// <summary>
+    /// Enables request assignment resource endpoints in enduser and serviceowner APIs.
+    /// </summary>
+    public const string EnableRequestAssignmentResource = "AccessMgmt.Controller.RequestAssignment.Resource";
+
+    /// <summary>
+    /// Enables request assignment package endpoints in enduser and serviceowner APIs.
+    /// </summary>
+    public const string EnableRequestAssignmentPackage = "AccessMgmt.Controller.RequestAssignment.Package";
 }

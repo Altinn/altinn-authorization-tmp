@@ -15,15 +15,29 @@ db_max_pool_size         = 100
 db_compute_sku           = "D2"
 sbl_endpoint             = "https://ai-tt02-vip-sblbridge.ai.basefarm.net/sblbridge/"
 enable_high_availability = true
+key_vault_rbac = [{
+  id       = "3863fbc0-a24b-42bf-af3d-f45111814457" # Altinn Product Authorization: Admins Prod
+  rolename = "Key Vault Secrets Officer"
+}]
 
 features = {
+  maskinporten = true
   a2_party_import = {
     parties  = true
     user_ids = true
     profiles = true
   }
+
   party_import = {
     system_users = true
+    npr = {
+      guardianships = true
+    }
+  }
+
+  ccr_proxy = {
+    enable = true
+    record = true
   }
 }
 
