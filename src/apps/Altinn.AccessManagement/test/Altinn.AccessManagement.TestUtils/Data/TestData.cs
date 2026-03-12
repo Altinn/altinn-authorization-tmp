@@ -163,6 +163,32 @@ public static class TestData
 
     #endregion
 
+    #region Tjenesteeier
+
+    public static ConstantDefinition<Entity> StorMektigTJenesteeier { get; } = new("f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8091a2")
+    {
+        Entity = new()
+        {
+            DateOfBirth = null,
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Stor og Mektig Tjenesteeier",
+            OrganizationIdentifier = "974761076",
+            Parent = null,
+            ParentId = null,
+            PartyId = 50100006,
+            PersonIdentifier = null,
+            RefId = "974761076",
+            TypeId = EntityTypeConstants.Organization,
+            UserId = null,
+            Username = null,
+            VariantId = EntityVariantConstants.AS,
+        }
+    };
+
+    #endregion
+
     #region Personer - Baker Johnsen
 
     public static ConstantDefinition<Entity> LarsBakke { get; } = new("10000001-aaaa-4bbb-8ccc-ddddeeee0001")

@@ -47,7 +47,7 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
                 claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
-                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestEntities.OrganizationVerdiqAS.Entity.OrganizationIdentifier)));
+                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.StorMektigTJenesteeier.Entity.OrganizationIdentifier)));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
             return client;
@@ -63,11 +63,16 @@ public class ServiceOwnerConnectionsControllerTest
         {
             // Arrange
             var client = CreateClient();
-            var request = new
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}",
-                To = $"urn:altinn:person:identifier-no:{TestEntities.PersonOrjan.Entity.PersonIdentifier}",
-                PackageUrn = $"urn:altinn:accesspackage:{PackageConstants.Customs.Entity.Urn.Split(':').Last()}"
+                From = from,
+                To = to,
+                PackageUrn = package
             };
 
             // Act
@@ -82,8 +87,8 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 var assignmentPackage = await db.AssignmentPackages
                     .Include(ap => ap.Assignment)
-                    .Where(ap => ap.Assignment.FromId == TestEntities.PersonPaula.Id)
-                    .Where(ap => ap.Assignment.ToId == TestEntities.PersonOrjan.Id)
+                    .Where(ap => ap.Assignment.FromId == TestData.BjornMoe.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.LarsBakke.Id)
                     .Where(ap => ap.PackageId == PackageConstants.Customs.Id)
                     .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
 
@@ -102,8 +107,8 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 var existingAssignment = new Assignment()
                 {
-                    FromId = TestEntities.PersonPaula.Id,
-                    ToId = TestEntities.PersonOrjan.Id,
+                    FromId = TestData.BjornMoe.Id,
+                    ToId = TestData.LarsBakke.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.Assignments.Add(existingAssignment);
@@ -118,19 +123,20 @@ public class ServiceOwnerConnectionsControllerTest
                 await db.SaveChangesAsync(TestContext.Current.CancellationToken);
             });
 
-            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
-            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+                ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+                ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+                AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
                 From = from,
                 To = to,
-                PackageUrn = AccessPackageUrn.AccessPackage.Create(AccessPackageIdentifier.Parse("PackageConstants.Customs.Entity.Urn.Split(':').Last()", null))
+                PackageUrn = package
             };
 
             // Act
             HttpResponseMessage response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
-            string contentTExt = await response.Content.ReadAsStringAsync();
+            string contentText = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -141,11 +147,16 @@ public class ServiceOwnerConnectionsControllerTest
         {
             // Arrange
             var client = CreateClient();
-            var request = new
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("nonexistent-package"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}",
-                To = $"urn:altinn:person:identifier-no:{TestEntities.PersonOrjan.Entity.PersonIdentifier}",
-                PackageUrn = "urn:altinn:accesspackage:nonexistent-package"
+                From = from,
+                To = to,
+                PackageUrn = package
             };
 
             // Act
@@ -160,11 +171,16 @@ public class ServiceOwnerConnectionsControllerTest
         {
             // Arrange
             var client = CreateClient();
-            var request = new
+
+            ServiceOwnerConnectionPartyUrn.OrganizationId from = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.MittRegnskap.Entity.OrganizationIdentifier));
+            ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.MittRegnskap.Entity.OrganizationIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationNordisAS.Entity.OrganizationIdentifier}",
-                To = $"urn:altinn:organization:identifier-no:{TestEntities.OrganizationVerdiqAS.Entity.OrganizationIdentifier}",
-                PackageUrn = $"urn:altinn:accesspackage:{PackageConstants.Customs.Entity.Urn.Split(':').Last()}"
+                From = from,
+                To = to,
+                PackageUrn = package
             };
 
             // Act
@@ -186,11 +202,15 @@ public class ServiceOwnerConnectionsControllerTest
             // Arrange
             var client = Fixture.Server.CreateClient(); // No auth token
 
-            var request = new
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}",
-                To = $"urn:altinn:person:identifier-no:{TestEntities.PersonOrjan.Entity.PersonIdentifier}",
-                PackageUrn = $"urn:altinn:accesspackage:{PackageConstants.Customs.Entity.Urn.Split(':').Last()}"
+                From = from,
+                To = to,
+                PackageUrn = package
             };
 
             // Act
@@ -207,16 +227,20 @@ public class ServiceOwnerConnectionsControllerTest
             var client = Fixture.Server.CreateClient();
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
-                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.OrganizationVerdiqAS.Id.ToString()));
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestData.MittRegnskap.Id.ToString()));
                 claims.Add(new Claim("scope", "some:other:scope")); // Wrong scope
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-            var request = new
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
             {
-                From = $"urn:altinn:person:identifier-no:{TestEntities.PersonPaula.Entity.PersonIdentifier}",
-                To = $"urn:altinn:person:identifier-no:{TestEntities.PersonOrjan.Entity.PersonIdentifier}",
-                PackageUrn = $"urn:altinn:accesspackage:{PackageConstants.Customs.Entity.Urn.Split(':').Last()}"
+                From = from,
+                To = to,
+                PackageUrn = package
             };
 
             // Act
