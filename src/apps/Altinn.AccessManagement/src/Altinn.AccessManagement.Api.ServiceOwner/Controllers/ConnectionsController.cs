@@ -38,7 +38,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         };
 
         [HttpPost("accesspackages")]
-        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.MaskinportenConsumer)]
         [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
         [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]

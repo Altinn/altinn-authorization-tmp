@@ -44,9 +44,15 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
                 claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
+                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestEntities.OrganizationVerdiqAS.Entity.OrganizationIdentifier)));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
             return client;
+        }
+
+        private static string GetConsumerClaimJson(string orgNumber)
+        {
+            return $$"""{ "authority":"iso6523-actorid-upis", "ID":"0192:{{orgNumber}}"}""";
         }
 
         [Fact]
