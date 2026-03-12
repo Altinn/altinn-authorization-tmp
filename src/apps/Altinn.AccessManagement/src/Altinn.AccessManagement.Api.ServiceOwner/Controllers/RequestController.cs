@@ -1,23 +1,17 @@
-﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
-
-//using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Migrations;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
-using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -186,5 +180,4 @@ public class RequestController(
         ConfirmLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
         StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
     };
-
 }
