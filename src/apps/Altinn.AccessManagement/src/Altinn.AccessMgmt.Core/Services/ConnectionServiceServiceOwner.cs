@@ -20,16 +20,9 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
             ConnectionOptions options = new(configureConnection);
-            (Entity from, Entity to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
-            
-            // Validate entities exist
-            if (from is null || to is null)
-            {
-                return Problems.ConnectionEntitiesDoNotExist;
-            }
 
             // Look for existing direct rightholder assignment
-            var assignment = await dbContext.Assignments
+            Assignment assignment = await dbContext.Assignments
                 .Where(a => a.FromId == fromId)
                 .Where(a => a.ToId == toId)
                 .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
@@ -47,9 +40,9 @@ namespace Altinn.AccessMgmt.Core.Services
                 await dbContext.Assignments.AddAsync(assignment, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken); // Save to get the ID
             }
-            
+
             // Check if package already assigned
-            var existingAssignmentPackage = await dbContext.AssignmentPackages
+            AssignmentPackage existingAssignmentPackage = await dbContext.AssignmentPackages
                 .AsNoTracking()
                 .Where(a => a.AssignmentId == assignment.Id)
                 .Where(a => a.PackageId == packageId)
@@ -70,25 +63,6 @@ namespace Altinn.AccessMgmt.Core.Services
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return DtoMapper.Convert(newAssignmentPackage);
-        }
-
-        private async Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
-        {
-            if (fromId is null && toId is null)
-            {
-                throw new UnreachableException();
-            }
-
-            List<Entity> entities = await dbContext.Entities
-                .AsNoTracking()
-                .Where(e => e.Id == fromId || e.Id == toId)
-                .Include(e => e.Type)
-                .ToListAsync(cancellationToken);
-
-            Entity fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
-            Entity toEntity = entities.FirstOrDefault(e => e.Id == toId);
-
-            return (fromEntity, toEntity);
         }
     }
 }

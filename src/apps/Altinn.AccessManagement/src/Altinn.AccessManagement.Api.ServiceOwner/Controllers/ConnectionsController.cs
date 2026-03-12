@@ -1,14 +1,11 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
@@ -62,14 +59,10 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 toEntity = personToEntity?.Id;
             }
 
-            if (fromEntity == null)
+             // Validate entities exist
+            if (fromEntity is null || toEntity is null)
             {
-                return Problems.UnknownPartyFrom.ToActionResult();
-            }
-
-            if (toEntity == null)
-            {
-                return Problems.UnknownPartyTo.ToActionResult();
+                return Problems.ConnectionEntitiesDoNotExist.ToActionResult();
             }
 
             PackageDto package = await packageService.GetPackageByUrnValue(packageDelegation.PackageUrn.ValueSpan.ToString(), cancellationToken);
