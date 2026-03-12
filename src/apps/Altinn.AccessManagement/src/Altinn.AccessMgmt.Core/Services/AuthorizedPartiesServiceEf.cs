@@ -644,7 +644,7 @@ public class AuthorizedPartiesServiceEf(
                 {
                     var instanceId = delegation.InstanceId;
                     var instanceRef = delegation.InstanceId;
-                    if (delegation.ResourceType == "AltinnApp" || DelegationCheckHelper.IsAppResource(delegation.ResourceId, out string _, out string _))
+                    if (DelegationCheckHelper.IsAppResource(delegation.ResourceId, out string _, out string _) && !instanceRef.StartsWith(AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute, StringComparison.OrdinalIgnoreCase))
                     {
                         instanceRef = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{delegation.InstanceId}";
                     }
