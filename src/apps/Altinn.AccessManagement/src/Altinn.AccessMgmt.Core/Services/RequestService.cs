@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -7,6 +8,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -260,8 +262,16 @@ public class RequestService(AppDbContext db) : IRequestService
                 AssignmentId = assignmentId,
                 ResourceId = resourceId
             };
+
             db.RequestAssignmentResources.Add(request);
 
+            await db.UpsertOutboxAsync(
+                "CurrentMethodNameThingy",
+                nameof(ResourceRequestPendingNotificationHandler),
+                _ => new ResourceRequestPendingNotificationMessage { RefId = DateTime.UtcNow, Resource = resourceId, RecipientId = Guid.Empty, RequesterId = Guid.Empty },
+                null,
+                ct
+            );
             var res = await db.SaveChangesAsync(ct);
 
             if (res == 0)
