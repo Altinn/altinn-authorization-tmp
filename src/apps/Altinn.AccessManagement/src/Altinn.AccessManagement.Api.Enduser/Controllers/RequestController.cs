@@ -54,7 +54,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetSentRequests(
-        [FromQuery] Guid party, 
+        [Required][FromQuery] Guid party, 
         [FromQuery] Guid? to,
         [FromQuery] RequestStatus[]? status,
         [FromQuery] string type,
