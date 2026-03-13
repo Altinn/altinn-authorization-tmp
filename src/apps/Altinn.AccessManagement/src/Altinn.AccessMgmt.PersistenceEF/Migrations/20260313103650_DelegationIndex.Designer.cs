@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260313103650_DelegationIndex")]
+    partial class DelegationIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2653,70 +2656,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasName("pk_errorqueue");
 
                     b.ToTable("errorqueue", "dbo");
-                });
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completedat");
-
-                    b.Property<string>("CorrelationId")
-                        .HasColumnType("text")
-                        .HasColumnName("correlationid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("data");
-
-                    b.Property<string>("Handler")
-                        .HasColumnType("text")
-                        .HasColumnName("handler");
-
-                    b.Property<string>("RefId")
-                        .HasColumnType("text")
-                        .HasColumnName("refid");
-
-                    b.Property<int>("Retries")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("retries");
-
-                    b.Property<DateTime?>("Schedule")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("schedule");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("startedat");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("Pending")
-                        .HasColumnName("status");
-
-                    b.Property<TimeSpan>("Timeout")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("interval")
-                        .HasDefaultValue(new TimeSpan(0, 0, 0, 10, 0))
-                        .HasColumnName("timeout");
-
-                    b.HasKey("Id")
-                        .HasName("pk_outboxmessage");
-
-                    b.HasIndex("RefId")
-                        .HasDatabaseName("ix_outboxmessage_refid");
-
-                    b.ToTable("outboxmessage", "dbo");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Package", b =>
