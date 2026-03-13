@@ -91,12 +91,12 @@ public class RequestController(
 
         if (input.Resource.HasValue() && resource == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.Urn} is not valid")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.ReferenceId} is not valid")]);
         }
 
         if (input.Package.HasValue() && package == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.Urn} is not valid")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.ReferenceId} is not valid")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -177,7 +177,7 @@ public class RequestController(
 
     private static RequestLinks BuildLinks(Guid requestId) => new()
     {
-        ConfirmLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
+        DetailsLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
         StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
     };
 }

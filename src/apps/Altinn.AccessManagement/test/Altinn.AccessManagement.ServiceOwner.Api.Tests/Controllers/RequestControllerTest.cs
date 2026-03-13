@@ -150,7 +150,7 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
+                Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
                 Package = new RequestRefrenceDto(),
             };
 
@@ -167,12 +167,11 @@ public class RequestControllerTest
 
             Assert.True(root.GetProperty("status").GetInt32() >= 0);
             Assert.True(root.TryGetProperty("resource", out var resource));
-            Assert.True(resource.TryGetProperty("urn", out _));
-            Assert.True(root.TryGetProperty("connection", out var conn));
-            Assert.True(conn.TryGetProperty("from", out _));
-            Assert.True(conn.TryGetProperty("to", out _));
+            Assert.True(resource.TryGetProperty("referenceId", out _));
+            Assert.True(root.TryGetProperty("from", out _));
+            Assert.True(root.TryGetProperty("to", out _));
             Assert.True(root.TryGetProperty("links", out var links));
-            Assert.True(links.TryGetProperty("confirmLink", out _));
+            Assert.True(links.TryGetProperty("detailsLink", out _));
             Assert.True(links.TryGetProperty("statusLink", out _));
         }
 
@@ -188,7 +187,7 @@ public class RequestControllerTest
                     From = "urn:invalid:prefix:12345",
                     To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
-                Resource = new RequestRefrenceDto { Urn = "test-resource-so-1" },
+                Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
                 Package = new RequestRefrenceDto(),
             };
 
@@ -210,7 +209,7 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new RequestRefrenceDto { Urn = string.Empty },
+                Resource = new RequestRefrenceDto { ReferenceId = string.Empty },
                 Package = new RequestRefrenceDto(),
             };
 
@@ -248,7 +247,7 @@ public class RequestControllerTest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),
-                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -264,12 +263,11 @@ public class RequestControllerTest
 
             Assert.True(root.GetProperty("status").GetInt32() >= 0);
             Assert.True(root.TryGetProperty("package", out var package));
-            Assert.True(package.TryGetProperty("urn", out _));
-            Assert.True(root.TryGetProperty("connection", out var conn));
-            Assert.True(conn.TryGetProperty("from", out _));
-            Assert.True(conn.TryGetProperty("to", out _));
+            Assert.True(package.TryGetProperty("referenceId", out _));
+            Assert.True(root.TryGetProperty("from", out _));
+            Assert.True(root.TryGetProperty("to", out _));
             Assert.True(root.TryGetProperty("links", out var links));
-            Assert.True(links.TryGetProperty("confirmLink", out _));
+            Assert.True(links.TryGetProperty("detailsLink", out _));
             Assert.True(links.TryGetProperty("statusLink", out _));
         }
 
@@ -286,7 +284,7 @@ public class RequestControllerTest
                     To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
                 Resource = new RequestRefrenceDto(),
-                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -308,7 +306,7 @@ public class RequestControllerTest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),
-                Package = new RequestRefrenceDto { Urn = string.Empty },
+                Package = new RequestRefrenceDto { ReferenceId = string.Empty },
             };
 
             var response = await client.PostAsJsonAsync(
@@ -383,7 +381,7 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
-                Resource = new RequestRefrenceDto { Urn = "test-resource-e2e-1" },
+                Resource = new RequestRefrenceDto { ReferenceId = "test-resource-e2e-1" },
                 Package = new RequestRefrenceDto()
             };
 
@@ -423,7 +421,7 @@ public class RequestControllerTest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
                 Resource = new RequestRefrenceDto(),
-                Package = new RequestRefrenceDto { Urn = PackageConstants.Agriculture.Entity.Urn },
+                Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var response = await client.PostAsJsonAsync(
