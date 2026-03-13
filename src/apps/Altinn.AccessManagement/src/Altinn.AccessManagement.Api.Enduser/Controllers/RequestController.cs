@@ -112,7 +112,7 @@ public class RequestController(
         )
     {
         var result = await requestService.GetRequest(id, ct);
-        if (result.Value.From.Id != party && result.Value.To.Id == party)
+        if (result.Value.From.Id != party && result.Value.To.Id != party)
         {
             return Forbid();
         }
