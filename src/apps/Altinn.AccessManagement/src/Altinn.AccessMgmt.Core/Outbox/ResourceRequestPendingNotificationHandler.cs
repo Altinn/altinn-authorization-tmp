@@ -11,7 +11,7 @@ using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-public class ResourceRequestAcceptedNotification(IAltinnNotification notification, IEntityService entityService) : IOutboxHandler
+public class ResourceRequestPendingNotificationHandler(IAltinnNotification notification, IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
@@ -21,7 +21,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
             new()
             {
                 IdempotencyId = $"auth_resource_request_accept_{recipient.Id}",
-                Recipient = await CreateRecipient(recipient, sender, resources, cancellationToken),
+                Recipient = CreateRecipient(recipient, sender, resources),
                 RequestedSendTime = DateTime.UtcNow,
             },
             cancellationToken);
@@ -32,9 +32,9 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
         }
     }
 
-    private async Task<(Entity Recipient, Entity Approver, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Sender, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<List<ResourceRequestAcceptedNotificationMessage>>(message.Data);
+        var content = JsonSerializer.Deserialize<List<ResourceRequestPendingNotificationMessage>>(message.Data);
         if (content is null || content.Count == 0)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
@@ -46,18 +46,18 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
             throw new InvalidOperationException("Outbox message contains multiple recipients, should contain only one.");
         }
 
-        var approvers = recipients.Single();
-        var approver = content.GroupBy(m => m.AcceptorId);
-        if (approver.Count() != 1)
+        var recipient = recipients.Single();
+        var senders = content.GroupBy(m => m.RequesterId);
+        if (senders.Count() != 1)
         {
             throw new InvalidOperationException("Outbox message contains multiple senders, should contain only one.");
         }
 
-        var sender = approver.Single();
-        var entityRecipient = await entityService.GetEntity(approvers.Key, cancellationToken);
+        var sender = senders.Single();
+        var entityRecipient = await entityService.GetEntity(recipient.Key, cancellationToken);
         if (entityRecipient is null)
         {
-            throw new InvalidOperationException($"Recipient entity with id '{approvers.Key}' not found.");
+            throw new InvalidOperationException($"Recipient entity with id '{recipient.Key}' not found.");
         }
 
         var entitySender = await entityService.GetEntity(sender.Key, cancellationToken);
@@ -73,14 +73,14 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
         );
     }
 
-    private static async Task<NotificationRecipientExt> CreateRecipient(Entity recipient, Entity approver, IEnumerable<string> resources, CancellationToken cancellationToken = default)
+    private static NotificationRecipientExt CreateRecipient(Entity recipient, Entity sender, IEnumerable<string> resources)
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
+            emailContent.AppendLine($"<p>{sender.Name} har bedt om følgende fullmakter fra deg.</p>");
             emailContent.AppendLine("<ul>");
             foreach (var resource in resources)
             {
@@ -88,6 +88,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
             }
 
             emailContent.AppendLine("</ul>");
+            emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
             return new NotificationRecipientExt
@@ -99,7 +100,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
                     ResourceId = "altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
-                        Subject = "Altinn Godkjent Tilgangsforespørsel",
+                        Subject = "Altinn Tilgangsforespørsel",
                         Body = emailContent.ToString()
                     }
                 }
@@ -108,7 +109,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
         else if (recipient.TypeId == EntityTypeConstants.Organization)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} med Org.nr {recipient.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
+            emailContent.AppendLine($"<p>{sender.Name} har bedt om følgende fullmakter fra {recipient.Name} med Org.nr {recipient.OrganizationIdentifier}.</p>");
             emailContent.AppendLine("<ul>");
             foreach (var resource in resources)
             {
@@ -116,6 +117,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
             }
 
             emailContent.AppendLine("</ul>");
+            emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
             return new NotificationRecipientExt
@@ -127,7 +129,7 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
                     ResourceId = "altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
-                        Subject = "Altinn Godkjent Tilgangsforespørsel",
+                        Subject = "Altinn Tilgangsforespørsel",
                         Body = emailContent.ToString()
                     }
                 }
@@ -141,12 +143,12 @@ public class ResourceRequestAcceptedNotification(IAltinnNotification notificatio
 /// <summary>
 /// Model used for deserializing content of outbox message for resource request notification.
 /// </summary>
-public class ResourceRequestAcceptedNotificationMessage
+public class ResourceRequestPendingNotificationMessage
 {
     /// <summary>
-    /// Entity ID of the acceptor, either person or organization.
+    /// Entity ID of the requester, either person or organization.
     /// </summary>
-    public Guid AcceptorId { get; set; }
+    public Guid RequesterId { get; set; }
 
     /// <summary>
     /// Entity ID of the recipient, either person or organization. 

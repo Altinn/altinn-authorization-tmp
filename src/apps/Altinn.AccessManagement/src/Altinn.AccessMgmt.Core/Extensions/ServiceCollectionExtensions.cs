@@ -8,6 +8,7 @@ using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Outbox;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -49,6 +50,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
+
+        services.AddTransient<ResourceRequestAcceptedNotificationHandler>();
+        services.AddTransient<ResourceRequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
 
