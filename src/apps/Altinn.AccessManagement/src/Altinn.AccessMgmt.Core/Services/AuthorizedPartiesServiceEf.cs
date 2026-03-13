@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
@@ -641,7 +642,25 @@ public class AuthorizedPartiesServiceEf(
             {
                 if (delegation.InstanceId != null && filters.IncludeInstances)
                 {
-                    party.EnrichWithResourceInstanceAccess(delegation.ResourceId, delegation.InstanceId);
+                    var instanceId = delegation.InstanceId;
+                    var instanceRef = delegation.InstanceId;
+                    if (DelegationCheckHelper.IsAppResource(delegation.ResourceId, out string _, out string _))
+                    {
+                        if (instanceId.StartsWith(AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Remove prefix from instanceId to remain backwards compatible. 
+                            var partyAndInstanceId = instanceRef.Substring(AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute.Length + 1);
+                            var split = partyAndInstanceId.Split('/');
+                            instanceId = split.Length == 2 ? split[1] : partyAndInstanceId;
+                        }
+                        else
+                        {
+                            // Add prefix to instanceRef
+                            instanceRef = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{delegation.InstanceId}";
+                        }
+                    }
+
+                    party.EnrichWithResourceInstanceAccess(delegation.ResourceId, instanceId, instanceRef);
                 }
                 else if (filters.IncludeResources)
                 {

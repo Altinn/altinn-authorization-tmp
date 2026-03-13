@@ -209,11 +209,22 @@ module "appsettings" {
           "Altinn:register:PartyImport:SystemUsers:Enable"       = { value = var.features.party_import.system_users }
           "Altinn:register:PartyImport:Npr:Guardianships:Enable" = { value = var.features.party_import.npr.guardianships }
 
+          "Altinn:register:Ccr:Update:Enabled" = { value = var.features.ccr_proxy.enable }
+          "Altinn:register:Ccr:Update:Record"  = { value = var.features.ccr_proxy.record }
+
           // config
           "Altinn:register:PartyImport:A2:MaxDbSizeInGib" = { value = var.config.a2_party_import.max_db_size_in_gib }
 
           // services
           "Services:altinn-authentication:http" = { value = "http://altinn-authentication.default.svc.cluster.local/" }
+
+          // api sources default
+          "Altinn:register:ApiSource:Default" = { value = var.config.api_source.default }
+        },
+        // api sources endpoints
+        {
+          for key, value in var.config.api_source.endpoints :
+          "Altinn:register:ApiSource:Endpoints:${key}" => { value = value }
         },
         var.features.maskinporten ? {
           // maskinporten config
