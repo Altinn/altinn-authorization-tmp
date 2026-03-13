@@ -16,7 +16,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 table: "delegation");
 
             migrationBuilder.CreateIndex(
-                name: "ix_delegation_toid_incl",
+                name: "ix_delegation_toid",
                 schema: "dbo",
                 table: "delegation",
                 column: "toid")
@@ -27,7 +27,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "ix_delegation_toid_incl",
+                name: "ix_delegation_toid",
                 schema: "dbo",
                 table: "delegation");
 
