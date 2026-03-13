@@ -251,19 +251,31 @@ module "appsettings" {
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AllAltinnRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II roles should be streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnClientRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II client roles should streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnAdminRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II admin roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync"
+      description = "Specifies if the Altinn II bankruptcy estate roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync"
+      description = "Specifies if the Altinn II private tax affair roles should be streamed from SBLBridge service to access management database as assignments with skatteforhold privatperson packages"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
@@ -354,6 +366,18 @@ module "appsettings" {
     {
       name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
       description = "Specifies if consent migration service should start"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Controller.RequestAssignment.Resource"
+      description = "Enables request assignment resource endpoints in enduser and serviceowner APIs."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Controller.RequestAssignment.Package"
+      description = "Enables request assignment package endpoints in enduser and serviceowner APIs."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
