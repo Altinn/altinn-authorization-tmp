@@ -150,6 +150,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
                 Package = new RequestRefrenceDto(),
             };
@@ -187,6 +189,8 @@ public class RequestControllerTest
                     From = "urn:invalid:prefix:12345",
                     To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
+                From = "urn:invalid:prefix:12345",
+                To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}",
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
                 Package = new RequestRefrenceDto(),
             };
@@ -209,6 +213,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = string.Empty },
                 Package = new RequestRefrenceDto(),
             };
@@ -246,6 +252,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
@@ -283,6 +291,8 @@ public class RequestControllerTest
                     From = "urn:invalid:prefix:12345",
                     To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
                 },
+                From = "urn:invalid:prefix:12345",
+                To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}",
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
@@ -305,6 +315,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { ReferenceId = string.Empty },
             };
@@ -381,6 +393,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-e2e-1" },
                 Package = new RequestRefrenceDto()
             };
@@ -420,6 +434,8 @@ public class RequestControllerTest
             var body = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };

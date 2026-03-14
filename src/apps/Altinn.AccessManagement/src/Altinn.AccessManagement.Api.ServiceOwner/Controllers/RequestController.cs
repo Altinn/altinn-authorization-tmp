@@ -69,13 +69,16 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var fromResult = await GetEntity(input.Connection.From, "BODY/connection.from", ct);
+        var fromInput = string.IsNullOrEmpty(input.From) ? input.Connection.From : input.From;
+        var toInput = string.IsNullOrEmpty(input.To) ? input.Connection.To : input.To;
+
+        var fromResult = await GetEntity(fromInput, "BODY/connection.from", ct);
         if (fromResult.IsProblem)
         {
             return fromResult.Problem.ToActionResult();
         }
 
-        var toResult = await GetEntity(input.Connection.To, "BODY/connection.to", ct);
+        var toResult = await GetEntity(toInput, "BODY/connection.to", ct);
         if (toResult.IsProblem) 
         { 
             return toResult.Problem.ToActionResult(); 

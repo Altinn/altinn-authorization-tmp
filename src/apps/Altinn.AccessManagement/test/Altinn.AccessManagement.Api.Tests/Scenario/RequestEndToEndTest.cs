@@ -86,6 +86,8 @@ public class RequestEndToEndTest
             var createBody = new CreateServiceOwnerRequest
             {
                 Connection = new ConnectionRequestInputDto { From = from, To = to },
+                From = from,
+                To = to,
                 Resource = new RequestRefrenceDto(),
                 Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
