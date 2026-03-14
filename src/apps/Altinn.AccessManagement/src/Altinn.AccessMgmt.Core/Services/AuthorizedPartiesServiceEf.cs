@@ -811,16 +811,10 @@ public class AuthorizedPartiesServiceEf(
             // Build filter.RoleFilter based on roleResources and packageRoles
             filter.RoleFilter ??= new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             
-            List<RoleResource> roleResources = await repoService.GetRoleResources(filter.ProviderCode, filter.ResourceFilter.Keys, ct: cancellationToken);
-            foreach (var group in roleResources.GroupBy(rr => rr.RoleId))
+            List<string> roleCodes = await repoService.GetRoleCodesFromRoleResources(filter.ProviderCode, filter.ResourceFilter.Keys, ct: cancellationToken);
+            foreach (var roleCode in roleCodes)
             {
-                Role role = group.First().Role;
-                filter.RoleFilter[role.Code] = role.Code;
-
-                if (role.LegacyCode != null)
-                {
-                    filter.RoleFilter[role.LegacyCode] = role.LegacyCode;
-                }
+                filter.RoleFilter[roleCode] = roleCode;
             }
 
             // Find all Roles for the PackageResources found above, as we need to include roles giving access via packages as well.
