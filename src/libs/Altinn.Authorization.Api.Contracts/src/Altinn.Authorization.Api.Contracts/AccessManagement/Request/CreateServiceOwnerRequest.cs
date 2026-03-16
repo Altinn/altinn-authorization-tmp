@@ -18,10 +18,10 @@ public class CreateServiceOwnerRequest
     /// <summary>
     /// Reference to the resource
     /// </summary>
-    public RequestRefrenceDto Resource { get; set; }
+    public RequestRefrenceDto? Resource { get; set; }
 
     /// <summary>
     /// Reference to the access package
     /// </summary>
-    public RequestRefrenceDto Package { get; set; }
+    public RequestRefrenceDto? Package { get; set; }
 }
