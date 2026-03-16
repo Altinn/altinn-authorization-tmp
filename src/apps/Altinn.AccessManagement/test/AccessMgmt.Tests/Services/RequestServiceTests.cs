@@ -131,7 +131,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         var result = await _requestService.GetRequest(created.Id);
 
-        Assert.NotNull(result);
         Assert.Equal(created.Id, result.Value.Id);
         Assert.Equal(RequestStatus.Draft, result.Value.Status);
     }
@@ -143,7 +142,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         var result = await _requestService.GetRequest(created.Id);
 
-        Assert.NotNull(result);
         Assert.Equal(created.Id, result.Value.Id);
         Assert.Equal(RequestStatus.Draft, result.Value.Status);
     }
@@ -246,7 +244,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
-        Assert.NotNull(fetched);
         Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser accepts
@@ -272,7 +269,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
-        Assert.NotNull(fetched);
         Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser accepts
@@ -300,7 +296,6 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
         // 4. Enduser fetches the request
         var fetched = await _requestService.GetRequest(created.Id);
-        Assert.NotNull(fetched);
         Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser rejects
