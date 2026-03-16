@@ -321,7 +321,7 @@ public class RequestService(AppDbContext db) : IRequestService
                         {
                             RecipientId = request.Assignment.FromId,
                             RequesterId = request.Assignment.ToId,
-                            Resource = resourceId.ToString(),
+                            Resource = resource.Id.ToString(),
                             ExpectedDeliveredAt = schedule,
                         }
                     ];
@@ -345,7 +345,7 @@ public class RequestService(AppDbContext db) : IRequestService
                     {
                         RecipientId = request.Assignment.FromId,
                         RequesterId = request.Assignment.ToId,
-                        Resource = resourceId.ToString(),
+                        Resource = resource.Id.ToString(),
                         ExpectedDeliveredAt = schedule,
                     });
 
@@ -359,7 +359,7 @@ public class RequestService(AppDbContext db) : IRequestService
                 nameof(ResourceRequestPendingNotificationHandler),
                 _ => new ResourceRequestPendingNotificationMessage
                 {
-                    RefId = DateTime.UtcNow,
+                    ExpectedDeliveredAt = DateTime.UtcNow,
                     Resource = resource.RefId,
                     RecipientId = assignment.FromId,
                     RequesterId = assignment.ToId,
