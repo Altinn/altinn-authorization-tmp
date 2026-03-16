@@ -32,6 +32,7 @@ public class ConsentServiceTests
     private readonly Mock<IProfileClient> _profileClientMock;
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IOptions<GeneralSettings>> _generalSettingsMock;
+    private readonly Mock<IConsentDelegationCheckService> _consentDelegationCheckServiceMock;
 
     public ConsentServiceTests()
     {
@@ -46,6 +47,7 @@ public class ConsentServiceTests
         _profileClientMock = new Mock<IProfileClient>();
         _timeProvider = TimeProvider.System;
         _generalSettingsMock = new Mock<IOptions<GeneralSettings>>();
+        _consentDelegationCheckServiceMock = new Mock<IConsentDelegationCheckService>();
 
         _generalSettingsMock.Setup(x => x.Value).Returns(new GeneralSettings { Hostname = "localhost" });
         SetupMemoryCache();
@@ -182,7 +184,8 @@ public class ConsentServiceTests
             _memoryCacheMock.Object,
             _profileClientMock.Object,
             _timeProvider,
-            _generalSettingsMock.Object);
+            _generalSettingsMock.Object,
+            _consentDelegationCheckServiceMock.Object);
     }
 
     private Altinn2ConsentRequest CreateAltinn2ConsentRequest(Guid id, Guid fromPartyUuid, Guid toPartyUuid)

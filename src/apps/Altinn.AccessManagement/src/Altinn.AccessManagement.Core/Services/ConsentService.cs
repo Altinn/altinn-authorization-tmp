@@ -29,11 +29,12 @@ namespace Altinn.AccessManagement.Core.Services
     /// Service responsible for consent functionality
     /// </remarks>
     public class ConsentService(ILogger<ConsentService> logger, IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
-        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
+        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings, IConsentDelegationCheckService consentDelegationCheckService) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
         private readonly ISingleRightsService _singleRightsService = singleRightsService;
+        private readonly IConsentDelegationCheckService _consentDelegationCheckService = consentDelegationCheckService;
         private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
@@ -678,55 +679,41 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<bool> AuthorizeForConsentRight(Party party, NewUserProfile profile, ConsentRight consentRight)
         {
-            DelegationCheckResponse response = await GetDelegatableRightsForConsentResource(party, profile, consentRight);
-
-            if (response.RightDelegationCheckResults != null)
-            {
-                foreach (string action in consentRight.Action)
-                {
-                    bool actionMatch = false;
-                    foreach (RightDelegationCheckResult result in response.RightDelegationCheckResults)
-                    {
-                        if (result.Action.Value.Equals(action, StringComparison.InvariantCultureIgnoreCase) && result.Status.Equals(DelegableStatus.Delegable))
-                        {
-                            actionMatch = true;
-                            break;
-                        }
-                    }
-
-                    if (!actionMatch)
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
+            if (consentRight.Resource == null || consentRight.Resource.Count != 1)
             {
                 return false;
             }
 
+            if (profile.UserUuid == null || party.PartyUuid == null || party.PartyUuid == default)
+            {
+                return false;
+            }
+
+            // A ConsentRight should only have one resource. Currently no support for subresources as part of a consent request.
+            ConsentResourceAttribute resource = consentRight.Resource[0];
+
+            ConsentDelegationCheckResult checkResult = await _consentDelegationCheckService.CheckDelegatableRights(
+                authenticatedUserUuid: profile.UserUuid.Value,
+                partyUuid: party.PartyUuid.Value,
+                resourceIdentifier: resource.Value);
+
+            if (!checkResult.IsSuccess)
+            {
+                return false;
+            }
+
+            foreach (string action in consentRight.Action)
+            {
+                bool actionMatch = checkResult.DelegatableActions.Any(a =>
+                    a.Equals(action, StringComparison.OrdinalIgnoreCase));
+
+                if (!actionMatch)
+                {
+                    return false;
+                }
+            }
+
             return true;
-        }
-
-        private async Task<DelegationCheckResponse> GetDelegatableRightsForConsentResource(Party party, NewUserProfile profile, ConsentRight consentRight)
-        {
-            RightsDelegationCheckRequest rightsDelegationCheckRequest = new()
-            {
-                From = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = party.PartyId.ToString() }]
-            };
-
-            if (consentRight.Resource != null && consentRight.Resource.Count == 1)
-            {
-                // A ConsentRight Should only have one resource.  Currently no support for subresources as part of a consent request.
-                ConsentResourceAttribute resource = consentRight.Resource[0];
-                rightsDelegationCheckRequest.Resource = [new AttributeMatch { Id = resource.Type, Value = resource.Value }];
-            }
-            else
-            {
-                return null;
-            }
-
-            return await _singleRightsService.RightsDelegationCheck(profile.UserId, 3, rightsDelegationCheckRequest);
         }
 
         /// <summary>
