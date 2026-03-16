@@ -232,7 +232,10 @@ public class RequestService(AppDbContext db) : IRequestService
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == id, ct);
+        var request = await db.RequestAssignmentPackages
+            .Include(t => t.Assignment)
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+        
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
@@ -244,6 +247,11 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         request.Status = status;
+        if (status == RequestStatus.Approved)
+        {
+            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, request.PackageId, ct);
+        }
+
         var res = await db.SaveChangesAsync(ct);
 
         if (res != 1)
@@ -264,7 +272,10 @@ public class RequestService(AppDbContext db) : IRequestService
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == id, ct);
+        var request = await db.RequestAssignmentResources
+            .Include(t => t.Assignment)
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentResources));
@@ -276,6 +287,11 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         request.Status = status;
+        if (status == RequestStatus.Approved)
+        {
+            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, request.ResourceId, null, ct);
+        }
+
         var res = await db.SaveChangesAsync(ct);
 
         if (res != 1)
@@ -354,8 +370,8 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private async Task<Result<RequestDto>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var request = await db
-            .RequestAssignmentResources.Include(rar => rar.Assignment)
+        var request = await db.RequestAssignmentResources
+            .Include(r => r.Assignment)
             .FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus, ct);
 
         if (request is null)
@@ -367,7 +383,7 @@ public class RequestService(AppDbContext db) : IRequestService
                 ResourceId = resourceId
             };
             db.RequestAssignmentResources.Add(request);
-            
+
             await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, resourceId, null, ct);
 
             var res = await db.SaveChangesAsync(ct);
@@ -384,7 +400,7 @@ public class RequestService(AppDbContext db) : IRequestService
     private async Task AddRequestPendingToOutbox(Guid requesterId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
     {
         await db.UpsertOutboxAsync(
-            refId: $"auth_resource_request_accept_{requesterId}_{recipientId}",
+            refId: $"request_pending_{requesterId}_{recipientId}",
             handler: "request_pending",
             addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, msg),
             updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, msg, data),
@@ -406,7 +422,7 @@ public class RequestService(AppDbContext db) : IRequestService
             }
 
             data.Updated++;
-            
+
             if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
             {
                 data.ResourceIds = data.ResourceIds.Append(resourceId.Value);
@@ -416,7 +432,7 @@ public class RequestService(AppDbContext db) : IRequestService
             {
                 data.PackageIds = data.PackageIds.Append(packageId.Value);
             }
-            
+
             var candidate = DateTime.UtcNow.AddMinutes(15.0 / (data.Updated + 1));
             msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
 
@@ -446,9 +462,77 @@ public class RequestService(AppDbContext db) : IRequestService
         }
     }
 
+    private async Task AddRequestApprovedToOutbox(Guid approverId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
+    {
+        await db.UpsertOutboxAsync(
+            refId: $"request_approved_{approverId}_{recipientId}",
+            handler: "request_approved",
+            addValueFactory: msg => AddValue(approverId, recipientId, resourceId, packageId, msg),
+            updateValueFactory: (msg, data) => UpdateValue(approverId, recipientId, resourceId, packageId, msg, data),
+            cancellationToken: ct
+        );
+
+        static RequestApprovedNotificationMessage UpdateValue(
+            Guid requesterId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg,
+            RequestApprovedNotificationMessage data)
+        {
+            if (data is null)
+            {
+                Activity.Current?.AddTag(nameof(AddRequestApprovedToOutbox), $"Current outbox message {nameof(ResourceRequestPendingNotificationMessage)} is null? Creating new object.");
+                return AddValue(requesterId, recipientId, resourceId, packageId, msg);
+            }
+
+            data.Updated++;
+
+            if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
+            {
+                data.ResourceIds = data.ResourceIds.Append(resourceId.Value);
+            }
+
+            if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
+            {
+                data.PackageIds = data.PackageIds.Append(packageId.Value);
+            }
+
+            var candidate = DateTime.UtcNow.AddMinutes(5.0 / (data.Updated + 1));
+            msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
+
+            return data;
+        }
+
+        static RequestApprovedNotificationMessage AddValue(
+            Guid approverId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg)
+        {
+            var schedule = DateTime.UtcNow.AddMinutes(5);
+            msg.Schedule = schedule;
+            msg.Timeout = TimeSpan.FromMinutes(1);
+
+            return new RequestApprovedNotificationMessage()
+            {
+                RecipientId = approverId,
+                ApproverId = recipientId,
+                ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
+                PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
+                InitiatedAt = schedule,
+                Updated = 1,
+            };
+        }
+    }
+
     private async Task<Result<RequestDto>> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
+        var request = await db.RequestAssignmentPackages
+            .Include(r => r.Assignment)
+            .FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
+
         if (request is null)
         {
             request = new RequestAssignmentPackage

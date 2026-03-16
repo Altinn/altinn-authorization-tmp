@@ -13,20 +13,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-public class RequestPendingNotificationHandler(
+public class RequestApprovedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
     IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
+        var (recipient, approver, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
         var response = await notification.Send(
             new()
             {
                 IdempotencyId = idempotencyId,
-                Recipient = CreateRecipient(recipient, requester, resources, packages),
+                Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
                 RequestedSendTime = DateTime.UtcNow,
             },
             cancellationToken);
@@ -37,9 +37,9 @@ public class RequestPendingNotificationHandler(
         }
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Approver, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<ResourceRequestPendingNotificationMessage>(message.Data);
+        var content = JsonSerializer.Deserialize<RequestApprovedNotificationMessage>(message.Data);
         if (content is null)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
@@ -51,21 +51,21 @@ public class RequestPendingNotificationHandler(
             throw new InvalidOperationException($"Recipient entity with id '{content.RecipientId}' not found.");
         }
 
-        var entityRequester = await entityService.GetEntity(content.RequesterId, cancellationToken);
-        if (entityRequester is null)
+        var entityApprover = await entityService.GetEntity(content.ApproverId, cancellationToken);
+        if (entityApprover is null)
         {
-            throw new InvalidOperationException($"Sender entity with id '{content.RequesterId}' not found.");
+            throw new InvalidOperationException($"Approver entity with id '{content.ApproverId}' not found.");
         }
 
         return (
             entityRecipient,
-            entityRequester,
+            entityApprover,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityRecipient.Id}_{entityRequester.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_pending_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
         );
 
-        async Task<List<Resource>> GetResources(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
+        async Task<List<Resource>> GetResources(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
         {
             if (content.ResourceIds is { } && content.ResourceIds.Any())
             {
@@ -78,7 +78,7 @@ public class RequestPendingNotificationHandler(
             return [];
         }
 
-        async Task<List<Package>> GetPackages(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
+        async Task<List<Package>> GetPackages(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
         {
             if (content.PackageIds is { } && content.PackageIds.Any())
             {
@@ -92,18 +92,17 @@ public class RequestPendingNotificationHandler(
         }
     }
 
-    private static NotificationRecipientExt CreateRecipient(Entity recipient, Entity requester, IEnumerable<Resource> resources, IEnumerable<Package> packages)
+    private static async Task<NotificationRecipientExt> CreateRecipient(Entity recipient, Entity approver, IEnumerable<Resource> resources, IEnumerable<Package> packages, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{requester.Name} har bedt om følgende fullmakter fra deg.</p>");
+            emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
             return new NotificationRecipientExt
@@ -115,7 +114,7 @@ public class RequestPendingNotificationHandler(
                     ResourceId = "altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
-                        Subject = "Altinn Tilgangsforespørsel",
+                        Subject = "Altinn Godkjent Tilgangsforespørsel",
                         Body = emailContent.ToString()
                     }
                 }
@@ -124,11 +123,10 @@ public class RequestPendingNotificationHandler(
         else if (recipient.TypeId == EntityTypeConstants.Organization)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{requester.Name} har bedt om følgende fullmakter fra {recipient.Name} med Org.nr {recipient.OrganizationIdentifier}.</p>");
-            
+            emailContent.AppendLine($"<p>{approver.Name} med Org.nr {recipient.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
+
             AddResourcesAndPackage(resources, packages, emailContent);
-            
-            emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
+
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
             return new NotificationRecipientExt
@@ -140,7 +138,7 @@ public class RequestPendingNotificationHandler(
                     ResourceId = "altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
-                        Subject = "Altinn Tilgangsforespørsel",
+                        Subject = "Altinn Godkjent Tilgangsforespørsel",
                         Body = emailContent.ToString()
                     }
                 }
@@ -180,12 +178,12 @@ public class RequestPendingNotificationHandler(
 /// <summary>
 /// Model used for deserializing content of outbox message for resource request notification.
 /// </summary>
-public class ResourceRequestPendingNotificationMessage
+public class RequestApprovedNotificationMessage
 {
     /// <summary>
-    /// Entity ID of the requester, either person or organization.
+    /// Entity ID of the approver, either person or organization.
     /// </summary>
-    public Guid RequesterId { get; set; }
+    public Guid ApproverId { get; set; }
 
     /// <summary>
     /// Entity ID of the recipient, either person or organization. 
