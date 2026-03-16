@@ -589,7 +589,14 @@ namespace Altinn.Platform.Authorization.Controllers
             if (!string.IsNullOrEmpty(resourceAttributes.ResourceInstanceValue))
             {
                 // If request has an instance id, only non-instance delegations or instance delegations with the same instance id should be considered
-                delegations = delegations.Where(d => d.InstanceId == null || d.InstanceId == resourceAttributes.ResourceInstanceValue);
+                delegations = delegations.Where(d => d.InstanceId == null || d.InstanceId.Equals(resourceAttributes.ResourceInstanceValue, StringComparison.OrdinalIgnoreCase));
+
+                if (!string.IsNullOrEmpty(resourceAttributes.AppInstanceIdValue))
+                {
+                    // If request also is for an app instance id, we must add all delegations with matching the app instance id (for backwards compatibility with old instance delegation model)
+                    delegations = delegations.Where(d => d.InstanceId.Equals(resourceAttributes.AppInstanceIdValue, StringComparison.OrdinalIgnoreCase));
+                }
+
                 isInstanceAccessRequest = true;
             }
             else
