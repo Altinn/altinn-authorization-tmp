@@ -234,7 +234,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(PersonTo.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
@@ -259,7 +259,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(PersonTo.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
@@ -286,7 +286,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
-        var pending = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Pending)).Value;
+        var pending = (await _requestService.UpdateRequest(PersonTo.Id, created.Id, RequestStatus.Pending)).Value;
         Assert.Equal(RequestStatus.Pending, pending.Status);
 
         // 3. ServiceOwner checks that status has changed from Draft
