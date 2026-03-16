@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -125,9 +126,9 @@ public class RequestService(AppDbContext db) : IRequestService
         switch (requestResult.Value.Type)
         {
             case "resource":
-                return await UpdateResourceRequestStatus(requestId, status);
+                return await UpdateResourceRequestStatus(requestId, status, ct);
             case "package":
-                return await UpdatePackageRequestStatus(requestId, status);
+                return await UpdatePackageRequestStatus(requestId, status, ct);
         }
 
         errorBuilder.Add(ValidationErrors.RequestNotFound);
@@ -151,8 +152,10 @@ public class RequestService(AppDbContext db) : IRequestService
                     errorBuilder.Add(ValidationErrors.RequestUnauthorizedStatusUpdate, $"$QUERY/party", [new("party", $"Unable to update {request.Id} from {request.Status.ToString()} to {status.ToString()}")]);
                 }
             }
-
-            errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
+            else
+            {
+                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
+            }
         }
 
         if (request.Status == RequestStatus.Pending)
@@ -163,7 +166,7 @@ public class RequestService(AppDbContext db) : IRequestService
                 if (request.To.Id != partyUuid)
                 {
                     errorBuilder.Add(ValidationErrors.RequestUnauthorizedStatusUpdate, $"$QUERY/party", [new("party", $"Unable to update {request.Id} from {request.Status.ToString()} to {status.ToString()}")]);
-                }
+                } 
             }
 
             if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
@@ -175,7 +178,10 @@ public class RequestService(AppDbContext db) : IRequestService
                 }
             }
 
-            errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
+            if (status != RequestStatus.Withdrawn && status != RequestStatus.Approved && status != RequestStatus.Rejected)
+            {
+                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
+            }
         }
 
         if (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Rejected || request.Status == RequestStatus.Withdrawn)
@@ -188,18 +194,18 @@ public class RequestService(AppDbContext db) : IRequestService
         return problems;
     }
 
-    private async Task<Result<RequestDto>> UpdatePackageRequestStatus(Guid id, RequestStatus status)
+    private async Task<Result<RequestDto>> UpdatePackageRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == id);
+        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == id, ct);
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
         }
 
         request.Status = status;
-        var res = await db.SaveChangesAsync();
+        var res = await db.SaveChangesAsync(ct);
 
         if (res != 1)
         {
@@ -215,18 +221,18 @@ public class RequestService(AppDbContext db) : IRequestService
         return await GetRequest(id);
     }
 
-    private async Task<Result<RequestDto>> UpdateResourceRequestStatus(Guid id, RequestStatus status)
+    private async Task<Result<RequestDto>> UpdateResourceRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == id);
+        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == id, ct);
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentResources));
         }
 
         request.Status = status;
-        var res = await db.SaveChangesAsync();
+        var res = await db.SaveChangesAsync(ct);
 
         if (res != 1)
         {
