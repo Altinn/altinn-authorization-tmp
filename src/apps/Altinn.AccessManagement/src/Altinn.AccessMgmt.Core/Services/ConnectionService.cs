@@ -539,7 +539,7 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        if (!connection.IsSuccess || !connection.Value.Any())
         {
             return Problems.MissingConnection;
         }
@@ -944,7 +944,7 @@ public partial class ConnectionService(
         // Fetch packages
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, ConfigureConnections, cancellationToken);
 
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+        bool isMainAdminForFrom = packages.Value.Any(p => p.Result && p.Package.Id == PackageConstants.MainAdministrator.Id);
 
         // Fetch roles
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
@@ -1010,7 +1010,7 @@ public partial class ConnectionService(
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, configureConnection, cancellationToken);
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+        bool isMainAdminForFrom = packages.Value.Any(p => p.Result && p.Package.Id == PackageConstants.MainAdministrator.Id);
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
         var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
@@ -1218,16 +1218,13 @@ public partial class ConnectionService(
             return canDelegate.Problem;
         }
 
-        foreach (var rightKey in rightKeys.DirectRightKeys)
+        if (rightKeys.DirectRightKeys.Any(rightKey => !canDelegate.Value.Rights.Any(a => a.Right.Key == rightKey && a.Result)))
         {
-            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == rightKey && a.Result))
-            {
-                return Problems.NotAuthorizedForDelegationRequest;
-            }
+            return Problems.NotAuthorizedForDelegationRequest;
         }
 
         var connection = await Get(from.Id, from.Id, to.Id, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        if (!connection.IsSuccess || !connection.Value.Any())
         {
             return Problems.MissingConnection;
         }
