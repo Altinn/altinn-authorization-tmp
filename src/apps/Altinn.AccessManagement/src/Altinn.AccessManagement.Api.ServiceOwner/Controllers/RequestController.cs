@@ -69,16 +69,16 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var fromResult = await GetEntity(input.Connection.From, "BODY/connection.from", ct);
+        var fromResult = await GetEntity(input.Connection.From, "connection/from", ct);
         if (fromResult.IsProblem)
         {
             return fromResult.Problem.ToActionResult();
         }
 
-        var toResult = await GetEntity(input.Connection.To, "BODY/connection.to", ct);
-        if (toResult.IsProblem) 
-        { 
-            return toResult.Problem.ToActionResult(); 
+        var toResult = await GetEntity(input.Connection.To, "connection/to", ct);
+        if (toResult.IsProblem)
+        {
+            return toResult.Problem.ToActionResult();
         }
 
         var from = fromResult.Value;
@@ -91,12 +91,12 @@ public class RequestController(
 
         if (input.Resource.HasValue() && resource == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.Urn} is not valid")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"resource", [new("resource", $"Urn {input.Resource.Urn} is not valid")]);
         }
 
         if (input.Package.HasValue() && package == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.Urn} is not valid")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"package", [new("package", $"Urn {input.Package.Urn} is not valid")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -163,14 +163,14 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]);
         }
 
-        if (errorBuilder.TryBuild(out var problem1))
+        if (errorBuilder.TryBuild(out problem))
         {
-            return problem1;
+            return problem;
         }
 
         return entity;
     }
-   
+
     private static bool ValidUrn(string urn) => ValidUrns.Any(t => urn.StartsWith(t));
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];

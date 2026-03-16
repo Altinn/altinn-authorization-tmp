@@ -15,12 +15,12 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var (recipient, sender, resources) = await GetContext(message, cancellationToken);
+        var (recipient, sender, idempotencyId, resources) = await GetContext(message, cancellationToken);
 
         var response = await notification.Send(
             new()
             {
-                IdempotencyId = $"auth_resource_request_accept_{recipient.Id}",
+                IdempotencyId = idempotencyId,
                 Recipient = CreateRecipient(recipient, sender, resources),
                 RequestedSendTime = DateTime.UtcNow,
             },
@@ -32,7 +32,7 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         }
     }
 
-    private async Task<(Entity Recipient, Entity Sender, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Sender, string IdempotencyId, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<List<ResourceRequestPendingNotificationMessage>>(message.Data);
         if (content is null || content.Count == 0)
@@ -69,6 +69,7 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         return (
             entityRecipient,
             entitySender,
+            $"auth_resource_request_pending_{recipient.Key}_{sender.Key}_{content.OrderBy(m => m.ExpectedDeliveredAt).First().ExpectedDeliveredAt.Ticks}",
             content.Select(m => m.Resource).Distinct()
         );
     }
@@ -163,5 +164,5 @@ public class ResourceRequestPendingNotificationMessage
     /// <summary>
     /// Used for creating a unique idempotency key and external ref id
     /// </summary>
-    public DateTime RefId { get; set; }
+    public DateTime ExpectedDeliveredAt { get; set; }
 }

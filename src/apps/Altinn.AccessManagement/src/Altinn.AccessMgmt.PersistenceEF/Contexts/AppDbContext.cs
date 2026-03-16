@@ -80,7 +80,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RequestAssignmentPackage> RequestAssignmentPackages => Set<RequestAssignmentPackage>();
 
     public DbSet<RequestAssignmentResource> RequestAssignmentResources => Set<RequestAssignmentResource>();
-    
+
     public DbSet<ErrorQueue> ErrorQueue => Set<ErrorQueue>();
 
     public DbSet<RightImportProgress> RightImportProgress => Set<RightImportProgress>();
@@ -347,7 +347,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         var message = await OutboxMessages
             .AsTracking()
-            .FirstOrDefaultAsync(o => o.RefId == refId, cancellationToken);
+            .FirstOrDefaultAsync(
+                o =>
+                o.RefId == refId &&
+                o.Handler == handler &&
+                o.Status == OutboxStatus.Pending,
+                cancellationToken);
 
         UpsertOutbox(refId, handler, addValueFactory, updateValueFactory, message);
     }
@@ -400,7 +405,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         var message = OutboxMessages
             .AsTracking()
-            .FirstOrDefault(o => o.RefId == refId);
+            .FirstOrDefault(o =>
+                o.RefId == refId &&
+                o.Handler == handler &&
+                o.Status == OutboxStatus.Pending);
 
         UpsertOutbox(refId, handler, addValueFactory, updateValueFactory, message);
     }
