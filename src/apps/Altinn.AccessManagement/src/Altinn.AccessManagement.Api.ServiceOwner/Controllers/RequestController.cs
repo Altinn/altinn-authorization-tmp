@@ -69,8 +69,8 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var fromInput = string.IsNullOrEmpty(input.From) ? input.Connection.From : input.From;
-        var toInput = string.IsNullOrEmpty(input.To) ? input.Connection.To : input.To;
+        var fromInput = input.From;
+        var toInput = input.To;
 
         var fromResult = await GetEntity(fromInput, "BODY/connection.from", ct);
         if (fromResult.IsProblem)

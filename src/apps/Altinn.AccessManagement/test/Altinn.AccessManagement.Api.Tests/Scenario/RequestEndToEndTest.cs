@@ -85,7 +85,6 @@ public class RequestEndToEndTest
             var soClient = CreateServiceOwnerClient(Fixture, TestData.FredriksonsFabrikk.Entity.OrganizationIdentifier);
             var createBody = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto(),
