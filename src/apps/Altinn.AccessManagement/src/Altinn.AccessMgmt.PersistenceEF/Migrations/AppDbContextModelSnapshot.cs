@@ -2734,6 +2734,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.InstanceSourceType", b =>
             {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid")
+                    .HasColumnName("id");
+
                 b.Property<string>("Audit_ChangeOperation")
                     .HasColumnType("text")
                     .HasColumnName("audit_changeoperation");
