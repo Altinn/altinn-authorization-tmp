@@ -2,26 +2,31 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-public class ResourceRequestPendingNotificationHandler(IAltinnNotification notification, IEntityService entityService) : IOutboxHandler
+public class RequestPendingNotificationHandler(
+    AppDbContext db,
+    IAltinnNotification notification,
+    IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var (recipient, sender, idempotencyId, resources) = await GetContext(message, cancellationToken);
+        var (recipient, sender, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
         var response = await notification.Send(
             new()
             {
                 IdempotencyId = idempotencyId,
-                Recipient = CreateRecipient(recipient, sender, resources),
+                Recipient = CreateRecipient(recipient, sender, resources, packages),
                 RequestedSendTime = DateTime.UtcNow,
             },
             cancellationToken);
@@ -32,49 +37,62 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         }
     }
 
-    private async Task<(Entity Recipient, Entity Sender, string IdempotencyId, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Sender, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<List<ResourceRequestPendingNotificationMessage>>(message.Data);
-        if (content is null || content.Count == 0)
+        var content = JsonSerializer.Deserialize<ResourceRequestPendingNotificationMessage>(message.Data);
+        if (content is null)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
         }
 
-        var recipients = content.GroupBy(m => m.RecipientId);
-        if (recipients.Count() != 1)
-        {
-            throw new InvalidOperationException("Outbox message contains multiple recipients, should contain only one.");
-        }
-
-        var recipient = recipients.Single();
-        var senders = content.GroupBy(m => m.RequesterId);
-        if (senders.Count() != 1)
-        {
-            throw new InvalidOperationException("Outbox message contains multiple senders, should contain only one.");
-        }
-
-        var sender = senders.Single();
-        var entityRecipient = await entityService.GetEntity(recipient.Key, cancellationToken);
+        var entityRecipient = await entityService.GetEntity(content.RecipientId, cancellationToken);
         if (entityRecipient is null)
         {
-            throw new InvalidOperationException($"Recipient entity with id '{recipient.Key}' not found.");
+            throw new InvalidOperationException($"Recipient entity with id '{content.RecipientId}' not found.");
         }
 
-        var entitySender = await entityService.GetEntity(sender.Key, cancellationToken);
-        if (sender is null)
+        var entitySender = await entityService.GetEntity(content.RequesterId, cancellationToken);
+        if (entitySender is null)
         {
-            throw new InvalidOperationException($"Sender entity with id '{sender.Key}' not found.");
+            throw new InvalidOperationException($"Sender entity with id '{content.RequesterId}' not found.");
         }
 
         return (
             entityRecipient,
             entitySender,
-            $"auth_resource_request_pending_{recipient.Key}_{sender.Key}_{content.OrderBy(m => m.ExpectedDeliveredAt).First().ExpectedDeliveredAt.Ticks}",
-            content.Select(m => m.Resource).Distinct()
+            await GetResources(content, cancellationToken),
+            await GetPackages(content, cancellationToken),
+            $"auth_resource_request_pending_{entityRecipient.Id}_{entitySender.Id}_{content.InitiatedAt.Ticks}"
         );
+
+        async Task<List<Resource>> GetResources(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
+        {
+            if (content.ResourceIds is { } && content.ResourceIds.Any())
+            {
+                return await db.Resources
+                    .AsNoTracking()
+                    .Where(r => content.ResourceIds.Contains(r.Id))
+                    .ToListAsync(cancellationToken);
+            }
+
+            return [];
+        }
+
+        async Task<List<Package>> GetPackages(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
+        {
+            if (content.PackageIds is { } && content.PackageIds.Any())
+            {
+                var packages = await db.Packages
+                    .AsNoTracking()
+                    .Where(r => content.PackageIds.Contains(r.Id))
+                    .ToListAsync(cancellationToken);
+            }
+
+            return [];
+        }
     }
 
-    private static NotificationRecipientExt CreateRecipient(Entity recipient, Entity sender, IEnumerable<string> resources)
+    private static NotificationRecipientExt CreateRecipient(Entity recipient, Entity sender, IEnumerable<Resource> resources, IEnumerable<Package> packages)
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
@@ -82,13 +100,9 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         {
             var emailContent = new StringBuilder();
             emailContent.AppendLine($"<p>{sender.Name} har bedt om følgende fullmakter fra deg.</p>");
-            emailContent.AppendLine("<ul>");
-            foreach (var resource in resources)
-            {
-                emailContent.AppendLine($"<li>{resource}</li>");
-            }
 
-            emailContent.AppendLine("</ul>");
+            AddResourcesAndPackage(resources, packages, emailContent);
+
             emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
@@ -111,13 +125,9 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         {
             var emailContent = new StringBuilder();
             emailContent.AppendLine($"<p>{sender.Name} har bedt om følgende fullmakter fra {recipient.Name} med Org.nr {recipient.OrganizationIdentifier}.</p>");
-            emailContent.AppendLine("<ul>");
-            foreach (var resource in resources)
-            {
-                emailContent.AppendLine($"<li>{resource}</li>");
-            }
-
-            emailContent.AppendLine("</ul>");
+            
+            AddResourcesAndPackage(resources, packages, emailContent);
+            
             emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
@@ -138,6 +148,32 @@ public class ResourceRequestPendingNotificationHandler(IAltinnNotification notif
         }
 
         throw new InvalidOperationException("Unsupported party type. not person or organization");
+
+        static void AddResourcesAndPackage(IEnumerable<Resource> resources, IEnumerable<Package> packages, StringBuilder emailContent)
+        {
+            if (resources.Any())
+            {
+                emailContent.AppendLine("<ul>");
+                foreach (var resource in resources)
+                {
+                    emailContent.AppendLine($"<li>{resource}</li>");
+                }
+
+                emailContent.AppendLine("</ul>");
+            }
+
+            if (packages.Any())
+            {
+                emailContent.AppendLine("<p>og/eller følgende pakkeløsninger:</p>");
+                emailContent.AppendLine("<ul>");
+                foreach (var package in packages)
+                {
+                    emailContent.AppendLine($"<li>{package}</li>");
+                }
+
+                emailContent.AppendLine("</ul>");
+            }
+        }
     }
 }
 
@@ -157,12 +193,22 @@ public class ResourceRequestPendingNotificationMessage
     public Guid RecipientId { get; set; }
 
     /// <summary>
-    /// Name of resource.
+    /// Guid of resource.
     /// </summary>
-    public string Resource { get; set; }
+    public IEnumerable<Guid> ResourceIds { get; set; }
 
     /// <summary>
-    /// Used for creating a unique idempotency key and external ref id
+    /// Guid of package
     /// </summary>
-    public DateTime ExpectedDeliveredAt { get; set; }
+    public IEnumerable<Guid> PackageIds { get; set; }
+
+    /// <summary>
+    /// Used for idempotency.
+    /// </summary>
+    public DateTime InitiatedAt { get; set; }
+
+    /// <summary>
+    /// Number of updates.
+    /// </summary>
+    public int Updated { get; set; } = 0;
 }

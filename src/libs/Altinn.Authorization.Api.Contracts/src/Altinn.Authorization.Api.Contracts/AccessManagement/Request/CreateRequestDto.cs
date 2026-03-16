@@ -25,10 +25,10 @@ public class CreateRequestDto
     /// <summary>
     /// Resource (opt)
     /// </summary>
-    public ResourceDto? Resource { get; set; }
+    public Guid? Resource { get; set; }
 
     /// <summary>
     /// Package (opt)
     /// </summary>
-    public PackageDto? Package { get; set; }
+    public Guid? Package { get; set; }
 }

@@ -51,10 +51,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
-        services.AddTransient<ResourceRequestAcceptedNotificationHandler>();
-        services.AddTransient<ResourceRequestPendingNotificationHandler>();
-        services.AddTransient<PackageRequestAcceptedNotificationHandler>();
-        services.AddTransient<PackageRequestPendingNotificationHandler>();
+        services.AddTransient<RequestAcceptedNotificationHandler>();
+        services.AddTransient<RequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
 

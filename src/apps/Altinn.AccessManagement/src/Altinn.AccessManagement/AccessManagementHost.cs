@@ -102,10 +102,8 @@ internal static partial class AccessManagementHost
             options.AppConnectionString = connectionStrings.AppSource;
             options.MigrationConnectionString = connectionStrings.MigrationSource;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
-            options.AddOutboxHandler<ResourceRequestAcceptedNotificationHandler>("resource_request_accepted");
-            options.AddOutboxHandler<ResourceRequestPendingNotificationHandler>("resource_request_pending");
-            options.AddOutboxHandler<PackageRequestAcceptedNotificationHandler>("package_request_accepted");
-            options.AddOutboxHandler<PackageRequestPendingNotificationHandler>("package_request_pending");
+            options.AddOutboxHandler<RequestAcceptedNotificationHandler>("request_accepted");
+            options.AddOutboxHandler<RequestPendingNotificationHandler>("request_pending");
         });
 
         builder.Services.AddAccessMgmtCore(builder.Configuration);

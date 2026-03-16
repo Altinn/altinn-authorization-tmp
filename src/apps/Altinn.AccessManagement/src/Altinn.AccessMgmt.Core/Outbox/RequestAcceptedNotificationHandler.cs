@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -11,17 +11,17 @@ using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-public class PackageRequestAcceptedNotificationHandler(IAltinnNotification notification, IEntityService entityService) : IOutboxHandler
+public class RequestAcceptedNotificationHandler(IAltinnNotification notification, IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var (recipient, sender, packages) = await GetContext(message, cancellationToken);
+        var (recipient, sender, resources) = await GetContext(message, cancellationToken);
 
         var response = await notification.Send(
             new()
             {
-                IdempotencyId = $"auth_package_request_accept_{recipient.Id}",
-                Recipient = await CreateRecipient(recipient, sender, packages, cancellationToken),
+                IdempotencyId = $"auth_resource_request_accept_{recipient.Id}",
+                Recipient = await CreateRecipient(recipient, sender, resources, cancellationToken),
                 RequestedSendTime = DateTime.UtcNow,
             },
             cancellationToken);
@@ -32,9 +32,9 @@ public class PackageRequestAcceptedNotificationHandler(IAltinnNotification notif
         }
     }
 
-    private async Task<(Entity Recipient, Entity Approver, IEnumerable<string> Packages)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Approver, IEnumerable<string> Resources)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<List<PackageRequestAcceptedNotificationMessage>>(message.Data);
+        var content = JsonSerializer.Deserialize<List<ResourceRequestAcceptedNotificationMessage>>(message.Data);
         if (content is null || content.Count == 0)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
@@ -69,22 +69,22 @@ public class PackageRequestAcceptedNotificationHandler(IAltinnNotification notif
         return (
             entityRecipient,
             entitySender,
-            content.Select(m => m.Package).Distinct()
+            content.Select(m => m.Resource).Distinct()
         );
     }
 
-    private static async Task<NotificationRecipientExt> CreateRecipient(Entity recipient, Entity approver, IEnumerable<string> packages, CancellationToken cancellationToken = default)
+    private static async Task<NotificationRecipientExt> CreateRecipient(Entity recipient, Entity approver, IEnumerable<string> resources, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende tilgangspakker.</p>");
+            emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
             emailContent.AppendLine("<ul>");
-            foreach (var package in packages)
+            foreach (var resource in resources)
             {
-                emailContent.AppendLine($"<li>{package}</li>");
+                emailContent.AppendLine($"<li>{resource}</li>");
             }
 
             emailContent.AppendLine("</ul>");
@@ -108,11 +108,11 @@ public class PackageRequestAcceptedNotificationHandler(IAltinnNotification notif
         else if (recipient.TypeId == EntityTypeConstants.Organization)
         {
             var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} med Org.nr {recipient.OrganizationIdentifier} har akseptert din forespørsel om følgende tilgangspakker.</p>");
+            emailContent.AppendLine($"<p>{approver.Name} med Org.nr {recipient.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
             emailContent.AppendLine("<ul>");
-            foreach (var package in packages)
+            foreach (var resource in resources)
             {
-                emailContent.AppendLine($"<li>{package}</li>");
+                emailContent.AppendLine($"<li>{resource}</li>");
             }
 
             emailContent.AppendLine("</ul>");
@@ -139,9 +139,9 @@ public class PackageRequestAcceptedNotificationHandler(IAltinnNotification notif
 }
 
 /// <summary>
-/// Model used for deserializing content of outbox message for package request notification.
+/// Model used for deserializing content of outbox message for resource request notification.
 /// </summary>
-public class PackageRequestAcceptedNotificationMessage
+public class ResourceRequestAcceptedNotificationMessage
 {
     /// <summary>
     /// Entity ID of the acceptor, either person or organization.
@@ -154,9 +154,9 @@ public class PackageRequestAcceptedNotificationMessage
     public Guid RecipientId { get; set; }
 
     /// <summary>
-    /// Name of package.
+    /// Name of resource.
     /// </summary>
-    public string Package { get; set; }
+    public string Resource { get; set; }
 
     /// <summary>
     /// Used for creating a unique idempotency key and external ref id

@@ -1,10 +1,9 @@
-﻿using System.Net.Mime;
+﻿﻿using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -115,8 +114,8 @@ public class RequestController(
                 To = to.Id,
                 Role = role.Id,
                 Status = status,
-                Resource = DtoMapper.Convert(resource),
-                Package = package,
+                Resource = resource?.Id,
+                Package = package?.Id,
             },
             ct
         );
@@ -167,14 +166,14 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]);
         }
 
-        if (errorBuilder.TryBuild(out problem))
+        if (errorBuilder.TryBuild(out var problem1))
         {
-            return problem;
+            return problem1;
         }
 
         return entity;
     }
-
+   
     private static bool ValidUrn(string urn) => ValidUrns.Any(t => urn.StartsWith(t));
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
