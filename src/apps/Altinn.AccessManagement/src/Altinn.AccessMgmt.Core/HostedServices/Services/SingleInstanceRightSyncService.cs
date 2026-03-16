@@ -90,7 +90,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 item.PerformedBy,
                                 item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                            var party = await partyService.GetByUid(item.FromUuid);
+                            var party = await partyService.GetByUid(item.FromUuid, cancellationToken);
 
                             if (party == null)
                             {
@@ -238,7 +238,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         batchId.ToString(),
                         element.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                    var party = await partyService.GetByUid(element.FromUuid);
+                    var party = await partyService.GetByUid(element.FromUuid, cancellationToken);
 
                     if (party == null)
                     {
@@ -295,10 +295,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 }
             }
         }
-        
-        private string CreateInstanceUrnFromInstanceIdAndPartyId(string instanceId, int partyid)
-        {
-            return $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{partyid}/{instanceId.ToLower()}";
-        }
+
+        private static string CreateInstanceUrnFromInstanceIdAndPartyId(string instanceId, int partyid) => $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{partyid}/{instanceId.ToLower()}";
     }
 }
