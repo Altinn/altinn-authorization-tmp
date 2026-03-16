@@ -53,6 +53,8 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<ResourceRequestAcceptedNotificationHandler>();
         services.AddTransient<ResourceRequestPendingNotificationHandler>();
+        services.AddTransient<PackageRequestAcceptedNotificationHandler>();
+        services.AddTransient<PackageRequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
 

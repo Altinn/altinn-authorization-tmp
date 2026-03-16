@@ -101,7 +101,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     {
         var resource = await SeedUniqueResource();
 
-        var result = await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
+        var result = await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource, Status = RequestStatus.Draft });
 
         Assert.False(result.IsProblem);
         Assert.Equal(RequestStatus.Draft, result.Value.Status);
@@ -114,8 +114,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     {
         var resource = await SeedUniqueResource();
 
-        var first = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
-        var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
+        var first = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource, Status = RequestStatus.Draft })).Value;
+        var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource, Status = RequestStatus.Draft })).Value;
 
         Assert.Equal(first.Id, second.Id);
     }

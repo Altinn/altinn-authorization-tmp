@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -111,8 +112,8 @@ public class RequestController(
                 To = to.Id,
                 Role = role.Id,
                 Status = status,
-                Resource = resource?.Id,
-                Package = package?.Id,
+                Resource = DtoMapper.Convert(resource),
+                Package = package,
             },
             ct
         );
