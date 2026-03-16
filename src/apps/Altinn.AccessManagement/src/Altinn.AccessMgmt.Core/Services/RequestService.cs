@@ -7,7 +7,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -138,7 +137,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
     #region privates
 
-    private Result VerifyRequestStatusUpdate(RequestDto request, Guid partyUuid, RequestStatus status)
+    private Result<RequestDto> VerifyRequestStatusUpdate(RequestDto request, Guid partyUuid, RequestStatus status)
     {
         ValidationErrorBuilder errorBuilder = default;
 
@@ -190,8 +189,12 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         errorBuilder.TryBuild(out var problems);
+        if (problems != null)
+        {
+            return problems;
+        }
 
-        return problems;
+        return request;
     }
 
     private async Task<Result<RequestDto>> UpdatePackageRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)

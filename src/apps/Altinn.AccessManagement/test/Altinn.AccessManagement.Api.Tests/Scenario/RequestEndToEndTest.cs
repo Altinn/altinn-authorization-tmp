@@ -107,7 +107,7 @@ public class RequestEndToEndTest
             // SiljeHaugen has ManagingDirector role in FredriksonsFabrikk, confirms on behalf of org
             var enduserClient = CreateEnduserClient(Fixture, TestData.SiljeHaugen.Id);
             var confirmResponse = await enduserClient.PutAsync(
-                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestData.FredriksonsFabrikk.Id}",
+                $"{EnduserRoute}/sent/confirm?id={requestId}&party={TestData.SiljeHaugen.Id}",
                 null,
                 TestContext.Current.CancellationToken);
 
