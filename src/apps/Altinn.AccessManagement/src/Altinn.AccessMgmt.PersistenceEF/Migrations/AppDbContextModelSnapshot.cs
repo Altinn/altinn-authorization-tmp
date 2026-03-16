@@ -2668,6 +2668,46 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.ToTable("errorqueue", "dbo");
                 });
 
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.InstanceSourceType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTimeOffset>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_instancesourcetype");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_instancesourcetype_name");
+
+                    b.ToTable("instancesourcetype", "dbo");
+
+                    b.HasAnnotation("Altinn:AuditVersion", 3);
+                });
+
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2731,46 +2771,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.ToTable("outboxmessage", "dbo");
                 });
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.InstanceSourceType", b =>
-            {
-                b.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("uuid")
-                    .HasColumnName("id");
-
-                b.Property<string>("Audit_ChangeOperation")
-                    .HasColumnType("text")
-                    .HasColumnName("audit_changeoperation");
-
-                b.Property<Guid?>("Audit_ChangedBy")
-                    .HasColumnType("uuid")
-                    .HasColumnName("audit_changedby");
-
-                b.Property<Guid?>("Audit_ChangedBySystem")
-                    .HasColumnType("uuid")
-                    .HasColumnName("audit_changedbysystem");
-
-                b.Property<DateTimeOffset>("Audit_ValidFrom")
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("audit_validfrom");
-
-                b.Property<string>("Name")
-                    .IsRequired()
-                    .HasColumnType("text")
-                    .HasColumnName("name");
-
-                b.HasKey("Id")
-                    .HasName("pk_instancesourcetype");
-
-                b.HasIndex("Name")
-                    .IsUnique()
-                    .HasDatabaseName("ix_instancesourcetype_name");
-
-                b.ToTable("instancesourcetype", "dbo");
-
-                b.HasAnnotation("Altinn:AuditVersion", 3);
-            });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Package", b =>
                 {
