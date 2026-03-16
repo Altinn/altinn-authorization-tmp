@@ -11,7 +11,10 @@ using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Seeds;
 using Altinn.AccessManagement.Tests.Util;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
@@ -20,6 +23,7 @@ using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -38,6 +42,32 @@ namespace AccessMgmt.Tests.Controllers.Bff
         private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;
         private readonly WebApplicationFactory<Program> _fixture;
         private readonly ITestOutputHelper _output;
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.ResourceType ConsentResourceType = new()
+        {
+            Id = Guid.Parse("0196b0c0-0000-7000-8000-000000000001"),
+            Name = "Consent",
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Resource ResourceSkattegrunnlag = new()
+        {
+            Id = Guid.Parse("0196b0c0-0000-7000-8000-000000000002"),
+            Name = "Skattegrunnlag",
+            Description = "Consent resource for skattegrunnlag",
+            RefId = "ttd_skattegrunnlag",
+            ProviderId = ProviderConstants.ResourceRegistry.Id,
+            TypeId = ConsentResourceType.Id,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Resource ResourceInntektsopplysninger = new()
+        {
+            Id = Guid.Parse("0196b0c0-0000-7000-8000-000000000003"),
+            Name = "Inntektsopplysninger",
+            Description = "Consent resource for inntektsopplysninger",
+            RefId = "ttd_inntektsopplysninger",
+            ProviderId = ProviderConstants.ResourceRegistry.Id,
+            TypeId = ConsentResourceType.Id,
+        };
 
         public ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output)
         {
@@ -62,6 +92,8 @@ namespace AccessMgmt.Tests.Controllers.Bff
                     services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
                 });
             });
+
+            SeedResources();
         }
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -72,6 +104,30 @@ namespace AccessMgmt.Tests.Controllers.Bff
         private void SetupMockPartyRepository()
         {
             MockParyRepositoryPopulator.SetupMockPartyRepository(_mockAmPartyRepository);
+        }
+
+        private void SeedResources()
+        {
+            using var scope = _fixture.Services.CreateEFScope(SystemEntityConstants.StaticDataIngest);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            if (!db.ResourceTypes.AsNoTracking().Any(t => t.Id == ConsentResourceType.Id))
+            {
+                db.ResourceTypes.Add(ConsentResourceType);
+                db.SaveChanges();
+            }
+
+            if (!db.Resources.AsNoTracking().Any(r => r.Id == ResourceSkattegrunnlag.Id))
+            {
+                db.Resources.Add(ResourceSkattegrunnlag);
+            }
+
+            if (!db.Resources.AsNoTracking().Any(r => r.Id == ResourceInntektsopplysninger.Id))
+            {
+                db.Resources.Add(ResourceInntektsopplysninger);
+            }
+
+            db.SaveChanges();
         }
 
         /// <summary>
