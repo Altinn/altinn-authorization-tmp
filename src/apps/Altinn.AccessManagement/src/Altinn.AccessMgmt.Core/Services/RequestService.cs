@@ -239,6 +239,10 @@ public class RequestService(AppDbContext db) : IRequestService
             {
                 return errors;
             }
+            else
+            {
+                throw new Exception($"DbNoRowsFound {nameof(db.RequestAssignmentResources)}");
+            }
         }
 
         request.Status = status;
@@ -270,6 +274,10 @@ public class RequestService(AppDbContext db) : IRequestService
             if (errors != null)
             {
                 return errors;
+            }
+            else
+            {
+                throw new Exception($"DbNoRowsFound {nameof(db.RequestAssignmentResources)}");
             }
         }
 
