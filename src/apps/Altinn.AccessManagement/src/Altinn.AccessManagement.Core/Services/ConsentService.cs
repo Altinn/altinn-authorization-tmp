@@ -249,18 +249,33 @@ namespace Altinn.AccessManagement.Core.Services
         public async Task<Result<ConsentRequestDetails>> GetAndStoreAltinn2Consent(Guid consentRequestId, CancellationToken cancellationToken)
         {
             ConsentRequestDetails consentRequest = null;
+            var swFetch = Stopwatch.StartNew();
             Altinn2ConsentRequest altinn2ConsentRequest = await _altinn2ConsentClient.GetAltinn2Consent(consentRequestId, cancellationToken);
+            swFetch.Stop();
+            logger.LogInformation("GetAltinn2Consent {ConsentRequestId} took {ElapsedMs}ms", consentRequestId, swFetch.Elapsed.TotalMilliseconds);
 
             if (altinn2ConsentRequest != null)
             {
+                var swMap = Stopwatch.StartNew();
                 ConsentRequest mappedConsentFromA2 = await MapA2ConsentToA3Consent(altinn2ConsentRequest, cancellationToken);
+                swMap.Stop();
+                logger.LogInformation("MapA2ConsentToA3Consent {ConsentRequestId} took {ElapsedMs}ms", consentRequestId, swMap.Elapsed.TotalMilliseconds);
+                var swCreate = Stopwatch.StartNew();
                 Result<ConsentRequestDetailsWrapper> result = await CreateRequest(mappedConsentFromA2, mappedConsentFromA2.From, true, cancellationToken);
+                swCreate.Stop();
+                logger.LogInformation("CreateRequest {ConsentRequestId} took {ElapsedMs}ms (IsProblem={IsProblem})", consentRequestId, swCreate.Elapsed.TotalMilliseconds, result.IsProblem);
 
+                var swUpdate = Stopwatch.StartNew();
                 await _altinn2ConsentClient.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), (result.IsProblem && result.Problem != Problems.ConsentWithIdAlreadyExist) ? 2 : 1, cancellationToken);
+                swUpdate.Stop();
+                logger.LogInformation("UpdateAltinn2ConsentMigrateStatus {ConsentRequestId} took {ElapsedMs}ms", consentRequestId, swUpdate.Elapsed.TotalMilliseconds);
 
                 if (!result.IsProblem)
                 {
+                    var swRead = Stopwatch.StartNew();
                     consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+                    swRead.Stop();
+                    logger.LogInformation("GetRequest (post-create) {ConsentRequestId} took {ElapsedMs}ms", consentRequestId, swRead.Elapsed.TotalMilliseconds);
                 }
                 else
                 {
