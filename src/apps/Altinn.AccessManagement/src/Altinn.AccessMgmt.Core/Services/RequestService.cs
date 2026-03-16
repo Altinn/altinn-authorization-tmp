@@ -137,64 +137,93 @@ public class RequestService(AppDbContext db) : IRequestService
 
     #region privates
 
-    private Result<RequestDto> VerifyRequestStatusUpdate(RequestDto request, Guid partyUuid, RequestStatus status)
+    private static Result<RequestDto> VerifyRequestStatusUpdate(RequestDto request, Guid partyUuid, RequestStatus status)
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        if (request.Status == RequestStatus.Draft)
+        switch (request.Status)
         {
-            if (status == RequestStatus.Pending || status == RequestStatus.Withdrawn)
-            {
-                // PartyUuid must match Request.To
-                if (request.To.Id != partyUuid)
-                {
-                    errorBuilder.Add(ValidationErrors.RequestUnauthorizedStatusUpdate, $"$QUERY/party", [new("party", $"Unable to update {request.Id} from {request.Status.ToString()} to {status.ToString()}")]);
-                }
-            }
-            else
-            {
-                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
-            }
-        }
+            case RequestStatus.Draft:
+                ValidateDraft(request, partyUuid, status, ref errorBuilder);
+                break;
 
-        if (request.Status == RequestStatus.Pending)
-        {
-            if (status == RequestStatus.Withdrawn)
-            {
-                // PartyUuid must match Request.To
-                if (request.To.Id != partyUuid)
-                {
-                    errorBuilder.Add(ValidationErrors.RequestUnauthorizedStatusUpdate, $"$QUERY/party", [new("party", $"Unable to update {request.Id} from {request.Status.ToString()} to {status.ToString()}")]);
-                } 
-            }
+            case RequestStatus.Pending:
+                ValidatePending(request, partyUuid, status, ref errorBuilder);
+                break;
 
-            if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
-            {
-                // PartyUuid must match Request.From
-                if (request.From.Id != partyUuid)
-                {
-                    errorBuilder.Add(ValidationErrors.RequestUnauthorizedStatusUpdate, $"$QUERY/party", [new("party", $"Unable to update {request.Id} from {request.Status.ToString()} to {status.ToString()}")]);
-                }
-            }
-
-            if (status != RequestStatus.Withdrawn && status != RequestStatus.Approved && status != RequestStatus.Rejected)
-            {
-                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
-            }
-        }
-
-        if (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Rejected || request.Status == RequestStatus.Withdrawn)
-        {
-            errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, $"$QUERY/party", [new("party", $"Changing request status from {request.Status.ToString()} to {status.ToString()} is not allowed.")]);
+            case RequestStatus.Approved:
+            case RequestStatus.Rejected:
+            case RequestStatus.Withdrawn:
+                AddUnsupportedStatusError(request, status, ref errorBuilder);
+                break;
         }
 
         errorBuilder.TryBuild(out var problems);
-        if (problems != null)
+
+        return problems != null ? problems : request;
+    }
+
+    private static void ValidateDraft(RequestDto request, Guid partyUuid, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        if (status != RequestStatus.Pending && status != RequestStatus.Withdrawn)
         {
-            return problems;
+            AddUnsupportedStatusError(request, status, ref errorBuilder);
+            return;
         }
 
-        return request;
+        if (request.To.Id != partyUuid)
+        {
+            AddUnauthorizedStatusError(request, status, ref errorBuilder);
+        }
+    }
+
+    private static void ValidatePending(RequestDto request, Guid partyUuid, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        switch (status)
+        {
+            case RequestStatus.Withdrawn:
+                if (request.To.Id != partyUuid)
+                {
+                    AddUnauthorizedStatusError(request, status, ref errorBuilder);
+                }
+
+                break;
+
+            case RequestStatus.Approved:
+            case RequestStatus.Rejected:
+                if (request.From.Id != partyUuid)
+                {
+                    AddUnauthorizedStatusError(request, status, ref errorBuilder);
+                }
+
+                break;
+
+            default:
+                AddUnsupportedStatusError(request, status, ref errorBuilder);
+                break;
+        }
+    }
+
+    private static void AddUnsupportedStatusError(RequestDto request, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        var paramName = "party";
+
+        errorBuilder.Add(
+            ValidationErrors.RequestUnsupportedStatusUpdate,
+            $"$QUERY/{paramName}",
+            [new(paramName, $"Changing request status from {request.Status} to {status} is not allowed.")]
+        );
+    }
+
+    private static void AddUnauthorizedStatusError(RequestDto request, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        var paramName = "party";
+
+        errorBuilder.Add(
+            ValidationErrors.RequestUnauthorizedStatusUpdate,
+            $"$QUERY/{paramName}",
+            [new(paramName, $"Unable to update {request.Id} from {request.Status} to {status}")]
+        );
     }
 
     private async Task<Result<RequestDto>> UpdatePackageRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
@@ -205,6 +234,11 @@ public class RequestService(AppDbContext db) : IRequestService
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
+            errorBuilder.TryBuild(out var errors);
+            if (errors != null)
+            {
+                return errors;
+            }
         }
 
         request.Status = status;
@@ -221,7 +255,7 @@ public class RequestService(AppDbContext db) : IRequestService
             return problems;
         }
 
-        return await GetRequest(id);
+        return await GetRequest(id, ct);
     }
 
     private async Task<Result<RequestDto>> UpdateResourceRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
@@ -232,6 +266,11 @@ public class RequestService(AppDbContext db) : IRequestService
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentResources));
+            errorBuilder.TryBuild(out var errors);
+            if (errors != null)
+            {
+                return errors;
+            }
         }
 
         request.Status = status;
@@ -248,7 +287,7 @@ public class RequestService(AppDbContext db) : IRequestService
             return problems;
         }
 
-        return await GetRequest(id);
+        return await GetRequest(id, ct);
     }
 
     private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, CancellationToken ct)
