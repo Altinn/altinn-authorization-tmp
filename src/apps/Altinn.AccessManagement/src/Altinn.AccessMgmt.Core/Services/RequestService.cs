@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Core.Errors;
+﻿using System.Diagnostics;
+using System.Transactions;
+using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -7,6 +10,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -48,7 +52,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
         return problems;
     }
-    
+
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<RequestDto>>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct = default)
     {
@@ -118,7 +122,7 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         var request = requestResult.Value;
-        
+
         if (request.Connection.From.Id != partyUuid)
         {
             errorBuilder.Add(ValidationErrors.RequestNotFound, "$QUERY/requestId", [new("RequestId", $"Request {requestId} does not exists")]);
@@ -205,7 +209,7 @@ public class RequestService(AppDbContext db) : IRequestService
             .WhereIf(after.HasValue, r => r.Audit_ValidFrom >= after.Value)
             .ToListAsync(cancellationToken: ct);
     }
-    
+
     private async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, DateTimeOffset? after, CancellationToken ct)
     {
         if (!fromId.HasValue && !toId.HasValue)
@@ -260,7 +264,54 @@ public class RequestService(AppDbContext db) : IRequestService
                 AssignmentId = assignmentId,
                 ResourceId = resourceId
             };
+
             db.RequestAssignmentResources.Add(request);
+            await db.UpsertOutboxAsync<List<ResourceRequestPendingNotificationMessage>>(
+                refId: $"auth_resource_request_accept_{request.Assignment.FromId}_{request.Assignment.ToId}",
+                handler: "resource_request_pending",
+                addValueFactory: msg =>
+                {
+                    var schedule = DateTime.UtcNow.AddMinutes(15);
+                    msg.Schedule = schedule;
+                    msg.Timeout = TimeSpan.FromMinutes(1);
+
+                    return [
+                        new ResourceRequestPendingNotificationMessage()
+                        {
+                            RecipientId = request.Assignment.FromId,
+                            RequesterId = request.Assignment.ToId,
+                            Resource = resourceId.ToString(),
+                            ExpectedDeliveredAt = schedule,
+                        }
+                    ];
+                },
+                updateValueFactory: (msg, curr) =>
+                {
+                    if (curr is null)
+                    {
+                        Activity.Current?.AddTag("RequestService.CreateRequestAssignmentResource.UpdateOutbox", "Current outbox message data is null? Creating new list");
+                        curr = [];
+                    }
+
+                    var latestExisting = curr.Count > 0
+                        ? curr.Max(b => b.ExpectedDeliveredAt)
+                        : DateTime.UtcNow.AddMinutes(15);
+
+                    var candidate = DateTime.UtcNow.AddMinutes(15.0 / (curr.Count + 1));
+                    var schedule = candidate > latestExisting ? latestExisting : candidate;
+
+                    curr.Add(new ResourceRequestPendingNotificationMessage()
+                    {
+                        RecipientId = request.Assignment.FromId,
+                        RequesterId = request.Assignment.ToId,
+                        Resource = resourceId.ToString(),
+                        ExpectedDeliveredAt = schedule,
+                    });
+
+                    return curr;
+                },
+                cancellationToken: ct
+            );
 
             var res = await db.SaveChangesAsync(ct);
 
