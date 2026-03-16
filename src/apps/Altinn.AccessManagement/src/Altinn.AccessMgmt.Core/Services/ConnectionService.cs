@@ -1014,8 +1014,9 @@ public partial class ConnectionService(
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
         var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+        var instances = await GetInstanceRights(party, authenticatedUserUuid, resourceDto.Id, instanceId, RoleConstants.Rightholder, cancellationToken);
 
-        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
+        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources, instances);
 
         // Map to result
         IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
@@ -1313,7 +1314,7 @@ public partial class ConnectionService(
         return result;
     }
 
-    private void ProcessTheAccessToTheRightKeys(List<Models.Right> rights, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRightDto> resources)
+    private void ProcessTheAccessToTheRightKeys(List<Models.Right> rights, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRightDto> resources, List<InstanceRightDto> instances = null)
     {
         foreach (var right in rights)
         {
@@ -1372,6 +1373,18 @@ public partial class ConnectionService(
                 if (resource.Rights.Any(r => r.Right.Key == right.Key))
                 {
                     right.ResourceAllowAccess.Add(resource.Rights.First(r => r.Right.Key == right.Key));
+                }
+            }
+
+            // Process instance-specific rights if provided
+            if (instances != null)
+            {
+                foreach (var instance in instances)
+                {
+                    if (instance.Rights.Any(r => r.Right.Key == right.Key))
+                    {
+                        right.ResourceAllowAccess.Add(instance.Rights.First(r => r.Right.Key == right.Key));
+                    }
                 }
             }
         }
