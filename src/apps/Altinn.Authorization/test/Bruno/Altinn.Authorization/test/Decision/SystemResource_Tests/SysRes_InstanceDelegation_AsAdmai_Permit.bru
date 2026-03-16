@@ -1,7 +1,7 @@
 meta {
-  name: SysRes_EnduserAccMgmt_AsKladm_NotApplicable
+  name: SysRes_InstanceDelegation_AsAdmai_Permit
   type: http
-  seq: 8
+  seq: 12
 }
 
 post {
@@ -66,9 +66,9 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/shared.js`);
   const testdata = require(`./testdata/Authorization/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "SysRes_EnduserAccMgmt_AsKladm_NotApplicable");
-  bru.setVar("resourceId", sharedtestdata.systemResources.accessmanagment);
-  bru.setVar("subjectUserId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.a2_klientadministrator.userId);
+  bru.setVar("requestName", "SysRes_InstanceDelegation_AsAdmai_Permit");
+  bru.setVar("resourceId", sharedtestdata.systemResources.instance_delegation);
+  bru.setVar("subjectUserId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.a2_tilgangsstyrer.userId);
   bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyId);
   
 }
@@ -77,6 +77,6 @@ tests {
   test("Decision_" + bru.getVar("requestName"), function() {
     const data = res.getBody();
     expect(res.status).to.equal(200);
-    expect(data.response[0]).to.have.property('decision', "NotApplicable");
+    expect(data.response[0]).to.have.property('decision', "Permit");
   });
 }
