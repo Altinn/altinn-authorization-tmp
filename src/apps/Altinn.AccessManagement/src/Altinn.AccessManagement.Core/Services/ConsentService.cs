@@ -57,7 +57,6 @@ namespace Altinn.AccessManagement.Core.Services
             IConsentRepository consentRepository,
             IAltinn2ConsentClient altinn2ConsentClient,
             IPartiesClient partiesClient,
-            ISingleRightsService singleRightsService,
             IResourceRegistryClient resourceRegistryClient,
             IAMPartyService ampartyService,
             IMemoryCache memoryCache,
@@ -71,7 +70,6 @@ namespace Altinn.AccessManagement.Core.Services
             _consentRepository = consentRepository;
             _altinn2ConsentClient = altinn2ConsentClient;
             _partiesClient = partiesClient;
-            _singleRightsService = singleRightsService;
             _resourceRegistryClient = resourceRegistryClient;
             _ampartyService = ampartyService;
             _memoryCache = memoryCache;

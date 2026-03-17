@@ -43,7 +43,6 @@ public class ConsentServiceTests
         _consentRepositoryMock = new Mock<IConsentRepository>();
         _altinn2ConsentClientMock = new Mock<IAltinn2ConsentClient>();
         _partiesClientMock = new Mock<IPartiesClient>();
-        _singleRightsServiceMock = new Mock<ISingleRightsService>();
         _resourceRegistryClientMock = new Mock<IResourceRegistryClient>();
         _amPartyServiceMock = new Mock<IAMPartyService>();
         _memoryCacheMock = new Mock<IMemoryCache>();
@@ -358,7 +357,6 @@ public class ConsentServiceTests
             _consentRepositoryMock.Object,
             _altinn2ConsentClientMock.Object,
             _partiesClientMock.Object,
-            _singleRightsServiceMock.Object,
             _resourceRegistryClientMock.Object,
             _amPartyServiceMock.Object,
             _memoryCacheMock.Object,

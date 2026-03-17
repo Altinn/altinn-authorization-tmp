@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Services.Interfaces;
+﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 
 namespace Altinn.AccessMgmt.Core.Services;
