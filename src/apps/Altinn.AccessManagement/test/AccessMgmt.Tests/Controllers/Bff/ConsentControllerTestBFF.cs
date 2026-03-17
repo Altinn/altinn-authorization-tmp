@@ -236,7 +236,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
                 {
                     FromId = ElenaFjaerEntity.Id,
                     ToId = ElenaFjaerEntity.Id,
-                    RoleId = RoleConstants.PrivatePerson,
+                    RoleId = RoleConstants.PrivatePerson.Id,
                 });
                 db.SaveChanges();
             }
