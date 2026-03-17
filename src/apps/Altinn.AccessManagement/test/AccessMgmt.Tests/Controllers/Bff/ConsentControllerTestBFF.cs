@@ -17,6 +17,7 @@ using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
@@ -185,8 +186,8 @@ namespace AccessMgmt.Tests.Controllers.Bff
 
         private void SeedResources()
         {
-            using var scope = _fixture.Services.CreateEFScope(SystemEntityConstants.StaticDataIngest);
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using IServiceScope scope = _fixture.Services.CreateEFScope(SystemEntityConstants.StaticDataIngest);
+            AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             if (!db.ResourceTypes.AsNoTracking().Any(t => t.Id == ConsentResourceType.Id))
             {
@@ -204,7 +205,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
                 db.Resources.Add(ResourceInntektsopplysninger);
             }
 
-            foreach (var entity in ConsentTestEntities)
+            foreach (Entity entity in ConsentTestEntities)
             {
                 if (!db.Entities.AsNoTracking().Any(e => e.Id == entity.Id))
                 {
