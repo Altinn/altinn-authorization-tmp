@@ -74,6 +74,13 @@ public class RequestService(AppDbContext db) : IRequestService
     {
         ValidationErrorBuilder error = default;
 
+        if (request.From == request.To)
+        {
+            error.Add(ValidationErrors.RequestFromSelfNotAllowed);
+            error.TryBuild(out var inputProblems);
+            return inputProblems;
+        }
+
         if (!request.Resource.HasValue && !request.Package.HasValue)
         {
             error.Add(ValidationErrors.RequestMissingResourceOrPackage);
