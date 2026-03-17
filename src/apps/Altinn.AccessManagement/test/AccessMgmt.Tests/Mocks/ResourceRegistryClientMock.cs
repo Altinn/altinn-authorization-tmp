@@ -15,7 +15,7 @@ using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using static Altinn.Authorization.ABAC.Constants.XacmlConstants;
 
-namespace Altinn.AccessManagement.Tests.Mocks
+namespace AccessMgmt.Tests.Mocks
 {
     /// <summary>
     /// Mock class for <see cref="IResourceRegistryClient"></see> interface
@@ -135,13 +135,13 @@ namespace Altinn.AccessManagement.Tests.Mocks
         }
 
         #region Code from resource registry to support mocking of rights decomposition in access management tests
-        public static List<AccessMgmt.Tests.Models.ResourceRegistry.Right> DecomposePolicy(XacmlPolicy policy, string resourceId, bool includeServiceOwnerRights, bool includeAppRights)
+        public static List<Models.ResourceRegistry.Right> DecomposePolicy(XacmlPolicy policy, string resourceId, bool includeServiceOwnerRights, bool includeAppRights)
         {
-            Dictionary<string, AccessMgmt.Tests.Models.ResourceRegistry.Right> rights = new Dictionary<string, AccessMgmt.Tests.Models.ResourceRegistry.Right>();
+            Dictionary<string, Models.ResourceRegistry.Right> rights = new Dictionary<string, Models.ResourceRegistry.Right>();
 
             foreach (XacmlRule rule in policy.Rules)
             {
-                IEnumerable<AccessMgmt.Tests.Models.ResourceRegistry.Right> rightsWithKeys = CalculateActionKey(rule, resourceId);
+                IEnumerable<Models.ResourceRegistry.Right> rightsWithKeys = CalculateActionKey(rule, resourceId);
                 List<string> ruleSubjects = DelegationCheckHelper.GetFirstAccessorValuesFromPolicy(rule, XacmlConstants.MatchAttributeCategory.Subject).ToList();
 
                 ruleSubjects = FilterSubjects(ruleSubjects, includeServiceOwnerRights, includeAppRights);
@@ -151,9 +151,9 @@ namespace Altinn.AccessManagement.Tests.Mocks
                     continue;
                 }
 
-                foreach (AccessMgmt.Tests.Models.ResourceRegistry.Right rightWithKey in rightsWithKeys)
+                foreach (Models.ResourceRegistry.Right rightWithKey in rightsWithKeys)
                 {
-                    if (!rights.TryGetValue(rightWithKey.Key, out AccessMgmt.Tests.Models.ResourceRegistry.Right value))
+                    if (!rights.TryGetValue(rightWithKey.Key, out Models.ResourceRegistry.Right value))
                     {
                         rightWithKey.AccessorUrns = [.. ruleSubjects];
                         rights.Add(rightWithKey.Key, rightWithKey);
@@ -170,12 +170,12 @@ namespace Altinn.AccessManagement.Tests.Mocks
 
         private static IEnumerable<AccessMgmt.Tests.Models.ResourceRegistry.Right> CalculateActionKey(XacmlRule rule, string resourceId)
         {
-            List<AccessMgmt.Tests.Models.ResourceRegistry.Right> result = [];
+            List<Models.ResourceRegistry.Right> result = [];
 
             // Use policy to calculate the rest of the key
             List<List<PolicyAttributeMatch>> resources = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Resource).ToList();
             List<List<PolicyAttributeMatch>> actions = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Action);
-            List<AccessMgmt.Tests.Models.ResourceRegistry.Right> resourceKeys = new List<AccessMgmt.Tests.Models.ResourceRegistry.Right>();
+            List<Models.ResourceRegistry.Right> resourceKeys = new List<Models.ResourceRegistry.Right>();
             List<string> actionKeys = new List<string>();
 
             foreach (var resource in resources)
@@ -197,7 +197,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
                     continue;
                 }
 
-                AccessMgmt.Tests.Models.ResourceRegistry.Right rightWithKey = new()
+                Models.ResourceRegistry.Right rightWithKey = new()
                 {
                     Resource = [.. resource] // Collection expression with spread - creates a new list
                 };
@@ -243,11 +243,11 @@ namespace Altinn.AccessManagement.Tests.Mocks
                 actionKeys.Add(actionKey.ToString());
             }
 
-            foreach (AccessMgmt.Tests.Models.ResourceRegistry.Right resource in resourceKeys)
+            foreach (Models.ResourceRegistry.Right resource in resourceKeys)
             {
                 foreach (var action in actionKeys)
                 {
-                    result.Add(new AccessMgmt.Tests.Models.ResourceRegistry.Right { Key = resource.Key + ":" + action, Resource = resource.Resource, Action = new PolicyAttributeMatch() { Id = MatchAttributeIdentifiers.ActionId, Value = action.Replace(MatchAttributeIdentifiers.ActionId + ":", string.Empty) } });
+                    result.Add(new Models.ResourceRegistry.Right { Key = resource.Key + ":" + action, Resource = resource.Resource, Action = new PolicyAttributeMatch() { Id = MatchAttributeIdentifiers.ActionId, Value = action.Replace(MatchAttributeIdentifiers.ActionId + ":", string.Empty) } });
                 }
             }
 
@@ -291,7 +291,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
             return result;
         }
 
-        private async Task<List<RightDto>> MapFromInternalToDecomposedRights(List<AccessMgmt.Tests.Models.ResourceRegistry.Right> rights, string resource, string language, CancellationToken cancellationToken = default)
+        private async Task<List<RightDto>> MapFromInternalToDecomposedRights(List<Models.ResourceRegistry.Right> rights, string resource, string language, CancellationToken cancellationToken = default)
         {
             List<RightDto> result = [];
 
@@ -303,7 +303,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
             return result;
         }
 
-        private async Task<RightDto> MapFromInternalToDecomposeRight(AccessMgmt.Tests.Models.ResourceRegistry.Right rights, string resource, string language, CancellationToken cancellationToken)
+        private async Task<RightDto> MapFromInternalToDecomposeRight(Models.ResourceRegistry.Right rights, string resource, string language, CancellationToken cancellationToken)
         {
             ResourceAndAction resourceAndAction = SplitRightKey(rights.Key);
 
