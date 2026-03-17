@@ -1,11 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
@@ -16,7 +14,6 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -35,7 +32,6 @@ namespace Altinn.AccessManagement.Core.Services
     {
         private readonly IConsentRepository _consentRepository;
         private readonly IPartiesClient _partiesClient;
-        private readonly ISingleRightsService _singleRightsService;
         private readonly IResourceRegistryClient _resourceRegistryClient;
         private readonly IAMPartyService _ampartyService;
         private readonly IMemoryCache _memoryCache;
