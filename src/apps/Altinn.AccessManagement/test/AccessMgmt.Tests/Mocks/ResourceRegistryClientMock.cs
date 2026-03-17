@@ -14,8 +14,9 @@ using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using static Altinn.Authorization.ABAC.Constants.XacmlConstants;
+using Right = AccessMgmt.Tests.Models.ResourceRegistry.Right;
 
-namespace AccessMgmt.Tests.Mocks
+namespace Altinn.AccessManagement.Tests.Mocks
 {
     /// <summary>
     /// Mock class for <see cref="IResourceRegistryClient"></see> interface
@@ -129,19 +130,19 @@ namespace AccessMgmt.Tests.Mocks
         {
             PolicyRetrievalPointMock policyRetrievalPointMock = new();
             XacmlPolicy policy = await policyRetrievalPointMock.GetPolicyAsync(resource, cancellationToken);
-            List<Models.ResourceRegistry.Right> rulesl = DecomposePolicy(policy, resource, includeServiceOwnerRights: false, includeAppRights: false);
+            List<Right> rulesl = DecomposePolicy(policy, resource, includeServiceOwnerRights: false, includeAppRights: false);
             List<RightDto> policyRights = await MapFromInternalToDecomposedRights(rulesl, resource, languageCode, cancellationToken);
             return policyRights;
         }
 
         #region Code from resource registry to support mocking of rights decomposition in access management tests
-        public static List<Models.ResourceRegistry.Right> DecomposePolicy(XacmlPolicy policy, string resourceId, bool includeServiceOwnerRights, bool includeAppRights)
+        public static List<Right> DecomposePolicy(XacmlPolicy policy, string resourceId, bool includeServiceOwnerRights, bool includeAppRights)
         {
-            Dictionary<string, Models.ResourceRegistry.Right> rights = new Dictionary<string, Models.ResourceRegistry.Right>();
+            Dictionary<string, Right> rights = new Dictionary<string, Right>();
 
             foreach (XacmlRule rule in policy.Rules)
             {
-                IEnumerable<Models.ResourceRegistry.Right> rightsWithKeys = CalculateActionKey(rule, resourceId);
+                IEnumerable<Right> rightsWithKeys = CalculateActionKey(rule, resourceId);
                 List<string> ruleSubjects = DelegationCheckHelper.GetFirstAccessorValuesFromPolicy(rule, XacmlConstants.MatchAttributeCategory.Subject).ToList();
 
                 ruleSubjects = FilterSubjects(ruleSubjects, includeServiceOwnerRights, includeAppRights);
@@ -151,9 +152,9 @@ namespace AccessMgmt.Tests.Mocks
                     continue;
                 }
 
-                foreach (Models.ResourceRegistry.Right rightWithKey in rightsWithKeys)
+                foreach (Right rightWithKey in rightsWithKeys)
                 {
-                    if (!rights.TryGetValue(rightWithKey.Key, out Models.ResourceRegistry.Right value))
+                    if (!rights.TryGetValue(rightWithKey.Key, out Right value))
                     {
                         rightWithKey.AccessorUrns = [.. ruleSubjects];
                         rights.Add(rightWithKey.Key, rightWithKey);
@@ -168,14 +169,14 @@ namespace AccessMgmt.Tests.Mocks
             return rights.Values.ToList();
         }
 
-        private static IEnumerable<AccessMgmt.Tests.Models.ResourceRegistry.Right> CalculateActionKey(XacmlRule rule, string resourceId)
+        private static IEnumerable<Right> CalculateActionKey(XacmlRule rule, string resourceId)
         {
-            List<Models.ResourceRegistry.Right> result = [];
+            List<Right> result = [];
 
             // Use policy to calculate the rest of the key
             List<List<PolicyAttributeMatch>> resources = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Resource).ToList();
             List<List<PolicyAttributeMatch>> actions = PolicyHelper.GetRulePolicyAttributeMatchesForCategory(rule, XacmlConstants.MatchAttributeCategory.Action);
-            List<Models.ResourceRegistry.Right> resourceKeys = new List<Models.ResourceRegistry.Right>();
+            List<Right> resourceKeys = new List<Right>();
             List<string> actionKeys = new List<string>();
 
             foreach (var resource in resources)
@@ -197,7 +198,7 @@ namespace AccessMgmt.Tests.Mocks
                     continue;
                 }
 
-                Models.ResourceRegistry.Right rightWithKey = new()
+                Right rightWithKey = new()
                 {
                     Resource = [.. resource] // Collection expression with spread - creates a new list
                 };
@@ -243,11 +244,11 @@ namespace AccessMgmt.Tests.Mocks
                 actionKeys.Add(actionKey.ToString());
             }
 
-            foreach (Models.ResourceRegistry.Right resource in resourceKeys)
+            foreach (Right resource in resourceKeys)
             {
                 foreach (var action in actionKeys)
                 {
-                    result.Add(new Models.ResourceRegistry.Right { Key = resource.Key + ":" + action, Resource = resource.Resource, Action = new PolicyAttributeMatch() { Id = MatchAttributeIdentifiers.ActionId, Value = action.Replace(MatchAttributeIdentifiers.ActionId + ":", string.Empty) } });
+                    result.Add(new Right { Key = resource.Key + ":" + action, Resource = resource.Resource, Action = new PolicyAttributeMatch() { Id = MatchAttributeIdentifiers.ActionId, Value = action.Replace(MatchAttributeIdentifiers.ActionId + ":", string.Empty) } });
                 }
             }
 
@@ -291,7 +292,7 @@ namespace AccessMgmt.Tests.Mocks
             return result;
         }
 
-        private async Task<List<RightDto>> MapFromInternalToDecomposedRights(List<Models.ResourceRegistry.Right> rights, string resource, string language, CancellationToken cancellationToken = default)
+        private async Task<List<RightDto>> MapFromInternalToDecomposedRights(List<Right> rights, string resource, string language, CancellationToken cancellationToken = default)
         {
             List<RightDto> result = [];
 
@@ -303,7 +304,7 @@ namespace AccessMgmt.Tests.Mocks
             return result;
         }
 
-        private async Task<RightDto> MapFromInternalToDecomposeRight(Models.ResourceRegistry.Right rights, string resource, string language, CancellationToken cancellationToken)
+        private async Task<RightDto> MapFromInternalToDecomposeRight(Right rights, string resource, string language, CancellationToken cancellationToken)
         {
             ResourceAndAction resourceAndAction = SplitRightKey(rights.Key);
 
