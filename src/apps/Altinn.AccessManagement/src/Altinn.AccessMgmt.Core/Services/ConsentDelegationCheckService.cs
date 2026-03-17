@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
