@@ -436,17 +436,22 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     public async Task<InstanceDelegationChange> GetLastInstanceDelegationChange(InstanceDelegationChangeRequest request, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.AssignmentInstances.AsNoTracking()
-           .Include(t => t.Assignment).ThenInclude(t => t.From)
-           .Include(t => t.Assignment).ThenInclude(t => t.To)
-           .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
+            .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
 
-           .Where(t => t.Resource.RefId == request.Resource)
-           .Where(t => t.InstanceId == request.Instance)
-           .Where(t => t.Assignment.FromId == request.FromUuid)
-           .Where(t => t.Assignment.ToId == request.ToUuid)
-           .SingleAsync(cancellationToken);
+            .Where(t => t.Resource.RefId == request.Resource)
+            .Where(t => t.InstanceId == request.Instance)
+            .Where(t => t.Assignment.FromId == request.FromUuid)
+            .Where(t => t.Assignment.ToId == request.ToUuid)
+            .SingleOrDefaultAsync(cancellationToken);
 
-        return Convert(result);
+        if (result == null)
+        {
+            return null;
+        }
+            
+        return Convert(result);                
     }
 
     /// <inheritdoc />
