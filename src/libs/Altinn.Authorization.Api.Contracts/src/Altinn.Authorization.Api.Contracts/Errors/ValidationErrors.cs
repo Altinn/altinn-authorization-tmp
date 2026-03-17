@@ -186,7 +186,7 @@ public static class ValidationErrors
     /// RequestMissingFromOrTo
     /// </summary>
     public static ValidationErrorDescriptor RequestMissingResourceOrPackage { get; }
-        = _factory.Create(38, $"Either Resource og Package must be included in request.");
+        = _factory.Create(38, $"Either Resource or Package must be included in request.");
 
     /// <summary>
     /// RequestMissingFromOrTo
