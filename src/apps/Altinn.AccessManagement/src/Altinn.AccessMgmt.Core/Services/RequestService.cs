@@ -63,17 +63,9 @@ public class RequestService(AppDbContext db) : IRequestService
         var requestResources = string.IsNullOrEmpty(type) || type == "resource" ? await GetRequestAssignmentResource(fromId, toId, status, ct) : default;
         var requestPackages = string.IsNullOrEmpty(type) || type == "package" ? await GetRequestAssignmentPackage(fromId, toId, status, ct) : default;
 
-        if (!requestResources.Any() && !requestPackages.Any())
-        {
-            error.Add(ValidationErrors.RequestNotFound);
-        }
+        var result = requestResources.Select(DtoMapper.Convert)
+            .Union(requestPackages.Select(DtoMapper.Convert));
 
-        if (error.TryBuild(out var problems))
-        {
-            return problems;
-        }
-
-        var result = requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert));
         return result.ToList();
     }
 
