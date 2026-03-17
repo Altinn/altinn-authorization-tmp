@@ -3,7 +3,7 @@
 namespace AccessMgmt.Tests.Models.ResourceRegistry
 {
     /// <summary>
-    /// Copy from Resource Regstry Right model, but with AccessorUrns instead of HasPermit and CanDelegate, as this is the model used in the ResourceRegistryClientMock
+    /// Copy from Resource Registry Right model, but with AccessorUrns instead of HasPermit and CanDelegate, as this is the model used in the ResourceRegistryClientMock
     /// </summary>
     public class Right
     {
