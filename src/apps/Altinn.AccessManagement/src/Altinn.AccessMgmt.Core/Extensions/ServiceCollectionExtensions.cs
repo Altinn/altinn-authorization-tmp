@@ -1,12 +1,14 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Configuration;
+﻿using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+using Altinn.AccessMgmt.Core.HostedServices.Outbox;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -25,6 +27,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
+        services.AddHostedService<OutboxHandlerJob>();
+        services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
@@ -41,10 +45,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRightImportProgressService, RightImportProgressService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
+        services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
+
+        services.AddTransient<RequestApprovedNotificationHandler>();
+        services.AddTransient<RequestPendingNotificationHandler>();
+
+        services.AddSingleton<AuditMiddleware>();
 
         // Consent Migration - Configuration
         services.AddOptions<ConsentMigrationSettings>()
@@ -65,7 +75,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRoleSyncService, RoleSyncService>();
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
         services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
+        services.AddSingleton<IPrivateTaxAffairRoleSyncService, PrivateTaxAffairRoleSyncService>();
         services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+        services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
         services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
         services.AddSingleton<ISingleAppRightSyncService, SingleAppRightSyncService>();
         services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();

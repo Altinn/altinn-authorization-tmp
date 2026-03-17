@@ -25,7 +25,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         public AltinnAdminRoleSyncService(
             IAltinnSblBridge role,
             IServiceProvider serviceProvider,
-            ILogger<AltinnClientRoleSyncService> logger
+            ILogger<AltinnAdminRoleSyncService> logger
         )
         {
             _role = role;
@@ -34,7 +34,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         }
 
         private readonly IAltinnSblBridge _role;
-        private readonly ILogger<AltinnClientRoleSyncService> _logger;
+        private readonly ILogger<AltinnAdminRoleSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
         private readonly IAMPartyService _partyService;
 
@@ -58,7 +58,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 Guid batchId = Guid.CreateVersion7();
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+                _logger.LogInformation("Starting processing role page '{0}'", batchName);
 
                 if (page.Content != null)
                 {
