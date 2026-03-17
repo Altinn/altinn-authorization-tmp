@@ -87,7 +87,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             BlobStoragePolicyPath = assignmentInstance.PolicyPath,
             BlobStorageVersionId = assignmentInstance.PolicyVersion,
             
-            ResourceId = assignmentInstance.ResourceId.ToString(),
+            ResourceId = assignmentInstance.Resource.RefId,
             InstanceId = assignmentInstance.InstanceId,
             
             InstanceDelegationMode = InstanceDelegationMode.ParallelSigning,
