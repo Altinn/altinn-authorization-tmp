@@ -305,8 +305,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 {
                     resourceAttributes.InstanceValue = attribute.AttributeValues.First().Value;
                     string[] instanceValues = resourceAttributes.InstanceValue.Split('/');
+                    if (instanceValues.Length == 2)
+                    {
+                        resourceAttributes.ResourceInstanceValue = $"{XacmlRequestAttribute.InstanceAttribute}:{resourceAttributes.InstanceValue}";
                     resourceAttributes.AppInstanceIdValue = instanceValues[1];
-                    resourceAttributes.ResourceInstanceValue = $"{XacmlRequestAttribute.InstanceAttribute}:{resourceAttributes.InstanceValue}";
+                    }
                 }
 
                 if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.ResourceRegistryInstanceAttribute))
@@ -315,11 +318,13 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     var instanceValueSplit = resourceAttributes.ResourceInstanceValue.Split($"{XacmlRequestAttribute.InstanceAttribute}:");
                     if (instanceValueSplit.Length == 2)
                     {
+                        string[] instanceValues = instanceValueSplit[1].Split('/');
+                        if (instanceValues.Length == 2)
+                        {
                         resourceAttributes.InstanceValue = instanceValueSplit[1];
-
-                        string[] instanceValues = resourceAttributes.InstanceValue.Split('/');
                         resourceAttributes.AppInstanceIdValue = instanceValues[1];
                     }
+                }
                 }
 
                 if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyAttribute))

@@ -26,7 +26,7 @@
         public string ResourceInstanceValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the value for a app instance id
+        /// Gets or sets the value for an app instance id
         /// </summary>
         public string AppInstanceIdValue { get; set; }
 
