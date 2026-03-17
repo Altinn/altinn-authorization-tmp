@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Clients;
-using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.Authorization.ABAC.Constants;
