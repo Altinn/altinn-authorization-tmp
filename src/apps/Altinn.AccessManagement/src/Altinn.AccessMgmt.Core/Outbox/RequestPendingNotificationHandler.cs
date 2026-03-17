@@ -39,12 +39,12 @@ public class RequestPendingNotificationHandler(
                 $@"Failed to send notification.
                     CorrelationId: {Activity.Current?.TraceId}
                     Status Code: {response.StatusCode}
-                    Problem Title: {response.ProblemDetails.Title}
-                    Problem Details: {response.ProblemDetails.Detail}
-                    Problem Instance: {response.ProblemDetails.Instance}
-                    Problem Type: {response.ProblemDetails.Type}
-                    Problem Error Code: {response.ProblemDetails.ErrorCode}
-                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails.Extensions)}"
+                    Problem Title: {response.ProblemDetails?.Title}
+                    Problem Details: {response.ProblemDetails?.Detail}
+                    Problem Instance: {response.ProblemDetails?.Instance}
+                    Problem Type: {response.ProblemDetails?.Type}
+                    Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}"
             );
         }
     }
