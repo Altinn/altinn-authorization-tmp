@@ -1,4 +1,6 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
@@ -13,8 +15,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -365,8 +365,7 @@ public class ConsentServiceTests
             _profileClientMock.Object,
             _timeProvider,
             _generalSettingsMock.Object,
-            _meterFactoryMock.Object);
-            _generalSettingsMock.Object,
+            _meterFactoryMock.Object,
             _consentDelegationCheckServiceMock.Object);
     }
 

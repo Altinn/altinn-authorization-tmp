@@ -31,11 +31,10 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(ILogger<ConsentService> logger, IConsentRepository consentRepository, IAltinn2ConsentClient altinn2ConsentClient, IPartiesClient partiesClient, ISingleRightsService singleRightsService,
-        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings, IConsentDelegationCheckService consentDelegationCheckService) : IConsent
+    public class ConsentService : IConsent
     {
         private readonly IConsentRepository _consentRepository;
-        private readonly IPartiesClient _partiesClient ;
+        private readonly IPartiesClient _partiesClient;
         private readonly ISingleRightsService _singleRightsService;
         private readonly IResourceRegistryClient _resourceRegistryClient;
         private readonly IAMPartyService _ampartyService;
@@ -45,6 +44,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly GeneralSettings _generalSettings;
         private readonly IAltinn2ConsentClient _altinn2ConsentClient;
         private readonly ILogger<ConsentService> _logger;
+        private readonly IConsentDelegationCheckService _consentDelegationCheckService;
 
         // histograms for sub-step durations (seconds)
         private readonly Histogram<double>? _getA2Histogram;
@@ -53,33 +53,23 @@ namespace Altinn.AccessManagement.Core.Services
 
         // overall per-consent end-to-end duration (seconds)
         private readonly Histogram<double>? _consentOverallHistogram;
-        private readonly IConsentRepository _consentRepository = consentRepository;
-        private readonly IPartiesClient _partiesClient = partiesClient;
-        private readonly ISingleRightsService _singleRightsService = singleRightsService;
-        private readonly IConsentDelegationCheckService _consentDelegationCheckService = consentDelegationCheckService;
-        private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
-        private readonly IAMPartyService _ampartyService = ampartyService;
-        private readonly IMemoryCache _memoryCache = memoryCache;
-        private readonly IProfileClient _profileClient = profileClient;
-        private readonly TimeProvider _timeProvider = timeProvider;
-        private readonly GeneralSettings _generalSettings = generalSettings.Value;
-        private readonly IAltinn2ConsentClient _altinn2ConsentClient = altinn2ConsentClient;
 
         private const string ResourceParam = "Resource";
 
         public ConsentService(
-            ILogger<ConsentService> logger, 
-            IConsentRepository consentRepository, 
-            IAltinn2ConsentClient altinn2ConsentClient, 
-            IPartiesClient partiesClient, 
+            ILogger<ConsentService> logger,
+            IConsentRepository consentRepository,
+            IAltinn2ConsentClient altinn2ConsentClient,
+            IPartiesClient partiesClient,
             ISingleRightsService singleRightsService,
-            IResourceRegistryClient resourceRegistryClient, 
-            IAMPartyService ampartyService, 
-            IMemoryCache memoryCache, 
-            IProfileClient profileClient, 
-            TimeProvider timeProvider, 
+            IResourceRegistryClient resourceRegistryClient,
+            IAMPartyService ampartyService,
+            IMemoryCache memoryCache,
+            IProfileClient profileClient,
+            TimeProvider timeProvider,
             IOptions<GeneralSettings> generalSettings,
-            IMeterFactory meterFactory)
+            IMeterFactory meterFactory,
+            IConsentDelegationCheckService consentDelegationCheckService)
         {
             _logger = logger;
             _consentRepository = consentRepository;
@@ -92,6 +82,7 @@ namespace Altinn.AccessManagement.Core.Services
             _profileClient = profileClient;
             _timeProvider = timeProvider;
             _generalSettings = generalSettings.Value;
+            _consentDelegationCheckService = consentDelegationCheckService;
 
             var meter = meterFactory.Create("Altinn.AccessManagement.ConsentMigration");
             _getA2Histogram = meter.CreateHistogram<double>("consent_migration_get_a2_duration_seconds", unit: "s", description: "Seconds to get a single consent from Altinn2");
