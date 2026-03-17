@@ -19,6 +19,7 @@ using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static Altinn.Authorization.ABAC.Constants.XacmlConstants;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -705,7 +706,7 @@ namespace Altinn.AccessManagement.Core.Services
             foreach (string action in consentRight.Action)
             {
                 bool actionMatch = checkResult.DelegatableActions.Any(a =>
-                    a.Equals(action, StringComparison.OrdinalIgnoreCase));
+                    a.Replace(MatchAttributeIdentifiers.ActionId + ":", string.Empty).Equals(action, StringComparison.OrdinalIgnoreCase));
 
                 if (!actionMatch)
                 {

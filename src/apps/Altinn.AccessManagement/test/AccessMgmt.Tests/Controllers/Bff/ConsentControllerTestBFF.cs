@@ -1,22 +1,24 @@
-﻿using AccessMgmt.Tests.Moqdata;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using AccessMgmt.Tests.Mocks;
+using AccessMgmt.Tests.Moqdata;
 using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Consent;
-using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
-using Altinn.AccessManagement.Tests.Seeds;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Consent;
-using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
@@ -27,12 +29,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using Npgsql.Internal;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
@@ -67,6 +63,20 @@ namespace AccessMgmt.Tests.Controllers.Bff
             RefId = "ttd_inntektsopplysninger",
             ProviderId = ProviderConstants.ResourceRegistry.Id,
             TypeId = ConsentResourceType.Id,
+        };
+
+        private static readonly Guid ElenaFjaerUuid = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity ElenaFjaerEntity = new()
+        {
+            Id = ElenaFjaerUuid,
+            Name = "Elena Fjær",
+            RefId = "01025161013",
+            PersonIdentifier = "01025161013",
+            TypeId = EntityTypeConstants.Person,
+            VariantId = EntityVariantConstants.Person,
+            PartyId = 513370001,
+            UserId = 20001337,
         };
 
         public ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output)
@@ -127,7 +137,24 @@ namespace AccessMgmt.Tests.Controllers.Bff
                 db.Resources.Add(ResourceInntektsopplysninger);
             }
 
+            if (!db.Entities.AsNoTracking().Any(e => e.Id == ElenaFjaerUuid))
+            {
+                db.Entities.Add(ElenaFjaerEntity);
+            }
+
             db.SaveChanges();
+
+            // Self-referencing PrivatePerson assignment for Elena Fjær
+            if (!db.Assignments.AsNoTracking().Any(a => a.FromId == ElenaFjaerUuid && a.ToId == ElenaFjaerUuid && a.RoleId == RoleConstants.PrivatePerson.Id))
+            {
+                db.Assignments.Add(new Altinn.AccessMgmt.PersistenceEF.Models.Assignment
+                {
+                    FromId = ElenaFjaerUuid,
+                    ToId = ElenaFjaerUuid,
+                    RoleId = RoleConstants.PrivatePerson,
+                });
+                db.SaveChanges();
+            }
         }
 
         /// <summary>
