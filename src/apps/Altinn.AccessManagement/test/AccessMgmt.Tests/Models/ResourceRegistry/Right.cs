@@ -13,7 +13,7 @@ namespace AccessMgmt.Tests.Models.ResourceRegistry
         public string Key { get; set; }
 
         /// <summary>
-        /// The name of the right to be presented in frontend, this is not used for any processing but only for display purposes. The name can be derived from the action part of the right key or can be a more user-friendly name associated with the right.
+        /// Set of accessor URNs that define which subjects or access packages are allowed for this right in the mocked resource registry.
         /// </summary>
         public HashSet<string> AccessorUrns { get; set; }
 
