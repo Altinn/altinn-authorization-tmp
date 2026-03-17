@@ -27,7 +27,6 @@ public class RequestApprovedNotificationHandler(
             {
                 IdempotencyId = idempotencyId,
                 Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
-                RequestedSendTime = DateTime.UtcNow.AddSeconds(1),
             },
             cancellationToken);
 
