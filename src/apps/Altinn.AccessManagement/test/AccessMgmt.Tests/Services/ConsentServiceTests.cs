@@ -2,15 +2,12 @@
 using System.Diagnostics.Metrics;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
-using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.Authorization.Api.Contracts.Register;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
