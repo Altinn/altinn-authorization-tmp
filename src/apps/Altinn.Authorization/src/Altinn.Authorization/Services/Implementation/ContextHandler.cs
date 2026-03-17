@@ -230,8 +230,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             if (resourceAttributes.ResourceInstanceValue != null && resourceAttributes.AppInstanceIdValue != null)
             {
                 // Missing resource registry instanceId attribute, add both old and new attribute for backward compatibility.
-                requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.ResourceInstanceValue));
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.AppInstanceIdValue));           
+                requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.ResourceInstanceValue));
             }
 
             return requestResourceAttributes;
