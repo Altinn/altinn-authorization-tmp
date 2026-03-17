@@ -572,7 +572,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         var instances = await DbContext.AssignmentInstances.AsNoTracking()
             .Where(t => t.AssignmentId == assignmentId)
             .ToListAsync(cancellationToken);
-        if (resources != null && resources.Any())
+        if (instances != null && instances.Any())
         {
             return false;
         }
@@ -601,7 +601,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     {
         try
         {
-            HashSet<Assignment> asignmentsToCheckForConnections = [];
+            HashSet<Assignment> assignmentsToCheckForConnections = [];
             foreach (var policy in policyWriteOutputs)
             {
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
@@ -615,13 +615,13 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 if (assignment == null || resource == null)
                 {
                     // Removes the assignment already processed before aborting the processing
-                    foreach (Assignment cuurentAssignment in asignmentsToCheckForConnections)
+                    foreach (Assignment currentAssignment in assignmentsToCheckForConnections)
                     {
-                        bool removeAssignment = await CheckCascadingAssignmentRevoke(cuurentAssignment.Id, cancellationToken);
+                        bool removeAssignment = await CheckCascadingAssignmentRevoke(currentAssignment.Id, cancellationToken);
 
                         if (removeAssignment)
                         {
-                            DbContext.Assignments.Remove(cuurentAssignment);
+                            DbContext.Assignments.Remove(currentAssignment);
                         }
                     }
 
@@ -651,13 +651,13 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 if (policy.ChangeType == DelegationChangeType.RevokeLast)
                 {
                     DbContext.AssignmentInstances.Remove(assignmentInstance);
-                    asignmentsToCheckForConnections.Add(assignment);
+                    assignmentsToCheckForConnections.Add(assignment);
                 }
             }
 
             await DbContext.SaveChangesAsync(cancellationToken);
 
-            foreach (Assignment assignment in asignmentsToCheckForConnections)
+            foreach (Assignment assignment in assignmentsToCheckForConnections)
             {
                 bool removeAssignment = await CheckCascadingAssignmentRevoke(assignment.Id, cancellationToken);
 

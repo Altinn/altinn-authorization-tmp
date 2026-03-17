@@ -85,20 +85,35 @@ public class AuditMiddleware : IMiddleware
 
     private static string AppAndTraceId(HttpContext context)
     {
-        string appid = string.Empty;
-        string token = context.Request.Headers["PlatformAccessToken"];
-        if (!string.IsNullOrEmpty(token))
+        string appid = null;
+        try
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(token);
-            var appidentifier = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
-            if (appidentifier != null)
+            string token = context.Request.Headers["PlatformAccessToken"];
+            if (!string.IsNullOrEmpty(token))
             {
-                appid = $"app_{jwtSecurityToken.Issuer}_{appidentifier.Value}";
+                var handler = new JwtSecurityTokenHandler();
+                if (handler.CanReadToken(token))
+                {
+                    var jwtSecurityToken = handler.ReadJwtToken(token);
+                    var appidentifier = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
+                    if (appidentifier != null)
+                    {
+                        appid = $"app_{jwtSecurityToken.Issuer}_{appidentifier.Value}";
+                    }
+                }
+
             }
         }
+        catch (Exception)
+        {
+        }
 
-        return $"{appid}_{TraceId(context)}";
+        if (appid is not null)
+        {
+            return $"{appid}_{TraceId(context)}";
+        }
+
+        return TraceId(context);
     }
 
     private async Task<Entity> GetEntityFromConsumerClaim(AppDbContext db, HttpContext context, ConsentPartyUrn party)

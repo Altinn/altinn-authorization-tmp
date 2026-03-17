@@ -377,7 +377,7 @@ public static class SystemEntityConstants
     /// <remarks>
     /// - <c>Id:</c> 81435d97-8527-4246-a475-ce281a898fa0
     /// - <c>Name:</c> App Instance Delegation API
-    /// - <c>RefId:</c> accessmgmt-service-owner-api
+    /// - <c>RefId:</c> accessmgmt-app-instance-delegation-api
     /// - <c>TypeId:</c> Internal entity type
     /// - <c>VariantId:</c> Standard variant
     /// </remarks>
