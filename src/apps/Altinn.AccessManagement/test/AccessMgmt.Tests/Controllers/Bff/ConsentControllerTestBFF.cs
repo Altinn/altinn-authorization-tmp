@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using AccessMgmt.Tests.Mocks;
-using AccessMgmt.Tests.Moqdata;
 using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -28,14 +27,12 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
 {
     public class ConsentControllerTestBFF: IClassFixture<WebApplicationFixture>
     {
-        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;
         private readonly WebApplicationFactory<Program> _fixture;
         private readonly ITestOutputHelper _output;
 
@@ -65,12 +62,12 @@ namespace AccessMgmt.Tests.Controllers.Bff
             TypeId = ConsentResourceType.Id,
         };
 
-        private static readonly Guid ElenaFjaerUuid = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+        #region Test Entities
 
         private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity ElenaFjaerEntity = new()
         {
-            Id = ElenaFjaerUuid,
-            Name = "Elena Fjær",
+            Id = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"),
+            Name = "ELENA FJÆR",
             RefId = "01025161013",
             PersonIdentifier = "01025161013",
             TypeId = EntityTypeConstants.Person,
@@ -79,9 +76,87 @@ namespace AccessMgmt.Tests.Controllers.Bff
             UserId = 20001337,
         };
 
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity SmekkFullBankEntity = new()
+        {
+            Id = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181"),
+            Name = "SmekkFull Bank AS",
+            RefId = "810419512",
+            OrganizationIdentifier = "810419512",
+            TypeId = EntityTypeConstants.Organization,
+            VariantId = EntityVariantConstants.AS,
+            PartyId = 501235,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity DigitaliseringsdirektoratetEntity = new()
+        {
+            Id = Guid.Parse("cdda2f11-95c5-4be4-9690-54206ff663f6"),
+            Name = "DIGITALISERINGSDIREKTORATET",
+            RefId = "991825827",
+            OrganizationIdentifier = "991825827",
+            TypeId = EntityTypeConstants.Organization,
+            VariantId = EntityVariantConstants.AS,
+            PartyId = 501236,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity KolsaasOgFlaamEntity = new()
+        {
+            Id = Guid.Parse("00000000-0000-0000-0005-000000004219"),
+            Name = "KOLSAAS OG FLAAM",
+            RefId = "810418192",
+            OrganizationIdentifier = "810418192",
+            TypeId = EntityTypeConstants.Organization,
+            VariantId = EntityVariantConstants.AS,
+            PartyId = 50004219,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity LepsoyOgTonstadEntity = new()
+        {
+            Id = Guid.Parse("00000000-0000-0000-0005-000000006078"),
+            Name = "LEPSØY OG TONSTAD",
+            RefId = "910493353",
+            OrganizationIdentifier = "910493353",
+            TypeId = EntityTypeConstants.Organization,
+            VariantId = EntityVariantConstants.AS,
+            PartyId = 50006078,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity ConsentToOrgEntity = new()
+        {
+            Id = Guid.Parse("00000000-0000-0000-0005-000000004646"),
+            Name = "CONSENT TO ORG",
+            RefId = "310419512",
+            OrganizationIdentifier = "310419512",
+            TypeId = EntityTypeConstants.Organization,
+            VariantId = EntityVariantConstants.AS,
+            PartyId = 50004646,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity KariNordmannEntity = new()
+        {
+            Id = Guid.Parse("d47ac10b-58cc-4372-a567-0e02b2c3d483"),
+            Name = "Kari Nordmann",
+            RefId = "01025181049",
+            PersonIdentifier = "01025181049",
+            TypeId = EntityTypeConstants.Person,
+            VariantId = EntityVariantConstants.Person,
+            PartyId = 501238,
+        };
+
+        private static readonly Altinn.AccessMgmt.PersistenceEF.Models.Entity[] ConsentTestEntities =
+        [
+            ElenaFjaerEntity,
+            SmekkFullBankEntity,
+            DigitaliseringsdirektoratetEntity,
+            KolsaasOgFlaamEntity,
+            LepsoyOgTonstadEntity,
+            ConsentToOrgEntity,
+            KariNordmannEntity,
+        ];
+
+        #endregion
+
         public ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output)
         {
-            _mockAmPartyRepository = new Mock<IAmPartyRepository>();
             _output = output;
 
             _fixture = fixture.WithWebHostBuilder(builder =>
@@ -97,9 +172,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
                     services.AddSingleton<IPDP, PdpPermitMock>();
                     services.AddSingleton<IProfileClient, ProfileClientMock>();
                     services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
-
-                    // Register the SAME mock instance
-                    services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
                 });
             });
 
@@ -110,11 +182,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-
-        private void SetupMockPartyRepository()
-        {
-            MockParyRepositoryPopulator.SetupMockPartyRepository(_mockAmPartyRepository);
-        }
 
         private void SeedResources()
         {
@@ -137,20 +204,23 @@ namespace AccessMgmt.Tests.Controllers.Bff
                 db.Resources.Add(ResourceInntektsopplysninger);
             }
 
-            if (!db.Entities.AsNoTracking().Any(e => e.Id == ElenaFjaerUuid))
+            foreach (var entity in ConsentTestEntities)
             {
-                db.Entities.Add(ElenaFjaerEntity);
+                if (!db.Entities.AsNoTracking().Any(e => e.Id == entity.Id))
+                {
+                    db.Entities.Add(entity);
+                }
             }
 
             db.SaveChanges();
 
             // Self-referencing PrivatePerson assignment for Elena Fjær
-            if (!db.Assignments.AsNoTracking().Any(a => a.FromId == ElenaFjaerUuid && a.ToId == ElenaFjaerUuid && a.RoleId == RoleConstants.PrivatePerson.Id))
+            if (!db.Assignments.AsNoTracking().Any(a => a.FromId == ElenaFjaerEntity.Id && a.ToId == ElenaFjaerEntity.Id && a.RoleId == RoleConstants.PrivatePerson.Id))
             {
                 db.Assignments.Add(new Altinn.AccessMgmt.PersistenceEF.Models.Assignment
                 {
-                    FromId = ElenaFjaerUuid,
-                    ToId = ElenaFjaerUuid,
+                    FromId = ElenaFjaerEntity.Id,
+                    ToId = ElenaFjaerEntity.Id,
                     RoleId = RoleConstants.PrivatePerson,
                 });
                 db.SaveChanges();
@@ -165,7 +235,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequest()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -189,7 +258,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequest_Show()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -218,7 +286,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequest_WithExpiredEvent()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -236,7 +303,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequestWithoutMessagehandledby()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -263,7 +329,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_Valid()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -295,7 +360,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_ValidToExpired()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(-10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -327,7 +391,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequestWithRequiredDelegator_Valid()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("a4253d59-b40f-409a-a3f7-c6395f065192");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -366,7 +429,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_AlreadyRejected()
         {
-            SetupMockPartyRepository();
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -397,7 +459,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task RejectRequest_Valid()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -412,7 +473,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task ListRequests_One_Valid()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -429,7 +489,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task ListRequests_One_Valid_Hidden_One_Valid_Show()
         {
-            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             Guid requestIdShow = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -452,7 +511,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task ListRequests_One_AcceptedAndExpired()
         {
-            SetupMockPartyRepository();
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
