@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -9,6 +10,7 @@ using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
@@ -33,7 +35,17 @@ public class RequestPendingNotificationHandler(
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(response.ProblemDetails.Detail);
+            throw new InvalidOperationException(
+                $@"Failed to send notification.
+                    CorrelationId: {Activity.Current?.TraceId}
+                    Status Code: {response.StatusCode}
+                    Problem Title: {response.ProblemDetails.Title}
+                    Problem Details: {response.ProblemDetails.Detail}
+                    Problem Instance: {response.ProblemDetails.Instance}
+                    Problem Type: {response.ProblemDetails.Type}
+                    Problem Error Code: {response.ProblemDetails.ErrorCode}
+                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails.Extensions)}"
+            );
         }
     }
 
@@ -125,9 +137,9 @@ public class RequestPendingNotificationHandler(
         {
             var emailContent = new StringBuilder();
             emailContent.AppendLine($"<p>{requester.Name} har bedt om følgende fullmakter fra {recipient.Name} med Org.nr {recipient.OrganizationIdentifier}.</p>");
-            
+
             AddResourcesAndPackage(resources, packages, emailContent);
-            
+
             emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
 
