@@ -29,7 +29,7 @@ public class RequestPendingNotificationHandler(
             IdempotencyId = idempotencyId,
             Recipient = CreateRecipient(recipient, requester, resources, packages),
             RequestedSendTime = DateTime.UtcNow,
-        }
+        };
 
         var response = await notification.Send(content, cancellationToken);
 
