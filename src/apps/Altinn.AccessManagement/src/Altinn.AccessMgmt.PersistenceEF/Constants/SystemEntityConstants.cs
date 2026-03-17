@@ -345,6 +345,32 @@ public static class SystemEntityConstants
             KeyValuePair.Create("Name", "Internt API")),
     };
 
+    /// <summary>
+    /// Represents the ServiceOwnerApi system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> ab418674-710b-4ca0-8ff1-b7daac8dc3d0
+    /// - <c>Name:</c> Service Owner API
+    /// - <c>RefId:</c> accessmgmt-service-owner-api
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
+    public static ConstantDefinition<Entity> ServiceOwnerApi { get; } = new ConstantDefinition<Entity>(AuditDefaults.ServiceOwnerApi)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.ServiceOwnerApi),
+            RefId = "accessmgmt-service-owner-api",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Service owner API")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Tjenesteeier API")),
+    };
+
     #endregion
 
     #region Internal
@@ -374,5 +400,32 @@ public static class SystemEntityConstants
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "DBA")),
     };
+
+    /// <summary>
+    /// Represents the Outbox system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 2b0e4b45-b5ac-41a9-b063-bba1dc9410e6
+    /// - <c>Name:</c> Outbox
+    /// - <c>RefId:</c> sys-outbox
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
+    public static ConstantDefinition<Entity> Outbox { get; } = new ConstantDefinition<Entity>(AuditDefaults.Outbox)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.Outbox),
+            RefId = "sys-outbox",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Outbox")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Outbox")),
+    };
+
     #endregion
 }

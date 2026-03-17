@@ -539,7 +539,7 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        if (!connection.IsSuccess || !connection.Value.Any())
         {
             return Problems.MissingConnection;
         }
@@ -944,7 +944,7 @@ public partial class ConnectionService(
         // Fetch packages
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, ConfigureConnections, cancellationToken);
 
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+        bool isMainAdminForFrom = packages.Value.Any(p => p.Result && p.Package.Id == PackageConstants.MainAdministrator.Id);
 
         // Fetch roles
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
@@ -1399,7 +1399,7 @@ public partial class ConnectionService(
         return result;
     }
 
-    private void ProcessTheAccessToTheRightKeys(List<Models.Right> rights, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRightDto> resources)
+    private void ProcessTheAccessToTheRightKeys(List<Models.Right> rights, IEnumerable<AccessPackageDto.AccessPackageDtoCheck> packages, IEnumerable<RoleDtoCheck> roles, List<ResourceRightDto> resources, List<InstanceRightDto> instances = null)
     {
         foreach (var right in rights)
         {
@@ -1458,6 +1458,18 @@ public partial class ConnectionService(
                 if (resource.Rights.Any(r => r.Right.Key == right.Key))
                 {
                     right.ResourceAllowAccess.Add(resource.Rights.First(r => r.Right.Key == right.Key));
+                }
+            }
+
+            // Process instance-specific rights if provided
+            if (instances != null)
+            {
+                foreach (var instance in instances)
+                {
+                    if (instance.Rights.Any(r => r.Right.Key == right.Key))
+                    {
+                        right.ResourceAllowAccess.Add(instance.Rights.First(r => r.Right.Key == right.Key));
+                    }
                 }
             }
         }
