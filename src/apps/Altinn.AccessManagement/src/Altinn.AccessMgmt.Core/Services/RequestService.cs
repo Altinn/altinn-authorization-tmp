@@ -254,7 +254,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
         var res = await db.SaveChangesAsync(ct);
 
-        if (res != 1)
+        if (res != 2)
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentPackages));
         }
@@ -294,7 +294,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
         var res = await db.SaveChangesAsync(ct);
 
-        if (res != 1)
+        if (res != 2)
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentResources));
         }
