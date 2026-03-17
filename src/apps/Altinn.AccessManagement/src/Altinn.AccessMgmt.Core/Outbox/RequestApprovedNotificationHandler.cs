@@ -114,7 +114,9 @@ public class RequestApprovedNotificationHandler(
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Godkjent Tilgangsforespørsel",
-                        Body = emailContent.ToString()
+                        Body = emailContent.ToString(),
+                        ContentType = EmailContentTypeExt.Html,
+
                     }
                 }
             };
