@@ -27,7 +27,7 @@ public class RequestApprovedNotificationHandler(
             {
                 IdempotencyId = idempotencyId,
                 Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
-                RequestedSendTime = DateTime.UtcNow,
+                RequestedSendTime = DateTime.UtcNow.AddSeconds(1),
             },
             cancellationToken);
 
@@ -110,8 +110,8 @@ public class RequestApprovedNotificationHandler(
                 RecipientPerson = new RecipientPersonExt
                 {
                     NationalIdentityNumber = recipient.PersonIdentifier,
-                    ChannelSchema = NotificationChannelExt.EmailAndSms,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ChannelSchema = NotificationChannelExt.EmailPreferred,
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Godkjent Tilgangsforespørsel",
@@ -135,7 +135,7 @@ public class RequestApprovedNotificationHandler(
                 {
                     OrgNumber = recipient.OrganizationIdentifier,
                     ChannelSchema = NotificationChannelExt.EmailPreferred,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
                         Subject = "Altinn Godkjent Tilgangsforespørsel",
