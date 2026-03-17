@@ -843,7 +843,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         var instances = await db.AssignmentInstances.AsNoTracking()
             .Where(t => t.AssignmentId == assignmentId)
             .ToListAsync(cancellationToken);
-        if (resources != null && resources.Any())
+        if (instances != null && instances.Any())
         {
             errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
         }
