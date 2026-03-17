@@ -194,7 +194,7 @@ module "appsettings" {
   labels = {
     "${var.environment}-access-management" = {
       values = {
-        "ConsentMigration:BatchSize" = { value = tostring(var.configuration.consent.batch_size) }
+        "ConsentMigration:BatchSize"              = { value = tostring(var.configuration.consent.batch_size) }
         "ConsentMigration:MaxDegreeOfParallelism" = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
       }
     }
@@ -214,6 +214,18 @@ module "appsettings" {
   ]
 
   feature_flags = [
+    {
+      name        = "AccessMgmt.Core.HostedServices.Outbox.Handler"
+      description = "Specifies if the outbox handler should be enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.Outbox.Reaper"
+      description = "Specifies if the outbox reaper should be enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
     {
       name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
       description = "Ignores single rights."

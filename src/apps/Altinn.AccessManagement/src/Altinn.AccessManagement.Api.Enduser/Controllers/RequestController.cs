@@ -9,6 +9,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -106,7 +107,7 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetRequest(
         [FromQuery][Required] Guid party, 
-        [FromRoute][Required] Guid id,
+        [FromQuery][Required] Guid id,
         [FromQuery, FromHeader] PagingInput paging, 
         CancellationToken ct = default
         )
@@ -327,8 +328,6 @@ public class RequestController(
         CancellationToken ct = default
         )
     {
-        ValidationErrorBuilder errorBuilder = default;
-
         var requestResult = await requestService.GetRequest(id, ct);
         if (requestResult.IsProblem)
         {

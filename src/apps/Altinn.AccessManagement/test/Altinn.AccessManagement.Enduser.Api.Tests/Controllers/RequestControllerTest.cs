@@ -66,13 +66,11 @@ public class RequestControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            Assert.Equal((int)RequestStatus.Pending, root.GetProperty("status").GetInt32());
-            Assert.Equal(TestData.BakerJohnsen.Id.ToString(), root.GetProperty("from").GetProperty("id").GetString());
-            Assert.Equal(TestData.LarsBakke.Id.ToString(), root.GetProperty("to").GetProperty("id").GetString());
+            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            
+            Assert.Equal(RequestStatus.Pending, obj.Status);
+            Assert.Equal(TestData.BakerJohnsen.Id.ToString(), obj.From.Id.ToString());
+            Assert.Equal(TestData.LarsBakke.Id.ToString(), obj.To.Id.ToString());
         }
     }
 
@@ -127,11 +125,8 @@ public class RequestControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            Assert.Equal((int)RequestStatus.Pending, root.GetProperty("status").GetInt32());
+            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Pending, obj.Status);
         }
     }
 
@@ -509,10 +504,10 @@ public class RequestControllerTest
         [Fact]
         public async Task Sender_WithdrawsPendingRequest_ReturnsWithdrawn()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.HildeStrand.Id);
 
             var response = await client.PutAsync(
-                $"{Route}/sent/withdraw?party={TestData.BakerJohnsen.Id}&id={PendingPackageRequestId}",
+                $"{Route}/sent/withdraw?party={TestData.HildeStrand.Id}&id={PendingPackageRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -562,10 +557,10 @@ public class RequestControllerTest
         [Fact]
         public async Task Sender_ConfirmsDraftRequest_ReturnsPending()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Id);
+            var client = CreateClient(Fixture, TestData.LarsBakke.Id);
 
             var response = await client.PutAsync(
-                $"{Route}/sent/confirm?party={TestData.BakerJohnsen.Id}&id={DraftPackageRequestId}",
+                $"{Route}/sent/confirm?party={TestData.LarsBakke.Id}&id={DraftPackageRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 

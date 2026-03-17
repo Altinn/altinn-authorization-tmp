@@ -8,10 +8,13 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+using Microsoft.EntityFrameworkCore;
+using Xunit.Sdk;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
@@ -149,7 +152,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
@@ -163,18 +165,24 @@ public class RequestControllerTest
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
+            await Fixture.QueryDb(static async db =>
+            {
+                var outbox = await db.OutboxMessages.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+                Assert.NotNull(outbox);
+                Assert.NotNull(outbox.Data);
 
-            Assert.True(root.GetProperty("status").GetInt32() >= 0);
-            Assert.True(root.TryGetProperty("resource", out var resource));
-            Assert.True(resource.TryGetProperty("referenceId", out _));
-            Assert.True(root.TryGetProperty("from", out _));
-            Assert.True(root.TryGetProperty("to", out _));
-            Assert.True(root.TryGetProperty("links", out var links));
-            Assert.True(links.TryGetProperty("detailsLink", out _));
-            Assert.True(links.TryGetProperty("statusLink", out _));
+                var data = JsonSerializer.Deserialize<ResourceRequestPendingNotificationMessage>(outbox.Data);
+                Assert.NotNull(data);
+
+                Assert.Equal(TestData.BakerJohnsen, data.RecipientId);
+                Assert.Equal(TestData.LarsBakke, data.RequesterId);
+                Assert.NotEmpty(data.ResourceIds);
+                Assert.Empty(data.PackageIds);
+                Assert.Equal(1, data.Updated);
+            });
+
+            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.NotNull(obj);
         }
 
         [Fact]
@@ -184,11 +192,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto
-                {
-                    From = "urn:invalid:prefix:12345",
-                    To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
-                },
                 From = "urn:invalid:prefix:12345",
                 To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}",
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-so-1" },
@@ -212,7 +215,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = string.Empty },
@@ -251,7 +253,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto(),
@@ -265,18 +266,8 @@ public class RequestControllerTest
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            Assert.True(root.GetProperty("status").GetInt32() >= 0);
-            Assert.True(root.TryGetProperty("package", out var package));
-            Assert.True(package.TryGetProperty("referenceId", out _));
-            Assert.True(root.TryGetProperty("from", out _));
-            Assert.True(root.TryGetProperty("to", out _));
-            Assert.True(root.TryGetProperty("links", out var links));
-            Assert.True(links.TryGetProperty("detailsLink", out _));
-            Assert.True(links.TryGetProperty("statusLink", out _));
+            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.NotNull(obj);
         }
 
         [Fact]
@@ -286,11 +277,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto
-                {
-                    From = "urn:invalid:prefix:12345",
-                    To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}"
-                },
                 From = "urn:invalid:prefix:12345",
                 To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}",
                 Resource = new RequestRefrenceDto(),
@@ -314,7 +300,6 @@ public class RequestControllerTest
 
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto(),
@@ -392,7 +377,6 @@ public class RequestControllerTest
             // Step 3: Create request with resource
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto { ReferenceId = "test-resource-e2e-1" },
@@ -433,7 +417,6 @@ public class RequestControllerTest
             // Step 3: Create request with package
             var body = new CreateServiceOwnerRequest
             {
-                Connection = new ConnectionRequestInputDto { From = from, To = to },
                 From = from,
                 To = to,
                 Resource = new RequestRefrenceDto(),
