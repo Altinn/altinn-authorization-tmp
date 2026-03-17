@@ -202,7 +202,7 @@
             public const string RequestconsentAction = "requestconsent";
 
             /// <summary>
-            /// Delegation attribute match identifier uses for user controlled delegation
+            /// Delegation attribute match identifier used for user controlled delegation
             /// </summary>
             public const string Delegation = "urn:altinn:resource:delegation";
         }
