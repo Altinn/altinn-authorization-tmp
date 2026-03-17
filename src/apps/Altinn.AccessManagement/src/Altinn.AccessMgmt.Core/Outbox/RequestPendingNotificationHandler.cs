@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -115,7 +115,8 @@ public class RequestPendingNotificationHandler(
             AddResourcesAndPackage(resources, packages, emailContent);
 
             emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
-            emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
+            emailContent.AppendLine($"<p>Med vennnlig hilsen</p>");
+            emailContent.AppendLine($"<p><b>Altinn</b></p>");
 
             return new NotificationRecipientExt
             {
@@ -171,7 +172,7 @@ public class RequestPendingNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var resource in resources)
                 {
-                    emailContent.AppendLine($"<li>{resource}</li>");
+                    emailContent.AppendLine($"<li>{resource.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
@@ -183,7 +184,7 @@ public class RequestPendingNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var package in packages)
                 {
-                    emailContent.AppendLine($"<li>{package}</li>");
+                    emailContent.AppendLine($"<li>{package.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
