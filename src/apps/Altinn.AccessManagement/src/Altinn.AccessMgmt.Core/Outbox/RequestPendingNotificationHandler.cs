@@ -24,19 +24,20 @@ public class RequestPendingNotificationHandler(
     {
         var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
-        var response = await notification.Send(
-            new()
-            {
-                IdempotencyId = idempotencyId,
-                Recipient = CreateRecipient(recipient, requester, resources, packages),
-                RequestedSendTime = DateTime.UtcNow,
-            },
-            cancellationToken);
+        var content = new NotificationOrderChainRequestExt()
+        {
+            IdempotencyId = idempotencyId,
+            Recipient = CreateRecipient(recipient, requester, resources, packages),
+            RequestedSendTime = DateTime.UtcNow,
+        }
+
+        var response = await notification.Send(content, cancellationToken);
 
         if (response.IsProblem)
         {
             throw new InvalidOperationException(
                 $@"Failed to send notification.
+                    Payload: {JsonSerializer.Serialize(response.Content)}
                     CorrelationId: {Activity.Current?.TraceId}
                     Status Code: {response.StatusCode}
                     Problem Title: {response.ProblemDetails?.Title}
