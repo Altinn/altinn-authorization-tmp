@@ -15,7 +15,7 @@ using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using static Altinn.Authorization.ABAC.Constants.XacmlConstants;
 
-namespace AccessMgmt.Tests.Mocks
+namespace Altinn.AccessManagement.Tests.Mocks
 {
     /// <summary>
     /// Mock class for <see cref="IResourceRegistryClient"></see> interface
