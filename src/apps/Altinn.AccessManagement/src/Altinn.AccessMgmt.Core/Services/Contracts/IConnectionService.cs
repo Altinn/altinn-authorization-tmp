@@ -352,7 +352,7 @@ public interface IConnectionService
     Task<Result<bool>> AddInstance(Entity from, Entity to, Resource resourceObj, string instanceId, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates (replaces) a delegation to a resource instance between two entities with the specified action keys. If not all actions is posible nothing is performed and a Problem is returned
+    /// Updates (replaces) a delegation to a resource instance between two entities with the specified action keys. If not all actions are possible, nothing is performed and a Problem is returned.
     /// </summary>
     /// <param name="from">The source entity from which the delegation originates.</param>
     /// <param name="to">The target entity to which the delegation is granted.</param>
@@ -378,7 +378,19 @@ public interface IConnectionService
     /// Token to monitor for cancellation requests.
     /// </param>
     /// <returns>
-    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// A task whose result is either <c>null</c> or a <see cref="ValidationProblemInstance"/>.
+    /// <list type="bullet">
+    /// <item>
+    /// <description>
+    /// <c>null</c> if the instance assignment was successfully removed, or if no matching assignment was found for the specified parameters.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// A <see cref="ValidationProblemInstance"/> describing any validation errors that prevented the removal of the instance assignment.
+    /// </description>
+    /// </item>
+    /// </list>
     /// </returns>
     Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 }
