@@ -102,7 +102,7 @@ public class RequestApprovedNotificationHandler(
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine($"<p>Med vennlig hilsen </br>Altinn</p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
@@ -128,7 +128,7 @@ public class RequestApprovedNotificationHandler(
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine($"<p>Med vennlig hilsen </br>Altinn</p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
