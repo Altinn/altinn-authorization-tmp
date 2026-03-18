@@ -11,34 +11,49 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesConsentMigration = "AccessMgmt.Core.HostedServices.ConsentMigration";
 
     /// <summary>
-    /// Specifies if the register data should streamed from register service to access management database
+    /// Specifies if the register data should be streamed from register service to access management database
     /// </summary>
     public const string HostedServicesRegisterSync = $"AccessMgmt.Core.HostedServices.RegisterSync";
 
     /// <summary>
-    /// Specifies if the register data should streamed from register service to access management database
+    /// Specifies if the register data should be streamed from register service to access management database
     /// </summary>
     public const string HostedServicesRegisterSyncImport = $"AccessMgmt.Core.HostedServices.RegisterSync.Import";
 
     /// <summary>
-    /// Specifies if the register data should streamed from register service to access management database
+    /// Specifies if the register data should be streamed from register service to access management database
     /// </summary>
     public const string HostedServicesResourceRegistrySync = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync";
 
     /// <summary>
-    /// Specifies if the altinn roles data should streamed from sblbridge service to access management database
+    /// Specifies if the altinn roles data should be streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAllAltinnRoleSync = $"AccessMgmt.Core.HostedServices.AllAltinnRoleSync";
 
     /// <summary>
-    /// Specifies if the altinn client roles data should streamed from sblbridge service to access management database
+    /// Specifies if the altinn client roles data should be streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAltinnClientRoleSync = $"AccessMgmt.Core.HostedServices.AltinnClientRoleSync";
 
     /// <summary>
-    /// Specifies if the altinn admin roles data should streamed from sblbridge service to access management database
+    /// Specifies if the altinn admin roles data should be streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
+
+    /// <summary>
+    /// Specifies if the altinn private tax affair roles data should streamed from sblbridge service to access management database
+    /// </summary>
+    public const string HostedServicesPrivateTaxAffairRoleSync = $"AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync";
+    
+    /// <summary>
+    /// Specifies if the altinn bankruptcyestate roles data should be streamed from sblbridge service to access management database
+    /// </summary>
+    public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
+
+    /// <summary>
+    /// Specifies if AuthorizedPartiesServiceEf should be used
+    /// </summary>
+    public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
 
     /// <summary>
     /// Specifies Client Delegation should be enabled in enduser API.
@@ -76,7 +91,27 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesSingleInstanceRightSyncFromErrorQueue = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync.FromErrorQueue";
 
     /// <summary>
+    /// Represents the handler for proessing pending outbox messages.
+    /// </summary>
+    public const string HostedServicesOutboxHandler = $"AccessMgmt.Core.HostedServices.Outbox.Handler";
+
+    /// <summary>
+    /// Represents the handler for outbox messages that couldn't be processed.
+    /// </summary>
+    public const string HostedServicesOutboxReaper = $"AccessMgmt.Core.HostedServices.Outbox.Reaper";
+
+    /// <summary>
     /// Feature flag for Controller Enduser Connections
     /// </summary>
     public const string EnduserControllerConnections = "AccessManagement.Enduser.Connections";
+
+    /// <summary>
+    /// Enables request assignment resource endpoints in enduser and serviceowner APIs.
+    /// </summary>
+    public const string EnableRequestAssignmentResource = "AccessMgmt.Controller.RequestAssignment.Resource";
+
+    /// <summary>
+    /// Enables request assignment package endpoints in enduser and serviceowner APIs.
+    /// </summary>
+    public const string EnableRequestAssignmentPackage = "AccessMgmt.Controller.RequestAssignment.Package";
 }
