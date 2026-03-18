@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -77,16 +78,17 @@ public class RequestController(
         CancellationToken ct = default
         )
     {
+        ValidationErrorBuilder errorBuilder = default;
+
         var fromResult = await GetEntity(from, "$QUERY/from", ct);
-        if (fromResult.IsProblem)
-        {
-            return fromResult.Problem.ToActionResult();
-        }
+        fromResult.Problems(ref errorBuilder);
 
         var toResult = await GetEntity(to, "$QUERY/to", ct);
-        if (toResult.IsProblem)
+        toResult.Problems(ref errorBuilder);
+
+        if (errorBuilder.TryBuild(out var problem))
         {
-            return toResult.Problem.ToActionResult();
+            return problem.ToActionResult();
         }
 
         /*
@@ -95,8 +97,8 @@ public class RequestController(
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         return await CreateResourceRequest(
-            atId: fromResult.Value.Id,
-            forId: toResult.Value.Id,
+            atId: fromResult.Entity.Id,
+            forId: toResult.Entity.Id,
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
@@ -124,30 +126,37 @@ public class RequestController(
         CancellationToken ct = default
         )
     {
+        ValidationErrorBuilder errorBuilder = default;
+
         var fromResult = await GetEntity(from, "$QUERY/from", ct);
-        if (fromResult.IsProblem)
-        {
-            return fromResult.Problem.ToActionResult();
-        }
+        fromResult.Problems(ref errorBuilder);
 
         var toResult = await GetEntity(to, "$QUERY/to", ct);
-        if (toResult.IsProblem)
+        toResult.Problems(ref errorBuilder);
+
+        if (!PackageConstants.TryGetByAll(package, out var packageObj))
         {
-            return toResult.Problem.ToActionResult();
+            errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package}'.")]);
         }
 
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
+        }
+
+        /*
         /*
         NAV (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
         ==
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         return await CreatePackageRequest(
-            atId: fromResult.Value.Id,
-            forId: toResult.Value.Id,
+            atId: fromResult.Entity.Id,
+            forId: toResult.Entity.Id,
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            packageRef: new RequestRefrenceDto() { ReferenceId = package },
+            packageRef: new RequestRefrenceDto() { ReferenceId = packageObj.Id.ToString() },
             ct: ct
             );
     }
@@ -170,21 +179,17 @@ public class RequestController(
         if (input.Resource.HasValue() && input.Package.HasValue())
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestResourceOrPackage);
-            return errorBuilder.TryToProblemDetails(out var errorProblemDetails) 
-                ? BadRequest(errorProblemDetails) 
-                : BadRequest();
         }
 
-        var fromResult = await GetEntity(input.From, "BODY/connection.from", ct);
-        if (fromResult.IsProblem)
+        var fromResult = await GetEntity(input.From, "connection/from", ct);
+        fromResult.Problems(ref errorBuilder);
+
+        var toResult = await GetEntity(input.To, "connection/to", ct);
+        toResult.Problems(ref errorBuilder);
+
+        if (errorBuilder.TryBuild(out var problem))
         {
-            return fromResult.Problem.ToActionResult();
-        }
-
-        var toResult = await GetEntity(input.To, "BODY/connection.to", ct);
-        if (toResult.IsProblem) 
-        { 
-            return toResult.Problem.ToActionResult(); 
+            return problem.ToActionResult();
         }
 
         /*
@@ -196,34 +201,33 @@ public class RequestController(
         if (input.Resource is { } && input.Resource.HasValue())
         {
             return await CreateResourceRequest(
-                atId: fromResult.Value.Id,
-                forId: toResult.Value.Id,
+                atId: fromResult.Entity.Id,
+                forId: toResult.Entity.Id,
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
                 resourceRef: input.Resource,
                 ct: ct
-                );
+            );
         }
 
         if (input.Package is { } && input.Package.HasValue())
         {
             return await CreatePackageRequest(
-                atId: fromResult.Value.Id,
-                forId: toResult.Value.Id,
+                atId: fromResult.Entity.Id,
+                forId: toResult.Entity.Id,
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
                 packageRef: input.Package,
                 ct: ct
-                );
+            );
         }
 
         errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound);
         errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound);
-        errorBuilder.TryToProblemDetails(out var problemDetails);
-
-        return problemDetails is { } ? BadRequest(problemDetails) : BadRequest();
+        errorBuilder.TryToActionResult(out var problemDetails);
+        return problemDetails;
     }
 
     private async Task<IActionResult> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestRefrenceDto resourceRef, CancellationToken ct = default)
@@ -231,13 +235,14 @@ public class RequestController(
         ValidationErrorBuilder errorBuilder = default;
 
         var resource = await resourceService.GetResource(resourceRef, ct);
-
-        if (resource == null)
+        if (resource is null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {resourceRef.ReferenceId} is not valid")]);
-            return errorBuilder.TryBuild(out var problem) 
-                ? BadRequest(problem.ToActionResult())
-                : BadRequest();
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
         }
 
         var result = await requestService.CreateResourceRequest(
@@ -263,15 +268,16 @@ public class RequestController(
     private async Task<IActionResult> CreatePackageRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestRefrenceDto packageRef, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
-
         var package = await packageService.GetPackage(packageRef, ct);
 
-        if (package == null)
+        if (package is null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {packageRef.ReferenceId} is not valid")]);
-            return errorBuilder.TryBuild(out var problem)
-               ? BadRequest(problem.ToActionResult())
-               : BadRequest();
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
         }
 
         var result = await requestService.CreatePackageRequest(
@@ -294,18 +300,23 @@ public class RequestController(
         return Accepted(result.Value);
     }
 
-    private async Task<Result<Entity>> GetEntity(string urn, string paramName, CancellationToken ct = default)
+    private delegate void ValidationRule(ref ValidationErrorBuilder errors);
+
+    private async Task<(Entity Entity, ValidationRule Problems)> GetEntity(string urn, string paramName, CancellationToken ct = default)
     {
-        ValidationErrorBuilder errorBuilder = default;
+        var accumulatedErrors = new List<ValidationRule>();
+        ValidationRule errorBuilderFunc = (ref ValidationErrorBuilder errors) =>
+        {
+            foreach (var error in accumulatedErrors)
+            {
+                accumulatedErrors.Add(error);
+            }
+        };
 
         if (!ValidUrn(urn))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, paramName, [new(paramName, $"Urn {urn} is not valid")]);
-        }
-
-        if (errorBuilder.TryBuild(out var problem))
-        {
-            return problem;
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, paramName, [new(paramName, $"Urn {urn} is not valid")]));
+            return (null, errorBuilderFunc);
         }
 
         var urnSegments = urn.Split(":");
@@ -314,7 +325,8 @@ public class RequestController(
 
         if (!ValidUrns.Contains(key))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, $"$QUERY/{paramName}", [new(paramName, $"Urn {urn} is not valid")]);
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, $"$QUERY/{paramName}", [new(paramName, $"Urn {urn} is not valid")]));
+            return (null, errorBuilderFunc);
         }
 
         var entity = key switch
@@ -327,17 +339,12 @@ public class RequestController(
 
         if (entity == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]);
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]));
         }
 
-        if (errorBuilder.TryBuild(out var problem1))
-        {
-            return problem1;
-        }
-
-        return entity;
+        return (entity, errorBuilderFunc);
     }
-   
+
     private static bool ValidUrn(string urn) => ValidUrns.Any(t => urn.StartsWith(t));
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
