@@ -100,7 +100,8 @@ public class RequestController(
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            resourceRef: new RequestRefrenceDto() { ReferenceId = resource }
+            resourceRef: new RequestRefrenceDto() { ReferenceId = resource },
+            ct: ct
             );
     }
 
@@ -146,7 +147,8 @@ public class RequestController(
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            packageRef: new RequestRefrenceDto() { ReferenceId = package }
+            packageRef: new RequestRefrenceDto() { ReferenceId = package },
+            ct: ct
             );
     }
 
@@ -199,7 +201,8 @@ public class RequestController(
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
-                resourceRef: input.Resource
+                resourceRef: input.Resource,
+                ct: ct
                 );
         }
 
@@ -211,7 +214,8 @@ public class RequestController(
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
-                packageRef: input.Package
+                packageRef: input.Package,
+                ct: ct
                 );
         }
 
