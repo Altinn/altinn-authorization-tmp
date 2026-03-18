@@ -142,12 +142,6 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        /*
-        Person1 vil be FirmaA om en rettighet, derfor er to = FirmaA i queryparam. 
-        Men da blir Assignment.From = FirmaA og Assignment.To = Party (Person1)
-        GLHF
-        */
-
         var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         var connections = await connectionQuery.HasConnection(to, authUserUuid);
         if (!connections.Result)
@@ -165,16 +159,19 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
-        var result = await requestService.CreateRequest(
-                new CreateRequestDto()
-                {
-                    From = to, // YES, this is correct
-                    To = party,
-                    Role = RoleConstants.Rightholder.Id,
-                    Status = RequestStatus.Pending,
-                    Resource = resourceObj.Id,
-                },
-                ct
+        /*
+        Per (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
+        ==
+        Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        */
+        var result = await requestService.CreateResourceRequest(
+            atId: to, 
+            forId: party, 
+            byId: authUserUuid, 
+            roleId: RoleConstants.Rightholder.Id,
+            resourceId: resourceObj.Id, 
+            status: RequestStatus.Pending, 
+            ct: ct
             );
 
         if (result.IsProblem)
@@ -206,12 +203,6 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        /*
-        Person1 vil be FirmaA om en rettighet, derfor er to = FirmaA i queryparam. 
-        Men da blir Assignment.From = FirmaA og Assignment.To = Party (Person1)
-        GLHF
-        */
-
         var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         var connections = await connectionQuery.HasConnection(to, authUserUuid);
 
@@ -232,17 +223,20 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
-        var result = await requestService.CreateRequest(
-                new CreateRequestDto()
-                {
-                    From = to, // YES, this is correct
-                    To = party,
-                    Role = RoleConstants.Rightholder.Id,
-                    Status = RequestStatus.Pending,
-                    Package = packageObj?.Id,
-                },
-                ct
-            );
+        /*
+        Per (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
+        ==
+        Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        */
+        var result = await requestService.CreatePackageRequest(
+           atId: to,
+           forId: party,
+           byId: authUserUuid,
+           roleId: RoleConstants.Rightholder.Id,
+           packageId: packageObj.Id,
+           status: RequestStatus.Pending,
+           ct: ct
+           );
 
         if (result.IsProblem)
         {

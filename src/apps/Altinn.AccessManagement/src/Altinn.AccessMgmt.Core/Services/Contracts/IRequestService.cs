@@ -1,5 +1,4 @@
-﻿﻿using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
@@ -23,6 +22,16 @@ public interface IRequestService
     /// Creates a new request
     /// </summary>
     Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a new request
+    /// </summary>
+    Task<Result<RequestDto>> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a new request
+    /// </summary>
+    Task<Result<RequestDto>> CreatePackageRequest(Guid atId, Guid forId, Guid byId, Guid roleId, Guid packageId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default);
 
     /// <summary>
     /// Updates the status of a request.
