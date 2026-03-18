@@ -235,11 +235,9 @@ public class RequestController(
         if (resource == null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {resourceRef.ReferenceId} is not valid")]);
-        }
-
-        if (errorBuilder.TryBuild(out var problem))
-        {
-            return problem.ToActionResult();
+            return errorBuilder.TryBuild(out var problem) 
+                ? BadRequest(problem.ToActionResult())
+                : BadRequest();
         }
 
         var result = await requestService.CreateResourceRequest(
@@ -271,11 +269,9 @@ public class RequestController(
         if (package == null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {packageRef.ReferenceId} is not valid")]);
-        }
-
-        if (errorBuilder.TryBuild(out var problem))
-        {
-            return problem.ToActionResult();
+            return errorBuilder.TryBuild(out var problem)
+               ? BadRequest(problem.ToActionResult())
+               : BadRequest();
         }
 
         var result = await requestService.CreatePackageRequest(
