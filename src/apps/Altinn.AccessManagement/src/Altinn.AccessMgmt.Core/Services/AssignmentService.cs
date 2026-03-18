@@ -1299,8 +1299,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
             await db.SaveChangesAsync(audit, cancellationToken);
         }
 
+        // TODO: Calculate the correct new path given new path rules
+        // TODO: Lock policy file in blob storage
+        // TODO: Move policy file to correct location in blob storage
+        // TODO: update polycy path and version in assignment instance
         var result = await UpsertAssignmentInstanceInternal(assignment.Id, resource.Id, instanceId, blobStoragePolicyPath, blobStorageVersionId, delegationEventId, InstanceSourceTypeConstants.AltinnApp.Id, audit, cancellationToken);
 
+        // TODO: release lock on policy file in blob storage
         return result ? 1 : 0;
     }
 

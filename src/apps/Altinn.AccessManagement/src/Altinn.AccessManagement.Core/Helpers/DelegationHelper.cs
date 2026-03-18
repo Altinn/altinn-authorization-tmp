@@ -492,26 +492,23 @@ namespace Altinn.AccessManagement.Core.Helpers
             sb.Append("instances");
             sb.Append('/');
 
+            sb.Append("from_");
+            sb.Append(rule.FromUuid);
+            sb.Append('/');
+
+            sb.Append("to_");
+            sb.Append(rule.ToUuid);
+            sb.Append('/');
+
             try
             {
-                sb.Append(rule.InstanceId.AsFileName());
+                sb.Append(rule.InstanceId.AsFileName(false));
                 sb.Append('/');
             }
             catch (Exception)
             {
                 return false;
-            }            
-            
-            sb.Append(rule.ToType);
-            sb.Append('-');
-            sb.Append(rule.ToUuid);
-            sb.Append('/');
-
-            sb.Append(rule.InstanceDelegationSource);
-            sb.Append('/');
-            
-            sb.Append(rule.InstanceDelegationMode);
-            sb.Append('/');
+            }
 
             sb.Append("delegationpolicy.xml");
             instanceDelegationPolicyPath = sb.ToString();
