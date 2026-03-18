@@ -27,7 +27,6 @@ public class RequestApprovedNotificationHandler(
             {
                 IdempotencyId = idempotencyId,
                 Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
-                RequestedSendTime = DateTime.UtcNow,
             },
             cancellationToken);
 
@@ -103,19 +102,21 @@ public class RequestApprovedNotificationHandler(
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
                 RecipientPerson = new RecipientPersonExt
                 {
                     NationalIdentityNumber = recipient.PersonIdentifier,
-                    ChannelSchema = NotificationChannelExt.EmailAndSms,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ChannelSchema = NotificationChannelExt.Email,
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Godkjent Tilgangsforespørsel",
-                        Body = emailContent.ToString()
+                        Body = emailContent.ToString(),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime
                     }
                 }
             };
@@ -127,19 +128,21 @@ public class RequestApprovedNotificationHandler(
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
                 RecipientOrganization = new RecipientOrganizationExt
                 {
                     OrgNumber = recipient.OrganizationIdentifier,
-                    ChannelSchema = NotificationChannelExt.EmailPreferred,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ChannelSchema = NotificationChannelExt.Email,
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
                         Subject = "Altinn Godkjent Tilgangsforespørsel",
-                        Body = emailContent.ToString()
+                        Body = emailContent.ToString(),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime
                     }
                 }
             };
@@ -154,7 +157,7 @@ public class RequestApprovedNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var resource in resources)
                 {
-                    emailContent.AppendLine($"<li>{resource}</li>");
+                    emailContent.AppendLine($"<li>{resource.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
@@ -166,7 +169,7 @@ public class RequestApprovedNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var package in packages)
                 {
-                    emailContent.AppendLine($"<li>{package}</li>");
+                    emailContent.AppendLine($"<li>{package.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");

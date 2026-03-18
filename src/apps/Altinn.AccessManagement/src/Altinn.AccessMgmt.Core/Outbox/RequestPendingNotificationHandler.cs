@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -22,18 +23,28 @@ public class RequestPendingNotificationHandler(
     {
         var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
-        var response = await notification.Send(
-            new()
-            {
-                IdempotencyId = idempotencyId,
-                Recipient = CreateRecipient(recipient, requester, resources, packages),
-                RequestedSendTime = DateTime.UtcNow,
-            },
-            cancellationToken);
+        var content = new NotificationOrderChainRequestExt()
+        {
+            IdempotencyId = idempotencyId,
+            Recipient = CreateRecipient(recipient, requester, resources, packages),
+        };
+
+        var response = await notification.Send(content, cancellationToken);
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(response.ProblemDetails.Detail);
+            throw new InvalidOperationException(
+                $@"Failed to send notification.
+                    Payload: {JsonSerializer.Serialize(content)}
+                    CorrelationId: {Activity.Current?.TraceId}
+                    Status Code: {response.StatusCode}
+                    Problem Title: {response.ProblemDetails?.Title}
+                    Problem Details: {response.ProblemDetails?.Detail}
+                    Problem Instance: {response.ProblemDetails?.Instance}
+                    Problem Type: {response.ProblemDetails?.Type}
+                    Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}"
+            );
         }
     }
 
@@ -104,19 +115,22 @@ public class RequestPendingNotificationHandler(
             AddResourcesAndPackage(resources, packages, emailContent);
 
             emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
-            emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
+
 
             return new NotificationRecipientExt
             {
                 RecipientPerson = new RecipientPersonExt
                 {
                     NationalIdentityNumber = recipient.PersonIdentifier,
-                    ChannelSchema = NotificationChannelExt.EmailAndSms,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ChannelSchema = NotificationChannelExt.Email,
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Tilgangsforespørsel",
-                        Body = emailContent.ToString()
+                        Body = emailContent.ToString(),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime,
                     }
                 }
             };
@@ -125,23 +139,25 @@ public class RequestPendingNotificationHandler(
         {
             var emailContent = new StringBuilder();
             emailContent.AppendLine($"<p>{requester.Name} har bedt om følgende fullmakter fra {recipient.Name} med Org.nr {recipient.OrganizationIdentifier}.</p>");
-            
+
             AddResourcesAndPackage(resources, packages, emailContent);
-            
+
             emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
-            emailContent.AppendLine($"<p>Med vennnlig hilsen<b>Altinn</b></p>");
+            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
                 RecipientOrganization = new RecipientOrganizationExt
                 {
                     OrgNumber = recipient.OrganizationIdentifier,
-                    ChannelSchema = NotificationChannelExt.EmailPreferred,
-                    ResourceId = "altinn_access_management_hovedadmin",
+                    ChannelSchema = NotificationChannelExt.Email,
+                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
                         Subject = "Altinn Tilgangsforespørsel",
-                        Body = emailContent.ToString()
+                        Body = emailContent.ToString(),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime,
                     }
                 }
             };
@@ -156,7 +172,7 @@ public class RequestPendingNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var resource in resources)
                 {
-                    emailContent.AppendLine($"<li>{resource}</li>");
+                    emailContent.AppendLine($"<li>{resource.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
@@ -168,7 +184,7 @@ public class RequestPendingNotificationHandler(
                 emailContent.AppendLine("<ul>");
                 foreach (var package in packages)
                 {
-                    emailContent.AppendLine($"<li>{package}</li>");
+                    emailContent.AppendLine($"<li>{package.Name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
