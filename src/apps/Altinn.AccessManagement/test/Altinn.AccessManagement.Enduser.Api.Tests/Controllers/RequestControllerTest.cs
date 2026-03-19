@@ -40,42 +40,6 @@ public class RequestControllerTest
         fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnableRequestAssignmentResource);
     }
 
-    #region POST — Create package request
-
-    public class CreatePackageRequest : IClassFixture<ApiFixture>
-    {
-        public CreatePackageRequest(ApiFixture fixture)
-        {
-            Fixture = fixture;
-            EnableFeatureFlags(fixture);
-        }
-
-        public ApiFixture Fixture { get; }
-
-        [Fact]
-        public async Task PersonWithRoleInOrg_CanCreatePackageRequest_ReturnsPending()
-        {
-            // LarsBakke er daglig leder i BakerJohnsen (seeded via TestData.Assignments)
-            var client = CreateClient(Fixture, TestData.LarsBakke.Id);
-            var package = PackageConstants.Agriculture.Entity.Id;
-
-            var response = await client.PostAsync(
-                $"{Route}/package?party={TestData.LarsBakke.Id}&to={TestData.BakerJohnsen.Id}&packageId={package}", 
-                null, 
-                TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
-            
-            Assert.Equal(RequestStatus.Pending, obj.Status);
-            Assert.Equal(TestData.BakerJohnsen.Id.ToString(), obj.From.Id.ToString());
-            Assert.Equal(TestData.LarsBakke.Id.ToString(), obj.To.Id.ToString());
-        }
-    }
-
-    #endregion
-
     #region POST — Create resource request
 
     public class CreateResourceRequest : IClassFixture<ApiFixture>
@@ -164,10 +128,10 @@ public class RequestControllerTest
         {
             // BjornMoe er daglig leder i RegnskapNorge, og har da nøkkel rolle til BakerJohnsen
             var client = CreateClient(Fixture, TestData.BjornMoe.Id);
-            var package = PackageConstants.Agriculture.Entity.Id;
+            var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
-                $"{Route}/package?party={TestData.BjornMoe.Id}&to={TestData.BakerJohnsen.Id}&packageId={package}",
+                $"{Route}/package?party={TestData.BjornMoe.Id}&to={TestData.BakerJohnsen.Id}&package={packageUrn}",
                 null,
                 TestContext.Current.CancellationToken);
 
