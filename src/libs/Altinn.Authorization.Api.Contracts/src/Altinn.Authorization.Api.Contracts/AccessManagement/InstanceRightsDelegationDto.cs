@@ -9,12 +9,12 @@ public class InstanceRightsDelegationDto
     /// Target person for delegation. Used when creating a new rightholder connection.
     /// Mutually exclusive with using 'to' query parameter.
     /// </summary>
-    public PersonInputDto To { get; set; }
+    public PersonInputDto? To { get; set; }
 
     /// <summary>
     /// List of right keys to delegate for the instance
     /// </summary>
-    public IEnumerable<string> DirectRightKeys { get; set; }
+    public IEnumerable<string> DirectRightKeys { get; set; } = [];
 }
 
 /// <summary>

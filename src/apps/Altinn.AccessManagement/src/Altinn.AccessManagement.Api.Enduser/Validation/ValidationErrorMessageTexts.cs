@@ -25,4 +25,5 @@ internal static class ValidationErrorMessageTexts
     internal const string NotFound = "Object not found";
     internal const string ToParameterConflict = "Cannot specify both 'to' query parameter and 'To' in request body. Use 'to' for existing connections or 'To' for creating new rightholder";
     internal const string ToParameterRequired = "Must specify either 'to' query parameter for existing connections or 'To' in request body for new rightholder";
+    internal const string DirectRightKeysRequired = "At least one right key must be specified for delegation";
 }

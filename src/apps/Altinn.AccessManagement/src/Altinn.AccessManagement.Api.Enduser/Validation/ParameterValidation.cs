@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Constants;
-using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -103,12 +102,14 @@ internal static class ParameterValidation
 
     /// <summary>
     /// Validates that either 'to' query parameter OR PersonInput in body is provided (mutually exclusive).
+    /// Also validates that DirectRightKeys contains at least one right key.
     /// Used for instance rights delegation to support both existing connections and new rightholder creation.
     /// </summary>
     /// <param name="to">Optional 'to' query parameter for existing connections</param>
     /// <param name="toInput">Optional PersonInput in body for creating new rightholder</param>
+    /// <param name="directRightKeys">Right keys to delegate (must contain at least one element)</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto toInput) => () =>
+    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto toInput, IEnumerable<string> directRightKeys) => () =>
     {
         if (to.HasValue && toInput != null)
         {
@@ -122,6 +123,13 @@ internal static class ParameterValidation
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
                     [new("to", ValidationErrorMessageTexts.ToParameterRequired)]);
+        }
+
+        if (directRightKeys == null || !directRightKeys.Any())
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$BODY/directRightKeys", 
+                    [new("directRightKeys", ValidationErrorMessageTexts.DirectRightKeysRequired)]);
         }
 
         return null;

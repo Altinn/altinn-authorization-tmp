@@ -865,7 +865,7 @@ public class ConnectionsController(
         CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
-            ParameterValidation.InstanceRightsDelegationInput(to, input?.To)
+            ParameterValidation.InstanceRightsDelegationInput(to, input?.To, input?.DirectRightKeys)
         );
         if (validationErrors is { })
         {
