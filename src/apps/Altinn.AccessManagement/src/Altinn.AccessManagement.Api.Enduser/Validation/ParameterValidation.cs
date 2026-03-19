@@ -102,30 +102,46 @@ internal static class ParameterValidation
     };
 
     /// <summary>
-    /// Instance must use a valid URN format with one of the allowed prefixes.
-    /// Valid formats are defined in <see cref="InstanceUrnConstants.ValidPrefixes"/>.
-    /// This validation is temporary until full integration with Dialogporten's dialog-lookup API.
+    /// Validates that either 'to' query parameter OR PersonInput in body is provided (mutually exclusive).
+    /// Also validates that 'to' is not Guid.Empty when provided, and that DirectRightKeys contains at least one right key.
+    /// Used for instance rights delegation to support both existing connections and new rightholder creation.
     /// </summary>
-    /// <param name="value">Raw instance parameter value.</param>
-    /// <param name="paramName">Parameter name used in error path.</param>
+    /// <param name="to">Optional 'to' query parameter for existing connections</param>
+    /// <param name="toInput">Optional PersonInput in body for creating new rightholder</param>
+    /// <param name="directRightKeys">Right keys to delegate (must contain at least one element)</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression InstanceUrn(string? value, string paramName = "instance") => () =>
+    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto? toInput, IEnumerable<string>? directRightKeys) => () =>
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (to.HasValue && toInput != null)
         {
-            return null;
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.ToParameterConflict)]);
         }
 
-        foreach (var prefix in InstanceUrnConstants.ValidPrefixes)
+        if (!to.HasValue && toInput == null)
         {
-            if (value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.ToParameterRequired)]);
         }
 
-        return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidInstanceUrn, $"$QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidInstanceUrnFormat)]);
+        // Validate 'to' is not Guid.Empty when provided
+        if (to.HasValue && to.Value == Guid.Empty)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.InvalidPartyValue)]);
+        }
+
+        if (directRightKeys == null || !directRightKeys.Any())
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.Required, "/directRightKeys",
+                    [new("directRightKeys", ValidationErrorMessageTexts.DirectRightKeysRequired)]);
+        }
+
+        return null;
     };
 
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
