@@ -324,7 +324,7 @@ public class RequestController(
         }
 
         var request = requestResult.Value;
-        if (request is null || request.From.Id != party)
+        if (request is null || request.To.Id != party)
         {
             return NotFound();
         }
