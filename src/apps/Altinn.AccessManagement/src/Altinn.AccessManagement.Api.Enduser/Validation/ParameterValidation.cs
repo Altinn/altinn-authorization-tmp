@@ -128,7 +128,7 @@ internal static class ParameterValidation
         if (directRightKeys == null || !directRightKeys.Any())
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "$BODY/directRightKeys", 
+                errors.Add(ValidationErrors.Required, "/directRightKeys",
                     [new("directRightKeys", ValidationErrorMessageTexts.DirectRightKeysRequired)]);
         }
 
