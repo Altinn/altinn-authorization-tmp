@@ -109,7 +109,7 @@ internal static class ParameterValidation
     /// <param name="toInput">Optional PersonInput in body for creating new rightholder</param>
     /// <param name="directRightKeys">Right keys to delegate (must contain at least one element)</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto toInput, IEnumerable<string> directRightKeys) => () =>
+    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto? toInput, IEnumerable<string>? directRightKeys) => () =>
     {
         if (to.HasValue && toInput != null)
         {
