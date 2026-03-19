@@ -101,6 +101,32 @@ internal static class ParameterValidation
         return null;
     };
 
+    /// <summary>
+    /// Validates that either 'to' query parameter OR PersonInput in body is provided (mutually exclusive).
+    /// Used for instance rights delegation to support both existing connections and new rightholder creation.
+    /// </summary>
+    /// <param name="to">Optional 'to' query parameter for existing connections</param>
+    /// <param name="toInput">Optional PersonInput in body for creating new rightholder</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression InstanceRightsDelegationInput(Guid? to, PersonInputDto toInput) => () =>
+    {
+        if (to.HasValue && toInput != null)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.ToParameterConflict)]);
+        }
+
+        if (!to.HasValue && toInput == null)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.ToParameterRequired)]);
+        }
+
+        return null;
+    };
+
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
     {
         if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)

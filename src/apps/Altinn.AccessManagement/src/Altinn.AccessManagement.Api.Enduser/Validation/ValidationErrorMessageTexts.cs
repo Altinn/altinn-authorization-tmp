@@ -23,4 +23,6 @@ internal static class ValidationErrorMessageTexts
     internal const string PersonIdentifierLastNameInvalid = "PersonInput details must match";
     internal const string SelfDelegationNotAllowed = "Self-delegation not allowed. From and To cannot be the same party";
     internal const string NotFound = "Object not found";
+    internal const string ToParameterConflict = "Cannot specify both 'to' query parameter and 'To' in request body. Use 'to' for existing connections or 'To' for creating new rightholder";
+    internal const string ToParameterRequired = "Must specify either 'to' query parameter for existing connections or 'To' in request body for new rightholder";
 }

@@ -864,27 +864,12 @@ public class ConnectionsController(
         [FromBody] InstanceRightsDelegationDto input,
         CancellationToken cancellationToken = default)
     {
-        // Validate that either 'to' parameter OR PersonInput is provided (mutually exclusive)
-        if (to.HasValue && input?.To != null)
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.InstanceRightsDelegationInput(to, input?.To)
+        );
+        if (validationErrors is { })
         {
-            ProblemDetails problem = new ProblemDetails
-            {
-                Title = "Invalid input",
-                Detail = "Cannot specify both 'to' query parameter and 'To' in request body. Use 'to' for existing connections or 'To' for creating new rightholder.",
-                Status = StatusCodes.Status400BadRequest
-            };
-            return problem.ToActionResult();
-        }
-
-        if (!to.HasValue && input?.To == null)
-        {
-            ProblemDetails problem = new ProblemDetails
-            {
-                Title = "Invalid input",
-                Detail = "Must specify either 'to' query parameter for existing connections or 'To' in request body for new rightholder.",
-                Status = StatusCodes.Status400BadRequest
-            };
-            return problem.ToActionResult();
+            return validationErrors.ToActionResult();
         }
 
         // Resolve the target entity
