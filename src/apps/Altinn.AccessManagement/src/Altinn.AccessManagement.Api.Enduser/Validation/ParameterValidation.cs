@@ -109,7 +109,7 @@ internal static class ParameterValidation
     /// <param name="value">Raw instance parameter value.</param>
     /// <param name="paramName">Parameter name used in error path.</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression InstanceUrn(string value, string paramName = "instance") => () =>
+    internal static RuleExpression InstanceUrn(string? value, string paramName = "instance") => () =>
     {
         if (string.IsNullOrWhiteSpace(value))
         {
