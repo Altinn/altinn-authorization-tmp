@@ -100,8 +100,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task CreateRequestAssignmentResource_WithValidInput_CreatesDraftRequest()
     {
         var resource = await SeedUniqueResource();
-
-        var result = await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
+        var result = await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending);
 
         Assert.False(result.IsProblem);
         Assert.Equal(RequestStatus.Draft, result.Value.Status);
@@ -114,8 +113,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     {
         var resource = await SeedUniqueResource();
 
-        var first = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
-        var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
+        var first  = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending)).Value;
+        var second = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending)).Value;
 
         Assert.Equal(first.Id, second.Id);
     }
@@ -127,7 +126,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task GetRequest_WithResourceRequestId_ReturnsRequestDto()
     {
         var resource = await SeedUniqueResource();
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
+        var created = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending)).Value;
 
         var result = await _requestService.GetRequest(created.Id);
 
@@ -138,7 +137,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task GetRequest_WithPackageRequestId_ReturnsRequestDto()
     {
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft })).Value;
+        
+        var created = (await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Pending)).Value;
 
         var result = await _requestService.GetRequest(created.Id);
 
@@ -161,9 +161,9 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task GetSentRequests_ReturnsOnlyMatchingRequests()
     {
         var resource = await SeedUniqueResource();
-        await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
+        var created = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending)).Value;
 
-        var results = await _requestService.GetSentRequests(partyId: PersonTo.Id, toId: null, status: [], type: null, ct: default);
+        var results = await _requestService.GetSentRequests(partyId: PersonTo.Id, toId: OrgFrom.Id, status: [], type: null, ct: default);
 
         Assert.NotEmpty(results.Value);
         Assert.All(results.Value, r => Assert.Equal(OrgFrom.Id, r.From.Id));
@@ -173,9 +173,9 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task GetReceivedRequests_ReturnsOnlyMatchingRequests()
     {
         var resource = await SeedUniqueResource();
-        await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
+        var created = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Pending)).Value;
 
-        var results = await _requestService.GetReceivedRequests(partyId: OrgFrom.Id, fromId: null, status: [], type: null, ct: default);
+        var results = await _requestService.GetReceivedRequests(partyId: OrgFrom.Id, fromId: PersonTo.Id, status: [], type: null, ct: default);
 
         Assert.NotEmpty(results.Value);
         Assert.All(results.Value, r => Assert.Equal(PersonTo.Id, r.To.Id));
@@ -188,7 +188,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task CreateRequestAssignmentPackage_WithValidInput_CreatesDraftRequest()
     {
-        var result = await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft });
+        var result = await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Draft);
 
         Assert.False(result.IsProblem);
         Assert.Equal(RequestStatus.Draft, result.Value.Status);
@@ -198,8 +198,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task CreateRequestAssignmentPackage_CalledTwice_ReturnsExistingPendingRequest()
     {
-        var first = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft })).Value;
-        var second = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft })).Value;
+        var first = (await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Draft)).Value;
+        var second = (await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Draft)).Value;
 
         Assert.Equal(first.Id, second.Id);
     }
@@ -211,8 +211,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task ResourceRequest_EnduserCreate_CreatesPendingRequest()
     {
         var resource = await SeedUniqueResource();
-
-        var result = await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Pending });
+        var result = await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Draft);
 
         Assert.False(result.IsProblem);
         Assert.Equal(RequestStatus.Pending, result.Value.Status);
@@ -224,7 +223,8 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var resource = await SeedUniqueResource();
 
         // 1. ServiceOwner creates request — status should be Draft
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
+        var created = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Draft)).Value;
+
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
@@ -249,7 +249,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     public async Task PackageRequest_FullLifecycle_DraftToPendingToAccepted()
     {
         // 1. ServiceOwner creates request — status should be Draft
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Package = PackageConstants.Agriculture.Id, Status = RequestStatus.Draft })).Value;
+        var created = (await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Draft)).Value;
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)
@@ -276,7 +276,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         var resource = await SeedUniqueResource();
 
         // 1. ServiceOwner creates request — status should be Draft
-        var created = (await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft })).Value;
+        var created = (await _requestService.CreateResourceRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, resource.Id, RequestStatus.Draft)).Value;
         Assert.Equal(RequestStatus.Draft, created.Status);
 
         // 2. Enduser sets status to Pending (acknowledges the request)

@@ -165,8 +165,8 @@ public class RequestController(
         Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         var result = await requestService.CreateResourceRequest(
-            atId: to, 
-            forId: party, 
+            toId: to, 
+            fromId: party, 
             byId: authUserUuid, 
             roleId: RoleConstants.Rightholder.Id,
             resourceId: resourceObj.Id, 
@@ -220,13 +220,12 @@ public class RequestController(
         }
 
         /*
-        Per (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
-        ==
-        Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        A Request from Kari by NAV to BakerAS for AppResource01.
+        Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
         */
         var result = await requestService.CreatePackageRequest(
-           atId: to,
-           forId: party,
+           toId: to,
+           fromId: party,
            byId: authUserUuid,
            roleId: RoleConstants.Rightholder.Id,
            packageId: packageObj.Id,

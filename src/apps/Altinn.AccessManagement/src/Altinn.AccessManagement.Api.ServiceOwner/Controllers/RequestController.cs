@@ -246,8 +246,8 @@ public class RequestController(
         }
 
         var result = await requestService.CreateResourceRequest(
-            atId: atId,
-            forId: forId,
+            toId: atId,
+            fromId: forId,
             byId: byId,
             roleId: roleId,
             resourceId: resource.Id,
@@ -280,8 +280,8 @@ public class RequestController(
         }
 
         var result = await requestService.CreatePackageRequest(
-           atId: atId,
-           forId: forId,
+           toId: atId,
+           fromId: forId,
            byId: byId,
            roleId: roleId,
            packageId: packageObj.Id,
