@@ -1,4 +1,7 @@
-﻿namespace Altinn.AccessMgmt.Core.Constants;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Altinn.AccessMgmt.Core.Constants;
 
 /// <summary>
 /// Constants for valid instance URN formats used in delegation.
@@ -27,10 +30,12 @@ public static class InstanceUrnConstants
     /// <summary>
     /// Gets all valid URN prefixes for instance identifiers.
     /// </summary>
-    public static readonly string[] ValidPrefixes =
+    private static readonly string[] ValidPrefixesArray =
     [
         AltinnAppsPrefix,
         CorrespondencePrefix,
         DialogPrefix
     ];
+
+    public static IReadOnlyList<string> ValidPrefixes { get; } = Array.AsReadOnly(ValidPrefixesArray);
 }
