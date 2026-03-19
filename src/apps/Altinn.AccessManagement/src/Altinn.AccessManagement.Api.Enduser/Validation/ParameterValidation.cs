@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessMgmt.Core.Constants;
+using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -98,6 +99,33 @@ internal static class ParameterValidation
         }
 
         return null;
+    };
+
+    /// <summary>
+    /// Instance must use a valid URN format with one of the allowed prefixes.
+    /// Valid formats are defined in <see cref="InstanceUrnConstants.ValidPrefixes"/>.
+    /// This validation is temporary until full integration with Dialogporten's dialog-lookup API.
+    /// </summary>
+    /// <param name="value">Raw instance parameter value.</param>
+    /// <param name="paramName">Parameter name used in error path.</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression InstanceUrn(string value, string paramName = "instance") => () =>
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        foreach (var prefix in InstanceUrnConstants.ValidPrefixes)
+        {
+            if (value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+            errors.Add(ValidationErrors.InvalidInstanceUrn, $"$QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidInstanceUrnFormat)]);
     };
 
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>

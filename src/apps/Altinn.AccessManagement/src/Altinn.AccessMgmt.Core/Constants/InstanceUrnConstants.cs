@@ -1,0 +1,36 @@
+﻿namespace Altinn.AccessMgmt.Core.Constants;
+
+/// <summary>
+/// Constants for valid instance URN formats used in delegation.
+/// These formats are used temporarily until full integration with Dialogporten's dialog-lookup API.
+/// </summary>
+public static class InstanceUrnConstants
+{
+    /// <summary>
+    /// URN prefix for Altinn Apps instance identifiers.
+    /// Format: urn:altinn:instance-id:{guid}
+    /// </summary>
+    public const string AltinnAppsPrefix = "urn:altinn:instance-id:";
+
+    /// <summary>
+    /// URN prefix for Correspondence instance identifiers.
+    /// Format: urn:altinn:correspondence-id:{guid}
+    /// </summary>
+    public const string CorrespondencePrefix = "urn:altinn:correspondence-id:";
+
+    /// <summary>
+    /// URN prefix for Dialog instance identifiers.
+    /// Format: urn:altinn:dialog-id:{guid}
+    /// </summary>
+    public const string DialogPrefix = "urn:altinn:dialog-id:";
+
+    /// <summary>
+    /// Gets all valid URN prefixes for instance identifiers.
+    /// </summary>
+    public static readonly string[] ValidPrefixes =
+    [
+        AltinnAppsPrefix,
+        CorrespondencePrefix,
+        DialogPrefix
+    ];
+}

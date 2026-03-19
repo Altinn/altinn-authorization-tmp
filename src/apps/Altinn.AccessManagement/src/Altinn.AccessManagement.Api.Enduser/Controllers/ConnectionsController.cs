@@ -713,7 +713,9 @@ public class ConnectionsController(
         [FromQuery] string? instance = null,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()),
+            ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -770,7 +772,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()),
+            ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -861,6 +865,12 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto rightKeys,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
@@ -905,6 +915,12 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
@@ -949,6 +965,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var problem = await ConnectionService.RemoveInstance(from, to, resource, instance, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -974,6 +996,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
