@@ -369,10 +369,18 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception ex)
             {
-                bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+                bool useEF = false;
                 bool validPath;
                 string path;
 
+                try
+                {
+                    useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+                }
+                catch (Exception)
+                {
+                }
+                
                 if (useEF)
                 {
                     validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);

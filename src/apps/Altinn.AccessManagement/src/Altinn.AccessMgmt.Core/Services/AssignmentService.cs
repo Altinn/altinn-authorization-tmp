@@ -1325,7 +1325,19 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             await db.SaveChangesAsync(audit, cancellationToken);
         }
 
-        string newPath = GetPolicyPath(fromId, toId, resourceName, instanceId, partyId);
+        string newPath = null;
+        try
+        {
+            newPath = GetPolicyPath(fromId, toId, resourceName, instanceId, partyId);
+        }
+        catch (Exception)
+        {
+        }
+        
+        if (newPath == null)
+        {
+            throw new InvalidOperationException($"Failed to generate new policy path for instance assignment. fromId: {fromId}, toId: {toId}, resourceName: {resourceName}, instanceId: {instanceId}, partyId: {partyId}");
+        }
 
         // Lock original policy file in blob storage
         var originalPolicyClient = policyFactory.Create(originalBlobStoragePolicyPath);
@@ -1349,7 +1361,10 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             if (!await newPolicyClient.PolicyExistsAsync(cancellationToken))
             {
                 // Create a new empty blob for lease locking
-                await newPolicyClient.WritePolicyAsync(new MemoryStream(), cancellationToken);
+                using (MemoryStream emptyStream = new MemoryStream())
+                {
+                    await newPolicyClient.WritePolicyAsync(emptyStream, cancellationToken);
+                }                
             }
 
             newLeaseId = await newPolicyClient.TryAcquireBlobLease(cancellationToken);
@@ -1360,7 +1375,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             }
 
             // Copy policy file to correct location in blob storage
-            var originalPolicyStream = await originalPolicyClient.GetPolicyVersionAsync(blobStorageVersionId, cancellationToken);
+            await using var originalPolicyStream = await originalPolicyClient.GetPolicyVersionAsync(blobStorageVersionId, cancellationToken);
             var copyResult = await newPolicyClient.WritePolicyConditionallyAsync(originalPolicyStream, newLeaseId, cancellationToken);
 
             if (copyResult == null || copyResult.GetRawResponse().Status >= 300)

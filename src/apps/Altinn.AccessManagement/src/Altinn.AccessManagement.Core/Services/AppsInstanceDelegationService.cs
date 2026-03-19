@@ -17,6 +17,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn;
 using Altinn.Urn.Json;
+using Azure.Core;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services.Implementation;
@@ -228,6 +229,19 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         return await Task.FromResult(result);        
     }
 
+    private async Task<MinimalParty> GetMinimalParty(PartyUrn urn, CancellationToken cancellationToken)
+    {
+        switch (urn.KeySpan.ToString())
+        {
+            case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
+                return await _partyService.GetByUid(new Guid(urn.ValueSpan.ToString()), cancellationToken);
+            case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationNumberAttribute:
+                return await _partyService.GetByOrgNo(Authorization.Api.Contracts.Register.OrganizationNumber.Parse(urn.ValueSpan), cancellationToken);
+            default:
+                return null;
+        }
+    }
+
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
@@ -236,8 +250,19 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
         if (useEF)
         {
-            // Create instance urn and use it for the internal processing but reset it for responce as we should not change the contract
-            MinimalParty party = await _partyService.GetByUid(new Guid(request.From.ValueSpan.ToString()), cancellationToken);
+            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
+
+            if (party == null) 
+            {
+                ValidationErrorBuilder errors = default;
+                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                if (errors.TryBuild(out var invalidParty))
+                {
+                    return invalidParty;
+                }
+            }
+
             string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
             request.InstanceId = instanceUrn;            
         }
@@ -255,7 +280,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
             From = request.From,
             To = request.To,
             ResourceId = request.ResourceId,
-            InstanceId = request.InstanceId,
+            InstanceId = instanceId,
             InstanceDelegationMode = request.InstanceDelegationMode
         };
 

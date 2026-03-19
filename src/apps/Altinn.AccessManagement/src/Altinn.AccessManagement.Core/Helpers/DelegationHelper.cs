@@ -520,7 +520,7 @@ namespace Altinn.AccessManagement.Core.Helpers
         }
 
         /// <summary>
-        /// Gets the delegation policy path for a single Rule given the storage is in dbo scema under EntityFramework
+        /// Gets the delegation policy path for a single Rule given the storage is in dbo schema under EntityFramework
         /// </summary>
         /// <returns>A bool indicating whether necessary params to build the path where found</returns>
         public static bool TryGetNewDelegationPolicyPathFromInstanceRule(InstanceRight rule, out string instanceDelegationPolicyPath)
