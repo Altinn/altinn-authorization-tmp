@@ -308,7 +308,7 @@ public class RequestController(
         {
             foreach (var error in accumulatedErrors)
             {
-                accumulatedErrors.Add(error);
+                error(ref errors);
             }
         };
 

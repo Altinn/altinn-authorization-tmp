@@ -280,7 +280,7 @@ public class RequestControllerTest
                 From = "urn:invalid:prefix:12345",
                 To = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}",
                 Resource = new RequestReferenceDto(),
-                Package = new RequestReferenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
+                Package = new RequestReferenceDto { Id = PackageConstants.Agriculture.Id },
             };
 
             var response = await client.PostAsJsonAsync(
