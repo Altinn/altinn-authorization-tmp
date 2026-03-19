@@ -158,35 +158,29 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     #region GetRequests
 
     [Fact]
-    public async Task GetRequests_FilterByFromId_ReturnsOnlyMatchingRequests()
+    public async Task GetSentRequests_ReturnsOnlyMatchingRequests()
     {
         var resource = await SeedUniqueResource();
         await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
 
-        var results = await _requestService.GetRequests(fromId: OrgFrom.Id, toId: null, status: [], type: null, ct: default);
+        var results = await _requestService.GetSentRequests(partyId: PersonTo.Id, toId: null, status: [], type: null, ct: default);
 
         Assert.NotEmpty(results.Value);
         Assert.All(results.Value, r => Assert.Equal(OrgFrom.Id, r.From.Id));
     }
 
     [Fact]
-    public async Task GetRequests_FilterByToId_ReturnsOnlyMatchingRequests()
+    public async Task GetReceivedRequests_ReturnsOnlyMatchingRequests()
     {
         var resource = await SeedUniqueResource();
         await _requestService.CreateRequest(new CreateRequestDto() { From = OrgFrom.Id, To = PersonTo.Id, Role = RoleConstants.Rightholder.Id, Resource = resource.Id, Status = RequestStatus.Draft });
 
-        var results = await _requestService.GetRequests(fromId: null, toId: PersonTo.Id, status: [], type: null, ct: default);
+        var results = await _requestService.GetReceivedRequests(partyId: OrgFrom.Id, fromId: null, status: [], type: null, ct: default);
 
         Assert.NotEmpty(results.Value);
         Assert.All(results.Value, r => Assert.Equal(PersonTo.Id, r.To.Id));
     }
 
-    [Fact]
-    public async Task GetRequests_WithoutFromOrToId_ThrowsArgumentException()
-    {
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            _requestService.GetRequests(fromId: null, toId: null, status: [], type: null, ct: default));
-    }
     #endregion
 
     #region CreateRequestAssignmentPackage

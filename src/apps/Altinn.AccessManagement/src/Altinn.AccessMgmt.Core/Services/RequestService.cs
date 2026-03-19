@@ -51,17 +51,24 @@ public class RequestService(AppDbContext db) : IRequestService
     }
 
     /// <inheritdoc/>
-    public async Task<Result<IEnumerable<RequestDto>>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RequestDto>>> GetSentRequests(Guid partyId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
     {
-        ValidationErrorBuilder error = default;
+        var filter = QuerySentFilter(partyId, toId);
+        var requestResources = string.IsNullOrEmpty(type) || type == "resource" ? await GetRequestAssignmentResource(filter, status, ct) : default;
+        var requestPackages = string.IsNullOrEmpty(type) || type == "package" ? await GetRequestAssignmentPackage(filter, status, ct) : default;
 
-        if (!fromId.HasValue && !toId.HasValue)
-        {
-            error.Add(ValidationErrors.RequestMissingFromOrTo);
-        }
+        var result = requestResources.Select(DtoMapper.Convert)
+            .Union(requestPackages.Select(DtoMapper.Convert));
 
-        var requestResources = string.IsNullOrEmpty(type) || type == "resource" ? await GetRequestAssignmentResource(fromId, toId, status, ct) : default;
-        var requestPackages = string.IsNullOrEmpty(type) || type == "package" ? await GetRequestAssignmentPackage(fromId, toId, status, ct) : default;
+        return result.ToList();
+    }
+    
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequests(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
+    {
+        var filter = QueryReceivedFilter(partyId, fromId);
+        var requestResources = string.IsNullOrEmpty(type) || type == "resource" ? await GetRequestAssignmentResource(filter, status, ct) : default;
+        var requestPackages = string.IsNullOrEmpty(type) || type == "package" ? await GetRequestAssignmentPackage(filter, status, ct) : default;
 
         var result = requestResources.Select(DtoMapper.Convert)
             .Union(requestPackages.Select(DtoMapper.Convert));
@@ -398,9 +405,9 @@ public class RequestService(AppDbContext db) : IRequestService
         return await GetRequest(id, ct);
     }
 
-    private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, CancellationToken ct)
+    private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue)
+        if (!filter.FromId.HasValue && !filter.ToId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
@@ -410,15 +417,15 @@ public class RequestService(AppDbContext db) : IRequestService
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
-            .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
+            .WhereIf(filter.FromId.HasValue, r => r.Assignment.FromId == filter.FromId.Value)
+            .WhereIf(filter.ToId.HasValue, r => r.Assignment.ToId == filter.ToId.Value)
             .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .ToListAsync(cancellationToken: ct);
     }
 
-    private async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, CancellationToken ct)
+    private async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
     {
-        if (!fromId.HasValue && !toId.HasValue)
+        if (!filter.FromId.HasValue && !filter.ToId.HasValue)
         {
             throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
         }
@@ -428,8 +435,8 @@ public class RequestService(AppDbContext db) : IRequestService
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
-            .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
+            .WhereIf(filter.FromId.HasValue, r => r.Assignment.FromId == filter.FromId.Value)
+            .WhereIf(filter.ToId.HasValue, r => r.Assignment.ToId == filter.ToId.Value)
             .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .ToListAsync(cancellationToken: ct);
     }
@@ -587,6 +594,18 @@ public class RequestService(AppDbContext db) : IRequestService
             };
         }
     }
+
+    private static RequestFilter QuerySentFilter(Guid party, Guid? toId)
+    {
+        return new RequestFilter(toId, party);
+    }
+
+    private static RequestFilter QueryReceivedFilter(Guid party, Guid? fromId)
+    {
+        return new RequestFilter(party, fromId);
+    }
+
+    internal record RequestFilter(Guid? FromId, Guid? ToId);
 
     #endregion
 }

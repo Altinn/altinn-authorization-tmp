@@ -102,7 +102,7 @@ public class RequestController(
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            resourceRef: new RequestRefrenceDto() { ReferenceId = resource },
+            resourceRef: new RequestReferenceDto() { ReferenceId = resource },
             ct: ct
             );
     }
@@ -156,7 +156,7 @@ public class RequestController(
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            packageRef: new RequestRefrenceDto() { ReferenceId = packageObj.Id.ToString() },
+            package: new RequestReferenceDto() { Id = packageObj.Id },
             ct: ct
             );
     }
@@ -219,7 +219,7 @@ public class RequestController(
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
-                packageRef: input.Package,
+                package: input.Package,
                 ct: ct
             );
         }
@@ -230,7 +230,7 @@ public class RequestController(
         return problemDetails;
     }
 
-    private async Task<IActionResult> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestRefrenceDto resourceRef, CancellationToken ct = default)
+    private async Task<IActionResult> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
@@ -265,14 +265,13 @@ public class RequestController(
         return Accepted(result.Value);
     }
 
-    private async Task<IActionResult> CreatePackageRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestRefrenceDto packageRef, CancellationToken ct = default)
+    private async Task<IActionResult> CreatePackageRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto package, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
-        var package = await packageService.GetPackage(packageRef, ct);
 
-        if (package is null)
+        if (!PackageConstants.TryGetByAll(package.ReferenceId, out var packageObj))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {packageRef.ReferenceId} is not valid")]);
+            errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package.ReferenceId}'.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -285,7 +284,7 @@ public class RequestController(
            forId: forId,
            byId: byId,
            roleId: roleId,
-           packageId: package.Id,
+           packageId: packageObj.Id,
            status: status,
            ct: ct
        );

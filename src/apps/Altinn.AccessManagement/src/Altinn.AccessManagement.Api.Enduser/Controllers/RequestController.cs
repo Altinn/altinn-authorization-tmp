@@ -66,7 +66,8 @@ public class RequestController(
             ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
             : status.ToList();
 
-        var result = await requestService.GetRequests(fromId: to, toId: party, status: statusFilter, type, ct);
+        var result = await requestService.GetSentRequests(party, to, statusFilter, type, ct);
+
         return result.IsSuccess ? Ok(PaginatedResult.Create(result.Value, null)) : result.Problem.ToActionResult();
     }
 
@@ -91,7 +92,7 @@ public class RequestController(
             ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
             : status.ToList();
 
-        var result = await requestService.GetRequests(fromId: party, toId: from, status: statusFilter, type, ct);
+        var result = await requestService.GetReceivedRequests(party, from, statusFilter, type, ct);
         return result.IsSuccess ? Ok(PaginatedResult.Create(result.Value, null)) : result.Problem.ToActionResult();
     }
 

@@ -87,8 +87,8 @@ public class RequestEndToEndTest
             {
                 From = from,
                 To = to,
-                Resource = new RequestRefrenceDto(),
-                Package = new RequestRefrenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
+                Resource = new RequestReferenceDto(),
+                Package = new RequestReferenceDto { ReferenceId = PackageConstants.Agriculture.Entity.Urn },
             };
 
             var createResponse = await soClient.PostAsJsonAsync(
