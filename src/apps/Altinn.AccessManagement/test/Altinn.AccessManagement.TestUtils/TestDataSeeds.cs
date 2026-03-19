@@ -61,6 +61,8 @@ public static class TestDataSeeds
             TestData.LivKristiansen,
             TestData.SteinarAndreassen,
             TestData.HelgeNilsen,
+            TestData.MalinEmilie,
+            TestData.DumboAdventures
         ]);
         #endregion
 

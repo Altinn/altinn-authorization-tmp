@@ -209,12 +209,12 @@ public class ConnectionsControllerTest
 
         public ApiFixture Fixture { get; }
 
-        private HttpClient CreateClient(params string[] scopes)
+        private HttpClient CreateClient(Guid partyUuid, params string[] scopes)
         {
             var client = Fixture.Server.CreateClient();
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
-                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
                 claims.Add(new Claim("scope", string.Join(" ", scopes)));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -228,9 +228,9 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task CheckResource_WithWriteToOthersScope_ReturnsOK()
         {
-            HttpClient client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
-            HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestEntities.OrganizationNordisAS.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -245,9 +245,9 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task CheckResource_WithReadScope_ReturnsForbidden()
         {
-            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
-            var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestEntities.OrganizationNordisAS.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -255,9 +255,9 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task CheckResource_WithFromOthersWriteScope_ReturnsForbidden()
         {
-            var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
+            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 
-            var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestEntities.OrganizationNordisAS.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
