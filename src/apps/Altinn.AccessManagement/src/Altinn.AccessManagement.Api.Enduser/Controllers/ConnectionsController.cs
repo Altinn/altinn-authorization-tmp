@@ -715,7 +715,7 @@ public class ConnectionsController(
     {
         var validationErrors = ValidationComposer.Validate(
             ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()),
-            ParameterValidation.InstanceUrn(instance));
+            ParameterValidation.InstanceUrn(instance ?? string.Empty));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
