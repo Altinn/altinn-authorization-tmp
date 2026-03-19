@@ -872,18 +872,6 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        // Validate that 'to' is a non-empty GUID when supplied using the shared validation pipeline
-        if (to.HasValue)
-        {
-            var toValidationErrors = ValidationComposer.Validate(
-                ParameterValidation.ToIsGuid(to.Value)
-            );
-            if (toValidationErrors is { })
-            {
-                return toValidationErrors.ToActionResult();
-            }
-        }
-
         // Resolve the target entity
         Guid targetEntityId;
         if (to.HasValue)

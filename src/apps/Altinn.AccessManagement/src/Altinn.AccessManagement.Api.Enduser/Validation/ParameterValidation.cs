@@ -102,7 +102,7 @@ internal static class ParameterValidation
 
     /// <summary>
     /// Validates that either 'to' query parameter OR PersonInput in body is provided (mutually exclusive).
-    /// Also validates that DirectRightKeys contains at least one right key.
+    /// Also validates that 'to' is not Guid.Empty when provided, and that DirectRightKeys contains at least one right key.
     /// Used for instance rights delegation to support both existing connections and new rightholder creation.
     /// </summary>
     /// <param name="to">Optional 'to' query parameter for existing connections</param>
@@ -123,6 +123,14 @@ internal static class ParameterValidation
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
                     [new("to", ValidationErrorMessageTexts.ToParameterRequired)]);
+        }
+
+        // Validate 'to' is not Guid.Empty when provided
+        if (to.HasValue && to.Value == Guid.Empty)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/to", 
+                    [new("to", ValidationErrorMessageTexts.InvalidPartyValue)]);
         }
 
         if (directRightKeys == null || !directRightKeys.Any())
