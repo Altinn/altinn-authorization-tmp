@@ -844,6 +844,7 @@ public class ConnectionsController(
     /// Add resource instance rights to an existing rightholder connection
     /// </summary>
     [HttpPost("resources/instances/rights")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -876,7 +877,7 @@ public class ConnectionsController(
                 problem.Extensions["instance"] = instance;
                 return problem.ToActionResult();
             }
-
+            
             return result.Problem.ToActionResult();
         }
 
@@ -887,6 +888,7 @@ public class ConnectionsController(
     /// Update resource instance rights for an existing rightholder connection
     /// </summary>
     [HttpPut("resources/instances/rights")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -903,9 +905,6 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
-
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as UpdateResourceRights, but with the intention to include instance information in the result once supported in connection service.
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
@@ -928,13 +927,13 @@ public class ConnectionsController(
         }
 
         return Ok();
-        */
     }
 
     /// <summary>
     /// Remove resource instance from rightholder connection and all actions
     /// </summary>
     [HttpDelete("resources/instances")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -950,10 +949,6 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
-
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as RemoveResources, but with the intention to include instance information in the result once supported in connection service.
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var problem = await ConnectionService.RemoveInstance(from, to, resource, instance, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -961,7 +956,6 @@ public class ConnectionsController(
         }
 
         return NoContent();
-        */
     }
 
     /// <summary>
