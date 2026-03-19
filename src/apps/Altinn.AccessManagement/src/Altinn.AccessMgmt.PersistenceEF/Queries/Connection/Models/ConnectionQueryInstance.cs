@@ -21,12 +21,12 @@ public sealed class ConnectionQueryInstance
     public string InstanceId { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the name of the resource associated with this instance.
+    /// Gets the name of the resource associated with this instance.
     /// </summary>
-    public string ResourceName { get; set; }
+    public string ResourceName { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the reference ID of the resource associated with this instance.
+    /// Gets the reference ID of the resource associated with this instance.
     /// </summary>
-    public string ResourceRefId { get; set; }
+    public string ResourceRefId { get; init; } = string.Empty;
 }
