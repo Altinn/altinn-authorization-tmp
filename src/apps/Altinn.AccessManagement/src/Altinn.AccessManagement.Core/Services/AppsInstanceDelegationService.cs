@@ -1,5 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Formats.Asn1;
+﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -8,6 +7,7 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Models.Rights;
@@ -27,22 +27,26 @@ namespace Altinn.AccessManagement.Core.Services.Implementation;
 public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 {
     private readonly IPartiesClient _partiesClient;
+    private readonly IAMPartyService _partyService;
     private readonly IPolicyInformationPoint _pip;
     private readonly IPolicyAdministrationPoint _pap;
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
+    private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap)
+    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
     {
         _partiesClient = partiesClient;
+        _partyService = partyService;
         _pip = pip;
         _resourceRegistryClient = resourceRegistryClient;
         _pap = pap;
         _appsInstanceDelegationSettings = appsInstanceDelegationSettings.Value;
+        _featureManager = featureManager;
     }
 
     private async Task<(UuidType DelegationType, Guid? Uuid)> TranslatePartyUuidToPersonOrganizationUuid(PartyUrn partyId)
@@ -227,7 +231,19 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
+        bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+        string instanceId = request.InstanceId;
+
+        if (useEF)
+        {
+            // Create instance urn and use it for the internal processing but reset it for responce as we should not change the contract
+            MinimalParty party = await _partyService.GetByUid(new Guid(request.From.ValueSpan.ToString()), cancellationToken);
+            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+            request.InstanceId = instanceUrn;            
+        }
+
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
+        request.InstanceId = instanceId;
 
         if (input.Errors.TryBuild(out var errorResult))
         {

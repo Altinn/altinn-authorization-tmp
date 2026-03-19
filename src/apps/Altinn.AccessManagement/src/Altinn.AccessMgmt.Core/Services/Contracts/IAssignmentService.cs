@@ -234,10 +234,11 @@ public interface IAssignmentService
     /// <param name="instanceId">The identifier for the instance the delegation is about</param>
     /// <param name="delegationEventId">The identifier of the delegation event that triggered this resource change.</param>
     /// <param name="audit">The audit information to record for this operation. Cannot be null.</param>
+    /// <param name="fromPartyId">partyId to use in construction of the instance urn</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the import operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the number of resource changes
     /// imported.</returns>
-    Task<int> ImportInstanceAssignmentChange(Guid fromId, Guid toId, string resourceName, string blobStoragePolicyPath, string blobStorageVersionId, string instanceId, int delegationEventId, AuditValues audit, CancellationToken cancellationToken = default);
+    Task<int> ImportInstanceAssignmentChange(Guid fromId, Guid toId, string resourceName, string blobStoragePolicyPath, string blobStorageVersionId, string instanceId, int delegationEventId, AuditValues audit, int fromPartyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Clears assignments for a dead person.
