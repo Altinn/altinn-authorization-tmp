@@ -108,48 +108,6 @@ public class RequestService(AppDbContext db) : IRequestService
     }
 
     /// <inheritdoc/>
-    private async Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default)
-    {
-        ValidationErrorBuilder error = default;
-
-        if (request.From == request.To)
-        {
-            error.Add(ValidationErrors.RequestFromSelfNotAllowed);
-            error.TryBuild(out var inputProblems);
-            return inputProblems;
-        }
-
-        if (!request.Resource.HasValue && !request.Package.HasValue)
-        {
-            error.Add(ValidationErrors.RequestMissingResourceOrPackage);
-            error.TryBuild(out var inputProblems);
-            return inputProblems;
-        }
-
-        var requestAssignmentResult = await GetOrCreateRequestAssignment(
-           fromId: request.From,
-           toId: request.To,
-           roleId: request.Role,
-           ct: ct
-           );
-        var requestAssignment = requestAssignmentResult.Value;
-
-        if (request.Resource.HasValue)
-        {
-            return await CreateResourceRequest(requestAssignment.Id, request.Resource.Value, request.Status, ct);
-        }
-
-        if (request.Package.HasValue)
-        {
-            return await CreatePackageRequest(requestAssignment.Id, request.Package.Value, request.Status, ct);
-        }
-
-        error.Add(ValidationErrors.RequestFailedToCreateRequest);
-        error.TryBuild(out var problems);
-        return problems;
-    }
-
-    /// <inheritdoc/>
     public async Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
     {
         ValidationErrorBuilder error = default;
