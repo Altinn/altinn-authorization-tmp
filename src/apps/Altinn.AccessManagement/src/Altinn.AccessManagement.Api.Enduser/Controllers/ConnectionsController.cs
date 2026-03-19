@@ -872,16 +872,16 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        // Validate that 'to' is not Guid.Empty when supplied
-        if (to.HasValue && to.Value == Guid.Empty)
+        // Validate that 'to' is a non-empty GUID when supplied using the shared validation pipeline
+        if (to.HasValue)
         {
-            ProblemDetails problem = new ProblemDetails
+            var toValidationErrors = ValidationComposer.Validate(
+                ParameterValidation.ToIsGuid(to.Value)
+            );
+            if (toValidationErrors is { })
             {
-                Title = "Invalid input",
-                Detail = "The 'to' query parameter must be a non-empty GUID.",
-                Status = StatusCodes.Status400BadRequest
-            };
-            return problem.ToActionResult();
+                return toValidationErrors.ToActionResult();
+            }
         }
 
         // Resolve the target entity
