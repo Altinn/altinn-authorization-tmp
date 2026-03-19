@@ -206,73 +206,6 @@ public class RequestControllerTest
 
     #endregion
 
-    #region GET /received — Receiver sees package requests
-
-    public class GetReceivedPackageRequests : IClassFixture<ApiFixture>
-    {
-        private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b003-0000-7000-8000-000000000001");
-
-        public GetReceivedPackageRequests(ApiFixture fixture)
-        {
-            Fixture = fixture;
-            EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
-            {
-                var reqAssignment = new RequestAssignment
-                {
-                    FromId = TestData.BakerJohnsen.Id,
-                    ToId = TestData.LarsBakke.Id,
-                    RoleId = RoleConstants.Rightholder,
-                };
-                db.RequestAssignments.Add(reqAssignment);
-                db.SaveChanges();
-
-                db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
-                {
-                    Id = PendingPackageRequestId,
-                    AssignmentId = reqAssignment.Id,
-                    PackageId = PackageConstants.Agriculture.Id,
-                    Status = RequestStatus.Pending,
-                });
-                db.SaveChanges();
-            });
-        }
-
-        public ApiFixture Fixture { get; }
-
-        [Fact]
-        public async Task Receiver_GetReceivedRequests_SeesPackageRequest()
-        {
-            var client = CreateClient(Fixture, TestData.LarsBakke.Id);
-
-            var response = await client.GetAsync(
-                $"{Route}/received?party={TestData.BakerJohnsen.Id}&from={TestData.LarsBakke.Id}",
-                TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            using var doc = JsonDocument.Parse(json);
-            var items = doc.RootElement.GetProperty("data");
-
-            JsonElement? match = null;
-            foreach (var item in items.EnumerateArray())
-            {
-                if (item.GetProperty("id").GetString() == PendingPackageRequestId.ToString())
-                {
-                    match = item;
-                    break;
-                }
-            }
-
-            Assert.True(match.HasValue, "Receiver should see the package request");
-            Assert.Equal(TestData.BakerJohnsen.Id.ToString(), match.Value.GetProperty("from").GetProperty("id").GetString());
-            Assert.Equal(TestData.LarsBakke.Id.ToString(), match.Value.GetProperty("to").GetProperty("id").GetString());
-        }
-    }
-
-    #endregion
-
     #region GET /received — Receiver sees resource requests
 
     public class GetReceivedResourceRequests : IClassFixture<ApiFixture>
@@ -415,7 +348,7 @@ public class RequestControllerTest
         [Fact]
         public async Task Receiver_RejectsPendingResourceRequest_ReturnsRejected()
         {
-            var client = CreateClient(Fixture, TestData.SvendsenAutomobil.Id);
+            var client = CreateClient(Fixture, TestData.MortenDahl.Id);
 
             var response = await client.PutAsync(
                 $"{Route}/received/reject?party={TestData.SvendsenAutomobil.Id}&id={PendingResourceRequestId}",

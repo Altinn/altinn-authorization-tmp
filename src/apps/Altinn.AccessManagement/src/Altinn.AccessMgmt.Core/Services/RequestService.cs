@@ -286,7 +286,7 @@ public class RequestService(AppDbContext db) : IRequestService
             return;
         }
 
-        if (request.To.Id != partyUuid)
+        if (request.From.Id != partyUuid)
         {
             AddUnauthorizedStatusError(request, status, ref errorBuilder);
         }
@@ -297,7 +297,7 @@ public class RequestService(AppDbContext db) : IRequestService
         switch (status)
         {
             case RequestStatus.Withdrawn:
-                if (request.To.Id != partyUuid)
+                if (request.From.Id != partyUuid)
                 {
                     AddUnauthorizedStatusError(request, status, ref errorBuilder);
                 }
@@ -306,7 +306,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
             case RequestStatus.Approved:
             case RequestStatus.Rejected:
-                if (request.From.Id != partyUuid)
+                if (request.To.Id != partyUuid)
                 {
                     AddUnauthorizedStatusError(request, status, ref errorBuilder);
                 }

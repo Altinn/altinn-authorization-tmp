@@ -28,13 +28,6 @@ public interface IRequestService
     /// A Request from Kari by NAV to BakerAS for AppResource01.
     /// Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
     /// </summary>
-    ///Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default);
-
-    /// <summary>
-    /// Creates a new request
-    /// A Request from Kari by NAV to BakerAS for AppResource01.
-    /// Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
-    /// </summary>
     Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default);
 
     /// <summary>
