@@ -861,7 +861,7 @@ public class ConnectionsController(
         [FromQuery(Name = "to")] Guid? to,
         [Required][FromQuery(Name = "resource")] string resource,
         [Required][FromQuery(Name = "instance")] string instance,
-        [FromBody] InstanceRightsDelegationDto input,
+        [Required][FromBody] InstanceRightsDelegationDto input,
         CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
