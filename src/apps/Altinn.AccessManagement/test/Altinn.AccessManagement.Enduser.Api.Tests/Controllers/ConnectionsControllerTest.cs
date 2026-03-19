@@ -222,16 +222,14 @@ public class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// User checks if has the right to delegate NAV Sykepenger Dialog resource for the organization Nordis AS, which has delegated the Rightholder role to Verdiq AS, which again has delegated the Agent role to Paula. User has the write to others scope, which should allow delegation checks for resources that the user has rights to delegate.
+        /// The managing director for Dumbo Adventures (Malin Emilie) checks if she has the delegation rights for the resource "Dialogs for sickness benefits" for her organization. 
+        /// With the correct scope, she should be able to check the resource and receive an OK response with the rights included in the response body.
         /// </summary>
-        /// <returns></returns>
         [Fact]
         public async Task CheckResource_WithWriteToOthersScope_ReturnsOK()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
-
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
-
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -240,6 +238,7 @@ public class ConnectionsControllerTest
             Assert.NotNull(result);
             Assert.NotNull(result.Rights);
             Assert.DoesNotContain(result.Rights, r => r.Result == false);
+            Assert.Equal(3, result.Rights.Count());
         }
 
         [Fact]
