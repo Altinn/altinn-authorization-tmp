@@ -350,7 +350,7 @@ public class RequestController(
 
     private static RequestLinks BuildLinks(Guid requestId) => new()
     {
-        DetailsLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
-        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
+        DetailsLink = $"accessmanagement/ui/requests/resource?requestId={requestId}",
+        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}/status"
     };
 }
