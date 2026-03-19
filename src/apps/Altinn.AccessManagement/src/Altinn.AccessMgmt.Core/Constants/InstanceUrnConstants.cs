@@ -8,20 +8,20 @@ public static class InstanceUrnConstants
 {
     /// <summary>
     /// URN prefix for Altinn Apps instance identifiers.
-    /// Format: urn:altinn:instance-id:{guid}
+    /// Format: urn:altinn:instance-id:{id}
     /// </summary>
     public const string AltinnAppsPrefix = "urn:altinn:instance-id:";
 
     /// <summary>
     /// URN prefix for Correspondence instance identifiers.
-    /// Format: urn:altinn:correspondence-id:{guid}
+    /// Format: urn:altinn:correspondence-id:{id}
     /// </summary>
     public const string CorrespondencePrefix = "urn:altinn:correspondence-id:";
 
     /// <summary>
-    /// URN prefix for Dialog instance identifiers.
-    /// Format: urn:altinn:dialog-id:{guid}
-    /// </summary>
+/// URN prefix for Dialog instance identifiers.
+/// Format: urn:altinn:dialog-id:{id}
+/// </summary>
     public const string DialogPrefix = "urn:altinn:dialog-id:";
 
     /// <summary>
