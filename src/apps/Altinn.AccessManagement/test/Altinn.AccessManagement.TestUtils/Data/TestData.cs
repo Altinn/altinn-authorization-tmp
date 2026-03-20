@@ -825,6 +825,22 @@ public static class TestData
 
     #endregion
 
+    #region Assignment Packages
+
+#pragma warning disable SA1401 // Fields should be private
+    public static List<AssignmentPackage> AssignmentPackages = new()
+#pragma warning restore SA1401 // Fields should be private
+    {
+        // Dumbo Adventures - Thea has Rightholder with a package
+        new AssignmentPackage() 
+        { 
+            AssignmentId = AssignDumboAdventuresThea, 
+            PackageId = PackageConstants.DocumentBasedSupervision.Id 
+        },
+    };
+
+    #endregion
+
     #region Delegations
 
 #pragma warning disable SA1401 // Fields should be private
