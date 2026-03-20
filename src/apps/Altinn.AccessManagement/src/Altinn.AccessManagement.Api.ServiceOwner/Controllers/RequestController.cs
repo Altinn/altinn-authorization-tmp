@@ -181,7 +181,7 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, "/package", [new("package", "Either package or resource must be defined.")]);
         }
 
-        if (input?.Resource is { } && input?.Package is { })
+        if (input?.Resource?.HasValue() == true && input?.Package?.HasValue() == true)
         {
             errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/resource", [new("resource", "Both package and resource are specified. Only one must be defined.")]);
             errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/package", [new("package", "Both package and resource are specified. Only one must be defined.")]);
@@ -204,7 +204,7 @@ public class RequestController(
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
 
-        if (input.Resource is { } && input.Resource.HasValue())
+        if (input?.Resource is { } && input.Resource.HasValue())
         {
             return await CreateResourceRequest(
                 atId: fromResult.Entity.Id,
@@ -217,7 +217,7 @@ public class RequestController(
             );
         }
 
-        if (input.Package is { } && input.Package.HasValue())
+        if (input?.Package is { } && input.Package.HasValue())
         {
             return await CreatePackageRequest(
                 atId: fromResult.Entity.Id,
