@@ -43,7 +43,7 @@ script:pre-request {
   bru.setVar("from", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
   bru.setVar("to", testdata.KOMPLEKS_LOJAL_TIGER.dagligleder.partyUuid);
   bru.setVar("resource", testdata.resources.instanceResourceId);
-  bru.setVar("instance", testdata.instances.testInstance1)
+  bru.setVar("instance", testdata.instances.testInstance1);
   
   var getTokenParameters = {
     auth_userId: testdata.VOKSENDE_FRYKTLØS_TIGER.dagligleder.userId,
