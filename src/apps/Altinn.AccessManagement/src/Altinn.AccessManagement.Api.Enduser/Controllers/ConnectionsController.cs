@@ -103,7 +103,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), party.ToString(), null));
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ConnectionValidation.ValidateReadConnection(party.ToString(), party.ToString(), null));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -1127,7 +1129,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
