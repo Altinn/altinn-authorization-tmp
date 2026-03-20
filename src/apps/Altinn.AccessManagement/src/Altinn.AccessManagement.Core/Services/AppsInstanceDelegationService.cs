@@ -231,7 +231,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
     private async Task<MinimalParty> GetMinimalParty(PartyUrn urn, CancellationToken cancellationToken)
     {
-        switch (urn.KeySpan.ToString())
+        switch (urn.PrefixSpan.ToString())
         {
             case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
                 return await _partyService.GetByUid(new Guid(urn.ValueSpan.ToString()), cancellationToken);
@@ -264,7 +264,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
             }
 
             string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-            request.InstanceId = instanceUrn;            
+            request.InstanceId = instanceUrn;
         }
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
