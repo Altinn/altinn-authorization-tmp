@@ -185,7 +185,7 @@ public class ConnectionsControllerTest
                     db.ResourceTypes.Add(resourceType);
                 }
 
-                Resource testResource = new Resource()
+                Resource navSykepengerResource = new Resource()
                 {
                     Name = "Dialogs for sickness benefits",
                     Description = "The service is used to send and receive dialogues in Dialogporten about new sick leaves, submitted applications, requests for income reports, and receipts for submitted income reports.",
@@ -194,7 +194,18 @@ public class ConnectionsControllerTest
                     ProviderId = ProviderConstants.Altinn3.Id,
                 };
 
-                db.Resources.Add(testResource);
+                db.Resources.Add(navSykepengerResource);
+
+                Resource diheOmsetningsoppgaveAlkhol = new Resource()
+                {
+                    Name = "Omsetningsoppgave for alkohol",
+                    Description = "Omsetningsoppgave for alkohol",
+                    RefId = "app_dihe_omsetningsoppgave-for-alkohol",
+                    TypeId = resourceType.Id,
+                    ProviderId = ProviderConstants.Altinn3.Id,
+                };
+
+                db.Resources.Add(diheOmsetningsoppgaveAlkhol);
 
                 var rightholderFromNordisToVerdiq = new Assignment()
                 {
@@ -321,6 +332,47 @@ public class ConnectionsControllerTest
             Assert.NotEmpty(subscribeRight.ReasonCodes);
             Assert.DoesNotContain(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+        }
+
+        [Fact]
+        public async Task CheckResource_DiheOmsettningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=app_dihe_omsetningsoppgave-for-alkohol", TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            ResourceCheckDto result = JsonSerializer.Deserialize<ResourceCheckDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+            Assert.NotNull(result.Rights);
+            Assert.Contains(result.Rights, r => r.Result == false);
+            Assert.Contains(result.Rights, r => r.Result == true);
+            Assert.Equal(17, result.Rights.Count());
+
+            // Check for the "read" right
+            RightCheckDto readRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("read", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(readRight);
+            Assert.True(readRight.Result, "The 'read' right should have Result = true");
+            Assert.NotEmpty(readRight.ReasonCodes);
+            Assert.Contains(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.DoesNotContain(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "access" right
+            RightCheckDto writeRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("Write (Task_1)", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(writeRight);
+            Assert.True(writeRight.Result, "The 'Write' right should have Result = true");
+            Assert.NotEmpty(writeRight.ReasonCodes);
+            Assert.Contains(writeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.DoesNotContain(writeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "subscribe" right
+            RightCheckDto signRight = result.Rights.FirstOrDefault(r => r.Right.Name.Contains("sign", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(signRight);
+            Assert.False(signRight.Result, "The 'sign' right should have Result = false");
+            Assert.NotEmpty(signRight.ReasonCodes);
+            Assert.Contains(signRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.MissingRoleAccess));
+            Assert.Contains(signRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.MissingDelegationAccess));
         }
 
         [Fact]

@@ -72,6 +72,13 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         /// <inheritdoc/>
         public async Task<XacmlPolicy> GetPolicyAsync(string resourceRegistry, CancellationToken cancellationToken = default)
         {
+            if (resourceRegistry.StartsWith("app_"))
+            {
+                string app = resourceRegistry.Split('_')[2];
+                string org = resourceRegistry.Split("_")[1];
+                return await GetPolicyAsync(org, app, cancellationToken);
+            }
+
             string testDataFolder = GetAltinnResourcePolicyPath(resourceRegistry);
             if (File.Exists(Path.Combine(testDataFolder, "resourcepolicy.xml")))
             {
