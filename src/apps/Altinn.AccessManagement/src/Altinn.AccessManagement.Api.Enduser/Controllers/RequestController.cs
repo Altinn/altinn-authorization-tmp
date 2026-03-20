@@ -165,12 +165,12 @@ public class RequestController(
         Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         var result = await requestService.CreateResourceRequest(
-            toId: to, 
-            fromId: party, 
-            byId: authUserUuid, 
+            toId: to,
+            fromId: party,
+            byId: authUserUuid,
             roleId: RoleConstants.Rightholder.Id,
-            resourceId: resourceObj.Id, 
-            status: RequestStatus.Pending, 
+            resourceId: resourceObj.Id,
+            status: RequestStatus.Pending,
             ct: ct
             );
 
@@ -413,7 +413,7 @@ public class RequestController(
         var authUser = await entityService.GetEntity(authUserId, ct);
         var resource = await resourceService.GetResource(request.Resource.Id.Value, ct);
 
-        var assignment = await assignmentService.GetOrCreateAssignment(from.Id, to.Id, RoleConstants.Rightholder, cancellationToken: ct);
+        var assignment = await assignmentService.GetOrCreateAssignment(to.Id, from.Id, RoleConstants.Rightholder, cancellationToken: ct);
         if (assignment is null)
         {
             return Problem("Unable to get or create rightholder assignment");
