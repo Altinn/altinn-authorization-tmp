@@ -410,6 +410,7 @@ public class RequestController(
 
         var from = await entityService.GetEntity(request.From.Id, ct);
         var to = await entityService.GetEntity(request.To.Id, ct);
+        var authUser = await entityService.GetEntity(authUserId, ct);
         var resource = await resourceService.GetResource(request.Resource.Id.Value, ct);
 
         var assignment = await assignmentService.GetOrCreateAssignment(from.Id, to.Id, RoleConstants.Rightholder, cancellationToken: ct);
@@ -419,11 +420,11 @@ public class RequestController(
         }
 
         var result = await connectionService.AddResource(
-            from,
             to,
+            from,
             resource,
             new RightKeyListDto { DirectRightKeys = rightKeys },
-            party,
+            authUser,
             ConfigureConnections,
             ct);
 
