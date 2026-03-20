@@ -244,7 +244,7 @@ public class ConnectionsControllerTest
         /// </para>
         /// </remarks>
         [Fact]
-        public async Task CheckResource_WithWriteToOthersScope_ReturnsOK()
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_ReturnsOK()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
@@ -280,6 +280,46 @@ public class ConnectionsControllerTest
             Assert.True(subscribeRight.Result, "The 'subscribe' right should have Result = true");
             Assert.NotEmpty(subscribeRight.ReasonCodes);
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+        }
+
+        [Fact]
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_ReturnsOK()
+        {
+            HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            ResourceCheckDto result = JsonSerializer.Deserialize<ResourceCheckDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+            Assert.NotNull(result.Rights);
+            Assert.DoesNotContain(result.Rights, r => r.Result == false);
+            Assert.Equal(3, result.Rights.Count());
+
+            // Check for the "read" right
+            RightCheckDto readRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("read", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(readRight);
+            Assert.True(readRight.Result, "The 'read' right should have Result = true");
+            Assert.NotEmpty(readRight.ReasonCodes);
+            Assert.DoesNotContain(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "access" right
+            RightCheckDto accessRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("access", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(accessRight);
+            Assert.True(accessRight.Result, "The 'access' right should have Result = true");
+            Assert.NotEmpty(accessRight.ReasonCodes);
+            Assert.DoesNotContain(accessRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(accessRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "subscribe" right
+            RightCheckDto subscribeRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("subscribe", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(subscribeRight);
+            Assert.True(subscribeRight.Result, "The 'subscribe' right should have Result = true");
+            Assert.NotEmpty(subscribeRight.ReasonCodes);
+            Assert.DoesNotContain(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 

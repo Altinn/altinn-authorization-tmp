@@ -835,7 +835,7 @@ public static class TestData
         new AssignmentPackage() 
         { 
             AssignmentId = AssignDumboAdventuresThea, 
-            PackageId = PackageConstants.DocumentBasedSupervision.Id 
+            PackageId = PackageConstants.SalarySpecialCategory.Id 
         },
     };
 
