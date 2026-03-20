@@ -229,4 +229,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor RequestFromSelfNotAllowed { get; }
         = _factory.Create(45, $"Self-targeted requests are not allowed.");
+
+    /// <summary>
+    /// Request connection not found
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidInstanceId { get; }
+        = _factory.Create(46, $"The instance ID is invalid as more than one owner was found.");
 }
