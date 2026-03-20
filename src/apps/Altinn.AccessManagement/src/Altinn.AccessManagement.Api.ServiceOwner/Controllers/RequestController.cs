@@ -181,16 +181,16 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, "/package", [new("package", "Either package or resource must be defined.")]);
         }
 
-        if (input?.Resource is not null && input.Package is not null)
+        if (input?.Resource is { } && input?.Package is { })
         {
             errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/resource", [new("resource", "Both package and resource are specified. Only one must be defined.")]);
             errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/package", [new("package", "Both package and resource are specified. Only one must be defined.")]);
         }
 
-        var fromResult = await GetEntity(input.From, "/connection/from", ct);
+        var fromResult = await GetEntity(input?.From, "/connection/from", ct);
         fromResult.Problems(ref errorBuilder);
 
-        var toResult = await GetEntity(input.To, "/connection/to", ct);
+        var toResult = await GetEntity(input?.To, "/connection/to", ct);
         toResult.Problems(ref errorBuilder);
 
         if (errorBuilder.TryBuild(out var problem))
