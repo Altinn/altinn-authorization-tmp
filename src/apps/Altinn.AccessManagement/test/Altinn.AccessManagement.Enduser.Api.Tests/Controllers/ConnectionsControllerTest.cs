@@ -14,6 +14,7 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
@@ -222,9 +223,26 @@ public class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// The managing director for Dumbo Adventures (Malin Emilie) checks if she has the delegation rights for the resource "Dialogs for sickness benefits" for her organization. 
-        /// With the correct scope, she should be able to check the resource and receive an OK response with the rights included in the response body.
+        /// Tests that a managing director can successfully check delegation rights for a resource when using the correct authorization scope.
         /// </summary>
+        /// <remarks>
+        /// This test verifies the delegation check functionality for the resource "Dialogs for sickness benefits" (nav_sykepenger_dialog).
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Resource: nav_sykepenger_dialog (Dialogs for sickness benefits)
+        /// - Party: Dumbo Adventures organization
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains a valid ResourceCheckDto object
+        /// - Response includes exactly 3 rights: "read", "access", and "subscribe"
+        /// - All rights have Result = true
+        /// - Each right contains ReasonCodes with both RoleAccess and PackageAccess
+        /// </para>
+        /// </remarks>
         [Fact]
         public async Task CheckResource_WithWriteToOthersScope_ReturnsOK()
         {
@@ -239,6 +257,30 @@ public class ConnectionsControllerTest
             Assert.NotNull(result.Rights);
             Assert.DoesNotContain(result.Rights, r => r.Result == false);
             Assert.Equal(3, result.Rights.Count());
+
+            // Check for the "read" right
+            RightCheckDto readRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("read", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(readRight);
+            Assert.True(readRight.Result, "The 'read' right should have Result = true");
+            Assert.NotEmpty(readRight.ReasonCodes);
+            Assert.Contains(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(readRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "access" right
+            RightCheckDto accessRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("access", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(accessRight);
+            Assert.True(accessRight.Result, "The 'access' right should have Result = true");
+            Assert.NotEmpty(accessRight.ReasonCodes);
+            Assert.Contains(accessRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(accessRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
+
+            // Check for the "subscribe" right
+            RightCheckDto subscribeRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("subscribe", StringComparison.InvariantCultureIgnoreCase));
+            Assert.NotNull(subscribeRight);
+            Assert.True(subscribeRight.Result, "The 'subscribe' right should have Result = true");
+            Assert.NotEmpty(subscribeRight.ReasonCodes);
+            Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.RoleAccess));
+            Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 
         [Fact]

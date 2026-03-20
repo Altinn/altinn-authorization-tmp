@@ -349,6 +349,28 @@ public static class TestData
         }
     };
 
+    public static ConstantDefinition<Entity> Thea { get; } = new("8f52236a-7fbb-4681-ae45-429de0c747e3")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(2002, 4, 15),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Thea BFF",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50049134,
+            PersonIdentifier = "11813349134",
+            RefId = "11813349134",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20049134,
+            Username = "thea.bff",
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
     #endregion
 
     #region Personer - Fredriksons Fabrikk
@@ -736,6 +758,7 @@ public static class TestData
 
     // Dumbo Adventures - personroller
     private static readonly Guid AssignDumboAdventuresMalinEmilieMD = Guid.Parse("0196a0b1-0001-7001-8001-000000000020");
+    private static readonly Guid AssignDumboAdventuresThea = Guid.Parse("0196a0b1-0001-7001-8001-000000000021");  
 
     // Org-til-org assignments
     private static readonly Guid AssignBakerJohnsenRegnskapNorgeAcc = Guid.Parse("0196a0b1-0001-7001-8001-000000000016");
@@ -780,6 +803,7 @@ public static class TestData
 
         // Dumbo Adventures - personroller
         new Assignment() { Id = AssignDumboAdventuresMalinEmilieMD, FromId = DumboAdventures, ToId = MalinEmilie, RoleId = RoleConstants.ManagingDirector },
+        new Assignment() { Id = AssignDumboAdventuresThea, FromId = DumboAdventures, ToId = Thea, RoleId = RoleConstants.Rightholder },
 
         // RPC AS - personroller
         new Assignment() { Id = AssignRpcOddHalvorsenMD, FromId = RpcAS, ToId = OddHalvorsen, RoleId = RoleConstants.ManagingDirector },
