@@ -61,6 +61,9 @@ public static class TestDataSeeds
             TestData.LivKristiansen,
             TestData.SteinarAndreassen,
             TestData.HelgeNilsen,
+            TestData.MalinEmilie,
+            TestData.Thea,
+            TestData.DumboAdventures
         ]);
         #endregion
 
@@ -77,6 +80,7 @@ public static class TestDataSeeds
 
         #region TestData Assignments and Delegations
         db.Assignments.AddRange(TestData.Assignments);
+        db.AssignmentPackages.AddRange(TestData.AssignmentPackages);
         //// db.Delegations.AddRange(TestData.Delegations);
         #endregion
 
