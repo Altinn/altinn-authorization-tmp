@@ -379,7 +379,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         List<InstanceRight> revokedResult = await _pap.TryWriteInstanceRevokeAllPolicyRules(rightsToRevoke, cancellationToken);
         List<AppsInstanceRevokeResponse> result = TransformInstanceRightListToAppsInstanceDelegationResponseList(revokedResult);
         result = RemoveInstanceIdFromResourceForRevokeResponseList(result);
-        
+        result = RemoveUrnPrefixFromInstanceIdForRevokeResponceList(result, request.InstanceId);
         return result;
     }
 
@@ -714,7 +714,18 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         }
 
         result = RemoveInstanceIdFromResourceForDelegationResponseList(result);
+        result = RemoveUrnPrefixFromInstanceId(result, request.InstanceId);
         return result;
+    }
+
+    private static List<AppsInstanceDelegationResponse> RemoveUrnPrefixFromInstanceId(List<AppsInstanceDelegationResponse> input, string instanceId)
+    {
+        foreach (AppsInstanceDelegationResponse item in input)
+        {
+            item.InstanceId = instanceId;
+        }
+
+        return input;
     }
 
     private static AppsInstanceRevokeResponse RemoveInstanceIdFromResourceForRevokeResponse(AppsInstanceRevokeResponse input)
@@ -736,6 +747,16 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
         return input;
     }
+
+    private static List<AppsInstanceRevokeResponse> RemoveUrnPrefixFromInstanceIdForRevokeResponceList(List<AppsInstanceRevokeResponse> input, string instanceId)
+    {
+        foreach (AppsInstanceRevokeResponse item in input)
+        {
+            item.InstanceId = instanceId;
+        }
+
+        return input;
+    }    
 
     private static List<AppsInstanceDelegationResponse> RemoveInstanceIdFromResourceForDelegationResponseList(List<AppsInstanceDelegationResponse> input)
     {
