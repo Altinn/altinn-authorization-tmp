@@ -243,7 +243,7 @@ public class RequestController(
         var resource = await resourceService.GetResource(resourceRef, ct);
         if (resource is null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"/resource", [new("resource", $"Urn {resourceRef.ReferenceId} is not valid")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
