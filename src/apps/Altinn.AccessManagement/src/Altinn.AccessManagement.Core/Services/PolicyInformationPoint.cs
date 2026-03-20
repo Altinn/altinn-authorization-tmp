@@ -307,6 +307,7 @@ namespace Altinn.AccessManagement.Core.Services
             List<AppsInstanceDelegationResponse> result = new List<AppsInstanceDelegationResponse>();
 
             List<InstanceDelegationChange> delegations = await _delegationRepository.GetAllLatestInstanceDelegationChanges(request.InstanceDelegationSource, request.ResourceId, request.InstanceId, cancellationToken);
+            HashSet<Guid> fromParty = [];
 
             foreach (InstanceDelegationChange delegation in delegations)
             {
@@ -319,9 +320,16 @@ namespace Altinn.AccessManagement.Core.Services
                     InstanceId = delegation.InstanceId
                 };
 
+                fromParty.Add(delegation.FromUuid);
+
                 XacmlPolicy policy = await _prp.GetPolicyVersionAsync(delegation.BlobStoragePolicyPath, delegation.BlobStorageVersionId, cancellationToken);
                 appsInstanceDelegationResponse.Rights = GetRightsFromPolicy(policy);
                 result.Add(appsInstanceDelegationResponse);
+            }
+
+            if (fromParty.Count > 1)
+            {
+                throw new ValidationException($"Multiple from parties found for instance delegations: {string.Join(", ", fromParty)}");
             }
 
             return result;

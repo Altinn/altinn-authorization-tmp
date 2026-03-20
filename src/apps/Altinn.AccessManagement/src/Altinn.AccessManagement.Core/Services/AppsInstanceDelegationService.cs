@@ -330,7 +330,21 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         }
 
         // Fetch all existing delegations
-        List<AppsInstanceDelegationResponse> delegations = await _pip.GetInstanceDelegations(request, cancellationToken);
+        List<AppsInstanceDelegationResponse> delegations;
+        try
+        { 
+            delegations = await _pip.GetInstanceDelegations(request, cancellationToken);
+        }
+        catch (ValidationException)
+        {
+            errors.Add(ValidationErrors.InvalidInstanceId, "request.InstanceId");
+            if (errors.TryBuild(out var invalidInstanceId))
+            {
+                return invalidInstanceId;
+            }
+
+            delegations = [];
+        }
 
         // If nothing to delete just return with empty result set and no errors
         if (delegations.Count == 0)
@@ -683,7 +697,22 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
             return errorResult;
         }
 
-        List<AppsInstanceDelegationResponse> result = await _pip.GetInstanceDelegations(request, cancellationToken);
+        List<AppsInstanceDelegationResponse> result;
+        try 
+        {
+            result = await _pip.GetInstanceDelegations(request, cancellationToken);
+        } 
+        catch (ValidationException)
+        {
+            errors.Add(ValidationErrors.InvalidInstanceId, "request.InstanceId");
+            if (errors.TryBuild(out var invalidInstanceId))
+            {
+                return invalidInstanceId;
+            }
+
+            result = [];
+        }
+
         result = RemoveInstanceIdFromResourceForDelegationResponseList(result);
         return result;
     }
