@@ -110,7 +110,6 @@ public class RequestController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetDraftRequest([FromQuery][Required] Guid id, CancellationToken ct = default)
     {
-        // var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         var result = await requestService.GetRequest(id, ct);
         if (result.IsProblem)
         {
@@ -122,7 +121,7 @@ public class RequestController(
             return Forbid();
         }
 
-        bool isAuthorized = await AuthorizeResourceAccess(result.Value.Resource.ReferenceId, result.Value.From.Id, User, "write");
+        bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", result.Value.From.Id, User, "write");
         if (isAuthorized)
         {
             return Forbid();
