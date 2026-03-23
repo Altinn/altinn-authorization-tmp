@@ -363,8 +363,6 @@ public class RequestController(
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
 
-    private static string 
-
     private static RequestLinks BuildLinks(Guid requestId) => new()
     {
         DetailsLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
