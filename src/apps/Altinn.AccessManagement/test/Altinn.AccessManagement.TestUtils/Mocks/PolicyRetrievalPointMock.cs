@@ -113,7 +113,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
             }
 
             string safePath = path?.Replace("\r", string.Empty).Replace("\n", string.Empty);
-            _logger.LogWarning("Policy Version did not found policy {PolicyPath}", safePath);
+            _logger.LogWarning("Policy Version was not found for the provided path.");
 
             return null;
         }
