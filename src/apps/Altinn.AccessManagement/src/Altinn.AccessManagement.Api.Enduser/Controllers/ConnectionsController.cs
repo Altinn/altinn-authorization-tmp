@@ -917,7 +917,7 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        if (!input.DirectRightKeys.Any())
+        if (input?.DirectRightKeys is null || !input.DirectRightKeys.Any())
         {
             ProblemDescriptor error = Problems.MissingRightKey;
             return error.ToActionResult();
