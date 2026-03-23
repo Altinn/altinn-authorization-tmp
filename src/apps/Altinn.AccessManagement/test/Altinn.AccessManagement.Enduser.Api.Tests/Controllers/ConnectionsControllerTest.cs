@@ -294,6 +294,28 @@ public class ConnectionsControllerTest
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 
+        /// <summary>
+        /// Tests that a user with package-based access receives full access when checking delegation rights for a resource,
+        /// where all rights are granted through packages but not roles.
+        /// </summary>
+        /// <remarks>
+        /// This test verifies the delegation check functionality for the resource "Dialogs for sickness benefits" (nav_sykepenger_dialog).
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Thea (user of Dumbo Adventures with package-based access only)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Resource: nav_sykepenger_dialog (Dialogs for sickness benefits)
+        /// - Party: Dumbo Adventures organization
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains a valid ResourceCheckDto object
+        /// - Response includes exactly 3 rights: "read", "access", and "subscribe"
+        /// - All rights have Result = true
+        /// - Each right contains ReasonCodes with PackageAccess only (no RoleAccess)
+        /// </para>
+        /// </remarks>
         [Fact]
         public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_ReturnsOK()
         {
@@ -334,6 +356,29 @@ public class ConnectionsControllerTest
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 
+        /// <summary>
+        /// Tests that a managing director receives partial access when checking delegation rights for a resource
+        /// where only some rights are granted through roles but not packages.
+        /// </summary>
+        /// <remarks>
+        /// This test verifies the delegation check functionality for the resource "Omsetningsoppgave for alkohol" (app_dihe_omsetningsoppgave-for-alkohol).
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Resource: app_dihe_omsetningsoppgave-for-alkohol (Omsetningsoppgave for alkohol)
+        /// - Party: Dumbo Adventures organization
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains a valid ResourceCheckDto object
+        /// - Response includes exactly 17 rights with a mix of granted and denied results
+        /// - The "read" right has Result = true with RoleAccess only (no PackageAccess)
+        /// - The "Write (Task_1)" right has Result = true with RoleAccess only (no PackageAccess)
+        /// - The "sign" right has Result = false with MissingRoleAccess and MissingDelegationAccess reason codes
+        /// </para>
+        /// </remarks>
         [Fact]
         public async Task CheckResource_DiheOmsettningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
         {
@@ -375,6 +420,10 @@ public class ConnectionsControllerTest
             Assert.Contains(signRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.MissingDelegationAccess));
         }
 
+        /// <summary>
+        /// Tests that requesting a delegation check with a read-only scope (SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ)
+        /// instead of the required to-others write scope returns HTTP 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task CheckResource_WithReadScope_ReturnsForbidden()
         {
@@ -385,12 +434,103 @@ public class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Tests that requesting a delegation check with the from-others write scope (SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE)
+        /// instead of the required to-others write scope returns HTTP 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task CheckResource_WithFromOthersWriteScope_ReturnsForbidden()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 
             var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+    }
+
+    #endregion
+
+    #region GET accessmanagement/api/v1/enduser/connections/users
+
+    /// <summary>
+    /// <see cref="ConnectionsController.GetAvailableUsers(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// </summary>
+    public class GetAvailableUsers : IClassFixture<ApiFixture>
+    {
+        public GetAvailableUsers(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient(Guid partyUuid, params string[] scopes)
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+                claims.Add(new Claim("scope", string.Join(" ", scopes)));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        /// <summary>
+        /// Tests that available users for Dumbo Adventures includes Thea when authenticated as Malin Emilie (managing director).
+        /// </summary>
+        /// <remarks>
+        /// This test verifies that the GetAvailableUsers endpoint returns the expected list of available users
+        /// for a given organization when the authenticated user has the required write scope.
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (person, managing director of Dumbo Adventures AS)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Party: Dumbo Adventures AS (organization)
+        /// - Endpoint: GET {Route}/users?party={DumboAdventures.Id}
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response deserializes to a valid PaginatedResult of SimplifiedConnectionDto
+        /// - The flattened list of all parties (including nested connections) contains Thea BFF
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task GetAvailableUsers_AsMalinForDumbo_ContainsThea()
+        {
+            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            var response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<SimplifiedConnectionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Items);
+
+            var allParties = result.Items
+                .SelectMany(c => new[] { c }.Concat(c.Connections ?? []))
+                .Select(c => c.Party)
+                .ToList();
+
+            Assert.Contains(allParties, p => p.Id == TestData.Thea.Id);
+        }
+
+        /// <summary>
+        /// Tests that requesting available users with a read-only scope (SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ)
+        /// instead of the required write scope returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task GetAvailableUsers_WithReadScope_ReturnsForbidden()
+        {
+            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            var response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
