@@ -73,9 +73,10 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         /// <inheritdoc/>
         public async Task<XacmlPolicy> GetPolicyAsync(string resourceRegistry, CancellationToken cancellationToken = default)
         {
+            string sanitizedResourceRegistry = resourceRegistry?.Replace("\r", string.Empty).Replace("\n", string.Empty);
             if (string.IsNullOrEmpty(resourceRegistry) || !IsValidResourceRegistryId(resourceRegistry))
             {
-                _logger.LogWarning("Invalid resource registry id provided to PolicyRetrievalPointMock: {ResourceRegistry}", resourceRegistry);
+                _logger.LogWarning("Invalid resource registry id provided to PolicyRetrievalPointMock: {ResourceRegistry}", sanitizedResourceRegistry);
                 return await Task.FromResult<XacmlPolicy>(null);
             }
 
@@ -89,7 +90,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
                     return await GetPolicyAsync(org, app, cancellationToken);
                 }
 
-                _logger.LogWarning("Resource registry id '{ResourceRegistry}' did not have the expected format 'app_{{org}}_{{app}}'.", resourceRegistry);
+                _logger.LogWarning("Resource registry id '{ResourceRegistry}' did not have the expected format 'app_{{org}}_{{app}}'.", sanitizedResourceRegistry);
                 return await Task.FromResult<XacmlPolicy>(null);
             }
 
@@ -111,7 +112,8 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
                 return await Task.FromResult(ParsePolicy(string.Empty, path));
             }
 
-            _logger.LogWarning("Policy Version did not found policy " + path);
+            string safePath = path?.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            _logger.LogWarning("Policy Version did not found policy {PolicyPath}", safePath);
 
             return null;
         }
