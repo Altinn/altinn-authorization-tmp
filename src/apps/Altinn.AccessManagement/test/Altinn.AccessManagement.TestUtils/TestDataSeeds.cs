@@ -63,6 +63,7 @@ public static class TestDataSeeds
             TestData.HelgeNilsen,
             TestData.MalinEmilie,
             TestData.Thea,
+            TestData.JosephineYvonnesdottir,
             TestData.DumboAdventures
         ]);
         #endregion

@@ -13,8 +13,10 @@ using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
@@ -501,22 +503,21 @@ public class ConnectionsControllerTest
         [Fact]
         public async Task GetAvailableUsers_AsMalinForDumbo_ContainsThea()
         {
-            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
-            var response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+            HttpResponseMessage response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<SimplifiedConnectionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            PaginatedResult<SimplifiedConnectionDto> result = JsonSerializer.Deserialize<PaginatedResult<SimplifiedConnectionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(result);
             Assert.NotNull(result.Items);
 
-            var allParties = result.Items
+            List<SimplifiedPartyDto> allParties = [.. result.Items
                 .SelectMany(c => new[] { c }.Concat(c.Connections ?? []))
-                .Select(c => c.Party)
-                .ToList();
+                .Select(c => c.Party)];
 
             Assert.Contains(allParties, p => p.Id == TestData.Thea.Id);
         }
@@ -531,6 +532,109 @@ public class ConnectionsControllerTest
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
             var response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+    }
+
+    #endregion
+
+    #region POST accessmanagement/api/v1/enduser/connections
+
+    /// <summary>
+    /// <see cref="ConnectionsController.AddRightholder(Guid, Guid, AccessManagement.Api.Enduser.Models.PersonInput, CancellationToken)"/>
+    /// </summary>
+    public class AddRightholder : IClassFixture<ApiFixture>
+    {
+        public AddRightholder(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
+            Fixture.EnsureSeedOnce(db =>
+            {
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient(Guid partyUuid, params string[] scopes)
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+                claims.Add(new Claim("scope", string.Join(" ", scopes)));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        /// <summary>
+        /// Tests that attempting to add a rightholder for a person with no existing connection
+        /// to the party returns a BadRequest with the EntityNotExists validation error.
+        /// </summary>
+        /// <remarks>
+        /// This test verifies the AddRightholder endpoint returns a validation problem when Josephine Yvonnesdottir
+        /// has no existing connection to Dumbo Adventures.
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Party: Dumbo Adventures organization
+        /// - To: Josephine Yvonnesdottir (person with no existing connection to Dumbo Adventures)
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is BadRequest (400)
+        /// - Response contains a valid AltinnValidationProblemDetails object
+        /// - The outer ErrorCode is "STD-00000" (standard validation error wrapper)
+        /// - The validationErrors array contains a single error with code matching ValidationErrors.EntityNotExists
+        /// - The validation error path is "QUERY/to"
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task AddRightholder_AsMalinForDumboWithJosephine_ReturnsProblem()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}&to={TestData.JosephineYvonnesdottir.Id}", null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(problemDetails);
+            Assert.Equal("STD-00000", problemDetails.ErrorCode.ToString());
+            Assert.Single(problemDetails.Errors, e => e.ErrorCode == ValidationErrors.EntityNotExists.ErrorCode);
+            Assert.Single(problemDetails.Errors, e => e.Paths.Contains("QUERY/to"));
+        }
+
+        /// <summary>
+        /// Tests that requesting to add a rightholder with a read-only scope (SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ)
+        /// instead of the required to-others write scope returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task AddRightholder_WithReadScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}&to={TestData.JosephineYvonnesdottir.Id}", null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Tests that requesting to add a rightholder with the from-others write scope (SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE)
+        /// instead of the required to-others write scope returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task AddRightholder_WithFromOthersWriteScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}&to={TestData.JosephineYvonnesdottir.Id}", null, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }

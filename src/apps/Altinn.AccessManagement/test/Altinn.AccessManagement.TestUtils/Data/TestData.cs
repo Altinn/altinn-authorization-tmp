@@ -371,6 +371,28 @@ public static class TestData
         }
     };
 
+    public static ConstantDefinition<Entity> JosephineYvonnesdottir { get; } = new("eeec4506-51d7-40d2-a0ef-38b95c95dff6")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1995, 9, 15),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Josephine Yvonnesdottir",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 5049963,
+            PersonIdentifier = "02883749963",
+            RefId = "02883749963",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20049963,
+            Username = "josephine.yvonnesdottir",
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
     #endregion
 
     #region Personer - Fredriksons Fabrikk
