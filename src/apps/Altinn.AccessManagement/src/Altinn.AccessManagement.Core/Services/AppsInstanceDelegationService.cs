@@ -34,6 +34,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
+    private const string InstanceDelegationEfFeatureFlag = "AccessManagement.InstanceDelegation.EF";
     private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
@@ -245,7 +246,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
-        bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+        bool useEF = await _featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
         string instanceId = request.InstanceId;
 
         if (useEF)
@@ -495,7 +496,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceRevokeResponse>> Revoke(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
-        bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+        bool useEF = await _featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
         string instanceId = request.InstanceId;
         if (useEF)
         {
