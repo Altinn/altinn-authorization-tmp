@@ -109,6 +109,28 @@ public static class TestData
         }
     };
 
+    public static ConstantDefinition<Entity> MilleHundefrisor { get; } = new("019d1b09-cb7a-747c-ab62-fa35a9c66ba9")
+    {
+        Entity = new()
+        {
+            DateOfBirth = null,
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Mille Hundefrisør",
+            OrganizationIdentifier = "314255461",
+            Parent = null,
+            ParentId = null,
+            PartyId = 50155461,
+            PersonIdentifier = null,
+            RefId = "314255461",
+            TypeId = EntityTypeConstants.Organization,
+            UserId = null,
+            Username = null,
+            VariantId = EntityVariantConstants.ENK,
+        }
+    };
+
     #endregion
 
     #region Regnskapsselskaper

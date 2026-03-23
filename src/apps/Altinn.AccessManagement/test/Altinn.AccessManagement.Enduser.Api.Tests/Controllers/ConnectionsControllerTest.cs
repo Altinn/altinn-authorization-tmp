@@ -618,6 +618,48 @@ public class ConnectionsControllerTest
         }
 
         /// <summary>
+        /// Tests that a managing director can successfully add an organization as a rightholder
+        /// using the "to" query parameter.
+        /// </summary>
+        /// <remarks>
+        /// This test verifies the AddRightholder endpoint for adding Mille Hundefrisør (an organization)
+        /// as a rightholder to Dumbo Adventures. Unlike persons, organizations do not require an existing
+        /// connection to pass validation.
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Party: Dumbo Adventures organization
+        /// - To: Mille Hundefrisør (organization with no existing connection to Dumbo Adventures)
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains a valid AssignmentDto object
+        /// - The assignment's FromId matches Dumbo Adventures
+        /// - The assignment's ToId matches Mille Hundefrisør
+        /// - The assignment's RoleId matches the Rightholder role
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}", null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.Equal(TestData.DumboAdventures.Id, result.FromId);
+            Assert.Equal(TestData.MilleHundefrisor.Id, result.ToId);
+            Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
+        }
+
+        /// <summary>
         /// Tests that a managing director can successfully add a new rightholder using PersonInput
         /// with personal number and last name.
         /// </summary>

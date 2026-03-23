@@ -65,7 +65,8 @@ public static class TestDataSeeds
             TestData.Thea,
             TestData.JosephineYvonnesdottir,
             TestData.BodilFarmor,
-            TestData.DumboAdventures
+            TestData.DumboAdventures,
+            TestData.MilleHundefrisor
         ]);
         #endregion
 
