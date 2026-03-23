@@ -72,11 +72,24 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         /// <inheritdoc/>
         public async Task<XacmlPolicy> GetPolicyAsync(string resourceRegistry, CancellationToken cancellationToken = default)
         {
-            if (resourceRegistry.StartsWith("app_"))
+            if (string.IsNullOrEmpty(resourceRegistry) || !IsValidResourceRegistryId(resourceRegistry))
             {
-                string app = resourceRegistry.Split('_')[2];
-                string org = resourceRegistry.Split("_")[1];
-                return await GetPolicyAsync(org, app, cancellationToken);
+                _logger.LogWarning("Invalid resource registry id provided to PolicyRetrievalPointMock: {ResourceRegistry}", resourceRegistry);
+                return await Task.FromResult<XacmlPolicy>(null);
+            }
+
+            if (resourceRegistry.StartsWith("app_", StringComparison.Ordinal))
+            {
+                string[] parts = resourceRegistry.Split('_');
+                if (parts.Length >= 3)
+                {
+                    string app = parts[2];
+                    string org = parts[1];
+                    return await GetPolicyAsync(org, app, cancellationToken);
+                }
+
+                _logger.LogWarning("Resource registry id '{ResourceRegistry}' did not have the expected format 'app_{{org}}_{{app}}'.", resourceRegistry);
+                return await Task.FromResult<XacmlPolicy>(null);
             }
 
             string testDataFolder = GetAltinnResourcePolicyPath(resourceRegistry);
@@ -85,7 +98,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
                 return await Task.FromResult(ParsePolicy("resourcepolicy.xml", GetAltinnResourcePolicyPath(resourceRegistry)));
             }
 
-            return null;
+            return await Task.FromResult<XacmlPolicy>(null);
         }
 
         /// <inheritdoc/>
@@ -160,6 +173,26 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         {
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(PolicyRetrievalPointMock).Assembly.Location).LocalPath);
             return Path.Combine(unitTestFolder, "..", "..", "..", "..", "AccessMgmt.Tests", "Data", "Xacml", "3.0", "ResourceRegistry", resourceRegistryId);
+        }
+
+        private static bool IsValidResourceRegistryId(string resourceRegistryId)
+        {
+            if (string.IsNullOrEmpty(resourceRegistryId))
+            {
+                return false;
+            }
+
+            if (resourceRegistryId.Contains("..", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (resourceRegistryId.Contains('/') || resourceRegistryId.Contains('\\'))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static string GetAltinnAppsDelegationPolicyPath(string policyPath)
