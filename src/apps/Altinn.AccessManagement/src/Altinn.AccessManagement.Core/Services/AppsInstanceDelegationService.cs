@@ -1,5 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Formats.Asn1;
+﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -8,6 +7,7 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Models.Rights;
@@ -17,6 +17,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn;
 using Altinn.Urn.Json;
+using Azure.Core;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services.Implementation;
@@ -27,22 +28,26 @@ namespace Altinn.AccessManagement.Core.Services.Implementation;
 public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 {
     private readonly IPartiesClient _partiesClient;
+    private readonly IAMPartyService _partyService;
     private readonly IPolicyInformationPoint _pip;
     private readonly IPolicyAdministrationPoint _pap;
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
+    private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap)
+    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
     {
         _partiesClient = partiesClient;
+        _partyService = partyService;
         _pip = pip;
         _resourceRegistryClient = resourceRegistryClient;
         _pap = pap;
         _appsInstanceDelegationSettings = appsInstanceDelegationSettings.Value;
+        _featureManager = featureManager;
     }
 
     private async Task<(UuidType DelegationType, Guid? Uuid)> TranslatePartyUuidToPersonOrganizationUuid(PartyUrn partyId)
@@ -224,10 +229,46 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         return await Task.FromResult(result);        
     }
 
+    private async Task<MinimalParty> GetMinimalParty(PartyUrn urn, CancellationToken cancellationToken)
+    {
+        switch (urn.PrefixSpan.ToString())
+        {
+            case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
+                return await _partyService.GetByUid(new Guid(urn.ValueSpan.ToString()), cancellationToken);
+            case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationNumberAttribute:
+                return await _partyService.GetByOrgNo(Authorization.Api.Contracts.Register.OrganizationNumber.Parse(urn.ValueSpan), cancellationToken);
+            default:
+                return null;
+        }
+    }
+
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
+        bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+        string instanceId = request.InstanceId;
+
+        if (useEF)
+        {
+            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
+
+            if (party == null) 
+            {
+                ValidationErrorBuilder errors = default;
+                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                if (errors.TryBuild(out var invalidParty))
+                {
+                    return invalidParty;
+                }
+            }
+
+            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+            request.InstanceId = instanceUrn;
+        }
+
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
+        request.InstanceId = instanceId;
 
         if (input.Errors.TryBuild(out var errorResult))
         {
@@ -239,7 +280,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
             From = request.From,
             To = request.To,
             ResourceId = request.ResourceId,
-            InstanceId = request.InstanceId,
+            InstanceId = instanceId,
             InstanceDelegationMode = request.InstanceDelegationMode
         };
 
@@ -289,7 +330,21 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         }
 
         // Fetch all existing delegations
-        List<AppsInstanceDelegationResponse> delegations = await _pip.GetInstanceDelegations(request, cancellationToken);
+        List<AppsInstanceDelegationResponse> delegations;
+        try
+        { 
+            delegations = await _pip.GetInstanceDelegations(request, cancellationToken);
+        }
+        catch (ValidationException)
+        {
+            errors.Add(ValidationErrors.InvalidInstanceId, "request.InstanceId");
+            if (errors.TryBuild(out var invalidInstanceId))
+            {
+                return invalidInstanceId;
+            }
+
+            delegations = [];
+        }
 
         // If nothing to delete just return with empty result set and no errors
         if (delegations.Count == 0)
@@ -324,7 +379,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         List<InstanceRight> revokedResult = await _pap.TryWriteInstanceRevokeAllPolicyRules(rightsToRevoke, cancellationToken);
         List<AppsInstanceRevokeResponse> result = TransformInstanceRightListToAppsInstanceDelegationResponseList(revokedResult);
         result = RemoveInstanceIdFromResourceForRevokeResponseList(result);
-        
+        result = RemoveUrnPrefixFromInstanceIdForRevokeResponceList(result, request.InstanceId);
         return result;
     }
 
@@ -586,7 +641,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
         if (rulesToDelegate.InstanceRules.Count > 0)
         {
-            InstanceRight delegationResult = await _pap.TryWriteInstanceDelegationPolicyRules(rulesToDelegate, cancellationToken);
+            InstanceRight delegationResult = await _pap.TryWriteInstanceDelegationPolicyRules(rulesToDelegate, cancellationToken: cancellationToken);
             rights.AddRange(DelegationHelper.GetRightDelegationResultsFromInstanceRules(delegationResult));
         }
 
@@ -642,9 +697,35 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
             return errorResult;
         }
 
-        List<AppsInstanceDelegationResponse> result = await _pip.GetInstanceDelegations(request, cancellationToken);
+        List<AppsInstanceDelegationResponse> result;
+        try 
+        {
+            result = await _pip.GetInstanceDelegations(request, cancellationToken);
+        } 
+        catch (ValidationException)
+        {
+            errors.Add(ValidationErrors.InvalidInstanceId, "request.InstanceId");
+            if (errors.TryBuild(out var invalidInstanceId))
+            {
+                return invalidInstanceId;
+            }
+
+            result = [];
+        }
+
         result = RemoveInstanceIdFromResourceForDelegationResponseList(result);
+        result = RemoveUrnPrefixFromInstanceId(result, request.InstanceId);
         return result;
+    }
+
+    private static List<AppsInstanceDelegationResponse> RemoveUrnPrefixFromInstanceId(List<AppsInstanceDelegationResponse> input, string instanceId)
+    {
+        foreach (AppsInstanceDelegationResponse item in input)
+        {
+            item.InstanceId = instanceId;
+        }
+
+        return input;
     }
 
     private static AppsInstanceRevokeResponse RemoveInstanceIdFromResourceForRevokeResponse(AppsInstanceRevokeResponse input)
@@ -666,6 +747,16 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
         return input;
     }
+
+    private static List<AppsInstanceRevokeResponse> RemoveUrnPrefixFromInstanceIdForRevokeResponceList(List<AppsInstanceRevokeResponse> input, string instanceId)
+    {
+        foreach (AppsInstanceRevokeResponse item in input)
+        {
+            item.InstanceId = instanceId;
+        }
+
+        return input;
+    }    
 
     private static List<AppsInstanceDelegationResponse> RemoveInstanceIdFromResourceForDelegationResponseList(List<AppsInstanceDelegationResponse> input)
     {

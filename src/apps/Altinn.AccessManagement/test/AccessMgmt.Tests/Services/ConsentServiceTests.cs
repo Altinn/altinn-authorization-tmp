@@ -1,14 +1,13 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
-using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.Authorization.Api.Contracts.Register;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,6 +31,8 @@ public class ConsentServiceTests
     private readonly Mock<IProfileClient> _profileClientMock;
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IOptions<GeneralSettings>> _generalSettingsMock;
+    private readonly Mock<IConsentDelegationCheckService> _consentDelegationCheckServiceMock;
+    private readonly Mock<IMeterFactory> _meterFactoryMock;
 
     public ConsentServiceTests()
     {
@@ -39,13 +40,17 @@ public class ConsentServiceTests
         _consentRepositoryMock = new Mock<IConsentRepository>();
         _altinn2ConsentClientMock = new Mock<IAltinn2ConsentClient>();
         _partiesClientMock = new Mock<IPartiesClient>();
-        _singleRightsServiceMock = new Mock<ISingleRightsService>();
         _resourceRegistryClientMock = new Mock<IResourceRegistryClient>();
         _amPartyServiceMock = new Mock<IAMPartyService>();
         _memoryCacheMock = new Mock<IMemoryCache>();
         _profileClientMock = new Mock<IProfileClient>();
         _timeProvider = TimeProvider.System;
         _generalSettingsMock = new Mock<IOptions<GeneralSettings>>();
+        _meterFactoryMock = new Mock<IMeterFactory>();
+        _consentDelegationCheckServiceMock = new Mock<IConsentDelegationCheckService>();
+
+        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
+        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
 
         _generalSettingsMock.Setup(x => x.Value).Returns(new GeneralSettings { Hostname = "localhost" });
         SetupMemoryCache();
@@ -169,6 +174,179 @@ public class ConsentServiceTests
             Times.Once);
     }
 
+    [Fact]
+    public async Task GetAndStoreAltinn2Consent_Records_All_Histograms_OnSuccess()
+    {
+        // Arrange: real Meter + listener to capture histogram recordings
+        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
+
+        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+
+        using var collector = new MeasurementCollector(meter, new[]
+        {
+            "consent_migration_get_a2_duration_seconds",
+            "consent_migration_insert_a3_duration_seconds",
+            "consent_migration_update_a2_duration_seconds"
+        });
+
+        var consentRequestId = Guid.NewGuid();
+        var fromPartyUuid = Guid.NewGuid();
+        var toPartyUuid = Guid.NewGuid();
+
+        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
+        var createdRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
+
+        _altinn2ConsentClientMock
+            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(altinn2ConsentRequest);
+
+        SetupValidationMocks(fromPartyUuid, toPartyUuid);
+
+        _consentRepositoryMock
+            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdRequestDetails);
+
+        _consentRepositoryMock
+            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdRequestDetails);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
+
+        // Allow listener to process
+        await Task.Delay(20);
+
+        // Assert
+        Assert.False(result.IsProblem);
+        Assert.NotNull(result.Value);
+
+        Assert.True(collector.GetMeasurements("consent_migration_get_a2_duration_seconds").Any());
+        Assert.True(collector.GetMeasurements("consent_migration_insert_a3_duration_seconds").Any());
+        Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
+    }
+
+    [Fact]
+    public async Task GetAndStoreAltinn2Consent_Records_GetHistogram_OnDuplicate()
+    {
+        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
+        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+
+        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_get_a2_duration_seconds" });
+
+        var consentRequestId = Guid.NewGuid();
+        var fromPartyUuid = Guid.NewGuid();
+        var toPartyUuid = Guid.NewGuid();
+
+        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
+        var existingRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
+
+        _altinn2ConsentClientMock
+            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(altinn2ConsentRequest);
+
+        SetupValidationMocks(fromPartyUuid, toPartyUuid);
+
+        _consentRepositoryMock
+            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ConsentRequestDetails)null);
+
+        _consentRepositoryMock
+            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingRequestDetails);
+
+        var service = CreateService();
+
+        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
+
+        await Task.Delay(20);
+
+        Assert.False(result.IsProblem);
+        Assert.NotNull(result.Value);
+        Assert.True(collector.GetMeasurements("consent_migration_get_a2_duration_seconds").Any());
+    }
+
+    [Fact]
+    public async Task GetAndStoreAltinn2Consent_Records_UpdateHistogram_OnValidationFailure()
+    {
+        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
+        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+
+        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_update_a2_duration_seconds" });
+
+        var consentRequestId = Guid.NewGuid();
+        var fromPartyUuid = Guid.NewGuid();
+        var toPartyUuid = Guid.NewGuid();
+
+        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
+
+        _altinn2ConsentClientMock
+            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(altinn2ConsentRequest);
+
+        SetupValidationMocks(fromPartyUuid, toPartyUuid);
+
+        // Make resource validation fail (return null for resource)
+        _resourceRegistryClientMock
+            .Setup(x => x.GetResource(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ServiceResource)null);
+
+        var service = CreateService();
+
+        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
+
+        await Task.Delay(20);
+
+        Assert.True(result.IsProblem || result.Value == null);
+        Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
+    }
+
+    [Fact]
+    public async Task GetAndStoreAltinn2Consent_Records_OverallHistogram_OnSuccess()
+    {
+        // Arrange: real Meter + listener to capture overall histogram recording
+        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
+        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
+
+        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_overall_duration_seconds" });
+
+        var consentRequestId = Guid.NewGuid();
+        var fromPartyUuid = Guid.NewGuid();
+        var toPartyUuid = Guid.NewGuid();
+
+        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
+        var createdRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
+
+        _altinn2ConsentClientMock
+            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(altinn2ConsentRequest);
+
+        SetupValidationMocks(fromPartyUuid, toPartyUuid);
+
+        _consentRepositoryMock
+            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdRequestDetails);
+
+        _consentRepositoryMock
+            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdRequestDetails);
+
+        var service = CreateService();
+
+        // Act
+        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
+
+        // Allow listener to process
+        await Task.Delay(20);
+
+        // Assert
+        Assert.False(result.IsProblem);
+        Assert.NotNull(result.Value);
+
+        Assert.True(collector.GetMeasurements("consent_migration_overall_duration_seconds").Any());
+    }
+
     private ConsentService CreateService()
     {
         return new ConsentService(
@@ -176,13 +354,14 @@ public class ConsentServiceTests
             _consentRepositoryMock.Object,
             _altinn2ConsentClientMock.Object,
             _partiesClientMock.Object,
-            _singleRightsServiceMock.Object,
             _resourceRegistryClientMock.Object,
             _amPartyServiceMock.Object,
             _memoryCacheMock.Object,
             _profileClientMock.Object,
             _timeProvider,
-            _generalSettingsMock.Object);
+            _generalSettingsMock.Object,
+            _meterFactoryMock.Object,
+            _consentDelegationCheckServiceMock.Object);
     }
 
     private Altinn2ConsentRequest CreateAltinn2ConsentRequest(Guid id, Guid fromPartyUuid, Guid toPartyUuid)
@@ -310,5 +489,53 @@ public class ConsentServiceTests
         _memoryCacheMock
             .Setup(x => x.CreateEntry(It.IsAny<object>()))
             .Returns(mockCacheEntry.Object);
+    }
+
+    // Simple Meter listener to capture histogram measurements
+    private sealed class MeasurementCollector : IDisposable
+    {
+        private readonly MeterListener _listener;
+        private readonly ConcurrentDictionary<string, ConcurrentBag<double>> _measurements = new();
+
+        public MeasurementCollector(Meter meter, IEnumerable<string> instrumentNames)
+        {
+            foreach (var name in instrumentNames)
+            {
+                _measurements[name] = new ConcurrentBag<double>();
+            }
+
+            _listener = new MeterListener
+            {
+                InstrumentPublished = (instr, listener) =>
+                {
+                    if (instr.Meter.Name == meter.Name && _measurements.ContainsKey(instr.Name))
+                    {
+                        listener.EnableMeasurementEvents(instr);
+                    }
+                }
+            };
+
+            _listener.SetMeasurementEventCallback<double>((inst, measurement, tags, state) =>
+            {
+                if (_measurements.ContainsKey(inst.Name))
+                {
+                    _measurements[inst.Name].Add(measurement);
+                }
+            });
+
+            _listener.Start();
+        }
+
+        public IReadOnlyCollection<double> GetMeasurements(string instrumentName)
+        {
+            if (_measurements.TryGetValue(instrumentName, out var bag))
+            {
+                return bag.ToArray();
+            }
+
+            return Array.Empty<double>();
+        }
+
+        public void Dispose() => _listener.Dispose();
     }
 }

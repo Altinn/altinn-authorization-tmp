@@ -36,14 +36,19 @@ public static class AuditDefaults
     public const string EnduserApi = "ed771364-42a8-4934-801e-b482ed20ec3e";
 
     /// <summary>
+    ///  Service Owner API
+    /// </summary>
+    public const string ServiceOwnerApi = "ab418674-710b-4ca0-8ff1-b7daac8dc3d0";
+
+    /// <summary>
+    ///  App Instance Delegation API
+    /// </summary>
+    public const string AppInstanceDelegationApi = "81435d97-8527-4246-a475-ce281a898fa0";
+
+    /// <summary>
     /// EnduserApi
     /// </summary>
     public const string InternalApi = "b2b7dd36-8de5-40fb-a6ce-c7a4020f9ddc";
-
-    /// <summary>
-    /// Service Owner API
-    /// </summary>
-    public const string ServiceOwnerApi = "ab418674-710b-4ca0-8ff1-b7daac8dc3d0";
 
     /// <summary>
     /// Altinn2ClientImportSystem
@@ -69,4 +74,9 @@ public static class AuditDefaults
     /// DBA
     /// </summary>
     public const string DBA = "0195efb8-7c80-7262-b616-7d9eb843bcaa";
+
+    /// <summary>
+    /// Outbox
+    /// </summary>
+    public const string Outbox = "2b0e4b45-b5ac-41a9-b063-bba1dc9410e6";
 }

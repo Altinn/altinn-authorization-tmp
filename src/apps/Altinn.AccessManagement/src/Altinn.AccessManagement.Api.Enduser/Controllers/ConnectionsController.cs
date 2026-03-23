@@ -89,6 +89,48 @@ public class ConnectionsController(
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
+    /// <summary>
+    /// Gets all available users who already have some access from the specified party and are available to receive new delegations.
+    /// </summary>
+    [HttpGet("users")]
+    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
+    [ProducesResponseType<PaginatedResult<SimplifiedConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAvailableUsers(
+        [Required][FromQuery(Name = "party")] Guid party,
+        [FromQuery, FromHeader] PagingInput paging,
+        CancellationToken cancellationToken = default)
+    {
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ConnectionValidation.ValidateReadConnection(party.ToString(), party.ToString(), null));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var result = await ConnectionService.Get(
+            party,
+            party,
+            null,
+            includeClientDelegations: true,
+            includeAgentConnections: true,
+            ConfigureConnections,
+            cancellationToken
+        );
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        var simplifiedConnections = DtoMapper.ToSimplifiedConnections(result.Value);
+        return Ok(PaginatedResult.Create(simplifiedConnections, null));
+    }
+
     #region Assignment
 
     /// <summary>
@@ -673,7 +715,7 @@ public class ConnectionsController(
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
-        var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, languageCode, cancellationToken);
+        var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, languageCode, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
@@ -713,7 +755,9 @@ public class ConnectionsController(
         [FromQuery] string? instance = null,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()),
+            ParameterValidation.InstanceUrn(instance ?? string.Empty));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -770,7 +814,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()),
+            ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -841,11 +887,15 @@ public class ConnectionsController(
     }
 
     /// <summary>
-    /// Add resource instance rights to an existing rightholder connection
+    /// Add resource instance rights to an existing or new rightholder connection.
+    /// Supports two modes: 
+    /// 1. Using 'to' query parameter for existing connections
+    /// 2. Using PersonInput in body to create new rightholder and delegate in one operation
     /// </summary>
     [HttpPost("resources/instances/rights")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -854,21 +904,71 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddInstanceRights(
         [Required][FromQuery(Name = "party")] Guid party,
-        [Required][FromQuery(Name = "to")] Guid to,
+        [FromQuery(Name = "to")] Guid? to,
         [Required][FromQuery(Name = "resource")] string resource,
         [Required][FromQuery(Name = "instance")] string instance,
-        [FromBody] RightKeyListDto rightKeys,
+        [Required][FromBody] InstanceRightsDelegationDto input,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
 
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as AddResourceRights, but with the intention to include instance information in the result once supported in connection service.
+        // Resolve the target entity
+        Guid targetEntityId;
+        if (to.HasValue)
+        {
+            // Existing connection scenario
+            targetEntityId = to.Value;
+        }
+        else
+        {
+            // New rightholder scenario - use inputValidation to sanitize and create/get entity
+            var personInput = new PersonInput
+            {
+                PersonIdentifier = input.To.PersonIdentifier,
+                LastName = input.To.LastName
+            };
+
+            var entityResult = await inputValidation.SanitizeToInput(
+                party,
+                Guid.Empty, // Will be resolved from PersonInput
+                personInput,
+                options =>
+                {
+                    options.AllowedToEntityTypes = [EntityTypeConstants.Person, EntityTypeConstants.Organization];
+                    options.EntitiesToValidateForAnyConnections = [EntityTypeConstants.Person];
+                },
+                cancellationToken);
+
+            if (entityResult.IsProblem)
+            {
+                return entityResult.Problem.ToActionResult();
+            }
+
+            targetEntityId = entityResult.Value.Id;
+
+            // Create rightholder connection (AddRightholder returns existing connection if already exists)
+            var assignmentResult = await ConnectionService.AddRightholder(party, targetEntityId, ConfigureConnections, cancellationToken);
+            if (assignmentResult.IsProblem)
+            {
+                return assignmentResult.Problem.ToActionResult();
+            }
+        }
+
+        // Proceed with instance delegation
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
-        var toEntity = await EntityService.GetEntity(to, cancellationToken);
+        var toEntity = await EntityService.GetEntity(targetEntityId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
-        var result = await ConnectionService.AddInstance(fromEntity, toEntity, resourceObj, instance, rightKeys, by, ConfigureConnections, cancellationToken);
+
+        // Convert input to RightKeyListDto for service call
+        var rightKeysDto = new RightKeyListDto { DirectRightKeys = input.DirectRightKeys };
+
+        var result = await ConnectionService.AddInstance(fromEntity, toEntity, resourceObj, instance, rightKeysDto, by, ConfigureConnections, cancellationToken);
 
         if (result.IsProblem)
         {
@@ -884,13 +984,13 @@ public class ConnectionsController(
         }
 
         return Created();
-        */
     }
 
     /// <summary>
     /// Update resource instance rights for an existing rightholder connection
     /// </summary>
     [HttpPut("resources/instances/rights")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -907,9 +1007,12 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
 
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as UpdateResourceRights, but with the intention to include instance information in the result once supported in connection service.
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
@@ -932,13 +1035,13 @@ public class ConnectionsController(
         }
 
         return Ok();
-        */
     }
 
     /// <summary>
     /// Remove resource instance from rightholder connection and all actions
     /// </summary>
     [HttpDelete("resources/instances")]
+    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -954,10 +1057,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
 
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as RemoveResources, but with the intention to include instance information in the result once supported in connection service.
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var problem = await ConnectionService.RemoveInstance(from, to, resource, instance, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -965,7 +1070,6 @@ public class ConnectionsController(
         }
 
         return NoContent();
-        */
     }
 
     /// <summary>
@@ -973,7 +1077,7 @@ public class ConnectionsController(
     /// </summary>
     [HttpGet("resources/instances/delegationcheck")]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
     [ProducesResponseType<InstanceCheckDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -984,9 +1088,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
 
-        /* ToDo: Implement instance support in connection service and uncomment code below when ready. Currently we return the same result as CheckResources, but with the intention to include instance information in the result once supported in connection service.
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
@@ -1005,7 +1112,65 @@ public class ConnectionsController(
         }
 
         return Ok(result.Value);
-        */
+    }
+
+    /// <summary>
+    /// Gets all users who have access to a specific instance.
+    /// </summary>
+    [HttpGet("resources/instances/users")]
+    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
+    [ProducesResponseType<PaginatedResult<SimplifiedPartyDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetInstanceUsers(
+        [Required][FromQuery(Name = "party")] Guid party,
+        [Required][FromQuery(Name = "resource")] string resource,
+        [Required][FromQuery(Name = "instance")] string instance,
+        [FromQuery, FromHeader] PagingInput paging,
+        CancellationToken cancellationToken = default)
+    {
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
+        if (resourceObj is null)
+        {
+            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+            problem.Extensions["resource"] = resource;
+            problem.Extensions["instance"] = instance;
+            return problem.ToActionResult();
+        }
+
+        var result = await ConnectionService.GetResourceInstances(
+            party,
+            fromId: party,
+            toId: null,
+            resourceId: resourceObj.Id,
+            instanceId: instance,
+            configureConnections: ConfigureConnections,
+            cancellationToken: cancellationToken
+        );
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        var users = result.Value
+            .SelectMany(inst => inst.Permissions ?? Enumerable.Empty<PermissionDto>())
+            .Where(perm => perm.To != null)
+            .Select(perm => DtoMapper.ToSimplifiedParty(perm.To))
+            .DistinctBy(p => p.Id)
+            .ToList();
+
+        return Ok(PaginatedResult.Create(users, null));
     }
 
     #endregion

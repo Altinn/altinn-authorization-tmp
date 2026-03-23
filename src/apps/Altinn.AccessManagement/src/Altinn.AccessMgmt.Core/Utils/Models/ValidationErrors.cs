@@ -107,4 +107,15 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor UnableToCompleteOperation { get; }
     = _factory.Create(27, $"The operation could not be completed.");
+
+    /// <summary>
+    /// Gets a validation error descriptor indicating that the object was not found.
+    /// </summary>
+    public static ValidationErrorDescriptor NotFound { get; } = _factory.Create(28, "Object not found");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when an invalid instance URN format is provided.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidInstanceUrn { get; }
+        = _factory.Create(29, "Instance must use a valid URN format: 'urn:altinn:instance-id:', 'urn:altinn:correspondence-id:', or 'urn:altinn:dialog-id:'.");
 }

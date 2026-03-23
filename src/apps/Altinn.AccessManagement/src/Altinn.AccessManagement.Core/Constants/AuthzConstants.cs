@@ -46,6 +46,11 @@
         public const string POLICY_ACCESS_MANAGEMENT_WRITE = "AccessManagementWrite";
 
         /// <summary>
+        /// Policy tag for authorizing instance delegation for end users
+        /// </summary>
+        public const string POLICY_INSTANCE_DELEGATION = "InstanceDelegation";
+
+        /// <summary>
         /// Policy tag for reading enduser access management information for the authorized party
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH = "AccessManagementEndUserReadOrAuthorizedParty";
@@ -219,5 +224,36 @@
         /// Claim for consumer prefixes from maskinporten token
         /// </summary>
         public const string CLAIM_MASKINPORTEN_CONSUMER_PREFIX = "consumer_prefix";
+
+        /// <summary>
+        /// Scope giving access to reading delegationrequests
+        /// </summary>
+        public const string ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ = "altinn:serviceowner/delegationrequests.read";
+
+        /// <summary>
+        /// Scope giving access to creating delegationrequests
+        /// </summary>
+        public const string ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE = "altinn:serviceowner/delegationrequests.write";
+
+        /// <summary>
+        /// Valid URN prefixes for instance identifiers
+        /// </summary>
+        public static class InstanceUrnPrefixes
+        {
+            /// <summary>
+            /// URN prefix for Altinn App instances
+            /// </summary>
+            public const string Apps = "urn:altinn:instance-id:";
+
+            /// <summary>
+            /// URN prefix for Altinn Correspondence instances
+            /// </summary>
+            public const string Correspondence = "urn:altinn:correspondence-id:";
+
+            /// <summary>
+            /// URN prefix for Dialogporten Dialog instances
+            /// </summary>
+            public const string Dialog = "urn:altinn:dialog-id:";
+        }
     }
 }

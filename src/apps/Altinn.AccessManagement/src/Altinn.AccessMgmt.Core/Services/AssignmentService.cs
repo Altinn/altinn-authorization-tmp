@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -16,7 +20,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery) : IAssignmentService
+public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery, IPolicyFactory policyFactory) : IAssignmentService
 {
     /// <inheritdoc/>
     public async Task<List<AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default)
@@ -282,6 +286,12 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         }
 
         return result.First();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Assignment>> GetAssignments(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -592,7 +602,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         return result > 0;
     }
 
-    private async Task<bool> UpsertAssignmentInstanceInternal(Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, int delegationChangeId, AuditValues audit, CancellationToken cancellationToken = default)
+    private async Task<bool> UpsertAssignmentInstanceInternal(Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, int delegationChangeId, Guid instanceSourceTypeId, AuditValues audit, CancellationToken cancellationToken = default)
     {
         var assignment = await db.Assignments.AsNoTracking().SingleAsync(t => t.Id == assignmentId, cancellationToken);
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
@@ -603,6 +613,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         {
             res.PolicyPath = policyPath;
             res.PolicyVersion = policyVersion;
+            res.DelegationChangeId = delegationChangeId;
         }
         else
         {
@@ -614,7 +625,8 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
                 InstanceId = instanceId,
                 PolicyPath = policyPath,
                 PolicyVersion = policyVersion,
-                DelegationChangeId = delegationChangeId
+                DelegationChangeId = delegationChangeId,
+                InstanceSourceTypeId = instanceSourceTypeId
             };
             db.AssignmentInstances.Add(res);
         }
@@ -805,6 +817,9 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
     /// 
     /// WARNING:    If this method is missing checks it can lead to cascading revokes of assignments and data loss that was not 
     ///             intended so this has to be updated toghether with any new feature that adds dependencies on assignments
+    ///             
+    /// There exist a similar test in Altinn.AccessMgmt.Core.Services.Legacy.DelegationMetadataEF.CheckCascadingAssignmentRevoke that 
+    /// must be kept in sync if new connections are added.
     /// </summary>
     /// <param name="assignmentId">The id of the assignment to delete</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
@@ -832,9 +847,9 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         var instances = await db.AssignmentInstances.AsNoTracking()
             .Where(t => t.AssignmentId == assignmentId)
             .ToListAsync(cancellationToken);
-        if (resources != null && resources.Any())
+        if (instances != null && instances.Any())
         {
-            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", instances.Select(p => p.Id.ToString())))]);
         }
 
         var delegationsFromAssingment = await db.Delegations.AsNoTracking()
@@ -1243,8 +1258,30 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
         return result ? 1 : 0;
     }
 
+    private string GetPolicyPath(Guid fromId, Guid toUuid, string resourcename, string instanceId, int partyId)
+    {
+        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{partyId}/{instanceId}";
+
+        InstanceRight rule = new InstanceRight
+        {
+            FromUuid = fromId,
+            ToUuid = toUuid,
+            ResourceId = resourcename,
+            InstanceId = instanceUrn
+        };
+
+        bool pathOk = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rule, out string path);
+
+        if (pathOk)
+        {
+            return path;
+        }
+
+        return null;
+    }
+
     /// <inheritdoc />
-    public async Task<int> ImportInstanceAssignmentChange(Guid fromId, Guid toId, string resourceName, string blobStoragePolicyPath, string blobStorageVersionId, string instanceId, int delegationEventId, AuditValues audit, CancellationToken cancellationToken = default)
+    public async Task<int> ImportInstanceAssignmentChange(Guid fromId, Guid toId, string resourceName, string originalBlobStoragePolicyPath, string blobStorageVersionId, string instanceId, int delegationEventId, AuditValues audit, int partyId, CancellationToken cancellationToken = default)
     {
         var resource = await db.Resources
             .AsNoTracking()
@@ -1288,9 +1325,92 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
             await db.SaveChangesAsync(audit, cancellationToken);
         }
 
-        var result = await UpsertAssignmentInstanceInternal(assignment.Id, resource.Id, instanceId, blobStoragePolicyPath, blobStorageVersionId, delegationEventId, audit, cancellationToken);
+        string newPath = null;
+        try
+        {
+            newPath = GetPolicyPath(fromId, toId, resourceName, instanceId, partyId);
+        }
+        catch (Exception)
+        {
+        }
+        
+        if (newPath == null)
+        {
+            throw new InvalidOperationException($"Failed to generate new policy path for instance assignment. fromId: {fromId}, toId: {toId}, resourceName: {resourceName}, instanceId: {instanceId}, partyId: {partyId}");
+        }
 
-        return result ? 1 : 0;
+        // Lock original policy file in blob storage
+        var originalPolicyClient = policyFactory.Create(originalBlobStoragePolicyPath);
+        if (!await originalPolicyClient.PolicyExistsAsync(cancellationToken))
+        {
+            throw new InvalidOperationException($"Failed to find original policy file: {originalBlobStoragePolicyPath}");
+        }
+
+        string originalLeaseId = await originalPolicyClient.TryAcquireBlobLease(cancellationToken);
+        if (string.IsNullOrEmpty(originalLeaseId))
+        {
+            throw new InvalidOperationException($"Failed to acquire lease on original policy file: {originalBlobStoragePolicyPath}");
+        }
+
+        string newLeaseId = null;
+        IPolicyRepository newPolicyClient = null;
+        try
+        {
+            // Lock new policy file in blob storage
+            newPolicyClient = policyFactory.Create(newPath);
+            if (!await newPolicyClient.PolicyExistsAsync(cancellationToken))
+            {
+                // Create a new empty blob for lease locking
+                using (MemoryStream emptyStream = new MemoryStream())
+                {
+                    await newPolicyClient.WritePolicyAsync(emptyStream, cancellationToken);
+                }                
+            }
+
+            newLeaseId = await newPolicyClient.TryAcquireBlobLease(cancellationToken);
+
+            if (string.IsNullOrEmpty(newLeaseId))
+            {
+                throw new InvalidOperationException($"Failed to acquire lease on new policy file: {newPath}");
+            }
+
+            // Copy policy file to correct location in blob storage
+            await using var originalPolicyStream = await originalPolicyClient.GetPolicyVersionAsync(blobStorageVersionId, cancellationToken);
+            var copyResult = await newPolicyClient.WritePolicyConditionallyAsync(originalPolicyStream, newLeaseId, cancellationToken);
+
+            if (copyResult == null || copyResult.GetRawResponse().Status >= 300)
+            {
+                throw new InvalidOperationException($"Failed to copy policy file to new location. Status: {copyResult?.GetRawResponse().Status}");
+            }
+
+            // Update policy path and version in assignment instance
+            var result = await UpsertAssignmentInstanceInternal(
+                assignment.Id,
+                resource.Id,
+                instanceId,
+                newPath,  // Use new path instead of original
+                copyResult.Value.VersionId,  // Use new version ID
+                delegationEventId,
+                InstanceSourceTypeConstants.AltinnApp.Id,
+                audit,
+                cancellationToken);
+
+            return result ? 1 : 0;
+        }
+        finally
+        {
+            // Release lock on new policy file in blob storage
+            if (!string.IsNullOrEmpty(newLeaseId) && newPolicyClient != null)
+            {
+                await newPolicyClient.ReleaseBlobLease(newLeaseId, cancellationToken);
+            }
+
+            // Release lock on original policy file in blob storage
+            if (!string.IsNullOrEmpty(originalLeaseId))
+            {
+                await originalPolicyClient.ReleaseBlobLease(originalLeaseId, cancellationToken);
+            }
+        }        
     }
 
     /// <inheritdoc />

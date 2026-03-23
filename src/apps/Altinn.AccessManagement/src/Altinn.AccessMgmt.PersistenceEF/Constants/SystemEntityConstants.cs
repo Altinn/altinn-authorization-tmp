@@ -371,6 +371,32 @@ public static class SystemEntityConstants
             KeyValuePair.Create("Name", "Tjenesteeier API")),
     };
 
+    /// <summary>
+    /// Represents the AppInstanceDelegationApi system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 81435d97-8527-4246-a475-ce281a898fa0
+    /// - <c>Name:</c> App Instance Delegation API
+    /// - <c>RefId:</c> accessmgmt-app-instance-delegation-api
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
+    public static ConstantDefinition<Entity> AppInstanceDelegationApi { get; } = new ConstantDefinition<Entity>(AuditDefaults.AppInstanceDelegationApi)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.AppInstanceDelegationApi),
+            RefId = "accessmgmt-app-instance-delegation-api",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "App instance delegation API")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "App Instans delegerings API")),
+    };
+
     #endregion
 
     #region Internal
@@ -400,5 +426,32 @@ public static class SystemEntityConstants
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "DBA")),
     };
+
+    /// <summary>
+    /// Represents the Outbox system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 2b0e4b45-b5ac-41a9-b063-bba1dc9410e6
+    /// - <c>Name:</c> Outbox
+    /// - <c>RefId:</c> sys-outbox
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
+    public static ConstantDefinition<Entity> Outbox { get; } = new ConstantDefinition<Entity>(AuditDefaults.Outbox)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.Outbox),
+            RefId = "sys-outbox",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Outbox")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Outbox")),
+    };
+
     #endregion
 }
