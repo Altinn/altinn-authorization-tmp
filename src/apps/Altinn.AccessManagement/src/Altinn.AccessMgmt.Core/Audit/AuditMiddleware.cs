@@ -126,16 +126,6 @@ public class AuditMiddleware : IMiddleware
         return null;
     }
 
-    private async Task<Provider> GetProviderFromConsumerClaim(AppDbContext db, HttpContext context, ConsentPartyUrn party)
-    {
-        if (party.IsOrganizationId(out var organizationIdentifier))
-        {
-            return await db.Providers.FirstOrDefaultAsync(e => e.RefId == organizationIdentifier.ToString(), context.RequestAborted);
-        }
-
-        return null;
-    }
-
     /// <summary>
     /// Find the special system user claim and return it as standard claim if available
     /// </summary>
