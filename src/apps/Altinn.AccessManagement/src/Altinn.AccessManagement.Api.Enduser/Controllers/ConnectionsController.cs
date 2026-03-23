@@ -89,6 +89,48 @@ public class ConnectionsController(
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
+    /// <summary>
+    /// Gets all available users who already have some access from the specified party and are available to receive new delegations.
+    /// </summary>
+    [HttpGet("users")]
+    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
+    [ProducesResponseType<PaginatedResult<SimplifiedConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAvailableUsers(
+        [Required][FromQuery(Name = "party")] Guid party,
+        [FromQuery, FromHeader] PagingInput paging,
+        CancellationToken cancellationToken = default)
+    {
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ConnectionValidation.ValidateReadConnection(party.ToString(), party.ToString(), null));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var result = await ConnectionService.Get(
+            party,
+            party,
+            null,
+            includeClientDelegations: true,
+            includeAgentConnections: true,
+            ConfigureConnections,
+            cancellationToken
+        );
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        var simplifiedConnections = DtoMapper.ToSimplifiedConnections(result.Value);
+        return Ok(PaginatedResult.Create(simplifiedConnections, null));
+    }
+
     #region Assignment
 
     /// <summary>
@@ -713,7 +755,9 @@ public class ConnectionsController(
         [FromQuery] string? instance = null,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()),
+            ParameterValidation.InstanceUrn(instance ?? string.Empty));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -770,7 +814,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()));
+        var validationErrors = ValidationComposer.Validate(
+            ConnectionValidation.ValidateReadConnection(party.ToString(), from.ToString(), to.ToString()),
+            ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -864,9 +910,7 @@ public class ConnectionsController(
         [Required][FromBody] InstanceRightsDelegationDto input,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(
-            ParameterValidation.InstanceRightsDelegationInput(to, input?.To, input?.DirectRightKeys)
-        );
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
@@ -963,6 +1007,12 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
@@ -1007,6 +1057,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var problem = await ConnectionService.RemoveInstance(from, to, resource, instance, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -1021,7 +1077,7 @@ public class ConnectionsController(
     /// </summary>
     [HttpGet("resources/instances/delegationcheck")]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
     [ProducesResponseType<InstanceCheckDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -1032,6 +1088,12 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "instance")] string instance,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
@@ -1050,6 +1112,65 @@ public class ConnectionsController(
         }
 
         return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Gets all users who have access to a specific instance.
+    /// </summary>
+    [HttpGet("resources/instances/users")]
+    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
+    [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
+    [ProducesResponseType<PaginatedResult<SimplifiedPartyDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetInstanceUsers(
+        [Required][FromQuery(Name = "party")] Guid party,
+        [Required][FromQuery(Name = "resource")] string resource,
+        [Required][FromQuery(Name = "instance")] string instance,
+        [FromQuery, FromHeader] PagingInput paging,
+        CancellationToken cancellationToken = default)
+    {
+        var validationErrors = ValidationComposer.Validate(
+            ParameterValidation.Party(party.ToString()),
+            ParameterValidation.InstanceUrn(instance));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var resourceObj = await resourceService.GetResource(resource, cancellationToken);
+        if (resourceObj is null)
+        {
+            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+            problem.Extensions["resource"] = resource;
+            problem.Extensions["instance"] = instance;
+            return problem.ToActionResult();
+        }
+
+        var result = await ConnectionService.GetResourceInstances(
+            party,
+            fromId: party,
+            toId: null,
+            resourceId: resourceObj.Id,
+            instanceId: instance,
+            configureConnections: ConfigureConnections,
+            cancellationToken: cancellationToken
+        );
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        var users = result.Value
+            .SelectMany(inst => inst.Permissions ?? Enumerable.Empty<PermissionDto>())
+            .Where(perm => perm.To != null)
+            .Select(perm => DtoMapper.ToSimplifiedParty(perm.To))
+            .DistinctBy(p => p.Id)
+            .ToList();
+
+        return Ok(PaginatedResult.Create(users, null));
     }
 
     #endregion
