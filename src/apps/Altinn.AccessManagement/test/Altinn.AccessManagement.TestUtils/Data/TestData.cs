@@ -393,6 +393,28 @@ public static class TestData
         }
     };
 
+    public static ConstantDefinition<Entity> BodilFarmor { get; } = new("10000023-aaaa-4bbb-8ccc-ddddeeee0023")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1960, 3, 15),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Bodil Farmor",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50200023,
+            PersonIdentifier = "15036000023",
+            RefId = "15036000023",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20100023,
+            Username = "bodil.farmor",
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
     #endregion
 
     #region Personer - Fredriksons Fabrikk

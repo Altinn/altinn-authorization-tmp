@@ -1,9 +1,8 @@
-﻿using System.Net;
-using System.Security.Claims;
-using System.Text.Json;
-using Altinn.AccessManagement.Api.Enduser.Controllers;
+﻿using Altinn.AccessManagement.Api.Enduser.Controllers;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
@@ -13,11 +12,14 @@ using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.Extensions.DependencyInjection;
+using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -550,6 +552,10 @@ public class ConnectionsControllerTest
         {
             Fixture = fixture;
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
+            Fixture.ConfiureServices(services =>
+            {
+                services.AddSingleton<IUserProfileLookupService, UserProfileLookupServiceMock>();
+            });
             Fixture.EnsureSeedOnce(db =>
             {
                 db.SaveChanges();
@@ -609,6 +615,50 @@ public class ConnectionsControllerTest
             Assert.Equal("STD-00000", problemDetails.ErrorCode.ToString());
             Assert.Single(problemDetails.Errors, e => e.ErrorCode == ValidationErrors.EntityNotExists.ErrorCode);
             Assert.Single(problemDetails.Errors, e => e.Paths.Contains("QUERY/to"));
+        }
+
+        /// <summary>
+        /// Tests that a managing director can successfully add a new rightholder using PersonInput
+        /// with personal number and last name.
+        /// </summary>
+        /// <remarks>
+        /// This test verifies the AddRightholder endpoint using the PersonInput body to look up
+        /// Bodil Farmor by her personal number and last name, bypassing the "to" query parameter.
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE
+        /// - Party: Dumbo Adventures organization
+        /// - PersonInput: PersonIdentifier = Bodil's personal number, LastName = "Farmor"
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains a valid AssignmentDto object
+        /// - The assignment's FromId matches Dumbo Adventures
+        /// - The assignment's ToId matches Bodil Farmor
+        /// - The assignment's RoleId matches the Rightholder role
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            PersonInput personInput = new() { PersonIdentifier = TestData.BodilFarmor.Entity.PersonIdentifier, LastName = "Farmor" };
+            StringContent content = new(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}", content, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.Equal(TestData.DumboAdventures.Id, result.FromId);
+            Assert.Equal(TestData.BodilFarmor.Id, result.ToId);
+            Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
         }
 
         /// <summary>
