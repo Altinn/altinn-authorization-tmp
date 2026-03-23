@@ -235,7 +235,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         {
             case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
                 return await _partyService.GetByUid(new Guid(urn.ValueSpan.ToString()), cancellationToken);
-            case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationNumberAttribute:
+            case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationId:
                 return await _partyService.GetByOrgNo(Authorization.Api.Contracts.Register.OrganizationNumber.Parse(urn.ValueSpan), cancellationToken);
             default:
                 return null;
