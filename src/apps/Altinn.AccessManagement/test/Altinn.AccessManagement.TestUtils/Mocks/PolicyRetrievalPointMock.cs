@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using System.Xml.Schema;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Utils;
@@ -121,7 +122,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
 
             policyDocument.Load(Path.Combine(policyPath, policyDocumentTitle));
             XacmlPolicy policy;
-            using (XmlReader reader = XmlReader.Create(new StringReader(policyDocument.OuterXml)))
+            using (XmlReader reader = XmlReader.Create(new StringReader(policyDocument.OuterXml), CreateSafeXmlReaderSettings()))
             {
                 policy = XacmlParser.ParseXacmlPolicy(reader);
             }
@@ -216,6 +217,21 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         {
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(PolicyRetrievalPointMock).Assembly.Location).LocalPath);
             return Path.Combine(unitTestFolder, "..", "..", "..", "..", "AccessMgmt.Tests", "Data", "Xacml", "3.0", "ConformanceTests");
+        }
+
+        private static XmlReaderSettings CreateSafeXmlReaderSettings()
+        {
+            XmlReaderSettings settings = new XmlReaderSettings
+            {
+                ValidationType = ValidationType.Schema,
+                DtdProcessing = DtdProcessing.Prohibit
+            };
+
+            settings.Schemas = new XmlSchemaSet();
+            settings.ValidationFlags &= ~XmlSchemaValidationFlags.ProcessInlineSchema;
+            settings.ValidationFlags &= ~XmlSchemaValidationFlags.ProcessSchemaLocation;
+
+            return settings;
         }
     }
 }
