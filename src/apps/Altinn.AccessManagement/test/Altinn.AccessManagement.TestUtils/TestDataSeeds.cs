@@ -64,6 +64,10 @@ public static class TestDataSeeds
         ]);
         #endregion
 
+        db.Providers.AddRange([
+            TestData.ServiceOwnerNAV,
+            ]);
+
         #region Assignments
         db.Assignments.AddRange([
             new()

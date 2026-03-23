@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -11,10 +10,8 @@ using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Microsoft.EntityFrameworkCore;
-using Xunit.Sdk;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
@@ -134,7 +131,7 @@ public class RequestControllerTest
                     Name = "TestResource",
                     Description = "Test resource for ServiceOwner API tests",
                     RefId = "test-resource-so-1",
-                    ProviderId = ProviderConstants.ResourceRegistry,
+                    ProviderId = TestData.ServiceOwnerNAV,
                     TypeId = TestResourceType.Id,
                 });
                 db.SaveChanges();
@@ -146,7 +143,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithResource_Returns202Accepted()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -188,7 +185,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
 
             var body = new CreateServiceOwnerRequest
             {
@@ -209,7 +206,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyResourceId_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -247,7 +244,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithPackage_Returns202Accepted()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -273,7 +270,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithInvalidFromUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
 
             var body = new CreateServiceOwnerRequest
             {
@@ -294,7 +291,7 @@ public class RequestControllerTest
         [Fact]
         public async Task CreateRequest_WithEmptyPackageUrn_Returns400()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
@@ -342,7 +339,7 @@ public class RequestControllerTest
                     Name = "E2ETestResource",
                     Description = "End-to-end test resource",
                     RefId = "test-resource-e2e-1",
-                    ProviderId = ProviderConstants.ResourceRegistry,
+                    ProviderId = TestData.ServiceOwnerNAV,
                     TypeId = TestResourceType.Id,
                 });
                 db.SaveChanges();
@@ -354,7 +351,7 @@ public class RequestControllerTest
         [Fact]
         public async Task GetValidUrns_ThenCreateResourceRequest_EndToEnd()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(
@@ -394,7 +391,7 @@ public class RequestControllerTest
         [Fact]
         public async Task GetValidUrns_ThenCreatePackageRequest_EndToEnd()
         {
-            var client = CreateClient(Fixture, TestData.BakerJohnsen.Entity.OrganizationIdentifier);
+            var client = CreateClient(Fixture, TestData.ServiceOwnerNAV.Entity.RefId);
 
             // Step 1: Get valid URN prefixes
             var urnsResponse = await client.GetAsync(

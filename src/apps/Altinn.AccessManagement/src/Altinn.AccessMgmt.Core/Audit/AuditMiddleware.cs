@@ -55,10 +55,10 @@ public class AuditMiddleware : IMiddleware
                 if (party is { })
                 {
                     var db = context.RequestServices.GetRequiredService<AppDbContext>();
-                    var entity = await GetEntityFromConsumerClaim(db, context, party);
-                    if (entity is { })
+                    var provider = await GetProviderFromConsumerClaim(db, context, party);
+                    if (provider is { })
                     {
-                        auditContextAccessor.AuditValues = new(entity.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
+                        auditContextAccessor.AuditValues = new(provider.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
                     }
                 }
             }
@@ -121,6 +121,16 @@ public class AuditMiddleware : IMiddleware
         if (party.IsOrganizationId(out var organizationIdentifier))
         {
             return await db.Entities.FirstOrDefaultAsync(e => e.OrganizationIdentifier == organizationIdentifier.ToString(), context.RequestAborted);
+        }
+
+        return null;
+    }
+
+    private async Task<Provider> GetProviderFromConsumerClaim(AppDbContext db, HttpContext context, ConsentPartyUrn party)
+    {
+        if (party.IsOrganizationId(out var organizationIdentifier))
+        {
+            return await db.Providers.FirstOrDefaultAsync(e => e.RefId == organizationIdentifier.ToString(), context.RequestAborted);
         }
 
         return null;

@@ -1,4 +1,4 @@
-﻿﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Constants;
@@ -244,6 +244,11 @@ public class RequestController(
         if (resource is null)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
+        }
+
+        if (resource.ProviderId != byId)
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
