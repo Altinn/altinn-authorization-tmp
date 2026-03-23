@@ -379,7 +379,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         List<InstanceRight> revokedResult = await _pap.TryWriteInstanceRevokeAllPolicyRules(rightsToRevoke, cancellationToken);
         List<AppsInstanceRevokeResponse> result = TransformInstanceRightListToAppsInstanceDelegationResponseList(revokedResult);
         result = RemoveInstanceIdFromResourceForRevokeResponseList(result);
-        result = RemoveUrnPrefixFromInstanceIdForRevokeResponceList(result, request.InstanceId);
+        result = RemoveUrnPrefixFromInstanceIdForRevokeResponseList(result, request.InstanceId);
         return result;
     }
 
@@ -495,12 +495,35 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceRevokeResponse>> Revoke(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
+        bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+        string instanceId = request.InstanceId;
+        if (useEF)
+        {
+            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
+
+            if (party == null)
+            {
+                ValidationErrorBuilder errors = default;
+                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                if (errors.TryBuild(out var invalidParty))
+                {
+                    return invalidParty;
+                }
+            }
+
+            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+            request.InstanceId = instanceUrn;
+        }
+
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
 
         if (input.Errors.TryBuild(out var errorResult))
         {
             return errorResult;
         }
+        
+        request.InstanceId = instanceId;
 
         AppsInstanceRevokeResponse result = new()
         {
@@ -514,7 +537,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         List<InstanceRightRevokeResult> rights = await RevokeRights(input.RulesToHandle, input.RightsAppCantHandle, cancellationToken);
         result.Rights = rights;
         result = RemoveInstanceIdFromResourceForRevokeResponse(result);
-
+        
         return result;
     }
 
@@ -748,7 +771,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         return input;
     }
 
-    private static List<AppsInstanceRevokeResponse> RemoveUrnPrefixFromInstanceIdForRevokeResponceList(List<AppsInstanceRevokeResponse> input, string instanceId)
+    private static List<AppsInstanceRevokeResponse> RemoveUrnPrefixFromInstanceIdForRevokeResponseList(List<AppsInstanceRevokeResponse> input, string instanceId)
     {
         foreach (AppsInstanceRevokeResponse item in input)
         {
