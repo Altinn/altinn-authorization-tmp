@@ -112,7 +112,8 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
                 return await Task.FromResult(ParsePolicy(string.Empty, path));
             }
 
-            _logger.LogWarning("Policy Version did not found policy " + path);
+            string safePath = path?.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            _logger.LogWarning("Policy Version did not found policy {PolicyPath}", safePath);
 
             return null;
         }
