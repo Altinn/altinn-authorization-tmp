@@ -1,6 +1,5 @@
-﻿﻿using System.ComponentModel.DataAnnotations;
-using System.Net.Mime;
-using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core;
@@ -13,8 +12,11 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -27,10 +29,13 @@ public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
     IResourceService resourceService,
-    IPackageService packageService,
-    IAuditAccessor auditAccessor
+    IAuditAccessor auditAccessor,
+    IOptions<GeneralSettings> generalSettings
     ) : ControllerBase
 {
+
+    private readonly GeneralSettings _generalSettings = generalSettings.Value;
+
     /// <summary>
     /// Get valid urn prefixes for party identification
     /// </summary>
@@ -348,9 +353,9 @@ public class RequestController(
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
 
-    private static RequestLinks BuildLinks(Guid requestId) => new()
+    private RequestLinks BuildLinks(Guid requestId) => new()
     {
-        DetailsLink = $"accessmanagement/ui/requests/resource?requestId={requestId}",
-        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}/status"
+        DetailsLink = $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/requests/resource?requestId={requestId}",
+        StatusLink = $"https://platform.{_generalSettings.Hostname}/accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}/status"
     };
 }
