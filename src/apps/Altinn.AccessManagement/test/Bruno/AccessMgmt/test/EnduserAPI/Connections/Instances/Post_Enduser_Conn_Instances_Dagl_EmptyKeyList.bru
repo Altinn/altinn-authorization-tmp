@@ -1,7 +1,7 @@
 meta {
-  name: Post_Enduser_Conn_Instances_Dagl
+  name: Post_Enduser_Conn_Instances_Dagl_EmptyKeyList
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -25,10 +25,6 @@ headers {
 body:json {
   {
     "DirectRightKeys": [
-      "0144e74457db71df2ba504e6fc5b081d2e72b7396f501de222767cbf838c0a56f3",
-      "0166c5e067d84985ad6974588ad0b76d7e12c1502c65cbb551e16521696088c742",
-      "01f223492db1318fea6edad70bed2c2462e9b431e42596a1a6382f5630dfd9486b",
-      "0159c58c191e76b3e6bbf8e74c81f0b1c1ec2ed6158e51843afb3f7bd9c37fb210"
     ]
   }
 }
@@ -37,7 +33,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/resource-delegationcheck/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "Post_Enduser_Conn_Instances_Dagl");
+  bru.setVar("requestName", "Post_Enduser_Conn_Instances_Dagl_EmptyKeyList");
   
   bru.setVar("party", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
   bru.setVar("from", testdata.VOKSENDE_FRYKTLØS_TIGER.partyUuid);
@@ -66,6 +62,8 @@ tests {
     const body = res.getBody();
     const actions = body.actions;
     
-    expect(res.status).to.equal(201);  
+    expect(res.status).to.equal(400); 
+    assert.equal(body.detail, 'No right key provided');
+    assert.equal(body.code, 'AM-00033');
   });
 }
