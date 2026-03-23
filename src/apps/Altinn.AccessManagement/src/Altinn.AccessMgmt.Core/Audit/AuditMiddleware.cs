@@ -55,10 +55,10 @@ public class AuditMiddleware : IMiddleware
                 if (party is { })
                 {
                     var db = context.RequestServices.GetRequiredService<AppDbContext>();
-                    var provider = await GetProviderFromConsumerClaim(db, context, party);
-                    if (provider is { })
+                    var consumer = await GetEntityFromConsumerClaim(db, context, party);
+                    if (consumer is { })
                     {
-                        auditContextAccessor.AuditValues = new(provider.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
+                        auditContextAccessor.AuditValues = new(consumer.Id, SystemEntityConstants.ServiceOwnerApi, TraceId(context));
                     }
                 }
             }
