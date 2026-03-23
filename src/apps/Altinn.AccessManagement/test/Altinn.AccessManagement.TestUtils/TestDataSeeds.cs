@@ -37,6 +37,7 @@ public static class TestDataSeeds
             TestData.BakerJohnsen,
             TestData.SvendsenAutomobil,
             TestData.FredriksonsFabrikk,
+            TestData.NAV,
             TestData.RegnskapNorge,
             TestData.MittRegnskap,
             TestData.RpcAS,

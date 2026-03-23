@@ -246,7 +246,8 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
-        if (resource.ProviderId != byId)
+        var byEntity = await entityService.GetEntity(byId, ct);
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
