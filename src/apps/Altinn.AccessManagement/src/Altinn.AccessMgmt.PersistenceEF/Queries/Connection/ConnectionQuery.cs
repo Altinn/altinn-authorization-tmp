@@ -170,7 +170,7 @@ public class ConnectionQuery(AppDbContext db)
             {
                 if (filter.IncludeInstances)
                 {
-                    await LoadInstancesByKeyAsync(result, filter, ct);
+                    result = await LoadInstancesByKeyAsync(result, filter, ct);
                 }
             }
             catch (Exception ex)
@@ -1160,13 +1160,18 @@ public class ConnectionQuery(AppDbContext db)
         return index;
     }
 
-    private async Task<IEnumerable<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(IEnumerable<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    private async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var instanceSet = filter.InstanceIds?.Count > 0 ? new HashSet<string>(filter.InstanceIds) : null;
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
         // Assignment → AssignmentInstance
-        var aIds = allKeys.Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        var aIds = allKeys.Where(a => a.AssignmentId.HasValue).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        if (aIds.Count == 0)
+        {
+            return allKeys;
+        }
+
         var assignmentInstances = await db.AssignmentInstances
             .Where(ai => aIds.Contains(ai.AssignmentId))
             .Select(ai => new { ai.AssignmentId, ai.Id, ai.ResourceId, ai.InstanceId })
