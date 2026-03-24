@@ -5,6 +5,19 @@ namespace Altinn.AccessManagement.TestUtils.Data;
 
 public static class TestData
 {
+    #region Resource Types
+
+    /// <summary>
+    /// A generic test resource type used across integration tests.
+    /// </summary>
+    public static ResourceType TestResourceType { get; } = new()
+    {
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"),
+        Name = "Test",
+    };
+
+    #endregion
+
     #region Firmaer
 
     public static ConstantDefinition<Entity> BakerJohnsen { get; } = new("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")

@@ -60,34 +60,27 @@ public partial class ConnectionsControllerTest
             });
             Fixture.EnsureSeedOnce(db =>
             {
-                var resourceType = db.ResourceTypes.FirstOrDefault(t => t.Id == Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"));
-                if (resourceType is null)
-                {
-                    resourceType = new ResourceType() { Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"), Name = "Test" };
-                    db.ResourceTypes.Add(resourceType);
-                }
-
                 Resource navSykepengerResource = new Resource()
                 {
                     Name = "Dialogs for sickness benefits",
                     Description = "The service is used to send and receive dialogues in Dialogporten about new sick leaves, submitted applications, requests for income reports, and receipts for submitted income reports.",
                     RefId = "nav_sykepenger_dialog",
-                    TypeId = resourceType.Id,
+                    TypeId = TestData.TestResourceType.Id,
                     ProviderId = ProviderConstants.Altinn3.Id,
                 };
 
                 db.Resources.Add(navSykepengerResource);
 
-                Resource diheOmsetningsoppgaveAlkhol = new Resource()
+                Resource diheOmsetningsoppgaveAlkohol = new Resource()
                 {
                     Name = "Omsetningsoppgave for alkohol",
                     Description = "Omsetningsoppgave for alkohol",
                     RefId = "app_dihe_omsetningsoppgave-for-alkohol",
-                    TypeId = resourceType.Id,
+                    TypeId = TestData.TestResourceType.Id,
                     ProviderId = ProviderConstants.Altinn3.Id,
                 };
 
-                db.Resources.Add(diheOmsetningsoppgaveAlkhol);
+                db.Resources.Add(diheOmsetningsoppgaveAlkohol);
 
                 var rightholderFromNordisToVerdiq = new Assignment()
                 {
@@ -132,7 +125,7 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(result);
             Assert.NotNull(result.Rights);
             Assert.DoesNotContain(result.Rights, r => r.Result == false);
-            Assert.Equal(3, result.Rights.Count);
+            Assert.Equal(3, result.Rights.Count());
 
             RightCheckDto readRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("read", StringComparison.InvariantCultureIgnoreCase));
             Assert.NotNull(readRight);
@@ -157,7 +150,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Thea (rightholder of Dumbo) checks nav_sykepenger_dialog. Has access via packages only, no roles.
+        /// Thea (rightholder of Dumbo) checks nav_sykepenger_dialog
         /// Expects OK with 3 rights all granted with PackageAccess but not RoleAccess.
         /// </summary>
         [Fact]

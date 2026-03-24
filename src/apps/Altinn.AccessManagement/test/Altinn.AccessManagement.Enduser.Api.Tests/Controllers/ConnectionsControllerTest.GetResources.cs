@@ -53,19 +53,12 @@ public partial class ConnectionsControllerTest
             });
             Fixture.EnsureSeedOnce(db =>
             {
-                var resourceType = db.ResourceTypes.FirstOrDefault(t => t.Id == Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"));
-                if (resourceType is null)
-                {
-                    resourceType = new ResourceType() { Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"), Name = "Test" };
-                    db.ResourceTypes.Add(resourceType);
-                }
-
                 var skattResource = new Resource()
                 {
                     Name = "Skattemelding",
                     Description = "Innlevering av skattemelding for næringsdrivende",
                     RefId = "app_skd_skattemelding",
-                    TypeId = resourceType.Id,
+                    TypeId = TestData.TestResourceType.Id,
                     ProviderId = ProviderConstants.Altinn3.Id,
                 };
 
@@ -74,7 +67,7 @@ public partial class ConnectionsControllerTest
                     Name = "MVA-melding",
                     Description = "Innlevering av merverdiavgiftsmelding",
                     RefId = "app_skd_mva-melding",
-                    TypeId = resourceType.Id,
+                    TypeId = TestData.TestResourceType.Id,
                     ProviderId = ProviderConstants.Altinn3.Id,
                 };
 

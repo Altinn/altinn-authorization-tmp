@@ -12,6 +12,28 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
+/// <summary>
+/// Partial class extending <see cref="ConnectionsControllerTest"/> with integration tests
+/// for the <see cref="ConnectionsController.GetAvailableUsers(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/> endpoint.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This file contains the nested <see cref="GetAvailableUsers"/> test class which validates that
+/// the <c>GET accessmanagement/api/v1/enduser/connections/users</c> endpoint correctly returns
+/// users who already have some connection to a given party and are eligible for new delegations.
+/// </para>
+/// <para>
+/// The tests rely on seed data from <see cref="TestDataSeeds"/>, including the Dumbo Adventures
+/// organization with Malin Emilie as managing director and Thea as a rightholder.
+/// </para>
+/// <para>
+/// Coverage includes:
+/// <list type="bullet">
+///   <item><description>Verifying that an authorized caller with the to-others write scope receives a successful response containing expected parties.</description></item>
+///   <item><description>Verifying that a caller with only the from-others read scope is denied access (HTTP 403 Forbidden).</description></item>
+/// </list>
+/// </para>
+/// </remarks>
 public partial class ConnectionsControllerTest
 {
     /// <summary>
