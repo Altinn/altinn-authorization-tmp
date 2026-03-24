@@ -138,7 +138,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
             .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
-        );
+            );
     }
 
     private async Task<InstanceDelegationChange> GetAssignmentInstance(Guid id)
@@ -150,7 +150,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Resource).ThenInclude(t => t.Type)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
             .SingleAsync(t => t.Id == id)
-        );
+            );
     }
 
     private async Task<Resource> GetResource(string resourceIdentifier, CancellationToken cancellationToken = default)
