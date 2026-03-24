@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -27,7 +28,6 @@ public class AuthorizedPartiesServiceEf(
     Microsoft.FeatureManagement.IFeatureManager featureManager) : IAuthorizedPartiesService
 {
     private static readonly MemoryCacheEntryOptions _cacheEntryOptions = new() { AbsoluteExpirationRelativeToNow = new TimeSpan(0, 5, 0) };
-    private const string InstanceDelegationEfFeatureFlag = "AccessManagement.InstanceDelegation.EF";
 
     /// <inheritdoc/>
     public async Task<List<AuthorizedParty>> GetAuthorizedParties(BaseAttribute subjectAttribute, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default) => subjectAttribute.Type switch
@@ -643,7 +643,7 @@ public class AuthorizedPartiesServiceEf(
             return;
         }
 
-        bool useEF = await featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
+        bool useEF = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.InstanceDbEf);
 
         foreach (DelegationChange delegation in resourceDelegations)
         {
