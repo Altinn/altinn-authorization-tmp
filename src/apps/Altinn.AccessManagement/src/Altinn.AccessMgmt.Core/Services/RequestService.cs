@@ -575,12 +575,12 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private static RequestFilter QuerySentFilter(Guid party, Guid? toId)
     {
-        return new RequestFilter(toId, party);
+        return new RequestFilter(party, toId);
     }
 
     private static RequestFilter QueryReceivedFilter(Guid party, Guid? fromId)
     {
-        return new RequestFilter(party, fromId);
+        return new RequestFilter(fromId, party);
     }
 
     internal record RequestFilter(Guid? FromId, Guid? ToId);
