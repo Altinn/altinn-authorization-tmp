@@ -555,6 +555,7 @@ public class ConnectionsControllerTest
             Fixture.ConfiureServices(services =>
             {
                 services.AddSingleton<IUserProfileLookupService, UserProfileLookupServiceMock>();
+                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
             });
             Fixture.EnsureSeedOnce(db =>
             {
