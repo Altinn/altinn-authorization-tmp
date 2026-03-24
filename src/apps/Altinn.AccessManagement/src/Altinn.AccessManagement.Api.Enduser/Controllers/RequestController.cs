@@ -40,6 +40,8 @@ public class RequestController(
     IPDP Pdp
     ) : ControllerBase
 {
+    private static readonly RequestStatus[] DefaultStatusFilter = [RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn];
+
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
         options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization, EntityTypeConstants.Person];
@@ -68,8 +70,8 @@ public class RequestController(
         )
     {
         var statusFilter = status == null || !status.Any()
-            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
-            : status.ToList();
+            ? DefaultStatusFilter
+            : status;
 
         var result = await requestService.GetSentRequests(party, to, statusFilter, type, ct);
 
@@ -94,8 +96,8 @@ public class RequestController(
         )
     {
         var statusFilter = status == null || !status.Any()
-            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
-            : status.ToList();
+            ? DefaultStatusFilter
+            : status;
 
         var result = await requestService.GetReceivedRequests(party, from, statusFilter, type, ct);
         return result.IsSuccess ? Ok(PaginatedResult.Create(result.Value, null)) : result.Problem.ToActionResult();
@@ -118,8 +120,8 @@ public class RequestController(
         )
     {
         var statusFilter = status == null || !status.Any()
-            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
-            : status.ToList();
+            ? DefaultStatusFilter
+            : status;
 
         var result = await requestService.GetSentRequestsCount(party, to, statusFilter, type, ct);
 
@@ -143,8 +145,8 @@ public class RequestController(
         )
     {
         var statusFilter = status == null || !status.Any()
-            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
-            : status.ToList();
+            ? DefaultStatusFilter
+            : status;
 
         var result = await requestService.GetReceivedRequestsCount(party, from, statusFilter, type, ct);
         return result.IsSuccess ? Ok(result.Value) : result.Problem.ToActionResult();
