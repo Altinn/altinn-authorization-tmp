@@ -144,13 +144,13 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     private async Task<InstanceDelegationChange> GetAssignmentInstance(Guid id)
     {
         return Convert(await DbContext.AssignmentInstances
-            .AsNoTracking()
-            .Include(t => t.Assignment).ThenInclude(t => t.From)
-            .Include(t => t.Assignment).ThenInclude(t => t.To)
-            .Include(t => t.Resource).ThenInclude(t => t.Type)
-            .Include(t => t.Resource).ThenInclude(t => t.Provider)
-            .SingleAsync(t => t.Id == id)
-            );
+                .AsNoTracking()
+                .Include(t => t.Assignment).ThenInclude(t => t.From)
+                .Include(t => t.Assignment).ThenInclude(t => t.To)
+                .Include(t => t.Resource).ThenInclude(t => t.Type)
+                .Include(t => t.Resource).ThenInclude(t => t.Provider)
+                .SingleAsync(t => t.Id == id)
+        );
     }
 
     private async Task<Resource> GetResource(string resourceIdentifier, CancellationToken cancellationToken = default)
@@ -490,6 +490,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
 
         var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == instanceDelegationChange.InstanceId, cancellationToken);
         bool isRevokelast = false;
+        InstanceDelegationChange dummyResultForRevokeLast = null;
 
         if (assignmentInstance == null)
         {
@@ -512,6 +513,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         {
             if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
             {
+                dummyResultForRevokeLast = await GetAssignmentInstance(assignmentInstance.Id);
                 DbContext.AssignmentInstances.Remove(assignmentInstance);
                 isRevokelast = true;
             }
@@ -524,7 +526,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         }
 
         await DbContext.SaveChangesAsync(cancellationToken);
-
+        
         if (isRevokelast)
         {
             bool removeAssignment = await CheckCascadingAssignmentRevoke(assignment.Id, cancellationToken);
@@ -534,6 +536,8 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 DbContext.Assignments.Remove(assignment);
                 await DbContext.SaveChangesAsync(cancellationToken);
             }
+
+            return dummyResultForRevokeLast; // Must emulate that there stil exist a revoke last row as it does not exist anymore when revoke last is performed.
         }        
 
         return await GetAssignmentInstance(assignmentInstance.Id);
