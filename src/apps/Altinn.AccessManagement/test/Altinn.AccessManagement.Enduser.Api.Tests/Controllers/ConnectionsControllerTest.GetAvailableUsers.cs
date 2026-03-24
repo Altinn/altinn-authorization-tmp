@@ -1,0 +1,77 @@
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
+using Altinn.AccessManagement.Api.Enduser.Controllers;
+using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.TestUtils;
+using Altinn.AccessManagement.TestUtils.Data;
+using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessMgmt.Core;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+
+namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
+
+public partial class ConnectionsControllerTest
+{
+    /// <summary>
+    /// <see cref="ConnectionsController.GetAvailableUsers(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// </summary>
+    public class GetAvailableUsers : IClassFixture<ApiFixture>
+    {
+        public GetAvailableUsers(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient(Guid partyUuid, params string[] scopes)
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+                claims.Add(new Claim("scope", string.Join(" ", scopes)));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        /// <summary>
+        /// Tests that available users for Dumbo Adventures includes Thea when authenticated as Malin Emilie (managing director).
+        /// </summary>
+        [Fact]
+        public async Task GetAvailableUsers_AsMalinForDumbo_ContainsThea()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            PaginatedResult<SimplifiedConnectionDto> result = JsonSerializer.Deserialize<PaginatedResult<SimplifiedConnectionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Items);
+
+            List<SimplifiedPartyDto> allParties = [.. result.Items
+                .SelectMany(c => new[] { c }.Concat(c.Connections ?? []))
+                .Select(c => c.Party)];
+
+            Assert.Contains(allParties, p => p.Id == TestData.Thea.Id);
+        }
+
+        [Fact]
+        public async Task GetAvailableUsers_WithReadScope_ReturnsForbidden()
+        {
+            var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            var response = await client.GetAsync($"{Route}/users?party={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+    }
+}
