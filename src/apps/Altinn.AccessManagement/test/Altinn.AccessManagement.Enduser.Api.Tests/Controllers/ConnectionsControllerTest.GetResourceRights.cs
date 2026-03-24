@@ -150,6 +150,30 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
+        /// Malin (MD of Dumbo) queries resource rights for Skattemelding delegated to Mille in the to-others direction.
+        /// Expects OK with a valid response containing the resource.
+        /// </summary>
+        [Fact]
+        public async Task GetResourceRights_AsMalinForDumboToThea_WithToOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}&resource=app_skd_sirius-skattemelding-v1",
+                TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            using JsonDocument doc = JsonDocument.Parse(responseContent);
+            JsonElement root = doc.RootElement;
+
+            Assert.True(root.TryGetProperty("resource", out JsonElement resourceElement), "Response should contain a 'resource' property");
+            Assert.True(resourceElement.TryGetProperty("refId", out JsonElement refIdElement), "Resource should contain a 'refId' property");
+            Assert.Equal("app_skd_sirius-skattemelding-v1", refIdElement.GetString());
+        }
+
+        /// <summary>
         /// Malin uses from-others read scope for a to-others direction query.
         /// Expects 403 Forbidden.
         /// </summary>
