@@ -3629,7 +3629,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldingar, -skjema og -dialogar"),
-            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksen, for å kunne gi brukarar tilgang for enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
+            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksen, for å kunne gi brukarar tilgang til enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
         ),
     };
 
