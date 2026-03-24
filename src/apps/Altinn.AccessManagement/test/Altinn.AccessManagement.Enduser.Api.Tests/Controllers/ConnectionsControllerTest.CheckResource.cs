@@ -132,7 +132,7 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(result);
             Assert.NotNull(result.Rights);
             Assert.DoesNotContain(result.Rights, r => r.Result == false);
-            Assert.Equal(3, result.Rights.Count());
+            Assert.Equal(3, result.Rights.Count);
 
             RightCheckDto readRight = result.Rights.FirstOrDefault(r => r.Right.Name.Equals("read", StringComparison.InvariantCultureIgnoreCase));
             Assert.NotNull(readRight);
