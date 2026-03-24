@@ -2,7 +2,6 @@
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.HostedServices;
-using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,7 +15,6 @@ WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
-await app.DefineAccessMgmtDbModels();
 await PersistenceFeatures();
 
 if (appsettings.RunInitOnly)
@@ -43,7 +41,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseDbAudit();
 app.UseEfAudit();
 
 app.MapControllers();
@@ -58,11 +55,6 @@ async Task Init()
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync();
         await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
-    }
-    else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
-    {
-        bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
-        await app.UseAccessMgmtDb(generateBasicData);
     }
 
     using var cts = new CancellationTokenSource();

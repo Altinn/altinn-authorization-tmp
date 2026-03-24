@@ -1,14 +1,12 @@
 ﻿using Altinn.AccessManagement.Tests.Fixtures;
-using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using AuditDefaults = Altinn.AccessMgmt.Persistence.Data.AuditDefaults;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AccessMgmt.Tests.Services;
@@ -37,7 +35,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
         {
             AuditValues = new AuditValues(
                 changedBy: Guid.NewGuid(),
-                changedBySystem: AuditDefaults.StaticDataIngest
+                changedBySystem: SystemEntityConstants.StaticDataIngest
             )
         };
         
@@ -454,7 +452,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
         };
 
         // Act
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
 
         // Assert
         var saved = await _db.TranslationEntries
@@ -477,13 +475,13 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
             Value = "Original"
         };
 
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
 
         // Update the value
         translationEntry.Value = "Updated";
 
         // Act
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
 
         // Assert
         var saved = await _db.TranslationEntries
@@ -505,7 +503,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
             FieldName = "Name",
             Value = "Cached Translation"
         };
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
 
         var role = new RoleDto
         {

@@ -13,7 +13,6 @@ using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Outbox;
-using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -113,7 +112,6 @@ internal static partial class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
-        builder.ConfigureAccessManagementPersistence();
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
 
@@ -136,16 +134,6 @@ internal static partial class AccessManagementHost
             var connectionStringPwd = configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
             return (string.Format(connectionStringFmt, connectionStringPwd), string.Format(adminConnectionStringFmt, adminConnectionStringPwd), true);
         }
-    }
-
-    private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
-    {
-        builder.AddAccessMgmtDb(opts =>
-        {
-            builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
-        });
-
-        return builder;
     }
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
