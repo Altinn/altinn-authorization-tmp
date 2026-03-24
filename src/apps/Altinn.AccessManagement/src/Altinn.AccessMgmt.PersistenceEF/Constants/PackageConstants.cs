@@ -3624,7 +3624,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Access management of individual messages, forms and dialogs"),
+            KeyValuePair.Create("Name", "Access manager of individual messages, forms and dialogs"),
             KeyValuePair.Create("Description", "Provides access to the user interface in the message box, allowing users to grant access to individual messages, forms, and dialogs that the recipient themselves have access to.")
         ),
         NN = TranslationEntryList.Create(
