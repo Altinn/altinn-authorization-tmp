@@ -733,4 +733,150 @@ public class ConnectionsControllerTest
     }
 
     #endregion
+
+    #region GET accessmanagement/api/v1/enduser/connections/resources
+
+    /// <summary>
+    /// <see cref="ConnectionsController.GetResources(Guid, Guid?, Guid?, AccessManagement.Api.Enduser.Models.PagingInput, string, CancellationToken)"/>
+    /// </summary>
+    public class GetResources : IClassFixture<ApiFixture>
+    {
+        public GetResources(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
+            Fixture.ConfiureServices(services =>
+            {
+                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
+            });
+            Fixture.EnsureSeedOnce(db =>
+            {
+                var rightholderFromDumboToMille = new Assignment()
+                {
+                    FromId = TestData.DumboAdventures.Id,
+                    ToId = TestData.MilleHundefrisor.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                db.Assignments.Add(rightholderFromDumboToMille);
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient(Guid partyUuid, params string[] scopes)
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+                claims.Add(new Claim("scope", string.Join(" ", scopes)));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        /// <summary>
+        /// Tests that a managing director can get resources for a to-others connection
+        /// using the to-others read scope.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ
+        /// - Party: Dumbo Adventures organization
+        /// - From: Dumbo Adventures (to-others direction)
+        /// - To: Mille Hundefrisør
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task GetResources_AsMalinForDumboToMille_WithToOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}", TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+        }
+
+        /// <summary>
+        /// Tests that a managing director can get resources for a from-others connection
+        /// using the from-others read scope.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Malin Emilie (managing director of Dumbo Adventures)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ
+        /// - Party: Dumbo Adventures organization
+        /// - To: Dumbo Adventures (from-others direction)
+        /// - From: Mille Hundefrisør
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task GetResources_AsMalinForDumboFromMille_WithFromOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.DumboAdventures.Id}&to={TestData.DumboAdventures.Id}&from={TestData.MilleHundefrisor.Id}", TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+        }
+
+        /// <summary>
+        /// Tests that requesting resources for a to-others connection using the from-others read scope
+        /// returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task GetResources_ToOthersDirection_WithFromOthersScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Tests that requesting resources for a from-others connection using the to-others read scope
+        /// returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task GetResources_FromOthersDirection_WithToOthersScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.DumboAdventures.Id}&to={TestData.DumboAdventures.Id}&from={TestData.MilleHundefrisor.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Tests that requesting resources with write scope instead of read scope
+        /// returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task GetResources_WithWriteScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+    }
+
+    #endregion
 }
