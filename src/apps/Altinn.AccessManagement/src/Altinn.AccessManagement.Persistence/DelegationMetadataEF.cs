@@ -537,7 +537,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 await DbContext.SaveChangesAsync(cancellationToken);
             }
 
-            return dummyResultForRevokeLast; // Must emulate that there stil exist a revoke last row as it does not exist anymore when revoke last is performed.
+            return dummyResultForRevokeLast; // Must emulate that a 'revoke last' row still exists, as it no longer exists after revoke last is performed.
         }        
 
         return await GetAssignmentInstance(assignmentInstance.Id);
