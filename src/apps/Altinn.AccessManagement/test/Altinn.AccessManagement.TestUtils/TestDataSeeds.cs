@@ -37,6 +37,7 @@ public static class TestDataSeeds
             TestData.BakerJohnsen,
             TestData.SvendsenAutomobil,
             TestData.FredriksonsFabrikk,
+            TestData.NAV,
             TestData.RegnskapNorge,
             TestData.MittRegnskap,
             TestData.RpcAS,
@@ -69,6 +70,10 @@ public static class TestDataSeeds
             TestData.MilleHundefrisor
         ]);
         #endregion
+
+        db.Providers.AddRange([
+            TestData.ServiceOwnerNAV,
+            ]);
 
         #region Assignments
         db.Assignments.AddRange([

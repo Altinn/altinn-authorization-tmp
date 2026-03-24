@@ -1013,8 +1013,9 @@ public partial class ConnectionService(
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
         var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+        var instances = await GetInstanceRights(party, authenticatedUserUuid, resourceDto.Id, instanceId, RoleConstants.Rightholder, cancellationToken);
 
-        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
+        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources, instances);
 
         // Map to result
         IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
@@ -1177,6 +1178,11 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
+        if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
+        {
+            return Problems.MissingRightKey;
+        }
+
         var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
@@ -1211,7 +1217,7 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddInstance(Entity from, Entity to, Resource resourceObj, string instanceId, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
+        var canDelegate = await InstanceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, instanceId, configureConnection, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;

@@ -1,6 +1,7 @@
-﻿﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core;
@@ -13,6 +14,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
@@ -27,9 +29,13 @@ public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
     IResourceService resourceService,
-    IAuditAccessor auditAccessor
+    IAuditAccessor auditAccessor,
+    IOptions<GeneralSettings> generalSettings
     ) : ControllerBase
 {
+
+    private readonly GeneralSettings _generalSettings = generalSettings.Value;
+
     /// <summary>
     /// Get valid urn prefixes for party identification
     /// </summary>
@@ -174,23 +180,25 @@ public class RequestController(
     public async Task<IActionResult> CreateRequest([FromBody] CreateServiceOwnerRequest input, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
+        var resourceParamName = "resource";
+        var packageParamName = "package";
 
         if (input?.Resource is null && input?.Package is null)
         {
-            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, "/resource", [new("resource", "Either package or resource must be defined.")]);
-            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, "/package", [new("package", "Either package or resource must be defined.")]);
+            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, resourceParamName, [new(resourceParamName, "Either package or resource must be defined.")]);
+            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, packageParamName, [new(packageParamName, "Either package or resource must be defined.")]);
         }
 
         if (input?.Resource?.HasValue() == true && input?.Package?.HasValue() == true)
         {
-            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/resource", [new("resource", "Both package and resource are specified. Only one must be defined.")]);
-            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, "/package", [new("package", "Both package and resource are specified. Only one must be defined.")]);
+            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, resourceParamName, [new(resourceParamName, "Both package and resource are specified. Only one must be defined.")]);
+            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, packageParamName, [new(packageParamName, "Both package and resource are specified. Only one must be defined.")]);
         }
 
-        var fromResult = await GetEntity(input?.From, "/connection/from", ct);
+        var fromResult = await GetEntity(input?.From, "connection/from", ct);
         fromResult.Problems(ref errorBuilder);
 
-        var toResult = await GetEntity(input?.To, "/connection/to", ct);
+        var toResult = await GetEntity(input?.To, "connection/to", ct);
         toResult.Problems(ref errorBuilder);
 
         if (errorBuilder.TryBuild(out var problem))
@@ -239,11 +247,18 @@ public class RequestController(
     private async Task<IActionResult> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
+        var paramName = "resource";
 
         var resource = await resourceService.GetResource(resourceRef, ct);
         if (resource is null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, "/resource", [new("resource", $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
+        }
+
+        var byEntity = await entityService.GetEntity(byId, ct);
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier)
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -354,9 +369,9 @@ public class RequestController(
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
 
-    private static RequestLinks BuildLinks(Guid requestId) => new()
+    private RequestLinks BuildLinks(Guid requestId) => new()
     {
-        DetailsLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
-        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
+        DetailsLink = $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/requests/resource?requestId={requestId}",
+        StatusLink = $"https://platform.{_generalSettings.Hostname}/accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}/status"
     };
 }
