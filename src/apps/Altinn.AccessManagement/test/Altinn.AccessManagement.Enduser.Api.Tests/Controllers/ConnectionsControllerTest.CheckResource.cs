@@ -203,7 +203,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 17 rights (mix of granted and denied).
         /// </summary>
         [Fact]
-        public async Task CheckResource_DiheOmsettningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
+        public async Task CheckResource_DiheOmsetningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=app_dihe_omsetningsoppgave-for-alkohol", TestContext.Current.CancellationToken);
