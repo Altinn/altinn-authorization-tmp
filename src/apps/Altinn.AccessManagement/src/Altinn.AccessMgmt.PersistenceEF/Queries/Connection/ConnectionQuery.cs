@@ -1221,7 +1221,7 @@ public class ConnectionQuery(AppDbContext db)
 
         foreach (var key in allKeys)
         {
-            if (instancesByAssignment.TryGetValue((Guid)key.AssignmentId!, out var list))
+            if (key.AssignmentId.HasValue && instancesByAssignment.TryGetValue((Guid)key.AssignmentId!, out var list))
             {
                 key.Instances = list;
             }
