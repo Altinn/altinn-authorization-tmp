@@ -119,8 +119,8 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         var requestAssignmentResult = await GetOrCreateRequestAssignment(
-           fromId: toId, // YES, Request.To == Assignment.From
-           toId: fromId, // YES, Request.From == Assignment.To
+           fromId: fromId,
+           toId: toId,
            roleId: roleId,
            ct: ct
            );
@@ -142,8 +142,8 @@ public class RequestService(AppDbContext db) : IRequestService
         }
 
         var requestAssignmentResult = await GetOrCreateRequestAssignment(
-            fromId: toId, // YES, Request.To == Assignment.From
-            toId: fromId, // YES, Request.From == Assignment.To
+            fromId: fromId,
+            toId: toId,
             roleId: roleId, 
             ct: ct
             );
