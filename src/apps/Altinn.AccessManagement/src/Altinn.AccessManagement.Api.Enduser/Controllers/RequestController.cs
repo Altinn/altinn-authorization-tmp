@@ -101,6 +101,55 @@ public class RequestController(
         return result.IsSuccess ? Ok(PaginatedResult.Create(result.Value, null)) : result.Problem.ToActionResult();
     }
 
+    [HttpGet("sent/count")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [ProducesResponseType<int>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetSentRequestsCount(
+        [FromQuery][Required] Guid party,
+        [FromQuery] Guid? to,
+        [FromQuery] RequestStatus[]? status,
+        [FromQuery] string type,
+        CancellationToken ct = default
+        )
+    {
+        var statusFilter = status == null || !status.Any()
+            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
+            : status.ToList();
+
+        var result = await requestService.GetSentRequestsCount(party, to, statusFilter, type, ct);
+
+        return result.IsSuccess ? Ok(result.Value) : result.Problem.ToActionResult();
+    }
+
+    [HttpGet("received/count")]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [ProducesResponseType<int>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetReceivedRequestsCount(
+        [FromQuery][Required] Guid party,
+        [FromQuery] Guid? from,
+        [FromQuery] RequestStatus[]? status,
+        [FromQuery] string type,
+        CancellationToken ct = default
+        )
+    {
+        var statusFilter = status == null || !status.Any()
+            ? new List<RequestStatus>() { RequestStatus.Draft, RequestStatus.Pending, RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn }
+            : status.ToList();
+
+        var result = await requestService.GetReceivedRequestsCount(party, from, statusFilter, type, ct);
+        return result.IsSuccess ? Ok(result.Value) : result.Problem.ToActionResult();
+    }
+
     [HttpGet("draft")]
     [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]

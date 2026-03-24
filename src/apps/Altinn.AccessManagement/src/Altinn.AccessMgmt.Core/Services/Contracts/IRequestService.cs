@@ -24,6 +24,16 @@ public interface IRequestService
     Task<Result<IEnumerable<RequestDto>>> GetReceivedRequests(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default);
 
     /// <summary>
+    /// Get count of requests created for party
+    /// </summary>
+    Task<Result<int>> GetSentRequestsCount(Guid partyId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default);
+
+    /// <summary>
+    /// Get count of requests created at party
+    /// </summary>
+    Task<Result<int>> GetReceivedRequestsCount(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default);
+
+    /// <summary>
     /// Creates a new request
     /// A Request from Kari by NAV to BakerAS for AppResource01.
     /// Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
