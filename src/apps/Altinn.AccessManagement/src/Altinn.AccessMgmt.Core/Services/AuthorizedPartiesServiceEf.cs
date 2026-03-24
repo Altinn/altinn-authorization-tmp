@@ -23,9 +23,11 @@ public class AuthorizedPartiesServiceEf(
     IDelegationMetadataRepository resourceDelegationRepository,
     IContextRetrievalService contextRetrievalService,
     IAuthorizedPartyRepoServiceEf repoService,
-    IMemoryCache memoryCache) : IAuthorizedPartiesService
+    IMemoryCache memoryCache,
+    Microsoft.FeatureManagement.IFeatureManager featureManager) : IAuthorizedPartiesService
 {
     private static readonly MemoryCacheEntryOptions _cacheEntryOptions = new() { AbsoluteExpirationRelativeToNow = new TimeSpan(0, 5, 0) };
+    private const string InstanceDelegationEfFeatureFlag = "AccessManagement.InstanceDelegation.EF";
 
     /// <inheritdoc/>
     public async Task<List<AuthorizedParty>> GetAuthorizedParties(BaseAttribute subjectAttribute, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default) => subjectAttribute.Type switch
@@ -514,7 +516,7 @@ public class AuthorizedPartiesServiceEf(
 
         // Enrich AuthorizedParties with all authorized AccessPackages, Resources and Instances
         EnrichWithAccessPackageParties(parties, connections, filter);
-        EnrichWithResourceAndInstanceParties(parties, resourceDelegations, filter);
+        await EnrichWithResourceAndInstanceParties(parties, resourceDelegations, filter);
 
         return Tuple.Create(parties, authorizedParties.AsEnumerable());
     }
@@ -634,12 +636,14 @@ public class AuthorizedPartiesServiceEf(
         }
     }
 
-    private static void EnrichWithResourceAndInstanceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, AuthorizedPartiesFilters filters)
+    private async Task EnrichWithResourceAndInstanceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, AuthorizedPartiesFilters filters)
     {
         if (!filters.IncludeResources && !filters.IncludeInstances)
         {
             return;
         }
+
+        bool useEF = await featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
 
         foreach (DelegationChange delegation in resourceDelegations)
         {
@@ -658,9 +662,9 @@ public class AuthorizedPartiesServiceEf(
                             var split = partyAndInstanceId.Split('/');
                             instanceId = split.Length == 2 ? split[1] : partyAndInstanceId;
                         }
-                        else
+                        else if (!useEF)
                         {
-                            // Add prefix to instanceRef
+                            // Only add prefix when using old data model (EF feature flag disabled)
                             instanceRef = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{delegation.InstanceId}";
                         }
                     }
