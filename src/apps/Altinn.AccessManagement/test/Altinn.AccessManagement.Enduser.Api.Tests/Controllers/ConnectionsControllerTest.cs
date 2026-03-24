@@ -751,6 +751,34 @@ public class ConnectionsControllerTest
             });
             Fixture.EnsureSeedOnce(db =>
             {
+                var resourceType = db.ResourceTypes.FirstOrDefault(t => t.Id == Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"));
+                if (resourceType is null)
+                {
+                    resourceType = new ResourceType() { Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"), Name = "Test" };
+                    db.ResourceTypes.Add(resourceType);
+                }
+
+                var skattResource = new Resource()
+                {
+                    Name = "Skattemelding",
+                    Description = "Innlevering av skattemelding for næringsdrivende",
+                    RefId = "app_skd_skattemelding",
+                    TypeId = resourceType.Id,
+                    ProviderId = ProviderConstants.Altinn3.Id,
+                };
+
+                var mvaResource = new Resource()
+                {
+                    Name = "MVA-melding",
+                    Description = "Innlevering av merverdiavgiftsmelding",
+                    RefId = "app_skd_mva-melding",
+                    TypeId = resourceType.Id,
+                    ProviderId = ProviderConstants.Altinn3.Id,
+                };
+
+                db.Resources.Add(skattResource);
+                db.Resources.Add(mvaResource);
+
                 var rightholderFromDumboToMille = new Assignment()
                 {
                     FromId = TestData.DumboAdventures.Id,
@@ -759,6 +787,20 @@ public class ConnectionsControllerTest
                 };
 
                 db.Assignments.Add(rightholderFromDumboToMille);
+                db.SaveChanges();
+
+                db.AssignmentResources.Add(new AssignmentResource()
+                {
+                    AssignmentId = rightholderFromDumboToMille.Id,
+                    ResourceId = skattResource.Id,
+                });
+
+                db.AssignmentResources.Add(new AssignmentResource()
+                {
+                    AssignmentId = rightholderFromDumboToMille.Id,
+                    ResourceId = mvaResource.Id,
+                });
+
                 db.SaveChanges();
             });
         }
@@ -779,7 +821,7 @@ public class ConnectionsControllerTest
 
         /// <summary>
         /// Tests that a managing director can get resources for a to-others connection
-        /// using the to-others read scope.
+        /// using the to-others read scope and that the response contains the seeded resources.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -793,6 +835,7 @@ public class ConnectionsControllerTest
         /// <para>
         /// Assertions:
         /// - HTTP response status is OK (200)
+        /// - Response contains at least 2 resources (Skattemelding and MVA-melding)
         /// </para>
         /// </remarks>
         [Fact]
@@ -804,6 +847,13 @@ public class ConnectionsControllerTest
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            List<ResourcePermissionDto> result = JsonSerializer.Deserialize<List<ResourcePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.True(result.Count >= 2, $"Expected at least 2 resources but got {result.Count}. Response body: {responseContent}");
+            Assert.Contains(result, r => r.Resource.RefId == "app_skd_skattemelding");
+            Assert.Contains(result, r => r.Resource.RefId == "app_skd_mva-melding");
         }
 
         /// <summary>
@@ -833,6 +883,86 @@ public class ConnectionsControllerTest
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+        }
+
+        /// <summary>
+        /// Tests that Thea as managing director of Mille Hundefrisør can get resources
+        /// that Dumbo Adventures has delegated to Mille, viewed from Mille's perspective (from-others).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Thea (managing director of Mille Hundefrisør)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ
+        /// - Party: Mille Hundefrisør
+        /// - To: Mille Hundefrisør (from-others direction)
+        /// - From: Dumbo Adventures
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// - Response contains at least 2 resources (Skattemelding and MVA-melding)
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task GetResources_AsTheaForMilleFromDumbo_WithFromOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.MilleHundefrisor.Id}&to={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            List<ResourcePermissionDto> result = JsonSerializer.Deserialize<List<ResourcePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.True(result.Count >= 2, $"Expected at least 2 resources but got {result.Count}. Response body: {responseContent}");
+            Assert.Contains(result, r => r.Resource.RefId == "app_skd_skattemelding");
+            Assert.Contains(result, r => r.Resource.RefId == "app_skd_mva-melding");
+        }
+
+        /// <summary>
+        /// Tests that Thea as managing director of Mille Hundefrisør can get resources
+        /// in the to-others direction (what Mille gives to Dumbo), viewed from Mille's perspective.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Test Scenario:
+        /// - Actor: Thea (managing director of Mille Hundefrisør)
+        /// - Authorization Scope: SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ
+        /// - Party: Mille Hundefrisør
+        /// - From: Mille Hundefrisør (to-others direction)
+        /// - To: Dumbo Adventures
+        /// </para>
+        /// <para>
+        /// Assertions:
+        /// - HTTP response status is OK (200)
+        /// </para>
+        /// </remarks>
+        [Fact]
+        public async Task GetResources_AsTheaForMilleToDumbo_WithToOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.MilleHundefrisor.Id}&from={TestData.MilleHundefrisor.Id}&to={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+        }
+
+        /// <summary>
+        /// Tests that Thea using the wrong scope (to-others) when querying from-others direction
+        /// for Mille Hundefrisør returns HTTP 403 Forbidden.
+        /// </summary>
+        [Fact]
+        public async Task GetResources_AsTheaForMilleFromDumbo_WithToOthersScope_ReturnsForbidden()
+        {
+            HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync($"{Route}/resources?party={TestData.MilleHundefrisor.Id}&to={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         /// <summary>
