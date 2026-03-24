@@ -144,12 +144,12 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     private async Task<InstanceDelegationChange> GetAssignmentInstance(Guid id)
     {
         return Convert(await DbContext.AssignmentInstances
-                .AsNoTracking()
-                .Include(t => t.Assignment).ThenInclude(t => t.From)
-                .Include(t => t.Assignment).ThenInclude(t => t.To)
-                .Include(t => t.Resource).ThenInclude(t => t.Type)
-                .Include(t => t.Resource).ThenInclude(t => t.Provider)
-                .SingleAsync(t => t.Id == id)
+            .AsNoTracking()
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
+            .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .SingleAsync(t => t.Id == id)
         );
     }
 
