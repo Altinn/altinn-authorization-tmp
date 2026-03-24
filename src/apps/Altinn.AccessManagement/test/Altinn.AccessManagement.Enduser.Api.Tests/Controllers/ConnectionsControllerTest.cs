@@ -1,4 +1,8 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Controllers;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -16,10 +20,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -648,9 +648,9 @@ public class ConnectionsControllerTest
 
             HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}", null, TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
             AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(result);
@@ -692,9 +692,8 @@ public class ConnectionsControllerTest
 
             HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}", content, TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
             AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(result);
