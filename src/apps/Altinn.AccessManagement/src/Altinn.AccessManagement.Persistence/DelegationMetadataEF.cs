@@ -138,7 +138,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
             .Include(t => t.ChangedBy)
             .SingleAsync(t => t.Id == id)
-            );
+        );
     }
 
     private async Task<InstanceDelegationChange> GetAssignmentInstance(Guid id)
@@ -526,7 +526,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         }
 
         await DbContext.SaveChangesAsync(cancellationToken);
-        
+
         if (isRevokelast)
         {
             bool removeAssignment = await CheckCascadingAssignmentRevoke(assignment.Id, cancellationToken);
