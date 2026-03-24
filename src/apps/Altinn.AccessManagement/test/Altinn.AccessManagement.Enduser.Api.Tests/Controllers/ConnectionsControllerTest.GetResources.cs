@@ -20,8 +20,27 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 public partial class ConnectionsControllerTest
 {
     /// <summary>
-    /// <see cref="ConnectionsController.GetResources(Guid, Guid?, Guid?, AccessManagement.Api.Enduser.Models.PagingInput, string, CancellationToken)"/>
+    /// Tests for <see cref="ConnectionsController.GetResources(Guid, Guid?, Guid?, AccessManagement.Api.Enduser.Models.PagingInput, string, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Seed Data:
+    /// - ResourceType "Test"
+    /// - Resource "Skattemelding" (app_skd_skattemelding) and "MVA-melding" (app_skd_mva-melding)
+    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - AssignmentResource linking both resources to the assignment above
+    /// </para>
+    /// <para>
+    /// Actors:
+    /// - Malin Emilie: managing director of Dumbo Adventures (views from Dumbo's perspective)
+    /// - Thea: managing director of Mille Hundefrisør (views from Mille's perspective)
+    /// </para>
+    /// <para>
+    /// The tests verify scope-based authorization (from-others vs to-others read scopes),
+    /// that the correct resources are returned in the response, and that mismatched scopes
+    /// result in HTTP 403 Forbidden.
+    /// </para>
+    /// </remarks>
     public class GetResources : IClassFixture<ApiFixture>
     {
         public GetResources(ApiFixture fixture)
@@ -102,6 +121,10 @@ public partial class ConnectionsControllerTest
             return client;
         }
 
+        /// <summary>
+        /// Malin (MD of Dumbo) queries resources delegated to Mille in the to-others direction.
+        /// Expects OK with both Skattemelding and MVA-melding resources.
+        /// </summary>
         [Fact]
         public async Task GetResources_AsMalinForDumboToMille_WithToOthersScope_ReturnsOk()
         {
@@ -120,6 +143,10 @@ public partial class ConnectionsControllerTest
             Assert.Contains(result, r => r.Resource.RefId == "app_skd_mva-melding");
         }
 
+        /// <summary>
+        /// Malin (MD of Dumbo) queries resources from Mille in the from-others direction.
+        /// Expects OK (Mille has no resources delegated toward Dumbo, so the list may be empty).
+        /// </summary>
         [Fact]
         public async Task GetResources_AsMalinForDumboFromMille_WithFromOthersScope_ReturnsOk()
         {
@@ -131,6 +158,10 @@ public partial class ConnectionsControllerTest
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
         }
 
+        /// <summary>
+        /// Thea (MD of Mille) queries resources that Dumbo delegated to Mille, viewed from Mille's perspective (from-others).
+        /// Expects OK with both Skattemelding and MVA-melding resources.
+        /// </summary>
         [Fact]
         public async Task GetResources_AsTheaForMilleFromDumbo_WithFromOthersScope_ReturnsOk()
         {
@@ -149,6 +180,10 @@ public partial class ConnectionsControllerTest
             Assert.Contains(result, r => r.Resource.RefId == "app_skd_mva-melding");
         }
 
+        /// <summary>
+        /// Thea (MD of Mille) queries resources in the to-others direction (what Mille gives to Dumbo).
+        /// Expects OK (no resources delegated in this direction).
+        /// </summary>
         [Fact]
         public async Task GetResources_AsTheaForMilleToDumbo_WithToOthersScope_ReturnsOk()
         {
@@ -160,6 +195,10 @@ public partial class ConnectionsControllerTest
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
         }
 
+        /// <summary>
+        /// Thea uses the wrong scope (to-others read) when querying from-others direction for Mille.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task GetResources_AsTheaForMilleFromDumbo_WithToOthersScope_ReturnsForbidden()
         {
@@ -170,6 +209,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Malin uses from-others read scope for a to-others direction query.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task GetResources_ToOthersDirection_WithFromOthersScope_ReturnsForbidden()
         {
@@ -180,6 +223,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Malin uses to-others read scope for a from-others direction query.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task GetResources_FromOthersDirection_WithToOthersScope_ReturnsForbidden()
         {
@@ -190,6 +237,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Malin uses a write scope on the read-only GetResources endpoint.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task GetResources_WithWriteScope_ReturnsForbidden()
         {

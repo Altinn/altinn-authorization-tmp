@@ -22,8 +22,31 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 public partial class ConnectionsControllerTest
 {
     /// <summary>
-    /// <see cref="ConnectionsController.CheckResource(Guid, string, CancellationToken)"/>
+    /// Tests for <see cref="ConnectionsController.CheckResource(Guid, string, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Seed Data:
+    /// - ResourceType "Test"
+    /// - Resource "Dialogs for sickness benefits" (nav_sykepenger_dialog)
+    /// - Resource "Omsetningsoppgave for alkohol" (app_dihe_omsetningsoppgave-for-alkohol)
+    /// - Assignment: Nordis AS → Verdiq AS (Rightholder)
+    /// </para>
+    /// <para>
+    /// Mocks:
+    /// - <see cref="ResourceRegistryClientMock"/> for resource registry policy lookups
+    /// - <see cref="PolicyRetrievalPointMock"/> for XACML policy evaluation
+    /// </para>
+    /// <para>
+    /// Actors:
+    /// - Malin Emilie: managing director of Dumbo Adventures (has both role and package access)
+    /// - Thea: rightholder of Dumbo Adventures (has package access only, no role access)
+    /// </para>
+    /// <para>
+    /// The tests verify delegation check results including full access (roles + packages),
+    /// package-only access, partial access (some rights granted, some denied), and scope enforcement.
+    /// </para>
+    /// </remarks>
     public class CheckResource : IClassFixture<ApiFixture>
     {
         public CheckResource(ApiFixture fixture)
@@ -92,6 +115,10 @@ public partial class ConnectionsControllerTest
             return client;
         }
 
+        /// <summary>
+        /// Malin (MD of Dumbo) checks nav_sykepenger_dialog. Has full access via both roles and packages.
+        /// Expects OK with 3 rights (read, access, subscribe) all granted with RoleAccess and PackageAccess.
+        /// </summary>
         [Fact]
         public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_ReturnsOK()
         {
@@ -129,6 +156,10 @@ public partial class ConnectionsControllerTest
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 
+        /// <summary>
+        /// Thea (rightholder of Dumbo) checks nav_sykepenger_dialog. Has access via packages only, no roles.
+        /// Expects OK with 3 rights all granted with PackageAccess but not RoleAccess.
+        /// </summary>
         [Fact]
         public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_ReturnsOK()
         {
@@ -166,6 +197,11 @@ public partial class ConnectionsControllerTest
             Assert.Contains(subscribeRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.PackageAccess));
         }
 
+        /// <summary>
+        /// Malin (MD of Dumbo) checks app_dihe_omsetningsoppgave-for-alkohol. Has partial access: read and write
+        /// granted via roles, but sign denied with MissingRoleAccess and MissingDelegationAccess.
+        /// Expects OK with 17 rights (mix of granted and denied).
+        /// </summary>
         [Fact]
         public async Task CheckResource_DiheOmsettningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
         {
@@ -204,6 +240,10 @@ public partial class ConnectionsControllerTest
             Assert.Contains(signRight.ReasonCodes, r => r.Equals(DelegationCheckReasonCode.MissingDelegationAccess));
         }
 
+        /// <summary>
+        /// Malin uses from-others read scope on an endpoint that requires to-others write scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task CheckResource_WithReadScope_ReturnsForbidden()
         {
@@ -212,6 +252,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Malin uses from-others write scope on an endpoint that requires to-others write scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task CheckResource_WithFromOthersWriteScope_ReturnsForbidden()
         {

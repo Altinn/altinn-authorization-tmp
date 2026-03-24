@@ -15,8 +15,18 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 public partial class ConnectionsControllerTest
 {
     /// <summary>
-    /// <see cref="ConnectionsController.GetAvailableUsers(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// Tests for <see cref="ConnectionsController.GetAvailableUsers(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Seed Data: Uses the global <see cref="TestDataSeeds"/> which includes Dumbo Adventures
+    /// with Malin Emilie as managing director and Thea as rightholder.
+    /// </para>
+    /// <para>
+    /// The tests verify that the endpoint returns persons who already have some connection
+    /// to the party and are eligible for new delegations, and that the correct write scope is required.
+    /// </para>
+    /// </remarks>
     public class GetAvailableUsers : IClassFixture<ApiFixture>
     {
         public GetAvailableUsers(ApiFixture fixture)
@@ -64,6 +74,10 @@ public partial class ConnectionsControllerTest
             Assert.Contains(allParties, p => p.Id == TestData.Thea.Id);
         }
 
+        /// <summary>
+        /// Malin uses from-others read scope on an endpoint that requires to-others write scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task GetAvailableUsers_WithReadScope_ReturnsForbidden()
         {

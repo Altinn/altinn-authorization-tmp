@@ -17,8 +17,23 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 public partial class ConnectionsControllerTest
 {
     /// <summary>
-    /// <see cref="ConnectionsController.GetConnections(AccessManagement.Api.Enduser.Models.ConnectionInput, AccessManagement.Api.Enduser.Models.PagingInput, bool, bool, CancellationToken)"/>
+    /// Tests for <see cref="ConnectionsController.GetConnections(AccessManagement.Api.Enduser.Models.ConnectionInput, AccessManagement.Api.Enduser.Models.PagingInput, bool, bool, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Seed Data:
+    /// - Nordis AS → Verdiq AS: Rightholder and Accountant assignments
+    /// - Verdiq AS → Paula and Ørjan: Agent assignments
+    /// - Nordis AS → Paula: Agent assignment
+    /// - AssignmentPackage linking Nordis→Verdiq Rightholder to DocumentBasedSupervision
+    /// </para>
+    /// <para>
+    /// The tests verify bidirectional scope enforcement: from-others read scope is required when
+    /// the party appears as the "to" parameter (receiving), and to-others read scope is required
+    /// when the party appears as the "from" parameter (giving). Mismatched scopes or party values
+    /// that don't match from/to result in 403 Forbidden.
+    /// </para>
+    /// </remarks>
     public class GetConnections : IClassFixture<ApiFixture>
     {
         public GetConnections(ApiFixture fixture)
@@ -89,6 +104,10 @@ public partial class ConnectionsControllerTest
             return client;
         }
         
+        /// <summary>
+        /// Verdiq queries connections where it is the receiver (to=Verdiq) using from-others read scope.
+        /// Expects OK.
+        /// </summary>
         [Fact]
         public async Task ListConnections_WithDirectionFromOthersUsingFromOthersScope_ReturnsOk()
         {
@@ -102,6 +121,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        /// <summary>
+        /// Verdiq queries connections where it is the receiver (to=Verdiq) using the wrong to-others read scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task ListConnections_WithDirectionFromOthersUsingToOthersScope_ReturnsForbidden()
         {
@@ -112,6 +135,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Verdiq queries connections where it is the giver (from=Verdiq) using to-others read scope.
+        /// Expects OK.
+        /// </summary>
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingToOthersScope_ReturnsOk()
         {
@@ -125,6 +152,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        /// <summary>
+        /// Verdiq queries connections where it is the giver (from=Verdiq) using the wrong from-others read scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingFromOthersScope_ReturnsForbidden()
         {
@@ -135,6 +166,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Party (Verdiq) does not match either from (Paula) or to (Ørjan), so the request is rejected.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task ListConnections_WithDirectionToOthersUsingToOtherScopeWithPartyNotEqualFromOrTo_ReturnsForbidden()
         {

@@ -24,8 +24,25 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 public partial class ConnectionsControllerTest
 {
     /// <summary>
-    /// <see cref="ConnectionsController.AddRightholder(Guid, Guid, AccessManagement.Api.Enduser.Models.PersonInput, CancellationToken)"/>
+    /// Tests for <see cref="ConnectionsController.AddRightholder(Guid, Guid, AccessManagement.Api.Enduser.Models.PersonInput, CancellationToken)"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Mocks:
+    /// - <see cref="UserProfileLookupServiceMock"/> for PersonInput-based user lookup by SSN and last name
+    /// - <see cref="Altinn2RightsClientMock"/> to prevent real HTTP calls to Altinn 2 SBL Bridge
+    /// </para>
+    /// <para>
+    /// Actors:
+    /// - Malin Emilie: managing director of Dumbo Adventures
+    /// </para>
+    /// <para>
+    /// The tests verify three scenarios: adding a person with no existing connection (rejected for persons),
+    /// adding an organization as rightholder via the "to" query parameter (accepted),
+    /// and adding a person via PersonInput body with SSN + last name lookup (accepted).
+    /// Scope enforcement tests ensure only to-others write scope is accepted.
+    /// </para>
+    /// </remarks>
     public class AddRightholder : IClassFixture<ApiFixture>
     {
         public AddRightholder(ApiFixture fixture)
@@ -57,6 +74,10 @@ public partial class ConnectionsControllerTest
             return client;
         }
 
+        /// <summary>
+        /// Malin tries to add Josephine (person with no existing connection to Dumbo) as rightholder.
+        /// Persons require an existing connection; expects 400 BadRequest with EntityNotExists validation error.
+        /// </summary>
         [Fact]
         public async Task AddRightholder_AsMalinForDumboWithJosephine_ReturnsProblem()
         {
@@ -75,6 +96,10 @@ public partial class ConnectionsControllerTest
             Assert.Single(problemDetails.Errors, e => e.Paths.Contains("QUERY/to"));
         }
 
+        /// <summary>
+        /// Malin adds Mille Hundefrisør (organization) as rightholder via the "to" query parameter.
+        /// Organizations do not require an existing connection; expects OK with AssignmentDto.
+        /// </summary>
         [Fact]
         public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_ReturnsOk()
         {
@@ -93,6 +118,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
         }
 
+        /// <summary>
+        /// Malin adds Bodil Farmor as rightholder via PersonInput body (SSN + last name "Farmor").
+        /// The mock UserProfileLookupService resolves Bodil by SSN; expects OK with AssignmentDto.
+        /// </summary>
         [Fact]
         public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_ReturnsOk()
         {
@@ -113,6 +142,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
         }
 
+        /// <summary>
+        /// Malin uses from-others read scope on an endpoint that requires to-others write scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task AddRightholder_WithReadScope_ReturnsForbidden()
         {
@@ -123,6 +156,10 @@ public partial class ConnectionsControllerTest
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        /// <summary>
+        /// Malin uses from-others write scope on an endpoint that requires to-others write scope.
+        /// Expects 403 Forbidden.
+        /// </summary>
         [Fact]
         public async Task AddRightholder_WithFromOthersWriteScope_ReturnsForbidden()
         {
