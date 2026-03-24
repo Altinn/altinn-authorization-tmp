@@ -307,8 +307,8 @@ public class RequestControllerTest
 
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.SvendsenAutomobil.Id,
-                    ToId = TestData.MortenDahl.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
+                    FromId = TestData.MortenDahl.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -360,8 +360,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.BakerJohnsen.Id,
-                    ToId = TestData.HildeStrand.Id,
+                    ToId = TestData.BakerJohnsen.Id,
+                    FromId = TestData.HildeStrand.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -413,8 +413,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.BakerJohnsen.Id,
-                    ToId = TestData.LarsBakke.Id,
+                    ToId = TestData.BakerJohnsen.Id,
+                    FromId = TestData.LarsBakke.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
