@@ -471,6 +471,32 @@ public static class TestData
 
     #endregion
 
+    #region Personer - Mille Hundefrisør
+
+    public static ConstantDefinition<Entity> Milena { get; } = new("10000024-aaaa-4bbb-8ccc-ddddeeee0024")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1990, 5, 10),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Milena Solstad",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50298981,
+            PersonIdentifier = "28849198981",
+            RefId = "28849198981",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20198981,
+            Username = "milena.solstad",
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
+    #endregion
+
     #region Personer - Fredriksons Fabrikk
 
     public static ConstantDefinition<Entity> SiljeHaugen { get; } = new("10000007-aaaa-4bbb-8ccc-ddddeeee0007")
@@ -860,6 +886,7 @@ public static class TestData
 
     // Mille Hundefrisør - personroller
     private static readonly Guid AssignMilleHundefrisorTheaMD = Guid.Parse("0196a0b1-0001-7001-8001-000000000030");
+    private static readonly Guid AssignMilleHundefrisorMilenaCB = Guid.Parse("0196a0b1-0001-7001-8001-000000000031");
 
     // Org-til-org assignments
     private static readonly Guid AssignBakerJohnsenRegnskapNorgeAcc = Guid.Parse("0196a0b1-0001-7001-8001-000000000016");
@@ -908,6 +935,7 @@ public static class TestData
 
         // Mille Hundefrisør - personroller
         new Assignment() { Id = AssignMilleHundefrisorTheaMD, FromId = MilleHundefrisor, ToId = Thea, RoleId = RoleConstants.ManagingDirector },
+        new Assignment() { Id = AssignMilleHundefrisorMilenaCB, FromId = MilleHundefrisor, ToId = Milena, RoleId = RoleConstants.ChairOfTheBoard },
 
         // RPC AS - personroller
         new Assignment() { Id = AssignRpcOddHalvorsenMD, FromId = RpcAS, ToId = OddHalvorsen, RoleId = RoleConstants.ManagingDirector },
