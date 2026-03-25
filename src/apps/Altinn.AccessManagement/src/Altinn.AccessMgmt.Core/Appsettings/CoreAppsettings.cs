@@ -14,7 +14,7 @@ public class CoreAppsettings
         }
     }
 
-    public required RequestOptions Request { get; set; } = new();
+    public RequestOptions Request { get; set; } = new();
 
     public class RequestOptions
     {
