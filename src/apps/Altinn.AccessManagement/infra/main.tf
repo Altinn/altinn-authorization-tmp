@@ -194,8 +194,10 @@ module "appsettings" {
   labels = {
     "${var.environment}-access-management" = {
       values = {
-        "ConsentMigration:BatchSize"              = { value = tostring(var.configuration.consent.batch_size) }
-        "ConsentMigration:MaxDegreeOfParallelism" = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
+        "ConsentMigration:BatchSize"                  = { value = tostring(var.configuration.consent.batch_size) }
+        "ConsentMigration:MaxDegreeOfParallelism"     = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
+        "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) }
+        "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }
       }
     }
   }

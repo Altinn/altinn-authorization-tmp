@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
@@ -21,8 +22,9 @@ namespace Altinn.AccessMgmt.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration, Action<CoreAppsettings> configureAppsettings = null)
     {
+        var appsettings = new CoreAppsettings(configureAppsettings);
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
@@ -56,6 +58,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<RequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
+        
+        services.AddOptions<CoreAppsettings>()
+            .Configure(configureAppsettings);
 
         // Consent Migration - Configuration
         services.AddOptions<ConsentMigrationSettings>()

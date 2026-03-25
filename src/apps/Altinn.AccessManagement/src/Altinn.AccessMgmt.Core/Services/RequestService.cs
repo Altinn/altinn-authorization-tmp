@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -9,11 +10,16 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(AppDbContext db) : IRequestService
+public class RequestService(
+    AppDbContext db,
+    IFeatureManager featureManager,
+    IOptions<CoreAppsettings> appsettings) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -62,7 +68,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
         return result.ToList();
     }
-    
+
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequests(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
     {
@@ -144,7 +150,7 @@ public class RequestService(AppDbContext db) : IRequestService
         var requestAssignmentResult = await GetOrCreateRequestAssignment(
             fromId: toId, // YES, Request.To == Assignment.From
             toId: fromId, // YES, Request.From == Assignment.To
-            roleId: roleId, 
+            roleId: roleId,
             ct: ct
             );
         var requestAssignment = requestAssignmentResult.Value;
@@ -305,7 +311,7 @@ public class RequestService(AppDbContext db) : IRequestService
         var request = await db.RequestAssignmentPackages
             .Include(t => t.Assignment)
             .FirstOrDefaultAsync(t => t.Id == id, ct);
-        
+
         if (request is not { })
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
@@ -420,7 +426,7 @@ public class RequestService(AppDbContext db) : IRequestService
         A Request from Kari by NAV to BakerAS for AppResource01.
         Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
         */
-        
+
         var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId, ct);
         if (request == null)
         {
@@ -445,7 +451,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private async Task AddRequestPendingToOutbox(Guid requesterId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
     {
-        await db.UpsertOutboxAsync(
+        await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"request_pending_{requesterId}_{recipientId}",
             handler: "request_pending",
             addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, msg),
@@ -453,7 +459,7 @@ public class RequestService(AppDbContext db) : IRequestService
             cancellationToken: ct
         );
 
-        static ResourceRequestPendingNotificationMessage UpdateValue(
+        ResourceRequestPendingNotificationMessage UpdateValue(
             Guid requesterId,
             Guid recipientId,
             Guid? resourceId,
@@ -479,30 +485,34 @@ public class RequestService(AppDbContext db) : IRequestService
                 data.PackageIds = data.PackageIds.Append(packageId.Value);
             }
 
-            var candidate = DateTime.UtcNow.AddMinutes(15.0 / (data.Updated + 1));
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestPendingInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+
+            var candidate = now.Add(processAfter / (data.Updated + 1));
             msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
 
             return data;
         }
 
-        static ResourceRequestPendingNotificationMessage AddValue(
+        ResourceRequestPendingNotificationMessage AddValue(
             Guid requesterId,
             Guid recipientId,
             Guid? resourceId,
             Guid? packageId,
             OutboxMessage msg)
         {
-            var schedule = DateTime.UtcNow.AddMinutes(15);
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestPendingInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+            var schedule = now.Add(processAfter);
             msg.Schedule = schedule;
             msg.Timeout = TimeSpan.FromMinutes(1);
-
             return new ResourceRequestPendingNotificationMessage()
             {
                 RecipientId = requesterId,
                 RequesterId = recipientId,
                 ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
                 PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
-                InitiatedAt = schedule,
+                InitiatedAt = now,
                 Updated = 1,
             };
         }
@@ -510,7 +520,7 @@ public class RequestService(AppDbContext db) : IRequestService
 
     private async Task AddRequestApprovedToOutbox(Guid approverId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
     {
-        await db.UpsertOutboxAsync(
+        await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"request_approved_{approverId}_{recipientId}",
             handler: "request_approved",
             addValueFactory: msg => AddValue(approverId, recipientId, resourceId, packageId, msg),
@@ -518,7 +528,7 @@ public class RequestService(AppDbContext db) : IRequestService
             cancellationToken: ct
         );
 
-        static RequestApprovedNotificationMessage UpdateValue(
+        RequestApprovedNotificationMessage UpdateValue(
             Guid requesterId,
             Guid recipientId,
             Guid? resourceId,
@@ -544,20 +554,26 @@ public class RequestService(AppDbContext db) : IRequestService
                 data.PackageIds = data.PackageIds.Append(packageId.Value);
             }
 
-            var candidate = DateTime.UtcNow.AddMinutes(5.0 / (data.Updated + 1));
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestApprovedInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+
+            var candidate = now.Add(processAfter / (data.Updated + 1));
+
             msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
 
             return data;
         }
 
-        static RequestApprovedNotificationMessage AddValue(
+        RequestApprovedNotificationMessage AddValue(
             Guid approverId,
             Guid recipientId,
             Guid? resourceId,
             Guid? packageId,
             OutboxMessage msg)
         {
-            var schedule = DateTime.UtcNow.AddMinutes(5);
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestApprovedInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+            var schedule = now.Add(processAfter);
             msg.Schedule = schedule;
             msg.Timeout = TimeSpan.FromMinutes(1);
 

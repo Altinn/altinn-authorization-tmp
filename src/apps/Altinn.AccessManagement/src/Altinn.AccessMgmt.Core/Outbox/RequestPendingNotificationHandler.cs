@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -11,16 +12,25 @@ using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
 public class RequestPendingNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
+    IFeatureManager featureManager,
     IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        {
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            await db.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
         var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
         var content = new NotificationOrderChainRequestExt()
@@ -116,7 +126,6 @@ public class RequestPendingNotificationHandler(
 
             emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
-
 
             return new NotificationRecipientExt
             {

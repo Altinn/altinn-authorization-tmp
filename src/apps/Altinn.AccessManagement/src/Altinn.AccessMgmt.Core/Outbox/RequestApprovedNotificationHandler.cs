@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -10,29 +12,49 @@ using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
 public class RequestApprovedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
+    IFeatureManager featureManager,
     IEntityService entityService) : IOutboxHandler
 {
     public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        {
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            await db.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
         var (recipient, approver, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
-        var response = await notification.Send(
-            new()
-            {
-                IdempotencyId = idempotencyId,
-                Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
-            },
-            cancellationToken);
+        NotificationOrderChainRequestExt content = new()
+        {
+            IdempotencyId = idempotencyId,
+            Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
+        };
+
+        var response = await notification.Send(content, cancellationToken);
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(response.ProblemDetails.Detail);
+            throw new InvalidOperationException(
+                $@"Failed to send notification.
+                    Payload: {JsonSerializer.Serialize(content)}
+                    CorrelationId: {Activity.Current?.TraceId}
+                    Status Code: {response.StatusCode}
+                    Problem Title: {response.ProblemDetails?.Title}
+                    Problem Details: {response.ProblemDetails?.Detail}
+                    Problem Instance: {response.ProblemDetails?.Instance}
+                    Problem Type: {response.ProblemDetails?.Type}
+                    Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}"
+            );
         }
     }
 

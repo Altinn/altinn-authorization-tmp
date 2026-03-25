@@ -106,7 +106,12 @@ internal static partial class AccessManagementHost
             options.AddOutboxHandler<RequestPendingNotificationHandler>("request_pending");
         });
 
-        builder.Services.AddAccessMgmtCore(builder.Configuration);
+        builder.Services.AddAccessMgmtCore(builder.Configuration, options =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            options.Request.NotifyRequestApprovedInSeconds = options.Request.NotifyRequestApprovedInSeconds;
+            options.Request.NotifyRequestPendingInSeconds = options.Request.NotifyRequestPendingInSeconds;
+        });
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
