@@ -224,6 +224,40 @@ public partial class ConnectionsControllerTest
         }
 
         [Fact]
+        public async Task GetResourceRights_AsMalinForDumboToMilena_WithToOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Milena.Id}&resource=app_skd_sirius-skattemelding-v1",
+                TestContext.Current.CancellationToken);
+
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(resourceRightsDto);
+            Assert.NotNull(resourceRightsDto.Resource);
+            Assert.Empty(resourceRightsDto.DirectRights);
+            Assert.NotEmpty(resourceRightsDto.IndirectRights);
+            Assert.Equal(9, resourceRightsDto.IndirectRights.Count); // 9 inherited rights from Mille's Rightholder role
+            foreach (var right in resourceRightsDto.IndirectRights)
+            {
+                // All rights to Milena should be indirect via Mille's Rightholder role Chair of board, so we expect the same permission and reason for all rights
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(permission.To.Name, TestData.Milena.Entity.Name);
+                Assert.True(permission.To.Id == TestData.Milena.Id);
+                Assert.True(permission.From.Name == TestData.DumboAdventures.Entity.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
+
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
+        }
+
+        [Fact]
         public async Task GetResourceRights_AsTheaForDumboToThea_WithToOthersScope_ReturnsOk()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -304,5 +338,6 @@ public partial class ConnectionsControllerTest
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+
     }
 }
