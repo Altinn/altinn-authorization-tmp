@@ -217,6 +217,18 @@ module "appsettings" {
 
   feature_flags = [
     {
+      name        = "AccessMgmt.Core.Outbox.RequestNotifyPending"
+      description = "Specifies if notifications for pending requests are enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.Outbox.RequestNotifyApproved"
+      description = "Specifies if notifications for approved requests are enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.HostedServices.Outbox.Handler"
       description = "Specifies if the outbox handler should be enabled."
       label       = "${lower(var.environment)}-access-management"
