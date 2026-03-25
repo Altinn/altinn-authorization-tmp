@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -114,15 +115,12 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
 
-            using JsonDocument doc = JsonDocument.Parse(responseContent);
-            JsonElement root = doc.RootElement;
-
-            Assert.True(root.TryGetProperty("resource", out JsonElement resourceElement), "Response should contain a 'resource' property");
-            Assert.True(resourceElement.TryGetProperty("refId", out JsonElement refIdElement), "Resource should contain a 'refId' property");
-            Assert.Equal("app_skd_sirius-skattemelding-v1", refIdElement.GetString());
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(responseObj);
+            Assert.NotNull(responseObj.Resource);
+            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
         }
 
         /// <summary>
@@ -138,15 +136,11 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
-
-            using JsonDocument doc = JsonDocument.Parse(responseContent);
-            JsonElement root = doc.RootElement;
-
-            Assert.True(root.TryGetProperty("resource", out JsonElement resourceElement), "Response should contain a 'resource' property");
-            Assert.True(resourceElement.TryGetProperty("refId", out JsonElement refIdElement), "Resource should contain a 'refId' property");
-            Assert.Equal("app_skd_sirius-skattemelding-v1", refIdElement.GetString());
+            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(responseObj);
+            Assert.NotNull(responseObj.Resource);
+            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
         }
 
         /// <summary>
@@ -162,15 +156,11 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
-
-            using JsonDocument doc = JsonDocument.Parse(responseContent);
-            JsonElement root = doc.RootElement;
-
-            Assert.True(root.TryGetProperty("resource", out JsonElement resourceElement), "Response should contain a 'resource' property");
-            Assert.True(resourceElement.TryGetProperty("refId", out JsonElement refIdElement), "Resource should contain a 'refId' property");
-            Assert.Equal("app_skd_sirius-skattemelding-v1", refIdElement.GetString());
+            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(responseObj);
+            Assert.NotNull(responseObj.Resource);
+            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
         }
 
         /// <summary>
