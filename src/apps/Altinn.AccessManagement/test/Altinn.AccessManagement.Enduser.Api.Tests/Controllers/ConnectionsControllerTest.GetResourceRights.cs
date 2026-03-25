@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -18,6 +17,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
+/// <summary>
+/// Partial test class for ConnectionsController, focused on testing the GetResourceRights endpoint which returns direct and indirect rights for a specific resource between two parties. The tests cover both to-others and from-others query directions, verifying correct scope requirements and response content based on seeded data and actor perspectives.
+/// </summary>
 public partial class ConnectionsControllerTest
 {
     /// <summary>
@@ -115,12 +117,30 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
 
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
-            Assert.NotNull(responseObj);
-            Assert.NotNull(responseObj.Resource);
-            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
+            Assert.NotNull(resourceRightsDto);
+            Assert.NotNull(resourceRightsDto.Resource);
+            Assert.Empty(resourceRightsDto.IndirectRights);
+            Assert.NotEmpty(resourceRightsDto.DirectRights);
+            Assert.Equal(9, resourceRightsDto.DirectRights.Count); // 9 inherited rights from Dumbo to Mille via the Rightholder role
+            foreach (var right in resourceRightsDto.DirectRights)
+            {
+                // All rights to Mille should be direct via Dumbo's Rightholder role, so we expect the same permission and reason for all rights
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(permission.To.Name, TestData.MilleHundefrisor.Entity.Name);
+                Assert.True(permission.To.Id == TestData.MilleHundefrisor.Id);
+                Assert.True(permission.From.Name == TestData.DumboAdventures.Entity.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
+
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
         }
 
         /// <summary>
@@ -136,16 +156,38 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
-            Assert.NotNull(responseObj);
-            Assert.NotNull(responseObj.Resource);
-            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
+            Assert.NotNull(resourceRightsDto);
+            Assert.NotNull(resourceRightsDto.Resource);
+            Assert.Empty(resourceRightsDto.IndirectRights);
+            Assert.NotEmpty(resourceRightsDto.DirectRights);
+            Assert.Equal(9, resourceRightsDto.DirectRights.Count); // 9 inherited rights from Dumbo to Mille via the Rightholder role
+            foreach (var right in resourceRightsDto.DirectRights)
+            {
+                // All rights to Mille should be direct via Dumbo's Rightholder role, so we expect the same permission and reason for all rights
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(permission.To.Name, TestData.MilleHundefrisor.Entity.Name);
+                Assert.True(permission.To.Id == TestData.MilleHundefrisor.Id);
+                Assert.True(permission.From.Name == TestData.DumboAdventures.Entity.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
+
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
         }
 
         /// <summary>
         /// Malin (MD of Dumbo) queries resource rights for Skattemelding delegated to Mille in the to-others direction.
         /// Expects OK with a valid response containing the resource.
+        /// 
+        /// Mille gets rights indirectly since Thea is MD of Mille. (nøkkelrollearv)
+        /// She should get the same rights as query for Mille, bit indirect not direct.
         /// </summary>
         [Fact]
         public async Task GetResourceRights_AsMalinForDumboToThea_WithToOthersScope_ReturnsOk()
@@ -156,11 +198,63 @@ public partial class ConnectionsControllerTest
                 $"{Route}/resources/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}&resource=app_skd_sirius-skattemelding-v1",
                 TestContext.Current.CancellationToken);
 
-            var responseObj = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
-            Assert.NotNull(responseObj);
-            Assert.NotNull(responseObj.Resource);
-            Assert.Equal("app_skd_sirius-skattemelding-v1", responseObj.Resource.RefId);
+            Assert.NotNull(resourceRightsDto);
+            Assert.NotNull(resourceRightsDto.Resource);
+            Assert.Empty(resourceRightsDto.DirectRights);
+            Assert.NotEmpty(resourceRightsDto.IndirectRights);
+            Assert.Equal(9, resourceRightsDto.IndirectRights.Count); // 9 inherited rights from Mille's Rightholder role
+            foreach (var right in resourceRightsDto.IndirectRights)
+            {
+                // All rights to Thea should be indirect via Mille's Rightholder role, so we expect the same permission and reason for all rights
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(permission.To.Name, TestData.Thea.Entity.Name);
+                Assert.True(permission.To.Id == TestData.Thea.Id);
+                Assert.True(permission.From.Name == TestData.DumboAdventures.Entity.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
+
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
+        }
+
+        [Fact]
+        public async Task GetResourceRights_AsTheaForDumboToThea_WithToOthersScope_ReturnsOk()
+        {
+            HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/rights?party={TestData.Thea.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}&resource=app_skd_sirius-skattemelding-v1",
+                TestContext.Current.CancellationToken);
+
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(resourceRightsDto);
+            Assert.NotNull(resourceRightsDto.Resource);
+            Assert.Empty(resourceRightsDto.DirectRights);
+            Assert.NotEmpty(resourceRightsDto.IndirectRights);
+            Assert.Equal(9, resourceRightsDto.IndirectRights.Count); // 9 inherited rights from Mille's Rightholder role
+            foreach (var right in resourceRightsDto.IndirectRights)
+            {
+                // All rights to Thea should be indirect via Mille's Rightholder role, so we expect the same permission and reason for all rights
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(permission.To.Name, TestData.Thea.Entity.Name);
+                Assert.True(permission.To.Id == TestData.Thea.Id);
+                Assert.True(permission.From.Name == TestData.DumboAdventures.Entity.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.KeyRole), $"Expected KeyRole but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
+
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
         }
 
         /// <summary>
