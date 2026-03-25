@@ -5992,7 +5992,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to tax matters for private individuals. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Forsikring"),
+            KeyValuePair.Create("Name", "Skatteforhold for privatpersonar"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til skatteforhold for privatpersonar. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
