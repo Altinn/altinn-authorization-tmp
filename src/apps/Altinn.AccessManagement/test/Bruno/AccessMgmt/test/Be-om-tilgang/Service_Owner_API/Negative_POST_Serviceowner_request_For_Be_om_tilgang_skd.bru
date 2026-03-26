@@ -16,15 +16,12 @@ headers {
 }
 
 body:json {
-  {
-    "from": "urn:altinn:person:identifier-no:{{from}}",
-    "to": "urn:altinn:organization:identifier-no:{{toOrg}}",
-    "resource": { 
-      "referenceid": "{{resource}}"
-    },
-    "package": null
-    
-  }
+  "from": "urn:altinn:person:identifier-no:{{from}}",
+  "to": "urn:altinn:organization:identifier-no:{{toOrg}}",
+  "resource": { 
+    "referenceid": "{{resource}}"
+  },
+  "package": null
 }
 
 script:pre-request {
