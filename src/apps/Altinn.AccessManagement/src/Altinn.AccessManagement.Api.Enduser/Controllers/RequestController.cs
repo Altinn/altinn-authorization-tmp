@@ -464,7 +464,7 @@ public class RequestController(
             return updateResult.Problem.ToActionResult();
         }
 
-        return Ok(request);
+        return Ok(updateResult.Value);
     }
 
     private async Task<IActionResult> ApproveResourceRequest(Guid partyUuid, Guid authUserId, RequestDto request, IEnumerable<string> rightKeys, CancellationToken ct)
@@ -524,7 +524,7 @@ public class RequestController(
             return updateResult.Problem.ToActionResult();
         }
 
-        return Ok(request);
+        return Ok(updateResult.Value);
     }
 
     private async Task<IActionResult> UpdateRequestStatus(Guid partyUuid, Guid id, RequestStatus status, CancellationToken ct)
