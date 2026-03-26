@@ -19,7 +19,9 @@
         "clientdelegationsRead": "altinn:clientdelegations.read",
         "clientdelegationsWrite": "altinn:clientdelegations.write",
         "myclientsRead": "altinn:clientdelegations/myclients.read",
-        "myclientsWrite": "altinn:clientdelegations/myclients.write"
+        "myclientsWrite": "altinn:clientdelegations/myclients.write",
+        "serviceownerDelegationRequestWrite": "altinn:serviceowner/delegationrequests.write",
+        "serviceownerDelegationRequestRead": "altinn:serviceowner/delegationrequests.read"
     },
     "authTokenType": {
         "personal": "Personal",
