@@ -49,11 +49,11 @@ script:pre-request {
 
 tests {
   // Should be the same as the .bru request file. Used as prefix in test name which also shows in test result in pipeline.
-  const requestName = "InstDelgParties_AsResOwner_ToPerson";
+  const requestName = "DelegationRequest_CreateDraftRequest";
   const testdata = require(`./testdata/instance-delegation-authorized-parties/${bru.getEnvVar("tokenEnv")}.js`);
   const body = res.getBody();
   
-  test(requestName + "|HttpStatus.OK", function() {
+  test(requestName + "|HttpStatus.Accepted", function() {
     expect(res.status).to.equal(202);
   });
   
