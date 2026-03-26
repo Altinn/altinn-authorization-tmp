@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
@@ -22,13 +23,13 @@ public class RequestApprovedNotificationHandler(
     IFeatureManager featureManager,
     IEntityService entityService) : IOutboxHandler
 {
-    public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
         if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
         {
             db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
-            return;
+            return OutboxStatus.Completed;
         }
 
         var (recipient, approver, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
@@ -43,19 +44,28 @@ public class RequestApprovedNotificationHandler(
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(
-                $@"Failed to send notification.
-                    Payload: {JsonSerializer.Serialize(content)}
-                    CorrelationId: {Activity.Current?.TraceId}
-                    Status Code: {response.StatusCode}
-                    Problem Title: {response.ProblemDetails?.Title}
-                    Problem Details: {response.ProblemDetails?.Detail}
-                    Problem Instance: {response.ProblemDetails?.Instance}
-                    Problem Type: {response.ProblemDetails?.Type}
-                    Problem Error Code: {response.ProblemDetails?.ErrorCode}
-                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}"
+            var errorMessage = $@"Failed to send notification.
+                Payload: {JsonSerializer.Serialize(content)}
+                CorrelationId: {Activity.Current?.TraceId}
+                Status Code: {response.StatusCode}
+                Problem Title: {response.ProblemDetails?.Title}
+                Problem Details: {response.ProblemDetails?.Detail}
+                Problem Instance: {response.ProblemDetails?.Instance}
+                Problem Type: {response.ProblemDetails?.Type}
+                Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}";
+
+            db.OutboxMessageLogs.Add(
+                message,
+                errorMessage
             );
+
+            await db.SaveChangesAsync(cancellationToken);
+
+            return OutboxStatus.Failed;
         }
+
+        return OutboxStatus.Completed;
     }
 
     private async Task<(Entity Recipient, Entity Approver, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)

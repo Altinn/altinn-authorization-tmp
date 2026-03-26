@@ -142,15 +142,15 @@ public class OutboxHandlerJobTest : IClassFixture<ApiFixture>
 
 public class SuccessHandler : IOutboxHandler
 {
-    public Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return Task.FromResult(OutboxStatus.Completed);
     }
 }
 
 public class FailureHandler : IOutboxHandler
 {
-    public Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
         throw new ArgumentException("failure");
     }
@@ -158,9 +158,10 @@ public class FailureHandler : IOutboxHandler
 
 public class TimeoutHandler : IOutboxHandler
 {
-    public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
         await Task.Delay(100_000_000, cancellationToken);
+        return OutboxStatus.Completed;
     }
 }
 

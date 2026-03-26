@@ -11,15 +11,11 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(
-    AppDbContext db,
-    IFeatureManager featureManager,
-    IOptions<CoreAppsettings> appsettings) : IRequestService
+public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettings) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -170,10 +166,10 @@ public class RequestService(
         var requestAssignmentResult = await GetOrCreateRequestAssignment(
             fromId: fromId,
             toId: toId,
-            roleId: roleId, 
+            roleId: roleId,
             ct: ct
         );
-        
+
         var requestAssignment = requestAssignmentResult.Value;
 
         return await CreatePackageRequest(requestAssignment.Id, packageId, status, ct);
