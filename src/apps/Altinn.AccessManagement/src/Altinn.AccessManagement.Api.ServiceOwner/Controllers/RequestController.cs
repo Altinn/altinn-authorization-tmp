@@ -264,7 +264,8 @@ public class RequestController(
         var providerClaim = User.FindFirst(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value;
 
         var byEntity = await entityService.GetEntity(byId, ct);
-        if (resource.Provider.RefId != byEntity.OrganizationIdentifier && resource.Provider.Code != providerClaim)
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier
+            && !string.Equals(resource.Provider.Code, providerClaim, StringComparison.OrdinalIgnoreCase))
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
