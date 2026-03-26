@@ -83,7 +83,7 @@ public class RequestApprovedNotificationHandler(
             entityApprover,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_approved_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
         );
 
         async Task<List<Resource>> GetResources(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
