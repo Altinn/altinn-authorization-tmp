@@ -255,6 +255,11 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
+        }
+
         // Fetch provider claim from token
         var providerClaim = User.FindFirst(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value;
 
@@ -264,7 +269,7 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
 
-        if (errorBuilder.TryBuild(out var problem))
+        if (errorBuilder.TryBuild(out problem))
         {
             return problem.ToActionResult();
         }
