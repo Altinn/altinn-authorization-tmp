@@ -960,7 +960,7 @@ public partial class ConnectionService(
             cancellationToken
         );
 
-        bool isMainAdminForFrom = connectionsToFromParty.Any(c => c.RoleId == RoleConstants.MainAdministrator.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
+        bool isMainAdminForFrom = connectionsToFromParty.Any(c => c.RoleId == RoleConstants.Hadm.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
