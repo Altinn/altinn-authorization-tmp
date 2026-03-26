@@ -255,8 +255,11 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
+        // Fetch provider claim from token
+        var providerClaim = User.FindFirst(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value;
+
         var byEntity = await entityService.GetEntity(byId, ct);
-        if (resource.Provider.RefId != byEntity.OrganizationIdentifier)
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier && resource.Provider.Code != providerClaim)
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
