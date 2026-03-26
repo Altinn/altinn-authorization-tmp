@@ -116,7 +116,7 @@ public class RequestControllerTest
             var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
-                $"{Route}/package?party={TestData.BjornMoe.Id}&to={TestData.BakerJohnsen.Id}&package={packageUrn}",
+                $"{Route}/package?party={TestData.VegardSolberg.Id}&to={TestData.BakerJohnsen.Id}&package={packageUrn}",
                 null,
                 TestContext.Current.CancellationToken);
 
@@ -155,8 +155,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.BakerJohnsen.Id,
-                    ToId = TestData.LarsBakke.Id,
+                    FromId = TestData.LarsBakke.Id,
+                    ToId = TestData.BakerJohnsen.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -240,8 +240,8 @@ public class RequestControllerTest
 
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.SvendsenAutomobil.Id,
-                    ToId = TestData.MortenDahl.Id,
+                    FromId = TestData.MortenDahl.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -325,8 +325,8 @@ public class RequestControllerTest
 
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.SvendsenAutomobil.Id,
-                    ToId = TestData.MortenDahl.Id,
+                    FromId = TestData.MortenDahl.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -378,8 +378,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    FromId = TestData.BakerJohnsen.Id,
-                    ToId = TestData.HildeStrand.Id,
+                    FromId = TestData.HildeStrand.Id,
+                    ToId = TestData.BakerJohnsen.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
