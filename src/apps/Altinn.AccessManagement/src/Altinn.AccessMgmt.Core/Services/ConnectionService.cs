@@ -954,6 +954,7 @@ public partial class ConnectionService(
                 IncludeSubConnections = true,
                 IncludePackages = true,
                 IncludeDelegation = false,
+                EnrichEntities = false,
             },
             ConnectionQueryDirection.FromOthers,
             true,
