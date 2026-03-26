@@ -3624,12 +3624,12 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Access management of individual messages, forms and dialogs"),
+            KeyValuePair.Create("Name", "Access manager of individual messages, forms and dialogs"),
             KeyValuePair.Create("Description", "Provides access to the user interface in the message box, allowing users to grant access to individual messages, forms, and dialogs that the recipient themselves have access to.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldinger, -skjema og -dialoger"),
-            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksa, for å kunne gi brukarar tilgang for enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
+            KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldingar, -skjema og -dialogar"),
+            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksen, for å kunne gi brukarar tilgang til enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
         ),
     };
 
@@ -4831,11 +4831,11 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "RoadUsers"),
-            KeyValuePair.Create("Description", "This authorization gives access to services related to vehicles and vehicle control. This includes the purchase and sale of vehicles. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
+            KeyValuePair.Create("Name", "Road users"),
+            KeyValuePair.Create("Description", "This authorization gives access to services related to driving licences and traffic information. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Køyretøy"),
+            KeyValuePair.Create("Name", "Trafikant"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til førarkort og trafikantinformasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i kva tilgangar denne fullmakta gir.")
         ),
     };
