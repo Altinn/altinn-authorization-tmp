@@ -24,7 +24,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration, Action<CoreAppsettings> configureAppsettings = null)
     {
-        var appsettings = new CoreAppsettings(configureAppsettings);
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();

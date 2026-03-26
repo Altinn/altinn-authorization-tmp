@@ -109,8 +109,8 @@ internal static partial class AccessManagementHost
         builder.Services.AddAccessMgmtCore(builder.Configuration, options =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            options.Request.NotifyRequestApprovedInSeconds = options.Request.NotifyRequestApprovedInSeconds;
-            options.Request.NotifyRequestPendingInSeconds = options.Request.NotifyRequestPendingInSeconds;
+            options.Request.NotifyRequestApprovedInSeconds = appsettings.Core.Request.NotifyRequestApprovedInSeconds;
+            options.Request.NotifyRequestPendingInSeconds = appsettings.Core.Request.NotifyRequestPendingInSeconds;
         });
 
         builder.ConfigurePostgreSqlConfiguration();
