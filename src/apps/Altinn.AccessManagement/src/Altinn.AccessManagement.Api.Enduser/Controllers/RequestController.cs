@@ -329,7 +329,7 @@ public class RequestController(
     /// <summary>
     /// Confirm a draft request (transitions Draft → Pending)
     /// </summary>
-    [HttpPut("sent/confirm")]
+    [HttpPut("draft/confirm")]
     [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
