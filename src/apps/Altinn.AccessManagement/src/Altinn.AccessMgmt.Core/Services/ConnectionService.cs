@@ -943,9 +943,25 @@ public partial class ConnectionService(
         // Fetch packages
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, ConfigureConnections, cancellationToken);
 
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result && p.Package.Id == PackageConstants.MainAdministrator.Id);
-
         // Fetch roles
+        var connectionsToFromParty = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = [party],
+                ToIds = [authenticatedUserUuid],
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeSubConnections = true,
+                IncludePackages = true,
+                IncludeDelegation = false,
+            },
+            ConnectionQueryDirection.FromOthers,
+            true,
+            cancellationToken
+        );
+
+        bool isMainAdminForFrom = connectionsToFromParty.Any(c => c.RoleId == RoleConstants.MainAdministrator.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
+
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
         // Fetch resource rights
