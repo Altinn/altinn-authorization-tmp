@@ -1026,7 +1026,26 @@ public partial class ConnectionService(
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, configureConnection, cancellationToken);
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+
+        // Fetch roles
+        var connectionsToFromParty = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = [party],
+                ToIds = [authenticatedUserUuid],
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeSubConnections = true,
+                IncludePackages = true,
+                IncludeDelegation = false,
+                EnrichEntities = false,
+            },
+            ConnectionQueryDirection.FromOthers,
+            true,
+            cancellationToken
+        );
+
+        bool isMainAdminForFrom = connectionsToFromParty.Any(c => c.RoleId == RoleConstants.Hadm.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
         var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
