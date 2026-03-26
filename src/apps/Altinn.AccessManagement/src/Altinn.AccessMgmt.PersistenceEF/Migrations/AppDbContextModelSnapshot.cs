@@ -2708,6 +2708,108 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasAnnotation("Altinn:AuditVersion", 3);
                 });
 
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completedat");
+
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text")
+                        .HasColumnName("correlationid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdat")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data");
+
+                    b.Property<string>("Handler")
+                        .HasColumnType("text")
+                        .HasColumnName("handler");
+
+                    b.Property<string>("RefId")
+                        .HasColumnType("text")
+                        .HasColumnName("refid");
+
+                    b.Property<int>("Retries")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("retries");
+
+                    b.Property<DateTime?>("Schedule")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("schedule");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("startedat");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<TimeSpan>("Timeout")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("interval")
+                        .HasDefaultValue(new TimeSpan(0, 0, 0, 10, 0))
+                        .HasColumnName("timeout");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outboxmessage");
+
+                    b.HasIndex("RefId")
+                        .HasDatabaseName("ix_outboxmessage_refid");
+
+                    b.ToTable("outboxmessage", "dbo");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessageLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt");
+
+                    b.Property<string>("Log")
+                        .HasColumnType("text")
+                        .HasColumnName("log");
+
+                    b.Property<Guid>("OutboxMessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("outboxmessageid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outboxmessagelog");
+
+                    b.HasIndex("OutboxMessageId")
+                        .HasDatabaseName("ix_outboxmessagelog_outboxmessageid");
+
+                    b.ToTable("outboxmessagelog", "dbo");
+                });
+
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Package", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3928,6 +4030,18 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Navigation("Variant");
                 });
 
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessageLog", b =>
+                {
+                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", "OutboxMessage")
+                        .WithMany("OutboxMessageLogs")
+                        .HasForeignKey("OutboxMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_outboxmessagelog_outboxmessage_outboxmessageid");
+
+                    b.Navigation("OutboxMessage");
+                });
+
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Package", b =>
                 {
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Area", "Area")
@@ -4178,6 +4292,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
                 {
                     b.Navigation("DelegationPackages");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", b =>
+                {
+                    b.Navigation("OutboxMessageLogs");
                 });
 #pragma warning restore 612, 618
         }

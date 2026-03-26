@@ -28,6 +28,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IPolicyFactory _policyFactory;
         private readonly IDelegationMetadataRepository _delegationRepository;
         private readonly IDelegationChangeEventQueue _eventQueue;
+        private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
         private readonly int delegationChangeEventQueueErrorId = 911;
 
         /// <summary>
@@ -38,13 +39,14 @@ namespace Altinn.AccessManagement.Core.Services
         /// <param name="delegationRepository">The delegation change repository (postgresql).</param>
         /// <param name="eventQueue">The delegation change event queue service to post events for any delegation change.</param>
         /// <param name="logger">Logger instance.</param>
-        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger)
+        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, Microsoft.FeatureManagement.IFeatureManager featureManager)
         {
             _prp = policyRetrievalPoint;
             _policyFactory = policyFactory;
             _delegationRepository = delegationRepository;
             _eventQueue = eventQueue;
             _logger = logger;
+            _featureManager = featureManager;
         }
 
         /// <inheritdoc/>
@@ -141,7 +143,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<bool> WriteInstanceDelegationPolicyInternal(string policyPath, InstanceRight rules, CancellationToken cancellationToken = default)
+        private async Task<bool> WriteInstanceDelegationPolicyInternal(string policyPath, InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
             // Check for a current delegation change from postgresql
             (XacmlPolicy ExistingDelegationPolicy, string PolicyPath) policyData = await GetExistingPolicy(policyPath, rules, cancellationToken);
@@ -160,7 +162,7 @@ namespace Altinn.AccessManagement.Core.Services
                 try
                 {
                     // Build delegation XacmlPolicy either as a new policy or add rules to existing
-                    XacmlPolicy delegationPolicy = BuildInstanceDelegationPolicy(policyData.ExistingDelegationPolicy, rules);
+                    XacmlPolicy delegationPolicy = BuildInstanceDelegationPolicy(policyData.ExistingDelegationPolicy, rules, ignoreExistingPolicy);
 
                     // Write delegation policy to blob storage
                     MemoryStream dataStream = PolicyHelper.GetXmlMemoryStreamFromXacmlPolicy(delegationPolicy);
@@ -262,11 +264,11 @@ namespace Altinn.AccessManagement.Core.Services
             return (existingDelegationPolicy, policyPath);
         }
 
-        private static XacmlPolicy BuildInstanceDelegationPolicy(XacmlPolicy existingDelegationPolicy, InstanceRight rules)
+        private static XacmlPolicy BuildInstanceDelegationPolicy(XacmlPolicy existingDelegationPolicy, InstanceRight rules, bool ignoreExistingPolicy)
         {
             // Build delegation XacmlPolicy either as a new policy or add rules to existing
             XacmlPolicy delegationPolicy;
-            if (existingDelegationPolicy != null)
+            if (existingDelegationPolicy != null && !ignoreExistingPolicy)
             {
                 delegationPolicy = existingDelegationPolicy;
                 PolicyParameters policyData = PolicyHelper.GetPolicyDataFromInstanceRight(rules);
@@ -303,9 +305,20 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, CancellationToken cancellationToken = default)
+        public async Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
-            bool validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out string path);
+            bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+            bool validPath;
+            string path;
+
+            if (useEF)
+            {
+                validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
+            }
+            else
+            {
+                validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
+            }
 
             if (validPath)
             {
@@ -313,7 +326,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 try
                 {
-                    writePolicySuccess = await WriteInstanceDelegationPolicyInternal(path, rules, cancellationToken);
+                    writePolicySuccess = await WriteInstanceDelegationPolicyInternal(path, rules, ignoreExistingPolicy, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -356,7 +369,27 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception ex)
             {
-                bool validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out string path);
+                bool useEF = false;
+                bool validPath;
+                string path;
+
+                try
+                {
+                    useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+                }
+                catch (Exception)
+                {
+                }
+                
+                if (useEF)
+                {
+                    validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
+                }
+                else
+                {
+                    validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
+                }
+
                 if (validPath)
                 {
                     _logger.LogError(ex, "An exception occured while processing authorization rules for delegation on delegation policy path: {path}", path);

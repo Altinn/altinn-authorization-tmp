@@ -1,9 +1,13 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text.Json;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -49,6 +53,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<EntityVariantRole> EntityVariantRoles => Set<EntityVariantRole>();
 
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    public DbSet<OutboxMessageLog> OutboxMessageLogs => Set<OutboxMessageLog>();
+
     public DbSet<Package> Packages => Set<Package>();
 
     public DbSet<PackageResource> PackageResources => Set<PackageResource>();
@@ -74,7 +82,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RequestAssignmentPackage> RequestAssignmentPackages => Set<RequestAssignmentPackage>();
 
     public DbSet<RequestAssignmentResource> RequestAssignmentResources => Set<RequestAssignmentResource>();
-    
+
     public DbSet<ErrorQueue> ErrorQueue => Set<ErrorQueue>();
 
     public DbSet<RightImportProgress> RightImportProgress => Set<RightImportProgress>();
@@ -176,6 +184,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditEntityType>(new AuditEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditEntityVariant>(new AuditEntityVariantConfiguration());
         modelBuilder.ApplyConfiguration<AuditEntityVariantRole>(new AuditEntityVariantRoleConfiguration());
+        modelBuilder.ApplyConfiguration<OutboxMessage>(new OutboxMessageConfiguration());
+        modelBuilder.ApplyConfiguration<OutboxMessageLog>(new OutboxMessageLogConfiguration());
         modelBuilder.ApplyConfiguration<AuditPackage>(new AuditPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditPackageResource>(new AuditPackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditProvider>(new AuditProviderConfiguration());

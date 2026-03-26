@@ -1,15 +1,20 @@
-﻿using System.Net.Mime;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
@@ -24,8 +29,13 @@ public class RequestController(
     IRequestService requestService,
     IEntityService entityService,
     IResourceService resourceService,
-    IPackageService packageService) : ControllerBase
+    IAuditAccessor auditAccessor,
+    IOptions<GeneralSettings> generalSettings
+    ) : ControllerBase
 {
+
+    private readonly GeneralSettings _generalSettings = generalSettings.Value;
+
     /// <summary>
     /// Get valid urn prefixes for party identification
     /// </summary>
@@ -57,6 +67,108 @@ public class RequestController(
     /// <summary>
     /// Create a resource request for a given party and resource
     /// </summary>
+    [HttpPost("resource")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
+    [AuditServiceOwnerConsumer]
+    [ProducesResponseType<RequestDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreateResourceRequest(
+        [FromQuery][Required] string from,
+        [FromQuery][Required] string to,
+        [FromQuery][Required] string resource,
+        [FromBody] string[]? rightKeys,
+        CancellationToken ct = default
+        )
+    {
+        ValidationErrorBuilder errorBuilder = default;
+
+        var fromResult = await GetEntity(from, "$QUERY/from", ct);
+        fromResult.Problems(ref errorBuilder);
+
+        var toResult = await GetEntity(to, "$QUERY/to", ct);
+        toResult.Problems(ref errorBuilder);
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
+        }
+
+        /*
+        NAV (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
+        ==
+        NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        */
+        return await CreateResourceRequest(
+            toId: toResult.Entity.Id,
+            fromId: fromResult.Entity.Id,
+            byId: auditAccessor.AuditValues.ChangedBy,
+            roleId: RoleConstants.Rightholder.Id,
+            status: RequestStatus.Draft,
+            resourceRef: new RequestReferenceDto() { ReferenceId = resource },
+            ct: ct
+            );
+    }
+
+    /// <summary>
+    /// Create a package request
+    /// </summary>
+    [HttpPost("package")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
+    [AuditServiceOwnerConsumer]
+    [ProducesResponseType<RequestDto>(StatusCodes.Status202Accepted, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CreatePackageRequest(
+        [FromQuery][Required] string from,
+        [FromQuery][Required] string to,
+        [FromQuery][Required] string package,
+        [FromBody] string[]? rightKeys,
+        CancellationToken ct = default
+        )
+    {
+        ValidationErrorBuilder errorBuilder = default;
+
+        var fromResult = await GetEntity(from, "$QUERY/from", ct);
+        fromResult.Problems(ref errorBuilder);
+
+        var toResult = await GetEntity(to, "$QUERY/to", ct);
+        toResult.Problems(ref errorBuilder);
+
+        if (!PackageConstants.TryGetByAll(package, out var packageObj))
+        {
+            errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package}'.")]);
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem.ToActionResult();
+        }
+
+        /*
+        /*
+        NAV (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
+        ==
+        NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        */
+        return await CreatePackageRequest(
+            toId: toResult.Entity.Id,
+            fromId: fromResult.Entity.Id,
+            byId: auditAccessor.AuditValues.ChangedBy,
+            roleId: RoleConstants.Rightholder.Id,
+            status: RequestStatus.Draft,
+            package: new RequestReferenceDto() { Id = packageObj.Id },
+            ct: ct
+            );
+    }
+
+    /// <summary>
+    /// Create a resource request for a given party and resource
+    /// </summary>
     [HttpPost]
     [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
@@ -68,38 +180,85 @@ public class RequestController(
     public async Task<IActionResult> CreateRequest([FromBody] CreateServiceOwnerRequest input, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
+        var resourceParamName = "resource";
+        var packageParamName = "package";
 
-        var fromInput = string.IsNullOrEmpty(input.From) ? input.Connection.From : input.From;
-        var toInput = string.IsNullOrEmpty(input.To) ? input.Connection.To : input.To;
-
-        var fromResult = await GetEntity(fromInput, "BODY/connection.from", ct);
-        if (fromResult.IsProblem)
+        if (input?.Resource is null && input?.Package is null)
         {
-            return fromResult.Problem.ToActionResult();
+            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, resourceParamName, [new(resourceParamName, "Either package or resource must be defined.")]);
+            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, packageParamName, [new(packageParamName, "Either package or resource must be defined.")]);
         }
 
-        var toResult = await GetEntity(toInput, "BODY/connection.to", ct);
-        if (toResult.IsProblem) 
-        { 
-            return toResult.Problem.ToActionResult(); 
+        if (input?.Resource?.HasValue() == true && input?.Package?.HasValue() == true)
+        {
+            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, resourceParamName, [new(resourceParamName, "Both package and resource are specified. Only one must be defined.")]);
+            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, packageParamName, [new(packageParamName, "Both package and resource are specified. Only one must be defined.")]);
         }
 
-        var from = fromResult.Value;
-        var to = toResult.Value;
+        var fromResult = await GetEntity(input?.From, "connection/from", ct);
+        fromResult.Problems(ref errorBuilder);
 
-        var role = RoleConstants.Rightholder;
-        var status = RequestStatus.Draft;
-        var resource = input.Resource is { } ? await resourceService.GetResource(input.Resource, ct) : null;
-        var package = input.Package is { } ? await packageService.GetPackage(input.Package, ct) : null;
+        var toResult = await GetEntity(input?.To, "connection/to", ct);
+        toResult.Problems(ref errorBuilder);
 
-        if (input.Resource.HasValue() && resource == null)
+        if (errorBuilder.TryBuild(out var problem))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, $"BODY/resource", [new("resource", $"Urn {input.Resource.ReferenceId} is not valid")]);
+            return problem.ToActionResult();
         }
 
-        if (input.Package.HasValue() && package == null)
+        /*
+        NAV (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
+        ==
+        NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
+        */
+
+        if (input?.Resource is { } && input.Resource.HasValue())
         {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound, $"BODY/package", [new("package", $"Urn {input.Package.ReferenceId} is not valid")]);
+            return await CreateResourceRequest(
+                toId: fromResult.Entity.Id,
+                fromId: toResult.Entity.Id,
+                byId: auditAccessor.AuditValues.ChangedBy,
+                roleId: RoleConstants.Rightholder.Id,
+                status: RequestStatus.Draft,
+                resourceRef: input.Resource,
+                ct: ct
+            );
+        }
+
+        if (input?.Package is { } && input.Package.HasValue())
+        {
+            return await CreatePackageRequest(
+                toId: fromResult.Entity.Id,
+                fromId: toResult.Entity.Id,
+                byId: auditAccessor.AuditValues.ChangedBy,
+                roleId: RoleConstants.Rightholder.Id,
+                status: RequestStatus.Draft,
+                package: input.Package,
+                ct: ct
+            );
+        }
+
+        errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound);
+        errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound);
+        errorBuilder.TryToActionResult(out var problemDetails);
+        return problemDetails;
+    }
+
+    private async Task<IActionResult> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+        var paramName = "resource";
+
+        var resource = await resourceService.GetResource(resourceRef, ct);
+        if (resource is null)
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
+        }
+
+        var byEntity = await entityService.GetEntity(byId, ct);
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier)
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -107,17 +266,14 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
-        var result = await requestService.CreateRequest(
-            new CreateRequestDto()
-            {
-                From = from.Id,
-                To = to.Id,
-                Role = role.Id,
-                Status = status,
-                Resource = resource?.Id,
-                Package = package?.Id,
-            },
-            ct
+        var result = await requestService.CreateResourceRequest(
+            toId: toId,
+            fromId: fromId,
+            byId: byId,
+            roleId: roleId,
+            resourceId: resource.Id,
+            status: status,
+            ct: ct
         );
 
         if (result.IsProblem)
@@ -130,18 +286,57 @@ public class RequestController(
         return Accepted(result.Value);
     }
 
-    private async Task<Result<Entity>> GetEntity(string urn, string paramName, CancellationToken ct = default)
+    private async Task<IActionResult> CreatePackageRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto package, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        if (!ValidUrn(urn))
+        if (!PackageConstants.TryGetByAll(package.ReferenceId, out var packageObj))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, paramName, [new(paramName, $"Urn {urn} is not valid")]);
+            errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package.ReferenceId}'.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
         {
-            return problem;
+            return problem.ToActionResult();
+        }
+
+        var result = await requestService.CreatePackageRequest(
+           toId: toId,
+           fromId: fromId,
+           byId: byId,
+           roleId: roleId,
+           packageId: packageObj.Id,
+           status: status,
+           ct: ct
+       );
+
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        result.Value.Links = BuildLinks(result.Value.Id);
+
+        return Accepted(result.Value);
+    }
+
+    private delegate void ValidationRule(ref ValidationErrorBuilder errors);
+
+    private async Task<(Entity Entity, ValidationRule Problems)> GetEntity(string urn, string paramName, CancellationToken ct = default)
+    {
+        var accumulatedErrors = new List<ValidationRule>();
+        ValidationRule errorBuilderFunc = (ref ValidationErrorBuilder errors) =>
+        {
+            foreach (var error in accumulatedErrors)
+            {
+                error(ref errors);
+            }
+        };
+
+        if (!ValidUrn(urn))
+        {
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, paramName, [new(paramName, $"Urn {urn} is not valid")]));
+            return (null, errorBuilderFunc);
         }
 
         var urnSegments = urn.Split(":");
@@ -150,7 +345,8 @@ public class RequestController(
 
         if (!ValidUrns.Contains(key))
         {
-            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, $"$QUERY/{paramName}", [new(paramName, $"Urn {urn} is not valid")]);
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, $"$QUERY/{paramName}", [new(paramName, $"Urn {urn} is not valid")]));
+            return (null, errorBuilderFunc);
         }
 
         var entity = key switch
@@ -163,24 +359,19 @@ public class RequestController(
 
         if (entity == null)
         {
-            errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]);
+            accumulatedErrors.Add((ref ValidationErrorBuilder errorBuilder) => errorBuilder.Add(ValidationErrorDescriptors.NotFound, $"$QUERY/{paramName}", [new(paramName, $"Entity not found with matcing urn '{urn}'")]));
         }
 
-        if (errorBuilder.TryBuild(out var problem1))
-        {
-            return problem1;
-        }
-
-        return entity;
+        return (entity, errorBuilderFunc);
     }
-   
+
     private static bool ValidUrn(string urn) => ValidUrns.Any(t => urn.StartsWith(t));
 
     private static string[] ValidUrns => ["urn:altinn:person:identifier-no", "urn:altinn:organization:identifier-no"];
 
-    private static RequestLinks BuildLinks(Guid requestId) => new()
+    private RequestLinks BuildLinks(Guid requestId) => new()
     {
-        DetailsLink = $"accessmanagement/api/v1/enduser/request/{requestId}/accept",
-        StatusLink = $"accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}"
+        DetailsLink = $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/requests/resource?requestId={requestId}",
+        StatusLink = $"https://platform.{_generalSettings.Hostname}/accessmanagement/api/v1/serviceowner/delegationrequests/{requestId}/status"
     };
 }

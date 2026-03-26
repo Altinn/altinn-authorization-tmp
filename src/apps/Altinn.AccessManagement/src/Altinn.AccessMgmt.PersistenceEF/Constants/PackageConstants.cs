@@ -16,6 +16,12 @@ public static class PackageConstants
     /// </summary>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
     {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            return false;
+        }
+
         if (TryGetByUrn(value, out result))
         {
             return true;
@@ -768,14 +774,14 @@ public static class PackageConstants
     /// - <c>Id:</c> 0ef5d123-6dd6-4fca-929b-30148996e926
     /// - <c>URN:</c> urn:altinn:accesspackage:beredskap
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakt til tjenester knyttet til etablering, rapportering og varsling av beredskap. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> Readiness { get; } = new ConstantDefinition<Package>("0ef5d123-6dd6-4fca-929b-30148996e926")
     {
         Entity = new()
         {
             Name = "Beredskap",
-            Description = "Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakt til tjenester knyttet til etablering, rapportering og varsling av beredskap. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:beredskap",
             Code = "beredskap",
             IsDelegable = true,
@@ -787,11 +793,11 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Readiness"),
-            KeyValuePair.Create("Description", "This access package authorizes services to manage and coordinate technical interfaces with the Swedish Tax Agency. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+            KeyValuePair.Create("Description", "This access package authorizes services related to the establishment, reporting and notification of emergency preparedness. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Beredskap"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester for å forvalta og koordinera tekniske grensesnitt mot Skatteetaten. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakt til tenester knytte til etablering, rapportering og varsling av beredskap. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3618,12 +3624,12 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Access management of individual messages, forms and dialogs"),
+            KeyValuePair.Create("Name", "Access manager of individual messages, forms and dialogs"),
             KeyValuePair.Create("Description", "Provides access to the user interface in the message box, allowing users to grant access to individual messages, forms, and dialogs that the recipient themselves have access to.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldinger, -skjema og -dialoger"),
-            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksa, for å kunne gi brukarar tilgang for enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
+            KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldingar, -skjema og -dialogar"),
+            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksen, for å kunne gi brukarar tilgang til enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
         ),
     };
 
@@ -4825,11 +4831,11 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "RoadUsers"),
-            KeyValuePair.Create("Description", "This authorization gives access to services related to vehicles and vehicle control. This includes the purchase and sale of vehicles. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
+            KeyValuePair.Create("Name", "Road users"),
+            KeyValuePair.Create("Description", "This authorization gives access to services related to driving licences and traffic information. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Køyretøy"),
+            KeyValuePair.Create("Name", "Trafikant"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til førarkort og trafikantinformasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i kva tilgangar denne fullmakta gir.")
         ),
     };

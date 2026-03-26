@@ -12,6 +12,7 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.Extensions;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
@@ -101,9 +102,16 @@ internal static partial class AccessManagementHost
             options.AppConnectionString = connectionStrings.AppSource;
             options.MigrationConnectionString = connectionStrings.MigrationSource;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
+            options.AddOutboxHandler<RequestApprovedNotificationHandler>("request_approved");
+            options.AddOutboxHandler<RequestPendingNotificationHandler>("request_pending");
         });
 
-        builder.Services.AddAccessMgmtCore(builder.Configuration);
+        builder.Services.AddAccessMgmtCore(builder.Configuration, options =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            options.Request.NotifyRequestApprovedInSeconds = appsettings.Core.Request.NotifyRequestApprovedInSeconds;
+            options.Request.NotifyRequestPendingInSeconds = appsettings.Core.Request.NotifyRequestPendingInSeconds;
+        });
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
@@ -309,6 +317,7 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_access_management")))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", false)))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_INSTANCE_DELEGATION, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_instance_delegation", false)))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", true)))
             .AddPolicy(AuthzConstants.POLICY_RESOURCEOWNER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_AUTHORIZEDPARTIES_RESOURCEOWNER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN])))
             .AddPolicy(AuthzConstants.POLICY_ENDUSER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ENDUSERSYSTEM])))

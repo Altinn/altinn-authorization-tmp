@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Core.Errors;
+﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Appsettings;
+using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -7,11 +10,12 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(AppDbContext db) : IRequestService
+public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettings) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -47,62 +51,51 @@ public class RequestService(AppDbContext db) : IRequestService
 
         return problems;
     }
-    
+
     /// <inheritdoc/>
-    public async Task<Result<IEnumerable<RequestDto>>> GetRequests(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RequestDto>>> GetSentRequests(Guid partyId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
     {
-        ValidationErrorBuilder error = default;
+        var filter = QuerySentFilter(partyId, toId);
+        var requestResources = string.IsNullOrEmpty(type) || type.Equals("resource", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentResource(filter, status, ct) : new List<RequestAssignmentResource>();
+        var requestPackages = string.IsNullOrEmpty(type) || type.Equals("package", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentPackage(filter, status, ct) : new List<RequestAssignmentPackage>();
 
-        if (!fromId.HasValue && !toId.HasValue)
-        {
-            error.Add(ValidationErrors.RequestMissingFromOrTo);
-        }
+        var result = requestResources.Select(DtoMapper.Convert)
+            .Union(requestPackages.Select(DtoMapper.Convert));
 
-        var requestResources = string.IsNullOrEmpty(type) || type == "resource" ? await GetRequestAssignmentResource(fromId, toId, status, ct) : default;
-        var requestPackages = string.IsNullOrEmpty(type) || type == "package" ? await GetRequestAssignmentPackage(fromId, toId, status, ct) : default;
-
-        if (!requestResources.Any() && !requestPackages.Any())
-        {
-            error.Add(ValidationErrors.RequestNotFound);
-        }
-
-        if (error.TryBuild(out var problems))
-        {
-            return problems;
-        }
-
-        var result = requestResources.Select(DtoMapper.Convert).Union(requestPackages.Select(DtoMapper.Convert));
         return result.ToList();
     }
 
     /// <inheritdoc/>
-    public async Task<Result<RequestDto>> CreateRequest(CreateRequestDto request, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequests(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
     {
-        ValidationErrorBuilder error = default;
+        var filter = QueryReceivedFilter(partyId, fromId);
+        var requestResources = string.IsNullOrEmpty(type) || type.Equals("resource", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentResource(filter, status, ct) : new List<RequestAssignmentResource>();
+        var requestPackages = string.IsNullOrEmpty(type) || type.Equals("package", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentPackage(filter, status, ct) : new List<RequestAssignmentPackage>();
 
-        if (!request.Resource.HasValue && !request.Package.HasValue)
-        {
-            error.Add(ValidationErrors.RequestMissingResourceOrPackage);
-            error.TryBuild(out var inputProblems);
-            return inputProblems;
-        }
+        var result = requestResources.Select(DtoMapper.Convert)
+            .Union(requestPackages.Select(DtoMapper.Convert));
 
-        var requestAssignmentResult = await GetOrCreateRequestAssignment(request.From, request.To, request.Role, ct);
-        var requestAssignment = requestAssignmentResult.Value;
+        return result.ToList();
+    }
 
-        if (request.Resource.HasValue)
-        {
-            return await CreateRequestAssignmentResource(requestAssignment.Id, request.Resource.Value, request.Status, ct);
-        }
+    /// <inheritdoc/>
+    public async Task<Result<int>> GetSentRequestsCount(Guid partyId, Guid? toId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
+    {
+        var filter = QuerySentFilter(partyId, toId);
+        var resourceCount = string.IsNullOrEmpty(type) || type.Equals("resource", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentResourceCount(filter, status, ct) : 0;
+        var packageCount = string.IsNullOrEmpty(type) || type.Equals("package", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentPackageCount(filter, status, ct) : 0;
 
-        if (request.Package.HasValue)
-        {
-            return await CreateRequestAssignmentPackage(requestAssignment.Id, request.Package.Value, request.Status, ct);
-        }
+        return resourceCount + packageCount;
+    }
 
-        error.Add(ValidationErrors.RequestFailedToCreateRequest);
-        error.TryBuild(out var problems);
-        return problems;
+    /// <inheritdoc/>
+    public async Task<Result<int>> GetReceivedRequestsCount(Guid partyId, Guid? fromId, IEnumerable<RequestStatus> status, string? type, CancellationToken ct = default)
+    {
+        var filter = QueryReceivedFilter(partyId, fromId);
+        var resourceCount = string.IsNullOrEmpty(type) || type.Equals("resource", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentResourceCount(filter, status, ct) : 0;
+        var packageCount = string.IsNullOrEmpty(type) || type.Equals("package", StringComparison.OrdinalIgnoreCase) ? await GetRequestAssignmentPackageCount(filter, status, ct) : 0;
+
+        return resourceCount + packageCount;
     }
 
     /// <inheritdoc/>
@@ -113,117 +106,368 @@ public class RequestService(AppDbContext db) : IRequestService
         var requestResult = await GetRequest(requestId, ct);
         if (requestResult.IsProblem)
         {
-            return requestResult;
+            return requestResult.Problem;
         }
 
-        var request = requestResult.Value;
-        
-        if (request.From.Id != partyUuid)
+        var verify = VerifyRequestStatusUpdate(request: requestResult.Value, partyUuid, status);
+        if (verify.IsProblem)
         {
-            errorBuilder.Add(ValidationErrors.RequestNotFound, "$QUERY/requestId", [new("RequestId", $"Request {requestId} does not exists")]);
+            return verify.Problem;
         }
 
-        var statusRules = new Dictionary<RequestStatus, List<RequestStatus>>
-        {
-            { RequestStatus.Draft, [RequestStatus.Pending, RequestStatus.Withdrawn] },
-            { RequestStatus.Pending, [RequestStatus.Approved, RequestStatus.Rejected, RequestStatus.Withdrawn] },
-            { RequestStatus.Approved, [] },
-            { RequestStatus.Rejected, [] },
-            { RequestStatus.Withdrawn, [] }
-        };
-
-        foreach (var rule in statusRules)
-        {
-            if (request.Status == rule.Key && !rule.Value.Contains(status))
-            {
-                errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, "$QUERY/status", [new("Status", $"Request cannot change from {request.Status} to {status}.")]);
-            }
-        }
-
-        if (errorBuilder.TryBuild(out var problem))
-        {
-            return problem;
-        }
-
-        switch (request.Type)
+        switch (requestResult.Value.Type)
         {
             case "resource":
-                await UpdateResourceRequestStatus(requestId, status);
-                break;
+                return await UpdateResourceRequestStatus(requestId, status, ct);
             case "package":
-                await UpdatePackageRequestStatus(requestId, status);
-                break;
+                return await UpdatePackageRequestStatus(requestId, status, ct);
         }
 
-        return await GetRequest(requestId, ct);
+        errorBuilder.Add(ValidationErrors.RequestNotFound);
+        errorBuilder.TryBuild(out var problems);
+        return problems;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
+    {
+        ValidationErrorBuilder error = default;
+
+        if (toId == fromId)
+        {
+            error.Add(ValidationErrors.RequestFromSelfNotAllowed);
+            error.TryBuild(out var inputProblems);
+            return inputProblems;
+        }
+
+        var requestAssignmentResult = await GetOrCreateRequestAssignment(
+           fromId: fromId,
+           toId: toId,
+           roleId: roleId,
+           ct: ct
+           );
+        var requestAssignment = requestAssignmentResult.Value;
+
+        return await CreateResourceRequest(requestAssignment.Id, resourceId, status, ct);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<RequestDto>> CreatePackageRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid packageId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
+    {
+        ValidationErrorBuilder error = default;
+
+        if (toId == fromId)
+        {
+            error.Add(ValidationErrors.RequestFromSelfNotAllowed);
+            error.TryBuild(out var inputProblems);
+            return inputProblems;
+        }
+
+        var requestAssignmentResult = await GetOrCreateRequestAssignment(
+            fromId: fromId,
+            toId: toId,
+            roleId: roleId,
+            ct: ct
+        );
+
+        var requestAssignment = requestAssignmentResult.Value;
+
+        return await CreatePackageRequest(requestAssignment.Id, packageId, status, ct);
     }
 
     #region privates
-
-    private async Task<bool> UpdatePackageRequestStatus(Guid id, RequestStatus status)
+    private async Task<Result<RequestDto>> CreateResourceRequest(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(t => t.Id == id);
-        if (request is { })
+        var request = await db.RequestAssignmentResources
+            .Include(r => r.Assignment)
+            .FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus, ct);
+
+        if (request is null)
         {
-            request.Status = status;
-            await db.SaveChangesAsync();
-            return true;
+            request = new RequestAssignmentResource
+            {
+                Status = initialStatus,
+                AssignmentId = assignmentId,
+                ResourceId = resourceId
+            };
+            db.RequestAssignmentResources.Add(request);
+
+            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, resourceId, null, ct);
+
+            var res = await db.SaveChangesAsync(ct);
+
+            if (res == 0)
+            {
+                return Problems.RequestCreationFailed;
+            }
         }
 
-        return false;
+        return await GetRequest(request.Id, ct);
     }
 
-    private async Task<bool> UpdateResourceRequestStatus(Guid id, RequestStatus status)
+    private async Task<Result<RequestDto>> CreatePackageRequest(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(t => t.Id == id);
-        if (request is { })
+        var request = await db.RequestAssignmentPackages
+            .Include(r => r.Assignment)
+            .FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
+
+        if (request is null)
         {
-            request.Status = status;
-            await db.SaveChangesAsync();
-            return true;
+            request = new RequestAssignmentPackage
+            {
+                Status = initialStatus,
+                AssignmentId = assignmentId,
+                PackageId = packageId,
+            };
+            db.RequestAssignmentPackages.Add(request);
+            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, packageId, ct);
+
+            var res = await db.SaveChangesAsync(ct);
+            if (res == 0)
+            {
+                return Problems.RequestCreationFailed;
+            }
         }
 
-        return false;
+        return await GetRequest(request.Id, ct);
     }
 
-    private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, CancellationToken ct)
+    private static Result<RequestDto> VerifyRequestStatusUpdate(RequestDto request, Guid partyUuid, RequestStatus status)
     {
-        if (!fromId.HasValue && !toId.HasValue)
+        ValidationErrorBuilder errorBuilder = default;
+
+        switch (request.Status)
         {
-            throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
+            case RequestStatus.Draft:
+                ValidateDraft(request, partyUuid, status, ref errorBuilder);
+                break;
+
+            case RequestStatus.Pending:
+                ValidatePending(request, partyUuid, status, ref errorBuilder);
+                break;
+
+            case RequestStatus.Approved:
+            case RequestStatus.Rejected:
+            case RequestStatus.Withdrawn:
+                AddUnsupportedStatusError(request, status, ref errorBuilder);
+                break;
         }
 
-        return await db.RequestAssignmentResources
+        errorBuilder.TryBuild(out var problems);
+
+        return problems != null ? problems : request;
+    }
+
+    private static void ValidateDraft(RequestDto request, Guid partyUuid, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        if (status != RequestStatus.Pending && status != RequestStatus.Withdrawn)
+        {
+            AddUnsupportedStatusError(request, status, ref errorBuilder);
+            return;
+        }
+
+        if (request.From.Id != partyUuid)
+        {
+            AddUnauthorizedStatusError(request, status, ref errorBuilder);
+        }
+    }
+
+    private static void ValidatePending(RequestDto request, Guid partyUuid, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        switch (status)
+        {
+            case RequestStatus.Withdrawn:
+                if (request.From.Id != partyUuid)
+                {
+                    AddUnauthorizedStatusError(request, status, ref errorBuilder);
+                }
+
+                break;
+
+            case RequestStatus.Approved:
+            case RequestStatus.Rejected:
+                if (request.To.Id != partyUuid)
+                {
+                    AddUnauthorizedStatusError(request, status, ref errorBuilder);
+                }
+
+                break;
+
+            default:
+                AddUnsupportedStatusError(request, status, ref errorBuilder);
+                break;
+        }
+    }
+
+    private static void AddUnsupportedStatusError(RequestDto request, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        var paramName = "party";
+
+        errorBuilder.Add(
+            ValidationErrors.RequestUnsupportedStatusUpdate,
+            $"$QUERY/{paramName}",
+            [new(paramName, $"Changing request status from {request.Status} to {status} is not allowed.")]
+        );
+    }
+
+    private static void AddUnauthorizedStatusError(RequestDto request, RequestStatus status, ref ValidationErrorBuilder errorBuilder)
+    {
+        var paramName = "party";
+
+        errorBuilder.Add(
+            ValidationErrors.RequestUnauthorizedStatusUpdate,
+            $"$QUERY/{paramName}",
+            [new(paramName, $"Unable to update {request.Id} from {request.Status} to {status}")]
+        );
+    }
+
+    private async Task<Result<RequestDto>> UpdatePackageRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+
+        var request = await db.RequestAssignmentPackages
+            .Include(t => t.Assignment)
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+
+        if (request is not { })
+        {
+            errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
+            errorBuilder.TryBuild(out var errors);
+            if (errors != null)
+            {
+                return errors;
+            }
+        }
+
+        request.Status = status;
+        if (status == RequestStatus.Approved)
+        {
+            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, request.PackageId, ct);
+        }
+
+        var res = await db.SaveChangesAsync(ct);
+
+        if (res == 0)
+        {
+            errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentPackages));
+        }
+
+        errorBuilder.TryBuild(out var problems);
+        if (problems != null)
+        {
+            return problems;
+        }
+
+        return await GetRequest(id, ct);
+    }
+
+    private async Task<Result<RequestDto>> UpdateResourceRequestStatus(Guid id, RequestStatus status, CancellationToken ct = default)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+
+        var request = await db.RequestAssignmentResources
+            .Include(t => t.Assignment)
+            .FirstOrDefaultAsync(t => t.Id == id, ct);
+
+        if (request is not { })
+        {
+            errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentResources));
+            errorBuilder.TryBuild(out var errors);
+            if (errors != null)
+            {
+                return errors;
+            }
+        }
+
+        request.Status = status;
+        if (status == RequestStatus.Approved)
+        {
+            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, request.ResourceId, null, ct);
+        }
+
+        var res = await db.SaveChangesAsync(ct);
+
+        if (res == 0)
+        {
+            errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentResources));
+        }
+
+        errorBuilder.TryBuild(out var problems);
+        if (problems != null)
+        {
+            return problems;
+        }
+
+        return await GetRequest(id, ct);
+    }
+
+    private async Task<IEnumerable<RequestAssignmentResource>> GetRequestAssignmentResource(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
+    {
+        ValidateFilter(filter);
+
+        return await BuildRequestAssignmentResourceQuery(filter, status)
             .Include(r => r.Assignment).ThenInclude(a => a.From)
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Resource)
-            .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .ToListAsync(cancellationToken: ct);
     }
-    
-    private async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(Guid? fromId, Guid? toId, IEnumerable<RequestStatus> status, CancellationToken ct)
-    {
-        if (!fromId.HasValue && !toId.HasValue)
-        {
-            throw new ArgumentException("At least one of fromId, toId or requestedBy must be provided");
-        }
 
-        return await db.RequestAssignmentPackages
+    private async Task<IEnumerable<RequestAssignmentPackage>> GetRequestAssignmentPackage(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
+    {
+        ValidateFilter(filter);
+
+        return await BuildRequestAssignmentPackageQuery(filter, status)
             .Include(r => r.Assignment).ThenInclude(a => a.From)
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Package)
-            .WhereIf(fromId.HasValue, r => r.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, r => r.Assignment.ToId == toId.Value)
-            .WhereIf(status?.Any() == true, r => status.Contains(r.Status))
             .ToListAsync(cancellationToken: ct);
+    }
+
+    private async Task<int> GetRequestAssignmentResourceCount(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
+    {
+        ValidateFilter(filter);
+        return await BuildRequestAssignmentResourceQuery(filter, status).CountAsync(cancellationToken: ct);
+    }
+
+    private async Task<int> GetRequestAssignmentPackageCount(RequestFilter filter, IEnumerable<RequestStatus> status, CancellationToken ct)
+    {
+        ValidateFilter(filter);
+        return await BuildRequestAssignmentPackageQuery(filter, status).CountAsync(cancellationToken: ct);
+    }
+
+    private IQueryable<RequestAssignmentResource> BuildRequestAssignmentResourceQuery(RequestFilter filter, IEnumerable<RequestStatus> status)
+    {
+        return db.RequestAssignmentResources
+            .WhereIf(filter.FromId.HasValue, r => r.Assignment.FromId == filter.FromId.Value)
+            .WhereIf(filter.ToId.HasValue, r => r.Assignment.ToId == filter.ToId.Value)
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status));
+    }
+
+    private IQueryable<RequestAssignmentPackage> BuildRequestAssignmentPackageQuery(RequestFilter filter, IEnumerable<RequestStatus> status)
+    {
+        return db.RequestAssignmentPackages
+            .WhereIf(filter.FromId.HasValue, r => r.Assignment.FromId == filter.FromId.Value)
+            .WhereIf(filter.ToId.HasValue, r => r.Assignment.ToId == filter.ToId.Value)
+            .WhereIf(status?.Any() == true, r => status.Contains(r.Status));
+    }
+
+    private static void ValidateFilter(RequestFilter filter)
+    {
+        if (!filter.FromId.HasValue && !filter.ToId.HasValue)
+        {
+            throw new ArgumentException("At least one of fromId or toId must be provided");
+        }
     }
 
     private async Task<Result<RequestAssignment>> GetOrCreateRequestAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken ct = default)
     {
+        /*
+        A Request from Kari by NAV to BakerAS for AppResource01.
+        Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
+        */
+
         var request = await db.RequestAssignments.FirstOrDefaultAsync(r => r.FromId == fromId && r.ToId == toId && r.RoleId == roleId, ct);
         if (request == null)
         {
@@ -246,51 +490,157 @@ public class RequestService(AppDbContext db) : IRequestService
         return request;
     }
 
-    private async Task<Result<RequestDto>> CreateRequestAssignmentResource(Guid assignmentId, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    private async Task AddRequestPendingToOutbox(Guid requesterId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
     {
-        var request = await db.RequestAssignmentResources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.ResourceId == resourceId && r.Status == initialStatus, ct);
-        if (request == null)
+        await db.OutboxMessages.UpsertOutboxAsync(
+            refId: $"request_pending_{requesterId}_{recipientId}",
+            handler: "request_pending",
+            addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, msg),
+            updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, msg, data),
+            cancellationToken: ct
+        );
+
+        ResourceRequestPendingNotificationMessage UpdateValue(
+            Guid requesterId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg,
+            ResourceRequestPendingNotificationMessage data)
         {
-            request = new RequestAssignmentResource
+            if (data is null)
             {
-                Status = initialStatus,
-                AssignmentId = assignmentId,
-                ResourceId = resourceId
-            };
-            db.RequestAssignmentResources.Add(request);
-
-            var res = await db.SaveChangesAsync(ct);
-
-            if (res == 0)
-            {
-                return Problems.RequestCreationFailed;
+                Activity.Current?.AddTag(nameof(AddRequestPendingToOutbox), $"Current outbox message {nameof(ResourceRequestPendingNotificationMessage)} is null? Creating new object.");
+                return AddValue(requesterId, recipientId, resourceId, packageId, msg);
             }
+
+            data.Updated++;
+
+            if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
+            {
+                data.ResourceIds = data.ResourceIds.Append(resourceId.Value);
+            }
+
+            if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
+            {
+                data.PackageIds = data.PackageIds.Append(packageId.Value);
+            }
+
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestPendingInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+
+            var candidate = now.Add(processAfter / (data.Updated + 1));
+            msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
+
+            return data;
         }
 
-        return await GetRequest(request.Id, ct);
+        ResourceRequestPendingNotificationMessage AddValue(
+            Guid requesterId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg)
+        {
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestPendingInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+            var schedule = now.Add(processAfter);
+            msg.Schedule = schedule;
+            msg.Timeout = TimeSpan.FromMinutes(1);
+            return new ResourceRequestPendingNotificationMessage()
+            {
+                RecipientId = requesterId,
+                RequesterId = recipientId,
+                ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
+                PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
+                InitiatedAt = now,
+                Updated = 1,
+            };
+        }
     }
 
-    private async Task<Result<RequestDto>> CreateRequestAssignmentPackage(Guid assignmentId, Guid packageId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    private async Task AddRequestApprovedToOutbox(Guid approverId, Guid recipientId, Guid? resourceId, Guid? packageId, CancellationToken ct)
     {
-        var request = await db.RequestAssignmentPackages.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId && r.PackageId == packageId && r.Status == initialStatus, cancellationToken: ct);
-        if (request is null)
-        {
-            request = new RequestAssignmentPackage
-            {
-                Status = initialStatus,
-                AssignmentId = assignmentId,
-                PackageId = packageId,
-            };
-            db.RequestAssignmentPackages.Add(request);
+        await db.OutboxMessages.UpsertOutboxAsync(
+            refId: $"request_approved_{approverId}_{recipientId}",
+            handler: "request_approved",
+            addValueFactory: msg => AddValue(approverId, recipientId, resourceId, packageId, msg),
+            updateValueFactory: (msg, data) => UpdateValue(approverId, recipientId, resourceId, packageId, msg, data),
+            cancellationToken: ct
+        );
 
-            var res = await db.SaveChangesAsync(ct);
-            if (res == 0)
+        RequestApprovedNotificationMessage UpdateValue(
+            Guid requesterId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg,
+            RequestApprovedNotificationMessage data)
+        {
+            if (data is null)
             {
-                return Problems.RequestCreationFailed;
+                Activity.Current?.AddTag(nameof(AddRequestApprovedToOutbox), $"Current outbox message {nameof(ResourceRequestPendingNotificationMessage)} is null? Creating new object.");
+                return AddValue(requesterId, recipientId, resourceId, packageId, msg);
             }
+
+            data.Updated++;
+
+            if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
+            {
+                data.ResourceIds = data.ResourceIds.Append(resourceId.Value);
+            }
+
+            if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
+            {
+                data.PackageIds = data.PackageIds.Append(packageId.Value);
+            }
+
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestApprovedInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+
+            var candidate = now.Add(processAfter / (data.Updated + 1));
+
+            msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
+
+            return data;
         }
 
-        return await GetRequest(request.Id, ct);
+        RequestApprovedNotificationMessage AddValue(
+            Guid approverId,
+            Guid recipientId,
+            Guid? resourceId,
+            Guid? packageId,
+            OutboxMessage msg)
+        {
+            var processAfter = TimeSpan.FromSeconds(appsettings?.Value?.Request?.NotifyRequestApprovedInSeconds ?? (60 * 15));
+            var now = DateTime.UtcNow;
+            var schedule = now.Add(processAfter);
+            msg.Schedule = schedule;
+            msg.Timeout = TimeSpan.FromMinutes(1);
+
+            return new RequestApprovedNotificationMessage()
+            {
+                RecipientId = approverId,
+                ApproverId = recipientId,
+                ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
+                PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
+                InitiatedAt = schedule,
+                Updated = 1,
+            };
+        }
     }
+
+    private static RequestFilter QuerySentFilter(Guid party, Guid? toId)
+    {
+        return new RequestFilter(party, toId);
+    }
+
+    private static RequestFilter QueryReceivedFilter(Guid party, Guid? fromId)
+    {
+        return new RequestFilter(fromId, party);
+    }
+
+    internal record RequestFilter(Guid? FromId, Guid? ToId);
+
     #endregion
 }

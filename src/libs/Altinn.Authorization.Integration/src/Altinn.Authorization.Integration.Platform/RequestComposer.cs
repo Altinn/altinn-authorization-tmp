@@ -1,6 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Web;
 using Altinn.Common.AccessTokenClient.Services;
 using CommunityToolkit.Diagnostics;
@@ -68,6 +71,20 @@ internal static class RequestComposer
         if (uri != null)
         {
             request.RequestUri = new Uri(uri, string.Join("/", segments));
+        }
+    };
+
+    /// <summary>
+    /// Sets the payload of the request and content-type to 'application/json'
+    /// </summary>
+    /// <param name="payload">The object to be serialized.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns>An action to configure the request content.</returns>
+    public static Action<HttpRequestMessage> WithJSONPayload<T>(T payload, JsonSerializerOptions? options = null) => request =>
+    {
+        if (payload is { })
+        {
+            request.Content = JsonContent.Create(payload, options: options);
         }
     };
 

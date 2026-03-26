@@ -15,7 +15,11 @@ db_max_pool_size = 10
 db_compute_sku   = "D2"
 configuration = {
   consent = {
-    batch_size = 1000,
-    max_degree_of_parallelism = 10
+    batch_size                = 5000,
+    max_degree_of_parallelism = 20
+  }
+  core = {
+    request_notify_request_approved_in_seconds = 600
+    request_notify_request_pending_in_seconds  = 960
   }
 }
