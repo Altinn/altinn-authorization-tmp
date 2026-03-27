@@ -192,14 +192,14 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             };
             db.RequestAssignmentResources.Add(request);
 
-            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, resourceId, null, ct);
-
             var res = await db.SaveChangesAsync(ct);
 
             if (res == 0)
             {
                 return Problems.RequestCreationFailed;
             }
+
+            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, resourceId, null, ct);
         }
 
         return await GetRequest(request.Id, ct);
@@ -220,13 +220,14 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
                 PackageId = packageId,
             };
             db.RequestAssignmentPackages.Add(request);
-            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, packageId, ct);
 
             var res = await db.SaveChangesAsync(ct);
             if (res == 0)
             {
                 return Problems.RequestCreationFailed;
             }
+
+            await AddRequestPendingToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, packageId, ct);
         }
 
         return await GetRequest(request.Id, ct);
