@@ -26,9 +26,7 @@ public class RequestControllerTest
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
-            claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_ENDUSER));
-            claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ));
-            claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE));
+            claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_PORTAL_ENDUSER} {AuthzConstants.SCOPE_ENDUSER_REQUESTS_READ} {AuthzConstants.SCOPE_ENDUSER_REQUESTS_WRITE}"));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         return client;
