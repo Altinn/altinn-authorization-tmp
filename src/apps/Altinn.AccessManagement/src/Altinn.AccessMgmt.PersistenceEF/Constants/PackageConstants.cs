@@ -4869,7 +4869,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This authorization provides access to services related to passenger and freight transport along the road network. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Veitransport"),
+            KeyValuePair.Create("Name", "Vegtransport"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til person- og godstransport langs vegnettet. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
