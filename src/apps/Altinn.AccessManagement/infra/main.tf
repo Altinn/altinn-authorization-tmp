@@ -194,7 +194,10 @@ module "appsettings" {
   labels = {
     "${var.environment}-access-management" = {
       values = {
-        "ConsentMigration:BatchSize" = { value = tostring(var.configuration.consent.batch_size) }
+        "ConsentMigration:BatchSize"                  = { value = tostring(var.configuration.consent.batch_size) }
+        "ConsentMigration:MaxDegreeOfParallelism"     = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
+        "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) }
+        "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }
       }
     }
   }
@@ -213,6 +216,30 @@ module "appsettings" {
   ]
 
   feature_flags = [
+    {
+      name        = "AccessMgmt.Core.Outbox.RequestNotifyPending"
+      description = "Specifies if notifications for pending requests are enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.Outbox.RequestNotifyApproved"
+      description = "Specifies if notifications for approved requests are enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.Outbox.Handler"
+      description = "Specifies if the outbox handler should be enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.Outbox.Reaper"
+      description = "Specifies if the outbox reaper should be enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
     {
       name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
       description = "Ignores single rights."
@@ -251,19 +278,31 @@ module "appsettings" {
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AllAltinnRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II roles should be streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnClientRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II client roles should streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
       name        = "AccessMgmt.Core.HostedServices.AltinnAdminRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      description = "Specifies if the Altinn II admin roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync"
+      description = "Specifies if the Altinn II bankruptcy estate roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync"
+      description = "Specifies if the Altinn II private tax affair roles should be streamed from SBLBridge service to access management database as assignments with skatteforhold privatperson packages"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

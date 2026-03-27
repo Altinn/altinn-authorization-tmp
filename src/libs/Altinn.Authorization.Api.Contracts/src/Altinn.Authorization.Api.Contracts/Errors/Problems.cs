@@ -149,4 +149,7 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor PackageDelegationNotAuthorized { get; }
     = _factory.Create(34, HttpStatusCode.Forbidden, "Service owner is not authorized to delegate this access package");
+  
+    public static ProblemDescriptor MissingRightKey { get; }
+    = _factory.Create(35, HttpStatusCode.BadRequest, "No right key provided");
 }

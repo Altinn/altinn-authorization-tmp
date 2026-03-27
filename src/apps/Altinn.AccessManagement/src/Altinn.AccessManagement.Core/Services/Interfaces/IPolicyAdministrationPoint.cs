@@ -18,7 +18,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<bool> WritePolicyAsync(string org, string app, Stream fileStream, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Trys to sort and store the set of rules as delegation policy files in blob storage.
+        /// Tries to sort and store the set of rules as delegation policy files in blob storage.
         /// </summary>
         /// <param name="rules">The set of rules to be delegated</param>
         /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
@@ -27,15 +27,16 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<List<Rule>> TryWriteDelegationPolicyRules(List<Rule> rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Trys to sort and store the set of rules as delegation policy files in blob storage.
+        /// Tries to sort and store the set of rules as delegation policy files in blob storage.
         /// </summary>
         /// <param name="rules">The set of instance rules to be delegated</param>
+        /// <param name="ignoreExistingPolicy">Ignore existing policy when writing new policy</param>
         /// <param name="cancellationToken">CancellationToke</param>
         /// <returns>The list of instance rules with created Id and result status</returns>
-        Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, CancellationToken cancellationToken = default);
+        Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Trys to sort and revoke the set of rules as delegation policy files in blob storage.
+        /// Tries to sort and store the set of rules as delegation policy files in blob storage.
         /// </summary>
         /// <param name="rules">The set of instance rules to be revoked</param>
         /// <param name="cancellationToken">CancellationToke</param>
@@ -43,7 +44,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<InstanceRight> TryWriteInstanceRevokePolicyRules(InstanceRight rules, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Trys to sort and revoke the set of rules as delegation policy files in blob storage.
+        /// Tries to sort and revoke the set of rules as delegation policy files in blob storage.
         /// </summary>
         /// <param name="rights">The set of instance rules to be revoked</param>
         /// <param name="cancellationToken">CancellationToke</param>
@@ -51,7 +52,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<List<InstanceRight>> TryWriteInstanceRevokeAllPolicyRules(List<InstanceRight> rights, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Trys to sort and delete the set of rules matching the list of ruleMatches to delete from delegation policy files in blob storage.
+        /// Tries to sort and delete the set of rules matching the list of ruleMatches to delete from delegation policy files in blob storage.
         /// </summary>
         /// <param name="rulesToDelete">Entity to define which rules to be deleted</param>
         /// <param name="cancellationToken">CancellationToken</param>
