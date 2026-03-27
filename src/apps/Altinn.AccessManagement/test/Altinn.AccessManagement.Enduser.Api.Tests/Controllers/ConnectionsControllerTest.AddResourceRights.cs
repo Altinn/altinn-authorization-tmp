@@ -148,6 +148,16 @@ public partial class ConnectionsControllerTest
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.Created, $"Expected Created but got {response.StatusCode}. Response body: {responseContent}");
+
+            // Assert on what was written
+            var policyFactory = Fixture.Server.Services.GetRequiredService<IPolicyFactory>() as PolicyFactoryMock;
+            Assert.NotNull(policyFactory);
+            Assert.NotEmpty(policyFactory.WrittenPolicies);
+
+            // Check a specific path was written
+            var (path, content) = policyFactory.WrittenPolicies.Single();
+            string xml = Encoding.UTF8.GetString(content);
+            Assert.Contains("expected-content", xml);
         }
 
         /// <summary>
