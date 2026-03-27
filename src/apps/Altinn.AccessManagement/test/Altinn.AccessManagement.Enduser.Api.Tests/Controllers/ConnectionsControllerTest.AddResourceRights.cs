@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
+using System.Xml;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -15,6 +15,9 @@ using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.ABAC.Constants;
+using Altinn.Authorization.ABAC.Utils;
+using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -149,15 +152,56 @@ public partial class ConnectionsControllerTest
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.Created, $"Expected Created but got {response.StatusCode}. Response body: {responseContent}");
 
-            // Assert on what was written
+            // Parse the written XACML policy
             var policyFactory = Fixture.Server.Services.GetRequiredService<IPolicyFactory>() as PolicyFactoryMock;
             Assert.NotNull(policyFactory);
             Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            // Check a specific path was written
             var (path, content) = policyFactory.WrittenPolicies.Single();
-            string xml = Encoding.UTF8.GetString(content);
-            Assert.Contains("expected-content", xml);
+            XacmlPolicy policy;
+            using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
+            {
+                policy = XacmlParser.ParseXacmlPolicy(reader);
+            }
+
+            // Assert rule count
+            Assert.Single(policy.Rules);
+
+            // Verify subject in each rule
+            foreach (XacmlRule rule in policy.Rules)
+            {
+                Assert.NotNull(rule.Target);
+                var subjectMatches = rule.Target.AnyOf
+                    .SelectMany(anyOf => anyOf.AllOf)
+                    .SelectMany(allOf => allOf.Matches)
+                    .Where(match => match.AttributeDesignator.Category.OriginalString == XacmlConstants.MatchAttributeCategory.Subject)
+                    .ToList();
+                Assert.NotEmpty(subjectMatches);
+
+                foreach (XacmlMatch match in subjectMatches)
+                {
+                   Assert.Equal(TestData.MilleHundefrisor.Entity.PartyId.ToString(),match.AttributeValue.Value);
+                }
+            }
+
+            // Verify resource in each rule
+            foreach (XacmlRule rule in policy.Rules)
+            {
+                var resourceMatches = rule.Target.AnyOf
+                    .SelectMany(anyOf => anyOf.AllOf)
+                    .SelectMany(allOf => allOf.Matches)
+                    .Where(match => match.AttributeDesignator.Category.OriginalString == XacmlConstants.MatchAttributeCategory.Resource)
+                    .ToList();
+                Assert.NotEmpty(resourceMatches);
+
+                var orgMatch = resourceMatches.FirstOrDefault(m => m.AttributeDesignator.AttributeId.OriginalString == AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute);
+                Assert.NotNull(orgMatch);
+                Assert.Equal("skd", orgMatch.AttributeValue.Value);
+
+                var appMatch = resourceMatches.FirstOrDefault(m => m.AttributeDesignator.AttributeId.OriginalString == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
+                Assert.NotNull(appMatch);
+                Assert.Equal("sirius-skattemelding-v1", appMatch.AttributeValue.Value);
+            }
         }
 
         /// <summary>

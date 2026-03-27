@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(find /c/repos/altinn-authorization-tmp -name *skattemelding* -o -name *sirius*)",
+      "Bash(dotnet build:*)"
+    ]
+  }
+}
