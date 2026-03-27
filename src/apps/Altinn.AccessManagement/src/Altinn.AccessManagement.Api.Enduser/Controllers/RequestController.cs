@@ -29,7 +29,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/request")]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class RequestController(
     IRequestService requestService,
     IAssignmentService assignmentService,
