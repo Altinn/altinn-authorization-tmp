@@ -183,10 +183,10 @@ public static class ValidationErrors
         = _factory.Create(37, $"Query must have either from or to defined.");
 
     /// <summary>
-    /// RequestMissingFromOrTo
+    /// RequestMissingResource
     /// </summary>
-    public static ValidationErrorDescriptor RequestMissingResourceOrPackage { get; }
-        = _factory.Create(38, $"Either Resource or Package must be included in request.");
+    public static ValidationErrorDescriptor RequestMissingResource { get; }
+        = _factory.Create(38, $"Resource must be included in request.");
 
     /// <summary>
     /// RequestMissingFromOrTo

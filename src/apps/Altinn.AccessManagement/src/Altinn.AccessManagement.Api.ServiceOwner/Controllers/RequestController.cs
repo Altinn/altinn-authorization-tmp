@@ -127,7 +127,6 @@ public class RequestController(
         [FromQuery][Required] string from,
         [FromQuery][Required] string to,
         [FromQuery][Required] string package,
-        [FromBody] string[]? rightKeys,
         CancellationToken ct = default
         )
     {
@@ -181,18 +180,10 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
         var resourceParamName = "resource";
-        var packageParamName = "package";
 
-        if (input?.Resource is null && input?.Package is null)
+        if (input?.Resource is null || input?.Resource?.HasValue() == false)
         {
-            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, resourceParamName, [new(resourceParamName, "Either package or resource must be defined.")]);
-            errorBuilder.Add(ValidationErrors.RequestMissingResourceOrPackage, packageParamName, [new(packageParamName, "Either package or resource must be defined.")]);
-        }
-
-        if (input?.Resource?.HasValue() == true && input?.Package?.HasValue() == true)
-        {
-            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, resourceParamName, [new(resourceParamName, "Both package and resource are specified. Only one must be defined.")]);
-            errorBuilder.Add(ValidationErrors.ResourceAndPackageIsSpecified, packageParamName, [new(packageParamName, "Both package and resource are specified. Only one must be defined.")]);
+            errorBuilder.Add(ValidationErrors.RequestMissingResource, resourceParamName, [new(resourceParamName, "Resource must be defined.")]);
         }
 
         var fromResult = await GetEntity(input?.From, "connection/from", ct);
@@ -212,36 +203,15 @@ public class RequestController(
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
 
-        if (input?.Resource is { } && input.Resource.HasValue())
-        {
-            return await CreateResourceRequest(
-                toId: fromResult.Entity.Id,
-                fromId: toResult.Entity.Id,
-                byId: auditAccessor.AuditValues.ChangedBy,
-                roleId: RoleConstants.Rightholder.Id,
-                status: RequestStatus.Draft,
-                resourceRef: input.Resource,
-                ct: ct
-            );
-        }
-
-        if (input?.Package is { } && input.Package.HasValue())
-        {
-            return await CreatePackageRequest(
-                toId: fromResult.Entity.Id,
-                fromId: toResult.Entity.Id,
-                byId: auditAccessor.AuditValues.ChangedBy,
-                roleId: RoleConstants.Rightholder.Id,
-                status: RequestStatus.Draft,
-                package: input.Package,
-                ct: ct
-            );
-        }
-
-        errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound);
-        errorBuilder.Add(ValidationErrorDescriptors.RequestedPackageNotFound);
-        errorBuilder.TryToActionResult(out var problemDetails);
-        return problemDetails;
+        return await CreateResourceRequest(
+            toId: fromResult.Entity.Id,
+            fromId: toResult.Entity.Id,
+            byId: auditAccessor.AuditValues.ChangedBy,
+            roleId: RoleConstants.Rightholder.Id,
+            status: RequestStatus.Draft,
+            resourceRef: input.Resource,
+            ct: ct
+        );
     }
 
     private async Task<IActionResult> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
