@@ -47,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IConnectionServiceServiceOwner, ConnectionServiceServiceOwner>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
@@ -67,8 +68,12 @@ public static class ServiceCollectionExtensions
                 .ValidateOnStart()
                 .BindConfiguration("ConsentMigration");
 
+        // Resource Owner Delegation - Configuration
+        services.AddOptions<ServiceOwnerDelegationSettings>()
+                .BindConfiguration("ServiceOwnerDelegation");
+
         // Consent Migration - Services (Core - Scoped)
-        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
+        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
 
         AddJobs(services);
         return services;
