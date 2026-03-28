@@ -2217,7 +2217,7 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, Guid? fromId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, Guid? fromId = null, CancellationToken cancellationToken = default)
     {
         var result = dbContext.Connections
             .AsNoTracking()
