@@ -2217,9 +2217,9 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, Guid? fromId, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Connections
+        var result = dbContext.Connections
             .AsNoTracking()
             .IncludeExtendedEntities()
             .Include(t => t.Delegation)
@@ -2230,10 +2230,11 @@ public partial class ConnectionService
             .ThenInclude(t => t.Variant)
             .Include(t => t.ViaRole)
             .Where(t => t.ToId == toId)
-            .Where(t => t.ViaId == viaId)
-            .ToListAsync(cancellationToken);
+            .Where(t => t.ViaId == viaId);
 
-        return GetConnectionsAsSystemUserClientConnectionDto(result);
+        result = fromId.HasValue ? result.Where(t => t.FromId == fromId.Value) : result;
+
+        return GetConnectionsAsSystemUserClientConnectionDto(await result.ToListAsync(cancellationToken));
     }
 
     #region Mappers
