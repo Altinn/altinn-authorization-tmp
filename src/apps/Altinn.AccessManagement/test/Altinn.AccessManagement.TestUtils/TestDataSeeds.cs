@@ -97,7 +97,7 @@ public static class TestDataSeeds
         //// db.Delegations.AddRange(TestData.Delegations);
         #endregion
 
-        #region resources
+        #region Resources
         db.Resources.Add(TestData.MattilsynetBakeryService);
         db.Resources.Add(TestData.SiriusSkattemelding);
         #endregion
