@@ -40,6 +40,24 @@ public static class TestData
         ProviderId = ProviderConstants.Altinn3.Id,
     };
 
+    public static readonly Resource SkattResource = new()
+    {
+        Name = "Skattemelding",
+        Description = "Innlevering av skattemelding for næringsdrivende",
+        RefId = "app_skd_skattemelding",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
+    public static readonly Resource MvaResource = new()
+    {
+        Name = "MVA-melding",
+        Description = "Innlevering av merverdiavgiftsmelding",
+        RefId = "app_skd_mva-melding",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
     #endregion
 
     #region Firmaer

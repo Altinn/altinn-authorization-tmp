@@ -100,6 +100,9 @@ public static class TestDataSeeds
         #region Resources
         db.Resources.Add(TestData.MattilsynetBakeryService);
         db.Resources.Add(TestData.SiriusSkattemelding);
+        db.Resources.Add(TestData.SkattResource);
+        db.Resources.AddRange(TestData.MvaResource);
+
         #endregion
 
         await db.SaveChangesAsync();
