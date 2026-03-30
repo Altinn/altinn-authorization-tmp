@@ -2219,7 +2219,7 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, Guid? fromId = null, CancellationToken cancellationToken = default)
     {
-        var result = dbContext.Connections
+        var result = await dbContext.Connections
             .AsNoTracking()
             .IncludeExtendedEntities()
             .Include(t => t.Delegation)
@@ -2230,11 +2230,11 @@ public partial class ConnectionService
             .ThenInclude(t => t.Variant)
             .Include(t => t.ViaRole)
             .Where(t => t.ToId == toId)
-            .Where(t => t.ViaId == viaId);
+            .Where(t => t.ViaId == viaId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId)
+            .ToListAsync(cancellationToken);
 
-        result = fromId.HasValue ? result.Where(t => t.FromId == fromId.Value) : result;
-
-        return GetConnectionsAsSystemUserClientConnectionDto(await result.ToListAsync(cancellationToken));
+        return GetConnectionsAsSystemUserClientConnectionDto(result);
     }
 
     #region Mappers
