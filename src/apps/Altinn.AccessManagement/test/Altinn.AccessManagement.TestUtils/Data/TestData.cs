@@ -19,31 +19,34 @@ public static class TestData
     #endregion
 
     #region Resources
-    
-    #pragma warning disable SA1401 // Fields should be private
-    public static List<Resource> Resources = new()
-    #pragma warning restore SA1401 // Fields should be private
+
+#pragma warning disable SA1401 // Fields should be private
+
+    public static Resource MattilsynetBakeryService = new()
     {
-        new()
-        {
-            Name = "Mattilsynet Bakery Service",
-            Description = "Service for bakery inspections and food safety reporting to the Norwegian Food Safety Authority",
-            RefId = "app_mat_mattilsynet-baker-konditorvare",
-            TypeId = TestData.TestResourceType.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-        },
-        new()
-        {
-            Name = "Skattemelding med næringsspesifikasjon 2020",
-            Description = "Skattemelding med næringsspesifikasjon 2020",
-            RefId = "app_skd_sirius-skattemelding-v1",
-            TypeId = TestData.TestResourceType.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-        }
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320c"),
+        Name = "Mattilsynet Bakery Service",
+        Description = "Service for bakery inspections and food safety reporting to the Norwegian Food Safety Authority",
+        RefId = "app_mat_mattilsynet-baker-konditorvare",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
     };
+
+    public static Resource SiriusSkattemelding = new()
+    {
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320e"),
+        Name = "Skattemelding med næringsspesifikasjon 2020",
+        Description = "Skattemelding med næringsspesifikasjon 2020",
+        RefId = "app_skd_sirius-skattemelding-v1",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
+     #pragma warning restore SA1401 // Fields should be private
+
     #endregion
 
-        #region Firmaer
+    #region Firmaer
 
     public static ConstantDefinition<Entity> BakerJohnsen { get; } = new("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
     {
