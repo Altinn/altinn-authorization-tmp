@@ -20,9 +20,7 @@ public static class TestData
 
     #region Resources
 
-#pragma warning disable SA1401 // Fields should be private
-
-    public static Resource MattilsynetBakeryService = new()
+    public static readonly Resource MattilsynetBakeryService = new()
     {
         Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320c"),
         Name = "Mattilsynet Bakery Service",
@@ -32,7 +30,7 @@ public static class TestData
         ProviderId = ProviderConstants.Altinn3.Id,
     };
 
-    public static Resource SiriusSkattemelding = new()
+    public static readonly Resource SiriusSkattemelding = new()
     {
         Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320e"),
         Name = "Skattemelding med næringsspesifikasjon 2020",
@@ -41,8 +39,6 @@ public static class TestData
         TypeId = TestData.TestResourceType.Id,
         ProviderId = ProviderConstants.Altinn3.Id,
     };
-
-     #pragma warning restore SA1401 // Fields should be private
 
     #endregion
 
