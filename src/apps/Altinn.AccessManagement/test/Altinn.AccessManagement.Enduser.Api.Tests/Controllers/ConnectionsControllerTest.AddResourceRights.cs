@@ -146,7 +146,7 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(policyFactory);
             Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            var (path, content) = policyFactory.WrittenPolicies.Single();
+            var (_, content) = policyFactory.WrittenPolicies.Single();
             XacmlPolicy policy;
             using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
             {
