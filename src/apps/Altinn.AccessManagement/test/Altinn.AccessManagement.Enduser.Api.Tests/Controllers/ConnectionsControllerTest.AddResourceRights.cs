@@ -129,7 +129,7 @@ public partial class ConnectionsControllerTest
             List<string> rightKeys = await GetDelegatableRightKeys("app_skd_sirius-skattemelding-v1");
             Assert.NotEmpty(rightKeys);
 
-            // Use the first delegatable right key
+            // Use all delegatable right keys
             var body = new RightKeyListDto { DirectRightKeys = rightKeys };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -146,7 +146,7 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(policyFactory);
             Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            var (path, content) = policyFactory.WrittenPolicies.Single();
+            var (_, content) = policyFactory.WrittenPolicies.Single();
             XacmlPolicy policy;
             using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
             {
