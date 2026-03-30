@@ -44,7 +44,7 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if the altinn private tax affair roles data should streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesPrivateTaxAffairRoleSync = $"AccessMgmt.Core.HostedServices.AltinnPrivateTaxAffairRoleSync";
-    
+
     /// <summary>
     /// Specifies if the altinn bankruptcyestate roles data should be streamed from sblbridge service to access management database
     /// </summary>
@@ -99,6 +99,70 @@ public static class AccessMgmtFeatureFlags
     /// Represents the handler for outbox messages that couldn't be processed.
     /// </summary>
     public const string HostedServicesOutboxReaper = $"AccessMgmt.Core.HostedServices.Outbox.Reaper";
+
+    #region Outbox
+
+    /// <summary>
+    /// Specifies if notifications for pending requests are enabled.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxRequestNotifyPending = $"AccessMgmt.Core.Outbox.RequestNotifyPending";
+
+    /// <summary>
+    /// Specifies if notifications for approved requests are enabled.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxRequestNotifyApproved = $"AccessMgmt.Core.Outbox.RequestNotifyApproved";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if rightholder assignemnt is added.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxRightholderNotifyAdded = $"AccessMgmt.Core.Outbox.RightholderNotifyAdded";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if rightholder assignemnt is removed.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxRightholderNotifyRemoved = $"AccessMgmt.Core.Outbox.RightholderNotifyRemoved";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if package is added.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxPackageNotifyAdded = $"AccessMgmt.Core.Outbox.PackageNotifyAdded";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if package is removed.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxPackageNotifyRemoved = $"AccessMgmt.Core.Outbox.PackageNotifyRemoved";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if resource is added.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxResourceNotifyAdded = $"AccessMgmt.Core.Outbox.ResourceNotifyAdded";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if resource is removed.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxResourceNotifyRemoved = $"AccessMgmt.Core.Outbox.ResourceNotifyRemoved";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if aggent is added.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxAgentNotifyAdded = $"AccessMgmt.Core.Outbox.AgentNotifyAdded";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if agent is removed.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxAgentNotifyRemoved = $"AccessMgmt.Core.Outbox.AgentNotifyRemoved";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if client is added.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxClientNotifyAdded = $"AccessMgmt.Core.Outbox.ClientNotifyAdded";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if client is removed.
+    /// </summary>
+    public const string AccessMgmtCoreOutboxClientNotifyRemoved = $"AccessMgmt.Core.Outbox.ClientNotifyRemoved";
+
+    #endregion
 
     /// <summary>
     /// Feature flag for Controller Enduser Connections

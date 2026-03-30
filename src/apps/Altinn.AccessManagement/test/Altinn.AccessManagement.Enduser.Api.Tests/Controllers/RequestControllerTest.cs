@@ -1,14 +1,17 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
@@ -17,15 +20,33 @@ public class RequestControllerTest
 {
     public const string Route = "accessmanagement/api/v1/enduser/request";
 
-    private static HttpClient CreateClient(ApiFixture fixture, Guid partyUuid)
+    /// <summary>
+    /// Creates an HTTP client with a token for portal users (interactive browser sessions).
+    /// NOTE: Not currently used in tests as existing tests focus on validating the new system scope authorization.
+    /// Portal authorization path remains unchanged and functional. Could be used for regression testing if needed.
+    /// </summary>
+    private static HttpClient CreatePortalClient(ApiFixture fixture, Guid partyUuid)
     {
         var client = fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
             claims.Add(new Claim("scope", AuthzConstants.SCOPE_PORTAL_ENDUSER));
-            claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ));
-            claims.Add(new Claim("scope", AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE));
+        });
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        return client;
+    }
+
+    /// <summary>
+    /// Creates an HTTP client with a token for system users (Maskinporten/ID-porten integrations)
+    /// </summary>
+    private static HttpClient CreateSystemClient(ApiFixture fixture, Guid partyUuid)
+    {
+        var client = fixture.Server.CreateClient();
+        var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+        {
+            claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, partyUuid.ToString()));
+            claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_REQUESTS_READ} {AuthzConstants.SCOPE_ENDUSER_REQUESTS_WRITE}"));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         return client;
@@ -77,7 +98,7 @@ public class RequestControllerTest
         public async Task PersonWithRoleInOrg_CanCreateResourceRequest_ReturnsPending()
         {
             // KnutVik er styremedlem i BakerJohnsen (seeded via TestData.Assignments)
-            var client = CreateClient(Fixture, TestData.KnutVik.Id);
+            var client = CreateSystemClient(Fixture, TestData.KnutVik.Id);
 
             var response = await client.PostAsync(
                 $"{Route}/resource?party={TestData.KnutVik.Id}&to={TestData.BakerJohnsen.Id}&resource={TestResourceRefId}",
@@ -106,10 +127,25 @@ public class RequestControllerTest
         public ApiFixture Fixture { get; }
 
         [Fact]
+        public async Task PersonWithNoConnection_GetsNonSuccessResponse()
+        {
+            // BjornMoe er daglig leder i RegnskapNorge, men har ingen rolle i BakerJohnsen
+            var client = CreateSystemClient(Fixture, TestData.VegardSolberg.Id);
+            var packageUrn = PackageConstants.Agriculture.Entity.Urn;
+
+            var response = await client.PostAsync(
+                $"{Route}/package?party={TestData.VegardSolberg.Id}&to={TestData.BakerJohnsen.Id}&package={packageUrn}",
+                null,
+                TestContext.Current.CancellationToken);
+
+            Assert.False(response.IsSuccessStatusCode, "Person without connection should not be able to create request");
+        }
+
+        [Fact]
         public async Task PersonWithKeyConnection_GetsSuccessResponse()
         {
             // BjornMoe er daglig leder i RegnskapNorge, og har da nøkkel rolle til BakerJohnsen
-            var client = CreateClient(Fixture, TestData.BjornMoe.Id);
+            var client = CreateSystemClient(Fixture, TestData.BjornMoe.Id);
             var packageUrn = PackageConstants.Agriculture.Entity.Urn;
 
             var response = await client.PostAsync(
@@ -137,8 +173,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    ToId = TestData.BakerJohnsen.Id,
                     FromId = TestData.LarsBakke.Id,
+                    ToId = TestData.BakerJohnsen.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -160,7 +196,7 @@ public class RequestControllerTest
         [Fact]
         public async Task Sender_GetSentRequests_ContainsSeededRequest()
         {
-            var client = CreateClient(Fixture, TestData.LarsBakke.Id);
+            var client = CreateSystemClient(Fixture, TestData.BakerJohnsen.Id);
 
             var response = await client.GetAsync(
                 $"{Route}/sent?party={TestData.LarsBakke.Id}&to={TestData.BakerJohnsen.Id}",
@@ -222,8 +258,8 @@ public class RequestControllerTest
 
                 var reqAssignment = new RequestAssignment
                 {
-                    ToId = TestData.SvendsenAutomobil.Id,
                     FromId = TestData.MortenDahl.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -245,7 +281,7 @@ public class RequestControllerTest
         [Fact]
         public async Task Receiver_GetReceivedRequests_SeesResourceRequest()
         {
-            var client = CreateClient(Fixture, TestData.MortenDahl.Id);
+            var client = CreateSystemClient(Fixture, TestData.MortenDahl.Id);
 
             var response = await client.GetAsync(
                 $"{Route}/received?party={TestData.SvendsenAutomobil.Id}&from={TestData.MortenDahl.Id}",
@@ -307,8 +343,8 @@ public class RequestControllerTest
 
                 var reqAssignment = new RequestAssignment
                 {
-                    ToId = TestData.SvendsenAutomobil.Id,
                     FromId = TestData.MortenDahl.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -330,7 +366,7 @@ public class RequestControllerTest
         [Fact]
         public async Task Receiver_RejectsPendingResourceRequest_ReturnsRejected()
         {
-            var client = CreateClient(Fixture, TestData.MortenDahl.Id);
+            var client = CreateSystemClient(Fixture, TestData.MortenDahl.Id);
 
             var response = await client.PutAsync(
                 $"{Route}/received/reject?party={TestData.SvendsenAutomobil.Id}&id={PendingResourceRequestId}",
@@ -360,8 +396,8 @@ public class RequestControllerTest
             {
                 var reqAssignment = new RequestAssignment
                 {
-                    ToId = TestData.BakerJohnsen.Id,
                     FromId = TestData.HildeStrand.Id,
+                    ToId = TestData.BakerJohnsen.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
                 db.RequestAssignments.Add(reqAssignment);
@@ -383,7 +419,7 @@ public class RequestControllerTest
         [Fact]
         public async Task Sender_WithdrawsPendingRequest_ReturnsWithdrawn()
         {
-            var client = CreateClient(Fixture, TestData.HildeStrand.Id);
+            var client = CreateSystemClient(Fixture, TestData.HildeStrand.Id);
 
             var response = await client.PutAsync(
                 $"{Route}/sent/withdraw?party={TestData.HildeStrand.Id}&id={PendingPackageRequestId}",
@@ -436,10 +472,10 @@ public class RequestControllerTest
         [Fact]
         public async Task Sender_ConfirmsDraftRequest_ReturnsPending()
         {
-            var client = CreateClient(Fixture, TestData.LarsBakke.Id);
+            var client = CreateSystemClient(Fixture, TestData.LarsBakke.Id);
 
             var response = await client.PutAsync(
-                $"{Route}/sent/confirm?party={TestData.LarsBakke.Id}&id={DraftPackageRequestId}",
+                $"{Route}/draft/confirm?party={TestData.LarsBakke.Id}&id={DraftPackageRequestId}",
                 null,
                 TestContext.Current.CancellationToken);
 

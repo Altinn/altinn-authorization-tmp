@@ -114,9 +114,9 @@ public class BaseOutboxMessage
     public DateTime? StartedAt { get; set; }
 
     /// <summary>
-    /// Custom message field.
+    /// gets or sets the created at outbox element.
     /// </summary>
-    public string? HandlerMessage { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the timestamp when the message processing completed.
@@ -131,6 +131,14 @@ public class BaseOutboxMessage
     /// Gets or sets the OpenTelemetry correlation identifier associated with the message.
     /// </summary>
     public string? CorrelationId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the attempted number of times the message has been executed.
+    /// </summary>
+    /// <remarks>
+    /// This value is used to correlate logs.
+    /// </remarks>
+    public int Attempt { get; set; } = 0;
 }
 
 /// <summary>

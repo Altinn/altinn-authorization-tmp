@@ -102,8 +102,8 @@ public class RequestController(
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         return await CreateResourceRequest(
-            atId: fromResult.Entity.Id,
-            forId: toResult.Entity.Id,
+            toId: toResult.Entity.Id,
+            fromId: fromResult.Entity.Id,
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
@@ -156,8 +156,8 @@ public class RequestController(
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
         return await CreatePackageRequest(
-            atId: fromResult.Entity.Id,
-            forId: toResult.Entity.Id,
+            toId: toResult.Entity.Id,
+            fromId: fromResult.Entity.Id,
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
@@ -215,8 +215,8 @@ public class RequestController(
         if (input?.Resource is { } && input.Resource.HasValue())
         {
             return await CreateResourceRequest(
-                atId: fromResult.Entity.Id,
-                forId: toResult.Entity.Id,
+                toId: fromResult.Entity.Id,
+                fromId: toResult.Entity.Id,
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
@@ -228,8 +228,8 @@ public class RequestController(
         if (input?.Package is { } && input.Package.HasValue())
         {
             return await CreatePackageRequest(
-                atId: fromResult.Entity.Id,
-                forId: toResult.Entity.Id,
+                toId: fromResult.Entity.Id,
+                fromId: toResult.Entity.Id,
                 byId: auditAccessor.AuditValues.ChangedBy,
                 roleId: RoleConstants.Rightholder.Id,
                 status: RequestStatus.Draft,
@@ -244,7 +244,7 @@ public class RequestController(
         return problemDetails;
     }
 
-    private async Task<IActionResult> CreateResourceRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
+    private async Task<IActionResult> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto resourceRef, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
         var paramName = "resource";
@@ -255,20 +255,29 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
-        var byEntity = await entityService.GetEntity(byId, ct);
-        if (resource.Provider.RefId != byEntity.OrganizationIdentifier)
-        {
-            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
-        }
-
         if (errorBuilder.TryBuild(out var problem))
         {
             return problem.ToActionResult();
         }
 
+        // Fetch provider claim from token
+        var providerClaim = User.FindFirst(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value;
+
+        var byEntity = await entityService.GetEntity(byId, ct);
+        if (resource.Provider.RefId != byEntity.OrganizationIdentifier
+            && !string.Equals(resource.Provider.Code, providerClaim, StringComparison.OrdinalIgnoreCase))
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);
+        }
+
+        if (errorBuilder.TryBuild(out problem))
+        {
+            return problem.ToActionResult();
+        }
+
         var result = await requestService.CreateResourceRequest(
-            toId: atId,
-            fromId: forId,
+            toId: toId,
+            fromId: fromId,
             byId: byId,
             roleId: roleId,
             resourceId: resource.Id,
@@ -286,7 +295,7 @@ public class RequestController(
         return Accepted(result.Value);
     }
 
-    private async Task<IActionResult> CreatePackageRequest(Guid atId, Guid forId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto package, CancellationToken ct = default)
+    private async Task<IActionResult> CreatePackageRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, RequestStatus status, RequestReferenceDto package, CancellationToken ct = default)
     {
         ValidationErrorBuilder errorBuilder = default;
 
@@ -301,8 +310,8 @@ public class RequestController(
         }
 
         var result = await requestService.CreatePackageRequest(
-           toId: atId,
-           fromId: forId,
+           toId: toId,
+           fromId: fromId,
            byId: byId,
            roleId: roleId,
            packageId: packageObj.Id,

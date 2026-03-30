@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260326104214_AddOutboxMessageLog")]
+    partial class AddOutboxMessageLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2727,12 +2730,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("correlationid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdat")
-                        .HasDefaultValueSql("NOW()");
-
                     b.Property<string>("Data")
                         .IsRequired()
                         .HasColumnType("jsonb")
@@ -2741,6 +2738,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<string>("Handler")
                         .HasColumnType("text")
                         .HasColumnName("handler");
+
+                    b.Property<string>("HandlerMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("handlermessage");
 
                     b.Property<string>("RefId")
                         .HasColumnType("text")
