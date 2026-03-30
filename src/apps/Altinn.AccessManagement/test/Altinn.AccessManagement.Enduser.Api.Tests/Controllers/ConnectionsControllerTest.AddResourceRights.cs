@@ -129,7 +129,7 @@ public partial class ConnectionsControllerTest
             List<string> rightKeys = await GetDelegatableRightKeys("app_skd_sirius-skattemelding-v1");
             Assert.NotEmpty(rightKeys);
 
-            // Use the first delegatable right key
+            // Use all delegatable right keys
             var body = new RightKeyListDto { DirectRightKeys = rightKeys };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
