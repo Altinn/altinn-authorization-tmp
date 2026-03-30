@@ -1,5 +1,7 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -14,8 +16,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -33,9 +33,11 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - ResourceType "Test"
-    /// - Resource "Skattemelding" (app_skd_sirius-skattemelding-v1)
     /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// </para>
+    /// <para>
+    /// Pre-seeded via <see cref="TestDataSeeds"/>:
+    /// - Resource "Sykmelding til arbeidsgiver" (nav_sykepenger_sykmelding)
     /// </para>
     /// <para>
     /// Mocks:
@@ -136,20 +138,20 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin (MD of Dumbo Adventures) removes all resource rights for Skattemelding delegated to Mille Hundefrisør.
+        /// Malin (MD of Dumbo Adventures) removes all resource rights for nav_sykepenger_sykmelding delegated to Mille Hundefrisør.
         /// First adds the delegation, then removes it. Expects 204 NoContent.
         /// </summary>
         [Fact]
         public async Task RemoveResource_AsMalinForDumboFromDumboToMille_ReturnsNoContent()
         {
-            List<string> rightKeys = await GetDelegatableRightKeys("app_skd_sirius-skattemelding-v1");
+            List<string> rightKeys = await GetDelegatableRightKeys("nav_sykepenger_sykmelding");
             Assert.NotEmpty(rightKeys);
 
-            await AddResourceRights("app_skd_sirius-skattemelding-v1", rightKeys);
+            await AddResourceRights("nav_sykepenger_sykmelding", rightKeys);
 
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
+                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=nav_sykepenger_sykmelding",
                 TestContext.Current.CancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -157,20 +159,20 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Thea (MD of Mille Hundefrisør) removes all resource rights for Skattemelding from the Dumbo → Mille connection,
+        /// Thea (MD of Mille Hundefrisør) removes all resource rights for nav_sykepenger_sykmelding from the Dumbo → Mille connection,
         /// acting as receiver (from-others direction). Expects 204 NoContent.
         /// </summary>
         [Fact]
         public async Task RemoveResource_AsTheaForMilleFromDumboToMille_ReturnsNoContent()
         {
-            List<string> rightKeys = await GetDelegatableRightKeys("app_skd_sirius-skattemelding-v1");
+            List<string> rightKeys = await GetDelegatableRightKeys("nav_sykepenger_sykmelding");
             Assert.NotEmpty(rightKeys);
 
-            await AddResourceRights("app_skd_sirius-skattemelding-v1", rightKeys);
+            await AddResourceRights("nav_sykepenger_sykmelding", rightKeys);
 
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}/resources?party={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
+                $"{Route}/resources?party={TestData.MilleHundefrisor.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=nav_sykepenger_sykmelding",
                 TestContext.Current.CancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -201,7 +203,7 @@ public partial class ConnectionsControllerTest
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
+                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=nav_sykepenger_sykmelding",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -216,7 +218,7 @@ public partial class ConnectionsControllerTest
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=app_skd_sirius-skattemelding-v1",
+                $"{Route}/resources?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MilleHundefrisor.Id}&resource=nav_sykepenger_sykmelding",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

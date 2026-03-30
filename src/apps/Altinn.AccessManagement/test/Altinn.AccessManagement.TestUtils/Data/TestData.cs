@@ -40,6 +40,36 @@ public static class TestData
         ProviderId = ProviderConstants.Altinn3.Id,
     };
 
+    public static readonly Resource NavSykepengerDialog = new()
+    {
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-50893176320f"),
+        Name = "Dialogs for sickness benefits",
+        Description = "The service is used to send and receive dialogues in Dialogporten about new sick leaves, submitted applications, requests for income reports, and receipts for submitted income reports.",
+        RefId = "nav_sykepenger_dialog",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
+    public static readonly Resource DiheOmsetningsoppgaveAlkohol = new()
+    {
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-508931763210"),
+        Name = "Omsetningsoppgave for alkohol",
+        Description = "Omsetningsoppgave for alkohol",
+        RefId = "app_dihe_omsetningsoppgave-for-alkohol",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
+    public static readonly Resource NavSykepengerSykmelding = new()
+    {
+        Id = Guid.Parse("0195efb8-7c80-7f26-817a-508931763211"),
+        Name = "Sykmelding til arbeidsgiver",
+        Description = "Sykmelding fra arbeidstaker gjør at arbeidsgiver kan motta sykmeldingen som den sykmeldte sender fra nav.no.",
+        RefId = "nav_sykepenger_sykmelding",
+        TypeId = TestData.TestResourceType.Id,
+        ProviderId = ProviderConstants.Altinn3.Id,
+    };
+
     public static readonly Resource SkattResource = new()
     {
         Name = "Skattemelding",
