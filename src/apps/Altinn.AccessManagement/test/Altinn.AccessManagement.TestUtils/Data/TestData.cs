@@ -18,7 +18,32 @@ public static class TestData
 
     #endregion
 
-    #region Firmaer
+    #region Resources
+    
+    #pragma warning disable SA1401 // Fields should be private
+    public static List<Resource> Resources = new()
+    #pragma warning restore SA1401 // Fields should be private
+    {
+        new()
+        {
+            Name = "Mattilsynet Bakery Service",
+            Description = "Service for bakery inspections and food safety reporting to the Norwegian Food Safety Authority",
+            RefId = "app_mat_mattilsynet-baker-konditorvare",
+            TypeId = TestData.TestResourceType.Id,
+            ProviderId = ProviderConstants.Altinn3.Id,
+        },
+        new()
+        {
+            Name = "Skattemelding med næringsspesifikasjon 2020",
+            Description = "Skattemelding med næringsspesifikasjon 2020",
+            RefId = "app_skd_sirius-skattemelding-v1",
+            TypeId = TestData.TestResourceType.Id,
+            ProviderId = ProviderConstants.Altinn3.Id,
+        }
+    };
+    #endregion
+
+        #region Firmaer
 
     public static ConstantDefinition<Entity> BakerJohnsen { get; } = new("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
     {

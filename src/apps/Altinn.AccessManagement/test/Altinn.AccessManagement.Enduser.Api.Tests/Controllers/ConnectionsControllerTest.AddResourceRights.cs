@@ -71,17 +71,6 @@ public partial class ConnectionsControllerTest
             });
             Fixture.EnsureSeedOnce(db =>
             {
-                Resource skattResource = new()
-                {
-                    Name = "Skattemelding med næringsspesifikasjon 2020",
-                    Description = "Skattemelding med næringsspesifikasjon 2020",
-                    RefId = "app_skd_sirius-skattemelding-v1",
-                    TypeId = TestData.TestResourceType.Id,
-                    ProviderId = ProviderConstants.Altinn3.Id,
-                };
-
-                db.Resources.Add(skattResource);
-
                 var rightholderFromDumboToMille = new Assignment()
                 {
                     FromId = TestData.DumboAdventures.Id,

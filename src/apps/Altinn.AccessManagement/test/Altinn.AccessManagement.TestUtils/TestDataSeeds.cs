@@ -97,6 +97,10 @@ public static class TestDataSeeds
         //// db.Delegations.AddRange(TestData.Delegations);
         #endregion
 
+        #region resources
+        db.Resources.AddRange(TestData.Resources);
+        #endregion
+
         await db.SaveChangesAsync();
     }
 }

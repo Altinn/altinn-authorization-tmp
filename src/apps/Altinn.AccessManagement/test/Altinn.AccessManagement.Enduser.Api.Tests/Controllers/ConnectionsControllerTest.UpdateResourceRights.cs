@@ -12,7 +12,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -70,21 +69,10 @@ public partial class ConnectionsControllerTest
                 services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
+                services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueueMock>();
             });
             Fixture.EnsureSeedOnce(db =>
             {
-                // Add the Mattilsynet Bakery Service resource
-                Resource bakeryResource = new()
-                {
-                    Name = "Mattilsynet Bakery Service",
-                    Description = "Service for bakery inspections and food safety reporting to the Norwegian Food Safety Authority",
-                    RefId = "app_mat_mattilsynet-baker-konditorvare",
-                    TypeId = TestData.TestResourceType.Id,
-                    ProviderId = ProviderConstants.Altinn3.Id,
-                };
-
-                db.Resources.Add(bakeryResource);
-
                 var rightholderFromDumboToMille = new Assignment()
                 {
                     FromId = TestData.DumboAdventures.Id,
