@@ -141,7 +141,7 @@ public partial class ConnectionsControllerTest
             Assert.NotEmpty(rightKeys);
 
             // Use the first delegatable right key
-            var body = new RightKeyListDto { DirectRightKeys = [rightKeys.First()] };
+            var body = new RightKeyListDto { DirectRightKeys = rightKeys };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
             HttpResponseMessage response = await client.PostAsJsonAsync(
@@ -165,7 +165,7 @@ public partial class ConnectionsControllerTest
             }
 
             // Assert rule count
-            Assert.Single(policy.Rules);
+            Assert.Equal(rightKeys.Count, policy.Rules.Count);
 
             // Verify subject in each rule
             foreach (XacmlRule rule in policy.Rules)
