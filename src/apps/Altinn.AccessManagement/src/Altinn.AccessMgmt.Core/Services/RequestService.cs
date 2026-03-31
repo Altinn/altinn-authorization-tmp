@@ -342,7 +342,9 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         request.Status = status;
         if (status == RequestStatus.Approved)
         {
-            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, null, request.PackageId, ct);
+            // ToId: organization / person that request approves / declines request.
+            // FromId: organization / person that request access.
+            await AddRequestApprovedToOutbox(request.Assignment.ToId, request.Assignment.FromId, null, request.PackageId, ct);
         }
 
         var res = await db.SaveChangesAsync(ct);
@@ -382,7 +384,9 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         request.Status = status;
         if (status == RequestStatus.Approved)
         {
-            await AddRequestApprovedToOutbox(request.Assignment.FromId, request.Assignment.ToId, request.ResourceId, null, ct);
+            // ToId: organization / person that request approves / declines request.
+            // FromId: organization / person that request access.
+            await AddRequestApprovedToOutbox(request.Assignment.ToId, request.Assignment.FromId, request.ResourceId, null, ct);
         }
 
         var res = await db.SaveChangesAsync(ct);
@@ -549,8 +553,8 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             msg.Timeout = TimeSpan.FromMinutes(1);
             return new ResourceRequestPendingNotificationMessage()
             {
-                RecipientId = requesterId,
-                RequesterId = recipientId,
+                RecipientId = recipientId,
+                RequesterId = requesterId,
                 ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
                 PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
                 InitiatedAt = now,
@@ -570,7 +574,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         );
 
         RequestApprovedNotificationMessage UpdateValue(
-            Guid requesterId,
+            Guid approverId,
             Guid recipientId,
             Guid? resourceId,
             Guid? packageId,
@@ -580,7 +584,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             if (data is null)
             {
                 Activity.Current?.AddTag(nameof(AddRequestApprovedToOutbox), $"Current outbox message {nameof(ResourceRequestPendingNotificationMessage)} is null? Creating new object.");
-                return AddValue(requesterId, recipientId, resourceId, packageId, msg);
+                return AddValue(approverId, recipientId, resourceId, packageId, msg);
             }
 
             data.Updated++;
@@ -620,12 +624,12 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
 
             return new RequestApprovedNotificationMessage()
             {
-                RecipientId = approverId,
-                ApproverId = recipientId,
+                RecipientId = recipientId,
+                ApproverId = approverId,
                 ResourceIds = resourceId.HasValue && resourceId.Value != Guid.Empty ? [resourceId.Value] : [],
                 PackageIds = packageId.HasValue && packageId.Value != Guid.Empty ? [packageId.Value] : [],
                 InitiatedAt = schedule,
-                Updated = 1,
+                Updated = 0,
             };
         }
     }
