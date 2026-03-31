@@ -1,4 +1,4 @@
-meta {
+﻿meta {
   name: GET_Resources_Which_Org_has_requested
   type: http
   seq: 13
@@ -37,7 +37,7 @@ script:pre-request {
 tests {
   const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
     
-    test("GET request which user has sent", function() {
+    test("GET_requests_sent_by_org", function() {
       const data = res.getBody();
       
       expect(res.status).to.equal(200);

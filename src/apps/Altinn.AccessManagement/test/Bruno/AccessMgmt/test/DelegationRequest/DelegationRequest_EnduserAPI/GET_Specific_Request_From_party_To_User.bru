@@ -5,14 +5,14 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/request?party={{party}}&id={{resourcerequestidapprove}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/request?party={{party}}&id={{resourcerequestId}}
   body: none
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  id: {{resourcerequestidapprove}}
+  id: {{resourcerequestId}}
 }
 
 script:pre-request {
@@ -28,7 +28,7 @@ script:pre-request {
       auth_partyUuid: testdata.Bot_person.partyuuid,
       auth_ssn: testdata.Bot_person.pid,
       auth_tokenType: sharedtestdata.authTokenType.personal,
-      auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+      auth_scopes: sharedtestdata.auth_scopes.sluttbrukerdelegationrequestread
     }
     
     const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);

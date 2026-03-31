@@ -1,7 +1,7 @@
 meta {
   name: PUT_Approve_Received_Request_On_Resource
   type: http
-  seq: 5
+  seq: 6
 }
 
 put {
@@ -27,7 +27,7 @@ script:pre-request {
       auth_partyUuid: testdata.Bot_person.partyuuid,
       auth_ssn: testdata.Bot_person.pid,
       auth_tokenType: sharedtestdata.authTokenType.personal,
-      auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+      auth_scopes: sharedtestdata.auth_scopes.sluttbrukerdelegationrequestwrite
     }
     
     const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);

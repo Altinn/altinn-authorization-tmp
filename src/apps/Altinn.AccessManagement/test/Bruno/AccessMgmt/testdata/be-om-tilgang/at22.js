@@ -70,6 +70,13 @@
       partyuuid: "38c5f772-3544-4850-9cab-e4c81077c56c",
     },
   },
+  user_uten_rettighetshaver: {
+    lastname: "SJOKOLADEKAKE",
+    pid: "63881275025",
+    partyid: 51089153,
+    userid: 20230679,
+    partyuuid: "2dfe42c3-0c03-4684-be9a-fa3b0a451725",
+  },
   serviceowner_digdir: {
     org: "digdir",
     orgno: "991825827",
