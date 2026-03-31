@@ -72,7 +72,10 @@ public static class TestDataSeeds
             TestData.BodilFarmor,
             TestData.DumboAdventures,
             TestData.MilleHundefrisor,
-            TestData.Milena
+            TestData.Milena,
+            TestData.KaosMagicDesignAndArts,
+            TestData.JinxArcane,
+            TestData.AlexTheArtist
         ]);
         #endregion
 
