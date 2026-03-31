@@ -200,13 +200,15 @@ public class RequestApprovedNotificationHandler(
             {
                 emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
             }
-
-            if (!EntityTypeConstants.TryGetById(approver.TypeId, out var entityType))
+            else
             {
-                throw new InvalidOperationException($"Couldn't find approver with entity with typeid {approver.TypeId}");
-            }
+                if (!EntityTypeConstants.TryGetById(approver.TypeId, out var entityType))
+                {
+                    throw new InvalidOperationException($"Couldn't find approver with entity with typeid {approver.TypeId}");
+                }
 
-            throw new InvalidOperationException($"Unsupported approver entity type with uuid '{approver.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
+                throw new InvalidOperationException($"Unsupported approver entity type with uuid '{approver.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
+            }
         }
 
         static void AddResourcesAndPackage(IEnumerable<Resource> resources, IEnumerable<Package> packages, StringBuilder emailContent)
