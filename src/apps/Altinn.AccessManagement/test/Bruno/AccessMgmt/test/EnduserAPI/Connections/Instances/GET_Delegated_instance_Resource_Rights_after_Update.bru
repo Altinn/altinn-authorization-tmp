@@ -44,7 +44,7 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/enduser_instans-delegation/${bru.getEnvVar("tokenEnv")}.js`);
-    test("GET_Delegated_instance_Resource_Rights", function() {
+    test("GET_Delegated_instance_Resource_Rights_after_Update", function() {
       const data = res.getBody();
     
       expect(res.status).to.equal(200);
