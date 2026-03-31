@@ -960,6 +960,12 @@ public static class TestData
     private static readonly Guid AssignMilleHundefrisorTheaMD = Guid.Parse("0196a0b1-0001-7001-8001-000000000030");
     private static readonly Guid AssignMilleHundefrisorMilenaCB = Guid.Parse("0196a0b1-0001-7001-8001-000000000031");
 
+    // Privatperson (self-to-self) assignments
+    private static readonly Guid AssignMalinEmiliePriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000040");
+    private static readonly Guid AssignTheaPriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000041");
+    private static readonly Guid AssignJosephinePriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000042");
+    private static readonly Guid AssignMilenaPriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000043");
+
     // Org-til-org assignments
     private static readonly Guid AssignBakerJohnsenRegnskapNorgeAcc = Guid.Parse("0196a0b1-0001-7001-8001-000000000016");
     private static readonly Guid AssignSvendsenMittRegnskapAcc = Guid.Parse("0196a0b1-0001-7001-8001-000000000017");
@@ -1008,6 +1014,12 @@ public static class TestData
         // Mille Hundefrisør - personroller
         new Assignment() { Id = AssignMilleHundefrisorTheaMD, FromId = MilleHundefrisor, ToId = Thea, RoleId = RoleConstants.ManagingDirector },
         new Assignment() { Id = AssignMilleHundefrisorMilenaCB, FromId = MilleHundefrisor, ToId = Milena, RoleId = RoleConstants.ChairOfTheBoard },
+
+        // Privatperson (self-to-self)
+        new Assignment() { Id = AssignMalinEmiliePriv, FromId = MalinEmilie, ToId = MalinEmilie, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignTheaPriv, FromId = Thea, ToId = Thea, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignJosephinePriv, FromId = JosephineYvonnesdottir, ToId = JosephineYvonnesdottir, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignMilenaPriv, FromId = Milena, ToId = Milena, RoleId = RoleConstants.PrivatePerson },
 
         // RPC AS - personroller
         new Assignment() { Id = AssignRpcOddHalvorsenMD, FromId = RpcAS, ToId = OddHalvorsen, RoleId = RoleConstants.ManagingDirector },
