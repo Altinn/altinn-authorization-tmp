@@ -191,9 +191,10 @@ public interface IConnectionService
     /// <param name="configureConnection">ConnectionOptions</param>
     /// <param name="languageCode">the requested language code fallback "nb"</param>
     /// <param name="ignoreDelegableFlag">When true, the resource's Delegable flag is ignored and only the user's access is checked. Used for consent scenarios where re-delegation should not be allowed but access verification is still needed.</param>
+    /// <param name="allowMaskinportenSchema">When true, allows delegation of MaskinportenSchema resources which are normally blocked. Used for Maskinporten Suppliers API.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>The result on all the resource/action that is delegable on the resource and a reason behind if the user can or can not delegate a given action</returns>
-    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, CancellationToken cancellationToken = default);
+    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Method to check if a resource instance is delegable by an authenticated user on behalf of a party
@@ -319,10 +320,11 @@ public interface IConnectionService
     /// <param name="rightKeys">A list of rule keys that define the permissions or actions allowed for the resource.</param>
     /// <param name="by">The entity performing the operation. Used for auditing and authorization purposes.</param>
     /// <param name="configureConnection">An optional delegate to configure connection options for the operation. If null, default connection settings are used.</param>
+    /// <param name="allowMaskinportenSchema">When true, allows delegation of MaskinportenSchema resources which are normally blocked. Used for Maskinporten Suppliers API.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a Result object indicating whether
     /// the resource was successfully added.</returns>
-    Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+    Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a delegation to a resource between two entities with the specified action keys. If not all actions is posible nothing is performed and a Problem is returned
@@ -454,13 +456,12 @@ public interface IConnectionService
     /// <param name="party">The party ID.</param>
     /// <param name="toId">Optional supplier ID filter.</param>
     /// <param name="resourceId">Optional resource ID filter.</param>
-    /// <param name="scope">Optional Maskinporten scope value filter.</param>
     /// <param name="configureConnections">ConnectionOptions for supplier relationships.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>
     /// A <see cref="Result{T}"/> containing the list of delegated MaskinportenSchema resources.
     /// </returns>
-    Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a delegated Maskinporten scope (MaskinportenSchema resource) from a supplier.

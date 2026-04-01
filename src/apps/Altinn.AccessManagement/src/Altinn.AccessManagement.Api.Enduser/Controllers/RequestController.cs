@@ -521,6 +521,7 @@ public class RequestController(
             new RightKeyListDto { DirectRightKeys = rightKeys },
             authUser,
             ConfigureConnections,
+            allowMaskinportenSchema: false,
             ct);
 
         if (result.IsProblem)

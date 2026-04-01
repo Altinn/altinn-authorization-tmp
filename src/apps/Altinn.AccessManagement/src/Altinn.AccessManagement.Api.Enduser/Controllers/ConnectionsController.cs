@@ -610,7 +610,7 @@ public class ConnectionsController(
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
-        var result = await ConnectionService.AddResource(fromEntity, toEntity, resourceObj, rightKeys, by, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.AddResource(fromEntity, toEntity, resourceObj, rightKeys, by, ConfigureConnections, allowMaskinportenSchema: false, cancellationToken);
 
         if (result.IsProblem)
         {

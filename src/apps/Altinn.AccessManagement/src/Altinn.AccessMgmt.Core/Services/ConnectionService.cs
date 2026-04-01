@@ -892,7 +892,7 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);
@@ -953,7 +953,7 @@ public partial class ConnectionService(
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
 
         // Map to result
-        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, allowMaskinportenSchema, cancellationToken);
 
         // build reult with reason based on roles, packages, resource rights and users delegable
         ResourceCheckDto resourceCheckDto = new ResourceCheckDto
@@ -1017,8 +1017,8 @@ public partial class ConnectionService(
 
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources, instances);
 
-        // Map to result
-        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
+        // Map to result (InstanceDelegationCheck doesn't support MaskinportenSchema delegation, so allowMaskinportenSchema is always false)
+        IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, allowMaskinportenSchema: false, cancellationToken);
 
         // build result with resource, instance and rights
         InstanceCheckDto instanceCheckDto = new InstanceCheckDto
@@ -1056,7 +1056,7 @@ public partial class ConnectionService(
         return connectionsToFromParty.Any(c => c.RoleId == RoleConstants.Hadm.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
     }
 
-    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, CancellationToken cancellationToken)
+    private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, bool allowMaskinportenSchema, CancellationToken cancellationToken)
     {
         RightDto rightKey = rightKeys.FirstOrDefault(r => r.Key == right.Key);
         if (rightKey is null)
@@ -1131,7 +1131,7 @@ public partial class ConnectionService(
             permisions.Add(permision);
         }
 
-        if (isMaskinPortenSchema)
+        if (isMaskinPortenSchema && !allowMaskinportenSchema)
         {
             currentAction.Result = false;
             RightCheckDto.Permision permision = new RightCheckDto.Permision
@@ -1197,14 +1197,14 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default)
     {
         if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
         {
             return Problems.MissingRightKey;
         }
 
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, allowMaskinportenSchema: allowMaskinportenSchema, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;
@@ -1417,13 +1417,13 @@ public partial class ConnectionService(
         }
     }
 
-    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinportenSchema, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<RightCheckDto>> MapFromInternalToExternalRights(List<Models.Right> rights, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinportenSchema, bool allowMaskinportenSchema, CancellationToken cancellationToken = default)
     {
         List<RightCheckDto> result = [];
 
         foreach (var right in rights)
         {
-            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinportenSchema, cancellationToken));
+            result.Add(await MapFromInternalToExternalRight(right, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinportenSchema, allowMaskinportenSchema, cancellationToken));
         }
 
         return result;
@@ -2487,13 +2487,35 @@ public partial class ConnectionService
             }
         }
 
-        // Delegate the scope using the existing AddResource logic
-        var result = await AddResource(from, to, resourceObj, rightKeys, by, configureConnection, cancellationToken);
-        return result;
+        // Perform delegation check with MaskinportenSchema allowed
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, allowMaskinportenSchema: true, cancellationToken: cancellationToken);
+        if (canDelegate.IsProblem)
+        {
+            return canDelegate.Problem;
+        }
+
+        var keys = rightKeys.DirectRightKeys.ToList();
+        foreach (var rightKey in keys)
+        {
+            if (!canDelegate.Value.Rights.Any(a => a.Right.Key == rightKey && a.Result))
+            {
+                return Problems.NotAuthorizedForDelegationRequest;
+            }
+        }
+
+        // Write delegation policy rules directly (skip generic connection check since we verified Supplier assignment above)
+        List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, keys, by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
+
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
+        return true;
     }
 
     /// <inheritdoc/>
-    public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(party, toId, cancellationToken);
@@ -2533,14 +2555,6 @@ public partial class ConnectionService
         // Always filter to MaskinportenSchema resources only
         var maskinportenResources = resourcePermissions.Where(r => 
             r.Resource.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase));
-
-        // TODO: Implement scope-based filtering when scope parameter is provided
-        // For now, scope parameter is reserved for future use but all MaskinportenSchema resources are returned
-        if (!string.IsNullOrEmpty(scope))
-        {
-            // Future: Filter maskinportenResources by actual scope value from resource metadata
-            // Example: maskinportenResources = maskinportenResources.Where(r => r.Resource.Scope == scope);
-        }
 
         return maskinportenResources.ToList();
     }

@@ -311,7 +311,6 @@ public class MaskinportenSuppliersController(
         [Required][FromQuery(Name = "party")] Guid party,
         [FromQuery(Name = "supplier")] string? supplierOrgNo = null,
         [FromQuery(Name = "resource")] string? resource = null,
-        [FromQuery(Name = "scope")] string? scope = null,
         CancellationToken cancellationToken = default)
     {
         Guid? supplierId = null;
@@ -342,7 +341,6 @@ public class MaskinportenSuppliersController(
             party,
             toId: supplierId,
             resourceId: resourceId,
-            scope: scope,
             configureConnections: ConfigureSuppliers,
             cancellationToken: cancellationToken
         );
