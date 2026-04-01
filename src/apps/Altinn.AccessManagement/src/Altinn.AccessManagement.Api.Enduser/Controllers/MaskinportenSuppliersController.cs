@@ -378,7 +378,7 @@ public class MaskinportenSuppliersController(
             return NoContent(); // Already removed or doesn't exist
         }
 
-        var problem = await connectionService.RemoveResource(party, supplierEntity.Id, resource, ConfigureSuppliers, cancellationToken);
+        var problem = await connectionService.RemoveMaskinportenScopeFromSupplier(party, supplierEntity.Id, resource, ConfigureSuppliers, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();

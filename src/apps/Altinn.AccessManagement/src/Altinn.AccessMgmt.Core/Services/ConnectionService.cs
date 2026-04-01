@@ -2390,28 +2390,29 @@ public partial class ConnectionService
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<ConnectionDto>>> GetSuppliers(Guid party, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
-        var options = new ConnectionOptions(configureConnections);
-
-        var result = await Get(
-            party,
-            party,
-            null,
-            includeClientDelegations: false,
-            includeAgentConnections: false,
-            configureConnections,
+        var connections = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                RoleIds = [RoleConstants.Supplier.Id],
+                FromIds = [party],
+                ToIds = null,
+                EnrichEntities = true,
+                IncludeSubConnections = false,
+                IncludeKeyRole = false,
+                IncludeMainUnitConnections = false,
+                IncludeDelegation = false,
+                IncludePackages = false,
+                IncludeResources = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                OnlyUniqueResults = false
+            },
+            ConnectionQueryDirection.ToOthers,
+            true,
             cancellationToken
         );
 
-        if (result.IsProblem)
-        {
-            return result.Problem;
-        }
-
-        // Filter to only supplier connections
-        var supplierConnections = result.Value.Where(c => 
-            c.Roles.Any(r => r.Id == RoleConstants.Supplier.Id));
-
-        return supplierConnections.ToList();
+        return DtoMapper.ConvertToOthers(connections, getSingle: false);
     }
 
     /// <inheritdoc/>
@@ -2495,6 +2496,17 @@ public partial class ConnectionService
     public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(party, toId, cancellationToken);
+        var problem = ValidateReadOpInput(party, from, toId, to, options);
+        if (problem is { })
+        {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<ResourcePermissionDto>();
+            }
+
+            return problem;
+        }
 
         var connections = await connectionQuery.GetConnectionsAsync(
             new ConnectionQueryFilter()
@@ -2518,17 +2530,79 @@ public partial class ConnectionService
 
         var resourcePermissions = DtoMapper.ConvertResources(connections);
 
-        // Filter by scope if provided
+        // Always filter to MaskinportenSchema resources only
+        var maskinportenResources = resourcePermissions.Where(r => 
+            r.Resource.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase));
+
+        // TODO: Implement scope-based filtering when scope parameter is provided
+        // For now, scope parameter is reserved for future use but all MaskinportenSchema resources are returned
         if (!string.IsNullOrEmpty(scope))
         {
-            // TODO: Implement scope filtering based on resource metadata
-            // For now, returning all MaskinportenSchema resources
-            var filtered = resourcePermissions.Where(r => 
-                r.Resource.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase));
-            return filtered.ToList();
+            // Future: Filter maskinportenResources by actual scope value from resource metadata
+            // Example: maskinportenResources = maskinportenResources.Where(r => r.Resource.Scope == scope);
         }
 
-        return resourcePermissions.ToList();
+        return maskinportenResources.ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValidationProblemInstance> RemoveMaskinportenScopeFromSupplier(Guid fromId, Guid toId, string resource, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var resourceObj = await dbContext.Resources.AsNoTracking().FirstOrDefaultAsync(t => t.RefId == resource, cancellationToken);
+        if (resourceObj == null)
+        {
+            return ValidationComposer.Validate(
+                ResourceValidation.ResourceExists(resourceObj, resource)
+            );
+        }
+
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        // Use RoleConstants.Supplier instead of Rightholder for supplier delegations
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Supplier)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;
+        }
+
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignmentResources = await dbContext.AssignmentResources
+            .AsTracking()
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceObj.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentResources is null)
+        {
+            return null;
+        }
+
+        var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, cancellationToken);
+        existingAssignmentResources.PolicyVersion = newVersion;
+
+        dbContext.Remove(existingAssignmentResources);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
     }
 
     #endregion

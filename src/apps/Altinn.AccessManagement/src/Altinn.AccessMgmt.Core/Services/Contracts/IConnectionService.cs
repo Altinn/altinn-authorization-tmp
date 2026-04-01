@@ -462,5 +462,19 @@ public interface IConnectionService
     /// </returns>
     Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Removes a delegated Maskinporten scope (MaskinportenSchema resource) from a supplier.
+    /// Uses RoleConstants.Supplier to locate the correct assignment.
+    /// </summary>
+    /// <param name="fromId">ID of the organization entity from which the scope was delegated.</param>
+    /// <param name="toId">ID of the supplier organization entity.</param>
+    /// <param name="resource">The resource RefId (scope) to remove.</param>
+    /// <param name="configureConnection">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<ValidationProblemInstance> RemoveMaskinportenScopeFromSupplier(Guid fromId, Guid toId, string resource, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
     #endregion
 }
