@@ -2345,6 +2345,196 @@ public partial class ConnectionService
 }
 
 /// <summary>
+/// Partial ConnectionService - Maskinporten Suppliers
+/// </summary>
+public partial class ConnectionService
+{
+    #region Maskinporten Suppliers
+
+    /// <inheritdoc/>
+    public async Task<Result<AssignmentDto>> AddSupplier(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
+            .Where(e => e.RoleId == RoleConstants.Supplier)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignment is { })
+        {
+            return DtoMapper.Convert(existingAssignment);
+        }
+
+        var assignment = new Assignment()
+        {
+            FromId = fromId,
+            ToId = toId,
+            RoleId = RoleConstants.Supplier,
+        };
+
+        await dbContext.Assignments.AddAsync(assignment, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return DtoMapper.Convert(assignment);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<ConnectionDto>>> GetSuppliers(Guid party, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+
+        var result = await Get(
+            party,
+            party,
+            null,
+            includeClientDelegations: false,
+            includeAgentConnections: false,
+            configureConnections,
+            cancellationToken
+        );
+
+        if (result.IsProblem)
+        {
+            return result.Problem;
+        }
+
+        // Filter to only supplier connections
+        var supplierConnections = result.Value.Where(c => 
+            c.Roles.Any(r => r.Id == RoleConstants.Supplier.Id));
+
+        return supplierConnections.ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValidationProblemInstance> RemoveSupplier(Guid fromId, Guid toId, bool cascade = true, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var existingAssignment = await dbContext.Assignments
+            .AsTracking()
+            .Where(e => e.FromId == fromId)
+            .Where(e => e.ToId == toId)
+            .Where(e => e.RoleId == RoleConstants.Supplier)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignment is null)
+        {
+            return null;
+        }
+
+        if (!cascade)
+        {
+            var delegations = await dbContext.Delegations
+                .AsNoTracking()
+                .Where(p => p.FromId == existingAssignment.Id)
+                .ToListAsync(cancellationToken);
+
+            problem = ValidationComposer.Validate(
+                DelegationValidation.HasDelegationsAssigned(delegations)
+            );
+
+            if (problem is { })
+            {
+                return problem;
+            }
+        }
+
+        dbContext.Remove(existingAssignment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<bool>> AddMaskinportenScopeToSupplier(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+    {
+        if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
+        {
+            return Problems.MissingRightKey;
+        }
+
+        // Ensure supplier connection exists
+        var supplierCheck = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
+            .Where(e => e.RoleId == RoleConstants.Supplier)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (supplierCheck is null)
+        {
+            // Create supplier connection if it doesn't exist
+            var supplierResult = await AddSupplier(from.Id, to.Id, configureConnection, cancellationToken);
+            if (supplierResult.IsProblem)
+            {
+                return supplierResult.Problem;
+            }
+        }
+
+        // Delegate the scope using the existing AddResource logic
+        var result = await AddResource(from, to, resourceObj, rightKeys, by, configureConnection, cancellationToken);
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+
+        var connections = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                RoleIds = [RoleConstants.Supplier.Id],
+                ResourceIds = resourceId.HasValue ? [resourceId.Value] : null,
+                FromIds = [party],
+                ToIds = toId.HasValue ? [toId.Value] : null,
+                IncludeResources = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = false,
+                IncludeSubConnections = false,
+                IncludePackages = false,
+                EnrichPackageResources = false,
+                IncludeDelegation = false,
+            },
+            ConnectionQueryDirection.ToOthers,
+            true,
+            cancellationToken
+        );
+
+        var resourcePermissions = DtoMapper.ConvertResources(connections);
+
+        // Filter by scope if provided
+        if (!string.IsNullOrEmpty(scope))
+        {
+            // TODO: Implement scope filtering based on resource metadata
+            // For now, returning all MaskinportenSchema resources
+            var filtered = resourcePermissions.Where(r => 
+                r.Resource.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase));
+            return filtered.ToList();
+        }
+
+        return resourcePermissions.ToList();
+    }
+
+    #endregion
+}
+
+/// <summary>
 /// Configures Logic for Connection Services
 /// </summary>
 public sealed class ConnectionOptions

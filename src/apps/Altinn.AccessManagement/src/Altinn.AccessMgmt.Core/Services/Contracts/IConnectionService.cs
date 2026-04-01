@@ -395,4 +395,72 @@ public interface IConnectionService
     /// </list>
     /// </returns>
     Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    #region Maskinporten Suppliers
+
+    /// <summary>
+    /// Creates a supplier assignment between two organization entities for Maskinporten scope delegation.
+    /// </summary>
+    /// <param name="fromId">ID of the organization entity from which the supplier assignment originates.</param>
+    /// <param name="toId">ID of the supplier organization entity.</param>
+    /// <param name="configureConnection">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>
+    /// A <see cref="Result{T}"/> containing the newly created supplier <see cref="Assignment"/>.
+    /// </returns>
+    Task<Result<AssignmentDto>> AddSupplier(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all supplier connections for the specified party.
+    /// </summary>
+    /// <param name="party">The party ID to get suppliers for.</param>
+    /// <param name="configureConnections">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>
+    /// A <see cref="Result{T}"/> containing the list of supplier connections.
+    /// </returns>
+    Task<Result<IEnumerable<ConnectionDto>>> GetSuppliers(Guid party, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes a supplier assignment between two organization entities with cascade delete of delegated scopes.
+    /// </summary>
+    /// <param name="fromId">ID of the organization entity from which the supplier assignment originates.</param>
+    /// <param name="toId">ID of the supplier organization entity.</param>
+    /// <param name="cascade">If <c>true</c>, cascade delete any delegated scopes.</param>
+    /// <param name="configureConnection">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<ValidationProblemInstance> RemoveSupplier(Guid fromId, Guid toId, bool cascade = true, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a Maskinporten scope (MaskinportenSchema resource) to a supplier with auto-delegated rights.
+    /// </summary>
+    /// <param name="from">The source organization entity.</param>
+    /// <param name="to">The supplier organization entity.</param>
+    /// <param name="resourceObj">The MaskinportenSchema resource.</param>
+    /// <param name="rightKeys">A list of right keys to delegate (auto-delegated from delegation check).</param>
+    /// <param name="by">The entity performing the operation.</param>
+    /// <param name="configureConnection">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a Result object indicating whether
+    /// the scope was successfully delegated.</returns>
+    Task<Result<bool>> AddMaskinportenScopeToSupplier(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all delegated Maskinporten scopes for the specified party with optional filters.
+    /// </summary>
+    /// <param name="party">The party ID.</param>
+    /// <param name="toId">Optional supplier ID filter.</param>
+    /// <param name="resourceId">Optional resource ID filter.</param>
+    /// <param name="scope">Optional Maskinporten scope value filter.</param>
+    /// <param name="configureConnections">ConnectionOptions for supplier relationships.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>
+    /// A <see cref="Result{T}"/> containing the list of delegated MaskinportenSchema resources.
+    /// </returns>
+    Task<Result<IEnumerable<ResourcePermissionDto>>> GetMaskinportenScopes(Guid party, Guid? toId = null, Guid? resourceId = null, string? scope = null, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+    #endregion
 }

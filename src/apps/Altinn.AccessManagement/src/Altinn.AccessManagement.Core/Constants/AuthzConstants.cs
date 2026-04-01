@@ -126,6 +126,11 @@
         public const string POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS = "POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS";
 
         /// <summary>
+        /// Policy tag for authorizing maskinporten scope delegation (altinn_maskinporten_scope_delegation resource)
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_SCOPE_DELEGATION = "MaskinportenScopeDelegation";
+
+        /// <summary>
         /// Portal enduser scope giving access to most of the end user APIs
         /// </summary>
         public const string SCOPE_PORTAL_ENDUSER = "altinn:portal/enduser";
