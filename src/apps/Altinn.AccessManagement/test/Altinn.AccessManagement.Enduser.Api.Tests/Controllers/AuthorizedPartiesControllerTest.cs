@@ -355,8 +355,8 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         Assert.NotNull(kaos);
         Assert.Equal("Kaos Magic Design and Arts", kaos.Name);
         Assert.True(kaos.AuthorizedInstances.Count >= 2, $"Expected at least 2 instances but got {kaos.AuthorizedInstances.Count}. Response body: {content}");
-        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1" && i.InstanceId == "50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
-        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare" && i.InstanceId == "50315678/a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1" && i.InstanceId == "b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare" && i.InstanceId == "a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e");
     }
 
     /// <summary>

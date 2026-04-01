@@ -1162,7 +1162,9 @@ public static class TestData
         {
             AssignmentId = AssignKaosJosephineRightholder,
             ResourceId = SiriusSkattemelding.Id,
-            InstanceId = "50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+            InstanceId = "urn:altinn:instance-id:50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+            PolicyPath = "sirius-skattemelding-v1/50315678/p5049963/delegationpolicy.xml",
+            PolicyVersion = "1.0",
         },
 
         // Josephine has instance rights for Kaos on MattilsynetBakeryService
@@ -1170,7 +1172,9 @@ public static class TestData
         {
             AssignmentId = AssignKaosJosephineRightholder,
             ResourceId = MattilsynetBakeryService.Id,
-            InstanceId = "50315678/a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            InstanceId = "urn:altinn:instance-id:50315678/a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            PolicyPath = "mattilsynet-baker-konditorvare/50315678/p5049963/delegationpolicy.xml",
+            PolicyVersion = "1.0",
         },
     };
 
