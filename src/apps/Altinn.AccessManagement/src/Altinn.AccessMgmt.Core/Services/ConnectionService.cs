@@ -2390,6 +2390,13 @@ public partial class ConnectionService
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<ConnectionDto>>> GetSuppliers(Guid party, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(party, party, cancellationToken);
+        var problem = ValidateReadOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
         // Work around ConnectionQuery's unconditional exclusion of Supplier role by querying assignments directly.
         var assignments = await dbContext.Assignments
             .AsNoTracking()
