@@ -66,7 +66,7 @@ public partial class ConnectionsControllerTest
             {
                 services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
                 services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointWithWrittenPoliciesMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
             });
             Fixture.EnsureSeedOnce(db =>
@@ -212,36 +212,45 @@ public partial class ConnectionsControllerTest
                 Assert.Single(actionMatches);
             }
 
-            // Round-trip: verify the delegation created an instance via GetInstances
+            // Round-trip: verify the delegation is readable via GetInstanceRights
             HttpClient readClient = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
             HttpResponseMessage getResponse = await readClient.GetAsync(
-                $"{Route}/resources/instances?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.KaosMagicDesignAndArts.Id}",
+                $"{Route}/resources/instances/rights?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.KaosMagicDesignAndArts.Id}&resource=app_skd_sirius-skattemelding-v1&instance={SiriusInstanceId}",
                 TestContext.Current.CancellationToken);
 
             string getResponseContent = await getResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(getResponse.StatusCode == HttpStatusCode.OK, $"Expected OK but got {getResponse.StatusCode}. Response body: {getResponseContent}");
 
-            var instances = JsonSerializer.Deserialize<PaginatedResult<InstancePermissionDto>>(getResponseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            ExtInstanceRightDto instanceRights = await getResponse.Content.ReadFromJsonAsync<ExtInstanceRightDto>(TestContext.Current.CancellationToken);
 
-            Assert.NotNull(instances);
-            Assert.NotEmpty(instances.Items);
+            Assert.NotNull(instanceRights);
+            Assert.NotNull(instanceRights.Resource);
+            Assert.Equal("app_skd_sirius-skattemelding-v1", instanceRights.Resource.RefId);
+            Assert.NotNull(instanceRights.Instance);
+            Assert.NotEmpty(instanceRights.DirectRights);
+            Assert.Equal(rightKeys.Count, instanceRights.DirectRights.Count);
+            Assert.Empty(instanceRights.IndirectRights);
 
-            // Find the specific instance we just delegated
-            var delegatedInstance = instances.Items.FirstOrDefault(i => i.Instance.RefId == SiriusInstanceId);
-            Assert.NotNull(delegatedInstance);
+            // Verify each returned right has the correct permission structure
+            foreach (var right in instanceRights.DirectRights)
+            {
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {right.Reason.Flag}.");
+                Assert.Single(right.Permissions);
+                PermissionDto permission = right.Permissions[0];
+                Assert.Equal(TestData.KaosMagicDesignAndArts.Entity.Name, permission.To.Name);
+                Assert.True(permission.To.Id == TestData.KaosMagicDesignAndArts.Id);
+                Assert.Equal(TestData.DumboAdventures.Entity.Name, permission.From.Name);
+                Assert.True(permission.From.Id == TestData.DumboAdventures.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.Direct), $"Expected Direct but got {permission.Reason.Flag}.");
+                Assert.True(permission.Role.Id == RoleConstants.Rightholder, $"Expected Rightholder role but got {permission.Role.Id}.");
+                Assert.Null(permission.Via);
+            }
 
-            // Verify the instance is linked to the correct resource
-            Assert.Equal("app_skd_sirius-skattemelding-v1", delegatedInstance.Resource.RefId);
-            Assert.Equal("Skattemelding med næringsspesifikasjon 2020", delegatedInstance.Resource.Name);
-
-            // Verify the permission structure
-            Assert.NotEmpty(delegatedInstance.Permissions);
-            PermissionDto perm = delegatedInstance.Permissions.First();
-            Assert.Equal(TestData.DumboAdventures.Entity.Name, perm.From.Name);
-            Assert.True(perm.From.Id == TestData.DumboAdventures.Id);
-            Assert.Equal(TestData.KaosMagicDesignAndArts.Entity.Name, perm.To.Name);
-            Assert.True(perm.To.Id == TestData.KaosMagicDesignAndArts.Id);
+            // Verify the delegated right keys match what was requested
+            var returnedRightKeys = instanceRights.DirectRights.Select(r => r.Right.Key).OrderBy(k => k).ToList();
+            var requestedRightKeys = rightKeys.OrderBy(k => k).ToList();
+            Assert.Equal(requestedRightKeys, returnedRightKeys);
         }
 
         /// <summary>
