@@ -324,5 +324,59 @@ public partial class ConnectionsControllerTest
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+
+        /// <summary>
+        /// Malin tries to delegate instance rights with an empty DirectRightKeys list.
+        /// Expects 400 BadRequest because the controller rejects empty right key lists.
+        /// </summary>
+        [Fact]
+        public async Task AddInstanceRights_WithEmptyRightKeys_ReturnsBadRequest()
+        {
+            var body = new InstanceRightsDelegationDto { DirectRightKeys = [] };
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.DumboAdventures.Id}&to={TestData.KaosMagicDesignAndArts.Id}&resource=app_skd_sirius-skattemelding-v1&instance={SiriusInstanceId}",
+                body,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Sends a malformed instance URN (missing the required prefix).
+        /// Expects 400 BadRequest.
+        /// </summary>
+        [Fact]
+        public async Task AddInstanceRights_WithInvalidInstanceUrn_ReturnsBadRequest()
+        {
+            var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.DumboAdventures.Id}&to={TestData.KaosMagicDesignAndArts.Id}&resource=app_skd_sirius-skattemelding-v1&instance=50315678/not-a-valid-urn",
+                body,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Request without any authentication token.
+        /// Expects 401 Unauthorized.
+        /// </summary>
+        [Fact]
+        public async Task AddInstanceRights_WithNoToken_ReturnsUnauthorized()
+        {
+            var client = Fixture.Server.CreateClient();
+            var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.DumboAdventures.Id}&to={TestData.KaosMagicDesignAndArts.Id}&resource=app_skd_sirius-skattemelding-v1&instance={SiriusInstanceId}",
+                body,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }

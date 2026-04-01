@@ -183,5 +183,47 @@ public partial class ConnectionsControllerTest
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+
+        /// <summary>
+        /// Request without any authentication token.
+        /// Expects 401 Unauthorized.
+        /// </summary>
+        [Fact]
+        public async Task GetInstances_WithNoToken_ReturnsUnauthorized()
+        {
+            var client = Fixture.Server.CreateClient();
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/instances?party={TestData.KaosMagicDesignAndArts.Id}&from={TestData.KaosMagicDesignAndArts.Id}&to={TestData.JosephineYvonnesdottir.Id}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Jinx queries instances with a specific resource filter.
+        /// Only SiriusSkattemelding instances should be returned, not MattilsynetBakeryService.
+        /// </summary>
+        [Fact]
+        public async Task GetInstances_AsJinxForKaosToJosephine_FilterByResource_ReturnsOnlyMatchingResource()
+        {
+            HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/instances?party={TestData.KaosMagicDesignAndArts.Id}&from={TestData.KaosMagicDesignAndArts.Id}&to={TestData.JosephineYvonnesdottir.Id}&resource=app_skd_sirius-skattemelding-v1",
+                TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            PaginatedResult<InstancePermissionDto> result = JsonSerializer.Deserialize<PaginatedResult<InstancePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.Items);
+
+            // All returned instances should be for SiriusSkattemelding only
+            Assert.All(result.Items, i => Assert.Equal("app_skd_sirius-skattemelding-v1", i.Resource.RefId));
+            // Should not contain the MattilsynetBakeryService instance
+            Assert.DoesNotContain(result.Items, i => i.Resource.RefId == "app_mat_mattilsynet-baker-konditorvare");
+        }
     }
 }

@@ -70,7 +70,15 @@ public partial class ConnectionsControllerTest
                     RoleId = RoleConstants.Rightholder,
                 };
 
+                var rightholderFromAlexToMilena = new Assignment()
+                {
+                    FromId = TestData.AlexTheArtist.Id,
+                    ToId = TestData.Milena.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
                 db.Assignments.Add(rightholderFromJinxToThea);
+                db.Assignments.Add(rightholderFromAlexToMilena);
                 db.SaveChanges();
             });
         }
@@ -291,6 +299,89 @@ public partial class ConnectionsControllerTest
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Alex delegates 2 right keys to Milena for MattilsynetBakeryService, then updates to only 1,
+        /// verifying that rights are reduced. Uses Alex→Milena (separate from Jinx→Thea) and a different
+        /// resource to avoid shared state collisions.
+        /// </summary>
+        [Fact]
+        public async Task UpdateInstanceRights_AsAlexToMilena_ReduceRights_RemovesExcessRights()
+        {
+            const string instanceIdForReduce = "urn:altinn:instance-id:50401002/e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8092";
+
+            // Alex checks delegatable rights for mattilsynet
+            HttpClient checkClient = CreateClient(TestData.AlexTheArtist.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpResponseMessage checkResponse = await checkClient.GetAsync(
+                $"{Route}/resources/instances/delegationcheck?party={TestData.AlexTheArtist.Id}&resource=app_mat_mattilsynet-baker-konditorvare&instance={instanceIdForReduce}",
+                TestContext.Current.CancellationToken);
+            string checkContent = await checkResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(checkResponse.StatusCode == HttpStatusCode.OK, $"Delegation check failed: {checkResponse.StatusCode}. Body: {checkContent}");
+            InstanceCheckDto checkResult = JsonSerializer.Deserialize<InstanceCheckDto>(checkContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            List<string> allRightKeys = checkResult.Rights.Where(r => r.Result).Select(r => r.Right.Key).ToList();
+            Assert.True(allRightKeys.Count >= 2, $"Expected at least 2 delegatable right keys, but got {allRightKeys.Count}");
+
+            // Step 1: Add initial delegation with 2 right keys
+            var initialRightKeys = allRightKeys.Take(2).ToList();
+            var addBody = new InstanceRightsDelegationDto { DirectRightKeys = initialRightKeys };
+            HttpClient addClient = CreateClient(TestData.AlexTheArtist.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpResponseMessage addResponse = await addClient.PostAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.AlexTheArtist.Id}&to={TestData.Milena.Id}&resource=app_mat_mattilsynet-baker-konditorvare&instance={instanceIdForReduce}",
+                addBody,
+                TestContext.Current.CancellationToken);
+            string addContent = await addResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(addResponse.StatusCode == HttpStatusCode.Created, $"Add failed: {addResponse.StatusCode}. Body: {addContent}");
+
+            // Step 2: Verify 2 rights exist
+            HttpClient readClient = CreateClient(TestData.AlexTheArtist.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+            HttpResponseMessage beforeResponse = await readClient.GetAsync(
+                $"{Route}/resources/instances/rights?party={TestData.AlexTheArtist.Id}&from={TestData.AlexTheArtist.Id}&to={TestData.Milena.Id}&resource=app_mat_mattilsynet-baker-konditorvare&instance={instanceIdForReduce}",
+                TestContext.Current.CancellationToken);
+            string beforeContent = await beforeResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(beforeResponse.StatusCode == HttpStatusCode.OK, $"Before GET failed: {beforeResponse.StatusCode}. Body: {beforeContent}");
+            ExtInstanceRightDto beforeRights = await beforeResponse.Content.ReadFromJsonAsync<ExtInstanceRightDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(2, beforeRights.DirectRights.Count);
+
+            // Step 3: Update to only 1 right key (reducing from 2 to 1)
+            var reducedRightKeys = new List<string> { allRightKeys.First() };
+            var updateBody = new RightKeyListDto { DirectRightKeys = reducedRightKeys };
+            HttpClient writeClient = CreateClient(TestData.AlexTheArtist.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            HttpResponseMessage putResponse = await writeClient.PutAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.AlexTheArtist.Id}&to={TestData.Milena.Id}&resource=app_mat_mattilsynet-baker-konditorvare&instance={instanceIdForReduce}",
+                updateBody,
+                TestContext.Current.CancellationToken);
+            string putContent = await putResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(putResponse.StatusCode == HttpStatusCode.OK, $"Expected OK but got {putResponse.StatusCode}. Body: {putContent}");
+
+            // Step 4: Verify only 1 right remains
+            HttpClient readClient2 = CreateClient(TestData.AlexTheArtist.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+            HttpResponseMessage afterResponse = await readClient2.GetAsync(
+                $"{Route}/resources/instances/rights?party={TestData.AlexTheArtist.Id}&from={TestData.AlexTheArtist.Id}&to={TestData.Milena.Id}&resource=app_mat_mattilsynet-baker-konditorvare&instance={instanceIdForReduce}",
+                TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, afterResponse.StatusCode);
+            ExtInstanceRightDto afterRights = await afterResponse.Content.ReadFromJsonAsync<ExtInstanceRightDto>(TestContext.Current.CancellationToken);
+            Assert.Single(afterRights.DirectRights);
+            Assert.Equal(reducedRightKeys.First(), afterRights.DirectRights.First().Right.Key);
+        }
+
+        /// <summary>
+        /// Request without any authentication token.
+        /// Expects 401 Unauthorized.
+        /// </summary>
+        [Fact]
+        public async Task UpdateInstanceRights_WithNoToken_ReturnsUnauthorized()
+        {
+            var client = Fixture.Server.CreateClient();
+            var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
+
+            HttpResponseMessage response = await client.PutAsJsonAsync(
+                $"{Route}/resources/instances/rights?party={TestData.JinxArcane.Id}&to={TestData.Thea.Id}&resource=app_skd_sirius-skattemelding-v1&instance={SiriusInstanceIdForUpdate}",
+                body,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }

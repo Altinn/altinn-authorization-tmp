@@ -381,6 +381,55 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     }
 
     /// <summary>
+    /// Josephine requests authorized parties with includeResources=true.
+    /// Kaos should appear with AuthorizedResources populated from the instance delegations
+    /// (resources are listed regardless of whether access is at resource or instance level).
+    /// AuthorizedInstances should be empty since includeInstances is not set.
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsJosephineWithIncludeResources_ReturnsKaosWithResources()
+    {
+        HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeResources=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto kaos = result.Items.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
+        Assert.NotNull(kaos);
+        Assert.Contains("app_skd_sirius-skattemelding-v1", kaos.AuthorizedResources);
+        Assert.Contains("app_mat_mattilsynet-baker-konditorvare", kaos.AuthorizedResources);
+        Assert.Empty(kaos.AuthorizedInstances);
+    }
+
+    /// <summary>
+    /// Josephine requests authorized parties with both includeResources and includeInstances.
+    /// Kaos should have instances populated (from seed) but resources empty (no resource delegations).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsJosephineWithIncludeResourcesAndInstances_ReturnsKaosWithInstancesButNoResources()
+    {
+        HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeResources=true&includeInstances=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto kaos = result.Items.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
+        Assert.NotNull(kaos);
+        Assert.Empty(kaos.AuthorizedResources);
+        Assert.True(kaos.AuthorizedInstances.Count >= 2, $"Expected at least 2 instances but got {kaos.AuthorizedInstances.Count}. Response: {content}");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare");
+    }
+
+    /// <summary>
     /// Asserts that the authorized party has the expected DAGL role and its subroles.
     /// </summary>
     private static void AssertHasDaglRoles(AuthorizedPartyDto party)

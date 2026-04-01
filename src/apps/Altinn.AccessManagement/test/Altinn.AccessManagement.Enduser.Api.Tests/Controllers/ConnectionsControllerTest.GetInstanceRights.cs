@@ -205,5 +205,36 @@ public partial class ConnectionsControllerTest
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+        /// <summary>
+        /// Sends a malformed instance URN (missing the required prefix).
+        /// Expects 400 BadRequest with a validation error.
+        /// </summary>
+        [Fact]
+        public async Task GetInstanceRights_WithInvalidInstanceUrn_ReturnsBadRequest()
+        {
+            HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/instances/rights?party={TestData.KaosMagicDesignAndArts.Id}&from={TestData.KaosMagicDesignAndArts.Id}&to={TestData.JosephineYvonnesdottir.Id}&resource=app_skd_sirius-skattemelding-v1&instance=invalid-format-no-urn-prefix",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Request without any authentication token.
+        /// Expects 401 Unauthorized.
+        /// </summary>
+        [Fact]
+        public async Task GetInstanceRights_WithNoToken_ReturnsUnauthorized()
+        {
+            var client = Fixture.Server.CreateClient();
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/instances/rights?party={TestData.KaosMagicDesignAndArts.Id}&from={TestData.KaosMagicDesignAndArts.Id}&to={TestData.JosephineYvonnesdottir.Id}&resource=app_skd_sirius-skattemelding-v1&instance={SiriusInstanceId}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }
