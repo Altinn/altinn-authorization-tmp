@@ -65,6 +65,43 @@ public partial class ConnectionsControllerTest
 
                 db.Assignments.Add(rightholderFromDumboToBaker);
                 db.SaveChanges();
+
+                // Two separate Rightholders with packages for cascade/non-cascade tests.
+                // Uses isolated entities to avoid interference with other test fixtures.
+
+                // For non-cascade test (will NOT be deleted)
+                var rightholderForNoCascade = new Assignment()
+                {
+                    FromId = TestData.FredriksonsFabrikk.Id,
+                    ToId = TestData.SiljeHaugen.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                // For cascade test (will be deleted)
+                var rightholderForCascade = new Assignment()
+                {
+                    FromId = TestData.FredriksonsFabrikk.Id,
+                    ToId = TestData.EinarBerg.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                db.Assignments.Add(rightholderForNoCascade);
+                db.Assignments.Add(rightholderForCascade);
+                db.SaveChanges();
+
+                db.AssignmentPackages.Add(new AssignmentPackage()
+                {
+                    AssignmentId = rightholderForNoCascade.Id,
+                    PackageId = PackageConstants.SalarySpecialCategory.Id,
+                });
+
+                db.AssignmentPackages.Add(new AssignmentPackage()
+                {
+                    AssignmentId = rightholderForCascade.Id,
+                    PackageId = PackageConstants.SalarySpecialCategory.Id,
+                });
+
+                db.SaveChanges();
             });
         }
 
@@ -123,17 +160,18 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin tries to remove the Dumbo->Thea Rightholder connection without cascade.
-        /// Thea has a SalarySpecialCategory package on this assignment, so non-cascade removal
-        /// should fail with a validation error (400 BadRequest).
+        /// Silje (MD of Fredriksons Fabrikk) tries to remove the Fredriksons->SiljeHaugen Rightholder
+        /// connection without cascade. SiljeHaugen has a SalarySpecialCategory package on this assignment,
+        /// so non-cascade removal should fail with a validation error (400 BadRequest).
+        /// Uses a dedicated relationship (not the default seed) to avoid interference from other test fixtures.
         /// </summary>
         [Fact]
         public async Task RemoveAssignment_WithPackagesNoCascade_ReturnsBadRequest()
         {
-            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpClient client = CreateClient(TestData.SiljeHaugen.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}",
+                $"{Route}?party={TestData.FredriksonsFabrikk.Id}&from={TestData.FredriksonsFabrikk.Id}&to={TestData.SiljeHaugen.Id}",
                 TestContext.Current.CancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -141,16 +179,18 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin removes the Dumbo->Thea connection with cascade=true.
-        /// Even though Thea has packages, cascade deletes everything. Expects 204 NoContent.
+        /// Silje removes the Fredriksons->EinarBerg connection with cascade=true.
+        /// Even though EinarBerg has a SalarySpecialCategory package, cascade deletes everything.
+        /// Expects 204 NoContent. Uses a separate relationship (EinarBerg) from the non-cascade test
+        /// (SiljeHaugen) so test ordering doesn't matter.
         /// </summary>
         [Fact]
         public async Task RemoveAssignment_WithPackagesCascade_ReturnsNoContent()
         {
-            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+            HttpClient client = CreateClient(TestData.SiljeHaugen.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
             HttpResponseMessage response = await client.DeleteAsync(
-                $"{Route}?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.Thea.Id}&cascade=true",
+                $"{Route}?party={TestData.FredriksonsFabrikk.Id}&from={TestData.FredriksonsFabrikk.Id}&to={TestData.EinarBerg.Id}&cascade=true",
                 TestContext.Current.CancellationToken);
 
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
