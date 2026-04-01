@@ -2390,29 +2390,24 @@ public partial class ConnectionService
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<ConnectionDto>>> GetSuppliers(Guid party, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
-        var connections = await connectionQuery.GetConnectionsAsync(
-            new ConnectionQueryFilter()
-            {
-                RoleIds = [RoleConstants.Supplier.Id],
-                FromIds = [party],
-                ToIds = null,
-                EnrichEntities = true,
-                IncludeSubConnections = false,
-                IncludeKeyRole = false,
-                IncludeMainUnitConnections = false,
-                IncludeDelegation = false,
-                IncludePackages = false,
-                IncludeResources = false,
-                EnrichPackageResources = false,
-                ExcludeDeleted = false,
-                OnlyUniqueResults = false
-            },
-            ConnectionQueryDirection.ToOthers,
-            true,
-            cancellationToken
-        );
+        // Work around ConnectionQuery's unconditional exclusion of Supplier role by querying assignments directly.
+        var assignments = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(a => a.FromId == party)
+            .Where(a => a.RoleId == RoleConstants.Supplier)
+            .ToListAsync(cancellationToken);
 
-        return DtoMapper.ConvertToOthers(connections, getSingle: false);
+        var connections = assignments
+            .Select(a => new ConnectionDto
+            {
+                FromId = a.FromId,
+                ToId = a.ToId,
+                RoleId = a.RoleId
+            })
+            .ToList()
+            .AsEnumerable();
+
+        return Result<IEnumerable<ConnectionDto>>.Success(connections);
     }
 
     /// <inheritdoc/>
