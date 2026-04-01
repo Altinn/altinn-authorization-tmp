@@ -29,6 +29,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     {
         Fixture = fixture;
         Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled);
+        Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.InstanceDbEf);
         Fixture.ConfiureServices(services =>
         {
             services.AddSingleton<IProfileClient, ProfileClientMock>();
@@ -332,6 +333,51 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         Assert.Equal("Dumbo Adventures AS", dumbo.Name);
         AssertHasReviRoles(dumbo);
         AssertHasReviPackages(dumbo);
+    }
+
+    /// <summary>
+    /// Josephine requests authorized parties with includeInstances=true.
+    /// Expects Kaos Magic Design and Arts to appear with instance rights for SiriusSkattemelding and MattilsynetBakeryService.
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsJosephineWithIncludeInstances_ReturnsKaosWithInstances()
+    {
+        HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeInstances=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto kaos = result.Items.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
+        Assert.NotNull(kaos);
+        Assert.Equal("Kaos Magic Design and Arts", kaos.Name);
+        Assert.True(kaos.AuthorizedInstances.Count >= 2, $"Expected at least 2 instances but got {kaos.AuthorizedInstances.Count}. Response body: {content}");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1" && i.InstanceId == "50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
+        Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare" && i.InstanceId == "50315678/a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e");
+    }
+
+    /// <summary>
+    /// Josephine requests authorized parties without includeInstances.
+    /// Expects Kaos to appear but with empty instances list.
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsJosephineWithoutIncludeInstances_ReturnsKaosWithoutInstances()
+    {
+        HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
+
+        HttpResponseMessage response = await client.GetAsync(Route, TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto kaos = result.Items.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
+        Assert.NotNull(kaos);
+        Assert.Empty(kaos.AuthorizedInstances);
     }
 
     /// <summary>
