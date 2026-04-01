@@ -257,10 +257,8 @@ public class MaskinportenSuppliersController(
 
         // Extract all delegable right keys from delegation check
         var delegableRightKeys = delegationCheck.Value.Rights
-            .Where(r => r.Result)
             .Select(r => r.Right.Key)
             .ToList();
-
         if (!delegableRightKeys.Any())
         {
             ProblemDetails problem = Problems.NotAuthorizedForDelegationRequest.ToProblemDetails();
