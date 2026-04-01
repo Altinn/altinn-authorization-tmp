@@ -2,7 +2,7 @@
 <xacml:Policy xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="urn:altinn:example:policyid:1" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
   <xacml:Target/>
   <xacml:Rule RuleId="urn:altinn:example:ruleid:1" Effect="Permit">
-    <xacml:Description>Delegates read and instantiate rights for sirius-skattemelding-v1 to Josephine (party 5049963)</xacml:Description>
+    <xacml:Description>Delegates read and write rights for sirius-skattemelding-v1 to Josephine (party 5049963)</xacml:Description>
     <xacml:Target>
       <xacml:AnyOf>
         <xacml:AllOf>
