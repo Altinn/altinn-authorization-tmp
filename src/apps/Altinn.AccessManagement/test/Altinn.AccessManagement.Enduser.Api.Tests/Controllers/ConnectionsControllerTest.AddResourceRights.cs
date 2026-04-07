@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -38,7 +38,7 @@ public partial class ConnectionsControllerTest
     /// Seed Data:
     /// - ResourceType "Test"
     /// - Resource "Skattemelding" (app_skd_sirius-skattemelding-v1)
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Mille HundefrisÃ¸r (Rightholder)
     /// </para>
     /// <para>
     /// Mocks:
@@ -49,7 +49,7 @@ public partial class ConnectionsControllerTest
     /// <para>
     /// Actors:
     /// - Malin Emilie: managing director of Dumbo Adventures (has DAGL role, can delegate)
-    /// - Thea: managing director of Mille Hundefrisør and rightholder of Dumbo Adventures
+    /// - Thea: managing director of Mille HundefrisÃ¸r and rightholder of Dumbo Adventures
     /// </para>
     /// <para>
     /// The tests verify that Malin can delegate resource rights on behalf of Dumbo to existing rightholders,
@@ -119,7 +119,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin (MD of Dumbo) delegates resource rights for Skattemelding to Mille Hundefrisør (existing rightholder).
+        /// Malin (MD of Dumbo) delegates resource rights for Skattemelding to Mille HundefrisÃ¸r (existing rightholder).
         /// Uses valid right keys obtained from delegation check. Expects 201 Created.
         /// </summary>
         [Fact]

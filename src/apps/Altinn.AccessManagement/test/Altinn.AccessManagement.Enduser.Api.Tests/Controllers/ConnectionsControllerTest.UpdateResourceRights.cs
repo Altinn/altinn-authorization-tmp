@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -38,7 +38,7 @@ public partial class ConnectionsControllerTest
     /// Seed Data:
     /// - ResourceType "Test"
     /// - Resource "Mattilsynet Bakery Service" (app_mat_mattilsynet-baker-konditorvare)
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Mille HundefrisÃ¸r (Rightholder)
     /// - Existing delegation: Dumbo Adventures has delegated some rights to Mille for the bakery service
     /// </para>
     /// <para>
@@ -50,7 +50,7 @@ public partial class ConnectionsControllerTest
     /// <para>
     /// Actors:
     /// - Malin Emilie: managing director of Dumbo Adventures (has DAGL role, can delegate)
-    /// - Mille Hundefrisør: organization with rightholder connection to Dumbo Adventures
+    /// - Mille HundefrisÃ¸r: organization with rightholder connection to Dumbo Adventures
     /// </para>
     /// <para>
     /// The tests verify that Malin can update resource rights on behalf of Dumbo Adventures to existing rightholders,
@@ -137,7 +137,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin (MD of Dumbo Adventures) updates resource rights for Mattilsynet Bakery Service delegated to Mille Hundefrisør (existing rightholder).
+        /// Malin (MD of Dumbo Adventures) updates resource rights for Mattilsynet Bakery Service delegated to Mille HundefrisÃ¸r (existing rightholder).
         /// Uses valid right keys obtained from delegation check. Expects 200 OK.
         /// </summary>
         [Fact]
@@ -176,7 +176,7 @@ public partial class ConnectionsControllerTest
             // Assert rule count - should have rules for the updated rights
             Assert.NotEmpty(policy.Rules);
 
-            // Verify subject in rules - should be Mille Hundefrisør
+            // Verify subject in rules - should be Mille HundefrisÃ¸r
             foreach (XacmlRule rule in policy.Rules)
             {
                 Assert.NotNull(rule.Target);

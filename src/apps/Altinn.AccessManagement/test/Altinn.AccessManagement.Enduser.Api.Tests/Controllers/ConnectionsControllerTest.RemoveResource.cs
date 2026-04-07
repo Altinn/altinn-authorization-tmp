@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -22,7 +22,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// <summary>
 /// Partial test class for ConnectionsController, focused on testing the RemoveResource (DELETE resources) endpoint
 /// which removes all resource rights delegations for a given resource from one party to another. The tests cover
-/// successful removal by Malin (MD of Dumbo Adventures) and Thea (MD of Mille Hundefrisør), scope enforcement,
+/// successful removal by Malin (MD of Dumbo Adventures) and Thea (MD of Mille HundefrisÃ¸r), scope enforcement,
 /// and error scenarios.
 /// </summary>
 public partial class ConnectionsControllerTest
@@ -33,7 +33,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Mille HundefrisÃ¸r (Rightholder)
     /// </para>
     /// <para>
     /// Pre-seeded via <see cref="TestDataSeeds"/>:
@@ -49,11 +49,11 @@ public partial class ConnectionsControllerTest
     /// <para>
     /// Actors:
     /// - Malin Emilie: managing director of Dumbo Adventures (can act as to-others delegator)
-    /// - Thea: managing director of Mille Hundefrisør (can act as from-others receiver)
+    /// - Thea: managing director of Mille HundefrisÃ¸r (can act as from-others receiver)
     /// </para>
     /// <para>
     /// The tests verify that Malin can remove resource rights on behalf of Dumbo Adventures for existing rightholders,
-    /// that Thea can remove resource rights on behalf of Mille Hundefrisør from an existing connection,
+    /// that Thea can remove resource rights on behalf of Mille HundefrisÃ¸r from an existing connection,
     /// that correct scopes are enforced, and that invalid resources produce appropriate errors.
     /// </para>
     /// </remarks>
@@ -137,7 +137,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin (MD of Dumbo Adventures) removes all resource rights for nav_sykepenger_sykmelding delegated to Mille Hundefrisør.
+        /// Malin (MD of Dumbo Adventures) removes all resource rights for nav_sykepenger_sykmelding delegated to Mille HundefrisÃ¸r.
         /// First adds the delegation, then removes it. Expects 204 NoContent.
         /// </summary>
         [Fact]
@@ -158,7 +158,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Thea (MD of Mille Hundefrisør) removes all resource rights for nav_sykepenger_sykmelding from the Dumbo → Mille connection,
+        /// Thea (MD of Mille HundefrisÃ¸r) removes all resource rights for nav_sykepenger_sykmelding from the Dumbo â†’ Mille connection,
         /// acting as receiver (from-others direction). Expects 204 NoContent.
         /// </summary>
         [Fact]

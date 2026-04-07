@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -29,13 +29,13 @@ public partial class ConnectionsControllerTest
     /// Seed Data:
     /// - ResourceType "Test"
     /// - Resource "Skattemelding" (app_skd_skattemelding) and "MVA-melding" (app_skd_mva-melding)
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Mille HundefrisÃ¸r (Rightholder)
     /// - AssignmentResource linking both resources to the assignment above
     /// </para>
     /// <para>
     /// Actors:
     /// - Malin Emilie: managing director of Dumbo Adventures (views from Dumbo's perspective)
-    /// - Thea: managing director of Mille Hundefrisør (views from Mille's perspective)
+    /// - Thea: managing director of Mille HundefrisÃ¸r (views from Mille's perspective)
     /// </para>
     /// <para>
     /// The tests verify scope-based authorization (from-others vs to-others read scopes),

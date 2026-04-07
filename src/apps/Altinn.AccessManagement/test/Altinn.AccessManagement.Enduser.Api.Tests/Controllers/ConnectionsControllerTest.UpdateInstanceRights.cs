@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -36,7 +36,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Assignment: Jinx Arcane → Thea BFF (Rightholder) seeded locally
+    /// - Assignment: Jinx Arcane â†’ Thea BFF (Rightholder) seeded locally
     /// - Resource: SiriusSkattemelding (app_skd_sirius-skattemelding-v1)
     /// </para>
     /// <para>
@@ -301,7 +301,7 @@ public partial class ConnectionsControllerTest
 
         /// <summary>
         /// Alex delegates 2 right keys to Milena for MattilsynetBakeryService, then updates to only 1,
-        /// verifying that rights are reduced. Uses Alex→Milena (separate from Jinx→Thea) and a different
+        /// verifying that rights are reduced. Uses Alexâ†’Milena (separate from Jinxâ†’Thea) and a different
         /// resource to avoid shared state collisions.
         /// </summary>
         [Fact]

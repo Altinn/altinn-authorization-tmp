@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -30,13 +30,13 @@ public partial class ConnectionsControllerTest
     /// Seed Data:
     /// - ResourceType "Test"
     /// - Resource "Skattemelding" (app_skd_skattemelding)
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Mille HundefrisÃ¸r (Rightholder)
     /// - AssignmentResource linking Skattemelding to the assignment above
     /// </para>
     /// <para>
     /// Actors:
     /// - Malin Emilie: managing director of Dumbo Adventures (views from Dumbo's perspective)
-    /// - Thea: managing director of Mille Hundefrisør (views from Mille's perspective)
+    /// - Thea: managing director of Mille HundefrisÃ¸r (views from Mille's perspective)
     /// </para>
     /// <para>
     /// The tests verify that the endpoint returns direct and indirect rights for a specific resource
@@ -172,8 +172,8 @@ public partial class ConnectionsControllerTest
 
         /// <summary>
         /// Malin (MD of Dumbo) queries resource rights for Skattemelding for Thea in the to-others direction.
-        /// Thea is not a direct rightholder for Skattemelding — instead she inherits access through her
-        /// ManagingDirector role at Mille Hundefrisor, which IS a rightholder of Dumbo (key-role inheritance / nøkkelrollearv).
+        /// Thea is not a direct rightholder for Skattemelding â€” instead she inherits access through her
+        /// ManagingDirector role at Mille Hundefrisor, which IS a rightholder of Dumbo (key-role inheritance / nÃ¸kkelrollearv).
         /// Expects OK with 9 IndirectRights (KeyRole reason), no DirectRights.
         /// </summary>
         [Fact]
@@ -213,7 +213,7 @@ public partial class ConnectionsControllerTest
         /// <summary>
         /// Malin (MD of Dumbo) queries resource rights for Skattemelding for Milena in the to-others direction.
         /// Milena is Chair of the Board at Mille Hundefrisor, which is a rightholder of Dumbo. She inherits
-        /// access indirectly through her key-role at Mille (nøkkelrollearv).
+        /// access indirectly through her key-role at Mille (nÃ¸kkelrollearv).
         /// Expects OK with 9 IndirectRights (KeyRole reason), no DirectRights.
         /// </summary>
         [Fact]

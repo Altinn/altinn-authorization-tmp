@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Core.Constants;
@@ -11,7 +11,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
 /// <summary>
 /// Partial test class for ConnectionsController, focused on testing the RemoveRole
-/// (DELETE /connections/roles) endpoint. This endpoint is currently not implemented —
+/// (DELETE /connections/roles) endpoint. This endpoint is currently not implemented â€”
 /// it always returns 404 NotFound. These tests document the current behavior and will
 /// detect when the endpoint is activated.
 /// </summary>
@@ -45,7 +45,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// RemoveRole is not yet implemented — the method body returns NotFound() unconditionally.
+        /// RemoveRole is not yet implemented â€” the method body returns NotFound() unconditionally.
         /// However, the authorization middleware may reject before the action runs depending on
         /// fixture state. This test verifies that the endpoint does NOT return a success status,
         /// confirming it is not operational. When the endpoint is implemented, this test should be
@@ -60,12 +60,12 @@ public partial class ConnectionsControllerTest
                 $"{Route}/roles?party={TestData.DumboAdventures.Id}&to={TestData.MalinEmilie.Id}&roleCode=DAGL",
                 TestContext.Current.CancellationToken);
 
-            // The endpoint is not implemented — it should never return a success status (2xx)
+            // The endpoint is not implemented â€” it should never return a success status (2xx)
             Assert.False(response.IsSuccessStatusCode, $"RemoveRole should not be operational, but got {response.StatusCode}");
         }
 
         /// <summary>
-        /// Uses read scope — authorization still runs before the NotFound return.
+        /// Uses read scope â€” authorization still runs before the NotFound return.
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -22,10 +22,10 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Nordis AS → Verdiq AS: Rightholder and Accountant assignments
-    /// - Verdiq AS → Paula and Ørjan: Agent assignments
-    /// - Nordis AS → Paula: Agent assignment
-    /// - AssignmentPackage linking Nordis→Verdiq Rightholder to DocumentBasedSupervision
+    /// - Nordis AS â†’ Verdiq AS: Rightholder and Accountant assignments
+    /// - Verdiq AS â†’ Paula and Ã˜rjan: Agent assignments
+    /// - Nordis AS â†’ Paula: Agent assignment
+    /// - AssignmentPackage linking Nordisâ†’Verdiq Rightholder to DocumentBasedSupervision
     /// </para>
     /// <para>
     /// The tests verify bidirectional scope enforcement: from-others read scope is required when
@@ -166,7 +166,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Party (Verdiq) does not match either from (Paula) or to (Ørjan), so the request is rejected.
+        /// Party (Verdiq) does not match either from (Paula) or to (Ã˜rjan), so the request is rejected.
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]

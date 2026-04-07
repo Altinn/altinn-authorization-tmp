@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -37,7 +37,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Assignment: Dumbo Adventures → Kaos Magic Design and Arts (Rightholder) seeded locally
+    /// - Assignment: Dumbo Adventures â†’ Kaos Magic Design and Arts (Rightholder) seeded locally
     /// - Resource: SiriusSkattemelding (app_skd_sirius-skattemelding-v1)
     /// </para>
     /// <para>

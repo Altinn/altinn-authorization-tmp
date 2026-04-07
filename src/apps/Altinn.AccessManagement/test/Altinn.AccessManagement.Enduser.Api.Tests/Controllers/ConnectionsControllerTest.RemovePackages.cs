@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -21,7 +21,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// Partial test class for ConnectionsController, focused on testing the RemovePackages
 /// (DELETE /connections/accesspackages) endpoint which removes a package from a rightholder connection.
 /// Tests add a package first, verify it exists, remove it, then verify it's gone.
-/// Uses Kaos→Josephine (default seed Rightholder) with Jinx as the delegator
+/// Uses Kaosâ†’Josephine (default seed Rightholder) with Jinx as the delegator
 /// and Josephine as the from-others receiver.
 /// </summary>
 public partial class ConnectionsControllerTest
@@ -81,7 +81,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Jinx (MD of Kaos) adds a package to Kaos→Josephine, then removes it by packageId.
+        /// Jinx (MD of Kaos) adds a package to Kaosâ†’Josephine, then removes it by packageId.
         /// Verifies:
         /// - Package exists after add
         /// - DELETE returns 204 NoContent
@@ -108,7 +108,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Josephine (receiver, from-others) removes a package from the Kaos→Josephine connection by URN.
+        /// Josephine (receiver, from-others) removes a package from the Kaosâ†’Josephine connection by URN.
         /// Expects 204 NoContent.
         /// </summary>
         [Fact]

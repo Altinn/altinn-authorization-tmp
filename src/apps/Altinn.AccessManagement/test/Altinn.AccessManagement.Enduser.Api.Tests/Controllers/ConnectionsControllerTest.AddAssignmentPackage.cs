@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -21,7 +21,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// <summary>
 /// Partial test class for ConnectionsController, focused on testing the AddAssignmentPackage
 /// (POST /connections/accesspackages) endpoint which adds a package to an existing rightholder connection.
-/// Uses the default seed where Kaos→Josephine has a Rightholder assignment.
+/// Uses the default seed where Kaosâ†’Josephine has a Rightholder assignment.
 /// </summary>
 public partial class ConnectionsControllerTest
 {
@@ -31,7 +31,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Kaos Magic Design and Arts → Josephine Yvonnesdottir (Rightholder)
+    /// - Assignment: Kaos Magic Design and Arts â†’ Josephine Yvonnesdottir (Rightholder)
     /// </para>
     /// <para>
     /// Actors:
@@ -65,7 +65,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Jinx (MD of Kaos) adds AccountingAndEconomicReporting package to Kaos→Josephine connection using packageId.
+        /// Jinx (MD of Kaos) adds AccountingAndEconomicReporting package to Kaosâ†’Josephine connection using packageId.
         /// Expects 200 OK with the created AssignmentPackageDto.
         /// Then verifies the package appears in GetPackages.
         /// </summary>

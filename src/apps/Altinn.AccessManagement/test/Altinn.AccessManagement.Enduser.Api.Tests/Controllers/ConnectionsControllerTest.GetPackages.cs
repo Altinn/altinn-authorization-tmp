@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -16,7 +16,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// <summary>
 /// Partial test class for ConnectionsController, focused on testing the GetPackages
 /// (GET /connections/accesspackages) endpoint which returns access packages between two parties.
-/// Reuses the default seed where Dumbo→Thea has a SalarySpecialCategory package assignment.
+/// Reuses the default seed where Dumboâ†’Thea has a SalarySpecialCategory package assignment.
 /// </summary>
 public partial class ConnectionsControllerTest
 {
@@ -26,7 +26,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Dumbo Adventures → Thea BFF (Rightholder)
+    /// - Assignment: Dumbo Adventures â†’ Thea BFF (Rightholder)
     /// - AssignmentPackage: SalarySpecialCategory (lonn-personopplysninger-saerlig-kategori)
     /// </para>
     /// <para>

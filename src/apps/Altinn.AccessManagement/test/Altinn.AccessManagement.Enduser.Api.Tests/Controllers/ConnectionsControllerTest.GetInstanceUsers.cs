@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -29,7 +29,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Kaos Magic Design and Arts → Josephine Yvonnesdottir (Rightholder)
+    /// - Assignment: Kaos Magic Design and Arts â†’ Josephine Yvonnesdottir (Rightholder)
     /// - AssignmentInstance: SiriusSkattemelding instance delegated to Josephine
     /// - AssignmentInstance: MattilsynetBakeryService instance delegated to Josephine
     /// </para>

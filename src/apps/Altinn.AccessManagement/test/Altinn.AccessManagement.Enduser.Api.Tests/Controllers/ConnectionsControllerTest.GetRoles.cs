@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -16,7 +16,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// <summary>
 /// Partial test class for ConnectionsController, focused on testing the GetRoles
 /// (GET /connections/roles) endpoint which returns roles between two parties.
-/// Reuses the default seed where Dumbo→Malin is ManagingDirector and Dumbo→Thea is Rightholder.
+/// Reuses the default seed where Dumboâ†’Malin is ManagingDirector and Dumboâ†’Thea is Rightholder.
 /// </summary>
 public partial class ConnectionsControllerTest
 {
@@ -26,9 +26,9 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Dumbo Adventures → Malin Emilie (ManagingDirector / DAGL)
-    /// - Assignment: Dumbo Adventures → Thea BFF (Rightholder)
-    /// - Assignment: Kaos Magic Design and Arts → Jinx Arcane (ManagingDirector / DAGL)
+    /// - Assignment: Dumbo Adventures â†’ Malin Emilie (ManagingDirector / DAGL)
+    /// - Assignment: Dumbo Adventures â†’ Thea BFF (Rightholder)
+    /// - Assignment: Kaos Magic Design and Arts â†’ Jinx Arcane (ManagingDirector / DAGL)
     /// </para>
     /// <para>
     /// Actors:

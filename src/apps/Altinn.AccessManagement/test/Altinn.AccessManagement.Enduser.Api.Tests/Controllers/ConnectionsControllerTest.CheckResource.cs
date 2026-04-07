@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -27,7 +27,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Assignment: Nordis AS → Verdiq AS (Rightholder)
+    /// - Assignment: Nordis AS â†’ Verdiq AS (Rightholder)
     /// </para>
     /// <para>
     /// Pre-seeded via <see cref="TestDataSeeds"/>:

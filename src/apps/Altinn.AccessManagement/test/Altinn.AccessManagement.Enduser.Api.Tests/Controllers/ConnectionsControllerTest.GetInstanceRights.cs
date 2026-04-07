@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -19,7 +19,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// <summary>
 /// Partial class for connections controller tests. This part focuses on testing the GetInstanceRights endpoint,
 /// which returns direct and indirect rights for a specific instance delegation between two parties.
-/// The tests reuse seeded instance delegation data (Kaos → Josephine) with XACML delegation policies
+/// The tests reuse seeded instance delegation data (Kaos â†’ Josephine) with XACML delegation policies
 /// that define the specific rights (read, write) delegated for each instance.
 /// </summary>
 public partial class ConnectionsControllerTest
@@ -30,7 +30,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Kaos Magic Design and Arts → Josephine Yvonnesdottir (Rightholder)
+    /// - Assignment: Kaos Magic Design and Arts â†’ Josephine Yvonnesdottir (Rightholder)
     /// - AssignmentInstance: SiriusSkattemelding with delegation policy granting read+write (+ Task_1 read+write = 4 rights)
     /// - AssignmentInstance: MattilsynetBakeryService with delegation policy granting read (1 right)
     /// </para>

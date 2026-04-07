@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -26,7 +26,7 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data (from default TestData):
-    /// - Assignment: Kaos Magic Design and Arts → Josephine Yvonnesdottir (Rightholder)
+    /// - Assignment: Kaos Magic Design and Arts â†’ Josephine Yvonnesdottir (Rightholder)
     /// - AssignmentInstance: SiriusSkattemelding instance "50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
     /// - AssignmentInstance: MattilsynetBakeryService instance "50315678/a2b3c4d5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
     /// </para>

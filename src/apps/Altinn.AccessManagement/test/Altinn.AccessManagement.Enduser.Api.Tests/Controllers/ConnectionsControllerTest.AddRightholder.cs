@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -96,7 +96,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin adds Mille Hundefrisør (organization) as rightholder via the "to" query parameter.
+        /// Malin adds Mille HundefrisÃ¸r (organization) as rightholder via the "to" query parameter.
         /// Organizations do not require an existing connection; expects OK with AssignmentDto.
         /// </summary>
         [Fact]

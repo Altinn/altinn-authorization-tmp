@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -74,7 +74,7 @@ public partial class ConnectionsControllerTest
             }
             else
             {
-                // Authorization may block — that's acceptable for a hidden endpoint
+                // Authorization may block â€” that's acceptable for a hidden endpoint
                 Assert.False(response.IsSuccessStatusCode, $"Unexpected success status: {response.StatusCode}");
             }
         }
