@@ -1,0 +1,47 @@
+﻿meta {
+  name: PUT_Withdraw_Requested_Request_On_Resource
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/request/sent/withdraw?party={{party}}&id={{app_requestId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  id: {{app_requestId}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
+  
+  bru.setVar("party", testdata.Bot_Org_2.partyuuid);
+  
+  var getTokenParameters = {
+    auth_userId: testdata.Bot_Org_2.styreleder.userid,
+    auth_partyId: testdata.Bot_Org_2.styreleder.partyid,
+    auth_partyUuid: testdata.Bot_Org_2.styreleder.partyuuid,
+    auth_ssn: testdata.Bot_Org_2.styreleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+  
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken", token);
+}
+
+tests {
+  test("PUT_Withdraw_Requested_Request_On_Resource", function() {
+    expect(res.status).to.be.oneOf([200, 204], "Expected 200 or 204 for withdraw request");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
