@@ -28,7 +28,8 @@ public partial class ConnectionsControllerTest
     {
         public CheckPackage(ApiFixture fixture)
         {
-            Fixture = fixture;        }
+            Fixture = fixture;
+        }
 
         public ApiFixture Fixture { get; }
 

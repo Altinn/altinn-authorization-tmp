@@ -27,7 +27,8 @@ public partial class ConnectionsControllerTest
     {
         public DelegationCheckRoles(ApiFixture fixture)
         {
-            Fixture = fixture;        }
+            Fixture = fixture;
+        }
 
         public ApiFixture Fixture { get; }
 

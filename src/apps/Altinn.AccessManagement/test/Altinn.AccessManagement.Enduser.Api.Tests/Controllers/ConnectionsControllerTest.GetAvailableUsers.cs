@@ -53,7 +53,8 @@ public partial class ConnectionsControllerTest
     {
         public GetAvailableUsers(ApiFixture fixture)
         {
-            Fixture = fixture;        }
+            Fixture = fixture;
+        }
 
         public ApiFixture Fixture { get; }
 

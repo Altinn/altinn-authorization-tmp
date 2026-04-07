@@ -45,7 +45,8 @@ public partial class ConnectionsControllerTest
     {
         public GetInstances(ApiFixture fixture)
         {
-            Fixture = fixture;        }
+            Fixture = fixture;
+        }
 
         public ApiFixture Fixture { get; }
 
