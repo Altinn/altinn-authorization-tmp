@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -53,9 +53,7 @@ public partial class ConnectionsControllerTest
     {
         public GetAvailableUsers(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
-        }
+            Fixture = fixture;        }
 
         public ApiFixture Fixture { get; }
 

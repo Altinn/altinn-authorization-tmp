@@ -32,7 +32,6 @@ public class ClientDelegationControllerTest
         public GetMyClients(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
             Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderFromNordisToVerdiq = new Assignment()
@@ -235,9 +234,7 @@ public class ClientDelegationControllerTest
     {
         public GetClients(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -427,9 +424,7 @@ public class ClientDelegationControllerTest
     {
         public GetAgents(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -546,9 +541,7 @@ public class ClientDelegationControllerTest
     {
         public AddAgent(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-        }
+            Fixture = fixture;        }
 
         public ApiFixture Fixture { get; }
 
@@ -633,9 +626,7 @@ public class ClientDelegationControllerTest
     {
         public DeleteAgent(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -768,9 +759,7 @@ public class ClientDelegationControllerTest
     {
         public DelegateAccessPackageToAgentWithAgentRole(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -963,9 +952,7 @@ public class ClientDelegationControllerTest
     {
         public DelegateAccessPackageToAgentWithCCRRole(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var accountantFromNordisToVerdiq = new Assignment()
                 {
@@ -1165,9 +1152,7 @@ public class ClientDelegationControllerTest
     {
         public DeleteAgentAccessPackageAndDelegation(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -1430,9 +1415,7 @@ public class ClientDelegationControllerTest
     {
         public DeleteAgentAccessPackage(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture = fixture;            Fixture.EnsureSeedOnce(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -1594,35 +1577,5 @@ public class ClientDelegationControllerTest
             }
         }
     }
-    #endregion
-
-    #region Feature Flag Disabled Tests
-    public class FeatureFlagClientDelegationEnabledCollection : IClassFixture<ApiFixture>
-    {
-        public FeatureFlagClientDelegationEnabledCollection(ApiFixture fixture)
-        {
-            Fixture = fixture;
-            Fixture.WithDisabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-        }
-
-        [Fact]
-        public async Task ListClient_WithDisabledFeatureFlag_ReturnsNotFound()
-        {
-            Fixture.WithDisabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            var client = Fixture.Server.CreateClient();
-            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
-            {
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ));
-            });
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
-            var result = await client.GetAsync($"{Route}/clients?party={Guid.NewGuid()}", TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-        }
-
-        public ApiFixture Fixture { get; }
-    }
-
     #endregion
 }

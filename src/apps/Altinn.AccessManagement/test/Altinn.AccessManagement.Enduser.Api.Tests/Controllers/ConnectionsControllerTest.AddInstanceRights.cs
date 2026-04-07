@@ -59,9 +59,7 @@ public partial class ConnectionsControllerTest
         public AddInstanceRights(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.InstanceDbEf);
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.ResourceDelegationEF);
             Fixture.ConfiureServices(services =>
             {
                 services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();

@@ -28,9 +28,7 @@ public partial class ConnectionsControllerTest
     {
         public RemoveRole(ApiFixture fixture)
         {
-            Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
-        }
+            Fixture = fixture;        }
 
         public ApiFixture Fixture { get; }
 

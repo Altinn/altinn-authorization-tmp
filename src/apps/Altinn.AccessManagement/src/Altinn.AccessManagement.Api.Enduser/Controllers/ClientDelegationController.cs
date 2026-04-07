@@ -14,13 +14,11 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/clientdelegations")]
-[FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
 [Tags("Client Delegation")]
 public class ClientDelegationController(
     IHttpContextAccessor httpContextAccessor,

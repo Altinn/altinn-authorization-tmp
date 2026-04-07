@@ -51,16 +51,6 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
 
     /// <summary>
-    /// Specifies if AuthorizedPartiesServiceEf should be used
-    /// </summary>
-    public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
-
-    /// <summary>
-    /// Specifies Client Delegation should be enabled in enduser API.
-    /// </summary>
-    public const string EnduserControllerClientDelegation = $"AccessMgmt.Enduser.Controller.ClientDelegation";
-
-    /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
     /// </summary>
     public const string HostedServicesSingleAppRightSync = $"AccessMgmt.Core.HostedServices.SingleAppRightsSync";
@@ -165,11 +155,6 @@ public static class AccessMgmtFeatureFlags
     #endregion
 
     /// <summary>
-    /// Feature flag for Controller Enduser Connections
-    /// </summary>
-    public const string EnduserControllerConnections = "AccessManagement.Enduser.Connections";
-
-    /// <summary>
     /// Enables request assignment resource endpoints in enduser and serviceowner APIs.
     /// </summary>
     public const string EnableRequestAssignmentResource = "AccessMgmt.Controller.RequestAssignment.Resource";
@@ -183,9 +168,4 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if entity framework implementation of instance delegations should be used.
     /// </summary>
     public const string InstanceDbEf = $"AccessManagement.InstanceDelegation.EF";
-
-    /// <summary>
-    /// Specifies if entity framework implementation of resource delegations should be used.
-    /// </summary>
-    public const string ResourceDelegationEF = "AccessManagement.ResourceDelegation.EF";
 }

@@ -11,7 +11,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers;
 
@@ -20,7 +19,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/internal/connections")]
-[FeatureGate(AccessManagementInternalFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class InternalConnectionsController(IConnectionService connectionService) : ControllerBase
 {

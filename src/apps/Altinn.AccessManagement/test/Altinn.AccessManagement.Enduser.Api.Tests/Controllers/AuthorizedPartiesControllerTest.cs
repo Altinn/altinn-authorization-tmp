@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
@@ -27,9 +27,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
 
     public AuthorizedPartiesControllerTest(ApiFixture fixture)
     {
-        Fixture = fixture;
-        Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled);
-        Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.InstanceDbEf);
+        Fixture = fixture;        Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.InstanceDbEf);
         Fixture.ConfiureServices(services =>
         {
             services.AddSingleton<IProfileClient, ProfileClientMock>();
