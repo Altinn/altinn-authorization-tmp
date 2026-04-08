@@ -8,7 +8,7 @@ CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid_status
 CREATE INDEX IF NOT EXISTS idx_consentrequest_status
     ON consent.consentrequest (status);
 
--- consent.consentright: FK lookup used by multiple queries
+-- consent.consentright: join/lookup column used by multiple queries
 CREATE INDEX IF NOT EXISTS idx_consentright_consentrequestid
     ON consent.consentright (consentRequestId);
 
