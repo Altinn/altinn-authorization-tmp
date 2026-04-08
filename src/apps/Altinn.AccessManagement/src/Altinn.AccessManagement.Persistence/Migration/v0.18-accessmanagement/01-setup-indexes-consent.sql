@@ -1,10 +1,19 @@
 -- Index for consent
 
--- consent.consentrequest: party + status + portalviewmode for count endpoint and filtered queries
-CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid_status_portalviewmode
-    ON consent.consentrequest (fromPartyUuid, status, portalviewmode);
+-- consent.consentrequest: party lookup for general queries (e.g. GetRequestsForParty)
+CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid
+    ON consent.consentrequest (fromPartyUuid);
 
--- consent.consentright: join/lookup column used by multiple queries
+-- consent.consentrequest: party + status for portal-visible consent requests (count endpoint)
+CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid_status_portal_show
+    ON consent.consentrequest (fromPartyUuid, status)
+    WHERE portalviewmode = 'show';
+
+-- consent.consentrequest: status-only lookup for getting consent requests by status
+CREATE INDEX IF NOT EXISTS idx_consentrequest_status
+    ON consent.consentrequest (status);
+
+-- consent.consentright: FK lookup used by multiple queries
 CREATE INDEX IF NOT EXISTS idx_consentright_consentrequestid
     ON consent.consentright (consentRequestId);
 
@@ -16,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_metadata_consentrightid
 CREATE INDEX IF NOT EXISTS idx_consentevent_consentrequestid_created
     ON consent.consentevent (consentRequestId, created);
 
--- consent.context: lookup column for GetConsentContext()
+-- consent.context: FK lookup for GetConsentContext()
 CREATE INDEX IF NOT EXISTS idx_context_consentrequestid
     ON consent.context (consentRequestId);
+
