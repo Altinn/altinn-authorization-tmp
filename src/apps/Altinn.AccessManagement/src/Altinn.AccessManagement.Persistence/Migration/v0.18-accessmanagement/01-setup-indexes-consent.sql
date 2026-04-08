@@ -4,10 +4,6 @@
 CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid_status
     ON consent.consentrequest (fromPartyUuid, status);
 
--- consent.consentrequest: status-only lookup for getting consent requests by status. Not used by any existing query, but low cost and may be useful for future queries for statistics.
-CREATE INDEX IF NOT EXISTS idx_consentrequest_status
-    ON consent.consentrequest (status);
-
 -- consent.consentright: join/lookup column used by multiple queries
 CREATE INDEX IF NOT EXISTS idx_consentright_consentrequestid
     ON consent.consentright (consentRequestId);
