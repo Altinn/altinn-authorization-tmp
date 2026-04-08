@@ -4,7 +4,7 @@
 CREATE INDEX IF NOT EXISTS idx_consentrequest_frompartyuuid_status
     ON consent.consentrequest (fromPartyUuid, status);
 
--- consent.consentrequest: status-only lookup for getting consent requests by status  Not used by any existing query, but low cost and may be useful for future querie for statistics
+-- consent.consentrequest: status-only lookup for getting consent requests by status. Not used by any existing query, but low cost and may be useful for future queries for statistics.
 CREATE INDEX IF NOT EXISTS idx_consentrequest_status
     ON consent.consentrequest (status);
 
