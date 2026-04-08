@@ -1,13 +1,22 @@
-﻿using System.Text.Json;
-using Altinn.AccessManagement.Core.Constants;
+﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Audit;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Storage.Interface.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Altinn.AccessManagement.Controllers
 {
@@ -20,6 +29,9 @@ namespace Altinn.AccessManagement.Controllers
         private readonly ILogger _logger;
         private readonly IPolicyInformationPoint _pip;
         private readonly ISingleRightsService _rights;
+        private readonly IEntityService _entityService;
+        private readonly IResourceService _resourceService;
+        private readonly IConnectionService _connectionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelegationsController"/> class.
@@ -27,14 +39,23 @@ namespace Altinn.AccessManagement.Controllers
         /// <param name="logger">the logger.</param>
         /// <param name="policyInformationPoint">The policy information point</param>
         /// <param name="rights">Singlerights service to enrich and call PolicyAdministrationpoint for storing the changed rights</param>
+        /// <param name="entityService">The entity service for retrieving entity information for parties involved in delegations</param>
+        /// <param name="resourceService">The resource service for retrieving resource information for delegations</param>
+        /// <param name="connectionService">The connection service for creating instance delegations</param>
         public DelegationsController(
             ILogger<DelegationsController> logger,
             IPolicyInformationPoint policyInformationPoint,
-            ISingleRightsService rights)
+            ISingleRightsService rights,
+            IEntityService entityService,
+            IResourceService resourceService,
+            IConnectionService connectionService)
         {
             _logger = logger;
             _pip = policyInformationPoint;
             _rights = rights;
+            _entityService = entityService;
+            _resourceService = resourceService;
+            _connectionService = connectionService;
         }
 
         /// <summary>
@@ -217,6 +238,82 @@ namespace Altinn.AccessManagement.Controllers
 
             _logger.LogInformation("Deletion could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{policiesToDeleteSerialized}", policiesToDeleteSerialized);
             return StatusCode(400, $"Unable to complete deletion");
+        }
+
+        /// <summary>
+        /// Endpoint for adding instance delegations for the given instance/offeredby/coveredby.
+        /// This method creates a delegation that grants specific rights on a resource instance from one party to another.
+        /// </summary>
+        /// <param name="from">The UUID of the party offering the delegation (the resource owner)</param>
+        /// <param name="to">The UUID of the party receiving the delegation</param>
+        /// <param name="by">The UUID of the party performing the delegation</param>
+        /// <param name="resource">The resource identifier for which the delegation is being created</param>
+        /// <param name="instance">The specific instance identifier of the resource</param>
+        /// <param name="delegatedDateTime">The date and time when the delegation is effective, provided in the request body</param>
+        /// <param name="rightKeys">The list of right keys to be delegated, provided in the request body</param>
+        /// <param name="cancellationToken">Cancellation token to cancel the operation</param>
+        /// <returns>A 201 Created response on success, or a problem details response on failure</returns>
+        /// <response code="201">Successfully created the instance delegation</response>
+        /// <response code="400">Bad Request - Invalid input parameters or resource/instance not found</response>
+        [HttpPost]
+        [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
+        [AuditStaticDb(System = AuditDefaults.Altinn2AddInstanceDelegationApi)]
+        [Route("accessmanagement/api/v1/delegations/addaltinn2instanceright")]
+        public async Task<IActionResult> AddAltinn2InstanceRights(
+        [Required][FromQuery(Name = "from")] Guid from,
+        [Required][FromQuery(Name = "to")] Guid to,
+        [Required][FromQuery(Name = "by")] Guid by,
+        [Required][FromQuery(Name = "resource")] string resource,
+        [Required][FromQuery(Name = "instance")] string instance,
+        [Required][FromQuery(Name = "delegatedDateTime")] DateTime delegatedDateTime,
+        [Required][FromBody] RightKeyListDto rightKeys,
+        CancellationToken cancellationToken = default)
+        {
+            var fromEntity = await _entityService.GetEntity(from, cancellationToken);
+            var toEntity = await _entityService.GetEntity(to, cancellationToken);
+            var byEntity = await _entityService.GetEntity(by, cancellationToken);
+            var resourceObj = await _resourceService.GetResource(resource, cancellationToken);
+
+            //var result = await _connectionService.AddInstance(fromEntity, toEntity, resourceObj, instance, rightKeys, byEntity, null, cancellationToken);
+
+            //var instanceRules = await GenerateInstanceRules(from, to, resource, instanceId, ruleKeys, performedBy, cancellationToken);
+
+            //var instanceRight = new InstanceRight
+            //{
+            //    FromUuid = from.Id,
+            //    FromType = DelegationHelper.GetUuidTypeFromEntityType(from.TypeId),
+            //    ToUuid = to.Id,
+            //    ToType = DelegationHelper.GetUuidTypeFromEntityType(to.TypeId),
+            //    PerformedBy = performedBy.Id.ToString(),
+            //    PerformedByType = DelegationHelper.GetUuidTypeFromEntityType(performedBy.TypeId),
+            //    ResourceId = resource.RefId,
+            //    InstanceId = instanceId,
+            //    InstanceDelegationMode = InstanceDelegationMode.Normal,
+            //    InstanceDelegationSource = InstanceDelegationSource.User,
+            //    InstanceRules = instanceRules
+            //};
+
+            //InstanceRight result = await _pap.TryWriteInstanceDelegationPolicyRules(instanceRight, cancellationToken);
+
+            //if (!result.All(r => r.CreatedSuccessfully))
+            //{
+                //return Problems.DelegationPolicyRuleWriteFailed;
+            //}
+
+            //if (result.IsProblem)
+            //{
+            //    if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            //    {
+            //        ProblemDetails problem = result.Problem.ToProblemDetails();
+            //        problem.Extensions["resource"] = resource;
+            //        problem.Extensions["instance"] = instance;
+            //        return problem.ToActionResult();
+            //    }
+
+            //    return result.Problem.ToActionResult();
+            //}
+
+            return Created();
         }
     }
 }

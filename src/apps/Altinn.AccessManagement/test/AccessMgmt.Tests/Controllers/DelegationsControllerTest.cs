@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1583,6 +1583,48 @@ namespace Altinn.AccessManagement.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("[]", responseContent);
         }
+
+        /// <summary>
+        /// Scenario:
+        /// Calling the POST operation for AddRules to perform a valid delegation
+        /// Input:
+        /// List of two rules for delegation of the app org1/app1 between for a single offeredby/coveredby combination resulting in a single delegation policy.
+        /// Expected Result:
+        /// Rules are created and returned with the CreatedSuccessfully flag set and rule ids
+        /// Success Criteria:
+        /// AddRules returns status code 201 and list of rules created match expected
+        /// </summary>
+        [Fact]
+        public async Task Post_AddInstanceDelegation_Success()
+        {
+            // Arrange
+            Stream dataStream = File.OpenRead("Data/Json/InstanceDelegation/Delegation/0191579e-72bc-7977-af5d-f9e92af4393b/request.json");
+            StreamContent content = new StreamContent(dataStream);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            //List<Rule> expected = new List<Rule>
+            //{
+            //    TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "read", "org1", "app1", createdSuccessfully: true, coveredByUuid: "58241333-3438-4652-8750-4faff77f6046", coveredByUuidType: AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid),
+            //    TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "write", "org1", "app1", createdSuccessfully: true, coveredByUuid: "58241333-3438-4652-8750-4faff77f6046", coveredByUuidType: AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid),
+            //};
+
+            // Act
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/addaltinn2instancerights?from=d5b861c8-8e3b-44cd-9952-5315e5990cf5&to=8ef5e5fa-94e1-4869-8635-df86b6219181&by=8ef5e5fa-94e1-4869-8635-df86b6219181&resource=asdasd&instance=0191579e-72bc-7977-af5d-f9e92af4393b&delegatedDateTime=2024-06-05T10:10:10", content);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.True(actual.TrueForAll(a => a.CreatedSuccessfully));
+            Assert.True(actual.TrueForAll(a => !string.IsNullOrEmpty(a.RuleId)));
+            //AssertionUtil.AssertEqual(expected, actual);
+            foreach (Rule rule in actual)
+            {
+                Assert.True(Guid.TryParse(rule.RuleId, out _));
+            }
+        }
+
 
         private static List<Rule> GetExpectedRulesForUser()
         {

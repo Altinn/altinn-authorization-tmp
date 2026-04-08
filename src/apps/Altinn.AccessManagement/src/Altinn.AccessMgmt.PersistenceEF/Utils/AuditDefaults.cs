@@ -61,6 +61,11 @@ public static class AuditDefaults
     public const string Altinn2AddRulesApi = "0d8c172d-64e4-4aa2-8233-91ad32aa0f9d";
 
     /// <summary>
+    /// Altinn2AddRulesApi
+    /// </summary>
+    public const string Altinn2AddInstanceDelegationApi = "0d8c172d-64e4-4aa2-8233-91ad32aa0f9d";
+
+    /// <summary>
     /// LegacySingleRightsApi
     /// </summary>
     public const string LegacySingleRightsApi = "b1b52707-bd24-4f01-9bb9-3b0b6d6bd8d6";
