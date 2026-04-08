@@ -17,8 +17,7 @@ using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-[Obsolete($"will be removed once {nameof(RequestReviewedNotificationHandler)} is in production.")]
-public class RequestApprovedNotificationHandler(
+public class RequestReviewedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
     IFeatureManager featureManager,
@@ -26,19 +25,19 @@ public class RequestApprovedNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
 
-        var (recipient, approver, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
+        var (recipient, reviewer, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
 
         NotificationOrderChainRequestExt content = new()
         {
             IdempotencyId = idempotencyId,
-            Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
+            Recipient = CreateRecipient(recipient, reviewer, resources, packages),
         };
 
         var response = await notification.Send(content, cancellationToken);
@@ -81,9 +80,15 @@ public class RequestApprovedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Approver, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(
+        Entity Recipient,
+        Entity Reviewer,
+        IEnumerable<RequestReviewNotificationMessageResponse<Resource>> Resources,
+        IEnumerable<RequestReviewNotificationMessageResponse<Package>> Packages,
+        string IdempotencyId)>
+        UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<RequestApprovedNotificationMessage>(message.Data);
+        var content = JsonSerializer.Deserialize<RequestReviewNotificationMessage>(message.Data);
         if (content is null)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
@@ -95,55 +100,71 @@ public class RequestApprovedNotificationHandler(
             throw new InvalidOperationException($"Recipient entity with id '{content.RecipientId}' not found.");
         }
 
-        var entityApprover = await entityService.GetEntity(content.ApproverId, cancellationToken);
-        if (entityApprover is null)
+        var entityReviewer = await entityService.GetEntity(content.ReviewerId, cancellationToken);
+        if (entityReviewer is null)
         {
-            throw new InvalidOperationException($"Approver entity with id '{content.ApproverId}' not found.");
+            throw new InvalidOperationException($"Reviewer entity with id '{content.ReviewerId}' not found.");
         }
 
         return (
             entityRecipient,
-            entityApprover,
+            entityReviewer,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_approved_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_review_{entityRecipient.Id}_{entityReviewer.Id}_{content.InitiatedAt.Ticks}"
         );
 
-        async Task<List<Resource>> GetResources(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
+        async Task<IEnumerable<RequestReviewNotificationMessageResponse<Resource>>> GetResources(RequestReviewNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.ResourceIds is { } && content.ResourceIds.Any())
+            if (content.Resources is { } && content.Resources.Any())
             {
-                return await db.Resources
+                var resources = await db.Resources
                     .AsNoTracking()
-                    .Where(r => content.ResourceIds.Contains(r.Id))
+                    .Where(r => content.Resources.Select(r => r.Ref).Contains(r.Id))
                     .ToListAsync(cancellationToken);
+
+                return resources.Select(r => new RequestReviewNotificationMessageResponse<Resource>()
+                {
+                    Ref = r,
+                    IsApproved = content.Resources.FirstOrDefault(f => f.Ref == r.Id).IsApproved
+                });
             }
 
             return [];
         }
 
-        async Task<List<Package>> GetPackages(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
+        async Task<IEnumerable<RequestReviewNotificationMessageResponse<Package>>> GetPackages(RequestReviewNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.PackageIds is { } && content.PackageIds.Any())
+            if (content.Packages is { } && content.Packages.Any())
             {
                 var packages = await db.Packages
                     .AsNoTracking()
-                    .Where(r => content.PackageIds.Contains(r.Id))
+                    .Where(r => content.Packages.Select(r => r.Ref).Contains(r.Id))
                     .ToListAsync(cancellationToken);
+
+                return packages.Select(r => new RequestReviewNotificationMessageResponse<Package>()
+                {
+                    Ref = r,
+                    IsApproved = content.Packages.FirstOrDefault(f => f.Ref == r.Id).IsApproved
+                });
             }
 
             return [];
         }
     }
 
-    private static async Task<NotificationRecipientExt> CreateRecipient(Entity recipient, Entity approver, IEnumerable<Resource> resources, IEnumerable<Package> packages, CancellationToken cancellationToken = default)
+    private static NotificationRecipientExt CreateRecipient(
+        Entity recipient,
+        Entity reviewer,
+        IEnumerable<RequestReviewNotificationMessageResponse<Resource>> resources,
+        IEnumerable<RequestReviewNotificationMessageResponse<Package>> packages)
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
         var emailContent = new StringBuilder();
-        AddApprover(approver, emailContent);
-        AddResourcesAndPackage(resources, packages, emailContent);
-        emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
+        AddEmailIngress(emailContent, reviewer);
+        AddResourcesAndPackage(emailContent, reviewer, resources, packages);
+        emailContent.AppendLine($"<p>Med vennlig hilsen<br>Altinn</p>");
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
@@ -156,7 +177,7 @@ public class RequestApprovedNotificationHandler(
                     ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
-                        Subject = "Altinn Godkjent Tilgangsforespørsel",
+                        Subject = "Altinn Behandlet tilgangsforespørsel",
                         Body = emailContent.ToString(),
                         ContentType = EmailContentTypeExt.Html,
                         SendingTimePolicy = SendingTimePolicyExt.Anytime
@@ -175,7 +196,7 @@ public class RequestApprovedNotificationHandler(
                     ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()
                     {
-                        Subject = "Altinn Godkjent Tilgangsforespørsel",
+                        Subject = "Altinn Behandlet tilgangsforespørsel",
                         Body = emailContent.ToString(),
                         ContentType = EmailContentTypeExt.Html,
                         SendingTimePolicy = SendingTimePolicyExt.Anytime
@@ -191,47 +212,76 @@ public class RequestApprovedNotificationHandler(
 
         throw new InvalidOperationException($"Unsupported recipient entity type with uuid '{recipient.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
 
-        static void AddApprover(Entity approver, StringBuilder emailContent)
+        static void AddEmailIngress(StringBuilder emailContent, Entity reviewer)
         {
-            if (approver.TypeId == EntityTypeConstants.Organization)
+            if (reviewer.TypeId == EntityTypeConstants.Organization)
             {
-                emailContent.AppendLine($"<p>{approver.Name} med Org.nr {approver.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
+                emailContent.AppendLine($"<p>{reviewer.Name} med Org.nr {reviewer.OrganizationIdentifier} har svart på forespørsel om følgende fullmakter.</p>");
             }
-            else if (approver.TypeId == EntityTypeConstants.Person)
+            else if (reviewer.TypeId == EntityTypeConstants.Person)
             {
-                emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
+                emailContent.AppendLine($"<p>{reviewer.Name} har svart på forespørsel om følgende fullmakter.</p>");
             }
             else
             {
-                if (!EntityTypeConstants.TryGetById(approver.TypeId, out var entityType))
+                if (!EntityTypeConstants.TryGetById(reviewer.TypeId, out var entityType))
                 {
-                    throw new InvalidOperationException($"Couldn't find approver with entity with typeid {approver.TypeId}");
+                    throw new InvalidOperationException($"Couldn't find request rejecter with entity with typeid {reviewer.TypeId}");
                 }
 
-                throw new InvalidOperationException($"Unsupported approver entity type with uuid '{approver.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
+                throw new InvalidOperationException($"Unsupported request rejecter entity type with uuid '{reviewer.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
             }
         }
 
-        static void AddResourcesAndPackage(IEnumerable<Resource> resources, IEnumerable<Package> packages, StringBuilder emailContent)
+        static void AddResourcesAndPackage(
+            StringBuilder emailContent,
+            Entity reviewer,
+            IEnumerable<RequestReviewNotificationMessageResponse<Resource>> resources,
+            IEnumerable<RequestReviewNotificationMessageResponse<Package>> packages)
         {
-            if (resources.Any())
+            var approvedResources = resources.Where(r => r.IsApproved);
+            var approvedPackages = packages.Where(p => p.IsApproved);
+            var rejectedResources = resources.Where(r => !r.IsApproved);
+            var rejectedPackages = packages.Where(p => !p.IsApproved);
+
+            if (approvedPackages.Any() || approvedResources.Any())
             {
-                emailContent.AppendLine("<ul>");
-                foreach (var resource in resources)
+                emailContent.AppendLine($"<p><strong>Aksepterte</strong> fullmakter.</p>");
+                if (approvedPackages.Any())
                 {
-                    emailContent.AppendLine($"<li>{resource.Name}</li>");
+                    emailContent.Append("<strong>Tilgangspakker:</strong>");
+                    ListRefs(emailContent, approvedPackages.Select(p => p.Ref.Name));
                 }
 
-                emailContent.AppendLine("</ul>");
+                if (approvedResources.Any())
+                {
+                    emailContent.Append("<strong>Ressurser:</strong>");
+                    ListRefs(emailContent, approvedResources.Select(p => p.Ref.Name));
+                }
             }
 
-            if (packages.Any())
+            if (rejectedPackages.Any() || rejectedResources.Any())
             {
-                emailContent.AppendLine("<p>og/eller følgende pakkeløsninger:</p>");
-                emailContent.AppendLine("<ul>");
-                foreach (var package in packages)
+                emailContent.AppendLine($"<p><strong>Avslåtte</strong> fullmakter.</p>");
+                if (rejectedPackages.Any())
                 {
-                    emailContent.AppendLine($"<li>{package.Name}</li>");
+                    emailContent.Append("<strong>Tilgangspakker:</strong>");
+                    ListRefs(emailContent, rejectedPackages.Select(p => p.Ref.Name));
+                }
+
+                if (rejectedResources.Any())
+                {
+                    emailContent.Append("<strong>Ressurser:</strong>");
+                    ListRefs(emailContent, rejectedResources.Select(p => p.Ref.Name));
+                }
+            }
+
+            static void ListRefs(StringBuilder emailContent, IEnumerable<string> names)
+            {
+                emailContent.AppendLine("<ul>");
+                foreach (var name in names)
+                {
+                    emailContent.AppendLine($"<li>{name}</li>");
                 }
 
                 emailContent.AppendLine("</ul>");
@@ -240,15 +290,25 @@ public class RequestApprovedNotificationHandler(
     }
 }
 
+public class RequestReviewNotificationMessageResponse<T>
+{
+    /// <summary>
+    /// Package or Resource
+    /// </summary>
+    public T Ref { get; set; }
+
+    public bool IsApproved { get; set; }
+}
+
 /// <summary>
 /// Model used for deserializing content of outbox message for resource request notification.
 /// </summary>
-public class RequestApprovedNotificationMessage
+public class RequestReviewNotificationMessage
 {
     /// <summary>
-    /// Entity ID of the approver, either person or organization.
+    /// Entity ID of the Reviewer, either person or organization.
     /// </summary>
-    public Guid ApproverId { get; set; }
+    public Guid ReviewerId { get; set; }
 
     /// <summary>
     /// Entity ID of the recipient, either person or organization. 
@@ -256,14 +316,14 @@ public class RequestApprovedNotificationMessage
     public Guid RecipientId { get; set; }
 
     /// <summary>
-    /// Guid of resource.
+    /// Guids of approved / rejected resource.
     /// </summary>
-    public IEnumerable<Guid> ResourceIds { get; set; }
+    public List<RequestReviewNotificationMessageResponse<Guid>> Resources { get; set; } = [];
 
     /// <summary>
-    /// Guid of package
+    /// Guids of approved / rejected package.
     /// </summary>
-    public IEnumerable<Guid> PackageIds { get; set; }
+    public List<RequestReviewNotificationMessageResponse<Guid>> Packages { get; set; } = [];
 
     /// <summary>
     /// Used for idempotency.
