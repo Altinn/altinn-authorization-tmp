@@ -20,6 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_metadata_consentrightid
 CREATE INDEX IF NOT EXISTS idx_consentevent_consentrequestid_created
     ON consent.consentevent (consentRequestId, created);
 
--- consent.context: FK lookup for GetConsentContext()
+-- consent.context: lookup column for GetConsentContext()
 CREATE INDEX IF NOT EXISTS idx_context_consentrequestid
     ON consent.context (consentRequestId);
