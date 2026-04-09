@@ -539,7 +539,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using var pgcom = _db.CreateCommand(query);
             pgcom.Parameters.AddWithValue("fromPartyUuid", NpgsqlDbType.Uuid, fromPartyUuid);
-            pgcom.Parameters.AddWithValue("status", status);
+            pgcom.Parameters.Add(new NpgsqlParameter<ConsentRequestStatusType>("status", status));
 
             var result = await pgcom.ExecuteScalarAsync(cancellationToken);
             return Convert.ToInt32(result);
