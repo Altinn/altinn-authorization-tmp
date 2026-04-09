@@ -221,7 +221,6 @@ internal static partial class AccessManagementHost
             {
                 Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
                 Type = SecuritySchemeType.Http,
-                In = ParameterLocation.Header,
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Scheme = "bearer",
