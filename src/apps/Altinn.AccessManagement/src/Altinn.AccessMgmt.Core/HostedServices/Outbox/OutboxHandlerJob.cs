@@ -90,12 +90,14 @@ internal partial class OutboxHandlerJob(
                 SELECT id
                 FROM dbo.outboxmessage
                 WHERE status = 'Pending' AND (schedule IS NULL OR schedule <= NOW())
+                LIMIT 10
                 FOR UPDATE SKIP LOCKED
             )
             UPDATE dbo.outboxmessage
             SET
                 status = 'Processing',
-                startedat = NOW()
+                startedat = NOW(),
+                attempt = attempt + 1
             FROM locked_rows
             WHERE dbo.outboxmessage.id = locked_rows.id
             RETURNING dbo.outboxmessage.*;
@@ -143,7 +145,7 @@ internal partial class OutboxHandlerJob(
     public async Task<OutboxStatus> RunHandler(OutboxMessage message, IServiceScope serviceScope, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
-
+        var db = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var handlers = options.Value.Handlers;
         if (handlers.TryGetValue(message.Handler, out var handlerType))
         {
@@ -152,8 +154,8 @@ internal partial class OutboxHandlerJob(
             {
                 try
                 {
-                    await handler.Handle(message, cancellationToken);
-                    return OutboxStatus.Completed;
+                    var result = await handler.Handle(message, cancellationToken);
+                    return result;
                 }
                 catch (OperationCanceledException)
                 {
@@ -161,7 +163,8 @@ internal partial class OutboxHandlerJob(
                 }
                 catch (Exception ex)
                 {
-                    message.HandlerMessage = $"Handler threw exception: {ex.Message}\n{ex.StackTrace}";
+                    db.OutboxMessageLogs.Add(message, $"Handler threw unhandled exception: {ex.Message}\n{ex.StackTrace}");
+                    await db.SaveChangesAsync(cancellationToken);
                     return OutboxStatus.Failed;
                 }
             }

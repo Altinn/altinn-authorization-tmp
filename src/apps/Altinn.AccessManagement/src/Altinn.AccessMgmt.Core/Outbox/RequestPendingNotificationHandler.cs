@@ -1,26 +1,37 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
 public class RequestPendingNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
+    IFeatureManager featureManager,
     IEntityService entityService) : IOutboxHandler
 {
-    public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        {
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
         var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
         var content = new NotificationOrderChainRequestExt()
@@ -33,19 +44,40 @@ public class RequestPendingNotificationHandler(
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(
-                $@"Failed to send notification.
-                    Payload: {JsonSerializer.Serialize(content)}
-                    CorrelationId: {Activity.Current?.TraceId}
-                    Status Code: {response.StatusCode}
-                    Problem Title: {response.ProblemDetails?.Title}
-                    Problem Details: {response.ProblemDetails?.Detail}
-                    Problem Instance: {response.ProblemDetails?.Instance}
-                    Problem Type: {response.ProblemDetails?.Type}
-                    Problem Error Code: {response.ProblemDetails?.ErrorCode}
-                    Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}"
+            // Contact information for organization / person is missing
+            if (response.ProblemDetails?.ErrorCode.ToString() == "NOT-00001")
+            {
+                db.OutboxMessageLogs.Add(
+                    message,
+                    response.ProblemDetails?.Title ?? "Missing contact information for recipient(s)"
+                );
+
+                await db.SaveChangesAsync(cancellationToken);
+                return OutboxStatus.Completed;
+            }
+
+            var errorMessage = $@"Failed to send notification.
+                Payload: {JsonSerializer.Serialize(content)}
+                CorrelationId: {Activity.Current?.TraceId}
+                Status Code: {response.StatusCode}
+                Problem Title: {response.ProblemDetails?.Title}
+                Problem Details: {response.ProblemDetails?.Detail}
+                Problem Instance: {response.ProblemDetails?.Instance}
+                Problem Type: {response.ProblemDetails?.Type}
+                Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}";
+
+            db.OutboxMessageLogs.Add(
+                message,
+                errorMessage
             );
+
+            await db.SaveChangesAsync(cancellationToken);
+
+            return OutboxStatus.Failed;
         }
+
+        return OutboxStatus.Completed;
     }
 
     private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
@@ -115,8 +147,7 @@ public class RequestPendingNotificationHandler(
             AddResourcesAndPackage(resources, packages, emailContent);
 
             emailContent.AppendLine("<p>Logg inn i Altinn, gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
-            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
-
+            emailContent.AppendLine($"<p>Med vennlig hilsen </br>Altinn</p>");
 
             return new NotificationRecipientExt
             {
@@ -124,7 +155,6 @@ public class RequestPendingNotificationHandler(
                 {
                     NationalIdentityNumber = recipient.PersonIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
-                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Tilgangsforespørsel",

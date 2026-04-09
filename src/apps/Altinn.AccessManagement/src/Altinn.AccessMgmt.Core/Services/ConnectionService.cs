@@ -301,23 +301,13 @@ public partial class ConnectionService(
         foreach (var group in grouped)
         {
             var firstInstance = group.First().Instance;
-            var firstConnection = group.First().Connection;
-
-            // Get the resource from the Resources collection
-            var resource = firstConnection.Resources?.FirstOrDefault(r => r.Id == firstInstance.ResourceId);
-
-            if (resource == null)
-            {
-                continue; // Skip if resource not found
-            }
 
             var dto = new InstancePermissionDto
             {
-                Resource = DtoMapper.Convert(resource),
+                Resource = new ResourceDto { Id = firstInstance.ResourceId, RefId = firstInstance.ResourceRefId, Name = firstInstance.ResourceName },
                 Instance = new InstanceDto
                 {
-                    Id = firstInstance.InstanceId,
-                    Urn = $"urn:altinn:instance-id:{firstInstance.InstanceId}",
+                    RefId = firstInstance.InstanceId,
                     Type = null // TODO: InstanceType support to be added later
                 },
                 Permissions = group.Select(x => DtoMapper.ConvertToPermission(x.Connection)).ToList()
@@ -902,7 +892,7 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);
@@ -945,7 +935,7 @@ public partial class ConnectionService(
         }        
 
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
-        bool isResourceDelegable = resourceMetadata.Delegable;
+        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable;
 
         // Decompose policy into resource/tasks
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
@@ -953,9 +943,8 @@ public partial class ConnectionService(
         // Fetch packages
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, ConfigureConnections, cancellationToken);
 
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result && p.Package.Id == PackageConstants.MainAdministrator.Id);
-
-        // Fetch roles
+        bool isMainAdminForFrom = await IsMainAdmin(party, authenticatedUserUuid, cancellationToken);
+        
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
         // Fetch resource rights
@@ -1019,12 +1008,14 @@ public partial class ConnectionService(
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
 
         var packages = await CheckPackageForResource(party, authenticatedUserUuid, null, configureConnection, cancellationToken);
-        bool isMainAdminForFrom = packages.Value.Any(p => p.Result == true && p.Package.Id == PackageConstants.MainAdministrator.Id);
+
+        bool isMainAdminForFrom = await IsMainAdmin(party, authenticatedUserUuid, cancellationToken);
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
         var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+        var instances = await GetInstanceRights(party, authenticatedUserUuid, resourceDto.Id, instanceId, RoleConstants.Rightholder, cancellationToken);
 
-        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
+        ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources, instances);
 
         // Map to result
         IEnumerable<RightCheckDto> checkRights = await MapFromInternalToExternalRights(rights, resource, accessListMode, fromParty, rightKeys, isResourceDelegable, isMaskinPortenSchema, cancellationToken);
@@ -1035,14 +1026,34 @@ public partial class ConnectionService(
             Resource = resourceDto,
             Instance = new InstanceDto
             {
-                Id = instanceId,
-                Urn = $"urn:altinn:instance-id:{instanceId}",
+                RefId = instanceId,
                 Type = null
             },
             Rights = checkRights
         };
 
         return instanceCheckDto;
+    }
+
+    private async Task<bool> IsMainAdmin(Guid fromId, Guid authenticatedUserUuid, CancellationToken cancellationToken)
+    {
+        var connectionsToFromParty = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = [fromId],
+                ToIds = [authenticatedUserUuid],
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeSubConnections = true,
+                IncludePackages = true,
+                IncludeDelegation = false,
+                EnrichEntities = false,
+            },
+            ConnectionQueryDirection.FromOthers,
+            true,
+            cancellationToken
+        );
+        return connectionsToFromParty.Any(c => c.RoleId == RoleConstants.Hadm.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
     }
 
     private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, CancellationToken cancellationToken)
@@ -1188,6 +1199,11 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
+        if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
+        {
+            return Problems.MissingRightKey;
+        }
+
         var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
@@ -1222,7 +1238,7 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddInstance(Entity from, Entity to, Resource resourceObj, string instanceId, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
+        var canDelegate = await InstanceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, instanceId, configureConnection, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;
@@ -2134,7 +2150,7 @@ public partial class ConnectionService
             {
                 Resource = DtoMapper.Convert(internalResource),
                 Instance = !string.IsNullOrEmpty(instanceId) 
-                    ? new InstanceDto { Id = instanceId, Urn = $"urn:altinn:instance-id:{instanceId}" }
+                    ? new InstanceDto { RefId = instanceId }
                     : null,
                 Rights = new List<RightPermission>()
             };
@@ -2201,7 +2217,7 @@ public partial class ConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, Guid? fromId = null, CancellationToken cancellationToken = default)
     {
         var result = await dbContext.Connections
             .AsNoTracking()
@@ -2215,6 +2231,7 @@ public partial class ConnectionService
             .Include(t => t.ViaRole)
             .Where(t => t.ToId == toId)
             .Where(t => t.ViaId == viaId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId)
             .ToListAsync(cancellationToken);
 
         return GetConnectionsAsSystemUserClientConnectionDto(result);

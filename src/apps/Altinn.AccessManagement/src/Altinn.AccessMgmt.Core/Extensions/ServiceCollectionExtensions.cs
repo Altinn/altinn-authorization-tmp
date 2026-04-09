@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.HostedServices;
@@ -21,7 +22,7 @@ namespace Altinn.AccessMgmt.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration, Action<CoreAppsettings> configureAppsettings = null)
     {
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
@@ -47,14 +48,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
+        services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
+        // NOTE: can be removed once RequestReviewedNotificationHandler is in production.
         services.AddTransient<RequestApprovedNotificationHandler>();
+        services.AddTransient<RequestReviewedNotificationHandler>();
         services.AddTransient<RequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
+
+        services.AddOptions<CoreAppsettings>()
+            .Configure(configureAppsettings);
 
         // Consent Migration - Configuration
         services.AddOptions<ConsentMigrationSettings>()
@@ -63,7 +70,7 @@ public static class ServiceCollectionExtensions
                 .BindConfiguration("ConsentMigration");
 
         // Consent Migration - Services (Core - Scoped)
-        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();        
+        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
 
         AddJobs(services);
         return services;

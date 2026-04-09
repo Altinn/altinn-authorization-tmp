@@ -1,39 +1,84 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
 using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
+[Obsolete($"will be removed once {nameof(RequestReviewedNotificationHandler)} is in production.")]
 public class RequestApprovedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
+    IFeatureManager featureManager,
     IEntityService entityService) : IOutboxHandler
 {
-    public async Task Handle(OutboxMessage message, CancellationToken cancellationToken)
+    public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        {
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
         var (recipient, approver, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
 
-        var response = await notification.Send(
-            new()
-            {
-                IdempotencyId = idempotencyId,
-                Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
-            },
-            cancellationToken);
+        NotificationOrderChainRequestExt content = new()
+        {
+            IdempotencyId = idempotencyId,
+            Recipient = await CreateRecipient(recipient, approver, resources, packages, cancellationToken),
+        };
+
+        var response = await notification.Send(content, cancellationToken);
 
         if (response.IsProblem)
         {
-            throw new InvalidOperationException(response.ProblemDetails.Detail);
+            // Contact information for organization / person is missing
+            if (response.ProblemDetails?.ErrorCode.ToString() == "NOT-00001")
+            {
+                db.OutboxMessageLogs.Add(
+                    message,
+                    response.ProblemDetails?.Title ?? "Missing contact information for recipient(s)"
+                );
+
+                await db.SaveChangesAsync(cancellationToken);
+                return OutboxStatus.Completed;
+            }
+
+            var errorMessage = $@"Failed to send notification.
+                Payload: {JsonSerializer.Serialize(content)}
+                CorrelationId: {Activity.Current?.TraceId}
+                Status Code: {response.StatusCode}
+                Problem Title: {response.ProblemDetails?.Title}
+                Problem Details: {response.ProblemDetails?.Detail}
+                Problem Instance: {response.ProblemDetails?.Instance}
+                Problem Type: {response.ProblemDetails?.Type}
+                Problem Error Code: {response.ProblemDetails?.ErrorCode}
+                Problem Extensions: {JsonSerializer.Serialize(response.ProblemDetails?.Extensions ?? new Dictionary<string, object>())}";
+
+            db.OutboxMessageLogs.Add(
+                message,
+                errorMessage
+            );
+
+            await db.SaveChangesAsync(cancellationToken);
+
+            return OutboxStatus.Failed;
         }
+
+        return OutboxStatus.Completed;
     }
 
     private async Task<(Entity Recipient, Entity Approver, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
@@ -61,7 +106,7 @@ public class RequestApprovedNotificationHandler(
             entityApprover,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_approved_{entityRecipient.Id}_{entityApprover.Id}_{content.InitiatedAt.Ticks}"
         );
 
         async Task<List<Resource>> GetResources(RequestApprovedNotificationMessage content, CancellationToken cancellationToken)
@@ -95,15 +140,13 @@ public class RequestApprovedNotificationHandler(
     {
         ArgumentNullException.ThrowIfNull(recipient);
 
+        var emailContent = new StringBuilder();
+        AddApprover(approver, emailContent);
+        AddResourcesAndPackage(resources, packages, emailContent);
+        emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
+
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
-            var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
-
-            AddResourcesAndPackage(resources, packages, emailContent);
-
-            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
-
             return new NotificationRecipientExt
             {
                 RecipientPerson = new RecipientPersonExt
@@ -123,13 +166,6 @@ public class RequestApprovedNotificationHandler(
         }
         else if (recipient.TypeId == EntityTypeConstants.Organization)
         {
-            var emailContent = new StringBuilder();
-            emailContent.AppendLine($"<p>{approver.Name} med Org.nr {recipient.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
-
-            AddResourcesAndPackage(resources, packages, emailContent);
-
-            emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
-
             return new NotificationRecipientExt
             {
                 RecipientOrganization = new RecipientOrganizationExt
@@ -148,7 +184,33 @@ public class RequestApprovedNotificationHandler(
             };
         }
 
-        throw new InvalidOperationException("Unsupported party type. not person or organization");
+        if (!EntityTypeConstants.TryGetById(recipient.TypeId, out var entityType))
+        {
+            throw new InvalidOperationException($"Couldn't find recipient entity with typeid {recipient.TypeId}");
+        }
+
+        throw new InvalidOperationException($"Unsupported recipient entity type with uuid '{recipient.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
+
+        static void AddApprover(Entity approver, StringBuilder emailContent)
+        {
+            if (approver.TypeId == EntityTypeConstants.Organization)
+            {
+                emailContent.AppendLine($"<p>{approver.Name} med Org.nr {approver.OrganizationIdentifier} har akseptert din forespørsel om følgende fullmakter.</p>");
+            }
+            else if (approver.TypeId == EntityTypeConstants.Person)
+            {
+                emailContent.AppendLine($"<p>{approver.Name} har akseptert din forespørsel om følgende fullmakter.</p>");
+            }
+            else
+            {
+                if (!EntityTypeConstants.TryGetById(approver.TypeId, out var entityType))
+                {
+                    throw new InvalidOperationException($"Couldn't find approver with entity with typeid {approver.TypeId}");
+                }
+
+                throw new InvalidOperationException($"Unsupported approver entity type with uuid '{approver.Id}', must be a person or organization, not '{entityType.Entity.Name}'.");
+            }
+        }
 
         static void AddResourcesAndPackage(IEnumerable<Resource> resources, IEnumerable<Package> packages, StringBuilder emailContent)
         {
