@@ -47,7 +47,7 @@ public static partial class AccessManagementEnduserHost
                 Type = SecuritySchemeType.Http,
                 Name = "Authorization",
                 In = ParameterLocation.Header,
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 BearerFormat = "JWT"
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();

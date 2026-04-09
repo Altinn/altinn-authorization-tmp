@@ -224,7 +224,7 @@ internal static partial class AccessManagementHost
                 In = ParameterLocation.Header,
                 Name = "Authorization",
                 In = ParameterLocation.Header,
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 BearerFormat = "JWT"
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();

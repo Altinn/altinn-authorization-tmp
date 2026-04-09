@@ -23,7 +23,7 @@ namespace Altinn.AccessManagement.Api.Enterprise
                     Type = SecuritySchemeType.Http,
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Scheme = "Bearer",
+                    Scheme = "bearer",
                     BearerFormat = "JWT"
                 });
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
