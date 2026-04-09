@@ -220,9 +220,12 @@ internal static partial class AccessManagementHost
             options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
                 Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                Type = SecuritySchemeType.Http,
                 In = ParameterLocation.Header,
                 Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey
+                In = ParameterLocation.Header,
+                Scheme = "Bearer",
+                BearerFormat = "JWT"
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();
             options.EnableAnnotations();
