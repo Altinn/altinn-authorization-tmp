@@ -126,7 +126,7 @@ public class RequestReviewedNotificationHandler(
                 return resources.Select(r => new RequestReviewNotificationMessageResponse<Resource>()
                 {
                     Ref = r,
-                    IsApproved = content.Resources.FirstOrDefault(f => f.Ref == r.Id).IsApproved
+                    IsApproved = content.Resources.First(f => f.Ref == r.Id).IsApproved
                 });
             }
 
@@ -145,7 +145,7 @@ public class RequestReviewedNotificationHandler(
                 return packages.Select(r => new RequestReviewNotificationMessageResponse<Package>()
                 {
                     Ref = r,
-                    IsApproved = content.Packages.FirstOrDefault(f => f.Ref == r.Id).IsApproved
+                    IsApproved = content.Packages.First(f => f.Ref == r.Id).IsApproved
                 });
             }
 
@@ -163,7 +163,7 @@ public class RequestReviewedNotificationHandler(
 
         var emailContent = new StringBuilder();
         AddEmailIngress(emailContent, reviewer);
-        AddResourcesAndPackage(emailContent, reviewer, resources, packages);
+        AddResourcesAndPackage(emailContent, resources, packages);
         emailContent.AppendLine($"<p>Med vennlig hilsen<br>Altinn</p>");
 
         if (recipient.TypeId == EntityTypeConstants.Person)
@@ -174,7 +174,6 @@ public class RequestReviewedNotificationHandler(
                 {
                     NationalIdentityNumber = recipient.PersonIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
-                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new EmailSendingOptionsExt
                     {
                         Subject = "Altinn Behandlet tilgangsforespørsel",
@@ -235,7 +234,6 @@ public class RequestReviewedNotificationHandler(
 
         static void AddResourcesAndPackage(
             StringBuilder emailContent,
-            Entity reviewer,
             IEnumerable<RequestReviewNotificationMessageResponse<Resource>> resources,
             IEnumerable<RequestReviewNotificationMessageResponse<Package>> packages)
         {
