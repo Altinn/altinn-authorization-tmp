@@ -156,26 +156,4 @@ tests {
   
   });
   
-  // Helper to assert instances against expected IDs (order-agnostic)
-  function assertInstances(actualInstances, expectedInstanceIds, expectedResourceId) {
-    expect(actualInstances, 'authorizedInstances must be an array').to.be.an('array');
-    expect(actualInstances.length, 'unexpected number of instances').to.equal(expectedInstanceIds.length);
-  
-    // Validate all have expected resourceId
-    actualInstances.forEach((inst, idx) => {
-      expect(inst, `instance object at index ${idx} must be an object`).to.be.an('object');
-      expect(inst).to.have.property('resourceId', expectedResourceId);
-      expect(inst).to.have.property('instanceId').that.is.a('string').and.is.not.empty;
-    });
-  
-    // Compare sets of instanceIds (order-agnostic)
-    const actualIds = actualInstances.map(i => i.instanceId).sort();
-    const expectedIdsSorted = [...expectedInstanceIds].sort();
-    expect(actualIds).to.deep.equal(expectedIdsSorted);
-  
-    // Ensure uniqueness
-    const uniqueCount = new Set(actualIds).size;
-    expect(uniqueCount, 'duplicate instanceIds found').to.equal(actualIds.length);
-  }
-  
 }

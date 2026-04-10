@@ -40,7 +40,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithSubUnitPartyFilter");
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithOrgCodeFilter");
   bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
   bru.setVar("filterSubUnitParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.partyUuid);
   
@@ -72,10 +72,10 @@ tests {
   test(requestName + "|Verify all expected parties exists with expected access", function() {
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
     const actualMainUnit = allParties.find(party => party.partyUuid === expectedMainUnit.partyUuid);
-    const actualSubUnit = allParties.find(party => party.partyUuid === expectedMainUnit.subunit.partyUuid);
+    const actualSubUnit = allParties.find(party => party.partyUuid === expectedSubUnit.partyUuid);
   
     assert.exists(actualMainUnit, 'Expected MainUnit Party: '+expectedMainUnit.name+' to exist');
-    assert.exists(actualSubUnit, 'Expected SubUnit Party: '+expectedMainUnit.subunit.name+' to exist');
+    assert.exists(actualSubUnit, 'Expected SubUnit Party: '+expectedSubUnit.name+' to exist');
     expect(allParties.length, `Result should only contain the parties filtered`).to.equal(2);
     
     const expectedRolesMainUnit = [
@@ -132,8 +132,8 @@ tests {
       expectedMainUnit.instanceIdDelegatedToKeyRoleUnit
     ];
     const expectedInstancesSubUnit = [
-      expectedMainUnit.subunit.instanceIdDelegatedToPerson,
-      expectedMainUnit.subunit.instanceIdDelegatedToKeyRoleUnit
+      expectedSubUnit.instanceIdDelegatedToPerson,
+      expectedSubUnit.instanceIdDelegatedToKeyRoleUnit
     ];
     
     assertInstances(actualMainUnit.authorizedInstances, expectedInstancesMainUnit, expectedInstanceResourceId);
@@ -173,7 +173,7 @@ tests {
     
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
+  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
     // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
