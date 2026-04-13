@@ -195,14 +195,11 @@ public class ServiceOwnerConnectionsControllerTest
             // Act
             var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
 
-            // Assert - Note: This may fail if the controller only supports person identifiers currently
+            // Assert - The current implementation only handles person identifiers, so organization identifiers should return BadRequest
             var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             
-            // The current implementation only handles person identifiers, so this should return BadRequest
             // Update this assertion once organization support is added
-            Assert.True(
-                response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.BadRequest,
-                $"Expected OK or BadRequest, got {response.StatusCode}: {content}");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Fact]
