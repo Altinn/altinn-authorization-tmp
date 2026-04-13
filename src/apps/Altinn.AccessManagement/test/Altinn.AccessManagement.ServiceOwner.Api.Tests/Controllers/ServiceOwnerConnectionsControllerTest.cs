@@ -152,7 +152,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithInvalidPackageUrn_ReturnsBadRequest()
+        public async Task AddPackage_WithInvalidPackageUrn_ReturnsForbidden()
         {
             // Arrange
             var client = CreateClient();
