@@ -23,7 +23,7 @@ namespace Altinn.AccessMgmt.Core.Services
             Assignment assignment = await dbContext.Assignments
                 .Where(a => a.FromId == fromId)
                 .Where(a => a.ToId == toId)
-                .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
+                .Where(a => a.RoleId == RoleConstants.Rightholder)
                 .FirstOrDefaultAsync(cancellationToken);
             
             if (assignment == null)
