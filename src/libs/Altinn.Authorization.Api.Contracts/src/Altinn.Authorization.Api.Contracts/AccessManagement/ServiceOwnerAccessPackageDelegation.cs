@@ -8,13 +8,10 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement
     /// </summary>
     public class ServiceOwnerAccessPackageDelegation
     {
-        [Required]
-        public ServiceOwnerConnectionPartyUrn From { get; set; }
+        public required ServiceOwnerConnectionPartyUrn From { get; set; }
 
-        [Required]
-        public ServiceOwnerConnectionPartyUrn To { get; set; }
+        public required ServiceOwnerConnectionPartyUrn To { get; set; }
 
-        [Required]
-        public AccessPackageUrn PackageUrn { get; set; }
+        public required AccessPackageUrn PackageUrn { get; set; }
     }
 }
