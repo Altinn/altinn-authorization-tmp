@@ -454,29 +454,29 @@ public static class SystemEntityConstants
     };
 
     /// <summary>
-    /// Represents the ManualScripting system entity.
+    /// Represents the ManuellSanering system entity.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 019d85eb-5255-700d-8214-0dcdec1df3d1
-    /// - <c>Name:</c> ManualScripting
-    /// - <c>RefId:</c> sys-manual-script
+    /// - <c>Name:</c> ManuellSanering
+    /// - <c>RefId:</c> sys-manuell-sanering
     /// - <c>TypeId:</c> Internal entity type
     /// - <c>VariantId:</c> Standard variant
     /// </remarks>
-    public static ConstantDefinition<Entity> ManualScripting { get; } = new ConstantDefinition<Entity>(AuditDefaults.ManualScripting)
+    public static ConstantDefinition<Entity> ManualScripting { get; } = new ConstantDefinition<Entity>(AuditDefaults.ManuellSanering)
     {
         Entity = new()
         {
-            Name = nameof(AuditDefaults.ManualScripting),
-            RefId = "sys-manual-script",
+            Name = "Altinn",
+            RefId = "sys-manuell-sanering",
             ParentId = null,
             TypeId = EntityTypeConstants.Internal,
             VariantId = EntityVariantConstants.Standard,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ManualScripting")),
+            KeyValuePair.Create("Name", "Altinn")),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ManualScripting")),
+            KeyValuePair.Create("Name", "Altinn")),
     };
 
     /// <summary>
