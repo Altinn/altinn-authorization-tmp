@@ -46,6 +46,11 @@
         public const string POLICY_ACCESS_MANAGEMENT_WRITE = "AccessManagementWrite";
 
         /// <summary>
+        /// Policy tag for authorizing instance delegation for end users
+        /// </summary>
+        public const string POLICY_INSTANCE_DELEGATION = "InstanceDelegation";
+
+        /// <summary>
         /// Policy tag for reading enduser access management information for the authorized party
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH = "AccessManagementEndUserReadOrAuthorizedParty";
@@ -166,6 +171,26 @@
         public const string SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE = "altinn:accessmanagement/enduser:connections:toothers.write";
 
         /// <summary>
+        /// Policy tag for authorizing enduser requests API read access
+        /// </summary>
+        public const string POLICY_ENDUSER_REQUESTS_READ = "POLICY_ENDUSER_REQUESTS_READ";
+
+        /// <summary>
+        /// Policy tag for authorizing enduser requests API write access
+        /// </summary>
+        public const string POLICY_ENDUSER_REQUESTS_WRITE = "POLICY_ENDUSER_REQUESTS_WRITE";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on requests
+        /// </summary>
+        public const string SCOPE_ENDUSER_REQUESTS_READ = "altinn:accessmanagement/enduser:requests.read";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations on requests
+        /// </summary>
+        public const string SCOPE_ENDUSER_REQUESTS_WRITE = "altinn:accessmanagement/enduser:requests.write";
+
+        /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
         /// </summary>
         public const string SCOPE_AUTHORIZEDPARTIES_ENDUSERSYSTEM = "altinn:accessmanagement/authorizedparties";
@@ -234,5 +259,26 @@
         /// Scope giving access to creating delegationrequests
         /// </summary>
         public const string ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE = "altinn:serviceowner/delegationrequests.write";
+
+        /// <summary>
+        /// Valid URN prefixes for instance identifiers
+        /// </summary>
+        public static class InstanceUrnPrefixes
+        {
+            /// <summary>
+            /// URN prefix for Altinn App instances
+            /// </summary>
+            public const string Apps = "urn:altinn:instance-id:";
+
+            /// <summary>
+            /// URN prefix for Altinn Correspondence instances
+            /// </summary>
+            public const string Correspondence = "urn:altinn:correspondence-id:";
+
+            /// <summary>
+            /// URN prefix for Dialogporten Dialog instances
+            /// </summary>
+            public const string Dialog = "urn:altinn:dialog-id:";
+        }
     }
 }

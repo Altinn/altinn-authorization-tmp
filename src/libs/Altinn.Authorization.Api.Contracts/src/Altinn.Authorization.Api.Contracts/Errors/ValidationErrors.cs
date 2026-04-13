@@ -186,7 +186,7 @@ public static class ValidationErrors
     /// RequestMissingFromOrTo
     /// </summary>
     public static ValidationErrorDescriptor RequestMissingResourceOrPackage { get; }
-        = _factory.Create(38, $"Either Resource og PAckage must be included in request.");
+        = _factory.Create(38, $"Either Resource or Package must be included in request.");
 
     /// <summary>
     /// RequestMissingFromOrTo
@@ -199,4 +199,46 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor RequestFailedToApprove { get; }
         = _factory.Create(40, $"Failed to approve request.");
+
+    /// <summary>
+    /// Request connection not found
+    /// </summary>
+    public static ValidationErrorDescriptor RequestConnectionNotFound { get; }
+        = _factory.Create(41, $"Initial connection between parties not found.");
+
+    /// <summary>
+    /// DbNoRowsAffected
+    /// </summary>
+    public static ValidationErrorDescriptor DbNoRowsAffected { get; }
+        = _factory.Create(42, $"No rows affected.");
+
+    /// <summary>
+    /// DbNoRowsFound
+    /// </summary>
+    public static ValidationErrorDescriptor DbNoRowsFound { get; }
+        = _factory.Create(43, $"No rows found.");
+
+    /// <summary>
+    /// RequestUnauthorizedStatusUpdate
+    /// </summary>
+    public static ValidationErrorDescriptor RequestUnauthorizedStatusUpdate { get; }
+        = _factory.Create(44, $"Party cannot perform this status change.");
+
+    /// <summary>
+    /// Request connection not found
+    /// </summary>
+    public static ValidationErrorDescriptor RequestFromSelfNotAllowed { get; }
+        = _factory.Create(45, $"Self-targeted requests are not allowed.");
+    
+    /// <summary>
+    /// Either Resource or Package must be included in the request, but not both.
+    /// </summary>
+    public static ValidationErrorDescriptor ResourceAndPackageIsSpecified { get; }
+        = _factory.Create(46, "Either Resource or Package must be included in the request, but not both.");
+
+    /// <summary>
+    /// More than one fromParty is connected to the same instance uuid this should not be posible
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidInstanceId { get; }
+        = _factory.Create(47, $"The instance ID is invalid as more than one owner was found.");
 }

@@ -16,6 +16,12 @@ public static class PackageConstants
     /// </summary>
     public static bool TryGetByAll(string value, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
     {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            return false;
+        }
+
         if (TryGetByUrn(value, out result))
         {
             return true;
@@ -753,7 +759,7 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Technical interaction with the Norwegian Tax Agency"),
-            KeyValuePair.Create("Description", "This access package authorizes services to manage and coordinate technical interfaces with the Swedish Tax Agency. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+            KeyValuePair.Create("Description", "This access package authorizes services to manage and coordinate technical interfaces with the Norwegian Tax Agency. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Teknisk samhandling med Skatteetaten"),
@@ -768,14 +774,14 @@ public static class PackageConstants
     /// - <c>Id:</c> 0ef5d123-6dd6-4fca-929b-30148996e926
     /// - <c>URN:</c> urn:altinn:accesspackage:beredskap
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakt til tjenester knyttet til etablering, rapportering og varsling av beredskap. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> Readiness { get; } = new ConstantDefinition<Package>("0ef5d123-6dd6-4fca-929b-30148996e926")
     {
         Entity = new()
         {
             Name = "Beredskap",
-            Description = "Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakt til tjenester knyttet til etablering, rapportering og varsling av beredskap. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:beredskap",
             Code = "beredskap",
             IsDelegable = true,
@@ -787,11 +793,11 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Readiness"),
-            KeyValuePair.Create("Description", "This access package authorizes services to manage and coordinate technical interfaces with the Swedish Tax Agency. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+            KeyValuePair.Create("Description", "This access package authorizes services related to the establishment, reporting and notification of emergency preparedness. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Beredskap"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester for å forvalta og koordinera tekniske grensesnitt mot Skatteetaten. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakt til tenester knytte til etablering, rapportering og varsling av beredskap. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3594,6 +3600,40 @@ public static class PackageConstants
     };
 
     /// <summary>
+    /// Represents the 'Tilgangsstyrer for enkeltmeldinger, -skjema og -dialoger' access package.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 019ce74f-7fc8-7032-b3ed-85af6492ea84
+    /// - <c>URN:</c> urn:altinn:accesspackage:tilgangsstyring-enkeltinstanser
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Description:</c> Gir tilgang til brukergrensesnitt i meldingsboksen, for å kunne gi andre brukere tilganger til enkeltmeldinger, -skjema og -dialoger, som mottakeren selv har tilgang til.
+    /// </remarks>
+    public static ConstantDefinition<Package> InstanceDelegation { get; } = new ConstantDefinition<Package>("019ce74f-7fc8-7032-b3ed-85af6492ea84")
+    {
+        Entity = new()
+        {
+            Name = "Tilgangsstyrer for enkeltmeldinger, -skjema og -dialoger",
+            Description = "Gir tilgang til brukergrensesnitt i meldingsboksen, for å kunne gi andre brukere tilgang til enkeltmeldinger, -skjema og -dialoger, som mottakeren selv har tilgang til.",
+            Urn = "urn:altinn:accesspackage:tilgangsstyring-enkeltinstanser",
+            Code = "tilgangsstyring-enkeltinstanser",
+            IsDelegable = false,
+            IsAvailableForServiceOwners = false,
+            IsAssignable = true,
+            EntityTypeId = EntityTypeConstants.Organization,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Access manager of individual messages, forms and dialogs"),
+            KeyValuePair.Create("Description", "Provides access to the user interface in the message box, allowing users to grant access to individual messages, forms, and dialogs that the recipient themselves have access to.")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Tilgangsstyrar for enkeltmeldingar, -skjema og -dialogar"),
+            KeyValuePair.Create("Description", "Gir tilgang til brukargrensesnitt i meldingsboksen, for å kunne gi brukarar tilgang til enkeltmeldingar, -skjema og -dialogar, som mottakaren sjølv har tilgang til.")
+        ),
+    };
+
+    /// <summary>
     /// Represents the 'Klientadministrator' access package.
     /// </summary>
     /// <remarks>
@@ -3899,7 +3939,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Posttenester"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til informasjon og kommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til posttenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4246,7 +4286,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This access package authorizes services related to auditing. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Rekneskap og økonomirapportering"),
+            KeyValuePair.Create("Name", "Revisjon"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til revisjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
@@ -4791,11 +4831,11 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "RoadUsers"),
-            KeyValuePair.Create("Description", "This authorization gives access to services related to vehicles and vehicle control. This includes the purchase and sale of vehicles. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
+            KeyValuePair.Create("Name", "Road users"),
+            KeyValuePair.Create("Description", "This authorization gives access to services related to driving licences and traffic information. In the event of regulatory changes or the introduction of new digital services, there may be changes in which access this authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Køyretøy"),
+            KeyValuePair.Create("Name", "Trafikant"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til førarkort og trafikantinformasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i kva tilgangar denne fullmakta gir.")
         ),
     };
@@ -4829,7 +4869,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This authorization provides access to services related to passenger and freight transport along the road network. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Veitransport"),
+            KeyValuePair.Create("Name", "Vegtransport"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til person- og godstransport langs vegnettet. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
@@ -5072,7 +5112,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Søknader og sertifisering"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til sjukefråvær. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til søknader og sertifisering. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
 
@@ -5121,14 +5161,14 @@ public static class PackageConstants
     /// - <c>Id:</c> 8dd91aeb-9f95-4d1c-bcf0-f46bd86a4ef7
     /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-barnehage-sfo-skole
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barnehage, SFO og skole. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
     public static ConstantDefinition<Package> InnbyggerBarnehageSfoSkole { get; } = new ConstantDefinition<Package>("8dd91aeb-9f95-4d1c-bcf0-f46bd86a4ef7")
     {
         Entity = new()
         {
             Name = "Barnehage, SFO og skole",
-            Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barn og foreldre. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til barnehage, SFO og skole. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger-barnehage-sfo-skole",
             Code = "innbygger-barnehage-sfo-skole",
             IsDelegable = true,
@@ -5227,14 +5267,14 @@ public static class PackageConstants
     /// - <c>Id:</c> 990bc1ff-b0cd-4d87-83ae-861c22c980fd
     /// - <c>URN:</c> urn:altinn:accesspackage:innbygger-avlastning-stotte
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til avlastning og støtte. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.
     /// </remarks>
     public static ConstantDefinition<Package> InnbyggerAvlastningStotte { get; } = new ConstantDefinition<Package>("990bc1ff-b0cd-4d87-83ae-861c22c980fd")
     {
         Entity = new()
         {
             Name = "Avlastning og støtte",
-            Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til fritidsaktiviteter og annet friluftsliv for barn og voksne. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester og korrespondanse knyttet til avlastning og støtte. Ved innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktene gir.",
             Urn = "urn:altinn:accesspackage:innbygger-avlastning-stotte",
             Code = "innbygger-avlastning-stotte",
             IsDelegable = true,
@@ -5453,11 +5493,11 @@ public static class PackageConstants
             AreaId = AreaConstants.CultureSportAndVolunteering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sports"),
+            KeyValuePair.Create("Name", "Volunteering"),
             KeyValuePair.Create("Description", "This access package authorizes services and correspondence related to volunteering. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Idrett"),
+            KeyValuePair.Create("Name", "Frivilligheit"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til frivilligheit. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -5847,7 +5887,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Førarkort"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til køyretøy. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til førarkort. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
 
@@ -5952,7 +5992,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to tax matters for private individuals. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Forsikring"),
+            KeyValuePair.Create("Name", "Skatteforhold for privatpersonar"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester og korrespondanse knytt til skatteforhold for privatpersonar. Ved innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmaktene gir.")
         ),
     };
@@ -6051,7 +6091,7 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Collection"),
-            KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to debt collection for private individuals. The access package is reserved for the Swedish Tax Agency. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
+            KeyValuePair.Create("Description", "This access package gives authorizations for services and correspondence related to debt collection for private individuals. The access package is reserved for the Norwegian Tax Agency. When new digital services are introduced, there may be changes in the access that the authorizations provide.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Innkrevjing"),

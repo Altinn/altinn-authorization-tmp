@@ -19,6 +19,10 @@ public static class TestDataSeeds
     /// <param name="db">The <see cref="AppDbContext"/> to seed.</param>
     public static async Task Exec(AppDbContext db)
     {
+        #region Resource Types
+        db.ResourceTypes.Add(TestData.TestResourceType);
+        #endregion
+
         #region Entities
         db.Entities.AddRange([
             TestEntities.PersonPaula,
@@ -37,6 +41,7 @@ public static class TestDataSeeds
             TestData.BakerJohnsen,
             TestData.SvendsenAutomobil,
             TestData.FredriksonsFabrikk,
+            TestData.NAV,
             TestData.RegnskapNorge,
             TestData.MittRegnskap,
             TestData.RpcAS,
@@ -62,8 +67,22 @@ public static class TestDataSeeds
             TestData.LivKristiansen,
             TestData.SteinarAndreassen,
             TestData.HelgeNilsen,
+            TestData.MalinEmilie,
+            TestData.Thea,
+            TestData.JosephineYvonnesdottir,
+            TestData.BodilFarmor,
+            TestData.DumboAdventures,
+            TestData.MilleHundefrisor,
+            TestData.Milena,
+            TestData.KaosMagicDesignAndArts,
+            TestData.JinxArcane,
+            TestData.AlexTheArtist
         ]);
         #endregion
+
+        db.Providers.AddRange([
+            TestData.ServiceOwnerNAV,
+            ]);
 
         #region Assignments
         db.Assignments.AddRange([
@@ -78,7 +97,20 @@ public static class TestDataSeeds
 
         #region TestData Assignments and Delegations
         db.Assignments.AddRange(TestData.Assignments);
+        db.AssignmentPackages.AddRange(TestData.AssignmentPackages);
+        db.AssignmentInstances.AddRange(TestData.AssignmentInstances);
         //// db.Delegations.AddRange(TestData.Delegations);
+        #endregion
+
+        #region Resources
+        db.Resources.Add(TestData.MattilsynetBakeryService);
+        db.Resources.Add(TestData.SiriusSkattemelding);
+        db.Resources.Add(TestData.NavSykepengerDialog);
+        db.Resources.Add(TestData.DiheOmsetningsoppgaveAlkohol);
+        db.Resources.Add(TestData.NavSykepengerSykmelding);
+        db.Resources.Add(TestData.SkattResource);
+        db.Resources.AddRange(TestData.MvaResource);
+
         #endregion
 
         await db.SaveChangesAsync();
