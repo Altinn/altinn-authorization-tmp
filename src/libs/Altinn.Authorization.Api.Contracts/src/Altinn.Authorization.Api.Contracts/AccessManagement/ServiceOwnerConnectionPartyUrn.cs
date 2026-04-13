@@ -2,7 +2,7 @@
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Urn;
 
-namespace Altinn.Authorization.Api.Contracts.Consent
+namespace Altinn.Authorization.Api.Contracts.AccessManagement
 {
     /// <summary>
     /// A unique reference to a party in the form of an URN.
