@@ -146,16 +146,11 @@ public static class Problems
     public static ProblemDescriptor MissingRightKey { get; }
     = _factory.Create(33, HttpStatusCode.BadRequest, "No right key provided");
 
-
-
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor PackageDelegationNotAuthorized { get; }
     = _factory.Create(34, HttpStatusCode.Forbidden, "Service owner is not authorized to delegate this access package");
 
-
-    public static ProblemDescriptor MissingRightKey { get; }
-    = _factory.Create(33, HttpStatusCode.BadRequest, "No right key provided");
-
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor PackageNotFound { get; }
     = _factory.Create(35, HttpStatusCode.BadRequest, "Unknown Access Package");
 }
