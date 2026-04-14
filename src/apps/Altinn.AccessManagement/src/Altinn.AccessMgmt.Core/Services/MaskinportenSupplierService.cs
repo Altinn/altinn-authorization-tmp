@@ -98,7 +98,7 @@ public class MaskinportenSupplierService(
             {
                 // Resources exist and cascade not requested - fail with validation error
                 return ValidationComposer.Validate(
-                    ResourceValidation.HasAssignedResources(true)
+                    ResourceValidation.HasAssignedResources(assignedResources)
                 );
             }
 
