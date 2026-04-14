@@ -121,4 +121,30 @@ public static class ResourceValidation
             errors.Add(ValidationErrors.InvalidResourceType, $"QUERY/{paramName}", [new("resourceType", $"Resource '{resource?.RefId}' must be of type '{expectedTypeName}'.")]);
         };
     };
+
+    internal static RuleExpression PolicyClearSucceeded(string policyVersion, string resourceRefId, string paramName = "resource") => () =>
+    {
+        if (policyVersion is not null)
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+        {
+            errors.Add(ValidationErrors.PolicyClearFailed, $"POLICY/{paramName}", [new("resource", $"Failed to clear delegation policy for resource '{resourceRefId}'.")]);
+        };
+    };
+
+    internal static RuleExpression PolicyCascadeClearSucceeded(string policyVersion, string paramName = "cascade") => () =>
+    {
+        if (policyVersion is not null)
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+        {
+            errors.Add(ValidationErrors.PolicyClearFailed, $"POLICY/{paramName}", [new("assignmentResources", "Failed to clear delegation policies during cascade deletion.")]);
+        };
+    };
 }

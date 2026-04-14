@@ -142,5 +142,11 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor PackageIsNotAssignableToRecipient { get; }
         = _factory.Create(33, "Package is not assignable to the recipient entity type.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when clearing delegation policy rules fails.
+    /// </summary>
+    public static ValidationErrorDescriptor PolicyClearFailed { get; }
+        = _factory.Create(34, "Failed to clear delegation policy rules.");
 }
 

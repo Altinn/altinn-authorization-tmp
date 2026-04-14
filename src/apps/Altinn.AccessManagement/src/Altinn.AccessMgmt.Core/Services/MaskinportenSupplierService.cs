@@ -113,6 +113,14 @@ public class MaskinportenSupplierService(
                     assignmentResource.PolicyVersion,
                     cancellationToken);
 
+                if (newVersion is null)
+                {
+                    // Policy clear failed - abort the entire cascade operation
+                    return ValidationComposer.Validate(
+                        ResourceValidation.PolicyCascadeClearSucceeded(newVersion)
+                    );
+                }
+
                 // Update version to track the clear operation
                 assignmentResource.PolicyVersion = newVersion;
 
@@ -500,6 +508,14 @@ public class MaskinportenSupplierService(
             existingAssignmentResource.PolicyPath,
             existingAssignmentResource.PolicyVersion,
             cancellationToken);
+
+        if (newVersion is null)
+        {
+            // Policy clear failed - do not delete DB record to maintain consistency
+            return ValidationComposer.Validate(
+                ResourceValidation.PolicyClearSucceeded(newVersion, resource)
+            );
+        }
 
         existingAssignmentResource.PolicyVersion = newVersion;
 
