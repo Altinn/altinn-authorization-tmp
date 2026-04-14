@@ -24,16 +24,6 @@ public class MaskinportenConsumersController(
     IMaskinportenSupplierService maskinportenSupplierService
     ) : ControllerBase
 {
-    private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
-    {
-        // Maskinporten supplier delegations are restricted to organization-to-organization only
-        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedWriteToEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedReadToEntityTypes = [EntityTypeConstants.Organization];
-        options.FilterFromEntityTypes = [];
-        options.FilterToEntityTypes = [];
-    };
     /// <summary>
     /// Gets all consumers for the authenticated supplier
     /// </summary>

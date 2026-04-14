@@ -116,6 +116,11 @@ public class MaskinportenSupplierService(
             return consumer.Problem;
         }
 
+        if (!IsOrganization(consumer.Value))
+        {
+            return Problems.PartyNotFound;
+        }
+
         var connections = await connectionQuery.GetConnectionsAsync(
             new ConnectionQueryFilter()
             {
@@ -141,6 +146,11 @@ public class MaskinportenSupplierService(
         if (supplier.IsProblem)
         {
             return supplier.Problem;
+        }
+
+        if (!IsOrganization(supplier.Value))
+        {
+            return Problems.PartyNotFound;
         }
 
         var connections = await connectionQuery.GetConnectionsAsync(
@@ -173,6 +183,11 @@ public class MaskinportenSupplierService(
         if (consumer.IsProblem)
         {
             return consumer.Problem;
+        }
+
+        if (!IsOrganization(consumer.Value))
+        {
+            return Problems.PartyNotFound;
         }
 
         // Build resource filter (by ID or scope)
@@ -226,6 +241,11 @@ public class MaskinportenSupplierService(
             return supplier.Problem;
         }
 
+        if (!IsOrganization(supplier.Value))
+        {
+            return Problems.PartyNotFound;
+        }
+
         // Build resource filter (by ID or scope)
         List<Guid>? resourceIds = null;
         if (resourceId.HasValue)
@@ -237,7 +257,7 @@ public class MaskinportenSupplierService(
             resourceIds = await GetResourceIdsByScope(scope, cancellationToken);
             if (resourceIds.Count == 0)
             {
-                return new List<ResourcePermissionDto>();
+                return new List<ResourcePermissionDto>(); // No matching resources
             }
         }
 
@@ -265,6 +285,7 @@ public class MaskinportenSupplierService(
 
     /// <inheritdoc />
     public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(
+        Guid authenticatedUserUuid,
         Guid consumerId,
         string resource,
         string languageCode = "nb",
@@ -292,13 +313,10 @@ public class MaskinportenSupplierService(
             return Problems.InvalidResource;
         }
 
-        // Use authenticated user from audit context
-        var authenticatedUserId = auditAccessor.AuditValues.ChangedBy;
-
         // Delegate to ConnectionService with allowMaskinportenSchema = true for MaskinportenSchema resources
         // This allows delegation even if delegable=false, but still requires valid access rights
         return await connectionService.ResourceDelegationCheck(
-            authenticatedUserId,
+            authenticatedUserUuid,
             consumerId,
             resource,
             configureConnection: null,
@@ -339,15 +357,14 @@ public class MaskinportenSupplierService(
             return Problems.InvalidResource;
         }
 
-        // Get authenticated user
+        // Perform delegation check
         var by = await GetEntity(auditAccessor.AuditValues.ChangedBy, cancellationToken);
         if (by.IsProblem)
         {
             return by.Problem;
         }
 
-        // Perform delegation check
-        var delegationCheck = await ResourceDelegationCheck(consumerId, resource, cancellationToken: cancellationToken);
+        var delegationCheck = await ResourceDelegationCheck(by.Value.Id, consumerId, resource, cancellationToken: cancellationToken);
         if (delegationCheck.IsProblem)
         {
             return delegationCheck.Problem;
@@ -508,12 +525,13 @@ public class MaskinportenSupplierService(
 
     private async Task<List<Guid>> GetResourceIdsByScope(string scope, CancellationToken cancellationToken)
     {
-        // Query resources by scope claim (this assumes resources have scope metadata stored)
-        // For now, we'll use RefId matching - adjust based on actual schema
+        // Fallback: Use exact RefId matching until authoritative scope metadata is available.
+        // This assumes RefId matches the Maskinporten scope claim (may not always be true).
+        // Future implementation should use proper scope claim storage and Resource Registry lookup.
         var resources = await dbContext.Resources
             .Include(r => r.Type)
             .Where(r => r.Type.Name == MaskinportenSchemaTypeName)
-            .Where(r => r.RefId.Contains(scope)) // Simplified - adjust based on actual scope storage
+            .Where(r => r.RefId == scope) // Exact match only - no substring matching
             .Select(r => r.Id)
             .ToListAsync(cancellationToken);
 

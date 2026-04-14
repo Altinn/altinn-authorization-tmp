@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Models;
@@ -24,16 +25,6 @@ public class MaskinportenSuppliersController(
     IMaskinportenSupplierService maskinportenSupplierService
     ) : ControllerBase
 {
-    private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
-    {
-        // Maskinporten supplier delegations are restricted to organization-to-organization only
-        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedWriteToEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organization];
-        options.AllowedReadToEntityTypes = [EntityTypeConstants.Organization];
-        options.FilterFromEntityTypes = [];
-        options.FilterToEntityTypes = [];
-    };
     /// <summary>
     /// Adds a supplier assignment to allow an organization to receive Maskinporten scope delegations
     /// </summary>
@@ -134,7 +125,9 @@ public class MaskinportenSuppliersController(
         [Required][FromQuery(Name = "resource")] string resource,
         CancellationToken cancellationToken = default)
     {
-        var result = await maskinportenSupplierService.ResourceDelegationCheck(party, resource, cancellationToken: cancellationToken);
+        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+
+        var result = await maskinportenSupplierService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

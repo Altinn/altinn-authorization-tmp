@@ -82,12 +82,14 @@ public interface IMaskinportenSupplierService
     /// <summary>
     /// Performs a delegation check for a MaskinportenSchema resource
     /// </summary>
+    /// <param name="authenticatedUserUuid">UUID of the authenticated user performing the check</param>
     /// <param name="consumerId">The consumer organization ID</param>
     /// <param name="resource">The resource identifier</param>
     /// <param name="languageCode">Language code for translations</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Resource check result</returns>
     Task<Result<ResourceCheckDto>> ResourceDelegationCheck(
+        Guid authenticatedUserUuid,
         Guid consumerId,
         string resource,
         string languageCode = "nb",
