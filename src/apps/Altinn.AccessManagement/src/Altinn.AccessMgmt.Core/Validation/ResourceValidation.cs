@@ -93,13 +93,16 @@ public static class ResourceValidation
         return null;
     };
 
-    internal static RuleExpression HasAssignedResources(IEnumerable<AssignmentResource> assignedResources) => () =>
+    internal static RuleExpression HasAssignedResources(IEnumerable<AssignmentResource> assignedResources, string paramName = "cascade") => () =>
     {
+        ArgumentNullException.ThrowIfNull(assignedResources);
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
         if (assignedResources.Any())
         {
             return (ref ValidationErrorBuilder errors) =>
             {
-                errors.Add(ValidationErrors.AssignmentResourcesExist, "assignment", [new("assignmentResources", "Cannot remove supplier assignment while resources are still delegated. Use cascade=true or remove resources first.")]);
+                errors.Add(ValidationErrors.AssignmentResourcesExist, $"QUERY/{paramName}", [new("assignmentResources", "Cannot remove supplier assignment while resources are still delegated. Use cascade=true or remove resources first.")]);
             };
         }
 
