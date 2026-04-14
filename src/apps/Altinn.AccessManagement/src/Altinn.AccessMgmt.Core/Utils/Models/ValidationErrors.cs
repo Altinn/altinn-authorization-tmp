@@ -120,7 +120,7 @@ public static class ValidationErrors
         = _factory.Create(29, "Instance must use a valid URN format: 'urn:altinn:instance-id:', 'urn:altinn:correspondence-id:', or 'urn:altinn:dialog-id:'.");
 
     /// <summary>
-    /// Gets a validation error descriptor for when a Resource not exists.
+    /// Gets a validation error descriptor for when a resource does not exist.
     /// </summary>
     public static ValidationErrorDescriptor ResourceNotExists { get; }
         = _factory.Create(30, "Resource does not exist.");
