@@ -899,7 +899,7 @@ public partial class ConnectionService(
 
         ResourceDto resourceDto;
         XacmlPolicy policy;
-        bool isMaskinPortenSchema = false;
+        bool isMaskinPortenSchemaResource = false;
 
         try
         {
@@ -916,8 +916,12 @@ public partial class ConnectionService(
 
         if (resourceDto.Type.Name.Equals("MaskinportenSchema", StringComparison.InvariantCultureIgnoreCase))
         {
-            isMaskinPortenSchema = true;
+            isMaskinPortenSchemaResource = true;
         }
+
+        // When allowMaskinportenSchema is true, we don't want to deny delegation for MaskinportenSchema resources
+        // isMaskinPortenSchema is used later to add denial reasons, so we only set it when we want to deny
+        bool isMaskinPortenSchema = isMaskinPortenSchemaResource && !allowMaskinportenSchema;
 
         // Fetch Resourcemetadata
         ServiceResource resourceMetadata = await contextRetrievalService.GetResource(resource, cancellationToken);
@@ -935,7 +939,7 @@ public partial class ConnectionService(
         }        
 
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
-        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable || (allowMaskinportenSchema && isMaskinPortenSchema);
+        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable || (allowMaskinportenSchema && isMaskinPortenSchemaResource);
 
         // Decompose policy into resource/tasks
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
