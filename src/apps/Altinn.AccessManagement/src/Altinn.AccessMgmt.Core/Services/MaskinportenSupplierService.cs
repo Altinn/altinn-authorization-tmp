@@ -438,16 +438,61 @@ public class MaskinportenSupplierService(
             );
         }
 
-        return await connectionService.RemoveResource(
+        return await RemoveSupplierResource(
             consumerId,
             supplierId,
             resourceObj.Id,
-            configureConnection: null,
-            cancellationToken: cancellationToken);
+            cancellationToken);
     }
 
     #region Private Helper Methods
 
+    private async Task<ValidationProblemInstance> RemoveSupplierResource(
+        Guid consumerId,
+        Guid supplierId,
+        Guid resourceId,
+        CancellationToken cancellationToken)
+    {
+        var assignment = await dbContext.Assignments
+            .Include(a => a.Role)
+            .Include(a => a.AssignmentResources)
+            .FirstOrDefaultAsync(
+                a =>
+                    a.FromEntityId == supplierId
+                    && a.ToEntityId == consumerId
+                    && a.Role.Name == RoleConstants.Supplier,
+                cancellationToken);
+
+        if (assignment == null)
+        {
+            return null;
+        }
+
+        var assignmentResource = assignment.AssignmentResources
+            .FirstOrDefault(ar => ar.ResourceId == resourceId);
+
+        if (assignmentResource == null)
+        {
+            return null;
+        }
+
+        var delegationPolicyRules = await dbContext.DelegationChangePolicyRules
+            .Where(
+                rule =>
+                    rule.AssignmentId == assignment.Id
+                    && rule.ResourceId == resourceId)
+            .ToListAsync(cancellationToken);
+
+        if (delegationPolicyRules.Count > 0)
+        {
+            dbContext.DelegationChangePolicyRules.RemoveRange(delegationPolicyRules);
+        }
+
+        dbContext.AssignmentResources.Remove(assignmentResource);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
     private async Task<Result<Entity>> GetEntity(Guid entityId, CancellationToken cancellationToken)
     {
         var entity = await dbContext.Entities
