@@ -102,9 +102,11 @@ public class MaskinportenSupplierService(
                 );
             }
 
-            // Cascade: Revoke each delegated resource by clearing policy rules directly
+            // Cascade: Clear all policy rules first (all-or-nothing)
             // Cannot use ConnectionService.RemoveResource because it looks for RoleConstants.Rightholder,
             // but supplier delegations use RoleConstants.Supplier
+            var clearedVersions = new List<(AssignmentResource Resource, string NewVersion)>();
+
             foreach (var assignmentResource in assignedResources)
             {
                 // Clear delegation policy rules for this resource
@@ -116,16 +118,24 @@ public class MaskinportenSupplierService(
                 if (newVersion is null)
                 {
                     // Policy clear failed - abort the entire cascade operation
+                    // All previously cleared policies remain cleared (no rollback mechanism)
+                    // But database records are NOT deleted, maintaining partial consistency
                     return ValidationComposer.Validate(
                         ResourceValidation.PolicyCascadeClearSucceeded(newVersion)
                     );
                 }
 
+                clearedVersions.Add((assignmentResource, newVersion));
+            }
+
+            // All policy clears succeeded - now safe to delete database records
+            foreach (var (resource, newVersion) in clearedVersions)
+            {
                 // Update version to track the clear operation
-                assignmentResource.PolicyVersion = newVersion;
+                resource.PolicyVersion = newVersion;
 
                 // Remove the assignment resource record
-                dbContext.Remove(assignmentResource);
+                dbContext.Remove(resource);
             }
         }
 
@@ -435,7 +445,7 @@ public class MaskinportenSupplierService(
             ignoreExistingPolicy: false,
             cancellationToken: cancellationToken);
 
-        if (!result.All(r => r.CreatedSuccessfully))
+        if (!result.Any() || !result.All(r => r.CreatedSuccessfully))
         {
             return Problems.DelegationPolicyRuleWriteFailed;
         }
