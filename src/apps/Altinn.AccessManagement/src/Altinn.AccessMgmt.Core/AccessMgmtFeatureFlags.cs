@@ -21,6 +21,11 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesRegisterSyncImport = $"AccessMgmt.Core.HostedServices.RegisterSync.Import";
 
     /// <summary>
+    /// Specifies if the resource registry data should be streamed from resource registry service to access management database
+    /// </summary>
+    public const string HostedServicesResourceRegistrySync = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync";
+
+    /// <summary>
     /// Specifies if the altinn roles data should be streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAllAltinnRoleSync = $"AccessMgmt.Core.HostedServices.AllAltinnRoleSync";

@@ -100,10 +100,15 @@ public partial class RegisterHostedService(
         try
         {
             var cancellationToken = (CancellationToken)state;
-            await using var resourceLease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
-            if (resourceLease is not null && !cancellationToken.IsCancellationRequested)
+            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
-                await SyncResourceRegistry(resourceLease, cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
+                if (lease is null || cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                await SyncResourceRegistry(lease, cancellationToken);
             }
 
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSync))
