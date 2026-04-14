@@ -27,6 +27,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
         private const string PARAM_CONSENT_CONTEXT_ID = "contextId";
         private const string PARAM_CONTEXT = "context";
         private const string PARAM_LANGAUGE = "language";
+        private const string PARAM_REVOKED_TIME = "revokedTime";
+        private const string PARAM_REJECTED_TIME = "rejectedTime";
+        private const string PARAM_CONSENTED_TIME = "consentedTime";
 
         private const string EventQuery = /*strpsql*/@"
                 INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
@@ -42,7 +45,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <inheritdoc/>
         public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty, ConsentContext context, CancellationToken cancellationToken = default)
         {
-            DateTimeOffset consentedTime = DateTime.UtcNow;
+            DateTimeOffset consentedTime = DateTimeOffset.UtcNow;
 
             const string updateConsentRequestQuery = /*strpsql*/@"
                     UPDATE consent.consentrequest set status = 'accepted', consented = @consentedTime  WHERE consentRequestId= @consentRequestId and status = 'created'";
@@ -54,7 +57,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = updateConsentRequestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            command.Parameters.AddWithValue(PARAM_CONSENTED_TIME, NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
 
             if (rowsAffected == 0)
@@ -390,7 +393,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <inheritdoc/>
         public async Task RejectConsentRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken = default)
         {
-            DateTimeOffset rejectedTime = DateTime.UtcNow;
+            DateTimeOffset rejectedTime = DateTimeOffset.UtcNow;
 
             const string updateConsentRequestQuery = /*strpsql*/@"
                     UPDATE consent.consentrequest set status = 'rejected', rejected = @rejectedTime WHERE consentRequestId= @consentRequestId and status = 'created'";
@@ -402,7 +405,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = updateConsentRequestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            command.Parameters.AddWithValue("rejectedTime", NpgsqlDbType.TimestampTz, rejectedTime.ToOffset(TimeSpan.Zero));
+            command.Parameters.AddWithValue(PARAM_REJECTED_TIME, NpgsqlDbType.TimestampTz, rejectedTime.ToOffset(TimeSpan.Zero));
             int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
 
             if (rowsAffected == 0)
@@ -425,7 +428,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <inheritdoc/>
         public async Task Revoke(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken = default)
         {
-            DateTimeOffset revokedTime = DateTime.UtcNow;
+            DateTimeOffset revokedTime = DateTimeOffset.UtcNow;
 
             const string updateConsentRequestQuery = /*strpsql*/@"
                     UPDATE consent.consentrequest set status = 'revoked', revoked = @revokedTime  WHERE consentRequestId= @consentRequestId and status = 'accepted'";
@@ -437,7 +440,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = updateConsentRequestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            command.Parameters.AddWithValue("revokedTime", NpgsqlDbType.TimestampTz, revokedTime.ToOffset(TimeSpan.Zero));
+            command.Parameters.AddWithValue(PARAM_REVOKED_TIME, NpgsqlDbType.TimestampTz, revokedTime.ToOffset(TimeSpan.Zero));
             int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
 
             if (rowsAffected == 0)
