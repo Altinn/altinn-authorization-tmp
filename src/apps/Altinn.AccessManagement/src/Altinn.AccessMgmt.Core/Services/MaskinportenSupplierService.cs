@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -23,17 +24,18 @@ public class MaskinportenSupplierService(
     AppDbContext dbContext,
     ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor,
-    IConnectionService connectionService) : IMaskinportenSupplierService
+    IConnectionService connectionService,
+    ISingleRightsService singleRightsService) : IMaskinportenSupplierService
 {
     private const string MaskinportenSchemaTypeName = "MaskinportenSchema";
 
     /// <inheritdoc />
     public async Task<Result<AssignmentDto>> AddSupplier(Guid consumerId, Guid supplierId, CancellationToken cancellationToken = default)
     {
-        var (consumer, supplier) = await GetAndValidateOrganizations(consumerId, supplierId, cancellationToken);
-        if (consumer.IsProblem)
+        var (validation, _) = await GetAndValidateOrganizations(consumerId, supplierId, cancellationToken);
+        if (validation.IsProblem)
         {
-            return consumer.Problem;
+            return validation.Problem;
         }
 
         // Check if assignment already exists
@@ -84,23 +86,42 @@ public class MaskinportenSupplierService(
             return null;
         }
 
-        if (!cascade)
+        // Get all delegated resources for this supplier assignment
+        var assignedResources = await dbContext.AssignmentResources
+            .AsTracking()
+            .Where(p => p.AssignmentId == existingAssignment.Id)
+            .ToListAsync(cancellationToken);
+
+        if (assignedResources.Any())
         {
-            var hasAssignedResources = await dbContext.AssignmentResources
-                .AsNoTracking()
-                .Where(p => p.AssignmentId == existingAssignment.Id)
-                .AnyAsync(cancellationToken);
-
-            var problem = ValidationComposer.Validate(
-                ResourceValidation.HasAssignedResources(hasAssignedResources)
-            );
-
-            if (problem is { })
+            if (!cascade)
             {
-                return problem;
+                // Resources exist and cascade not requested - fail with validation error
+                return ValidationComposer.Validate(
+                    ResourceValidation.HasAssignedResources(true)
+                );
+            }
+
+            // Cascade: Revoke each delegated resource by clearing policy rules directly
+            // Cannot use ConnectionService.RemoveResource because it looks for RoleConstants.Rightholder,
+            // but supplier delegations use RoleConstants.Supplier
+            foreach (var assignmentResource in assignedResources)
+            {
+                // Clear delegation policy rules for this resource
+                var newVersion = await singleRightsService.ClearPolicyRules(
+                    assignmentResource.PolicyPath,
+                    assignmentResource.PolicyVersion,
+                    cancellationToken);
+
+                // Update version to track the clear operation
+                assignmentResource.PolicyVersion = newVersion;
+
+                // Remove the assignment resource record
+                dbContext.Remove(assignmentResource);
             }
         }
 
+        // All resources revoked (or none existed) - safe to delete the assignment
         dbContext.Remove(existingAssignment);
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -394,15 +415,24 @@ public class MaskinportenSupplierService(
             return Problems.MissingConnection;
         }
 
-        // Delegate all available rights
-        return await connectionService.AddResource(
+        // Write delegation policy rules directly to avoid double delegation check
+        // Cannot use ConnectionService.AddResource because it performs ResourceDelegationCheck
+        // without allowMaskinportenSchema=true, which would deny all MaskinportenSchema rights
+        var result = await singleRightsService.TryWriteDelegationPolicyRules(
             entities.Consumer,
             entities.Supplier,
             resourceObj,
-            new RightKeyListDto { DirectRightKeys = delegableRightKeys },
+            delegableRightKeys,
             by.Value,
-            configureConnection: null,
+            ignoreExistingPolicy: false,
             cancellationToken: cancellationToken);
+
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -438,12 +468,46 @@ public class MaskinportenSupplierService(
             );
         }
 
-        return await connectionService.RemoveResource(
-            consumerId,
-            supplierId,
-            resourceObj.Id,
-            configureConnection: null,
-            cancellationToken: cancellationToken);
+        // Find the supplier assignment (not rightholder)
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .Include(a => a.To)
+            .Where(a => a.FromId == consumerId)
+            .Where(a => a.ToId == supplierId)
+            .Where(a => a.RoleId == RoleConstants.Supplier.Id)  // Supplier, not Rightholder!
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            return null;  // No supplier assignment exists
+        }
+
+        // Find the assignment resource for this specific resource
+        var existingAssignmentResource = await dbContext.AssignmentResources
+            .AsTracking()
+            .Where(a => a.AssignmentId == assignment.Id)
+            .Where(a => a.ResourceId == resourceObj.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignmentResource is null)
+        {
+            return null;  // Resource not delegated to this supplier
+        }
+
+        // Clear delegation policy rules
+        var newVersion = await singleRightsService.ClearPolicyRules(
+            existingAssignmentResource.PolicyPath,
+            existingAssignmentResource.PolicyVersion,
+            cancellationToken);
+
+        existingAssignmentResource.PolicyVersion = newVersion;
+
+        // Remove the assignment resource
+        dbContext.Remove(existingAssignmentResource);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return null;
     }
 
     #region Private Helper Methods
