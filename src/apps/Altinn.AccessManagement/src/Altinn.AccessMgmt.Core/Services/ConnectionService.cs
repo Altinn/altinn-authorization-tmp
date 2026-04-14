@@ -892,7 +892,7 @@ public partial class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, CancellationToken cancellationToken = default)
+    public async Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default)
     {
         // Get fromParty
         MinimalParty fromParty = await partyService.GetByUid(party, cancellationToken);
@@ -935,7 +935,7 @@ public partial class ConnectionService(
         }        
 
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
-        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable;
+        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable || (allowMaskinportenSchema && isMaskinPortenSchema);
 
         // Decompose policy into resource/tasks
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
