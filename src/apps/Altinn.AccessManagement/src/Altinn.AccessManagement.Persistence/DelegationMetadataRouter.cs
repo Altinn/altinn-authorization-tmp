@@ -37,9 +37,7 @@ public sealed class DelegationMetadataRouter(
             ? "InstanceDelegation"
             : "ResourceDelegation";
 
-        // ResourceDelegation always uses EF now (ResourceDelegationEF feature flag removed)
-        // InstanceDelegation still checks the feature flag
-        var useEF = feature == "ResourceDelegation" || await policy.IsEnabledAsync(feature, "EF", "AccessManagement", ct);
+        var useEF = await policy.IsEnabledAsync(feature, "EF", "AccessManagement", ct);
 
         if (FeedMethods.Contains(methodName))
         {

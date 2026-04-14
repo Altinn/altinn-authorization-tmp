@@ -165,6 +165,11 @@ public static class AccessMgmtFeatureFlags
     public const string EnableRequestAssignmentPackage = "AccessMgmt.Controller.RequestAssignment.Package";
 
     /// <summary>
+    /// Specifies if entity framework implementation of resource delegations should be used.
+    /// </summary>
+    public const string ResourceDelegationEF = $"AccessManagement.ResourceDelegation.EF";
+
+    /// <summary>
     /// Specifies if entity framework implementation of instance delegations should be used.
     /// </summary>
     public const string InstanceDbEf = $"AccessManagement.InstanceDelegation.EF";
