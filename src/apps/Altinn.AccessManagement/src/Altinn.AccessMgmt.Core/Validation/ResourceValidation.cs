@@ -93,12 +93,11 @@ public static class ResourceValidation
         return null;
     };
 
-    internal static RuleExpression HasAssignedResources(IEnumerable<AssignmentResource> assignedResources, string paramName = "cascade") => () =>
+    internal static RuleExpression HasAssignedResources(bool hasAssignedResources, string paramName = "cascade") => () =>
     {
-        ArgumentNullException.ThrowIfNull(assignedResources);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (assignedResources.Any())
+        if (hasAssignedResources)
         {
             return (ref ValidationErrorBuilder errors) =>
             {

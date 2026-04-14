@@ -86,13 +86,13 @@ public class MaskinportenSupplierService(
 
         if (!cascade)
         {
-            var assignedResources = await dbContext.AssignmentResources
+            var hasAssignedResources = await dbContext.AssignmentResources
                 .AsNoTracking()
                 .Where(p => p.AssignmentId == existingAssignment.Id)
-                .ToListAsync(cancellationToken);
+                .AnyAsync(cancellationToken);
 
             var problem = ValidationComposer.Validate(
-                ResourceValidation.HasAssignedResources(assignedResources)
+                ResourceValidation.HasAssignedResources(hasAssignedResources)
             );
 
             if (problem is { })
@@ -314,7 +314,11 @@ public class MaskinportenSupplierService(
         }
 
         // Delegate to ConnectionService with allowMaskinportenSchema = true for MaskinportenSchema resources
-        // This allows delegation even if delegable=false, but still requires valid access rights
+        // This allows delegation even if delegable=false in Resource Registry, but still requires valid access rights.
+        // 
+        // Technical note: allowMaskinportenSchema bypasses the MaskinportenSchema denial logic in 
+        // ConnectionService.MapFromInternalToExternalRight, allowing rights to have Result=true
+        // when the caller has proper authorization. This enables AddResource to succeed with delegable rights.
         return await connectionService.ResourceDelegationCheck(
             authenticatedUserUuid,
             consumerId,
@@ -354,7 +358,9 @@ public class MaskinportenSupplierService(
 
         if (!resourceObj.Type.Name.Equals(MaskinportenSchemaTypeName, StringComparison.InvariantCultureIgnoreCase))
         {
-            return Problems.InvalidResource;
+            return ValidationComposer.Validate(
+                ResourceValidation.ResourceTypeIs(resourceObj, MaskinportenSchemaTypeName)
+            );
         }
 
         // Perform delegation check
