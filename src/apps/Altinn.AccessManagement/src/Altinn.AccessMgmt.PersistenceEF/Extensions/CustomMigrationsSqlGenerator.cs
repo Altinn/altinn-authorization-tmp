@@ -366,7 +366,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     private string GenerateGrants(string schema, string table)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, UPDATE ON TABLE {schema}.{table} TO platform_authorization;");
+        sb.AppendLine($"GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, REFERENCES ON TABLE {schema}.{table} TO platform_authorization;");
         return sb.ToString();
     }
 }
