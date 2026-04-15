@@ -120,7 +120,7 @@ public class MaskinportenSupplierService(
                     // All previously cleared policies remain cleared (no rollback mechanism)
                     // But database records are NOT deleted, maintaining partial consistency
                     return ValidationComposer.Validate(
-                        ResourceValidation.PolicyCascadeClearSucceeded(newVersion)
+                        ResourceValidation.PolicyCascadeClearFailed(newVersion)
                     );
                 }
 
@@ -518,7 +518,7 @@ public class MaskinportenSupplierService(
         {
             // Policy clear failed - do not delete DB record to maintain consistency
             return ValidationComposer.Validate(
-                ResourceValidation.PolicyClearSucceeded(newVersion, resource)
+                ResourceValidation.PolicyClearFailed(newVersion, resource)
             );
         }
 

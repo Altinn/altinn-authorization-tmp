@@ -122,7 +122,7 @@ public static class ResourceValidation
         };
     };
 
-    internal static RuleExpression PolicyClearSucceeded(string policyVersion, string resourceRefId, string paramName = "resource") => () =>
+    internal static RuleExpression PolicyClearFailed(string policyVersion, string resourceRefId, string paramName = "resource") => () =>
     {
         if (policyVersion is not null)
         {
@@ -135,7 +135,7 @@ public static class ResourceValidation
         };
     };
 
-    internal static RuleExpression PolicyCascadeClearSucceeded(string policyVersion, string paramName = "cascade") => () =>
+    internal static RuleExpression PolicyCascadeClearFailed(string policyVersion, string paramName = "cascade") => () =>
     {
         if (policyVersion is not null)
         {
