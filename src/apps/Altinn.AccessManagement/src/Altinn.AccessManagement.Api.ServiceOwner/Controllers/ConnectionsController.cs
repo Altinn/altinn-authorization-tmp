@@ -23,7 +23,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
     [ApiController]
     [Route("accessmanagement/api/v1/serviceowner/connections")]
     public class ConnectionsController(
-        IConnectionServiceServiceOwner connectionService,
+        IServiceOwnerConnectionService connectionService,
         IEntityService EntityService,
         IPackageService packageService,
         IOptions<ServiceOwnerDelegationSettings> serviceOwnerDelegationSettings

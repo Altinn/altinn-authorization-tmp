@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
-    public class ConnectionServiceServiceOwner(
-        AppDbContext dbContext) : IConnectionServiceServiceOwner
+    public class ServiceOwnerConnectionService(
+        AppDbContext dbContext) : IServiceOwnerConnectionService
     {
         /// <summary>
         /// Allows service owners to 
