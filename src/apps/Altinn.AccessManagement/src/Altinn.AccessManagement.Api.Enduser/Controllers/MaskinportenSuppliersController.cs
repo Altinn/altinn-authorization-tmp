@@ -194,7 +194,6 @@ public class MaskinportenSuppliersController(
         [Required][FromQuery(Name = "party")] Guid party,
         [FromQuery(Name = "supplier")] string? supplier = null,
         [FromQuery(Name = "resource")] string? resource = null,
-        [FromQuery(Name = "scope")] string? scope = null,
         CancellationToken cancellationToken = default)
     {
         Guid? supplierEntityId = null;
@@ -222,7 +221,7 @@ public class MaskinportenSuppliersController(
             resourceId = resourceEntity.Value.Id;
         }
 
-        var result = await maskinportenSupplierService.GetSupplierResources(party, supplierEntityId, resourceId, scope, cancellationToken);
+        var result = await maskinportenSupplierService.GetSupplierResources(party, supplierEntityId, resourceId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

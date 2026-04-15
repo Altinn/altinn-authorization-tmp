@@ -108,7 +108,6 @@ public class MaskinportenConsumersController(
         [Required][FromQuery(Name = "party")] Guid party,
         [FromQuery(Name = "consumer")] string? consumer = null,
         [FromQuery(Name = "resource")] string? resource = null,
-        [FromQuery(Name = "scope")] string? scope = null,
         CancellationToken cancellationToken = default)
     {
         Guid? consumerEntityId = null;
@@ -136,7 +135,7 @@ public class MaskinportenConsumersController(
             resourceId = resourceEntity.Value.Id;
         }
 
-        var result = await maskinportenSupplierService.GetConsumerResources(party, consumerEntityId, resourceId, scope, cancellationToken);
+        var result = await maskinportenSupplierService.GetConsumerResources(party, consumerEntityId, resourceId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

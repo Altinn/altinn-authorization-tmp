@@ -218,7 +218,6 @@ public class MaskinportenSupplierService(
         Guid consumerId,
         Guid? supplierId = null,
         Guid? resourceId = null,
-        string? scope = null,
         CancellationToken cancellationToken = default)
     {
         var consumer = await GetEntity(consumerId, cancellationToken);
@@ -230,15 +229,6 @@ public class MaskinportenSupplierService(
         if (!IsOrganization(consumer.Value))
         {
             return Problems.PartyNotFound;
-        }
-
-        // Scope filtering not yet implemented - requires Resource Registry integration
-        var problem = ValidationComposer.Validate(
-            ResourceValidation.ScopeFilterNotImplemented(scope)
-        );
-        if (problem is { })
-        {
-            return problem;
         }
 
         // Direct EF query for delegated resources
@@ -281,7 +271,6 @@ public class MaskinportenSupplierService(
         Guid supplierId,
         Guid? consumerId = null,
         Guid? resourceId = null,
-        string? scope = null,
         CancellationToken cancellationToken = default)
     {
         var supplier = await GetEntity(supplierId, cancellationToken);
@@ -293,15 +282,6 @@ public class MaskinportenSupplierService(
         if (!IsOrganization(supplier.Value))
         {
             return Problems.PartyNotFound;
-        }
-
-        // Scope filtering not yet implemented - requires Resource Registry integration
-        var problem = ValidationComposer.Validate(
-            ResourceValidation.ScopeFilterNotImplemented(scope)
-        );
-        if (problem is { })
-        {
-            return problem;
         }
 
         // Direct EF query for delegated resources
