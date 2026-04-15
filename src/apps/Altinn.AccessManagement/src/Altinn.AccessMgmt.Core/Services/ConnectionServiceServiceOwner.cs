@@ -36,8 +36,7 @@ namespace Altinn.AccessMgmt.Core.Services
                 };
 
                 await dbContext.Assignments.AddAsync(assignment, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken); // Save to get the ID
-            }
+             }
 
             // Check if package already assigned
             AssignmentPackage existingAssignmentPackage = await dbContext.AssignmentPackages
