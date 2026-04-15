@@ -131,7 +131,7 @@ public static class ResourceValidation
 
         return (ref ValidationErrorBuilder errors) =>
         {
-            errors.Add(ValidationErrors.PolicyClearFailed, $"POLICY/{paramName}", [new("resource", $"Failed to clear delegation policy for resource '{resourceRefId}'.")]);
+            errors.Add(ValidationErrors.PolicyClearFailed, $"QUERY/{paramName}", [new("resource", $"Failed to clear delegation policy for resource '{resourceRefId}'.")]);
         };
     };
 
@@ -144,7 +144,7 @@ public static class ResourceValidation
 
         return (ref ValidationErrorBuilder errors) =>
         {
-            errors.Add(ValidationErrors.PolicyClearFailed, $"POLICY/{paramName}", [new("assignmentResources", "Failed to clear delegation policies during cascade deletion.")]);
+            errors.Add(ValidationErrors.PolicyClearFailed, $"QUERY/{paramName}", [new("assignmentResources", "Failed to clear delegation policies during cascade deletion.")]);
         };
     };
 }

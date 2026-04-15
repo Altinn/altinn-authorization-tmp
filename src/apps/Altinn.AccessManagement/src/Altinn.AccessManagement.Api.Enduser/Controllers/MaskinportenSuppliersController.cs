@@ -140,8 +140,9 @@ public class MaskinportenSuppliersController(
         CancellationToken cancellationToken = default)
     {
         Guid authenticatedUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
+        string languageCode = this.GetLanguageCode();
 
-        var result = await maskinportenSupplierService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, cancellationToken: cancellationToken);
+        var result = await maskinportenSupplierService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, languageCode: languageCode, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
