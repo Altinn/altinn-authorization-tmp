@@ -8,9 +8,8 @@ using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -22,10 +21,10 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// </summary>
 public class MaskinportenSupplierService(
     AppDbContext dbContext,
-    ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor,
     IConnectionService connectionService,
-    ISingleRightsService singleRightsService) : IMaskinportenSupplierService
+    ISingleRightsService singleRightsService,
+    IEntityService entityService) : IMaskinportenSupplierService
 {
     private const string MaskinportenSchemaTypeName = "MaskinportenSchema";
 
@@ -160,22 +159,24 @@ public class MaskinportenSupplierService(
             return Problems.PartyNotFound;
         }
 
-        var connections = await connectionQuery.GetConnectionsAsync(
-            new ConnectionQueryFilter()
-            {
-                FromIds = [consumerId],
-                ToIds = supplierId.HasValue ? [supplierId.Value] : null,
-                RoleIds = [RoleConstants.Supplier.Id],
-                EnrichEntities = true,
-                IncludeKeyRole = true,
-                ExcludeDeleted = false,
-            },
-            ConnectionQueryDirection.ToOthers,
-            true,
-            cancellationToken
-        );
+        // Direct EF query for supplier assignments
+        var assignments = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.To)
+            .ThenInclude(e => e.Type)
+            .Include(a => a.Role)
+            .Where(a => a.FromId == consumerId)
+            .Where(a => a.RoleId == RoleConstants.Supplier.Id)
+            .WhereIf(supplierId.HasValue, a => a.ToId == supplierId.Value)
+            .ToListAsync(cancellationToken);
 
-        return DtoMapper.ConvertToOthers(connections, getSingle: supplierId.HasValue);
+        var suppliers = assignments.Select(a => new ConnectionDto
+        {
+            Party = DtoMapper.Convert(a.To),
+            Roles = new List<CompactRoleDto> { DtoMapper.ConvertCompactRole(a.Role) }
+        }).ToList();
+
+        return suppliers;
     }
 
     /// <inheritdoc />
@@ -192,22 +193,24 @@ public class MaskinportenSupplierService(
             return Problems.PartyNotFound;
         }
 
-        var connections = await connectionQuery.GetConnectionsAsync(
-            new ConnectionQueryFilter()
-            {
-                FromIds = consumerId.HasValue ? [consumerId.Value] : null,
-                ToIds = [supplierId],
-                RoleIds = [RoleConstants.Supplier.Id],
-                EnrichEntities = true,
-                IncludeKeyRole = true,
-                ExcludeDeleted = false,
-            },
-            ConnectionQueryDirection.FromOthers,
-            true,
-            cancellationToken
-        );
+        // Direct EF query for consumer assignments
+        var assignments = await dbContext.Assignments
+            .AsNoTracking()
+            .Include(a => a.From)
+            .ThenInclude(e => e.Type)
+            .Include(a => a.Role)
+            .Where(a => a.ToId == supplierId)
+            .Where(a => a.RoleId == RoleConstants.Supplier.Id)
+            .WhereIf(consumerId.HasValue, a => a.FromId == consumerId.Value)
+            .ToListAsync(cancellationToken);
 
-        return DtoMapper.ConvertFromOthers(connections, getSingle: consumerId.HasValue);
+        var consumers = assignments.Select(a => new ConnectionDto
+        {
+            Party = DtoMapper.Convert(a.From),
+            Roles = new List<CompactRoleDto> { DtoMapper.ConvertCompactRole(a.Role) }
+        }).ToList();
+
+        return consumers;
     }
 
     /// <inheritdoc />
@@ -229,41 +232,48 @@ public class MaskinportenSupplierService(
             return Problems.PartyNotFound;
         }
 
-        // Build resource filter (by ID or scope)
-        List<Guid>? resourceIds = null;
-        if (resourceId.HasValue)
-        {
-            resourceIds = [resourceId.Value];
-        }
-        else if (!string.IsNullOrWhiteSpace(scope))
-        {
-            resourceIds = await GetResourceIdsByScope(scope, cancellationToken);
-            if (resourceIds.Count == 0)
-            {
-                return new List<ResourcePermissionDto>(); // No matching resources
-            }
-        }
-
-        var connections = await connectionQuery.GetConnectionsAsync(
-            new ConnectionQueryFilter()
-            {
-                FromIds = [consumerId],
-                ToIds = supplierId.HasValue ? [supplierId.Value] : null,
-                RoleIds = [RoleConstants.Supplier.Id],
-                ResourceIds = resourceIds,
-                IncludeResources = true,
-                IncludeKeyRole = true,
-                EnrichEntities = true,
-            },
-            ConnectionQueryDirection.ToOthers,
-            true,
-            cancellationToken
+        // Scope filtering not yet implemented - requires Resource Registry integration
+        var problem = ValidationComposer.Validate(
+            ResourceValidation.ScopeFilterNotImplemented(scope)
         );
+        if (problem is { })
+        {
+            return problem;
+        }
 
-        var resources = DtoMapper.ConvertResources(connections);
+        // Direct EF query for delegated resources
+        var delegatedResources = await dbContext.AssignmentResources
+            .AsNoTracking()
+            .Include(ar => ar.Assignment)
+            .ThenInclude(a => a.To)
+            .ThenInclude(e => e.Type)
+            .Include(ar => ar.Assignment)
+            .ThenInclude(a => a.Role)
+            .Include(ar => ar.Resource)
+            .ThenInclude(r => r.Type)
+            .Where(ar => ar.Assignment.FromId == consumerId)
+            .Where(ar => ar.Assignment.RoleId == RoleConstants.Supplier.Id)
+            .Where(ar => ar.Resource.Type.Name == MaskinportenSchemaTypeName)
+            .WhereIf(supplierId.HasValue, ar => ar.Assignment.ToId == supplierId.Value)
+            .WhereIf(resourceId.HasValue, ar => ar.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        // Filter to only MaskinportenSchema resources
-        return resources.Where(r => r.Resource.Type?.Name == MaskinportenSchemaTypeName).ToList();
+        // Group by resource
+        var groupedByResource = delegatedResources
+            .GroupBy(ar => ar.ResourceId)
+            .Select(g => new ResourcePermissionDto
+            {
+                Resource = DtoMapper.Convert(g.First().Resource),
+                Permissions = g.Select(ar => new PermissionDto
+                {
+                    From = DtoMapper.Convert(consumer.Value),
+                    To = DtoMapper.Convert(ar.Assignment.To),
+                    Role = DtoMapper.ConvertCompactRole(ar.Assignment.Role)
+                }).ToList()
+            })
+            .ToList();
+
+        return groupedByResource;
     }
 
     /// <inheritdoc />
@@ -285,41 +295,48 @@ public class MaskinportenSupplierService(
             return Problems.PartyNotFound;
         }
 
-        // Build resource filter (by ID or scope)
-        List<Guid>? resourceIds = null;
-        if (resourceId.HasValue)
-        {
-            resourceIds = [resourceId.Value];
-        }
-        else if (!string.IsNullOrWhiteSpace(scope))
-        {
-            resourceIds = await GetResourceIdsByScope(scope, cancellationToken);
-            if (resourceIds.Count == 0)
-            {
-                return new List<ResourcePermissionDto>(); // No matching resources
-            }
-        }
-
-        var connections = await connectionQuery.GetConnectionsAsync(
-            new ConnectionQueryFilter()
-            {
-                FromIds = consumerId.HasValue ? [consumerId.Value] : null,
-                ToIds = [supplierId],
-                RoleIds = [RoleConstants.Supplier.Id],
-                ResourceIds = resourceIds,
-                IncludeResources = true,
-                IncludeKeyRole = true,
-                EnrichEntities = true,
-            },
-            ConnectionQueryDirection.FromOthers,
-            true,
-            cancellationToken
+        // Scope filtering not yet implemented - requires Resource Registry integration
+        var problem = ValidationComposer.Validate(
+            ResourceValidation.ScopeFilterNotImplemented(scope)
         );
+        if (problem is { })
+        {
+            return problem;
+        }
 
-        var resources = DtoMapper.ConvertResources(connections);
+        // Direct EF query for delegated resources
+        var delegatedResources = await dbContext.AssignmentResources
+            .AsNoTracking()
+            .Include(ar => ar.Assignment)
+            .ThenInclude(a => a.From)
+            .ThenInclude(e => e.Type)
+            .Include(ar => ar.Assignment)
+            .ThenInclude(a => a.Role)
+            .Include(ar => ar.Resource)
+            .ThenInclude(r => r.Type)
+            .Where(ar => ar.Assignment.ToId == supplierId)
+            .Where(ar => ar.Assignment.RoleId == RoleConstants.Supplier.Id)
+            .Where(ar => ar.Resource.Type.Name == MaskinportenSchemaTypeName)
+            .WhereIf(consumerId.HasValue, ar => ar.Assignment.FromId == consumerId.Value)
+            .WhereIf(resourceId.HasValue, ar => ar.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        // Filter to only MaskinportenSchema resources
-        return resources.Where(r => r.Resource.Type?.Name == MaskinportenSchemaTypeName).ToList();
+        // Group by resource
+        var groupedByResource = delegatedResources
+            .GroupBy(ar => ar.ResourceId)
+            .Select(g => new ResourcePermissionDto
+            {
+                Resource = DtoMapper.Convert(g.First().Resource),
+                Permissions = g.Select(ar => new PermissionDto
+                {
+                    From = DtoMapper.Convert(ar.Assignment.From),
+                    To = DtoMapper.Convert(supplier.Value),
+                    Role = DtoMapper.ConvertCompactRole(ar.Assignment.Role)
+                }).ToList()
+            })
+            .ToList();
+
+        return groupedByResource;
     }
 
     /// <inheritdoc />
@@ -382,25 +399,14 @@ public class MaskinportenSupplierService(
             return validation.Problem;
         }
 
-        // Validate resource is MaskinportenSchema
-        var resourceObj = await dbContext.Resources
-            .Include(r => r.Type)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.RefId == resource, cancellationToken);
-
-        if (resourceObj == null)
+        // Validate resource exists and is MaskinportenSchema
+        var resourceResult = await GetResourceByRefId(resource, cancellationToken);
+        if (resourceResult.IsProblem)
         {
-            return ValidationComposer.Validate(
-                ResourceValidation.ResourceExists(resourceObj, resource)
-            );
+            return resourceResult.Problem;
         }
 
-        if (!resourceObj.Type.Name.Equals(MaskinportenSchemaTypeName, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return ValidationComposer.Validate(
-                ResourceValidation.ResourceTypeIs(resourceObj, MaskinportenSchemaTypeName)
-            );
-        }
+        var resourceObj = resourceResult.Value;
 
         // Perform delegation check
         var by = await GetEntity(auditAccessor.AuditValues.ChangedBy, cancellationToken);
@@ -467,24 +473,13 @@ public class MaskinportenSupplierService(
         }
 
         // Validate resource exists and is MaskinportenSchema
-        var resourceObj = await dbContext.Resources
-            .Include(r => r.Type)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.RefId == resource, cancellationToken);
-
-        if (resourceObj == null)
+        var resourceResult = await GetResourceByRefId(resource, cancellationToken);
+        if (resourceResult.IsProblem)
         {
-            return ValidationComposer.Validate(
-                ResourceValidation.ResourceExists(resourceObj, resource)
-            );
+            return resourceResult.Problem as ValidationProblemInstance;
         }
 
-        if (!resourceObj.Type.Name.Equals(MaskinportenSchemaTypeName, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return ValidationComposer.Validate(
-                ResourceValidation.ResourceTypeIs(resourceObj, MaskinportenSchemaTypeName)
-            );
-        }
+        var resourceObj = resourceResult.Value;
 
         // Find the supplier assignment (not rightholder)
         var assignment = await dbContext.Assignments
@@ -556,12 +551,7 @@ public class MaskinportenSupplierService(
     /// <inheritdoc />
     public async Task<Result<Entity>> GetEntity(string organizationNumber, CancellationToken cancellationToken = default)
     {
-        var entity = await dbContext.Entities
-            .AsNoTracking()
-            .Include(e => e.Type)
-            .Where(e => e.RefId == organizationNumber)
-            .Where(e => e.TypeId == EntityTypeConstants.Organization.Id)
-            .FirstOrDefaultAsync(cancellationToken);
+        var entity = await entityService.GetByOrgNoWithType(organizationNumber, cancellationToken);
 
         if (entity is null)
         {
@@ -582,6 +572,14 @@ public class MaskinportenSupplierService(
         if (resource is null)
         {
             return Problems.InvalidResource;
+        }
+
+        // Validate that the resource is a MaskinportenSchema
+        if (!resource.Type.Name.Equals(MaskinportenSchemaTypeName, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return ValidationComposer.Validate(
+                ResourceValidation.ResourceTypeIs(resource, MaskinportenSchemaTypeName)
+            );
         }
 
         return resource;
@@ -618,21 +616,6 @@ public class MaskinportenSupplierService(
 
     private static bool IsOrganization(Entity entity)
         => entity.TypeId == EntityTypeConstants.Organization.Id;
-
-    private async Task<List<Guid>> GetResourceIdsByScope(string scope, CancellationToken cancellationToken)
-    {
-        // Fallback: Use exact RefId matching until authoritative scope metadata is available.
-        // This assumes RefId matches the Maskinporten scope claim (may not always be true).
-        // Future implementation should use proper scope claim storage and Resource Registry lookup.
-        var resources = await dbContext.Resources
-            .Include(r => r.Type)
-            .Where(r => r.Type.Name == MaskinportenSchemaTypeName)
-            .Where(r => r.RefId == scope) // Exact match only - no substring matching
-            .Select(r => r.Id)
-            .ToListAsync(cancellationToken);
-
-        return resources;
-    }
 
     #endregion
 }

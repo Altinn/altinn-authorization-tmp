@@ -148,5 +148,11 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor PolicyClearFailed { get; }
         = _factory.Create(34, "Failed to clear delegation policy rules.");
+
+    /// <summary>
+    /// Gets a validation error descriptor for when scope filtering is not yet implemented.
+    /// </summary>
+    public static ValidationErrorDescriptor ScopeFilterNotImplemented { get; }
+        = _factory.Create(35, "Scope filtering is not yet implemented. Use the 'resource' parameter to filter by specific resource identifier instead.");
 }
 

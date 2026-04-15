@@ -73,7 +73,7 @@ public class MaskinportenConsumersController(
     public async Task<IActionResult> RemoveConsumer(
         [Required][FromQuery(Name = "party")] Guid party,
         [Required][FromQuery(Name = "consumer")] string consumer,
-        [FromQuery(Name = "cascade")] bool cascade = true,
+        [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
         var consumerEntity = await maskinportenSupplierService.GetEntity(consumer, cancellationToken);

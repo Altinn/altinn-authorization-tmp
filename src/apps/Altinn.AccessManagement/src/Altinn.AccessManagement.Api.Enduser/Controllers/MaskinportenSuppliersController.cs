@@ -67,9 +67,23 @@ public class MaskinportenSuppliersController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetSuppliers(
         [Required][FromQuery(Name = "party")] Guid party,
+        [FromQuery(Name = "supplier")] string? supplier = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await maskinportenSupplierService.GetSuppliers(party, supplierId: null, cancellationToken);
+        Guid? supplierEntityId = null;
+
+        if (!string.IsNullOrWhiteSpace(supplier))
+        {
+            var supplierEntity = await maskinportenSupplierService.GetEntity(supplier, cancellationToken);
+            if (supplierEntity.IsProblem)
+            {
+                return supplierEntity.Problem.ToActionResult();
+            }
+
+            supplierEntityId = supplierEntity.Value.Id;
+        }
+
+        var result = await maskinportenSupplierService.GetSuppliers(party, supplierEntityId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -125,7 +139,7 @@ public class MaskinportenSuppliersController(
         [Required][FromQuery(Name = "resource")] string resource,
         CancellationToken cancellationToken = default)
     {
-        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        Guid authenticatedUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
 
         var result = await maskinportenSupplierService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, cancellationToken: cancellationToken);
         if (result.IsProblem)

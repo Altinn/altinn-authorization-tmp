@@ -147,4 +147,17 @@ public static class ResourceValidation
             errors.Add(ValidationErrors.PolicyClearFailed, $"POLICY/{paramName}", [new("assignmentResources", "Failed to clear delegation policies during cascade deletion.")]);
         };
     };
+
+    internal static RuleExpression ScopeFilterNotImplemented(string scope, string paramName = "scope") => () =>
+    {
+        if (string.IsNullOrWhiteSpace(scope))
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+        {
+            errors.Add(ValidationErrors.ScopeFilterNotImplemented, $"QUERY/{paramName}", [new("scope", "Scope filtering is not yet implemented. Use the 'resource' parameter to filter by specific resource identifier instead.")]);
+        };
+    };
 }
