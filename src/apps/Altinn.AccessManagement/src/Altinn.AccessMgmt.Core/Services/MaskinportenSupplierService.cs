@@ -582,6 +582,7 @@ public class MaskinportenSupplierService(
         var problem = ValidationComposer.Validate(
             EntityValidation.FromExists(consumer),
             EntityValidation.ToExists(supplier),
+            EntityValidation.FromIsNotTo(consumerId, supplierId, "party", "supplier"),
             EntityTypeValidation.FromIsOfType(consumer?.TypeId ?? Guid.Empty, [EntityTypeConstants.Organization.Id]),
             EntityTypeValidation.ToIsOfType(supplier?.TypeId ?? Guid.Empty, [EntityTypeConstants.Organization.Id])
         );
