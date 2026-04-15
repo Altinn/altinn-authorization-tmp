@@ -20,6 +20,7 @@ using Altinn.Platform.Authorization.Models.External;
 using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Interface;
 using Altinn.Platform.Authorization.Services.Interfaces;
+using Altinn.Platform.Authorization.Telemetry;
 using Altinn.Platform.Register.Models;
 using Altinn.Platform.Storage.Interface.Models;
 using AutoMapper;
@@ -403,7 +404,53 @@ namespace Altinn.Platform.Authorization.Controllers
                 await _eventLog.CreateAuthorizationEvent(_featureManager, decisionRequest, HttpContext, finalResponse, cancellationToken);
             }
 
+            await RecordPdpDecisionMetric(decisionRequest, cancellationToken);
+
             return finalResponse;
+        }
+
+        /// <summary>
+        /// Resolves the resource owner and resource identifier for the current decision request and records
+        /// a PDP decision counter increment so that PDP usage can be attributed back to the service owner of
+        /// the resource being protected.
+        /// </summary>
+        private async Task RecordPdpDecisionMetric(XacmlContextRequest decisionRequest, CancellationToken cancellationToken)
+        {
+            try
+            {
+                PolicyResourceType resourceType = PolicyHelper.GetPolicyResourceType(decisionRequest, out string resourceRegistryId, out string org, out string app);
+
+                string ownerOrg;
+                string resourceId;
+
+                switch (resourceType)
+                {
+                    case PolicyResourceType.AltinnApps:
+                        ownerOrg = string.IsNullOrEmpty(org) ? DecisionTelemetry.UnknownDimensionValue : org;
+                        resourceId = $"app_{org}_{app}";
+                        break;
+
+                    case PolicyResourceType.ResourceRegistry:
+                        // GetResourceAsync is cached in ResourceRegistryWrapper with the same TTL as policies,
+                        // so calls from IsAccessListAuthorized and from here collapse to a single cold lookup.
+                        ServiceResource resource = await _resourceRegistry.GetResourceAsync(resourceRegistryId, cancellationToken);
+                        ownerOrg = resource?.HasCompetentAuthority?.Orgcode ?? DecisionTelemetry.UnknownDimensionValue;
+                        resourceId = resourceRegistryId;
+                        break;
+
+                    default:
+                        ownerOrg = DecisionTelemetry.UnknownDimensionValue;
+                        resourceId = DecisionTelemetry.UnknownDimensionValue;
+                        break;
+                }
+
+                DecisionTelemetry.RecordDecision(ownerOrg, resourceId);
+            }
+            catch (Exception ex)
+            {
+                // Telemetry must never break the authorization flow.
+                _logger.LogWarning(ex, "// DecisionController // RecordPdpDecisionMetric // Failed to record PdpDecisions metric");
+            }
         }
 
         private async Task<bool> IsAccessListAuthorized(XacmlContextRequest decisionRequest, CancellationToken cancellationToken = default)
