@@ -41,7 +41,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
 
         [HttpPost("accesspackages")]
         [AuditServiceOwnerConsumer]
-        [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE)]
+        [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE)]
         [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

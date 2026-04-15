@@ -55,7 +55,7 @@ public class ServiceOwnerConnectionsControllerTest
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE));
                 claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier)));
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
@@ -288,7 +288,7 @@ public class ServiceOwnerConnectionsControllerTest
             var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
             {
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, "OTHER"));
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_WRITE));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE));
                 claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.BakerJohnsen.Entity.OrganizationIdentifier))); // Not in whitelist
             });
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
