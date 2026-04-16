@@ -1,7 +1,8 @@
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Tests.Constants;
 
+[Trait("Category", "Unit")]
 public class RoleConstantsTest
 {
     [Fact]

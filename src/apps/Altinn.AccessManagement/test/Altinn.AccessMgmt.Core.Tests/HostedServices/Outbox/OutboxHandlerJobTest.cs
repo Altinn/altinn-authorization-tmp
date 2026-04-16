@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.TestUtils.Fixtures;
+﻿using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core.HostedServices.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -11,6 +11,7 @@ namespace Altinn.AccessMgmt.Core.Tests.HostedServices.Outbox;
 /// <summary>
 /// <see cref="OutboxHandlerJob"/>
 /// </summary>
+[Trait("Category", "Integration")]
 public class OutboxHandlerJobTest : IClassFixture<ApiFixture>
 {
     public ApiFixture Fixture { get; }

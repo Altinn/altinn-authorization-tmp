@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
+[Trait("Category", "Integration")]
 public class ClientDelegationControllerTest
 {
     public const string Route = "accessmanagement/api/v1/enduser/clientdelegations";

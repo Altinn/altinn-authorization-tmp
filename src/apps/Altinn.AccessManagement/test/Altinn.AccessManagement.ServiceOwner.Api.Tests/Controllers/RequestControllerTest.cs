@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
+[Trait("Category", "Integration")]
 public class RequestControllerTest
 {
     public const string Route = "accessmanagement/api/v1/serviceowner/delegationrequests";

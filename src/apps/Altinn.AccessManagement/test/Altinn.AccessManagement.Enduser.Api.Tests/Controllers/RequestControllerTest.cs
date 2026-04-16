@@ -16,6 +16,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
+[Trait("Category", "Integration")]
 public class RequestControllerTest
 {
     public const string Route = "accessmanagement/api/v1/enduser/request";
