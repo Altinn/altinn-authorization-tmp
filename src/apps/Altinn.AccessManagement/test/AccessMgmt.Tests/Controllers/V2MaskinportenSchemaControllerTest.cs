@@ -6,6 +6,16 @@ using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Scenarios;
 using Altinn.AccessManagement.Tests.Seeds;
 
+// Audit:
+//   Pattern: A-isolated
+//   Mocks: (none direct — DelegationScenarios injects data via WebApplicationFixture)
+//   Writes: Yes (DelegationScenarios write delegation rows)
+//   Notes: ALL tests are already [Skip]ped (WebApplicationFixture cannot seed EF
+//          data needed by DelegationScenarios). Uses AcceptanceCriteriaComposer.
+//          Migration must replace DelegationScenarios seeding with direct EF seeds
+//          via EnsureSeedOnce<T> and replace AcceptanceCriteriaComposer with plain
+//          HTTP calls. Low priority — no tests are currently running.
+
 namespace Altinn.AccessManagement.Tests.Controllers;
 
 /// <summary>

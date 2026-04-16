@@ -21,6 +21,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 
+// Audit:
+//   Pattern: B
+//   Mocks: IPolicyRetrievalPoint, IDelegationMetadataRepository, IPolicyFactory,
+//          IPublicSigningKeyProvider, IPartiesClient, IProfileClient,
+//          IResourceRegistryClient, IAltinnRolesClient, IPDP,
+//          IAltinn2RightsClient, IDelegationChangeEventQueue,
+//          IAuthenticationClient, IAccessListsAuthorizationClient
+//   Writes: Yes (delegation POST endpoints mutate DB via mocked repositories)
+//   Notes: ~1600-line file. GetTestClient() calls WithWebHostBuilder per invocation
+//          (per-test host rebuild is the perf problem). Two test methods near line
+//          1557/1583 pass WithPDPMock as an additional action, giving them a
+//          different IPDP mock than the rest. Split into two inner classes:
+//          - WithDefaultMocks  (the majority of test methods, IPDP = PdpPermitMock)
+//          - WithPdpMock       (the two tests that pass WithPDPMock)
+//          Each inner class gets IClassFixture<ApiFixture> with ConfigureServices.
+
 namespace Altinn.AccessManagement.Tests.Controllers
 {
     /// <summary>

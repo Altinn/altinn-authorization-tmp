@@ -17,6 +17,17 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+// Audit:
+//   Pattern: A-isolated
+//   Mocks: IResourceMetadataRepository, IPublicSigningKeyProvider,
+//          IResourceRegistryClient, IPDP
+//   Writes: No (IResourceMetadataRepository is mocked; no real DB)
+//   Notes: Uses CustomWebApplicationFactory.WithWebHostBuilder in GetTestClient(),
+//          which is called in the constructor — rebuilds host once per test class
+//          instance. All test methods share the same mock configuration. Plain HTTP
+//          tests with static JSON files; no DelegationScenarios/AcceptanceCriteria.
+//          Clean migration to ApiFixture.ConfigureServices + BuildConfiguration.
+
 namespace Altinn.AccessManagement.Tests.Controllers
 {
     /// <summary>

@@ -4,6 +4,16 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Scenarios;
 
+// Audit:
+//   Pattern: A-isolated
+//   Mocks: (none direct — auth handled by AcceptanceCriteriaComposer/TokenScenario)
+//   Writes: Yes (POST upserts a resource; test asserts DB state)
+//   Notes: Uses AcceptanceCriteriaComposer.Test(Fixture) which calls
+//          WebApplicationFixture.ConfigureHostBuilderWithScenarios. Single
+//          test method with a single TheoryData row; scenarios are the same
+//          across all rows. After migration the AcceptanceCriteriaComposer
+//          call must be replaced by a direct HTTP call with a platform token.
+
 namespace Altinn.AccessManagement.Tests.Controllers;
 
 /// <summary>
