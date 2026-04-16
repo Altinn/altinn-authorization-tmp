@@ -105,6 +105,13 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
         services.AddScoped<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
         services.AddSingleton<IDelegationChangeEventQueue>(new DelegationChangeEventQueueMock());
 
+        // Replace the IAuditAccessor registration from production code with test version
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAuditAccessor));
+        if (descriptor != null)
+        {
+            services.Remove(descriptor);
+        }
+
         services.AddScoped<IAuditAccessor>(sp => new AuditAccessor
         {
             AuditValues = new AuditValues(SystemEntityConstants.StaticDataIngest.Entity.Id)
@@ -114,6 +121,11 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// <summary>
     /// Signalize usage of postgres server
     /// </summary>
+    /// <remarks>
+    /// Note: WebApplicationFixture does not seed test data. Tests that require EF delegation
+    /// with proper resource data should use ApiFixture instead, which seeds all necessary
+    /// test entities via TestDataSeeds.
+    /// </remarks>
     public Task InitializeAsync()
     {
         PostgresServer.StartUsing(this);

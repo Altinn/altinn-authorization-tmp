@@ -33,6 +33,13 @@ namespace Altinn.AccessManagement.Tests
 
             builder.ConfigureTestServices(services =>
             {
+                // Replace the IAuditAccessor registration from production code with test version
+                var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAuditAccessor));
+                if (descriptor != null)
+                {
+                    services.Remove(descriptor);
+                }
+
                 services.AddScoped<IAuditAccessor>(sp => new AuditAccessor
                 {
                     AuditValues = new AuditValues(SystemEntityConstants.StaticDataIngest.Entity.Id)

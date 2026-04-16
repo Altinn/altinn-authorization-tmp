@@ -24,7 +24,7 @@ public sealed class DelegationMetadataRouter(
         "GetNextPageInstanceDelegationChanges"
     };
 
-    private Task<T> Route<T>(string methodName, Func<IDelegationMetadataRepository, Task<T>> call, CancellationToken ct)
+    private Task<T> Route<T>(string methodName, Func<IDelegationMetadataRepository, Task<T>> call)
     {
         // Feed methods are not yet implemented in EF, use legacy implementation
         var useEF = !FeedMethods.Contains(methodName);
@@ -42,8 +42,7 @@ public sealed class DelegationMetadataRouter(
             CancellationToken cancellationToken = default)
             => Route(
                 nameof(InsertDelegation),
-                repo => repo.InsertDelegation(resourceMatchType, delegationChange, cancellationToken),
-                cancellationToken);
+                repo => repo.InsertDelegation(resourceMatchType, delegationChange, cancellationToken));
 
     public Task<List<InstanceDelegationChange>> GetAllLatestInstanceDelegationChanges(
         InstanceDelegationSource source, 
@@ -52,40 +51,35 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllLatestInstanceDelegationChanges),
-            repo => repo.GetAllLatestInstanceDelegationChanges(source, resourceID, instanceID, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllLatestInstanceDelegationChanges(source, resourceID, instanceID, cancellationToken));
 
     public Task<List<InstanceDelegationChange>> GetAllCurrentReceivedInstanceDelegations(
         List<Guid> toUuid, 
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllCurrentReceivedInstanceDelegations),
-            repo => repo.GetAllCurrentReceivedInstanceDelegations(toUuid, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllCurrentReceivedInstanceDelegations(toUuid, cancellationToken));
 
     public Task<InstanceDelegationChange> GetLastInstanceDelegationChange(
         InstanceDelegationChangeRequest request, 
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetLastInstanceDelegationChange),
-            repo => repo.GetLastInstanceDelegationChange(request, cancellationToken),
-            cancellationToken);
+            repo => repo.GetLastInstanceDelegationChange(request, cancellationToken));
 
     public Task<InstanceDelegationChange> InsertInstanceDelegation(
         InstanceDelegationChange instanceDelegationChange,
         CancellationToken cancellationToken = default)
         => Route(
             nameof(InsertInstanceDelegation),
-            repo => repo.InsertInstanceDelegation(instanceDelegationChange, cancellationToken),
-            cancellationToken);
+            repo => repo.InsertInstanceDelegation(instanceDelegationChange, cancellationToken));
 
     public Task<bool> InsertMultipleInstanceDelegations(
         List<PolicyWriteOutput> policyWriteOutputs,
         CancellationToken cancellationToken = default)
         => Route(
             nameof(InsertMultipleInstanceDelegations),
-            repo => repo.InsertMultipleInstanceDelegations(policyWriteOutputs, cancellationToken),
-            cancellationToken);
+            repo => repo.InsertMultipleInstanceDelegations(policyWriteOutputs, cancellationToken));
 
     public Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(
         List<string> resourceIds, 
@@ -94,8 +88,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetActiveInstanceDelegations),
-            repo => repo.GetActiveInstanceDelegations(resourceIds, from, to, cancellationToken),
-            cancellationToken);
+            repo => repo.GetActiveInstanceDelegations(resourceIds, from, to, cancellationToken));
 
     public Task<DelegationChange> GetCurrentDelegationChange(
         ResourceAttributeMatchType resourceMatchType, 
@@ -108,8 +101,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetCurrentDelegationChange),
-            repo => repo.GetCurrentDelegationChange(resourceMatchType, resourceId, offeredByPartyId, coveredByPartyId, coveredByUserId, toUuid, toUuidType, cancellationToken),
-            cancellationToken);
+            repo => repo.GetCurrentDelegationChange(resourceMatchType, resourceId, offeredByPartyId, coveredByPartyId, coveredByUserId, toUuid, toUuidType, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllCurrentAppDelegationChanges(
         List<int> offeredByPartyIds, 
@@ -120,8 +112,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllCurrentAppDelegationChanges),
-            repo => repo.GetAllCurrentAppDelegationChanges(offeredByPartyIds, altinnAppIds, coveredByPartyIds, coveredByUserIds, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllCurrentAppDelegationChanges(offeredByPartyIds, altinnAppIds, coveredByPartyIds, coveredByUserIds, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllCurrentAppDelegationChanges(
         List<string> altinnAppIds, 
@@ -131,8 +122,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllCurrentAppDelegationChanges),
-            repo => repo.GetAllCurrentAppDelegationChanges(altinnAppIds, fromPartyIds, toUuidType, toUuid, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllCurrentAppDelegationChanges(altinnAppIds, fromPartyIds, toUuidType, toUuid, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllCurrentResourceRegistryDelegationChanges(
         List<int> offeredByPartyIds, 
@@ -142,8 +132,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllCurrentResourceRegistryDelegationChanges),
-            repo => repo.GetAllCurrentResourceRegistryDelegationChanges(offeredByPartyIds, resourceRegistryIds, coveredByPartyIds, coveredByUserId, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllCurrentResourceRegistryDelegationChanges(offeredByPartyIds, resourceRegistryIds, coveredByPartyIds, coveredByUserId, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllCurrentResourceRegistryDelegationChanges(
         List<string> resourceRegistryIds, 
@@ -153,8 +142,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllCurrentResourceRegistryDelegationChanges),
-            repo => repo.GetAllCurrentResourceRegistryDelegationChanges(resourceRegistryIds, fromPartyIds, toUuidType, toUuid, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllCurrentResourceRegistryDelegationChanges(resourceRegistryIds, fromPartyIds, toUuidType, toUuid, cancellationToken));
 
     public Task<List<DelegationChange>> GetOfferedResourceRegistryDelegations(
         int offeredByPartyId, 
@@ -163,16 +151,14 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetOfferedResourceRegistryDelegations),
-            repo => repo.GetOfferedResourceRegistryDelegations(offeredByPartyId, resourceRegistryIds, resourceTypes, cancellationToken),
-            cancellationToken);
+            repo => repo.GetOfferedResourceRegistryDelegations(offeredByPartyId, resourceRegistryIds, resourceTypes, cancellationToken));
 
     public Task<List<DelegationChange>> GetOfferedDelegations(
         List<int> offeredByPartyIds, 
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetOfferedDelegations),
-            repo => repo.GetOfferedDelegations(offeredByPartyIds, cancellationToken),
-            cancellationToken);
+            repo => repo.GetOfferedDelegations(offeredByPartyIds, cancellationToken));
 
     public Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByPartys(
         List<int> coveredByPartyIds, 
@@ -182,8 +168,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetReceivedResourceRegistryDelegationsForCoveredByPartys),
-            repo => repo.GetReceivedResourceRegistryDelegationsForCoveredByPartys(coveredByPartyIds, offeredByPartyIds, resourceRegistryIds, resourceTypes, cancellationToken),
-            cancellationToken);
+            repo => repo.GetReceivedResourceRegistryDelegationsForCoveredByPartys(coveredByPartyIds, offeredByPartyIds, resourceRegistryIds, resourceTypes, cancellationToken));
 
     public Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByUser(
         int coveredByUserId, 
@@ -193,8 +178,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetReceivedResourceRegistryDelegationsForCoveredByUser),
-            repo => repo.GetReceivedResourceRegistryDelegationsForCoveredByUser(coveredByUserId, offeredByPartyIds, resourceRegistryIds, resourceTypes, cancellationToken),
-            cancellationToken);
+            repo => repo.GetReceivedResourceRegistryDelegationsForCoveredByUser(coveredByUserId, offeredByPartyIds, resourceRegistryIds, resourceTypes, cancellationToken));
 
     public Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(
         List<string> resourceIds, 
@@ -204,8 +188,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetResourceRegistryDelegationChanges),
-            repo => repo.GetResourceRegistryDelegationChanges(resourceIds, offeredByPartyId, coveredByPartyId, resourceType, cancellationToken),
-            cancellationToken);
+            repo => repo.GetResourceRegistryDelegationChanges(resourceIds, offeredByPartyId, coveredByPartyId, resourceType, cancellationToken));
 
     public Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(
         List<string> resourceIds,
@@ -215,8 +198,7 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetResourceRegistryDelegationChanges),
-            repo => repo.GetResourceRegistryDelegationChanges(resourceIds, offeredByPartyUuid, coveredByPartyUuid, resourceType, cancellationToken),
-            cancellationToken);
+            repo => repo.GetResourceRegistryDelegationChanges(resourceIds, offeredByPartyUuid, coveredByPartyUuid, resourceType, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllDelegationChangesForAuthorizedParties(
         List<int> coveredByUserIds, 
@@ -224,38 +206,33 @@ public sealed class DelegationMetadataRouter(
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllDelegationChangesForAuthorizedParties),
-            repo => repo.GetAllDelegationChangesForAuthorizedParties(coveredByUserIds, coveredByPartyIds, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllDelegationChangesForAuthorizedParties(coveredByUserIds, coveredByPartyIds, cancellationToken));
 
     public Task<List<DelegationChange>> GetAllDelegationChangesForAuthorizedParties(
         List<Guid> toPartyUuids, 
         CancellationToken cancellationToken = default)
         => Route(
             nameof(GetAllDelegationChangesForAuthorizedParties),
-            repo => repo.GetAllDelegationChangesForAuthorizedParties(toPartyUuids, cancellationToken),
-            cancellationToken);
+            repo => repo.GetAllDelegationChangesForAuthorizedParties(toPartyUuids, cancellationToken));
 
     public Task<List<DelegationChange>> GetNextPageAppDelegationChanges(
         long startFeedIndex,
         CancellationToken cancellationToken)
         => Route(
             nameof(GetNextPageAppDelegationChanges),
-            repo => repo.GetNextPageAppDelegationChanges(startFeedIndex, cancellationToken),
-            cancellationToken);
+            repo => repo.GetNextPageAppDelegationChanges(startFeedIndex, cancellationToken));
 
     public Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(
         long startFeedIndex,
         CancellationToken cancellationToken)
         => Route(
             nameof(GetNextPageResourceDelegationChanges),
-            repo => repo.GetNextPageResourceDelegationChanges(startFeedIndex, cancellationToken),
-            cancellationToken);
+            repo => repo.GetNextPageResourceDelegationChanges(startFeedIndex, cancellationToken));
 
     public Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(
         long startFeedIndex,
         CancellationToken cancellationToken)
         => Route(
             nameof(GetNextPageInstanceDelegationChanges),
-            repo => repo.GetNextPageInstanceDelegationChanges(startFeedIndex, cancellationToken),
-            cancellationToken);
+            repo => repo.GetNextPageInstanceDelegationChanges(startFeedIndex, cancellationToken));
 }
