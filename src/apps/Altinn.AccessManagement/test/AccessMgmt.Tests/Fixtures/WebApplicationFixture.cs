@@ -6,6 +6,8 @@ using Altinn.AccessManagement.Tests.Contexts;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Scenarios;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
@@ -103,7 +105,10 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
         services.AddScoped<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
         services.AddSingleton<IDelegationChangeEventQueue>(new DelegationChangeEventQueueMock());
 
-        services.AddScoped<IAuditAccessor, AuditAccessor>();
+        services.AddScoped<IAuditAccessor>(sp => new AuditAccessor
+        {
+            AuditValues = new AuditValues(SystemEntityConstants.StaticDataIngest.Entity.Id)
+        });
     }
 
     /// <summary>

@@ -1,4 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -31,7 +33,10 @@ namespace Altinn.AccessManagement.Tests
 
             builder.ConfigureTestServices(services =>
             {
-                services.AddScoped<IAuditAccessor, AuditAccessor>();
+                services.AddScoped<IAuditAccessor>(sp => new AuditAccessor
+                {
+                    AuditValues = new AuditValues(SystemEntityConstants.StaticDataIngest.Entity.Id)
+                });
             });
         }
     }
