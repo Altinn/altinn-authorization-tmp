@@ -643,7 +643,8 @@ public class AuthorizedPartiesServiceEf(
             return;
         }
 
-        bool useEF = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.InstanceDbEf);
+        // EF implementation is now always used
+        bool useEF = true;
 
         foreach (DelegationChange delegation in resourceDelegations)
         {

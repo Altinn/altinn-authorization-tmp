@@ -36,8 +36,6 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
                ["PostgreSQLSettings:EnableDBConnection"] = "true",
                ["Logging:LogLevel:*"] = "Error",
                ["FeatureManagement:AccessManagement.MigrationDbEf"] = "true",
-               ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "true",
-               ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "true",
                ["RunIntegrationTests"] = "true",
            });
 

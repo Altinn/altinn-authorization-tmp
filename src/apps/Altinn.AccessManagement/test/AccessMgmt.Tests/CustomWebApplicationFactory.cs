@@ -25,8 +25,6 @@ namespace Altinn.AccessManagement.Tests
             .AddInMemoryCollection(new Dictionary<string, string>
             {
                 ["Logging:LogLevel:*"] = "Warning",
-                ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "true",
-                ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "true",
             });
 
             builder.UseConfiguration(appsettings.Build());

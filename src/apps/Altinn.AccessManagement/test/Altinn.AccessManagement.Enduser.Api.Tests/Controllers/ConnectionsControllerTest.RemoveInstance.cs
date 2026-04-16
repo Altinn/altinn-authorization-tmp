@@ -50,7 +50,6 @@ public partial class ConnectionsControllerTest
         public RemoveInstance(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.InstanceDbEf);
             Fixture.ConfiureServices(services =>
             {
                 services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
