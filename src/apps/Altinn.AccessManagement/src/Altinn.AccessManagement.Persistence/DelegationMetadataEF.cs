@@ -961,6 +961,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             ResourceRegistryResourceType.BrokerService => "BrokerService",
             ResourceRegistryResourceType.CorrespondenceService => "CorrespondenceService",
             ResourceRegistryResourceType.Consent => "Consent",
+            ResourceRegistryResourceType.MigratedApp => "MigratedApp",
             _ => throw new ArgumentOutOfRangeException(nameof(resourceType), $"Not expected resource type value: {resourceType}"),
         };
     }
