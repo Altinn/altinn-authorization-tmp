@@ -48,9 +48,8 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
 
-        builder.Services.AddScoped<DelegationMetadataEF>();
         builder.Services.AddScoped<DelegationMetadataRepo>();
-        builder.Services.AddScoped<IDelegationMetadataRepository, DelegationMetadataRouter>();
+        builder.Services.AddScoped<IDelegationMetadataRepository, DelegationMetadataEF>();
 
         builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
