@@ -30,7 +30,7 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        _initializationTimer.Start();
+        _initializationTimer.Restart();
         var dbTimer = Stopwatch.StartNew();
         var db = PostgresServer.NewEFDatabase();
         dbTimer.Stop();
