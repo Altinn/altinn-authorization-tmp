@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessManagement.Api.ServiceOwner.Models;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Request a resource

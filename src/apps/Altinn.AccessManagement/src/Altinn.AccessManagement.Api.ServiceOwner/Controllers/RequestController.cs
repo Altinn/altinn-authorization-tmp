@@ -1,5 +1,4 @@
-﻿using Altinn.AccessManagement.Api.ServiceOwner.Models;
-using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
@@ -150,7 +149,7 @@ public class RequestController(
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            package: new RequestReferenceDto() { Id = packageObj.Id },
+            package: new RequestReferenceDto() { Id = packageObj.Id, ReferenceId = packageObj.Entity.Urn },
             ct: ct
             );
     }
