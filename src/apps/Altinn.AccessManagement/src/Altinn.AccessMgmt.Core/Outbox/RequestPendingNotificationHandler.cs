@@ -25,9 +25,9 @@ public class RequestPendingNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -105,7 +105,7 @@ public class RequestPendingNotificationHandler(
             entityRequester,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityRecipient.Id}_{entityRequester.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_pending_{entityRecipient.Id}_{entityRequester.Id}_{message.CreatedAt.Ticks}"
         );
 
         async Task<List<Resource>> GetResources(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
@@ -248,11 +248,6 @@ public class ResourceRequestPendingNotificationMessage
     /// Guid of package
     /// </summary>
     public IEnumerable<Guid> PackageIds { get; set; }
-
-    /// <summary>
-    /// Used for idempotency.
-    /// </summary>
-    public DateTime InitiatedAt { get; set; }
 
     /// <summary>
     /// Number of updates.
