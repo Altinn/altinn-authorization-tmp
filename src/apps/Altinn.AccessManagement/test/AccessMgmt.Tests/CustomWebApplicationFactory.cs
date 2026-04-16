@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Tests
 {
@@ -22,9 +25,16 @@ namespace Altinn.AccessManagement.Tests
             .AddInMemoryCollection(new Dictionary<string, string>
             {
                 ["Logging:LogLevel:*"] = "Warning",
+                ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "true",
+                ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "true",
             });
 
             builder.UseConfiguration(appsettings.Build());
+
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddScoped<IAuditAccessor, AuditAccessor>();
+            });
         }
     }
 }

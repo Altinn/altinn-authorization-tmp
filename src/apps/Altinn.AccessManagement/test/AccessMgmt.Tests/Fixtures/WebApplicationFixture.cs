@@ -1,11 +1,11 @@
 ﻿using System.Reflection;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Contexts;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Scenarios;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
@@ -36,8 +36,8 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
                ["PostgreSQLSettings:EnableDBConnection"] = "true",
                ["Logging:LogLevel:*"] = "Error",
                ["FeatureManagement:AccessManagement.MigrationDbEf"] = "true",
-               ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "false",
-               ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "false",
+               ["FeatureManagement:AccessManagement.InstanceDelegation.EF"] = "true",
+               ["FeatureManagement:AccessManagement.ResourceDelegation.EF"] = "true",
                ["RunIntegrationTests"] = "true",
            });
 
@@ -104,6 +104,8 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
         services.AddScoped<IAltinn2RightsClient, Altinn2RightsClientMock>();
         services.AddScoped<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
         services.AddSingleton<IDelegationChangeEventQueue>(new DelegationChangeEventQueueMock());
+
+        services.AddScoped<IAuditAccessor, AuditAccessor>();
     }
 
     /// <summary>
