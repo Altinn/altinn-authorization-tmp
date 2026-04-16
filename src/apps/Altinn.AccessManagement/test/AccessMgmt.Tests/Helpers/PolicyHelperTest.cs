@@ -13,6 +13,7 @@ namespace Altinn.AccessManagement.Tests.Helpers
     /// <summary>
     /// Test class for <see cref="PolicyHelper"></see>
     /// </summary>
+    [Trait("Category", "Unit")]
     public class PolicyHelperTest
     {
         private readonly PolicyRetrievalPointMock _policyRetrievalPointMock;

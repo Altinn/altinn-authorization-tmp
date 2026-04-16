@@ -2,6 +2,7 @@
 
 namespace Altinn.AccessManagement.Tests.Models
 {
+    [Trait("Category", "Unit")]
     [Collection("Models Test")]
     public class DelegationModelTest
     {

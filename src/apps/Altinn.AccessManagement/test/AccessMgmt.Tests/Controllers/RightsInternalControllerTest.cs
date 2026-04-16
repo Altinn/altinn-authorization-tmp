@@ -26,6 +26,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
     /// <summary>
     /// Test class for <see cref="RightsInternalController"></see>
     /// </summary>
+    [Trait("Category", "Integration")]
     [Collection("RightsInternalController Tests")]
     public class RightsInternalControllerTest : IClassFixture<CustomWebApplicationFactory<RightsInternalController>>
     {

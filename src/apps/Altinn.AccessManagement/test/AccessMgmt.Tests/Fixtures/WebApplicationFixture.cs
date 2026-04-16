@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -25,9 +26,15 @@ namespace Altinn.AccessManagement.Tests.Fixtures;
 /// </summary>
 public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private readonly Stopwatch _initializationTimer = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        _initializationTimer.Start();
+        var dbTimer = Stopwatch.StartNew();
         var db = PostgresServer.NewEFDatabase();
+        dbTimer.Stop();
+        Console.WriteLine($"[PERF] WebApplicationFixture: Database provisioning took {dbTimer.ElapsedMilliseconds}ms");
 
         var appsettings = new ConfigurationBuilder()
            .AddJsonFile("appsettings.test.json")
@@ -42,6 +49,8 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
            });
 
         builder.UseConfiguration(appsettings.Build());
+        _initializationTimer.Stop();
+        Console.WriteLine($"[PERF] WebApplicationFixture: Total initialization took {_initializationTimer.ElapsedMilliseconds}ms");
     }
 
     /// <summary>

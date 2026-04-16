@@ -3,6 +3,7 @@ using Altinn.Authorization.Api.Contracts.Register;
 
 namespace Altinn.AccessManagement.Tests.Models.Urn
 {
+    [Trait("Category", "Unit")]
     [Collection("Models Test")]
     public class OrganizationNumberTest
     {

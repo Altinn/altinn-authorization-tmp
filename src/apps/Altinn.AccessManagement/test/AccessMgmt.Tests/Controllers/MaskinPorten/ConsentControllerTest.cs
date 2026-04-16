@@ -31,6 +31,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
+    [Trait("Category", "Integration")]
     public class ConsentControllerTest : IClassFixture<WebApplicationFixture>
     {
         private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;

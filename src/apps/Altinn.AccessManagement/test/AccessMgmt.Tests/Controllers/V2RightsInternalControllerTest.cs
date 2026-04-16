@@ -11,6 +11,7 @@ namespace Altinn.AccessManagement.Tests.Controllers;
 /// <summary>
 /// <see cref="RightsInternalController"/>
 /// </summary>
+[Trait("Category", "Integration")]
 public class V2RightsInternalControllerTest(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
 {
     private WebApplicationFixture Fixture { get; } = fixture;

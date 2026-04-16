@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Tests.Controllers;
 
+[Trait("Category", "Integration")]
 public class AppsInstanceDelegationControllerTest : IClassFixture<CustomWebApplicationFactory<AppsInstanceDelegationController>>
 {
     private readonly CustomWebApplicationFactory<AppsInstanceDelegationController> _factory;

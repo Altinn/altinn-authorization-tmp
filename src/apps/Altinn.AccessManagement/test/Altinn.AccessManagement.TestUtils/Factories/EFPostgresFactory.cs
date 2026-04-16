@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -57,15 +58,20 @@ public static class EFPostgresFactory
     /// <exception cref="XunitException">Thrown when bootstrapping the primary database or roles fails.</exception>
     public static async Task<PostgresDatabase> Create()
     {
+        var totalTimer = Stopwatch.StartNew();
         await _semaphore.WaitAsync();
         try
         {
             if (!_isInitialized)
             {
+                var containerTimer = Stopwatch.StartNew();
                 await Server.StartAsync();
+                containerTimer.Stop();
+                Console.WriteLine($"[PERF] EFPostgresFactory: Container startup took {containerTimer.ElapsedMilliseconds}ms");
 
                 const string templateDb = "test_primary";
 
+                var roleTimer = Stopwatch.StartNew();
                 var roleResult = await Server.ExecScriptAsync($@"
                 DO $$
                     BEGIN
@@ -77,13 +83,19 @@ public static class EFPostgresFactory
                     END IF;
                 END $$;
                 ");
+                roleTimer.Stop();
+                Console.WriteLine($"[PERF] EFPostgresFactory: Role creation took {roleTimer.ElapsedMilliseconds}ms");
 
                 if (roleResult.ExitCode != 0 || !string.IsNullOrEmpty(roleResult.Stderr))
                 {
                     throw new XunitException($"Role init failed. Exitcode {roleResult.ExitCode}, Error {roleResult.Stderr}");
                 }
 
+                var createDbTimer = Stopwatch.StartNew();
                 var createDbResult = await Server.ExecScriptAsync($@"CREATE DATABASE {templateDb};");
+                createDbTimer.Stop();
+                Console.WriteLine($"[PERF] EFPostgresFactory: Template DB creation took {createDbTimer.ElapsedMilliseconds}ms");
+
                 if (createDbResult.ExitCode != 0 || !string.IsNullOrEmpty(createDbResult.Stderr))
                 {
                     throw new XunitException($"Create Db failed. Exitcode {createDbResult.ExitCode}, Error {createDbResult.Stderr}");
@@ -91,6 +103,7 @@ public static class EFPostgresFactory
 
                 var connString = new PostgresDatabase(templateDb, Server.GetConnectionString());
 
+                var migrationTimer = Stopwatch.StartNew();
                 using var sp = new ServiceCollection()
                     .AddAccessManagementDatabase(opts =>
                     {
@@ -102,9 +115,17 @@ public static class EFPostgresFactory
                 var audit = new AuditValues(SystemEntityConstants.StaticDataIngest);
                 using var db = sp.CreateEFScope(audit).ServiceProvider.GetRequiredService<AppDbContext>();
                 await db.Database.MigrateAsync();
+                migrationTimer.Stop();
+                Console.WriteLine($"[PERF] EFPostgresFactory: EF migrations took {migrationTimer.ElapsedMilliseconds}ms");
+
+                var seedTimer = Stopwatch.StartNew();
                 await TestDataSeeds.Exec(db);
+                seedTimer.Stop();
+                Console.WriteLine($"[PERF] EFPostgresFactory: Test data seeding took {seedTimer.ElapsedMilliseconds}ms");
+
                 NpgsqlConnection.ClearAllPools();
                 _isInitialized = true;
+                Console.WriteLine($"[PERF] EFPostgresFactory: Total initialization took {totalTimer.ElapsedMilliseconds}ms");
             }
         }
         finally
@@ -112,16 +133,24 @@ public static class EFPostgresFactory
             _semaphore.Release();
         }
 
+        var cloneTimer = Stopwatch.StartNew();
         var dbInstance = Interlocked.Increment(ref _databaseInstance);
         var dbName = $"test_{dbInstance}";
 
         var cloneResult = await Server.ExecScriptAsync($"CREATE DATABASE {dbName} WITH TEMPLATE test_primary OWNER {DbUserName};");
+        cloneTimer.Stop();
+
+        if (_databaseInstance <= 5)  // Log first 5 clones to avoid spam
+        {
+            Console.WriteLine($"[PERF] EFPostgresFactory: Database clone #{dbInstance} took {cloneTimer.ElapsedMilliseconds}ms");
+        }
 
         if (cloneResult.ExitCode != 0 || !string.IsNullOrEmpty(cloneResult.Stderr))
         {
             throw new XunitException($"create database with template failed. Exitcode {cloneResult.ExitCode}, Error {cloneResult.Stderr}");
         }
 
+        totalTimer.Stop();
         return new PostgresDatabase(dbName, Server.GetConnectionString());
     }
 }

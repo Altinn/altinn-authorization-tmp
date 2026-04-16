@@ -9,6 +9,7 @@ namespace Altinn.AccessManagement.Tests.Controllers;
 /// <summary>
 /// <see cref="ResourceController"/>
 /// </summary>
+[Trait("Category", "Integration")]
 public class V2ResourceControllerTest(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
 {
     private WebApplicationFixture Fixture { get; } = fixture;

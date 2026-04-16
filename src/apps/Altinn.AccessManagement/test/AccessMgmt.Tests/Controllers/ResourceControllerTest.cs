@@ -22,6 +22,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
     /// <summary>
     /// Tests for AccessManagmet Resource metadata
     /// </summary>
+    [Trait("Category", "Integration")]
     [Collection("ResourceController Tests")]
     public class ResourceControllerTest : IClassFixture<CustomWebApplicationFactory<ResourceController>>
     {

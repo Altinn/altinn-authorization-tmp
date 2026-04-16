@@ -18,4 +18,10 @@
 		<ProjectReference Include="..\..\src\Altinn.AccessManagement.Api.ServiceOwner\Altinn.AccessManagement.Api.ServiceOwner.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Update="xunit.runner.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>

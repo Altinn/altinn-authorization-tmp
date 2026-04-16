@@ -35,6 +35,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
     /// <summary>
     /// Test class for <see cref="MaskinportenSchemaController"></see>
     /// </summary>
+    [Trait("Category", "Integration")]
     [Collection("MaskinportenSchemaController Tests")]
     public class MaskinportenSchemaControllerTest : IClassFixture<CustomWebApplicationFactory<MaskinportenSchemaController>>
     {

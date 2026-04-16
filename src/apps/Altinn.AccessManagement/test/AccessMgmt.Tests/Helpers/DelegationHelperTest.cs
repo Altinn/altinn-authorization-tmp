@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Constants;
+﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Enums;
@@ -14,6 +14,7 @@ namespace Altinn.AccessManagement.Tests.Helpers
     /// <summary>
     /// Test class for <see cref="DelegationHelper"></see>
     /// </summary>
+    [Trait("Category", "Unit")]
     public class DelegationHelperTest
     {
         private PolicyRetrievalPointMock _prpMock = new PolicyRetrievalPointMock(new HttpContextAccessor(), new Mock<ILogger<PolicyRetrievalPointMock>>().Object);

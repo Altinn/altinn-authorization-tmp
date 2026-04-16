@@ -17,6 +17,7 @@ namespace Altinn.AccessManagement.Tests.Controllers;
 /// <summary>
 /// Test class for <see cref="PolicyInformationPointController"></see>
 /// </summary>
+[Trait("Category", "Integration")]
 public class PolicyInformationPointControllerTest : IClassFixture<CustomWebApplicationFactory<PolicyInformationPointController>>
 {
     private HttpClient _client;

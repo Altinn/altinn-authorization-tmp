@@ -11,6 +11,7 @@ namespace Altinn.AccessManagement.Tests.Controllers;
 /// <summary>
 /// <see cref="MaskinportenSchemaController"/>
 /// </summary>
+[Trait("Category", "Integration")]
 public class V2MaskinportenSchemaControllerTest(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
 {
     private WebApplicationFixture Fixture { get; } = fixture;

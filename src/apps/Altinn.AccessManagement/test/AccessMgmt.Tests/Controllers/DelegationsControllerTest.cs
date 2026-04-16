@@ -26,6 +26,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
     /// <summary>
     /// Test class for <see cref="DelegationsController"></see>
     /// </summary>
+    [Trait("Category", "Integration")]
     [Collection("DelegationController Tests")]
     public class DelegationsControllerTest : IClassFixture<CustomWebApplicationFactory<DelegationsController>>
     {
