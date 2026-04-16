@@ -3,7 +3,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
