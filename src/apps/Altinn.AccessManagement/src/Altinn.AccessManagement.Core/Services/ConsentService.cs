@@ -1111,7 +1111,11 @@ namespace Altinn.AccessManagement.Core.Services
                 else
                 {
                     resourceDetails = await _resourceRegistryClient.GetResources(cancellationToken, searchParam);
-                    _memoryCache.Set(cacheKey, resourceDetails, TimeSpan.FromHours(24));
+                    
+                    if (resourceDetails != null && resourceDetails.Count > 0)
+                    {
+                        _memoryCache.Set(cacheKey, resourceDetails, TimeSpan.FromHours(24));
+                    }
                 }
 
                 if (resourceDetails != null)
