@@ -75,7 +75,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<CreateResourceRequest>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -169,7 +169,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<GetSentRequests>(db =>
             {
                 var reqAssignment = new RequestAssignment
                 {
@@ -241,7 +241,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<GetReceivedResourceRequests>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -326,7 +326,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<RejectResourceRequest>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -392,7 +392,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<WithdrawRequest>(db =>
             {
                 var reqAssignment = new RequestAssignment
                 {
@@ -445,7 +445,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<ConfirmDraftRequest>(db =>
             {
                 var reqAssignment = new RequestAssignment
                 {

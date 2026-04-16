@@ -120,7 +120,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<CreateResourceRequestTest>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
@@ -351,7 +351,7 @@ public class RequestControllerTest
         {
             Fixture = fixture;
             EnableFeatureFlags(fixture);
-            fixture.EnsureSeedOnce(db =>
+            fixture.EnsureSeedOnce<GetValidUrnsThenCreateRequestTest>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
                 db.SaveChanges();
