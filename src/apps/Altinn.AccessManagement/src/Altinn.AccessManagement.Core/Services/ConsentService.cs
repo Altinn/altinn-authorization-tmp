@@ -946,7 +946,10 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            ValidateRequiredMetadata(ref problemsBuilder, consentRight, resourceDetails);
+            if (!fromAltinn2)
+            {
+                ValidateRequiredMetadata(ref problemsBuilder, consentRight, resourceDetails);
+            }
         }
 
         private static void ValidateRequiredMetadata(ref MultipleProblemBuilder problemsBuilder, ConsentRight consentRight, ServiceResource resourceDetails)
@@ -1034,6 +1037,12 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return requests;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Result<int>> GetConsentRequestCountForParty(Guid offeredByParty, ConsentRequestStatusType status, CancellationToken cancellationToken)
+        {
+            return await _consentRepository.GetConsentRequestCountForParty(offeredByParty, status, cancellationToken);
         }
 
         private List<ConsentRequestEvent> AddExpiredEventIfConsentIsExpired(List<ConsentRequestEvent> consentRequestEvents, DateTimeOffset validTo,  ConsentPartyUrn to)

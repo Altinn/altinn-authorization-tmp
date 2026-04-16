@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessManagement.Persistence;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -13,7 +14,7 @@ using ResourceRegistryResourceType = Altinn.AccessManagement.Core.Models.Resourc
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
 /// <inheritdoc/>
-public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbContext) : IDelegationMetadataRepository
+public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbContext, DelegationMetadataRepo LegacyRepo) : IDelegationMetadataRepository
 {
     private string ConvertFromAppResourceId(string resourceId)
     {
@@ -57,6 +58,42 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
             OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
             
+            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
+            PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
+            PerformedByUserId = assignmentResource.ChangedBy.UserId,
+            PerformedByUuidType = ConvertEntityTypeToUuidType(assignmentResource.ChangedBy.TypeId),
+
+            DelegationChangeType = DelegationChangeType.Grant,
+
+            ToUuid = assignmentResource.Assignment.ToId,
+            ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
+            CoveredByUserId = assignmentResource.Assignment.To.UserId,
+            CoveredByPartyId = assignmentResource.Assignment.To.UserId.HasValue ? null : assignmentResource.Assignment.To.PartyId, // If CoveredByUserId already has value skip setting CoveredByPartyId as old logic expects only one of these
+        };
+    }
+
+    private DelegationChange ConvertForAuthorizedParties(AssignmentResource assignmentResource)
+    {
+        return new DelegationChange()
+        {
+            DelegationChangeId = assignmentResource.Resource.Type.Name == "AltinnApp"
+            ? assignmentResource.DelegationChangeId
+            : 0,
+            ResourceRegistryDelegationChangeId = assignmentResource.Resource.Type.Name != "AltinnApp"
+            ? assignmentResource.DelegationChangeId
+            : 0,
+            Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
+
+            ResourceId = assignmentResource.Resource.RefId,
+
+            ResourceType = assignmentResource.Resource.Type.Name,
+            BlobStoragePolicyPath = assignmentResource.PolicyPath,
+            BlobStorageVersionId = assignmentResource.PolicyVersion,
+
+            FromUuid = assignmentResource.Assignment.FromId,
+            FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
+            OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,
+
             PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
             PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
             PerformedByUserId = assignmentResource.ChangedBy.UserId,
@@ -895,23 +932,20 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
           .Where(t => t.Assignment.RoleId == RoleConstants.Rightholder)
           .ToListAsync(cancellationToken);
 
-        return result.Select(Convert).ToList();
+        return result.Select(ConvertForAuthorizedParties).ToList();
     }
 
-    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageAppDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageAppDelegationChanges(startFeedIndex, cancellationToken);
 
-    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageResourceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageResourceDelegationChanges(startFeedIndex, cancellationToken);
 
-    Task<List<InstanceDelegationChange>> IDelegationMetadataRepository.GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageInstanceDelegationChanges(startFeedIndex, cancellationToken);
 
     private static string MapResourceTypeToResourceTypeName(ResourceRegistryResourceType resourceType)
     {
