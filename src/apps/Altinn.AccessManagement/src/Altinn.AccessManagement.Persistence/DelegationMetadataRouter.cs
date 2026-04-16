@@ -3,27 +3,20 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence;
-using Altinn.AccessManagement.Persistence.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
+/// <summary>
+/// Router that directs delegation metadata operations to the appropriate implementation.
+/// Most operations use the EF implementation, but feed methods still use legacy implementation
+/// as they are not yet implemented in EF.
+/// </summary>
 public sealed class DelegationMetadataRouter(
-    ILegacyRoutingPolicy policy,
     DelegationMetadataEF delegationMetadataEF,
     DelegationMetadataRepo delegationMetadataRepo
     ) : IDelegationMetadataRepository
 {
-    private static readonly HashSet<string> InstanceMethods = new(StringComparer.Ordinal)
-    {
-        "InsertInstanceDelegation",
-        "GetLastInstanceDelegationChange",
-        "GetAllCurrentReceivedInstanceDelegations",
-        "GetAllLatestInstanceDelegationChanges",
-        "InsertMultipleInstanceDelegations",
-        "GetActiveInstanceDelegations",
-    };
-
     private static readonly HashSet<string> FeedMethods = new(StringComparer.Ordinal)
     {
         "GetNextPageAppDelegationChanges",
@@ -31,24 +24,16 @@ public sealed class DelegationMetadataRouter(
         "GetNextPageInstanceDelegationChanges"
     };
 
-    private async Task<T> Route<T>(string methodName, Func<IDelegationMetadataRepository, Task<T>> call, CancellationToken ct)
+    private Task<T> Route<T>(string methodName, Func<IDelegationMetadataRepository, Task<T>> call, CancellationToken ct)
     {
-        string feature = InstanceMethods.Contains(methodName)
-            ? "InstanceDelegation"
-            : "ResourceDelegation";
-
-        var useEF = await policy.IsEnabledAsync(feature, "EF", "AccessManagement", ct);
-
-        if (FeedMethods.Contains(methodName))
-        {
-            useEF = false;
-        }
+        // Feed methods are not yet implemented in EF, use legacy implementation
+        var useEF = !FeedMethods.Contains(methodName);
 
         var target = useEF
             ? (IDelegationMetadataRepository)delegationMetadataEF
             : (IDelegationMetadataRepository)delegationMetadataRepo;
 
-        return await call(target);
+        return call(target);
     }
 
     public Task<DelegationChange> InsertDelegation(
