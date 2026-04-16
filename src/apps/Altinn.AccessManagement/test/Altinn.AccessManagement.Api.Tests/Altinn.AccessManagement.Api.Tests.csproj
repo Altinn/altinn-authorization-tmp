@@ -18,4 +18,8 @@
 		<ProjectReference Include="..\..\src\Altinn.AccessManagement.Api.Enduser\Altinn.AccessManagement.Api.Enduser.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
+	</ItemGroup>
+
 </Project>

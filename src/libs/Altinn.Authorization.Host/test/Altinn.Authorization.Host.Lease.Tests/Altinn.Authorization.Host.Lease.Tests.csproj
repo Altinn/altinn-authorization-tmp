@@ -3,5 +3,9 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
 </Project>

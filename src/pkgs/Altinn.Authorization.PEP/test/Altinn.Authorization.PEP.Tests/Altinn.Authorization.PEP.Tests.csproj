@@ -16,4 +16,8 @@
         <ProjectReference Include="..\..\src\Altinn.Authorization.PEP\Altinn.Authorization.PEP.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
 </Project>

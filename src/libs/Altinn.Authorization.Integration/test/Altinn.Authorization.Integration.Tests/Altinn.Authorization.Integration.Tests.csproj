@@ -8,6 +8,7 @@
         <None Update="testsettings.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
