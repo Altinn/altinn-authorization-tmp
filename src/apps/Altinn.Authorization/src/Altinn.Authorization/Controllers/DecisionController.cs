@@ -386,6 +386,12 @@ namespace Altinn.Platform.Authorization.Controllers
 
             XacmlContextResponse finalResponse = delegationContextResponse ?? rolesContextResponse;
             XacmlContextResult finalResult = finalResponse.Results.First();
+
+            // Recorded before the access-list early-return below so that every exit path with a
+            // computed decision is counted. The metric is dimensioned on the request, not the
+            // response, so its placement does not depend on which response is ultimately returned.
+            await RecordPdpDecisionMetric(decisionRequest, cancellationToken);
+
             if (finalResult.Decision.Equals(XacmlContextDecision.Permit) && !await IsAccessListAuthorized(decisionRequest, cancellationToken))
             {
                 return new XacmlContextResponse(new XacmlContextResult(XacmlContextDecision.Deny)
@@ -403,8 +409,6 @@ namespace Altinn.Platform.Authorization.Controllers
             {
                 await _eventLog.CreateAuthorizationEvent(_featureManager, decisionRequest, HttpContext, finalResponse, cancellationToken);
             }
-
-            await RecordPdpDecisionMetric(decisionRequest, cancellationToken);
 
             return finalResponse;
         }
