@@ -422,7 +422,7 @@ namespace Altinn.Platform.Authorization.Controllers
         {
             try
             {
-                PolicyResourceType resourceType = PolicyHelper.GetPolicyResourceType(decisionRequest, out string resourceRegistryId, out string org, out string app);
+                PolicyResourceType resourceType = PolicyHelper.GetPolicyResourceType(decisionRequest, out string policyResourceId, out string org, out string app);
 
                 string ownerOrg;
                 string resourceId;
@@ -437,9 +437,9 @@ namespace Altinn.Platform.Authorization.Controllers
                     case PolicyResourceType.ResourceRegistry:
                         // GetResourceAsync is cached in ResourceRegistryWrapper with the same TTL as policies,
                         // so calls from IsAccessListAuthorized and from here collapse to a single cold lookup.
-                        ServiceResource resource = await _resourceRegistry.GetResourceAsync(resourceRegistryId, cancellationToken);
+                        ServiceResource resource = await _resourceRegistry.GetResourceAsync(policyResourceId, cancellationToken);
                         ownerOrg = resource?.HasCompetentAuthority?.Orgcode ?? DecisionTelemetry.UnknownDimensionValue;
-                        resourceId = resourceRegistryId;
+                        resourceId = policyResourceId;
                         break;
 
                     default:
