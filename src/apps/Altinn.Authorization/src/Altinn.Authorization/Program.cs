@@ -300,6 +300,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
         logger.LogInformation("Startup // ApplicationInsightsConnectionString = {applicationInsightsConnectionString}", applicationInsightsConnectionString);
     }
 
+    services.AddSingleton<DecisionTelemetry>();
     services.ConfigureOpenTelemetryMeterProvider(provider => provider.AddMeter(DecisionTelemetry.MeterName));
 
     services.AddMvc(options =>

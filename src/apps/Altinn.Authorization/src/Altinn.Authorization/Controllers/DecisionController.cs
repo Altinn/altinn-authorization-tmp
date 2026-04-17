@@ -51,6 +51,7 @@ namespace Altinn.Platform.Authorization.Controllers
         private readonly IResourceRegistry _resourceRegistry;
         private readonly IRegisterService _registerService;
         private readonly IAccessListAuthorization _accessListAuthorization;
+        private readonly DecisionTelemetry _decisionTelemetry;
         private readonly IMapper _mapper;
 
         private readonly SortedDictionary<string, AuthInfo> _appInstanceInfo = new();
@@ -77,6 +78,7 @@ namespace Altinn.Platform.Authorization.Controllers
         /// <param name="memoryCache">memory cache</param>
         /// <param name="eventLog">the authorization event logger</param>
         /// <param name="featureManager">the feature manager</param>
+        /// <param name="decisionTelemetry">PDP decision metric recorder</param>
         /// <param name="mapper">The model mapper</param>
         public DecisionController(
             IAccessManagementWrapper accessManagement,
@@ -91,6 +93,7 @@ namespace Altinn.Platform.Authorization.Controllers
             IMemoryCache memoryCache,
             IEventLog eventLog,
             IFeatureManager featureManager,
+            DecisionTelemetry decisionTelemetry,
             IMapper mapper)
         {
             _pdp = new PolicyDecisionPoint();
@@ -105,6 +108,7 @@ namespace Altinn.Platform.Authorization.Controllers
             _resourceRegistry = resourceRegistry;
             _registerService = registerService;
             _accessListAuthorization = accessListAuthorization;
+            _decisionTelemetry = decisionTelemetry;
             _mapper = mapper;
         }
 
@@ -448,7 +452,7 @@ namespace Altinn.Platform.Authorization.Controllers
                         break;
                 }
 
-                DecisionTelemetry.RecordDecision(ownerOrg, resourceId);
+                _decisionTelemetry.RecordDecision(ownerOrg, resourceId);
             }
             catch (Exception ex)
             {
