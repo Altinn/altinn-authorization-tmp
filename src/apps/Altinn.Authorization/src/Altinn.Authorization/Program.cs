@@ -26,7 +26,7 @@ using Altinn.Platform.Telemetry;
 using AltinnCore.Authentication.JwtCookie;
 
 using Azure.Identity;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Azure.Security.KeyVault.Secrets;
 
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -290,10 +290,12 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
         services.AddApplicationInsightsTelemetryProcessor<IdentityTelemetryFilter>();
         services.AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
 
-        // OpenTelemetry pipeline for System.Diagnostics.Metrics instruments (e.g. PDP decision metrics)
-        // shipped to Azure Monitor alongside the classic Application Insights SDK.
+        // Metrics-only OpenTelemetry pipeline for System.Diagnostics.Metrics instruments (e.g. PDP
+        // decision metrics) shipped to Azure Monitor. Traces and logs continue to flow through the
+        // classic Application Insights SDK above to avoid duplicate ingestion.
         services.AddOpenTelemetry()
-            .UseAzureMonitor(options => options.ConnectionString = applicationInsightsConnectionString);
+            .WithMetrics(metrics => metrics
+                .AddAzureMonitorMetricExporter(options => options.ConnectionString = applicationInsightsConnectionString));
 
         logger.LogInformation("Startup // ApplicationInsightsConnectionString = {applicationInsightsConnectionString}", applicationInsightsConnectionString);
     }
