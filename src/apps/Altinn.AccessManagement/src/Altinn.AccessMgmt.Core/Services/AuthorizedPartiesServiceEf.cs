@@ -71,53 +71,30 @@ public class AuthorizedPartiesServiceEf(
         switch (subject.TypeId)
         {
             case var id when id == EntityTypeConstants.Person.Id:
-                List<Guid> keyRoleEntities = [];
-                if (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True)
-                {
-                    // Persons can have key roles for other parties, meaning they inherit access to others via these parties.
-                    var keyRoleAssignments = await repoService.GetKeyRoleAssignments(subject.Id, cancellationToken);
-                    keyRoleEntities = keyRoleAssignments.Select(t => t.FromId).Distinct().ToList();
 
-                    // Also get any sub-units of key role entities
-                    if (keyRoleEntities.Count > 0)
-                    {
-                        var subUnits = await repoService.GetSubunits(keyRoleEntities, cancellationToken);
-                        keyRoleEntities.AddRange(subUnits.Select(t => t.Id));
-                    }
-                }
-
-                return await GetAuthorizedParties(filter, subject, keyRoleEntities, cancellationToken);
+                return await GetAuthorizedParties(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.EnterpriseUser.Id:
 
-                // Enterprise user can also have key role (ECKeyRole) for their organization. Will still need to get these via SBL Bridge until A2-role import is complete.
-                IEnumerable<Entity> eckeyroleEntities = [];
-                if (subject.UserId.HasValue && (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True))
-                {
-                    // A2 lookup of key role parties includes subunits by default
-                    List<int> keyRolePartyIds = await contextRetrievalService.GetKeyRolePartyIds(subject.UserId.Value, cancellationToken);
-                    eckeyroleEntities = await repoService.GetEntitiesByPartyIds(keyRolePartyIds, cancellationToken);
-                }
-
-                return await GetAuthorizedParties(filter, subject, eckeyroleEntities.Select(t => t.Id), cancellationToken);
+                return await GetAuthorizedParties(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.Organization.Id:
 
                 // Organizations can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
-                return await GetAuthorizedParties(filter, subject, null, cancellationToken);
+                return await GetAuthorizedParties(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.SystemUser.Id:
 
                 // System users can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
-                return await GetAuthorizedParties(filter, subject, null, cancellationToken);
+                return await GetAuthorizedParties(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.SelfIdentified.Id:
 
-                // SelfIdentified users can only have Altinn 2 roles (for themselves) for now.
-                filter.IncludeAltinn3 = false;
-                return await GetAuthorizedParties(filter, subject, null, cancellationToken);
+                // SelfIdentified are fully imported to Altinn 3 so no longer need to check Altinn 2.
+                filter.IncludeAltinn2 = false;
+                return await GetAuthorizedParties(filter, subject, cancellationToken);
 
             default:
                 throw new ArgumentException(message: $"Unknown party type: {subject.Type.Name}", paramName: nameof(subject));
@@ -349,7 +326,7 @@ public class AuthorizedPartiesServiceEf(
         return partyUuids;
     }
 
-    private async Task<List<AuthorizedParty>> GetAuthorizedParties(AuthorizedPartiesFilters filter, Entity userSubject, IEnumerable<Guid> orgSubjectParties = null, CancellationToken cancellationToken = default)
+    private async Task<List<AuthorizedParty>> GetAuthorizedParties(AuthorizedPartiesFilters filter, Entity userSubject, CancellationToken cancellationToken = default)
     {
         Task<(IEnumerable<AuthorizedParty> A2AuthorizedParties, Dictionary<Guid, Entity> AllA2Parties)> a2Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, Entity>()));
         Task<(IEnumerable<AuthorizedParty> A3AuthorizedParties, Dictionary<Guid, AuthorizedParty> AllA3Parties)> a3Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, AuthorizedParty>()));
@@ -373,7 +350,7 @@ public class AuthorizedPartiesServiceEf(
         {
             a3Task = Task.Run(async () =>
             {
-                var (allA3Parties, a3AuthorizedParties) = await GetAltinn3AuthorizedParties(filter, userSubject.Id, orgSubjectParties?.ToList(), cancellationToken);
+                var (allA3Parties, a3AuthorizedParties) = await GetAltinn3AuthorizedParties(filter, userSubject.Id, cancellationToken);
                 return (a3AuthorizedParties, allA3Parties);
             });
         }
@@ -461,7 +438,6 @@ public class AuthorizedPartiesServiceEf(
     private async Task<Tuple<Dictionary<Guid, AuthorizedParty>, IEnumerable<AuthorizedParty>>> GetAltinn3AuthorizedParties(
         AuthorizedPartiesFilters filter,
         Guid toId,
-        List<Guid> toOrgs = null,
         CancellationToken cancellationToken = default)
     {
         List<ConnectionQueryExtendedRecord> connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
