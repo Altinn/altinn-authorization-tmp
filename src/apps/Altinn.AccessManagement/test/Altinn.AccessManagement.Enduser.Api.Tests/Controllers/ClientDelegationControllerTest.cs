@@ -782,7 +782,7 @@ public class ClientDelegationControllerTest
 
                 var agentFromVerdiqToOrjan = new Assignment()
                 {
-                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
                     ToId = TestEntities.PersonOrjan,
                     RoleId = RoleConstants.Agent,
                 };
@@ -809,7 +809,7 @@ public class ClientDelegationControllerTest
                 var delegationFromNordisToOrjan = new AccessMgmt.PersistenceEF.Models.Delegation()
                 {
                     FromId = rightholderfromNordisToVerdiq.Id,
-                    ToId = agentFromVerdiqToPaula.Id,
+                    ToId = agentFromVerdiqToOrjan.Id,
                     FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
                 };
 
@@ -876,6 +876,37 @@ public class ClientDelegationControllerTest
             Assert.All(problem.Errors, error =>
             {
                 Assert.Equal(ValidationErrors.DelegationHasActiveConnections.ErrorCode, error.ErrorCode);
+            });
+        }
+
+        [Fact]
+        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeTrue_ReturnsOk()
+        {
+            // Create Delegation
+            var client = CreateClient();
+
+            // Ensure delegation exists
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Where(a => a.To.ToId == TestEntities.PersonOrjan)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(delegation);
+            });
+
+            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonOrjan}&cascade=true", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            // Ensure delegation has been deleted.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Where(a => a.To.ToId == TestEntities.PersonOrjan)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.Null(delegation);
             });
         }
     }

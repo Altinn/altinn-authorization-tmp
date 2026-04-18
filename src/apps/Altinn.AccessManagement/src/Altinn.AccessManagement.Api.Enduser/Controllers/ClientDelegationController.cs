@@ -117,6 +117,7 @@ public class ClientDelegationController(
     {
         return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
         
+        // Uncomment once the frontend has migrated to the new endpoints
         // var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
         // if (partyUuid == Guid.Empty)
         // {

@@ -20,10 +20,10 @@ public class DelegationConfiguration : IEntityTypeConfiguration<Delegation>
         builder.PropertyWithReference(navKey: t => t.To, foreignKey: t => t.ToId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Facilitator, foreignKey: t => t.FacilitatorId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
 
-        builder
-            .HasMany(b => b.DelegationPackages)
-            .WithOne(b => b.Delegation)
-            .HasForeignKey(b => b.DelegationId);
+        builder.HasMany(t => t.DelegationPackages)
+            .WithOne(t => t.Delegation)
+            .HasForeignKey(t => t.DelegationId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(t => new { t.FromId, t.ToId, t.FacilitatorId }).IsUnique();
         builder.HasIndex(t => new { t.ToId }).IncludeProperties(["Id", "FromId"]);
