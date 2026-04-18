@@ -475,6 +475,12 @@ module "appsettings" {
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
+    {
+      name        = "AccessManagement.AuthorizedParties.IncludeAltinn2"
+      description = "Specifies if AuthorizedParty should still perform SBL Bridge lookup of AuthorizedParties from Altinn 2."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
   ]
   providers = {
     azurerm.hub = azurerm.hub

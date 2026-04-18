@@ -119,7 +119,8 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
             IncludePackages = filters?.IncludeAccessPackages == true || filters?.PackageFilter?.Keys?.Count > 0,
-            IncludeResources = false,
+            IncludeResources = true,
+            IncludeInstances = true,
             EnrichPackageResources = false,
             ExcludeDeleted = false
         },
