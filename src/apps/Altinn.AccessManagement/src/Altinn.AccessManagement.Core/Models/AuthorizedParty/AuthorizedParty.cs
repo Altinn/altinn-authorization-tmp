@@ -52,9 +52,6 @@ public class AuthorizedParty
         PartyUuid = sblAuthorizedParty.PartyUuid.Value;
         Name = sblAuthorizedParty.Name;
         Type = (AuthorizedPartyType)sblAuthorizedParty.PartyTypeName;
-        SortedAuthorizedRoles = new SortedList<string, string>(
-            sblAuthorizedParty.AuthorizedRoles?.ToDictionary(role => role, role => role) ?? new Dictionary<string, string>()
-        );
 
         if (Type == AuthorizedPartyType.Organization)
         {
@@ -257,34 +254,6 @@ public class AuthorizedParty
     }
 
     /// <summary>
-    /// Enriches this authorized party and any subunits with a resource access
-    /// </summary>
-    /// <param name="resourceId">The resource ID to add to the authorized party (and any subunits) list of authorized resources</param>
-    public void EnrichWithResourceAccess(string resourceId)
-    {
-        if (string.IsNullOrWhiteSpace(resourceId))
-        {
-            return;
-        }
-
-        resourceId = MapAppIdToResourceId(resourceId);
-        OnlyHierarchyElementWithNoAccess = false;
-
-        if (!SortedAuthorizedResources.ContainsKey(resourceId))
-        {
-            SortedAuthorizedResources.Add(resourceId, resourceId);
-        }
-
-        if (Subunits != null)
-        {
-            foreach (var subunit in Subunits)
-            {
-                subunit.EnrichWithResourceAccess(resourceId);
-            }
-        }
-    }
-
-    /// <summary>
     /// Enriches this authorized party and any subunits with resource accesses
     /// </summary>
     /// <param name="resourceIds">The resource IDs to add to the authorized party (and any subunits) list of authorized resources</param>
@@ -295,15 +264,10 @@ public class AuthorizedParty
             return;
         }
 
-        resourceIds = resourceIds.Select(MapAppIdToResourceId).ToList();
         OnlyHierarchyElementWithNoAccess = false;
-
-        foreach (var resourceId in resourceIds)
+        foreach (var resourceId in resourceIds.Where(resourceId => !SortedAuthorizedResources.ContainsKey(resourceId)))
         {
-            if (!SortedAuthorizedResources.ContainsKey(resourceId))
-            {
-                SortedAuthorizedResources.Add(resourceId, resourceId);
-            }
+            SortedAuthorizedResources.Add(resourceId, resourceId);
         }
 
         if (Subunits != null)
@@ -339,17 +303,6 @@ public class AuthorizedParty
                 InstanceRef = instanceRef
             });
         }
-    }
-
-    private static string MapAppIdToResourceId(string altinnAppId)
-    {
-        string[] orgAppSplit = altinnAppId.Split('/');
-        if (orgAppSplit.Length == 2)
-        {
-            return $"app_{orgAppSplit[0]}_{orgAppSplit[1]}";
-        }
-
-        return altinnAppId;
     }
 
     /// <summary>

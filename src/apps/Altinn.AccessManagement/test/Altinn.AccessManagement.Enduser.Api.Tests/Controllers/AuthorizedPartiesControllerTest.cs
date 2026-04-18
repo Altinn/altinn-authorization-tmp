@@ -403,14 +403,14 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
 
     /// <summary>
     /// Josephine requests authorized parties with both includeResources and includeInstances.
-    /// Kaos should have instances populated (from seed) but resources empty since includeResources is not set.
+    /// Kaos should have both resources and instances populated (from seed).
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsJosephineWithIncludeResourcesAndInstances_ReturnsKaosWithInstancesButNoResources()
+    public async Task GetAuthorizedParties_AsJosephineWithIncludeResourcesAndInstances_ReturnsKaosWithBothResourcesAndInstances()
     {
         HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
 
-        HttpResponseMessage response = await client.GetAsync($"{Route}?includeInstances=true", TestContext.Current.CancellationToken);
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeResources=true&includeInstances=true", TestContext.Current.CancellationToken);
         string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
 
@@ -419,7 +419,9 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
 
         AuthorizedPartyDto kaos = result.Items.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
         Assert.NotNull(kaos);
-        Assert.Empty(kaos.AuthorizedResources);
+        Assert.True(kaos.AuthorizedResources.Count >= 2, $"Expected at least 2 resources but got {kaos.AuthorizedResources.Count}. Response: {content}");
+        Assert.Contains("app_skd_sirius-skattemelding-v1", kaos.AuthorizedResources);
+        Assert.Contains("app_mat_mattilsynet-baker-konditorvare", kaos.AuthorizedResources);
         Assert.True(kaos.AuthorizedInstances.Count >= 2, $"Expected at least 2 instances but got {kaos.AuthorizedInstances.Count}. Response: {content}");
         Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1");
         Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare");
