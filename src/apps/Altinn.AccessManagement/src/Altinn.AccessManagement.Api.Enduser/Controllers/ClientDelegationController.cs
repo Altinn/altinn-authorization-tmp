@@ -277,7 +277,7 @@ public class ClientDelegationController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveAgent(
+    public async Task<IActionResult> RemoveAgentsClient(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "from")][Required] Guid from,
         [FromQuery(Name = "to")][Required] Guid to,
