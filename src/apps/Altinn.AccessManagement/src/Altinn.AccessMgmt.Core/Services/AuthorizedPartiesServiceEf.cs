@@ -361,7 +361,7 @@ public class AuthorizedPartiesServiceEf(
         var a3Result = await a3Task;
 
         // Since EF does not support parallel use of DbContexts, we need to fetch the Altinn 2 parties separately here
-        if (filter.IncludeAltinn2 && a2Result.A2AuthorizedParties.Count() > 0)
+        if (filter.IncludeAltinn2 && a2Result.A2AuthorizedParties.Any())
         {
             List<Guid> a2PartyUuids = a2Result.A2AuthorizedParties.Select(p => p.PartyUuid).Distinct().ToList();
             a2PartyUuids.AddRange(a2Result.A2AuthorizedParties.SelectMany(p => p.Subunits).Select(su => su.PartyUuid).Distinct());
@@ -377,12 +377,11 @@ public class AuthorizedPartiesServiceEf(
             a2Result.A2AuthorizedParties,
             a2Result.AllA2Parties,
             a3Result.A3AuthorizedParties,
-            a3Result.AllA3Parties,
-            filter
+            a3Result.AllA3Parties
         );
     }
 
-    private List<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties, AuthorizedPartiesFilters filters)
+    private List<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties)
     {
         List<AuthorizedParty> result = a3AuthorizedParties.ToList();
 
@@ -542,7 +541,7 @@ public class AuthorizedPartiesServiceEf(
 
                 if (filters.IncludeAccessPackages && connection.Packages != null && connection.Packages.Count > 0)
                 {
-                    party.EnrichWithAccessPackage(connection.Packages.DistinctBy(p => p.Id).Select(p => p.Urn.Split(":").Last()));
+                    party.EnrichWithAccessPackage(connection.Packages.DistinctBy(p => p.Id).Select(p => PackageConstants.TryGetById(p.Id, out var package) ? package.Entity.Code : null).Where(p => p != null));
                 }
 
                 if (filters.IncludeResources && connection.Resources != null && connection.Resources.Count > 0)
