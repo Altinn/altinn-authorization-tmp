@@ -5,6 +5,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
@@ -20,7 +21,12 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/resourceowner")]
-public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAuthorizedPartiesController> logger, IMapper mapper, IAuthorizedPartiesService authorizedPartiesService, IProviderService providerService) : ControllerBase
+public class ResourceOwnerAuthorizedPartiesController(
+    ILogger<ResourceOwnerAuthorizedPartiesController> logger,
+    IMapper mapper,
+    [FromKeyedServices("newConnectionQueryOnlyImplementation")] IAuthorizedPartiesService newConnectionQueryOnlyImplementation,
+    [FromKeyedServices("oldDelegationMetadataEfImplementation")] IAuthorizedPartiesService oldDelegationMetadataEfImplementation,
+    IProviderService providerService) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
@@ -69,6 +75,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
     {
         try
         {
+            var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
             BaseAttribute subjectAttribute = new BaseAttribute(subject.Type, subject.Value);
 
             if (orgCode != null)
