@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -119,8 +120,8 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
             IncludePackages = filters?.IncludeAccessPackages == true || filters?.PackageFilter?.Keys?.Count > 0,
-            IncludeResources = filters?.IncludeResources == true || filters?.ResourceFilter?.Keys?.Count > 0,
-            IncludeInstances = filters?.IncludeInstances == true || filters?.ResourceFilter?.Keys?.Count > 0,
+            IncludeResources = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? filters?.IncludeResources == true || filters?.ResourceFilter?.Keys?.Count > 0 : false,
+            IncludeInstances = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? filters?.IncludeInstances == true || filters?.ResourceFilter?.Keys?.Count > 0 : false,
             EnrichPackageResources = false,
             ExcludeDeleted = false
         },

@@ -83,6 +83,7 @@ async Task PersistenceFeatures()
 
     // Delete me after june 19th and Altinn 2 is no more
     AuthorizedPartiesSettings.IncludeAltinn2 = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesIncludeAltinn2);
+    AuthorizedPartiesSettings.UsingConnectionQueryOnly = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesUsingConnectionQueryOnly);
 }
 
 /// <summary>
