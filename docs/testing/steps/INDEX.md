@@ -11,11 +11,6 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 16):** Phase 2.2–2.3 kicked off. Migration **plan + recipe** documented, and
-> `ResourceControllerTest` migrated to `ApiFixture` as proof-of-concept (7/7 tests pass under Podman).
-> Sub-steps 16.1–16.5 queued in [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) —
-> each is a 2–3-class batch sized for a single chat.
-
 **When completing a step:**
 
 - **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) describing the goal,
