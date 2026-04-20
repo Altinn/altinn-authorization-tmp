@@ -36,8 +36,20 @@
   done). For each obsolete doc, either delete it and update links, or add a
   banner at the top pointing to the step that replaced it.
 - **Commit and push** at the end of each step.
-- **Wait for explicit go-ahead** before proceeding to the next step.
 - **Recommend whether a new chat should be started** for the next step, based on complexity and context.
+- **If a new chat is recommended, provide this ready-to-copy prompt** to hand off
+  cleanly (don't rewrite it — `INDEX.md` already carries all the context):
+
+  > Continue the testing infrastructure overhaul on branch
+  > `feature/2842_Optimize_Test_Infrastructure_and_Performance`.
+  >
+  > Start by reading `docs/testing/steps/INDEX.md` — it's the entry point and tells
+  > you exactly what to read next, how to pick the next step, and the workflow
+  > rules for completing one.
+  >
+  > Then execute the highest-priority item from
+  > `### Recommended Next Steps (priority order)` in that file.
+- **Wait for explicit go-ahead** before proceeding to the next step.
 
 **Picking the next step (when the list below is thinning):**
 
@@ -66,8 +78,8 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 4 | ✅ | Mock deduplication audit | Phase 3 | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
 | 5 | ✅ | Coverage infrastructure (`dotnet-coverage`, `run-coverage.ps1`) | Phase 5 | [Coverage_Infrastructure.md](Coverage_Infrastructure.md) |
 | 6 | ✅ | Test patterns, naming convention & csproj cleanup | Phase 4 | [Test_Patterns_and_Naming.md](Test_Patterns_and_Naming.md) |
-| 7 | ✅ | Maximize code coverage (actionable items) | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
-| 8 | ✅ | CI coverage threshold (6.6) | Phase 6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
+| 7 | ✅ | Maximize code coverage (actionable items) | Phase 6.1–6.5 | [Maximize_Coverage.md](Maximize_Coverage.md) |
+| 8 | ✅ | CI coverage threshold (6.6) | Phase 6.6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
 | 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
 | 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 | 11 | ✅ | Certificate consolidation — Authorization.Tests (M8) | Phase 3.5 | [Certificate_Consolidation.md](Certificate_Consolidation.md) |
