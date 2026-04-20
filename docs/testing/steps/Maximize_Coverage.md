@@ -301,12 +301,76 @@ Next candidates:
 
 ---
 
-## Next Step
+## Final Coverage Results (measured)
 
-Sub-step 6.7f is **complete** (ContextHandler unit tests, +35 tests).
+| Assembly | Line% Before | Line% After | Branch% Before | Branch% After | Threshold |
+|---|---|---|---|---|---|
+| **Altinn.Authorization** | 62.77 | **70.91** | 63.50 | **70.93** | 60% ✅ |
+| **Altinn.Authorization.ABAC** | 62.91 | **63.41** | 61.29 | **63.83** | 60% ✅ |
+| **Altinn.Authorization.PEP** | 60.20 | **77.75** | 56.25 | **76.10** | 75% ✅ |
 
-Next candidates:
-- **6.1** (full baseline, needs Docker)
-- **6.5** (Host.Lease, needs storage account)
-- Additional service-layer coverage (complex orchestration methods in `ContextHandler.EnrichSubjectAttributes`)
-- Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
+All CI thresholds exceeded. Total new tests: **184** Authorization + **52** PEP = **236 new tests**.
+
+## Test Quality Assessment
+
+| Category | Tests | % of new |
+|---|---|---|
+| **Real logic** (parsing, branching, mapping — zero or incidental mocks) | ~137 | ~74% |
+| **Mock-wiring / thin delegation** (verify service called) | ~51 | ~26% |
+
+Weakest tests (candidates for future pruning):
+- Cached lookup forwarders in `ContextHandlerUnitTest` (6 tests) — trivial delegation
+- `AccessListAuthorizationTest` (5 tests) — logic is just null-check + `.Any()`
+- `PDPAppSITest` (4 tests) — mostly mock wiring, real work in `AuthorizationApiClient`
+
+## Phase 6 Status: ✅ Complete (actionable items)
+
+Phase 6 coverage maximization is **done** for all projects that don't require Docker or
+external storage accounts. Remaining sub-steps are blocked on infrastructure:
+
+| Sub-step | Status | Blocker |
+|---|---|---|
+| 6.1 Full baseline | ⬜ | Docker (AccessMgmt Testcontainers) |
+| 6.2 Triage uncovered logic | ⬜ | Depends on 6.1 |
+| 6.5 Host.Lease tests | ⬜ | Azure Storage account |
+| 6.7g AccessManagement coverage | ⬜ | Docker |
+
+---
+
+## Recommended Next Steps (priority order)
+
+These recommendations are based on the audit findings in
+[TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md) and
+diminishing returns from additional test writing.
+
+### Priority 1: Phase 2.4 — Shared Fixture for Authorization.Tests
+> **Impact:** High — fixes audit issue **M5** (factory rebuilt per-test)
+
+`Authorization.Tests` has 6 integration tests that each call `GetTestClient()`,
+rebuilding `CustomWebApplicationFactory` per test. Creating an `AuthorizationFixture`
+(equivalent to `ApiFixture` from TestUtils) would:
+- Share the test server across all integration tests in a class
+- Make future integration test writing feasible
+- Prepare for Phase 2.5 (retire `CustomWebApplicationFactory`)
+
+No Docker needed. Pure refactoring of existing test infrastructure.
+
+### Priority 2: Phase 3.2–3.4 — Mock Dedup Implementation
+> **Impact:** Medium — fixes audit issue **C4** (mock duplication)
+
+The mock audit (Step 4) identified 9+ duplicated mock interfaces across 3 directories.
+Now that coverage sprints are done, we know exactly which mocks are used where.
+Consolidate canonical mocks into `TestUtils` or a new `Authorization.TestUtils` library.
+
+### Priority 3: Phase 4 Cleanup — Dead Code & Suppressions
+> **Impact:** Low effort, good hygiene — fixes **L1**, **L2**, **L3**
+
+- Clean up `GlobalSuppressions.cs` files (move to `.editorconfig` or fix)
+- Remove `Compile Remove`, `None Remove`, empty `Folder` includes in csproj
+- Quick wins from the original audit
+
+### Priority 4: Blocked Items (when infrastructure available)
+
+- **6.1 + 6.7g**: AccessManagement coverage (requires Docker)
+- **6.5**: Host.Lease tests (requires Azure Storage account)
+- **Phase 2.2–2.3**: AccessMgmt.Tests WAF consolidation (complex, Docker-dependent)

@@ -11,16 +11,32 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 4 | ✅ | Mock deduplication audit | Phase 3 | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
 | 5 | ✅ | Coverage infrastructure (`dotnet-coverage`, `run-coverage.ps1`) | Phase 5 | [Coverage_Infrastructure.md](Coverage_Infrastructure.md) |
 | 6 | ✅ | Test patterns, naming convention & csproj cleanup | Phase 4 | [Test_Patterns_and_Naming.md](Test_Patterns_and_Naming.md) |
-| 7 | 🔄 | Maximize code coverage | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
+| 7 | ✅ | Maximize code coverage (actionable items) | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
 | 8 | ✅ | CI coverage threshold (6.6) | Phase 6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
 
-### Next Step
+### Final Coverage (measured)
 
-**Step 7 — Maximize Code Coverage (Phase 6)** is in progress.
-Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), **6.6** (CI threshold enforcement), **6.7a** (Authorization infra/utility +30 tests), **6.7b** (Authorization models/services +23 tests), **6.7c** (PolicyInformationPoint +7 tests), **6.7d** (AccessListAuthorization +5 tests), **6.7e** (DelegationContextHandler +18 tests), and **6.7f** (ContextHandler unit tests +35 tests).
-Next actionable: **6.1 full baseline** (needs Docker), **6.5 Host.Lease tests** (needs storage account), or return to deferred work.
+| Assembly | Line% | Branch% | Threshold | Status |
+|---|---|---|---|---|
+| Altinn.Authorization | 70.91 | 70.93 | 60% | ✅ |
+| Altinn.Authorization.ABAC | 63.41 | 63.83 | 60% | ✅ |
+| Altinn.Authorization.PEP | 77.75 | 76.10 | 75% | ✅ |
 
-See [Maximize_Coverage.md → Next Step](Maximize_Coverage.md#next-step) for details.
+**236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
+
+### Recommended Next Steps (priority order)
+
+1. **Phase 2.4 — Shared fixture for Authorization.Tests** (high impact, no Docker)
+   - Fixes audit issue M5: factory rebuilt per-test. Create `AuthorizationFixture`.
+2. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
+   - Consolidate 9+ duplicated mock interfaces into shared library.
+3. **Phase 4 cleanup — dead code & suppressions** (low effort)
+   - `GlobalSuppressions.cs`, `Compile Remove`, empty `Folder` includes.
+4. **Blocked items** (when Docker/storage available)
+   - 6.1 + 6.7g: AccessManagement coverage, 6.5: Host.Lease tests.
+   - Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation.
+
+See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) for details.
 
 Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
 
@@ -28,8 +44,8 @@ Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_
 
 | Item | Reason | Tracked In |
 |---|---|---|
-| Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation | Complex; different mock/data strategy | [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md) |
-| Phase 3.2–3.4: Mock dedup implementation | Blocked until AccessMgmt.Tests migrates to ApiFixture | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
+| Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation | Complex; needs Docker | [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md) |
+| Phase 3.2–3.4: Mock dedup implementation | Ready to start (no longer blocked) | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
 
 ### Workflow
 
