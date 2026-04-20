@@ -35,6 +35,9 @@
                     <PrivateAssets>all</PrivateAssets>
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                 </PackageReference>
+
+                <!-- FluentAssertions for improved test assertions -->
+                <PackageReference Include="FluentAssertions" />
             </ItemGroup>
 
             <ItemGroup Condition=" '$(IsTestLibrary)' == 'true' ">
@@ -46,6 +49,7 @@
 
             <ItemGroup>
                 <Using Include="Xunit" />
+                <Using Include="FluentAssertions" />
             </ItemGroup>
 
         </When>
