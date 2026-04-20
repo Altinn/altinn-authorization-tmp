@@ -218,7 +218,8 @@ Next candidates:
 | **6.7b Authorization models & services coverage** | **✅** | +23 tests (314 → 337) |
 | **6.7c Authorization service-layer coverage** | **✅** | +7 tests (337 → 344) |
 | **6.7d AccessListAuthorization coverage** | **✅** | +5 tests (344 → 349) |
-| 6.7e AccessManagement coverage | ⬜ | Needs Docker |
+| **6.7e DelegationContextHandler coverage** | **✅** | +18 tests (349 → 367) |
+| 6.7f AccessManagement coverage | ⬜ | Needs Docker |
 
 ## Sub-step 6.7d: AccessListAuthorization Coverage Sprint
 
@@ -245,13 +246,37 @@ Next candidates:
 
 ---
 
+## Sub-step 6.7e: DelegationContextHandler Coverage Sprint
+
+### New Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `DelegationContextHandlerTest.cs` | 18 | `GetSubjectUserId` (2: present/absent), `GetSubjectPartyId` (2: present/absent), `GetSubjectAttributeMatch` (3: first priority, fallback, no match), `GetActionString` (2: present/absent), `GetResourceAttributes` (2: org+app, instance values), `EnrichRequestSubjectAttributes` (7: user+instance adds person uuid, user non-instance skips uuid, user with keyrole parties, party person instance, party org instance, party non-instance skips, no subject does nothing) |
+
+**Total new tests: 18** (349 → 367)
+
+### Approach
+
+- `DelegationContextHandler` — previously completely untested service extending `ContextHandler` with
+  12 constructor dependencies. All sync methods are pure attribute-extraction logic.
+  `EnrichRequestSubjectAttributes` has 7 async branches tested with mocked `IProfile`,
+  `IParties`, and `IRegisterService`.
+- Used `MemoryCache` (real) to satisfy base class caching.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 367 Authorization.Tests pass (349 existing + 18 new)
+
+---
+
 ## Next Step
 
-Sub-step 6.7d is **complete** (AccessListAuthorization coverage sprint, +5 tests).
+Sub-step 6.7e is **complete** (DelegationContextHandler coverage sprint, +18 tests).
 
 Next candidates:
-- **Additional Authorization service-layer coverage**: `DelegationContextHandler`,
-  `ContextHandler` gap analysis (require more complex mocking but no Docker)
+- **ContextHandler gap analysis** (many methods, some already tested via integration tests)
 - **6.1** (full baseline, needs Docker)
 - **6.5** (Host.Lease, needs storage account)
 - Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)

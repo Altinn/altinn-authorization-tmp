@@ -17,8 +17,8 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 ### Next Step
 
 **Step 7 — Maximize Code Coverage (Phase 6)** is in progress.
-Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), **6.6** (CI threshold enforcement), **6.7a** (Authorization infra/utility +30 tests), **6.7b** (Authorization models/services +23 tests), **6.7c** (PolicyInformationPoint +7 tests), and **6.7d** (AccessListAuthorization +5 tests).
-Next actionable: additional Authorization service-layer coverage (`DelegationContextHandler`, `ContextHandler` gap analysis), **6.1 full baseline** (needs Docker), **6.5 Host.Lease tests** (needs storage account), or return to deferred work.
+Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), **6.6** (CI threshold enforcement), **6.7a** (Authorization infra/utility +30 tests), **6.7b** (Authorization models/services +23 tests), **6.7c** (PolicyInformationPoint +7 tests), **6.7d** (AccessListAuthorization +5 tests), and **6.7e** (DelegationContextHandler +18 tests).
+Next actionable: `ContextHandler` gap analysis, **6.1 full baseline** (needs Docker), **6.5 Host.Lease tests** (needs storage account), or return to deferred work.
 
 See [Maximize_Coverage.md → Next Step](Maximize_Coverage.md#next-step) for details.
 
