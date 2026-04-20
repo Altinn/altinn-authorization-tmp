@@ -72,29 +72,29 @@ public class AuthorizedPartiesServiceEf(
         {
             case var id when id == EntityTypeConstants.Person.Id:
 
-                return await GetAuthorizedParties(filter, subject, cancellationToken);
+                return await GetAuthorizedPartiesInternal(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.EnterpriseUser.Id:
 
-                return await GetAuthorizedParties(filter, subject, cancellationToken);
+                return await GetAuthorizedPartiesInternal(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.Organization.Id:
 
                 // Organizations can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
-                return await GetAuthorizedParties(filter, subject, cancellationToken);
+                return await GetAuthorizedPartiesInternal(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.SystemUser.Id:
 
                 // System users can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
-                return await GetAuthorizedParties(filter, subject, cancellationToken);
+                return await GetAuthorizedPartiesInternal(filter, subject, cancellationToken);
 
             case var id when id == EntityTypeConstants.SelfIdentified.Id:
 
                 // SelfIdentified are fully imported to Altinn 3 so no longer need to check Altinn 2.
                 filter.IncludeAltinn2 = false;
-                return await GetAuthorizedParties(filter, subject, cancellationToken);
+                return await GetAuthorizedPartiesInternal(filter, subject, cancellationToken);
 
             default:
                 throw new ArgumentException(message: $"Unknown party type: {subject.Type.Name}", paramName: nameof(subject));
@@ -326,7 +326,7 @@ public class AuthorizedPartiesServiceEf(
         return partyUuids;
     }
 
-    private async Task<List<AuthorizedParty>> GetAuthorizedParties(AuthorizedPartiesFilters filter, Entity userSubject, CancellationToken cancellationToken = default)
+    private async Task<List<AuthorizedParty>> GetAuthorizedPartiesInternal(AuthorizedPartiesFilters filter, Entity userSubject, CancellationToken cancellationToken = default)
     {
         Task<(IEnumerable<AuthorizedParty> A2AuthorizedParties, Dictionary<Guid, Entity> AllA2Parties)> a2Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, Entity>()));
         Task<(IEnumerable<AuthorizedParty> A3AuthorizedParties, Dictionary<Guid, AuthorizedParty> AllA3Parties)> a3Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, AuthorizedParty>()));
