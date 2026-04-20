@@ -592,12 +592,12 @@ namespace Altinn.AccessManagement.Controllers
         }
 
         /// <summary>
-        /// Delegates instance rights from one user to another. This endpoint is intended to be used internally by the delegation system between Altinn 2 and Altinn 3, 
-        /// and is not meant to be called directly. Please refer to the API documentation for the available endpoints. This endpoint does not perform any authorization checks 
-        /// in itself, and assumes that the caller has verified the data to be correct, This endpoint just verifies that the caller presents a valid authentication token
-        /// The caller should be the delegation system in Altinn 2, which has its own authorization checks to ensure that only valid delegations are performed.
+        /// Revokes instance rights from a user. This endpoint is intended to be used internally by the delegation system between Altinn 2 and Altinn 3,
+        /// and is not meant to be called directly. Please refer to the API documentation for the available endpoints. This endpoint does not perform any authorization checks
+        /// in itself, and assumes that the caller has verified the data to be correct. This endpoint just verifies that the caller presents a valid authentication token.
+        /// The caller should be the delegation system in Altinn 2, which has its own authorization checks to ensure that only valid revocations are performed.
         /// </summary>
-        /// <param name="input">The data describing the delegation</param>
+        /// <param name="input">The data describing the revocation</param>
         /// <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
