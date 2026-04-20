@@ -15,13 +15,13 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 ### Next Step
 
-**Step 7 — Maximize Code Coverage (Phase 6)**. Detailed execution plan, baseline
-numbers, and prioritized sub-steps are in
-[Test_Patterns_and_Naming.md → "Next Phase" section](Test_Patterns_and_Naming.md#next-phase-phase-6--maximize-code-coverage).
-The full Phase 6 checklist (6.1–6.6) is in the
-[overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL.md#phase-6-maximize-code-coverage).
+**Step 7 — Maximize Code Coverage (Phase 6)** is in progress.
+Completed sub-steps: **6.3** (PEP sprint, 60→79%) and **6.4** (Authorization.Tests +66 tests).
+Next actionable: **6.6 CI coverage threshold** or run coverage baselines.
 
-Start by reading `docs/testing/steps/INDEX.md` and the linked sections above.
+See [Maximize_Coverage.md → Next Step](Maximize_Coverage.md#next-step) for details.
+
+Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
 
 ### Deferred Work
 
