@@ -51,10 +51,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Data\AuthorizedParties\TestDataAppsInstanceDelegation.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 9):** All 9 steps listed below are complete and
+> **Handoff note (after Step 10):** All 10 steps listed below are complete and
 > pushed. The next task is whichever item the user picks from *Recommended Next
 > Steps* below. Read the linked doc for that item before starting work.
 
@@ -39,6 +39,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 7 | ✅ | Maximize code coverage (actionable items) | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
 | 8 | ✅ | CI coverage threshold (6.6) | Phase 6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
 | 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
+| 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 
 ### Final Coverage (measured)
 
@@ -51,13 +52,6 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 **236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
 
 ### Recommended Next Steps (priority order)
-
-#### Actionable now
-
-1. **Phase 4 cleanup — dead code & suppressions** (low effort, no dependencies)
-   - Remove `GlobalSuppressions.cs`, `Compile Remove` items, empty `Folder` includes.
-   - See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
-     issues L1–L3.
 
 #### Blocked (need Docker / Azure Storage emulator)
 
