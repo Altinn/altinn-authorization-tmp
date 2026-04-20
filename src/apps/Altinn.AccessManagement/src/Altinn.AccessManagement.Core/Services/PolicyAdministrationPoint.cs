@@ -28,7 +28,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IPolicyFactory _policyFactory;
         private readonly IDelegationMetadataRepository _delegationRepository;
         private readonly IDelegationChangeEventQueue _eventQueue;
-        private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
         private readonly int delegationChangeEventQueueErrorId = 911;
 
         /// <summary>
@@ -39,14 +38,13 @@ namespace Altinn.AccessManagement.Core.Services
         /// <param name="delegationRepository">The delegation change repository (postgresql).</param>
         /// <param name="eventQueue">The delegation change event queue service to post events for any delegation change.</param>
         /// <param name="logger">Logger instance.</param>
-        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, Microsoft.FeatureManagement.IFeatureManager featureManager)
+        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger)
         {
             _prp = policyRetrievalPoint;
             _policyFactory = policyFactory;
             _delegationRepository = delegationRepository;
             _eventQueue = eventQueue;
             _logger = logger;
-            _featureManager = featureManager;
         }
 
         /// <inheritdoc/>
@@ -307,18 +305,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc />
         public async Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
-            bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
-            bool validPath;
-            string path;
-
-            if (useEF)
-            {
-                validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
-            else
-            {
-                validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
+            bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
             if (validPath)
             {
@@ -369,26 +356,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception ex)
             {
-                bool useEF = false;
-                bool validPath;
-                string path;
-
-                try
-                {
-                    useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
-                }
-                catch (Exception)
-                {
-                }
-                
-                if (useEF)
-                {
-                    validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
-                else
-                {
-                    validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
+                bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
                 if (validPath)
                 {
