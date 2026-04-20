@@ -14,6 +14,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 /// </summary>
 public class ConnectionQuery(AppDbContext db)
 {
+    private List<Guid>? _assignmentIds = null;
+
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
@@ -1127,7 +1129,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
-        var aIds = allKeys.Where(a => a.AssignmentId.HasValue).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        var aIds = GetAssignmentIds(allKeys);
         if (aIds.Count == 0)
         {
             return allKeys;
@@ -1140,8 +1142,7 @@ public class ConnectionQuery(AppDbContext db)
             .Join(db.Resources, x => x.ResourceId, r => r.Id, (x, r) => new
             {
                 x.AssignmentId,
-                x.Id,
-                x.ResourceId,
+                r.Id,
                 r.Name,
                 r.RefId
             })
@@ -1191,7 +1192,7 @@ public class ConnectionQuery(AppDbContext db)
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
         // Assignment → AssignmentInstance
-        var aIds = allKeys.Where(a => a.AssignmentId.HasValue).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        var aIds = GetAssignmentIds(allKeys);
         if (aIds.Count == 0)
         {
             return allKeys;
@@ -1253,6 +1254,16 @@ public class ConnectionQuery(AppDbContext db)
         }
 
         return allKeys;
+    }
+
+    private List<Guid> GetAssignmentIds(List<ConnectionQueryExtendedRecord> allKeys)
+    {
+        if (_assignmentIds is null)
+        {
+            _assignmentIds = allKeys.Where(a => a.AssignmentId.HasValue).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        }
+
+        return _assignmentIds;
     }
 
     private async Task EnrichPackageResourcesAsync(ConnectionIndex<ConnectionQueryPackage> packageIndex, ConnectionQueryFilter filter, CancellationToken ct = default)
