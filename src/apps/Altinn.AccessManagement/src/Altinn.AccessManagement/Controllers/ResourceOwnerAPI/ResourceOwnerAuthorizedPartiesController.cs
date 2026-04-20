@@ -166,7 +166,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         {
             // Cached because orgnumber→orgcode is effectively static and this endpoint is high-traffic.
             var orgNumberKey = organizationId.ToString();
-            string orgCode = await memoryCache.GetOrCreateAsync($"authparties:orgcode:{orgNumberKey}", async entry =>
+            string? orgCode = await memoryCache.GetOrCreateAsync($"authparties:orgcode:{orgNumberKey}", async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
                 Provider provider = await providerService.GetProviderByOrganizationId(orgNumberKey, cancellationToken);
