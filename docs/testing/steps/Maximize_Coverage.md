@@ -217,15 +217,41 @@ Next candidates:
 | **6.7a Authorization infra/utility coverage** | **✅** | +30 tests (284 → 314) |
 | **6.7b Authorization models & services coverage** | **✅** | +23 tests (314 → 337) |
 | **6.7c Authorization service-layer coverage** | **✅** | +7 tests (337 → 344) |
-| 6.7d AccessManagement coverage | ⬜ | Needs Docker |
+| **6.7d AccessListAuthorization coverage** | **✅** | +5 tests (344 → 349) |
+| 6.7e AccessManagement coverage | ⬜ | Needs Docker |
+
+## Sub-step 6.7d: AccessListAuthorization Coverage Sprint
+
+### New Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `AccessListAuthorizationTest.cs` | 5 | `Authorize` — null memberships → NotAuthorized, empty memberships → NotAuthorized, null ActionFilters → Authorized (wildcard), matching action filter → Authorized, non-matching action filter → NotAuthorized |
+
+**Total new tests: 5** (344 → 349)
+
+### Approach
+
+- `AccessListAuthorization` — previously completely untested service with 3 distinct authorization
+  branches based on access list membership and action filter matching.
+- Uses JSON deserialization to construct `AccessListAuthorizationRequest` (complex URN types
+  `UrnJsonTypeValue<PartyUrn>`, `UrnJsonTypeValue<ResourceIdUrn>`, `UrnJsonTypeValue<ActionUrn>`).
+- Single mock dependency (`IResourceRegistry`), all tests are pure unit tests.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 349 Authorization.Tests pass (344 existing + 5 new)
+
+---
 
 ## Next Step
 
-Sub-step 6.7c is **complete** (PolicyInformationPoint coverage sprint, +7 tests).
+Sub-step 6.7d is **complete** (AccessListAuthorization coverage sprint, +5 tests).
 
 Next candidates:
 - **Additional Authorization service-layer coverage**: `DelegationContextHandler`,
-  `AccessListAuthorization`, `ContextHandler` gap analysis (require more complex mocking but no Docker)
+  `ContextHandler` gap analysis (require more complex mocking but no Docker)
 - **6.1** (full baseline, needs Docker)
 - **6.5** (Host.Lease, needs storage account)
 - Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
