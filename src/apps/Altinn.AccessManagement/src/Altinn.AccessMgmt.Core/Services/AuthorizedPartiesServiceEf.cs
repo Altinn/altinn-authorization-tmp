@@ -43,7 +43,7 @@ public class AuthorizedPartiesServiceEf(
         _ => throw new ArgumentException(message: $"Unknown attribute type: {subjectAttribute.Type}", paramName: nameof(subjectAttribute))
     };
 
-    public async Task<List<AuthorizedParty>> GetAuthorizedParties(Entity subject, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByEntity(Entity subject, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         if (subject == null)
         {
@@ -109,14 +109,14 @@ public class AuthorizedPartiesServiceEf(
         }
 
         var subject = await repoService.GetEntity(partyUuid, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPartyId(int subjectPartyId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByPartyId(subjectPartyId, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPartyId(string subjectPartyId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
@@ -143,14 +143,14 @@ public class AuthorizedPartiesServiceEf(
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByUserId(int subjectUserId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByUserId(subjectUserId, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPersonId(string subjectPersonId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByPersonId(subjectPersonId, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -163,7 +163,7 @@ public class AuthorizedPartiesServiceEf(
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByOrganizationId(string subjectOrganizationNumber, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByOrganizationId(subjectOrganizationNumber, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -176,7 +176,7 @@ public class AuthorizedPartiesServiceEf(
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByEnterpriseUsername(string subjectEnterpriseUsername, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByUsername(subjectEnterpriseUsername, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -195,7 +195,7 @@ public class AuthorizedPartiesServiceEf(
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByIdPortenEmailId(string subjectIdPortenEmailId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         var subject = await repoService.GetEntityByIdPortenEmailId(subjectIdPortenEmailId, cancellationToken);
-        return await GetAuthorizedParties(subject, filter, cancellationToken);
+        return await GetAuthorizedPartiesByEntity(subject, filter, cancellationToken);
     }
 
     /// <inheritdoc/>
