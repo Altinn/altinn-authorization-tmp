@@ -1,4 +1,4 @@
-name: "Template: Vertical CI"
+﻿name: "Template: Vertical CI"
 
 on:
   workflow_call:
@@ -76,6 +76,18 @@ jobs:
       - name: Test
         run: dotnet test -c Release --no-build -bl:binlog/test.binlog
         working-directory: ${{ inputs.path }}
+
+      - name: Coverage threshold check
+        if: hashFiles(format('{0}/**/test/**/*.Tests.csproj', inputs.path)) != ''
+        shell: pwsh
+        working-directory: ${{ inputs.path }}
+        run: |
+          $thresholdsFile = Join-Path $env:GITHUB_WORKSPACE 'docs/testing/coverage-thresholds.json'
+          if (-not (Test-Path $thresholdsFile)) { Write-Host "No thresholds file, skipping"; exit 0 }
+          dotnet tool install -g dotnet-coverage 2>$null
+          $testProjs = Get-ChildItem -Path . -Filter '*.Tests.csproj' -Recurse | Select-Object -ExpandProperty FullName
+          if ($testProjs.Count -eq 0) { Write-Host "No test projects found, skipping"; exit 0 }
+          & (Join-Path $env:GITHUB_WORKSPACE 'docs/testing/run-coverage.ps1') -Projects $testProjs -NoBuild -ThresholdsFile $thresholdsFile
 
       - name: Pack
         run: dotnet pack -c Release --no-build -bl:binlog/pack.binlog

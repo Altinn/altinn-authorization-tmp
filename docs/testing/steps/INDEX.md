@@ -12,16 +12,17 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 5 | ✅ | Coverage infrastructure (`dotnet-coverage`, `run-coverage.ps1`) | Phase 5 | [Coverage_Infrastructure.md](Coverage_Infrastructure.md) |
 | 6 | ✅ | Test patterns, naming convention & csproj cleanup | Phase 4 | [Test_Patterns_and_Naming.md](Test_Patterns_and_Naming.md) |
 | 7 | 🔄 | Maximize code coverage | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
+| 8 | ✅ | CI coverage threshold (6.6) | Phase 6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
 
 ### Next Step
 
 **Step 7 — Maximize Code Coverage (Phase 6)** is in progress.
-Completed sub-steps: **6.3** (PEP sprint, 60→79%) and **6.4** (Authorization.Tests +66 tests).
-Next actionable: **6.6 CI coverage threshold** or run coverage baselines.
+Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), and **6.6** (CI threshold enforcement).
+Next actionable: **6.1 full baseline** (needs Docker) or **6.5 Host.Lease tests** (needs storage account), or return to deferred work.
 
-See [Maximize_Coverage.md → Next Step](Maximize_Coverage.md#next-step) for details.
+See [CI_Coverage_Threshold.md → Next Step](CI_Coverage_Threshold.md#next-step) for details.
 
-Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
+Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/CI_Coverage_Threshold.md`.
 
 ### Deferred Work
 

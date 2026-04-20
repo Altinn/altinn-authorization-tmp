@@ -3,7 +3,8 @@ param(
     [int]$Threshold = 0,
     [string[]]$Projects,
     [string]$Configuration = 'Release',
-    [switch]$NoBuild
+    [switch]$NoBuild,
+    [string]$ThresholdsFile
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -67,6 +68,22 @@ if ($coverageFiles.Count -eq 0) {
 Write-Host "`n=== Coverage Summary ===" -ForegroundColor Cyan
 $belowThreshold = @()
 
+# Load per-assembly thresholds if provided
+$assemblyThresholds = @{}
+$globalFloor = $Threshold
+if (-not $ThresholdsFile) {
+    $defaultPath = Join-Path $PSScriptRoot 'coverage-thresholds.json'
+    if (Test-Path $defaultPath) { $ThresholdsFile = $defaultPath }
+}
+if ($ThresholdsFile -and (Test-Path $ThresholdsFile)) {
+    $cfg = Get-Content $ThresholdsFile -Raw | ConvertFrom-Json
+    if ($cfg.globalThreshold -and $globalFloor -eq 0) { $globalFloor = $cfg.globalThreshold }
+    if ($cfg.assemblies) {
+        $cfg.assemblies.PSObject.Properties | ForEach-Object { $assemblyThresholds[$_.Name] = [int]$_.Value }
+    }
+    Write-Host "  Loaded thresholds from $ThresholdsFile" -ForegroundColor DarkGray
+}
+
 foreach ($file in $coverageFiles) {
     [xml]$xml = Get-Content $file
     foreach ($pkg in $xml.coverage.packages.package) {
@@ -76,20 +93,21 @@ foreach ($file in $coverageFiles) {
         if ($n -match '^Altinn\.' -and $n -notmatch 'Tests|TestUtils|Mocks') {
             $c = if ($lr -lt 50) { 'Red' } elseif ($lr -lt 70) { 'Yellow' } else { 'Green' }
             Write-Host ("  {0,-50} {1,7}% line  {2,7}% branch" -f $n, $lr, $br) -ForegroundColor $c
-            if ($Threshold -gt 0 -and $lr -lt $Threshold) {
-                $belowThreshold += "$n ($lr%)"
+            $floor = if ($assemblyThresholds.ContainsKey($n)) { $assemblyThresholds[$n] } else { $globalFloor }
+            if ($floor -gt 0 -and $lr -lt $floor) {
+                $belowThreshold += "$n ($lr% < $floor%)"
             }
         }
     }
 }
 
-if ($Threshold -gt 0 -and $belowThreshold.Count -gt 0) {
-    Write-Host "`nBelow ${Threshold}% threshold:" -ForegroundColor Red
+if ($belowThreshold.Count -gt 0) {
+    Write-Host "`nBelow threshold:" -ForegroundColor Red
     $belowThreshold | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
     exit 1
 }
-elseif ($Threshold -gt 0) {
-    Write-Host "`nAll assemblies meet the ${Threshold}% threshold." -ForegroundColor Green
+elseif ($globalFloor -gt 0 -or $assemblyThresholds.Count -gt 0) {
+    Write-Host "`nAll assemblies meet their coverage thresholds." -ForegroundColor Green
 }
 
 $rg = Get-Command reportgenerator -ErrorAction SilentlyContinue

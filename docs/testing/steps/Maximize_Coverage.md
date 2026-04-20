@@ -95,22 +95,17 @@ highest-impact, lowest-effort gaps identified in the Phase 5 baseline.
 | **6.3 PEP coverage sprint** | **✅** | 60% → 79% |
 | **6.4 Authorization.Tests edge cases** | **✅** | +66 tests (218 → 284) |
 | 6.5 Host.Lease tests | ⬜ | Blocked by storage account dependency |
-| 6.6 CI threshold | ⬜ | |
+| **6.6 CI threshold** | **✅** | Per-assembly thresholds in CI via `coverage-thresholds.json` |
 | 6.7 AccessManagement coverage | ⬜ | |
 
 ---
 
 ## Next Step
 
-The next highest-impact actionable item is **sub-step 6.6 — CI coverage threshold**.
-This is a quick infrastructure win that prevents coverage regressions:
+Sub-step 6.6 (CI coverage threshold) is **complete**.
+See [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for details.
 
-1. Add minimum coverage thresholds to `run-coverage.ps1` or CI pipeline config.
-2. Configure PR gates to fail if coverage drops below the established baselines.
-3. Optionally publish Cobertura reports to a dashboard.
+Next candidates: **6.1** (full baseline, needs Docker), **6.5** (Host.Lease, needs storage account),
+or return to deferred work (Phase 2.2–2.3, Phase 3.2–3.4).
 
-Alternatively, run `run-coverage.ps1` first to capture updated baselines for
-Altinn.Authorization and Altinn.Authorization.PEP after the 6.3 + 6.4 sprints,
-then use those numbers as the enforcement floor.
-
-Start by reading `docs/testing/steps/INDEX.md` and this file.
+Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/CI_Coverage_Threshold.md`.

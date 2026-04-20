@@ -1,0 +1,10 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Per-assembly minimum line-coverage thresholds (%). CI fails if any assembly drops below its floor.",
+  "globalThreshold": 50,
+  "assemblies": {
+    "Altinn.Authorization": 60,
+    "Altinn.Authorization.ABAC": 60,
+    "Altinn.Authorization.PEP": 75
+  }
+}
