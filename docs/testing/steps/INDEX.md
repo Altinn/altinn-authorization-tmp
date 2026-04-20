@@ -88,29 +88,30 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 14 | ✅ | Add FluentAssertions package | Phase 4.2a | [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md) |
 | 15 | ✅ | Mock deduplication implementation | Phase 3.2–3.4 | [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) |
 | 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
+| 17 | ✅ | Sub-step 16.1 — Group A easy wins (`PolicyInformationPointControllerTest`, `DelegationsControllerTest`) | Phase 2.2 | [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md) |
 
 ### Recommended Next Steps (priority order)
 
-All items below are actionable. Items 1–3 require Podman Desktop (working as of
-Step 12); items 4–6 have no container-runtime dependency.
+All items below are actionable. Items 1–2 require Podman Desktop (working as of
+Step 12); items 3–5 have no container-runtime dependency.
 
-1. **Sub-step 16.1 — AccessMgmt.Tests Group A easy wins** (3 controller classes)
-   - `PolicyInformationPointControllerTest`, `DelegationsControllerTest`, `MaskinportenSchemaControllerTest`
-   - Apply the migration recipe from Step 16 (constructor-only `WithAppsettings` + `ConfigureServices`).
-   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
-
-2. **Sub-step 16.2 — AccessMgmt.Tests Group A complex** (3 controller classes)
-   - `Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`, `RightsInternalControllerTest` (split into nested classes).
+1. **Sub-step 16.2 — AccessMgmt.Tests Group A complex** (4 controller classes)
+   - `MaskinportenSchemaControllerTest` **(promoted from 16.1 — needs nested-class split for PDP + HttpContext variants)**,
+     `Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`,
+     `RightsInternalControllerTest` (split into nested classes).
    - After this sub-step: delete `CustomWebApplicationFactory.cs`.
+   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
+     and [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md)
+     for the rationale behind promoting `MaskinportenSchemaControllerTest`.
 
-3. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
+2. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
 
-4. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
+3. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
    - Create usage guidelines and patterns documentation
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
 
-5. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
+4. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
    - Extend the CI coverage gate (Step 8) to the 4 AccessManagement assemblies already above 60%:
      - `Altinn.AccessMgmt.PersistenceEF` → 90% (currently 98.59)
      - `AccessManagement.Api.Maskinporten` → 75% (currently 80.36)
@@ -121,7 +122,7 @@ Step 12); items 4–6 have no container-runtime dependency.
    - Maps to overhaul plan Phase 5.1 / 5.4. Prevents regression on assemblies we've already invested in, without blocking CI on known gaps.
    - Read [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for the existing Authorization-app threshold pattern.
 
-6. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+5. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
@@ -148,7 +149,7 @@ See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Ba
 
 **AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
 point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
-threshold we'd enforce in CI once reached (see priority 5 in
+threshold we'd enforce in CI once reached (see priority 4 in
 [Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
 [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
 

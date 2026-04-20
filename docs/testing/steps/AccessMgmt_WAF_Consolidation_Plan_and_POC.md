@@ -179,15 +179,27 @@ Build: clean (0 errors; pre-existing StyleCop warnings only).
 
 Ordered by risk/complexity:
 
-### Sub-step 16.1 — Group A easy wins (3 classes)
+### Sub-step 16.1 — Group A easy wins (2 classes, ✅ completed)
 
 - `PolicyInformationPointControllerTest`
-- `DelegationsControllerTest` (+ rewrite `SetupUtils.GetTestClient` as an
-  `AccessMgmtMocks.AddDelegationMocks(IServiceCollection)` extension)
-- `MaskinportenSchemaControllerTest`
+- `DelegationsControllerTest` (registers mocks inline via
+  `fixture.ConfigureServices`; the unused `SetupUtils.GetTestClient` overload
+  was deleted instead of being rewritten as an `AccessMgmtMocks` extension —
+  deferred until a second consumer actually needs it.)
 
-### Sub-step 16.2 — Group A complex (3 classes)
+`MaskinportenSchemaControllerTest` was originally planned for 16.1 but
+**promoted to 16.2** after inspection: it has ~15 per-test
+`_client = GetTestClient(...)` calls that swap `IPDP`, `IHttpContextAccessor`,
+or `IDelegationMetadataRepository`. `ApiFixture` seals its DI container on
+first `CreateClient()`, so this pattern requires nested-class splitting (rule
+6 of the recipe above). See
+[Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md).
 
+### Sub-step 16.2 — Group A complex (4 classes)
+
+- `MaskinportenSchemaControllerTest` — split into nested classes for the
+  `PepWithPDPAuthorizationMock` vs `PdpPermitMock` variants and the per-test
+  `HttpContextAccessor` route-value customizations.
 - `Altinn2RightsControllerTest`
 - `AppsInstanceDelegationControllerTest`
 - `RightsInternalControllerTest` — split into two nested classes
