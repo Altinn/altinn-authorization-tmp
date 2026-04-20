@@ -219,7 +219,8 @@ Next candidates:
 | **6.7c Authorization service-layer coverage** | **✅** | +7 tests (337 → 344) |
 | **6.7d AccessListAuthorization coverage** | **✅** | +5 tests (344 → 349) |
 | **6.7e DelegationContextHandler coverage** | **✅** | +18 tests (349 → 367) |
-| 6.7f AccessManagement coverage | ⬜ | Needs Docker |
+| **6.7f ContextHandler unit tests** | **✅** | +35 tests (367 → 402) |
+| 6.7g AccessManagement coverage | ⬜ | Needs Docker |
 
 ## Sub-step 6.7d: AccessListAuthorization Coverage Sprint
 
@@ -271,12 +272,41 @@ Next candidates:
 
 ---
 
+## Sub-step 6.7f: ContextHandler Unit-Test Coverage Sprint
+
+### New Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `ContextHandlerUnitTest.cs` | 35 | `GetResourceAttributeValues` (16: org, app, instance, task, resource-party, resource-registry, app-resource, org-number, person-uuid, party-uuid, all-attributes, unknown-attribute, empty, org-only, app-only, multiple-values), `AddIfValueDoesNotExist` (2: new/existing), `GetAttribute` (2: found/missing), `EnrichResourceParty` (5: org-number, person-id, party-uuid, missing-party, no-identifiers), cached lookups (6: GetRoles, GetUserProfileByUserId, GetUserProfileByPersonId, GetKeyRolePartyIds, GetMainUnits, GetOedRoleAssignments), attribute builders (4: GetRoleAttribute, GetPartyTypeAttribute person/org, GetPartyIdsAttribute) |
+
+**Total new tests: 35** (367 → 402)
+
+### Approach
+
+- Used **testable subclass pattern** (`TestableContextHandler`) to expose 13 `protected` methods
+  without modifying production code or using `InternalsVisibleTo`.
+- `ContextHandler` has 12 constructor dependencies — all mocked except `IMemoryCache` (real `MemoryCache`).
+- `GetResourceAttributeValues` (lines 286–391) was the highest-value target: 13 attribute-type branches,
+  16 tests covering every branch plus edge cases.
+- `EnrichResourceParty` tested with 5 scenarios covering org-number, person-id, and party-uuid lookup paths.
+- Cached lookup methods (`GetRoles`, `GetMainUnits`, etc.) tested to verify correct service delegation.
+- Complex orchestration methods (`Enrich`, `EnrichSubjectAttributes`, `EnrichResourceAttributes`)
+  already covered by 6 existing integration tests — unit testing deferred.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 402 Authorization.Tests pass (367 existing + 35 new)
+
+---
+
 ## Next Step
 
-Sub-step 6.7e is **complete** (DelegationContextHandler coverage sprint, +18 tests).
+Sub-step 6.7f is **complete** (ContextHandler unit tests, +35 tests).
 
 Next candidates:
-- **ContextHandler gap analysis** (many methods, some already tested via integration tests)
 - **6.1** (full baseline, needs Docker)
 - **6.5** (Host.Lease, needs storage account)
+- Additional service-layer coverage (complex orchestration methods in `ContextHandler.EnrichSubjectAttributes`)
 - Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
