@@ -22,8 +22,7 @@ public class DelegationConfiguration : IEntityTypeConfiguration<Delegation>
 
         builder.HasMany(t => t.DelegationPackages)
             .WithOne(t => t.Delegation)
-            .HasForeignKey(t => t.DelegationId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .HasForeignKey(t => t.DelegationId);
 
         builder.HasIndex(t => new { t.FromId, t.ToId, t.FacilitatorId }).IsUnique();
         builder.HasIndex(t => new { t.ToId }).IncludeProperties(["Id", "FromId"]);

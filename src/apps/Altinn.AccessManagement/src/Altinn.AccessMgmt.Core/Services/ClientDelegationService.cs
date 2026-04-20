@@ -1045,6 +1045,10 @@ public interface IClientDelegationService
         bool cascade,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Removes an a client from an agent.
+    /// If <paramref name="cascade"/> is false, removal fails when active delegations exist.
+    /// </summary>
     Task<ValidationProblemInstance?> RemoveAnAgentsClient(Guid partyUuid, Guid fromUuid, Guid toUuid, bool cascade, CancellationToken cancellationToken = default);
 
     /// <summary>

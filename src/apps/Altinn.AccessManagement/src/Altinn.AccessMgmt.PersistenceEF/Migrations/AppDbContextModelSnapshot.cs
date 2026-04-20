@@ -2214,6 +2214,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AssignmentPackageId")
                         .HasDatabaseName("ix_delegationpackage_assignmentpackageid");
 
+                    b.HasIndex("DelegationId")
+                        .HasDatabaseName("ix_delegationpackage_delegationid");
+
                     b.HasIndex("PackageId")
                         .HasDatabaseName("ix_delegationpackage_packageid");
 
@@ -3906,7 +3909,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_delegationpackage_assignmentpackage_assignmentpackageid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
-                        .WithMany("DelegationPackages")
+                        .WithMany()
                         .HasForeignKey("DelegationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -4293,11 +4296,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
-                {
-                    b.Navigation("DelegationPackages");
-                });
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>
                 {
                     b.Navigation("DelegationPackages");
                 });
