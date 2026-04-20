@@ -23,8 +23,8 @@
   step log table below linking to the new doc.
 - **Run all tests that were changed or impacted by the step** and record the
   results in the step doc. Update the [Final Coverage (measured)](#final-coverage-measured)
-  table below if the step affected coverage of any listed assembly (or a new
-  assembly that should be tracked).
+  table at the bottom of this file if the step affected coverage of any listed
+  assembly (or a new assembly that should be tracked).
 - **Re-check the [Blocked Items](#blocked-items) section** to see if anything is
   now unblocked by the completed step. If so, move it into
   `### Recommended Next Steps (priority order)` at an appropriate priority and
@@ -77,41 +77,6 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 15 | ✅ | Mock deduplication implementation | Phase 3.2–3.4 | [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) |
 | 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
 
-### Final Coverage (measured)
-
-**Altinn.Authorization app** (Phase 6 — CI-enforced):
-
-| Assembly | Line% | Branch% | Threshold | Status |
-|---|---|---|---|---|
-| Altinn.Authorization | 70.91 | 70.93 | 60% | ✅ |
-| Altinn.Authorization.ABAC | 63.41 | 63.83 | 60% | ✅ |
-| Altinn.Authorization.PEP | 77.75 | 76.10 | 75% | ✅ |
-
-**236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
-
-**AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
-point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
-threshold we'd enforce in CI once reached (see priority 5 in
-[Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
-[AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
-
-| Assembly | Line% | Branch% | Target | Status |
-|---|---|---|---|---|
-| Altinn.AccessMgmt.PersistenceEF | 98.59 | 90.78 | 60% | ✅ |
-| AccessManagement.Api.Maskinporten | 80.36 | 80.00 | 60% | ✅ |
-| AccessManagement.Api.Enterprise | 66.39 | 56.52 | 60% | ✅ |
-| AccessManagement.Core | 63.43 | 61.49 | 60% | ✅ |
-| AccessManagement (main app) | 58.19 | 60.93 | 60% | ⚠️ Near |
-| AccessManagement.Integration | 47.57 | 43.75 | 60% | ❌ Gap |
-| AccessManagement.Api.Internal | 46.74 | 46.20 | 60% | ❌ Gap |
-| AccessManagement.Persistence | 44.94 | 30.23 | 60% | ❌ Gap |
-| AccessMgmt.Persistence | 32.51 | 9.42 | 60% | ❌ Gap |
-| AccessMgmt.Core | 17.31 | 12.00 | 60% | ❌ Gap |
-| AccessManagement.Api.Metadata | 16.59 | 13.33 | 60% | ❌ Gap |
-| AccessMgmt.Persistence.Core | 8.78 | 3.21 | 60% | ❌ Gap |
-| AccessManagement.Api.Enduser | 1.19 | 0.15 | 60% | ❌ Gap |
-| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | 60% | ❌ Gap |
-
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Items 1–3 require Podman Desktop (working as of
@@ -156,3 +121,38 @@ See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Ba
 | Item | Blocker | Notes |
 |---|---|---|
 | Phase 6.5: Host.Lease tests | Azure Storage Emulator/Azurite required | See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md) Phase 6.5 |
+
+### Final Coverage (measured)
+
+**Altinn.Authorization app** (Phase 6 — CI-enforced):
+
+| Assembly | Line% | Branch% | Threshold | Status |
+|---|---|---|---|---|
+| Altinn.Authorization | 70.91 | 70.93 | 60% | ✅ |
+| Altinn.Authorization.ABAC | 63.41 | 63.83 | 60% | ✅ |
+| Altinn.Authorization.PEP | 77.75 | 76.10 | 75% | ✅ |
+
+**236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
+
+**AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
+point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
+threshold we'd enforce in CI once reached (see priority 5 in
+[Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
+[AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
+
+| Assembly | Line% | Branch% | Target | Status |
+|---|---|---|---|---|
+| Altinn.AccessMgmt.PersistenceEF | 98.59 | 90.78 | 60% | ✅ |
+| AccessManagement.Api.Maskinporten | 80.36 | 80.00 | 60% | ✅ |
+| AccessManagement.Api.Enterprise | 66.39 | 56.52 | 60% | ✅ |
+| AccessManagement.Core | 63.43 | 61.49 | 60% | ✅ |
+| AccessManagement (main app) | 58.19 | 60.93 | 60% | ⚠️ Near |
+| AccessManagement.Integration | 47.57 | 43.75 | 60% | ❌ Gap |
+| AccessManagement.Api.Internal | 46.74 | 46.20 | 60% | ❌ Gap |
+| AccessManagement.Persistence | 44.94 | 30.23 | 60% | ❌ Gap |
+| AccessMgmt.Persistence | 32.51 | 9.42 | 60% | ❌ Gap |
+| AccessMgmt.Core | 17.31 | 12.00 | 60% | ❌ Gap |
+| AccessManagement.Api.Metadata | 16.59 | 13.33 | 60% | ❌ Gap |
+| AccessMgmt.Persistence.Core | 8.78 | 3.21 | 60% | ❌ Gap |
+| AccessManagement.Api.Enduser | 1.19 | 0.15 | 60% | ❌ Gap |
+| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | 60% | ❌ Gap |
