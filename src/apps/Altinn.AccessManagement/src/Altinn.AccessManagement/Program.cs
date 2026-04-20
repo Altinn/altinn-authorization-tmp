@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Logging;
 
 AppDomain domain = AppDomain.CurrentDomain;
@@ -14,7 +15,9 @@ domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
+var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
 await app.DefineAccessMgmtDbModels();
+await PersistenceFeatures();
 
 if (appsettings.RunInitOnly)
 {
@@ -69,6 +72,12 @@ async Task Init()
 
     var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
     await registerImport.EnsureDbIsIngestWithRegisterData(cts.Token);
+}
+
+async Task PersistenceFeatures()
+{
+    // Delete me after next prod release
+    Altinn.AccessMgmt.PersistenceEF.Utils.Settings.FeatureFlags.UseInstanceDelegationEF = await featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
 }
 
 /// <summary>

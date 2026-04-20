@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Moq;
 using Xunit;
 
@@ -30,6 +31,7 @@ namespace Altinn.AccessManagement.Tests
         private readonly IPolicyFactory _prp;
         private readonly IDelegationChangeEventQueue _eventQueue;
         private readonly Mock<ILogger<IPolicyAdministrationPoint>> _logger;
+        private readonly IFeatureManager _featureManager;
         private DelegationMetadataRepositoryMock _delegationMetadataRepositoryMock;
 
         /// <summary>
@@ -48,12 +50,18 @@ namespace Altinn.AccessManagement.Tests
             _prp = new PolicyFactoryMock(new Mock<ILogger<PolicyRepositoryMock>>().Object);
             _eventQueue = new DelegationChangeEventQueueMock();
 
+            // Add mock feature manager
+            var featureManagerMock = new Mock<IFeatureManager>();
+            featureManagerMock.Setup(f => f.IsEnabledAsync(It.IsAny<string>())).ReturnsAsync(false);
+            _featureManager = featureManagerMock.Object;
+
             _pap = new PolicyAdministrationPoint(
                 new PolicyRetrievalPoint(_prp, memoryCache, Options.Create(new CacheConfig { PolicyCacheTimeout = 1 })),
                 _prp,
                 _delegationMetadataRepositoryMock,
                 _eventQueue,
-                _logger.Object);
+                _logger.Object,
+                _featureManager);
         }
 
         /// <summary>

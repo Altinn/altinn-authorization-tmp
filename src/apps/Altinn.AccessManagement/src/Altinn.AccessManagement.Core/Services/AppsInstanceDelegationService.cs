@@ -34,11 +34,13 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
+    private const string InstanceDelegationEfFeatureFlag = "AccessManagement.InstanceDelegation.EF";
+    private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap)
+    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
     {
         _partiesClient = partiesClient;
         _partyService = partyService;
@@ -46,6 +48,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         _resourceRegistryClient = resourceRegistryClient;
         _pap = pap;
         _appsInstanceDelegationSettings = appsInstanceDelegationSettings.Value;
+        _featureManager = featureManager;
     }
 
     private async Task<(UuidType DelegationType, Guid? Uuid)> TranslatePartyUuidToPersonOrganizationUuid(PartyUrn partyId)
@@ -243,23 +246,27 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
+        bool useEF = await _featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
         string instanceId = request.InstanceId;
 
-        // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
-        MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
-
-        if (party == null) 
+        if (useEF)
         {
-            ValidationErrorBuilder errors = default;
-            errors.Add(ValidationErrors.InvalidPartyUrn, "From");
-            if (errors.TryBuild(out var invalidParty))
-            {
-                return invalidParty;
-            }
-        }
+            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
 
-        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-        request.InstanceId = instanceUrn;
+            if (party == null) 
+            {
+                ValidationErrorBuilder errors = default;
+                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                if (errors.TryBuild(out var invalidParty))
+                {
+                    return invalidParty;
+                }
+            }
+
+            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+            request.InstanceId = instanceUrn;
+        }
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
         request.InstanceId = instanceId;
@@ -489,23 +496,26 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceRevokeResponse>> Revoke(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
+        bool useEF = await _featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
         string instanceId = request.InstanceId;
-
-        // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
-        MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
-
-        if (party == null)
+        if (useEF)
         {
-            ValidationErrorBuilder errors = default;
-            errors.Add(ValidationErrors.InvalidPartyUrn, "From");
-            if (errors.TryBuild(out var invalidParty))
-            {
-                return invalidParty;
-            }
-        }
+            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
 
-        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-        request.InstanceId = instanceUrn;
+            if (party == null)
+            {
+                ValidationErrorBuilder errors = default;
+                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                if (errors.TryBuild(out var invalidParty))
+                {
+                    return invalidParty;
+                }
+            }
+
+            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+            request.InstanceId = instanceUrn;
+        }
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
 
