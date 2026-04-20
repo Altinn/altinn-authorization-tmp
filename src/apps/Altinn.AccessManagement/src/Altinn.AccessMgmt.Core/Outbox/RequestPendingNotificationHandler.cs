@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -125,7 +125,7 @@ public class RequestPendingNotificationHandler(
         {
             if (content.PackageIds is { } && content.PackageIds.Any())
             {
-                var packages = await db.Packages
+                return await db.Packages
                     .AsNoTracking()
                     .Where(r => content.PackageIds.Contains(r.Id))
                     .ToListAsync(cancellationToken);
