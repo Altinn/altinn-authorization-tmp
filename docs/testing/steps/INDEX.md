@@ -11,7 +11,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 4 | ✅ | Mock deduplication audit | Phase 3 | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
 | 5 | ✅ | Coverage infrastructure (`dotnet-coverage`, `run-coverage.ps1`) | Phase 5 | [Coverage_Infrastructure.md](Coverage_Infrastructure.md) |
 | 6 | ✅ | Test patterns, naming convention & csproj cleanup | Phase 4 | [Test_Patterns_and_Naming.md](Test_Patterns_and_Naming.md) |
-| 7 | ⬜ | Maximize code coverage | Phase 6 | _not started_ |
+| 7 | 🔄 | Maximize code coverage | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
 
 ### Next Step
 
