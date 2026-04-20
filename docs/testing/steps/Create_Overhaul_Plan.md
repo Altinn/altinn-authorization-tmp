@@ -1,4 +1,4 @@
-﻿# Step 0: Create Overhaul Plan
+﻿# Create Overhaul Plan
 
 ## Status: ✅ Complete
 

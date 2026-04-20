@@ -1,4 +1,4 @@
-﻿# Step 5 - Coverage Infrastructure
+﻿# Coverage Infrastructure
 
 ## Goal
 

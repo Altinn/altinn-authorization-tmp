@@ -55,10 +55,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Data\ResourceRegistryResources\nav_sykepenger_dialog\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 </Project>

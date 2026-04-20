@@ -34,8 +34,4 @@
         <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Webfactory\" />
-    </ItemGroup>
-
-</Project>
+    </Project>

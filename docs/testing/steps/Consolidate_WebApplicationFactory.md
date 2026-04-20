@@ -1,4 +1,4 @@
-﻿# Step 2 – Consolidate WebApplicationFactory Variants (Authorization.Tests)
+﻿# Consolidate WebApplicationFactory Variants (Authorization.Tests)
 
 ## Goal
 

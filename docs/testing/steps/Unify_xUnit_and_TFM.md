@@ -1,4 +1,4 @@
-﻿# Step 1: Unify xUnit Version & Target Framework
+﻿# Unify xUnit Version & Target Framework
 
 ## Status: ✅ Complete
 

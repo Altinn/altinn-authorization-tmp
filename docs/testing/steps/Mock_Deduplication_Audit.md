@@ -1,4 +1,4 @@
-﻿# Step 3 – Mock Deduplication Audit
+﻿# Mock Deduplication Audit
 
 ## Summary
 
