@@ -111,26 +111,28 @@ public class ClientDelegationController(
     public async Task<IActionResult> DeleteMyClientViaProvider(
         [FromQuery(Name = "provider")][Required] Guid provider,
         [FromQuery(Name = "from")][Required] Guid from,
-        [FromBody][Required] DelegationBatchInputDto payload,
+        [FromBody] DelegationBatchInputDto payload,
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
-        
-        // Uncomment once the frontend has migrated to the new endpoints
-        // var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        // if (partyUuid == Guid.Empty)
-        // {
-        //     return Unauthorized();
-        // }
+        if (!cascade)
+        {
+            return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
+        }
 
-        // var problem = await clientDelegationService.RemoveAnAgentsClient(provider, from, partyUuid, cascade, cancellationToken);
-        // if (problem is { })
-        // {
-        //     return problem.ToActionResult();
-        // }
+        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (partyUuid == Guid.Empty)
+        {
+            return Unauthorized();
+        }
 
-        // return NoContent();
+        var problem = await clientDelegationService.RemoveAnAgentsClient(provider, from, partyUuid, cascade, cancellationToken);
+        if (problem is { })
+        {
+            return problem.ToActionResult();
+        }
+
+        return NoContent();
     }
 
     [HttpDelete("my/clients/accesspackages")]
