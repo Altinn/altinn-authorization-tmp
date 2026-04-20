@@ -84,20 +84,24 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 15 | ✅ | Mock deduplication implementation | Phase 3.2–3.4 | [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) |
 | 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
 | 17 | ✅ | Sub-step 16.1 — Group A easy wins (`PolicyInformationPointControllerTest`, `DelegationsControllerTest`) | Phase 2.2 | [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md) |
+| 18 | ✅ | Sub-step 16.2a — Group A single-configuration migrations (`Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`) | Phase 2.2 | [Sub-step_16.2a_Group_A_Single_Config_Migrations.md](Sub-step_16.2a_Group_A_Single_Config_Migrations.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Items 1–2 require Podman Desktop (working as of
 Step 12); items 3–5 have no container-runtime dependency.
 
-1. **Sub-step 16.2 — AccessMgmt.Tests Group A complex** (4 controller classes)
-   - `MaskinportenSchemaControllerTest` **(promoted from 16.1 — needs nested-class split for PDP + HttpContext variants)**,
-     `Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`,
-     `RightsInternalControllerTest` (split into nested classes).
+1. **Sub-step 16.2b — AccessMgmt.Tests Group A nested-class splits** (2 controller classes)
+   - `MaskinportenSchemaControllerTest` — split into nested classes for the
+     `PepWithPDPAuthorizationMock` vs `PdpPermitMock` variants and the
+     per-test `HttpContextAccessor` route-value customizations.
+   - `RightsInternalControllerTest` — split into two nested classes
+     (`WithDefaultMocks` / `WithPdpMock`).
    - After this sub-step: delete `CustomWebApplicationFactory.cs`.
-   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
-     and [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md)
-     for the rationale behind promoting `MaskinportenSchemaControllerTest`.
+   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md),
+     [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md),
+     and [Sub-step_16.2a_Group_A_Single_Config_Migrations.md](Sub-step_16.2a_Group_A_Single_Config_Migrations.md)
+     for the rationale behind deferring these two classes to a dedicated sub-step.
 
 2. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
 
