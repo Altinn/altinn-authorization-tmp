@@ -169,18 +169,9 @@ highest-impact, lowest-effort gaps identified in the Phase 5 baseline.
 
 ---
 
-## Next Step
-
-Sub-step 6.7b is **complete** (Authorization models & services coverage sprint, +23 tests).
-
-Next candidates:
-- **6.1** (full baseline, needs Docker)
-- **6.5** (Host.Lease, needs storage account)
-- **Additional Authorization service-layer coverage**: `ContextHandler`, `DelegationContextHandler`,
-  `PolicyInformationPoint`, `AccessListAuthorization` (require more complex mocking but no Docker)
-- Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
-
 ## Sub-step 6.7c: Authorization Service-Layer Coverage Sprint
+
+> **Historical note:** After 6.7b, the next candidates considered were: 6.1 (full baseline), 6.5 (Host.Lease), additional service-layer coverage (`ContextHandler`, `DelegationContextHandler`, `PolicyInformationPoint`, `AccessListAuthorization`), or returning to deferred work. The team proceeded with service-layer coverage (6.7c-6.7f).
 
 ### New Test Files
 
