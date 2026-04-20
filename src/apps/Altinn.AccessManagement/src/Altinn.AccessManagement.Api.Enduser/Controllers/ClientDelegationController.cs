@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Audit;
@@ -111,26 +112,33 @@ public class ClientDelegationController(
     public async Task<IActionResult> DeleteMyClientViaProvider(
         [FromQuery(Name = "provider")][Required] Guid provider,
         [FromQuery(Name = "from")][Required] Guid from,
-        [FromBody][Required] DelegationBatchInputDto payload,
+        [FromBody] DelegationBatchInputDto payload,
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
-        
-        // Uncomment once the frontend has migrated to the new endpoints
-        // var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        // if (partyUuid == Guid.Empty)
-        // {
-        //     return Unauthorized();
-        // }
+        if (!cascade)
+        {
+            if (payload is null)
+            {
+                return BadRequest("Missing payload");    
+            }
 
-        // var problem = await clientDelegationService.RemoveAnAgentsClient(provider, from, partyUuid, cascade, cancellationToken);
-        // if (problem is { })
-        // {
-        //     return problem.ToActionResult();
-        // }
+            return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
+        }
 
-        // return NoContent();
+        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (partyUuid == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var problem = await clientDelegationService.RemoveAnAgentsClient(provider, from, partyUuid, cascade, cancellationToken);
+        if (problem is { })
+        {
+            return problem.ToActionResult();
+        }
+
+        return NoContent();
     }
 
     [HttpDelete("my/clients/accesspackages")]
