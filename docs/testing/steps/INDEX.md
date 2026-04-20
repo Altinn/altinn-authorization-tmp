@@ -11,9 +11,10 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 15):** Steps 1–15 complete! ✅ Mock deduplication complete — 7 of 8 duplicate mocks consolidated to TestUtils.
-> **Eliminated:** ~1,100 lines of duplicate code. Only `Altinn2RightsClientMock` remains duplicated (different implementations).
-> See [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) for details.
+> **Handoff note (after Step 16):** Phase 2.2–2.3 kicked off. Migration **plan + recipe** documented, and
+> `ResourceControllerTest` migrated to `ApiFixture` as proof-of-concept (7/7 tests pass under Podman).
+> Sub-steps 16.1–16.5 queued in [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) —
+> each is a 2–3-class batch sized for a single chat.
 
 **When completing a step:**
 
@@ -22,6 +23,7 @@
   step log table below linking to the new doc.
 - **Commit and push** at the end of each step.
 - **Wait for explicit go-ahead** before proceeding to the next step.
+- **Recommend whether a new chat should be started** for the next step, based on complexity and context.
 
 ---
 
@@ -45,6 +47,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 13 | ✅ | FluentAssertions evaluation | Phase 4.2 | [FluentAssertions_Evaluation.md](FluentAssertions_Evaluation.md) |
 | 14 | ✅ | Add FluentAssertions package | Phase 4.2a | [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md) |
 | 15 | ✅ | Mock deduplication implementation | Phase 3.2–3.4 | [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) |
+| 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
 
 ### Final Coverage (measured)
 
@@ -60,18 +63,23 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 **🎯 Ready to Execute** (Podman Desktop working, all dependencies met)
 
-1. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex, high impact)
-   - Migrate AccessMgmt.Tests controller tests to `ApiFixture` pattern
-   - **Status: Ready** — Podman + Testcontainers confirmed working (Step 12)
-   - **Will unblock:** Final Altinn2RightsClientMock consolidation
-   - Read [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md)
+1. **Sub-step 16.1 — AccessMgmt.Tests Group A easy wins** (3 controller classes)
+   - `PolicyInformationPointControllerTest`, `DelegationsControllerTest`, `MaskinportenSchemaControllerTest`
+   - Apply the migration recipe from Step 16 (constructor-only `WithAppsettings` + `ConfigureServices`).
+   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
 
-2. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
+2. **Sub-step 16.2 — AccessMgmt.Tests Group A complex** (3 controller classes)
+   - `Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`, `RightsInternalControllerTest` (split into nested classes).
+   - After this sub-step: delete `CustomWebApplicationFactory.cs`.
+
+3. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
+
+4. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
    - Create usage guidelines and patterns documentation
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
 
-3. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+5. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
