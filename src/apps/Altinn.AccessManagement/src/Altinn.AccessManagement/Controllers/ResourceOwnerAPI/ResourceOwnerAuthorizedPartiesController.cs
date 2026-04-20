@@ -127,19 +127,24 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
     }
 
     /// <summary>
-    /// Resolves the calling tjenesteier orgcode and records a resource owner AuthorizedParties
-    /// request counter increment so usage can be attributed per service owner. Orgcode is taken
-    /// directly from the <c>urn:altinn:org</c> claim when present; otherwise resolved from the
-    /// Maskinporten <c>consumer</c> claim orgnumber via the providers table (same principle as
-    /// ServiceOwnerLookup in altinn-resource-registry, backed by Providers instead of an OrgList
-    /// cache).
+    /// Resolves the calling party identifier and records a resource owner AuthorizedParties
+    /// request counter increment so usage can be attributed per caller. Resolution order:
+    /// <list type="number">
+    ///   <item><c>urn:altinn:org</c> claim (Altinn-issued token) — used directly as orgcode.</item>
+    ///   <item>Maskinporten <c>consumer</c> claim → orgnumber → providers table lookup (same
+    ///   principle as ServiceOwnerLookup in altinn-resource-registry, backed by Providers instead
+    ///   of an OrgList cache). If a registered tjenesteier is found, its orgcode is recorded.</item>
+    ///   <item>If the caller has the scope but is not a registered tjenesteier in Altinn, the
+    ///   raw orgnumber from the consumer claim is recorded so the metric still carries an
+    ///   identifier for the actor.</item>
+    /// </list>
     /// </summary>
     private async Task RecordResourceOwnerRequestMetric(CancellationToken cancellationToken)
     {
         try
         {
-            string resolvedOrgCode = await ResolveCallerOrgCode(cancellationToken);
-            authorizedPartiesTelemetry.RecordResourceOwnerRequest(resolvedOrgCode ?? AuthorizedPartiesTelemetry.UnknownDimensionValue);
+            string resolvedIdentifier = await ResolveCallerOrgCode(cancellationToken);
+            authorizedPartiesTelemetry.RecordResourceOwnerRequest(resolvedIdentifier ?? AuthorizedPartiesTelemetry.UnknownDimensionValue);
         }
         catch (Exception ex)
         {
@@ -161,12 +166,15 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         {
             // Cached because orgnumber→orgcode is effectively static and this endpoint is high-traffic.
             var orgNumberKey = organizationId.ToString();
-            return await memoryCache.GetOrCreateAsync($"authparties:orgcode:{orgNumberKey}", async entry =>
+            string orgCode = await memoryCache.GetOrCreateAsync($"authparties:orgcode:{orgNumberKey}", async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
                 Provider provider = await providerService.GetProviderByOrganizationId(orgNumberKey, cancellationToken);
                 return provider?.Code;
             });
+
+            // Fall back to orgnumber when the caller has the scope but is not a registered tjenesteier in Altinn.
+            return orgCode ?? orgNumberKey;
         }
 
         return null;
