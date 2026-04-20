@@ -332,7 +332,7 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             .AsTracking()
             .Where(d =>
                 d.FacilitatorId == partyUuid &&
-                d.To.ToId == toUuid && d.To.FromId == partyUuid &&
+                d.To.ToId == toUuid && d.To.FromId == partyUuid && d.To.RoleId == RoleConstants.Agent &&
                 d.From.ToId == partyUuid && d.From.FromId == fromUuid)
             .Include(d => d.DelegationPackages)
             .ThenInclude(d => d.Package)
