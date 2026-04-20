@@ -1349,7 +1349,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             .Where(a => a.Name == "CorrespondenceService")
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (resource.TypeId != resourceType.Id)
+        if (resourceType is null || resource.TypeId != resourceType.Id)
         {
             return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
@@ -1371,7 +1371,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             .AsNoTracking()
             .Where(ai => ai.AssignmentId == assignment.Id)
             .Where(ai => ai.ResourceId == resource.Id)
-            .Where(ai => ai.InstanceId == $"{AltinnXacmlConstants.MatchAttributeIdentifiers.CorrespondenceInstanceAttribute}:{input.InstanceId}")
+            .Where(ai => ai.InstanceId == $"{AltinnXacmlConstants.MatchAttributeIdentifiers.CorrespondenceInstanceAttribute}:{input.InstanceId.ToLowerInvariant()}")
             .FirstOrDefaultAsync(cancellationToken);
 
         if (assignmentInstance is null)
@@ -1505,7 +1505,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             .Where(a => a.Name == "CorrespondenceService")
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (resource.TypeId != resourceType.Id)
+        if (resourceType is null || resource.TypeId != resourceType.Id)
         {
             return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
@@ -1531,11 +1531,12 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         }
 
         // Fetch the AssignmentInstance record for fetching the correct policy file
+        var normalizedInstanceId = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.CorrespondenceInstanceAttribute}:{input.InstanceId}".ToLowerInvariant();
         var assignmentInstance = await db.AssignmentInstances
             .AsNoTracking()
             .Where(ai => ai.AssignmentId == assignment.Id)
             .Where(ai => ai.ResourceId == resource.Id)
-            .Where(ai => ai.InstanceId == input.InstanceId)
+            .Where(ai => ai.InstanceId == normalizedInstanceId)
             .FirstOrDefaultAsync(cancellationToken);
 
         string path = null;
@@ -1590,6 +1591,12 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
 
             // Write policy file to blob storage
             var policyWriteResult = await policyClient.WritePolicyConditionallyAsync(dataStream, leaseId, cancellationToken);
+            var policyWriteStatus = policyWriteResult?.GetRawResponse()?.Status;
+            var policyVersionId = policyWriteResult?.Value.VersionId;
+            if (policyWriteStatus is null || policyWriteStatus < 200 || policyWriteStatus >= 300 || string.IsNullOrEmpty(policyVersionId))
+            {
+                return AccessManagement.Core.Errors.Problems.DelegationPolicyRuleWriteFailed;
+            }
 
             // Update policy path and version in assignment instance
             return await UpsertAssignmentInstanceInternal(
@@ -1597,7 +1604,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 resource.Id,
                 instanceRight.InstanceId,
                 path,
-                policyWriteResult.Value.VersionId,
+                policyVersionId,
                 input.AuthorizationRuleID,
                 InstanceSourceTypeConstants.EndUser,
                 audit,
@@ -1643,7 +1650,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             FromType = AccessManagement.Enums.UuidType.Party,
             FromUuid = input.FromUuid,
             InstanceDelegationMode = AccessManagement.Core.Enums.InstanceDelegationMode.Normal,
-            InstanceId = instanceUrn.ToString(),
+            InstanceId = instanceUrn.ToString().ToLowerInvariant(),
             InstanceDelegationSource = AccessManagement.Core.Enums.InstanceDelegationSource.User,
             InstanceRules = rules,
             PerformedByType = AccessManagement.Enums.UuidType.Party,

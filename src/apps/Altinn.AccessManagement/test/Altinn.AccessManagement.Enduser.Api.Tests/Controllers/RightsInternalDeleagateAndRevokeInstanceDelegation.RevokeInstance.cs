@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
 /// <summary>
-/// Tests for <see cref="RightsInternalDeleagateAndRevokeInstanceDelegation"/>.
+/// Tests for <see cref="RightsInternalDelegateAndRevokeInstanceDelegation"/>.
 /// </summary>
 /// <remarks>
 /// These tests verify the complete flow of revoking instance delegations, including:
@@ -29,7 +29,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 /// - Validation of input parameters
 /// - Database persistence of revocation operations
 /// </remarks>
-public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<ApiFixture>
+public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<ApiFixture>
 {
     private const string InstanceId = "fa0678ad-960d-4307-aba2-ba29c9804c9d";
     private const string InstanceUrn = "urn:altinn:correspondence-id:fa0678ad-960d-4307-aba2-ba29c9804c9d";
@@ -38,7 +38,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
 
     private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-    public RightsInternalDeleagateAndRevokeInstanceDelegation(ApiFixture fixture)
+    public RightsInternalDelegateAndRevokeInstanceDelegation(ApiFixture fixture)
     {
         Fixture = fixture;
         Fixture.ConfiureServices(services =>
@@ -497,13 +497,14 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
     }
 
     /// <summary>
-    /// Test case: Attempts to revoke with an invalid (empty) FromUuid.
+    /// Test case: Attempts to Delegate with an empty action list
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
     public async Task DelegateInstance_EmptyActionList_ReturnsBadRequest()
     {
         // Arrange
+        var fromUuid = TestData.HanSoloEnterprise.Id;
         var toUuid = TestData.LeiaOrgana.Id;
         var performedBy = TestData.HanSolo.Id;
         var resourceId = TestData.TestdirektoratetCorrespondenceService.RefId;
@@ -512,7 +513,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
         {
             AuthorizationRuleID = 12345,
             Created = DateTimeOffset.UtcNow,
-            FromUuid = Guid.Empty, // Invalid UUID
+            FromUuid = fromUuid,
             ToUuid = toUuid,
             PerformedBy = performedBy,
             ResourceId = resourceId,
@@ -535,13 +536,14 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
     }
 
     /// <summary>
-    /// Test case: Attempts to revoke with an invalid (empty) FromUuid.
+    /// Test case: Attempts to revoke with a missing instance id
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
     public async Task DelegateInstance_EmptyIstanceId_ReturnsBadRequest()
     {
         // Arrange
+        var fromUuid = TestData.HanSoloEnterprise.Id;
         var toUuid = TestData.LeiaOrgana.Id;
         var performedBy = TestData.HanSolo.Id;
         var resourceId = TestData.TestdirektoratetCorrespondenceService.RefId;
@@ -550,7 +552,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
         {
             AuthorizationRuleID = 12345,
             Created = DateTimeOffset.UtcNow,
-            FromUuid = Guid.Empty, // Invalid UUID
+            FromUuid = fromUuid,
             ToUuid = toUuid,
             PerformedBy = performedBy,
             ResourceId = resourceId,

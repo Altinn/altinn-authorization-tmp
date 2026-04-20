@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Altinn.AccessManagement.Core.Models
 {
     /// <summary>
-    /// Represents a dekegation of an instance, including the instance owner and the actions that are delegated.
+    /// Represents a delegation of an instance, including the instance owner and the actions that are delegated.
     /// </summary>
     public class InstanceDelegationRequest
     {

@@ -17,7 +17,7 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the unique identifier for the authorization rule in Altinn II.
         /// </summary>
         [JsonPropertyName("authorizationruleid")]
-        [Required(ErrorMessage = "The original insance delegation id must be provided")]
+        [Required(ErrorMessage = "The original instance delegation id must be provided")]
         public int AuthorizationRuleID { get; set; }
 
         /// <summary>

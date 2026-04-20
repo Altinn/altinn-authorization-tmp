@@ -585,6 +585,7 @@ namespace Altinn.AccessManagement.Controllers
                 var problem = new ProblemDetails
                 {
                     Title = "An error occurred while delegating instance rights.",
+                    Detail = "An unexpected error occurred.",
                     Status = StatusCodes.Status500InternalServerError
                 };
                 return problem.ToActionResult();
@@ -601,7 +602,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
-        [ActionName(nameof(DelegateInstance))]
+        [ActionName(nameof(RevokeInstance))]
         [HttpPost("internal/instance/revoke")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -634,6 +635,7 @@ namespace Altinn.AccessManagement.Controllers
                 var problem = new ProblemDetails
                 {
                     Title = "An error occurred while revoking instance rights.",
+                    Detail = "An unexpected error occurred.",
                     Status = StatusCodes.Status500InternalServerError
                 };
                 return problem.ToActionResult();
