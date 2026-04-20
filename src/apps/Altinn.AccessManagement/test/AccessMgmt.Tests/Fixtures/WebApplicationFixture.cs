@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Contexts;
+using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Scenarios;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -101,7 +102,7 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
         services.AddScoped<IPDP, PdpPermitMock>();
-        services.AddScoped<IAltinn2RightsClient, Altinn2RightsClientMock>();
+        services.AddScoped<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
         services.AddScoped<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
         services.AddSingleton<IDelegationChangeEventQueue>(new DelegationChangeEventQueueMock());
 

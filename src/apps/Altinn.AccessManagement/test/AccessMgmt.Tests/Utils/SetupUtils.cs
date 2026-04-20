@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using AccessMgmt.Tests.Mocks;
+using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Controllers;
-using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.AccessManagement.TestUtils.Mocks;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

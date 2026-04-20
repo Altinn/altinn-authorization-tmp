@@ -9,6 +9,7 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Tests.Data;
+using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Utils;
 using Altinn.Authorization.ProblemDetails;
@@ -232,7 +233,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<CustomWebAppli
                 services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
+                services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
 
                 foreach (var action in actions)
                 {
