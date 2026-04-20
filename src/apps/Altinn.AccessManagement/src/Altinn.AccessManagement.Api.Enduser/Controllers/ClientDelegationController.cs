@@ -120,7 +120,7 @@ public class ClientDelegationController(
         {
             if (payload is null)
             {
-                return BadRequest();    
+                return BadRequest("Missing payload");    
             }
 
             return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
