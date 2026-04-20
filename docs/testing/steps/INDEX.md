@@ -49,5 +49,8 @@ Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_
 
 ### Workflow
 
+- **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) for each new step.
+  The doc should describe the goal, what changed, verification results, and any
+  deferred items. Add a row to the step log table above linking to the new doc.
 - **Commit and push** at the end of each step.
 - **Wait for explicit go-ahead** before proceeding to the next step.
