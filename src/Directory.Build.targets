@@ -8,6 +8,9 @@
                 <XUnitVersion Condition=" '$(XUnitVersion)' == '' ">v2</XUnitVersion>
                 <GenerateDocumentationFile Condition=" '$(EnableReferenceTrimmer)' == '' ">false</GenerateDocumentationFile>
                 <OutputType Condition=" '$(IsTestProject)' == 'true' And '$(XUnitVersion)' == 'v3' ">Exe</OutputType>
+
+                <!-- Coverage output format for coverlet -->
+                <CoverletOutputFormat>cobertura</CoverletOutputFormat>
             </PropertyGroup>
 
             <ItemGroup>
@@ -16,6 +19,11 @@
 
             <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
                 <PackageReference Include="coverlet.collector">
+                    <PrivateAssets>all</PrivateAssets>
+                    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+                </PackageReference>
+
+                <PackageReference Include="coverlet.msbuild">
                     <PrivateAssets>all</PrivateAssets>
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                 </PackageReference>
