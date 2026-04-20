@@ -1,5 +1,10 @@
 ﻿# Step 12 — AccessManagement Coverage Baseline Attempt (Phase 6.7a)
 
+> ⚠️ **OBSOLETE — superseded by [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).**
+> This doc records the initial Podman/Testcontainers troubleshooting attempt.
+> The working configuration and the actual measured baseline live in the `_Success` doc,
+> which is the one linked from [INDEX.md](INDEX.md). Kept for troubleshooting history only.
+
 ## Goal
 
 Run baseline coverage collection for AccessManagement projects to:

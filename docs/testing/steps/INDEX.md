@@ -21,9 +21,37 @@
 - **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) describing the goal,
   what changed, verification results, and any deferred items. Add a row to the
   step log table below linking to the new doc.
+- **Run all tests that were changed or impacted by the step** and record the
+  results in the step doc. Update the [Final Coverage (measured)](#final-coverage-measured)
+  table below if the step affected coverage of any listed assembly (or a new
+  assembly that should be tracked).
+- **Re-check the [Blocked Items](#blocked-items) section** to see if anything is
+  now unblocked by the completed step. If so, move it into
+  `### Recommended Next Steps (priority order)` at an appropriate priority and
+  remove it from the Blocked Items table.
+- **Sweep `docs/testing/steps/` for obsoleted docs.** Review every file under
+  `docs/testing/steps/` and check whether any have been superseded or
+  invalidated by the completed step (e.g. plans that are now fully executed,
+  audits whose findings have all been addressed, POCs whose follow-up work is
+  done). For each obsolete doc, either delete it and update links, or add a
+  banner at the top pointing to the step that replaced it.
 - **Commit and push** at the end of each step.
 - **Wait for explicit go-ahead** before proceeding to the next step.
 - **Recommend whether a new chat should be started** for the next step, based on complexity and context.
+
+**Picking the next step (when the list below is thinning):**
+
+1. If `### Recommended Next Steps (priority order)` still has actionable
+   items, take the highest-priority one.
+2. If that list is empty or only contains blocked/unactionable items, consult
+   [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
+   for the next actionable item from the phase plan, and add it back to the
+   list below before starting.
+3. If `TESTING_INFRASTRUCTURE_OVERHAUL.md` is also exhausted of actionable
+   work, the next step should itself be **a fresh audit of the current
+   testing infrastructure** to identify the next most valuable improvements
+   — produce an updated audit doc and a refreshed recommended-next-steps
+   list, then resume the cycle.
 
 ---
 
@@ -43,13 +71,15 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
 | 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 | 11 | ✅ | Certificate consolidation — Authorization.Tests (M8) | Phase 3.5 | [Certificate_Consolidation.md](Certificate_Consolidation.md) |
-| 12 | ✅ | AccessManagement coverage baseline with Podman (6.7a) | Phase 6 | [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) |
+| 12 | ✅ | AccessManagement coverage baseline with Podman (6.7a) | Phase 6.7a | [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) |
 | 13 | ✅ | FluentAssertions evaluation | Phase 4.2 | [FluentAssertions_Evaluation.md](FluentAssertions_Evaluation.md) |
 | 14 | ✅ | Add FluentAssertions package | Phase 4.2a | [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md) |
 | 15 | ✅ | Mock deduplication implementation | Phase 3.2–3.4 | [Mock_Deduplication_Implementation.md](Mock_Deduplication_Implementation.md) |
 | 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
 
 ### Final Coverage (measured)
+
+**Altinn.Authorization app** (Phase 6 — CI-enforced):
 
 | Assembly | Line% | Branch% | Threshold | Status |
 |---|---|---|---|---|
@@ -59,9 +89,33 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 **236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
 
+**AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
+point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
+threshold we'd enforce in CI once reached (see priority 5 in
+[Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
+[AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
+
+| Assembly | Line% | Branch% | Target | Status |
+|---|---|---|---|---|
+| Altinn.AccessMgmt.PersistenceEF | 98.59 | 90.78 | 60% | ✅ |
+| AccessManagement.Api.Maskinporten | 80.36 | 80.00 | 60% | ✅ |
+| AccessManagement.Api.Enterprise | 66.39 | 56.52 | 60% | ✅ |
+| AccessManagement.Core | 63.43 | 61.49 | 60% | ✅ |
+| AccessManagement (main app) | 58.19 | 60.93 | 60% | ⚠️ Near |
+| AccessManagement.Integration | 47.57 | 43.75 | 60% | ❌ Gap |
+| AccessManagement.Api.Internal | 46.74 | 46.20 | 60% | ❌ Gap |
+| AccessManagement.Persistence | 44.94 | 30.23 | 60% | ❌ Gap |
+| AccessMgmt.Persistence | 32.51 | 9.42 | 60% | ❌ Gap |
+| AccessMgmt.Core | 17.31 | 12.00 | 60% | ❌ Gap |
+| AccessManagement.Api.Metadata | 16.59 | 13.33 | 60% | ❌ Gap |
+| AccessMgmt.Persistence.Core | 8.78 | 3.21 | 60% | ❌ Gap |
+| AccessManagement.Api.Enduser | 1.19 | 0.15 | 60% | ❌ Gap |
+| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | 60% | ❌ Gap |
+
 ### Recommended Next Steps (priority order)
 
-**🎯 Ready to Execute** (Podman Desktop working, all dependencies met)
+All items below are actionable. Items 1–3 require Podman Desktop (working as of
+Step 12); items 4–6 have no container-runtime dependency.
 
 1. **Sub-step 16.1 — AccessMgmt.Tests Group A easy wins** (3 controller classes)
    - `PolicyInformationPointControllerTest`, `DelegationsControllerTest`, `MaskinportenSchemaControllerTest`
@@ -79,7 +133,18 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
 
-5. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+5. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
+   - Extend the CI coverage gate (Step 8) to the 4 AccessManagement assemblies already above 60%:
+     - `Altinn.AccessMgmt.PersistenceEF` → 90% (currently 98.59)
+     - `AccessManagement.Api.Maskinporten` → 75% (currently 80.36)
+     - `AccessManagement.Api.Enterprise` → 60% (currently 66.39)
+     - `AccessManagement.Core` → 60% (currently 63.43)
+   - Leave `AccessManagement` (main app, 58.19%) as a **warning-only** ratchet until it crosses 60%.
+   - Do **not** enforce thresholds on the low-coverage assemblies — those are covered by 6.7b–6.7d below.
+   - Maps to overhaul plan Phase 5.1 / 5.4. Prevents regression on assemblies we've already invested in, without blocking CI on known gaps.
+   - Read [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for the existing Authorization-app threshold pattern.
+
+6. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
