@@ -144,7 +144,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         try
         {
             string resolvedIdentifier = await ResolveCallerOrgCode(cancellationToken);
-            authorizedPartiesTelemetry.RecordResourceOwnerRequest(resolvedIdentifier ?? AuthorizedPartiesTelemetry.UnknownDimensionValue);
+            authorizedPartiesTelemetry.RecordResourceOwnerRequest(resolvedIdentifier);
         }
         catch (Exception ex)
         {
@@ -177,7 +177,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
             return orgCode ?? orgNumberKey;
         }
 
-        return null;
+        return AuthorizedPartiesTelemetry.UnknownDimensionValue;
     }
 
     private async Task<bool> IsAuthorizedForOrgCode(string orgCode, CancellationToken ct)
