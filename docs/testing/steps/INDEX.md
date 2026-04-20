@@ -11,9 +11,9 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 12):** Steps 1–11 complete, Step 12 blocked by Testcontainers+Podman incompatibility.
-> **Recommended:** Install Docker Desktop to unblock AccessManagement testing, OR proceed with non-Docker work (Phase 4.2 FluentAssertions, Phase 4.4 Collection usage).
-> Read the linked doc for context before proceeding.
+> **Handoff note (after Step 12):** Steps 1–12 complete! ✅ Podman Desktop works with Testcontainers using `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`.
+> **1,279 AccessManagement tests passing.** Ready to proceed with Phase 2.2–2.3 (WAF consolidation) or Phase 3.2–3.4 (mock dedup).
+> See [AccessManagement_Coverage_Baseline_Success.md](steps/AccessManagement_Coverage_Baseline_Success.md) for baseline metrics.
 
 **When completing a step:**
 
@@ -41,7 +41,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
 | 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 | 11 | ✅ | Certificate consolidation — Authorization.Tests (M8) | Phase 3.5 | [Certificate_Consolidation.md](Certificate_Consolidation.md) |
-| 12 | ⚠️ | AccessManagement coverage baseline attempt (6.7a) | Phase 6 | [AccessManagement_Coverage_Baseline_Attempt.md](AccessManagement_Coverage_Baseline_Attempt.md) |
+| 12 | ✅ | AccessManagement coverage baseline with Podman (6.7a) | Phase 6 | [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) |
 
 ### Final Coverage (measured)
 
