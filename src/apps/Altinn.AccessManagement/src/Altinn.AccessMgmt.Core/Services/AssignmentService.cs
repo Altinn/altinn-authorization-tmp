@@ -1308,7 +1308,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         return null;
     }
 
-    /// <inheritdoc />>
+    /// <inheritdoc />
     public async Task<Result<bool>> RevokeInstanceAssignmentFromAltinn2(InstanceRevokeRequest input, CancellationToken cancellationToken = default)
     {
         // Create audit values
