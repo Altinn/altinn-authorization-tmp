@@ -11,9 +11,9 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 11):** All 11 steps listed below are complete and
-> pushed. The next task is whichever item the user picks from *Recommended Next
-> Steps* below. Read the linked doc for that item before starting work.
+> **Handoff note (after Step 12):** Steps 1–11 complete, Step 12 blocked by Testcontainers+Podman incompatibility.
+> **Recommended:** Install Docker Desktop to unblock AccessManagement testing, OR proceed with non-Docker work (Phase 4.2 FluentAssertions, Phase 4.4 Collection usage).
+> Read the linked doc for context before proceeding.
 
 **When completing a step:**
 
@@ -41,6 +41,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
 | 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 | 11 | ✅ | Certificate consolidation — Authorization.Tests (M8) | Phase 3.5 | [Certificate_Consolidation.md](Certificate_Consolidation.md) |
+| 12 | ⚠️ | AccessManagement coverage baseline attempt (6.7a) | Phase 6 | [AccessManagement_Coverage_Baseline_Attempt.md](AccessManagement_Coverage_Baseline_Attempt.md) |
 
 ### Final Coverage (measured)
 
