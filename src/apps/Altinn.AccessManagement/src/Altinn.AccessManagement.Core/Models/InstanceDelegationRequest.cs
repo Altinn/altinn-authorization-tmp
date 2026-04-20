@@ -60,7 +60,6 @@ namespace Altinn.AccessManagement.Core.Models
         /// <summary>
         /// Gets or sets the list of actions.
         /// </summary>
-        /// </summary>
         [JsonPropertyName("actions")]
         [Required(ErrorMessage = "At least one action must be specified")]
         [MinLength(1, ErrorMessage = "At least one action must be specified")]
