@@ -51,16 +51,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Mocks\InstanceRepositoryMock.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Remove="Data\AuthorizedParties\TestDataAppsInstanceDelegation.cs" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Data\ResourceRegistryResources\nav_sykepenger_dialog\" />
-      <Folder Include="Data\Xacml\3.0\appdelegation\" />
     </ItemGroup>
 
     <ItemGroup>
