@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Models;
@@ -71,9 +71,10 @@ public class V2MaskinportenSchemaControllerTest(WebApplicationFixture fixture) :
         /// <summary>
         /// Seeds
         /// </summary>
-        public static TheoryData<SeedGetOfferedMaskinportenSchemaDelegations> Seeds() =>
-        [
-            new(
+        public static TheoryData<SeedGetOfferedMaskinportenSchemaDelegations> Seeds()
+        {
+            var data = new TheoryData<SeedGetOfferedMaskinportenSchemaDelegations>();
+            data.Add(new SeedGetOfferedMaskinportenSchemaDelegations(
                 /* Acceptance Criteria */ @"
                 GIVEN that organization Voss consulting has delegated a MaskinportenSchema resource to Voss Accounting
                 WHEN DAGL Olav for voss consulting requests delegations that Voss consulting has offered
@@ -86,8 +87,9 @@ public class V2MaskinportenSchemaControllerTest(WebApplicationFixture fixture) :
 
                 WithAssertDbContainsDelegationsToParty(OrganizationSeeds.VossConsulting.PartyId, OrganizationSeeds.VossAccounting.PartyId, ResourceSeeds.MaskinportenSchema.Identifier),
                 WithAssertResponseContainsDelegations(OrganizationSeeds.VossConsulting.Defaults, OrganizationSeeds.VossAccounting.Defaults),
-                WithAssertResponseStatusCodeSuccessful)
-        ];
+                WithAssertResponseStatusCodeSuccessful));
+            return data;
+        }
     }
 
     /// <summary>

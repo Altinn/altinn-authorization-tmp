@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
     <Choose>
 
         <When Condition=" '$(IsTestProject)' == 'true' Or '$(IsTestLibrary)' == 'true'">
@@ -7,6 +7,7 @@
                 <NoWarn>$(NoWarn);SA0001</NoWarn>
                 <XUnitVersion Condition=" '$(XUnitVersion)' == '' ">v2</XUnitVersion>
                 <GenerateDocumentationFile Condition=" '$(EnableReferenceTrimmer)' == '' ">false</GenerateDocumentationFile>
+                <OutputType Condition=" '$(IsTestProject)' == 'true' And '$(XUnitVersion)' == 'v3' ">Exe</OutputType>
             </PropertyGroup>
 
             <ItemGroup>
@@ -22,7 +23,7 @@
                 <PackageReference Include="Microsoft.NET.Test.Sdk" />
                 <PackageReference Include="xunit" Condition=" '$(XUnitVersion)' == 'v2' " />
                 <PackageReference Include="xunit.v3" Condition=" '$(XUnitVersion)' == 'v3' " />
-                <PackageReference Include="xunit.runner.visualstudio">
+                <PackageReference Include="xunit.runner.visualstudio" Condition=" '$(XUnitVersion)' == 'v2' ">
                     <PrivateAssets>all</PrivateAssets>
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                 </PackageReference>

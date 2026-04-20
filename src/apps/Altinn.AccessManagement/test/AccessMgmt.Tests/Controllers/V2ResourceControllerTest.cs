@@ -1,4 +1,4 @@
-﻿using Altinn.AccessManagement.Controllers;
+using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Tests.Fixtures;
@@ -62,9 +62,10 @@ public class V2ResourceControllerTest(WebApplicationFixture fixture) : IClassFix
         /// <summary>
         /// Seeds
         /// </summary>
-        public static TheoryData<SeedPostUpsertResource> Seeds() =>
-        [
-            new(
+        public static TheoryData<SeedPostUpsertResource> Seeds()
+        {
+            var data = new TheoryData<SeedPostUpsertResource>();
+            data.Add(new SeedPostUpsertResource(
                 /* Acceptance Criteria */ @"
                 GIVEN a resource is upserted in resource registry
                 WHEN resource registry forwards the resource
@@ -75,8 +76,9 @@ public class V2ResourceControllerTest(WebApplicationFixture fixture) : IClassFix
                 WithScenarios(TokenScenario.PlatformToken("platform", "resourceregistry")),
 
                 WithAssertResponseStatusCodeSuccessful,
-                WithAssertResourceExistsInDb(TestAltinnApp))
-        ];
+                WithAssertResourceExistsInDb(TestAltinnApp)));
+            return data;
+        }
     }
 
     /// <summary>

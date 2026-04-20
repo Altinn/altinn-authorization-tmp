@@ -24,7 +24,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.MaskinPorten
 {

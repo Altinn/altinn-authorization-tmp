@@ -126,19 +126,19 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// with proper resource data should use ApiFixture instead, which seeds all necessary
     /// test entities via TestDataSeeds.
     /// </remarks>
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         PostgresServer.StartUsing(this);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// Removes itself as consumer of the postgres server
     /// </summary>
-    public new Task DisposeAsync()
+    public new ValueTask DisposeAsync()
     {
         PostgresServer.StopUsing(this);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 

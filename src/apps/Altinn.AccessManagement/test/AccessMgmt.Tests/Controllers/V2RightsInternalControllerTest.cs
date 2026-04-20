@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Models;
@@ -77,8 +77,10 @@ public class V2RightsInternalControllerTest(WebApplicationFixture fixture) : ICl
         /// <summary>
         /// Seeds
         /// </summary>
-        public static TheoryData<SeedGetRightsDelegationsOffered> Seeds() => [
-            new(
+        public static TheoryData<SeedGetRightsDelegationsOffered> Seeds()
+        {
+            var data = new TheoryData<SeedGetRightsDelegationsOffered>();
+            data.Add(new SeedGetRightsDelegationsOffered(
                 /* Acceptance Critieria */ @"
                 GIVEN that organization Voss Accounting has an active delegation to employee Paula
                 WHEN DAGL Olav for Orstad Accounting requests offered delegations from Orstad Accounting
@@ -92,9 +94,9 @@ public class V2RightsInternalControllerTest(WebApplicationFixture fixture) : ICl
                     TokenScenario.PersonToken(PersonSeeds.Olav.Defaults)),
 
                 WithAssertResponseStatusCodeSuccessful,
-                WithAssertResponseContainsDelegationToUserProfile(OrganizationSeeds.VossAccounting.Defaults, PersonSeeds.Paula.Defaults)),
+                WithAssertResponseContainsDelegationToUserProfile(OrganizationSeeds.VossAccounting.Defaults, PersonSeeds.Paula.Defaults)));
 
-            new(
+            data.Add(new SeedGetRightsDelegationsOffered(
                 /* Acceptance Critieria */ @"
                 GIVEN that organization Voss Consulting has delegations to organization Voss Accounting
                 WHEN DAGL Paula for Voss Consulting requests offered delegations from Voss Consulting
@@ -108,8 +110,9 @@ public class V2RightsInternalControllerTest(WebApplicationFixture fixture) : ICl
                     TokenScenario.PersonToken(PersonSeeds.Paula.Defaults)),
 
                 WithAssertResponseStatusCodeSuccessful,
-                WithAssertResponseContainsDelegationToParty(OrganizationSeeds.VossConsulting.Defaults, OrganizationSeeds.VossAccounting.Defaults)),
-            new(
+                WithAssertResponseContainsDelegationToParty(OrganizationSeeds.VossConsulting.Defaults, OrganizationSeeds.VossAccounting.Defaults)));
+
+            data.Add(new SeedGetRightsDelegationsOffered(
                 /* Acceptance Critieria */ @"
                 GIVEN that organization Voss Consulting has active app delegations to organization Voss Accounting
                 AND app is deleted 
@@ -124,8 +127,10 @@ public class V2RightsInternalControllerTest(WebApplicationFixture fixture) : ICl
                     DelegationScenarios.WithoutResource(ResourceSeeds.AltinnApp.Defaults)),
 
                 WithAssertResponseStatusCodeSuccessful,
-                WithAssertResponseContainsDelegationToParty(OrganizationSeeds.VossConsulting.Defaults, OrganizationSeeds.VossAccounting.Defaults)),
-        ];
+                WithAssertResponseContainsDelegationToParty(OrganizationSeeds.VossConsulting.Defaults, OrganizationSeeds.VossAccounting.Defaults)));
+
+            return data;
+        }
     }
 
     /// <summary>

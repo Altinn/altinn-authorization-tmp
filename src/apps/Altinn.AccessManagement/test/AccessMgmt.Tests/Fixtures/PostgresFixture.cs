@@ -56,14 +56,14 @@ public class PostgresFixture : IAsyncLifetime
     public PostgresDatabase SharedDb { get; private set; }
 
     /// <inheritdoc/>
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         PostgresServer.StopUsing(this);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         PostgresServer.StartUsing(this);
 
@@ -77,7 +77,7 @@ public class PostgresFixture : IAsyncLifetime
         db.Database.MigrateAsync().Wait();
         AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(db).Wait();
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 
