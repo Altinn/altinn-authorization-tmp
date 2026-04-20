@@ -12,6 +12,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -21,7 +22,7 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/resourceowner")]
-public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAuthorizedPartiesController> logger, IMapper mapper, IAuthorizedPartiesService authorizedPartiesService, IProviderService providerService, AuthorizedPartiesTelemetry authorizedPartiesTelemetry) : ControllerBase
+public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAuthorizedPartiesController> logger, IMapper mapper, IAuthorizedPartiesService authorizedPartiesService, IProviderService providerService, AuthorizedPartiesTelemetry authorizedPartiesTelemetry, IMemoryCache memoryCache) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
@@ -158,8 +159,14 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         var consumerUrn = OrgUtil.GetAuthenticatedParty(User);
         if (consumerUrn is not null && consumerUrn.IsOrganizationId(out var organizationId))
         {
-            Provider provider = await providerService.GetProviderByOrganizationId(organizationId.ToString(), cancellationToken);
-            return provider?.Code;
+            // Cached because orgnumber→orgcode is effectively static and this endpoint is high-traffic.
+            var orgNumberKey = organizationId.ToString();
+            return await memoryCache.GetOrCreateAsync($"authparties:orgcode:{orgNumberKey}", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+                Provider provider = await providerService.GetProviderByOrganizationId(orgNumberKey, cancellationToken);
+                return provider?.Code;
+            });
         }
 
         return null;
