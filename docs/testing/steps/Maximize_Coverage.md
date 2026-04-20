@@ -138,19 +138,46 @@ highest-impact, lowest-effort gaps identified in the Phase 5 baseline.
 | 6.5 Host.Lease tests | ⬜ | Blocked by storage account dependency |
 | **6.6 CI threshold** | **✅** | Per-assembly thresholds in CI via `coverage-thresholds.json` |
 | **6.7a Authorization infra/utility coverage** | **✅** | +30 tests (284 → 314) |
-| 6.7b AccessManagement coverage | ⬜ | Needs Docker |
+| **6.7b Authorization models & services coverage** | **✅** | +23 tests (314 → 337) |
+| 6.7c AccessManagement coverage | ⬜ | Needs Docker |
+
+## Sub-step 6.7b: Authorization Models & Services Coverage Sprint
+
+### New / Updated Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `OrganizationNumberTest.cs` (new) | 18 | `Parse` (4: string valid/invalid, span valid/invalid), `TryParse` (6: valid, too short, too long, letters, null, span), `CreateUnchecked` (1), `ToString` overloads (2), `TryFormat` (2: sufficient/insufficient buffer), JSON round-trip (1), JSON invalid (1), `GetExamples` (1) |
+| `EventLogServiceTest.cs` (new) | 2 | `CreateAuthorizationEvent` — audit log enabled enqueues event, audit log disabled does not enqueue |
+| `EventLogHelperTest.cs` (updated) | 3 new | `GetClientIpAddress` with forwarded-for header, no header; `MapAuthorizationEventFromContextRequest` full field mapping |
+
+**Total new tests: 23** (314 → 337)
+
+### Approach
+
+- `OrganizationNumber` — previously completely untested model with substantial parsing, formatting,
+  and JSON serialization logic (~140 lines). Tests cover all public API surface.
+- `EventLogService` — previously untested service. Tested with mock `IFeatureManager` and
+  `IEventsQueueClient` to verify audit-log feature flag gating.
+- `MapAuthorizationEventFromContextRequest` — the main orchestrating method in `EventLogHelper`
+  that was missing from the existing test suite.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 337 Authorization.Tests pass (314 existing + 23 new)
 
 ---
 
 ## Next Step
 
-Sub-step 6.7a is **complete** (Authorization infrastructure & utility coverage sprint, +30 tests).
+Sub-step 6.7b is **complete** (Authorization models & services coverage sprint, +23 tests).
 
 Next candidates:
 - **6.1** (full baseline, needs Docker)
 - **6.5** (Host.Lease, needs storage account)
-- **Additional Authorization coverage**: `ContextHandler`, `DelegationContextHandler`, `PolicyInformationPoint`,
-  `AccessListAuthorization` (require more complex mocking but no Docker)
+- **Additional Authorization service-layer coverage**: `ContextHandler`, `DelegationContextHandler`,
+  `PolicyInformationPoint`, `AccessListAuthorization` (require more complex mocking but no Docker)
 - Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
 
 Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
