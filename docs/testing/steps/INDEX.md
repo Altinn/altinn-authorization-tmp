@@ -75,13 +75,11 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
-   - **6.5:** Host.Lease tests (blocked by Azure Storage Emulator)
 
-See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) and [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) for details.
+See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) for detailed coverage metrics.
 
-### Deferred Work
+### Blocked Items
 
-| Item | Reason | Tracked In |
+| Item | Blocker | Notes |
 |---|---|---|
-| Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation | Complex; needs Docker | [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md) |
-| Phase 3.2–3.4: Mock dedup implementation | Ready to start (no longer blocked) | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
+| Phase 6.5: Host.Lease tests | Azure Storage Emulator/Azurite required | See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md) Phase 6.5 |
