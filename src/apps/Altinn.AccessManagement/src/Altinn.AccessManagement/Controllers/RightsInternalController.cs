@@ -581,10 +581,10 @@ namespace Altinn.AccessManagement.Controllers
             }
             catch (Exception ex) 
             {
+                _logger.LogError(StatusCodes.Status500InternalServerError, ex, "Internal exception occurred during Instance Right Import");
                 var problem = new ProblemDetails
                 {
                     Title = "An error occurred while delegating instance rights.",
-                    Detail = ex.Message,
                     Status = StatusCodes.Status500InternalServerError
                 };
                 return problem.ToActionResult();
@@ -630,10 +630,10 @@ namespace Altinn.AccessManagement.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(StatusCodes.Status500InternalServerError, ex, "Internal exception occurred during Instance Right revoke");
                 var problem = new ProblemDetails
                 {
                     Title = "An error occurred while revoking instance rights.",
-                    Detail = ex.Message,
                     Status = StatusCodes.Status500InternalServerError
                 };
                 return problem.ToActionResult();

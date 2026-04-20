@@ -93,7 +93,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             PerformedBy = performedBy,
             ResourceId = resourceId,
             InstanceId = InstanceId,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
         };
 
         var delegationContent = new StringContent(
@@ -190,7 +190,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             PerformedBy = performedBy,
             ResourceId = resourceId,
             InstanceId = InstanceId,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
         };
 
         var delegationRequest2 = new InstanceDelegationRequest
@@ -202,7 +202,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             PerformedBy = performedBy,
             ResourceId = resourceId,
             InstanceId = instanceId2,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
         };
 
         var delegationContent1 = new StringContent(
@@ -401,7 +401,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             PerformedBy = performedBy,
             ResourceId = resourceId,
             InstanceId = InstanceId,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
 
         };
 
@@ -479,7 +479,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             PerformedBy = performedBy,
             ResourceId = resourceId,
             InstanceId = InstanceId,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
         };
 
         var content = new StringContent(
@@ -554,7 +554,7 @@ public class RightsInternalDeleagateAndRevokeInstanceDelegation : IClassFixture<
             ToUuid = toUuid,
             PerformedBy = performedBy,
             ResourceId = resourceId,
-            Actions = new List<string> { "read", "write" }
+            Actions = new List<string> { "read", "subscribe" }
         };
 
         var content = new StringContent(
