@@ -85,32 +85,21 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 16 | ✅ | AccessMgmt.Tests WAF consolidation — plan + `ResourceControllerTest` POC | Phase 2.2 | [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md) |
 | 17 | ✅ | Sub-step 16.1 — Group A easy wins (`PolicyInformationPointControllerTest`, `DelegationsControllerTest`) | Phase 2.2 | [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md) |
 | 18 | ✅ | Sub-step 16.2a — Group A single-configuration migrations (`Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`) | Phase 2.2 | [Sub-step_16.2a_Group_A_Single_Config_Migrations.md](Sub-step_16.2a_Group_A_Single_Config_Migrations.md) |
+| 19 | ✅ | Sub-step 16.2b — Group A nested-class splits (`MaskinportenSchemaControllerTest`, `RightsInternalControllerTest`); `CustomWebApplicationFactory` deleted | Phase 2.2 | [Sub-step_16.2b_Group_A_Nested_Class_Splits.md](Sub-step_16.2b_Group_A_Nested_Class_Splits.md) |
 
 ### Recommended Next Steps (priority order)
 
-All items below are actionable. Items 1–2 require Podman Desktop (working as of
-Step 12); items 3–5 have no container-runtime dependency.
+All items below are actionable. Items 1 requires Podman Desktop (working as of
+Step 12); items 2–4 have no container-runtime dependency.
 
-1. **Sub-step 16.2b — AccessMgmt.Tests Group A nested-class splits** (2 controller classes)
-   - `MaskinportenSchemaControllerTest` — split into nested classes for the
-     `PepWithPDPAuthorizationMock` vs `PdpPermitMock` variants and the
-     per-test `HttpContextAccessor` route-value customizations.
-   - `RightsInternalControllerTest` — split into two nested classes
-     (`WithDefaultMocks` / `WithPdpMock`).
-   - After this sub-step: delete `CustomWebApplicationFactory.cs`.
-   - Read [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md),
-     [Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md),
-     and [Sub-step_16.2a_Group_A_Single_Config_Migrations.md](Sub-step_16.2a_Group_A_Single_Config_Migrations.md)
-     for the rationale behind deferring these two classes to a dedicated sub-step.
+1. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
 
-2. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
-
-3. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
+2. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
    - Create usage guidelines and patterns documentation
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
 
-4. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
+3. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
    - Extend the CI coverage gate (Step 8) to the 4 AccessManagement assemblies already above 60%:
      - `Altinn.AccessMgmt.PersistenceEF` → 90% (currently 98.59)
      - `AccessManagement.Api.Maskinporten` → 75% (currently 80.36)
@@ -121,7 +110,7 @@ Step 12); items 3–5 have no container-runtime dependency.
    - Maps to overhaul plan Phase 5.1 / 5.4. Prevents regression on assemblies we've already invested in, without blocking CI on known gaps.
    - Read [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for the existing Authorization-app threshold pattern.
 
-5. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+4. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
