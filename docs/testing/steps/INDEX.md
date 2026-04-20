@@ -11,6 +11,10 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
+> **Handoff note (after Step 9):** All 9 steps listed below are complete and
+> pushed. The next task is whichever item the user picks from *Recommended Next
+> Steps* below. Read the linked doc for that item before starting work.
+
 **When completing a step:**
 
 - **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) describing the goal,
@@ -48,13 +52,24 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 ### Recommended Next Steps (priority order)
 
-1. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
-   - Consolidate 9+ duplicated mock interfaces into shared library.
-2. **Phase 4 cleanup — dead code & suppressions** (low effort)
-   - `GlobalSuppressions.cs`, `Compile Remove`, empty `Folder` includes.
-4. **Blocked items** (when Docker/storage available)
-   - 6.1 + 6.7g: AccessManagement coverage, 6.5: Host.Lease tests.
-   - Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation.
+#### Actionable now
+
+1. **Phase 4 cleanup — dead code & suppressions** (low effort, no dependencies)
+   - Remove `GlobalSuppressions.cs`, `Compile Remove` items, empty `Folder` includes.
+   - See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
+     issues L1–L3.
+
+#### Blocked (need Docker / Azure Storage emulator)
+
+2. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
+   - Consolidate 8 duplicated AccessManagement mocks between `AccessMgmt.Tests/`
+     and `TestUtils/`. Blocked because consolidation requires migrating
+     AccessMgmt.Tests to `ApiFixture` pattern first (Phase 2.2).
+   - Read [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) for full
+     analysis and consolidation strategy.
+3. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex)
+   - Read [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md).
+4. **Coverage gaps** — 6.1 + 6.7g: AccessManagement coverage, 6.5: Host.Lease tests.
 
 See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) for details.
 
