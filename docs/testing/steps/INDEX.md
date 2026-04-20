@@ -1,5 +1,18 @@
 ﻿# Testing Infrastructure Overhaul — Step Log
 
+## Getting Started (new chat)
+
+Read these docs **in order** to get full context:
+
+1. **This file** (`docs/testing/steps/INDEX.md`) — step log, coverage results,
+   recommended next steps, deferred work, and workflow rules.
+2. **[TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)** —
+   original audit, issue IDs (C1–C5, M1–M8, L1–L3), and the phase plan.
+3. **The step doc for the work you're about to do** (linked in the table below or
+   in the Recommended Next Steps section).
+
+---
+
 Steps are listed in the order they were **actually completed**, not by the
 original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL.md).
 
@@ -37,8 +50,6 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
    - Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation.
 
 See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) for details.
-
-Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
 
 ### Deferred Work
 
