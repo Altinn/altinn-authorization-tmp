@@ -20,12 +20,14 @@ namespace Altinn.Platform.Authorization.IntegrationTests
     public class ResourceRegistry_DecisionTests : IClassFixture<AuthorizationApiFixture>
     {
         private readonly AuthorizationApiFixture _fixture;
+        private readonly HttpClient _client;
         private readonly Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
         private readonly Mock<TimeProvider> timeProviderMock = new Mock<TimeProvider>();
 
         public ResourceRegistry_DecisionTests(AuthorizationApiFixture fixture)
         {
             _fixture = fixture;
+            _client = fixture.BuildClient();
             SetupFeatureMock("AuditLog", true);
             SetupFeatureMock("SystemUserAccessPackageAuthorization", true);
             SetupDateTimeMock();
@@ -35,12 +37,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_OedFormuesfullmakt_Xml_Permit()
         {
             string testCase = "ResourceRegistry_OedFormuesfullmakt_Xml_Permit";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequest(testCase);
             XacmlContextResponse expected = TestSetupUtil.ReadExpectedResponse(testCase);
 
             // Act
-            XacmlContextResponse contextResponse = await TestSetupUtil.GetXacmlContextResponseAsync(client, httpRequestMessage);
+            XacmlContextResponse contextResponse = await TestSetupUtil.GetXacmlContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -50,12 +51,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_OedFormuesfullmakt_Json_Permit()
         {
             string testCase = "ResourceRegistry_OedFormuesfullmakt_Json_Permit";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -65,12 +65,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_OedFormuesfullmakt_Xml_Indeterminate()
         {
             string testCase = "ResourceRegistry_OedFormuesfullmakt_Xml_Indeterminate";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequest(testCase);
             XacmlContextResponse expected = TestSetupUtil.ReadExpectedResponse(testCase);
 
             // Act
-            XacmlContextResponse contextResponse = await TestSetupUtil.GetXacmlContextResponseAsync(client, httpRequestMessage);
+            XacmlContextResponse contextResponse = await TestSetupUtil.GetXacmlContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -80,12 +79,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_OedFormuesfullmakt_Json_Indeterminate()
         {
             string testCase = "ResourceRegistry_OedFormuesfullmakt_Json_Indeterminate";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -98,12 +96,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_Permit()
         {
             string testCase = "ResourceRegistry_AccessListAuthorization_Json_Permit";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -116,12 +113,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_Deny()
         {
             string testCase = "ResourceRegistry_AccessListAuthorization_Json_Deny";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -134,12 +130,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_PermitWithActionFilterMatch()
         {
             string testCase = "ResourceRegistry_AccessListAuthorization_Json_PermitWithActionFilterMatch";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -152,12 +147,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_DenyActionFilterNotMatching()
         {
             string testCase = "ResourceRegistry_AccessListAuthorization_Json_DenyActionFilterNotMatching";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -170,12 +164,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_DenyAccessListDontSupportPerson()
         {
             string testCase = "ResourceRegistry_AccessListAuthorization_Json_DenyAccessListDontSupportPerson";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -204,12 +197,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry0002()
         {
             string testCase = "AltinnResourceRegistry0002";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -219,12 +211,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry0003()
         {
             string testCase = "AltinnResourceRegistry0003";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -253,13 +244,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidAccessList()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidAccessList";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -269,13 +259,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidAccessList_Ver2()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidAccessList_Ver2";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -285,13 +274,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_InValidAccessList()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_InValidAccessList";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -306,13 +294,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidPartyType()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -327,13 +314,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_SKE_Skattegrunnlag_ValidPartyType()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType_Ver3";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -349,13 +335,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidPartyType_Ver2()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType_Ver2";
-            HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -368,12 +353,11 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_SystemUserWithDelegation_Permit()
         {
             string testCase = "ResourceRegistry_SystemUserWithDelegation_Permit";
-            HttpClient client = GetTestClient();
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);

@@ -21,12 +21,14 @@ namespace Altinn.Platform.Authorization.IntegrationTests
     public class ExternalDecisionTest : IClassFixture<AuthorizationApiFixture>
     {
         private readonly AuthorizationApiFixture _fixture;
+        private readonly HttpClient _client;
         private readonly Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
         private readonly Mock<TimeProvider> timeProviderMock = new Mock<TimeProvider>();
 
         public ExternalDecisionTest(AuthorizationApiFixture fixture)
         {
             _fixture = fixture;
+            _client = fixture.BuildClient();
             SetupFeatureMock(true);
             SetupDateTimeMock();
         }
@@ -36,13 +38,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnApps0008";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -53,13 +54,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnApps0010";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -70,13 +70,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0005";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -88,14 +87,13 @@ namespace Altinn.Platform.Authorization.IntegrationTests
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
 
             string testCase = "AltinnResourceRegistry0006";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -106,13 +104,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0007";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -123,13 +120,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0008";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -143,13 +139,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0009";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -163,13 +158,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0010";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -183,13 +177,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistry0011";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -203,13 +196,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "ResourceRegistry_SystemUserWithDelegation_Permit";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -252,13 +244,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnApps_SystemUserWithDelegation_Permit";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -272,14 +263,13 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnApps_SystemUserWithDelegation_Permit";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act multiple times to ensure obligations is not cached multiple times
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
-            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
-            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
 
             // Assert
             Assert.True(contextResponse.Response[0].Obligations.Count() == 2, "Expected only the two instances of obligations from main app/resource policy in response");
@@ -293,13 +283,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "AltinnResourceRegistryMulti0012";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -313,13 +302,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "ResourceRegistry_SystemUserWithDelegation_TooManyRequestSubjects_Indeterminate";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);
@@ -473,13 +461,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "ResourceRegistry_SystemUserWithDelegations_MultiRequest_Permit";
-            HttpClient client = GetTestClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
             // Act
-            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
 
             // Assert
             AssertionUtil.AssertEqual(expected, contextResponse);

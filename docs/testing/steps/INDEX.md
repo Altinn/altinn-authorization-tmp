@@ -34,6 +34,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 6 | ✅ | Test patterns, naming convention & csproj cleanup | Phase 4 | [Test_Patterns_and_Naming.md](Test_Patterns_and_Naming.md) |
 | 7 | ✅ | Maximize code coverage (actionable items) | Phase 6 | [Maximize_Coverage.md](Maximize_Coverage.md) |
 | 8 | ✅ | CI coverage threshold (6.6) | Phase 6 | [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) |
+| 9 | ✅ | Shared fixture for Authorization.Tests | Phase 2.4 | [Shared_Fixture_Authorization.md](Shared_Fixture_Authorization.md) |
 
 ### Final Coverage (measured)
 
@@ -47,11 +48,9 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 ### Recommended Next Steps (priority order)
 
-1. **Phase 2.4 — Shared fixture for Authorization.Tests** (high impact, no Docker)
-   - Fixes audit issue M5: factory rebuilt per-test. Create `AuthorizationFixture`.
-2. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
+1. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
    - Consolidate 9+ duplicated mock interfaces into shared library.
-3. **Phase 4 cleanup — dead code & suppressions** (low effort)
+2. **Phase 4 cleanup — dead code & suppressions** (low effort)
    - `GlobalSuppressions.cs`, `Compile Remove`, empty `Folder` includes.
 4. **Blocked items** (when Docker/storage available)
    - 6.1 + 6.7g: AccessManagement coverage, 6.5: Host.Lease tests.
