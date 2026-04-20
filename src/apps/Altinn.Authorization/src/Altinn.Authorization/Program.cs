@@ -418,3 +418,9 @@ void Configure()
     app.MapControllers();
     app.MapHealthChecks("/health");
 }
+
+/// <summary>
+/// Make the auto-generated Program class public so test projects can
+/// reference it as the entry point for <see cref="Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory{TEntryPoint}"/>.
+/// </summary>
+public partial class Program { }

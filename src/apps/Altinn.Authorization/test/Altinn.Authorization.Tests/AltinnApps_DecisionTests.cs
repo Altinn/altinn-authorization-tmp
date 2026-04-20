@@ -5,35 +5,27 @@ using System.Threading.Tasks;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Platform.Authorization.Clients.Interfaces;
-using Altinn.Platform.Authorization.Controllers;
-using Altinn.Platform.Authorization.IntegrationTests.MockServices;
+using Altinn.Platform.Authorization.IntegrationTests.Fixtures;
 using Altinn.Platform.Authorization.IntegrationTests.Util;
-using Altinn.Platform.Authorization.IntegrationTests.Webfactory;
 using Altinn.Platform.Authorization.Models.EventLog;
-using Altinn.Platform.Authorization.Repositories.Interface;
-using Altinn.Platform.Authorization.Services.Interface;
-using Altinn.Platform.Authorization.Services.Interfaces;
-using Altinn.Platform.Events.Tests.Mocks;
-using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Moq;
 using Xunit;
 
 namespace Altinn.Platform.Authorization.IntegrationTests
 {
-    public class AltinnApps_DecisionTests :IClassFixture<CustomWebApplicationFactory<DecisionController>>
+    public class AltinnApps_DecisionTests : IClassFixture<AuthorizationApiFixture>
     {
-        private readonly CustomWebApplicationFactory<DecisionController> _factory;
+        private readonly AuthorizationApiFixture _fixture;
         private readonly Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
         private readonly Mock<TimeProvider> timeProviderMock = new Mock<TimeProvider>();
 
-        public AltinnApps_DecisionTests(CustomWebApplicationFactory<DecisionController> fixture)
+        public AltinnApps_DecisionTests(AuthorizationApiFixture fixture)
         {
-            _factory = fixture;
+            _fixture = fixture;
             SetupFeatureMock(true);
             SetupDateTimeMock();
         }
@@ -612,22 +604,10 @@ namespace Altinn.Platform.Authorization.IntegrationTests
 
         private HttpClient GetTestClient(IEventsQueueClient eventLog = null, IFeatureManager featureManager = null, TimeProvider timeProviderMock = null)
         {
-            HttpClient client = _factory.WithWebHostBuilder(builder =>
+            HttpClient client = _fixture.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
-                    services.AddSingleton<IAccessManagementWrapper, AccessManagementWrapperMock>();
-                    services.AddSingleton<IInstanceMetadataRepository, InstanceMetadataRepositoryMock>();
-                    services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                    services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-                    services.AddSingleton<IRoles, RolesMock>();
-                    services.AddSingleton<IOedRoleAssignmentWrapper, OedRoleAssignmentWrapperMock>();
-                    services.AddSingleton<IParties, PartiesMock>();
-                    services.AddSingleton<IProfile, ProfileMock>();
-                    services.AddSingleton<IRegisterService, RegisterServiceMock>();
-                    services.AddSingleton<IPolicyRepository, PolicyRepositoryMock>();
-                    services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueueMock>();
-                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                     if (featureManager != null)
                     {
                         services.AddSingleton(featureManager);
