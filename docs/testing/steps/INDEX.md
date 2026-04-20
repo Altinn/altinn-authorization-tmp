@@ -11,9 +11,9 @@
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
-> **Handoff note (after Step 12):** Steps 1–12 complete! ✅ Podman Desktop works with Testcontainers using `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE`.
-> **1,279 AccessManagement tests passing.** Ready to proceed with Phase 2.2–2.3 (WAF consolidation) or Phase 3.2–3.4 (mock dedup).
-> See [AccessManagement_Coverage_Baseline_Success.md](steps/AccessManagement_Coverage_Baseline_Success.md) for baseline metrics.
+> **Handoff note (after Step 13):** Steps 1–13 complete! ✅ FluentAssertions evaluated and recommended for adoption.
+> **Evaluation:** Comprehensive analysis of FluentAssertions vs current xUnit assertions completed. Recommendation: **ADOPT** for new tests.
+> See [FluentAssertions_Evaluation.md](FluentAssertions_Evaluation.md) for detailed analysis and implementation plan.
 
 **When completing a step:**
 
@@ -42,6 +42,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 10 | ✅ | Dead code & suppressions cleanup (L1–L3) | Phase 4.5–4.6 | [Dead_Code_and_Suppressions_Cleanup.md](Dead_Code_and_Suppressions_Cleanup.md) |
 | 11 | ✅ | Certificate consolidation — Authorization.Tests (M8) | Phase 3.5 | [Certificate_Consolidation.md](Certificate_Consolidation.md) |
 | 12 | ✅ | AccessManagement coverage baseline with Podman (6.7a) | Phase 6 | [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) |
+| 13 | ✅ | FluentAssertions evaluation | Phase 4.2 | [FluentAssertions_Evaluation.md](FluentAssertions_Evaluation.md) |
 
 ### Final Coverage (measured)
 
@@ -57,19 +58,20 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 **🎯 Ready to Execute** (Podman Desktop working, all dependencies met)
 
-1. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact, straightforward)
+1. **Phase 4.2a — Add FluentAssertions package** (quick win, evaluation complete)
+   - Add FluentAssertions to Directory.Packages.props
+   - **Status: Ready** — Evaluation complete (Step 13), recommendation: ADOPT
+   - Read [FluentAssertions_Evaluation.md](FluentAssertions_Evaluation.md) for analysis
+
+2. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact, straightforward)
    - Consolidate 8 duplicated AccessManagement mocks between `AccessMgmt.Tests/` and `TestUtils/`
    - **Status: Ready** — Was blocked by Testcontainers, now unblocked (Step 12)
    - Read [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) for strategy
 
-2. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex, high impact)
+3. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex, high impact)
    - Migrate AccessMgmt.Tests controller tests to `ApiFixture` pattern
    - **Status: Ready** — Podman + Testcontainers confirmed working (Step 12)
    - Read [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md)
-
-3. **Phase 4.2 — FluentAssertions evaluation** (quick win, no infrastructure needed)
-   - Evaluate adding FluentAssertions for better test readability
-   - Read Phase 4.2 in [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
 
 4. **Phase 6 coverage improvements** — Fill identified gaps:
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
