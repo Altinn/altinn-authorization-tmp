@@ -1,8 +1,8 @@
 ﻿# Testing Infrastructure Overhaul — Step Log
 
-## Getting Started (new chat)
+## Getting Started & Workflow
 
-Read these docs **in order** to get full context:
+**New chat?** Read these docs **in order** to get full context:
 
 1. **This file** (`docs/testing/steps/INDEX.md`) — step log, coverage results,
    recommended next steps, deferred work, and workflow rules.
@@ -10,6 +10,14 @@ Read these docs **in order** to get full context:
    original audit, issue IDs (C1–C5, M1–M8, L1–L3), and the phase plan.
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
+
+**When completing a step:**
+
+- **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) describing the goal,
+  what changed, verification results, and any deferred items. Add a row to the
+  step log table below linking to the new doc.
+- **Commit and push** at the end of each step.
+- **Wait for explicit go-ahead** before proceeding to the next step.
 
 ---
 
@@ -57,11 +65,3 @@ See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recom
 |---|---|---|
 | Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation | Complex; needs Docker | [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md) |
 | Phase 3.2–3.4: Mock dedup implementation | Ready to start (no longer blocked) | [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) |
-
-### Workflow
-
-- **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) for each new step.
-  The doc should describe the goal, what changed, verification results, and any
-  deferred items. Add a row to the step log table above linking to the new doc.
-- **Commit and push** at the end of each step.
-- **Wait for explicit go-ahead** before proceeding to the next step.
