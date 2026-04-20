@@ -98,14 +98,59 @@ highest-impact, lowest-effort gaps identified in the Phase 5 baseline.
 | **6.6 CI threshold** | **✅** | Per-assembly thresholds in CI via `coverage-thresholds.json` |
 | 6.7 AccessManagement coverage | ⬜ | |
 
+## Sub-step 6.7a: Authorization Infrastructure & Utility Coverage Sprint
+
+### New Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `ExtensionTests/HttpClientExtensionTest.cs` | 9 | `PostAsync` (5) — no tokens, auth token, platform token, both tokens, POST method; `GetAsync` (4) — no tokens, auth token, platform token, GET method |
+| `PlatformHttpExceptionTest.cs` | 4 | `CreateAsync` message formatting, `CreateAsync` stores response, constructor, `IsException` inheritance |
+| `ServiceResourceHelperTest.cs` | 11 | `ResourceIdentifierRegex` — valid (5: alpha, alphanumeric, hyphen, underscore, mixed), invalid (6: too short, empty, uppercase, space, dot, special char) |
+| `XacmlRequestApiModelBinderTest.cs` | 3 | `BindModelAsync` — null context throws, valid body, empty body |
+| `XacmlRequestApiModelBinderProviderTest.cs` | 3 | `GetBinder` — null context throws, matching type returns binder, non-matching type returns null |
+
+**Total new tests: 30** (284 → 314)
+
+### Approach
+
+- Targeted **previously completely untested** classes: `HttpClientExtension`, `PlatformHttpException`,
+  `ServiceResourceHelper`, `XacmlRequestApiModelBinder`, `XacmlRequestApiModelBinderProvider`.
+- All tests are pure unit tests — no WAF, Docker, or external dependencies needed.
+- Used `RecordingHandler` (test double for `HttpMessageHandler`) to verify HTTP extension behavior.
+- Used `DefaultHttpContext` and `DefaultModelBindingContext` for model binder tests.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 314 Authorization.Tests pass (284 existing + 30 new)
+
+---
+
+## Remaining Sub-steps
+
+| Sub-step | Status | Notes |
+|---|---|---|
+| 6.1 Full baseline across all 11 projects | ⬜ | Needs Docker for AccessMgmt projects |
+| 6.2 Triage uncovered business logic | ⬜ | |
+| **6.3 PEP coverage sprint** | **✅** | 60% → 79% |
+| **6.4 Authorization.Tests edge cases** | **✅** | +66 tests (218 → 284) |
+| 6.5 Host.Lease tests | ⬜ | Blocked by storage account dependency |
+| **6.6 CI threshold** | **✅** | Per-assembly thresholds in CI via `coverage-thresholds.json` |
+| **6.7a Authorization infra/utility coverage** | **✅** | +30 tests (284 → 314) |
+| 6.7b AccessManagement coverage | ⬜ | Needs Docker |
+
 ---
 
 ## Next Step
 
-Sub-step 6.6 (CI coverage threshold) is **complete**.
-See [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for details.
+Sub-step 6.7a is **complete** (Authorization infrastructure & utility coverage sprint, +30 tests).
 
-Next candidates: **6.1** (full baseline, needs Docker), **6.5** (Host.Lease, needs storage account),
-or return to deferred work (Phase 2.2–2.3, Phase 3.2–3.4).
+Next candidates:
+- **6.1** (full baseline, needs Docker)
+- **6.5** (Host.Lease, needs storage account)
+- **Additional Authorization coverage**: `ContextHandler`, `DelegationContextHandler`, `PolicyInformationPoint`,
+  `AccessListAuthorization` (require more complex mocking but no Docker)
+- Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
 
-Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/CI_Coverage_Threshold.md`.
+Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.

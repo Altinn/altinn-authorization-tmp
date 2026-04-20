@@ -17,12 +17,12 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 ### Next Step
 
 **Step 7 — Maximize Code Coverage (Phase 6)** is in progress.
-Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), and **6.6** (CI threshold enforcement).
-Next actionable: **6.1 full baseline** (needs Docker) or **6.5 Host.Lease tests** (needs storage account), or return to deferred work.
+Completed sub-steps: **6.3** (PEP sprint, 60→79%), **6.4** (Authorization.Tests +66 tests), **6.6** (CI threshold enforcement), and **6.7a** (Authorization infra/utility +30 tests).
+Next actionable: **6.1 full baseline** (needs Docker), **6.5 Host.Lease tests** (needs storage account), additional Authorization service-layer coverage, or return to deferred work.
 
-See [CI_Coverage_Threshold.md → Next Step](CI_Coverage_Threshold.md#next-step) for details.
+See [Maximize_Coverage.md → Next Step](Maximize_Coverage.md#next-step) for details.
 
-Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/CI_Coverage_Threshold.md`.
+Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
 
 ### Deferred Work
 
