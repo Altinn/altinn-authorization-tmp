@@ -55,19 +55,29 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 ### Recommended Next Steps (priority order)
 
-#### Blocked (need Docker / Azure Storage emulator)
+**🎯 Ready to Execute** (Podman Desktop working, all dependencies met)
 
-2. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact)
-   - Consolidate 8 duplicated AccessManagement mocks between `AccessMgmt.Tests/`
-     and `TestUtils/`. Blocked because consolidation requires migrating
-     AccessMgmt.Tests to `ApiFixture` pattern first (Phase 2.2).
-   - Read [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) for full
-     analysis and consolidation strategy.
-3. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex)
-   - Read [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md).
-4. **Coverage gaps** — 6.1 + 6.7g: AccessManagement coverage, 6.5: Host.Lease tests.
+1. **Phase 3.2–3.4 — Mock dedup implementation** (medium impact, straightforward)
+   - Consolidate 8 duplicated AccessManagement mocks between `AccessMgmt.Tests/` and `TestUtils/`
+   - **Status: Ready** — Was blocked by Testcontainers, now unblocked (Step 12)
+   - Read [Mock_Deduplication_Audit.md](Mock_Deduplication_Audit.md) for strategy
 
-See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) for details.
+2. **Phase 2.2–2.3 — AccessMgmt.Tests WAF consolidation** (complex, high impact)
+   - Migrate AccessMgmt.Tests controller tests to `ApiFixture` pattern
+   - **Status: Ready** — Podman + Testcontainers confirmed working (Step 12)
+   - Read [Consolidate_WebApplicationFactory.md](Consolidate_WebApplicationFactory.md)
+
+3. **Phase 4.2 — FluentAssertions evaluation** (quick win, no infrastructure needed)
+   - Evaluate adding FluentAssertions for better test readability
+   - Read Phase 4.2 in [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
+
+4. **Phase 6 coverage improvements** — Fill identified gaps:
+   - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
+   - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
+   - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
+   - **6.5:** Host.Lease tests (blocked by Azure Storage Emulator)
+
+See [Maximize_Coverage.md → Recommended Next Steps](Maximize_Coverage.md#recommended-next-steps-priority-order) and [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) for details.
 
 ### Deferred Work
 
