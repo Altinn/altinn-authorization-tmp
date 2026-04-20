@@ -632,7 +632,7 @@ namespace Altinn.AccessManagement.Controllers
             {
                 var problem = new ProblemDetails
                 {
-                    Title = "An error occurred while delegating instance rights.",
+                    Title = "An error occurred while revoking instance rights.",
                     Detail = ex.Message,
                     Status = StatusCodes.Status500InternalServerError
                 };
