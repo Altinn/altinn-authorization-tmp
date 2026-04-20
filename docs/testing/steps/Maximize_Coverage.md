@@ -180,4 +180,52 @@ Next candidates:
   `PolicyInformationPoint`, `AccessListAuthorization` (require more complex mocking but no Docker)
 - Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
 
-Start by reading `docs/testing/steps/INDEX.md` and `docs/testing/steps/Maximize_Coverage.md`.
+## Sub-step 6.7c: Authorization Service-Layer Coverage Sprint
+
+### New Test Files
+
+| File | Tests | Covers |
+|---|---|---|
+| `PolicyInformationPointTest.cs` | 7 | `GetRulesAsync` — no delegations returns empty, RevokeLast skipped, Grant extracts rules from XACML policy, Deny rules excluded, null-target rules excluded, mixed delegation types, multiple permit rules in single policy |
+
+**Total new tests: 7** (337 → 344)
+
+### Approach
+
+- Targeted `PolicyInformationPoint` — previously completely untested service with non-trivial
+  rule extraction logic (filters delegation changes by type, parses XACML policy rules,
+  maps action/subject/resource attribute matches to `Rule` model).
+- All tests are pure unit tests using Moq for `IPolicyRetrievalPoint` and `IDelegationMetadataRepository`.
+
+### Verification
+
+- [x] Build passes (0 errors)
+- [x] All 344 Authorization.Tests pass (337 existing + 7 new)
+
+---
+
+## Remaining Sub-steps
+
+| Sub-step | Status | Notes |
+|---|---|---|
+| 6.1 Full baseline across all 11 projects | ⬜ | Needs Docker for AccessMgmt projects |
+| 6.2 Triage uncovered business logic | ⬜ | |
+| **6.3 PEP coverage sprint** | **✅** | 60% → 79% |
+| **6.4 Authorization.Tests edge cases** | **✅** | +66 tests (218 → 284) |
+| 6.5 Host.Lease tests | ⬜ | Blocked by storage account dependency |
+| **6.6 CI threshold** | **✅** | Per-assembly thresholds in CI via `coverage-thresholds.json` |
+| **6.7a Authorization infra/utility coverage** | **✅** | +30 tests (284 → 314) |
+| **6.7b Authorization models & services coverage** | **✅** | +23 tests (314 → 337) |
+| **6.7c Authorization service-layer coverage** | **✅** | +7 tests (337 → 344) |
+| 6.7d AccessManagement coverage | ⬜ | Needs Docker |
+
+## Next Step
+
+Sub-step 6.7c is **complete** (PolicyInformationPoint coverage sprint, +7 tests).
+
+Next candidates:
+- **Additional Authorization service-layer coverage**: `DelegationContextHandler`,
+  `AccessListAuthorization`, `ContextHandler` gap analysis (require more complex mocking but no Docker)
+- **6.1** (full baseline, needs Docker)
+- **6.5** (Host.Lease, needs storage account)
+- Return to deferred work (Phase 2.2–2.3 AccessMgmt WAF consolidation, Phase 3.2–3.4 mock dedup)
