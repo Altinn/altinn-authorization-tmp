@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Audit;
@@ -117,6 +118,11 @@ public class ClientDelegationController(
     {
         if (!cascade)
         {
+            if (payload is null)
+            {
+                return BadRequest();    
+            }
+
             return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
         }
 
