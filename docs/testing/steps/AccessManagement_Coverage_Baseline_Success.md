@@ -115,26 +115,8 @@ All existing test infrastructure works with Podman:
 
 **Solution discovered:** Use `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` instead of `DOCKER_HOST`.
 
-## Next Steps
+---
 
-With reliable Testcontainers + Podman integration confirmed:
-
-1. **Proceed with Phase 2.2–2.3** (AccessMgmt.Tests WAF consolidation)
-2. **Define coverage thresholds** for AccessManagement assemblies
-3. **Address critical coverage gaps** (ServiceOwner, Enduser APIs)
-
-## Recommended Thresholds
-
-Based on current coverage and assembly criticality:
-
-| Assembly | Recommended Threshold | Current | Gap |
-|---|---|---|---|---|
-| AccessMgmt.PersistenceEF | 90% | 98.59% | ✅ Exceeds |
-| AccessManagement.Core | 60% | 63.43% | ✅ Exceeds |
-| AccessManagement (main) | 60% | 58.19% | ⚠️ -1.81% |
-| AccessManagement.Integration | 50% | 47.57% | ⚠️ -2.43% |
-| AccessManagement.Api.Internal | 50% | 46.74% | ⚠️ -3.26% |
-| All Persistence layers | 50% | 8-45% | ❌ Large gap |
-| All API projects | 50% | 0-80% | ❌ Varies widely |
+**Note:** For current recommendations and next steps, see [INDEX.md](INDEX.md).
 
 **Full coverage output:** `podman-coverage-accessmgmt.txt`

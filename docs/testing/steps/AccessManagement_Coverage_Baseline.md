@@ -136,10 +136,9 @@ Run AccessManagement coverage collection in a Linux CI environment where Podman/
 
 **None** — this was a reconnaissance step.
 
-## Next Step Depends On
+---
 
-- **If Docker Desktop is installed:** Retry this step to get full baseline
-- **If not:** Defer Phase 2.2–2.3 and Phase 3.2–3.4 (both require reliable Testcontainers), proceed with non-Docker work (Phase 4.2 FluentAssertions, Phase 4.4 Collection standardization)
+**Note:** This was the initial failed attempt. See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) for the successful resolution using Podman Desktop with proper Testcontainers configuration. For current recommendations and next steps, see [INDEX.md](INDEX.md).
 
 ## Coverage Script Output
 

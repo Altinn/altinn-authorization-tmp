@@ -58,16 +58,6 @@ docs/testing/run-coverage.ps1 -Threshold 60
 - [x] CI workflow includes coverage threshold step
 - [ ] CI pipeline passes on next push (verify after merge)
 
-## Next Step
+---
 
-**Sub-step 6.1 — Full baseline across all projects** or **6.5 — Host.Lease tests**
-are the next candidates. 6.1 requires Docker for AccessManagement projects;
-6.5 is blocked by storage account dependency. If neither is feasible, consider
-raising thresholds incrementally as coverage improves, or tackling additional
-edge-case coverage in under-tested assemblies.
-
-Alternatively, return to deferred work:
-- Phase 2.2–2.3: AccessMgmt.Tests WAF consolidation
-- Phase 3.2–3.4: Mock dedup implementation
-
-Start by reading `docs/testing/steps/INDEX.md` and this file.
+**Note:** For current recommendations and next steps, see [INDEX.md](INDEX.md).
