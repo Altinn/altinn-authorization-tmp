@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
@@ -25,7 +26,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery, IPolicyFactory policyFactory, IPolicyRetrievalPoint policyRetrivalPoint) : IAssignmentService
+public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery, IPolicyFactory policyFactory, IPolicyRetrievalPoint policyRetrivalPoint, IContextRetrievalService contextRetrievalService) : IAssignmentService
 {
     /// <inheritdoc/>
     public async Task<List<AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default)
@@ -1432,6 +1433,31 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         return true;
     }
 
+    private async Task<bool> CheckInstanceDelegationRequestIsValidForAsignment(InstanceDelegationRequest input, CancellationToken cancellationToken)
+    {
+        List<RightDto> rightKeys = await contextRetrievalService.GetResourcePolicyV2(input.ResourceId, "nb", cancellationToken);
+
+        string resourceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute}:{input.ResourceId}";
+        List<string> inputRightKeys = [];
+
+        foreach (string action in input.Actions)
+        {
+            string rightKeyPlain = $"{resourceUrn}:{AltinnXacmlConstants.MatchAttributeIdentifiers.ActionId}:{action}";
+            string rightKeyHashed = "01" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(rightKeyPlain))).ToLowerInvariant();
+            inputRightKeys.Add(rightKeyHashed);
+        }
+
+        foreach (string rightKey in inputRightKeys)
+        {
+            if (!rightKeys.Any(rk => rk.Key == rightKey))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <inheritdoc />
     public async Task<Result<bool>> ImportInstanceAssignmentFromAltinn2(InstanceDelegationRequest input, CancellationToken cancellationToken = default)
     {
@@ -1446,6 +1472,12 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         if (resource is null)
         {
             return AccessManagement.Core.Errors.Problems.InvalidResource;
+        }
+
+        bool delegationValid = await CheckInstanceDelegationRequestIsValidForAsignment(input, cancellationToken);
+        if (!delegationValid)
+        {
+            return AccessManagement.Core.Errors.Problems.InvalidRightKey;
         }
 
         var fromParty = await db.Entities
