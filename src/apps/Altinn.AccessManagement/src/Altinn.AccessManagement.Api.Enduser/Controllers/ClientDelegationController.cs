@@ -116,13 +116,8 @@ public class ClientDelegationController(
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        if (!cascade)
+        if (!cascade && payload is { })
         {
-            if (payload is null)
-            {
-                return BadRequest("Missing payload");    
-            }
-
             return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
         }
 
