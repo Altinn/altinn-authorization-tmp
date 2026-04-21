@@ -95,15 +95,16 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 26 | ✅ | Sub-step 16.5 — Retired `WebApplicationFixture`, `AcceptanceCriteriaComposer`, `Scenarios/*`, `ControllerTestTemplate`; `PostgresServer` retained (still used by `PostgresFixture`) | Phase 2.2 | [AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md](AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md) |
 | 27 | ✅ | FluentAssertions usage guidelines (`docs/testing/FLUENT_ASSERTIONS_GUIDELINES.md`) | Phase 4.2b | [FluentAssertions_Guidelines.md](FluentAssertions_Guidelines.md) |
 | 28 | ✅ | CI coverage thresholds for AccessManagement (4 enforced + 1 warn-only) | Phase 5.1b | [CI_Coverage_Thresholds_AccessManagement.md](CI_Coverage_Thresholds_AccessManagement.md) |
+| 29 | ✅ | Coverage: AccessManagement.Api.ServiceOwner — closed the three untested `RequestController` endpoints; 54.35% → 71.74% line | Phase 6.7b | [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable and have no container-runtime dependency.
 
 1. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
-   - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
+   - **6.7e:** (follow-up to Step 29) fix the two latent production bugs documented in [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) — `RequestController.CreatePackageRequest` query-param overload passes `Id` but not `ReferenceId` to the private helper; `PackageConstants.TryGetByName` throws when the name dictionary has duplicate keys.
 
 See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md) for detailed coverage metrics.
 
@@ -147,4 +148,4 @@ and will be enforced as their coverage improves. Source:
 | AccessManagement.Api.Metadata | 16.59 | 13.33 | — | ❌ Gap |
 | AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
 | AccessManagement.Api.Enduser | 1.19 | 0.15 | — | ❌ Gap |
-| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | — | ❌ Gap |
+| AccessManagement.Api.ServiceOwner | 71.74 | 60.00 | — | ✅ Step 29 |
