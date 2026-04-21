@@ -1,4 +1,4 @@
-# Testing Infrastructure Overhaul — Step Log
+﻿# Testing Infrastructure Overhaul — Step Log
 
 ## Getting Started & Workflow
 
@@ -116,6 +116,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 | 47 | ✅ | Fix Phase 6.7e latent production bugs — `ConstantLookup.GetByName` duplicate-key crash; `PackageConstants.TryGetByUrn` Case-2 off-by-one; `RequestController` `/resource` + `/package` query-param overloads now return 202 instead of 400; all 7 `PackageConstantsTest` skips removed | Phase 6.7e | [47_Coverage_ServiceOwner_Api_6_7e.md](47_Coverage_ServiceOwner_Api_6_7e.md) |
 | 48 | ✅ | Fix 6.7f — `ApprovePackageRequest` production bug: replaced `connectionService.AddPackage` (which ran an unauthorized-delegation check and returned 400) with `assignmentService.ImportAssignmentPackages`; fixed `ImportAssignmentPackages` null-`AuditValues` crash (500) by using the `CancellationToken`-only `SaveChangesAsync` overload when no explicit audit is supplied; `Sender_GetSentRequests_ContainsSeededRequest` was already passing; both `TODO (6.7f)` comments removed; 306 tests, 0 failed | Phase 6.7f | [48_Fix_6_7f_ApprovePackageRequest.md](48_Fix_6_7f_ApprovePackageRequest.md) |
+| 49 | ✅ | Coverage 6.7d Part 6 — 34 direct Moq-based unit tests for `Api.Internal` controllers: `InternalConnectionsController` (17 tests, 6 actions × 2 branches), `SystemUserClientDelegationController` (13 tests, 5 actions × multi-branch), `PartyController` (6 tests, JWT app-claim + service paths); resolved `PersistenceEF.Models` vs `Persistence.Models` type ambiguity; `Result<T>` constructor usage documented | Phase 6.7d | [49_Coverage_Api_Internal_Controllers.md](49_Coverage_Api_Internal_Controllers.md) |
 
 ### Recommended Next Steps (priority order)
 
@@ -161,7 +162,7 @@ and will be enforced as their coverage improves. Source:
 | AccessManagement.Core | 63.43 | 61.49 | 60% (enforced) | ✅ |
 | AccessManagement (main app) | 58.19 | 60.93 | 60% (⚠ warn-only) | ⚠️ Near |
 | AccessManagement.Integration | 47.57 | 43.75 | — | ❌ Gap |
-| AccessManagement.Api.Internal | 46.74 | 46.20 | — | ❌ Gap |
+| AccessManagement.Api.Internal | 46.74→↑ | 46.20→↑ | — | ⏫ Step 49 |
 | AccessManagement.Persistence | 44.94 | 30.23 | — | ❌ Gap |
 | AccessMgmt.Persistence | 32.51 | 9.42 | — | ❌ Gap |
 | AccessMgmt.Core | 17.31→↑ | 12.00→↑ | — | ⏫ Step 45 |
