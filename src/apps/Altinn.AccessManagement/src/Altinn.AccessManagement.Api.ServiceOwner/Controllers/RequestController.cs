@@ -93,6 +93,7 @@ public class RequestController(
         ==
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
+
         return await CreateResourceRequest(
             toId: toResult.Entity.Id,
             fromId: fromResult.Entity.Id,
