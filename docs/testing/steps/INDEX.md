@@ -98,13 +98,14 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 29 | ✅ | Coverage: AccessManagement.Api.ServiceOwner — closed the three untested `RequestController` endpoints; 54.35% → 71.74% line | Phase 6.7b | [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) |
 | 30 | ✅ | Coverage: AccessManagement.Api.Enduser — closed five untested `RequestController` endpoints (`GetRequest`, `GetSentRequestsCount`, `GetReceivedRequestsCount`, `ApprovePackageRequest`, `ApproveResourceRequest`); 45.57% → 49.93% line | Phase 6.7c | [Coverage_Enduser_Api.md](Coverage_Enduser_Api.md) |
 | 31 | ✅ | Coverage: AccessManagement.Api.Enduser Validation layer — `ConnectionValidation` + `ConnectionCombinationRules` direct unit tests via `InternalsVisibleTo`; 49.93% → 62.76% line | Phase 6.7c | [Coverage_Enduser_Api_Validation.md](Coverage_Enduser_Api_Validation.md) |
+| 32 | ✅ | Coverage: AccessManagement.Api.Enduser `ParameterValidation` — 44 direct unit tests for atomic per-parameter rules; 62.76% → 65.94% line | Phase 6.7c | [Coverage_Enduser_Api_ParameterValidation.md](Coverage_Enduser_Api_ParameterValidation.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable and have no container-runtime dependency.
 
 1. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
-   - **6.7c (continued):** AccessManagement.Api.Enduser remaining ~37% gap — `ParameterValidation` branches not composed by `ConnectionValidation` (`ToIsGuid`, `InstanceRightsDelegationInput`, `InstanceUrn`; easy follow-up using the `InternalsVisibleTo` plumbing added in Step 31), `MaskinportenConsumersController` / `MaskinportenSuppliersController` (needs PDP stubbing or seeding of `altinn_maskinporten_scope_delegation` resource), `Utils.ToUuidResolver`. See [Coverage_Enduser_Api_Validation.md](Coverage_Enduser_Api_Validation.md).
+   - **6.7c (continued):** AccessManagement.Api.Enduser remaining ~34% gap — `MaskinportenConsumersController` / `MaskinportenSuppliersController` (needs PDP stubbing or seeding of `altinn_maskinporten_scope_delegation` resource), `Utils.ToUuidResolver` (reachable only via `ConnectionsController.AddAssignmentPerson` / `CheckResourcePerson`). See [Coverage_Enduser_Api_ParameterValidation.md](Coverage_Enduser_Api_ParameterValidation.md).
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
    - **6.7e:** (follow-up to Step 29) fix the two latent production bugs documented in [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) — `RequestController.CreatePackageRequest` query-param overload passes `Id` but not `ReferenceId` to the private helper; `PackageConstants.TryGetByName` throws when the name dictionary has duplicate keys.
 
@@ -149,5 +150,5 @@ and will be enforced as their coverage improves. Source:
 | AccessMgmt.Core | 17.31 | 12.00 | — | ❌ Gap |
 | AccessManagement.Api.Metadata | 16.59 | 13.33 | — | ❌ Gap |
 | AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
-| AccessManagement.Api.Enduser | 62.76 | 50.15 | — | ⏫ Step 31 |
+| AccessManagement.Api.Enduser | 65.94 | 55.49 | — | ⏫ Step 32 |
 | AccessManagement.Api.ServiceOwner | 71.74 | 60.00 | — | ✅ Step 29 |
