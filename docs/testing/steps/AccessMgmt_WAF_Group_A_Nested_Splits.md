@@ -3,7 +3,7 @@
 Part of Step 16 (Phase 2.2–2.3). See
 [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
 for the full plan, audit, and migration recipe, and
-[Sub-step_16.2a_Group_A_Single_Config_Migrations.md](Sub-step_16.2a_Group_A_Single_Config_Migrations.md)
+[AccessMgmt_WAF_Group_A_Single_Config.md](AccessMgmt_WAF_Group_A_Single_Config.md)
 for the companion sub-step.
 
 ## Goal

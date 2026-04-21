@@ -193,7 +193,7 @@ Ordered by risk/complexity:
 or `IDelegationMetadataRepository`. `ApiFixture` seals its DI container on
 first `CreateClient()`, so this pattern requires nested-class splitting (rule
 6 of the recipe above). See
-[Sub-step_16.1_Group_A_Easy_Wins.md](Sub-step_16.1_Group_A_Easy_Wins.md).
+[AccessMgmt_WAF_Group_A_Easy_Wins.md](AccessMgmt_WAF_Group_A_Easy_Wins.md).
 
 ### Sub-step 16.2 — Group A complex (4 classes)
 
