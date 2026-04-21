@@ -351,13 +351,13 @@ public class RequestController(
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
-            errorBuilder.Add(ValidationErrors.RequestConnectionNotFound, "$QUERY/to", [new("to", $"No connection between party:'{party}' and to:'{to}'")]);
+            errorBuilder.Add(ValidationErrors.RequestConnectionNotFound, "/to", [new("to", $"No connection between party:'{party}' and to:'{to}'")]);
         }
 
         var resourceObj = await resourceService.GetResource(resource, ct);
         if (resourceObj is not { })
         {
-            errorBuilder.Add(ValidationErrors.ResourceNotExists, "$QUERY/resource", [new("resource", $"Unable to get resource '{resource}'")]);
+            errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
         try
@@ -366,12 +366,12 @@ public class RequestController(
 
             if (!serviceResource.Delegable)
             {
-                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
             }
         }
         catch
         {
-            // errorBuilder.Add(ValidationErrors.ResourceNotExists, "$QUERY/resource", [new("resource", $"Unable to get resource '{resource}'")]);
+            // errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -427,17 +427,17 @@ public class RequestController(
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
-            errorBuilder.Add(ValidationErrors.RequestConnectionNotFound, "$QUERY/to", [new("to", $"No connection between party:'{party}' and to:'{to}'")]);
+            errorBuilder.Add(ValidationErrors.RequestConnectionNotFound, "/to", [new("to", $"No connection between party:'{party}' and to:'{to}'")]);
         }
 
         if (!PackageConstants.TryGetByAll(package, out var packageObj))
         {
-            errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package}'.")]);
+            errorBuilder.Add(ValidationErrors.PackageNotExists, "/package", [new("package", $"No package was found with value '{package}'.")]);
         }
 
         if (packageObj != null && !packageObj.Entity.IsAssignable)
         {
-            errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package '{package}' is not assignable.")]);
+            errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "/package", [new("package", $"Package '{package}' is not assignable.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
