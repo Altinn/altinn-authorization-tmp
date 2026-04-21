@@ -1,5 +1,9 @@
 ﻿# Sub-step 16.4b — Final `WebApplicationFixture` consumers
 
+> **Update (Step 25):** The `ConsentControllerTestBFF` migration deferred here
+> has landed. See
+> [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md).
+
 **Status:** Partially delivered. Two skipped consumers deleted;
 `ConsentControllerTestBFF` migration **blocked** on per-test DB isolation gap in
 `LegacyApiFixture` and deferred to a dedicated follow-up.

@@ -91,34 +91,29 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 22 | ✅ | Sub-step 16.4-prep — `LegacyApiFixture` plumbing (Yuniql + EF schema) | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md](AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md) |
 | 23 | ✅ | Sub-step 16.4a — Migrate `V2ResourceControllerTest`, `ConsentControllerTestEnterprise`, `MaskinPorten.ConsentControllerTest` to `LegacyApiFixture` | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md](AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md) |
 | 24 | ⚠️ Partial | Sub-step 16.4b — Delete two 100%-`[Skip]`ped WAF consumers; `ConsentControllerTestBFF` migration blocked on per-test DB isolation gap | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md](AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md) |
+| 25 | ✅ | Sub-step 16.4b-continued — `ConsentControllerTestBFF` migrated to per-test `LegacyApiFixture` via `IAsyncLifetime`; `WebApplicationFixture` has no remaining consumers | Phase 2.2 | [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Item 1 requires Podman Desktop (working as of
 Step 12); items 2–4 have no container-runtime dependency.
 
-1. **Sub-step 16.4b-continued** — Migrate `ConsentControllerTestBFF` to
-   `LegacyApiFixture`.
-   - **Blocker identified in Step 24:** `WebApplicationFixture` gave each test
-     a fresh EF database (via `WithWebHostBuilder` re-invoking
-     `PostgresServer.NewEFDatabase()` per test). `LegacyApiFixture` is
-     class-scoped, so the 23 BFF tests — which reuse hard-coded `requestId`
-     GUIDs and re-seed entities — collide with `duplicate key`,
-     `"already updated"`, cross-test `ListRequests` contamination, and
-     `Forbidden` from stale policy state.
-   - **Two viable approaches:**
-     1. Extend `LegacyApiFixture` (or add a `LegacyPerTestApiFixture`) with
-        per-test DB isolation — either an `IAsyncLifetime` that allocates a
-        new EF database per test or a transaction-rollback `TestScope`.
-        Reusable for future multi-test-per-class consumers.
-     2. Rewrite `ConsentControllerTestBFF` tests to use unique per-test
-        `requestId`s (e.g. `Guid.CreateVersion7()`) and scope shared entity
-        inserts to avoid collisions.
-   - **Follow-up (16.5):** once this lands, retire `WebApplicationFixture`,
-     `PostgresFixture`, `PostgresServer`, `AcceptanceCriteriaComposer`, and
-     `Scenarios/*`. Until then 16.5 is blocked.
-   - Read [AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md](AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md)
-     for the full failure analysis.
+1. **Sub-step 16.5 — Retire `WebApplicationFixture`, `PostgresServer`,
+   `AcceptanceCriteriaComposer`, `Scenarios/*`.**
+   - **Unblocked by Step 25** — `ConsentControllerTestBFF` was the last
+     consumer and is now on `LegacyApiFixture`.
+   - Delete: `test/AccessMgmt.Tests/Fixtures/WebApplicationFixture.cs`,
+     `test/AccessMgmt.Tests/Scenarios/*`, `AcceptanceCriteriaComposer`, and
+     the `PostgresServer` helper that backs them.
+     `test/AccessMgmt.Tests/Templates/ControllerTestTemplate.cs` references
+     `WebApplicationFixture` — either port the template to `ApiFixture` /
+     `LegacyApiFixture` or delete it.
+   - **Out of scope:** `PostgresFixture` still has four active consumers
+     (`ConnectionQueryTests`, `RequestServiceTests`,
+     `TranslationServiceTests`, `DeepTranslationExtensionsTests`, plus
+     `DatabaseTestTemplate`). Retiring it is a separate follow-up.
+   - Read [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md)
+     for the current consumer audit.
 
 2. **Phase 4.2b — FluentAssertions guidelines**
    - Create usage guidelines and patterns documentation
