@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420064517_RemoveRequestUniqueIndex")]
+    partial class RemoveRequestUniqueIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,8 +260,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignmentinstance_assignmentid");
 
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId"), new[] { "Id", "ResourceId", "InstanceId" });
-
                     b.HasIndex("InstanceSourceTypeId")
                         .HasDatabaseName("ix_assignmentinstance_instancesourcetypeid");
 
@@ -371,8 +372,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignmentresource_assignmentid");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId"), new[] { "Id", "ResourceId" });
 
                     b.HasIndex("Audit_ChangedBy")
                         .HasDatabaseName("ix_assignmentresource_audit_changedby");
@@ -3915,7 +3914,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_delegationpackage_assignmentpackage_assignmentpackageid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
-                        .WithMany("DelegationPackages")
+                        .WithMany()
                         .HasForeignKey("DelegationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -4302,11 +4301,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
-                {
-                    b.Navigation("DelegationPackages");
-                });
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>
                 {
                     b.Navigation("DelegationPackages");
                 });
