@@ -469,29 +469,20 @@ public class RequestController(
 
     private async Task<IActionResult> ApprovePackageRequest(Guid partyUuid, RequestDto request, CancellationToken ct)
     {
-        ValidationErrorBuilder errorBuilder = default;
-
-        var assignment = await assignmentService.GetOrCreateAssignment(request.From.Id, request.To.Id, RoleConstants.Rightholder, cancellationToken: ct);
-        if (assignment is null)
-        {
-            errorBuilder.Add(ValidationErrors.RequestFailedToApprove, "Approve", [new("Approve", $"Unable to get or create rightholder assignment")]);
-        }
-
-        if (errorBuilder.TryBuild(out var problem))
-        {
-            return problem.ToActionResult();
-        }
-
-        var result = await connectionService.AddPackage(
+        // The request has already been validated: bypass the delegation-check path and
+        // directly create (or idempotently find) the Rightholder assignment + package.
+        var imported = await assignmentService.ImportAssignmentPackages(
             request.To.Id,
             request.From.Id,
-            request.Package.Id.Value,
-            ConfigureConnections,
-            ct);
+            [request.Package.ReferenceId],
+            cancellationToken: ct);
 
-        if (result.IsProblem)
+        if (imported is null || imported.Count == 0)
         {
-            return result.Problem.ToActionResult();
+            ValidationErrorBuilder errorBuilder = default;
+            errorBuilder.Add(ValidationErrors.RequestFailedToApprove, "Approve", [new("Approve", "Unable to create assignment package during approval")]);
+            errorBuilder.TryBuild(out var problem);
+            return problem.ToActionResult();
         }
 
         var updateResult = await requestService.UpdateRequest(partyUuid, request.Id, RequestStatus.Approved, ct);

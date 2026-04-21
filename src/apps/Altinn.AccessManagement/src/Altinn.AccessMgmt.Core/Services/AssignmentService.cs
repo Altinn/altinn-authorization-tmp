@@ -48,7 +48,14 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 Audit_ValidFrom = values?.ValidFrom ?? DateTimeOffset.UtcNow,
             };
             await db.Assignments.AddAsync(assignment, cancellationToken);
-            await db.SaveChangesAsync(values, cancellationToken);
+            if (values is null)
+            {
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            else
+            {
+                await db.SaveChangesAsync(values, cancellationToken);
+            }
         }
 
         var existingAssignmentPackages = await db.AssignmentPackages
@@ -82,7 +89,14 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
             result.Add(DtoMapper.Convert(newAssignmentPackage));
         }
 
-        await db.SaveChangesAsync(values, cancellationToken);
+        if (values is null)
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            await db.SaveChangesAsync(values, cancellationToken);
+        }
 
         return result;
     }
@@ -935,7 +949,6 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         ValidatePartyIsNotNull(fromEntityId, fromEntity, ref errors, "$QUERY/party");
         ValidatePartyIsOrg(fromEntity, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntity, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntity, ref errors, "$QUERY/to");
 
         var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
         if (roleResult == null || !roleResult.Any())
