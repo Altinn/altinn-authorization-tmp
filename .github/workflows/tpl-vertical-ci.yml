@@ -79,8 +79,71 @@ jobs:
         # vertical is currently `[Skip]`ed because the required infrastructure
         # such as Azurite is unavailable in CI). We don't want that to fail the
         # job; real test failures still exit with code 2.
+        id: test
         run: dotnet test -c Release --no-build -bl:binlog/test.binlog -- --ignore-exit-code 8
         working-directory: ${{ inputs.path }}
+
+      - name: Report failed tests
+        # When the Test step fails, surface the specific failing test names
+        # (plus their assertion / stack context) directly in the workflow log.
+        # The workflow's dotnet-test output otherwise only contains per-DLL
+        # summary lines ("Failed: N, Passed: M, ...") — MTP writes the test-
+        # level detail to bin/.../TestResults/<Project>_<tfm>_<arch>.log,
+        # which this step parses. The same files are uploaded as artifacts by
+        # the step below; we mirror the failures into the log (and as
+        # ::error:: annotations for the PR checks summary) so reviewers don't
+        # need to download the artifact for the most common case.
+        if: failure() && steps.test.conclusion == 'failure'
+        shell: pwsh
+        working-directory: ${{ inputs.path }}
+        run: |
+          $logs = Get-ChildItem -Path . -Recurse -Filter '*_net9.0_x64.log' -ErrorAction SilentlyContinue |
+                  Where-Object { $_.FullName -match [regex]::Escape([IO.Path]::Combine('bin','Release','net9.0','TestResults')) }
+
+          if (-not $logs) {
+              Write-Host "No MTP per-project logs found under bin/Release/net9.0/TestResults/." -ForegroundColor Yellow
+              exit 0
+          }
+
+          $total = 0
+          foreach ($log in $logs) {
+              # MTP's per-project log prints a line of the form
+              #   failed <Test Display Name> (duration)
+              # followed by the assertion message, source location, and stack.
+              # We grab each "failed " line plus a bounded block of context.
+              # Note: `$matches` is an automatic variable in PowerShell (written
+              # by the -match operator), so use a distinct name here.
+              $failures = Select-String -Path $log.FullName -Pattern '^\s*failed\s+' -Context 0, 15
+              if (-not $failures) { continue }
+
+              Write-Host ""
+              Write-Host "::group::Failed tests in $($log.BaseName)"
+              foreach ($m in $failures) {
+                  $total++
+                  $title = ($m.Line -replace '^\s*failed\s+', '').Trim()
+                  # Take context up to (but not past) the next "failed " line or
+                  # an unrelated xUnit/MTP summary line — whichever comes first.
+                  $ctx = @()
+                  foreach ($line in $m.Context.PostContext) {
+                      if ($line -match '^\s*failed\s+' -or $line -match '^\s*(passed|skipped)\s+' -or $line -match 'Test run summary' -or $line -match 'Tests (failed|succeeded):' ) { break }
+                      $ctx += $line
+                  }
+                  $body = ($ctx -join "`n").TrimEnd()
+                  Write-Host "`n  $title"
+                  if ($body) { Write-Host $body }
+
+                  # PR-checks annotation (first non-empty context line as message)
+                  $msgLine = ($ctx | Where-Object { $_.Trim() } | Select-Object -First 1)
+                  if (-not $msgLine) { $msgLine = 'See workflow log / test-results artifact for details.' }
+                  $escTitle = $title -replace '%','%25' -replace "`r",'' -replace "`n",' '
+                  $escMsg = $msgLine.Trim() -replace '%','%25' -replace "`r",'' -replace "`n",' '
+                  Write-Host "::error title=$escTitle::$escMsg"
+              }
+              Write-Host "::endgroup::"
+          }
+
+          Write-Host ""
+          Write-Host "Total failing tests: $total"
 
       - name: Coverage threshold check
         if: hashFiles(format('{0}/**/test/**/*.Tests.csproj', inputs.path)) != ''
