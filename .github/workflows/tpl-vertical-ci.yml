@@ -106,6 +106,20 @@ jobs:
         working-directory: ${{ inputs.path }}
         if: inputs.type == 'pkg'
 
+      - name: Upload test results
+        # Capture MTP per-project logs and TRX reports so test failures can be
+        # diagnosed from GHA artifacts (the `6_Test.txt` workflow log only
+        # contains summary lines like "Failed: N, Passed: M").
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ inputs.slug }}-test-results
+          path: |
+            ${{ inputs.path }}/**/TestResults/*.log
+            ${{ inputs.path }}/**/TestResults/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Create binlog artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
