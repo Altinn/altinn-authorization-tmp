@@ -120,12 +120,12 @@ public static class RequestPendingNotification
 
         if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
         {
-            data.ResourceIds.Append(resourceId.Value);
+            data.ResourceIds.Add(resourceId.Value);
         }
 
         if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
         {
-            data.PackageIds.Append(packageId.Value);
+            data.PackageIds.Add(packageId.Value);
         }
 
         var processAfter = TimeSpan.FromSeconds(notifyRequestPendingInSeconds);
