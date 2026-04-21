@@ -121,6 +121,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 51 | ✅ | Fix 6.7f — `ResourceRegistryMock.GetMembershipsForResourceForParty` cache-hit bug: on cache hit the method fell through to `return Enumerable.Empty<>()` instead of returning cached memberships; `DenyActionFilterNotMatching` primed the cache for `ttd-accesslist-resource-with-actionfilter`, `PermitWithActionFilterMatch` got empty on the subsequent cache hit → Deny; fixed with `return memberships ?? Enumerable.Empty<>()` after the block; `[Skip]` removed; all 21 `ResourceRegistry_DecisionTests` pass deterministically | Phase 6.7f | [51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md](51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md) |
 
 | 51 | ✅ | Fix 6.7f — `ResourceRegistryMock.GetMembershipsForResourceForParty` cache-hit bug: on cache hit, method fell through to `return Enumerable.Empty<>()` instead of returning cached memberships; `DenyActionFilterNotMatching` primed the cache, `PermitWithActionFilterMatch` got empty on cache hit → Deny; fixed with `return memberships ?? Enumerable.Empty<>()` after the block; `[Skip]` removed; all 21 `ResourceRegistry_DecisionTests` pass deterministically | Phase 6.7f | [51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md](51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md) |
+| 52 | ✅ | Coverage: `AccessManagement.Api.Metadata` `RolesController` — 14 direct unit tests covering all 6 endpoints (GetAll, GetId, GetPackages/GetResources by code, GetPackages/GetResources by id); pass-through `ITranslationService` mock; no containers required | Phase 6.7d | [52_Coverage_Api_Metadata_RolesController.md](52_Coverage_Api_Metadata_RolesController.md) |
 
 All items below are actionable and have no container-runtime dependency.
 
@@ -168,7 +169,7 @@ and will be enforced as their coverage improves. Source:
 | AccessManagement.Persistence | 44.94 | 30.23 | — | ❌ Gap |
 | AccessMgmt.Persistence | 32.51 | 9.42 | — | ❌ Gap |
 | AccessMgmt.Core | 17.31→↑ | 12.00→↑ | — | ⏫ Step 45 |
-| AccessManagement.Api.Metadata | 16.59 | 13.33 | — | ❌ Gap |
+| AccessManagement.Api.Metadata | 16.59→↑ | 13.33→↑ | — | ⏫ Step 52 |
 | AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
 | AccessManagement.Api.Enduser | 68.32 | 58.90 | — | ⏫ Step 33 |
 | AccessManagement.Api.ServiceOwner | 71.74→↑ | 60.00→↑ | — | ⏫ Step 47 |
