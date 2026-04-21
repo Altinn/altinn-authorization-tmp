@@ -37,6 +37,44 @@ public static class RequestPendingNotification
         );
     }
 
+    public static async Task RemoveValue(
+        AppDbContext db,
+        Guid requesterId,
+        Guid recipientId,
+        Guid? resourceId,
+        Guid? packageId,
+        CancellationToken ct = default
+    )
+    {
+        await db.OutboxMessages.UpsertOutboxAsync<ResourceRequestPendingNotificationMessage>(
+            refId: $"{Handler}_{requesterId}_{recipientId}",
+            handler: Handler,
+            addValueFactory: msg => new(),
+            updateValueFactory: (msg, data) => RemoveValue(resourceId, packageId, msg, data),
+            cancellationToken: ct
+        );
+    }
+
+    private static ResourceRequestPendingNotificationMessage RemoveValue(
+        Guid? resourceId,
+        Guid? packageId,
+        OutboxMessage msg,
+        ResourceRequestPendingNotificationMessage data
+    )
+    {
+        if (resourceId.HasValue && resourceId.Value != Guid.Empty)
+        {
+            data.ResourceIds.RemoveAll(r => r == resourceId.Value);
+        }
+
+        if (packageId.HasValue && packageId.Value != Guid.Empty)
+        {
+            data.PackageIds.RemoveAll(p => p == packageId.Value);
+        }
+
+        return data;
+    }
+
     private static ResourceRequestPendingNotificationMessage AddValue(
         Guid requesterId,
         Guid recipientId,
@@ -82,12 +120,12 @@ public static class RequestPendingNotification
 
         if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
         {
-            data.ResourceIds = data.ResourceIds.Append(resourceId.Value);
+            data.ResourceIds.Append(resourceId.Value);
         }
 
         if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
         {
-            data.PackageIds = data.PackageIds.Append(packageId.Value);
+            data.PackageIds.Append(packageId.Value);
         }
 
         var processAfter = TimeSpan.FromSeconds(notifyRequestPendingInSeconds);

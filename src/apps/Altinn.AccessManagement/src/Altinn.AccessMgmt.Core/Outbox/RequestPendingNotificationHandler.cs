@@ -32,7 +32,14 @@ public class RequestPendingNotificationHandler(
             return OutboxStatus.Completed;
         }
 
-        var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
+        var (recipient, requester, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+
+        if (!packages.Any() && !resources.Any())
+        {
+            db.OutboxMessageLogs.Add(message, $"Both lists of resources and packages are empty. Request is most likely withdrawn.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         var content = new NotificationOrderChainRequestExt()
         {
@@ -81,7 +88,7 @@ public class RequestPendingNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<ResourceRequestPendingNotificationMessage>(message.Data);
         if (content is null)
@@ -243,12 +250,12 @@ public class ResourceRequestPendingNotificationMessage
     /// <summary>
     /// Guid of resource.
     /// </summary>
-    public IEnumerable<Guid> ResourceIds { get; set; }
+    public List<Guid> ResourceIds { get; set; }
 
     /// <summary>
     /// Guid of package
     /// </summary>
-    public IEnumerable<Guid> PackageIds { get; set; }
+    public List<Guid> PackageIds { get; set; }
 
     /// <summary>
     /// Number of updates.

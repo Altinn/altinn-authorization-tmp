@@ -359,6 +359,17 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         }
 
         request.Status = status;
+        if (status == RequestStatus.Withdrawn)
+        {
+            await RequestPendingNotification.RemoveValue(
+                db,
+                request.Assignment.FromId,
+                request.Assignment.ToId,
+                null,
+                request.PackageId,
+                ct
+            );
+        }
         if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
         {
             // ToId: organization / person that request approves / declines request.
@@ -410,6 +421,18 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         }
 
         request.Status = status;
+        if (status == RequestStatus.Withdrawn)
+        {
+            await RequestPendingNotification.RemoveValue(
+                db,
+                request.Assignment.FromId,
+                request.Assignment.ToId,
+                request.ResourceId,
+                null,
+                ct
+            );
+        }
+
         if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
         {
             // ToId: organization / person that request approves / declines request.
