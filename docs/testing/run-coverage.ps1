@@ -4,7 +4,8 @@ param(
     [string[]]$Projects,
     [string]$Configuration = 'Release',
     [switch]$NoBuild,
-    [string]$ThresholdsFile
+    [string]$ThresholdsFile,
+    [string]$OwnedRoot = (Get-Location).Path
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -89,6 +90,25 @@ if ($ThresholdsFile -and (Test-Path $ThresholdsFile)) {
     Write-Host "  Loaded thresholds from $ThresholdsFile" -ForegroundColor DarkGray
 }
 
+$ownedRootFull = try { (Resolve-Path $OwnedRoot -ErrorAction Stop).Path } catch { $OwnedRoot }
+$ownedRootPrefix = $ownedRootFull.TrimEnd('\', '/')
+Write-Host "  Enforcing thresholds only for assemblies owned by: $ownedRootPrefix" -ForegroundColor DarkGray
+
+function Test-IsOwnedByVertical {
+    param($pkg, [string]$rootPrefix)
+    if (-not $rootPrefix) { return $true }
+    $classes = $pkg.classes.class
+    if (-not $classes) { return $false }
+    foreach ($cls in $classes) {
+        $fn = $cls.filename
+        if (-not $fn) { continue }
+        if ($fn.StartsWith($rootPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+    }
+    return $false
+}
+
 foreach ($file in $coverageFiles) {
     [xml]$xml = Get-Content $file
     foreach ($pkg in $xml.coverage.packages.package) {
@@ -96,8 +116,11 @@ foreach ($file in $coverageFiles) {
         $lr = [math]::Round([double]$pkg.'line-rate' * 100, 2)
         $br = [math]::Round([double]$pkg.'branch-rate' * 100, 2)
         if ($n -match '^Altinn\.' -and $n -notmatch 'Tests|TestUtils|Mocks') {
+            $owned = Test-IsOwnedByVertical -pkg $pkg -rootPrefix $ownedRootPrefix
+            $marker = if ($owned) { '' } else { ' (ref)' }
             $c = if ($lr -lt 50) { 'Red' } elseif ($lr -lt 70) { 'Yellow' } else { 'Green' }
-            Write-Host ("  {0,-50} {1,7}% line  {2,7}% branch" -f $n, $lr, $br) -ForegroundColor $c
+            Write-Host ("  {0,-50} {1,7}% line  {2,7}% branch{3}" -f $n, $lr, $br, $marker) -ForegroundColor $c
+            if (-not $owned) { continue }
             $floor = if ($assemblyThresholds.ContainsKey($n)) { $assemblyThresholds[$n] } else { $globalFloor }
             if ($floor -gt 0 -and $lr -lt $floor) {
                 $belowThreshold += "$n ($lr% < $floor%)"

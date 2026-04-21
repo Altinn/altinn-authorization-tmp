@@ -100,6 +100,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 31 | ✅ | Coverage: AccessManagement.Api.Enduser Validation layer — `ConnectionValidation` + `ConnectionCombinationRules` direct unit tests via `InternalsVisibleTo`; 49.93% → 62.76% line | Phase 6.7c | [Coverage_Enduser_Api_Validation.md](Coverage_Enduser_Api_Validation.md) |
 | 32 | ✅ | Coverage: AccessManagement.Api.Enduser `ParameterValidation` — 44 direct unit tests for atomic per-parameter rules; 62.76% → 65.94% line | Phase 6.7c | [Coverage_Enduser_Api_ParameterValidation.md](Coverage_Enduser_Api_ParameterValidation.md) |
 | 33 | ✅ | Coverage: AccessManagement.Api.Enduser `Utils.ToUuidResolver` — 13 direct unit tests (Moq) for both resolve branches; 65.94% → 68.32% line | Phase 6.7c | [Coverage_Enduser_Api_ToUuidResolver.md](Coverage_Enduser_Api_ToUuidResolver.md) |
+| 34 | ✅ | CI fix — scope coverage threshold enforcement to the owning vertical (unblocks `app: Authorization`, `lib: Integration`, `pkg: PEP`) | Phase 6.6 follow-up | [CI_Coverage_Threshold_Scoping.md](CI_Coverage_Threshold_Scoping.md) |
 
 ### Recommended Next Steps (priority order)
 
