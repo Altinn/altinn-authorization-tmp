@@ -27,11 +27,6 @@ public static class PackageConstants
             return true;
         }
 
-        if (TryGetByName(value, out result))
-        {
-            return true;
-        }
-
         if (Guid.TryParse(value, out var packageGuid) && TryGetById(packageGuid, out result))
         {
             return true;
@@ -39,12 +34,6 @@ public static class PackageConstants
 
         return false;
     }
-
-    /// <summary>
-    /// Try to get <see cref="Package"/> by name.
-    /// </summary>
-    public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
-        => ConstantLookup.TryGetByName(typeof(PackageConstants), name, out result);
 
     /// <summary>
     /// Try to get <see cref="Package"/> using Guid.
