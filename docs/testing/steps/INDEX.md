@@ -89,42 +89,30 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 20 | ✅ | Sub-step 16.3 — Group B simple (`HealthCheckTests`, `PartyControllerTests`) | Phase 2.2 | [AccessMgmt_WAF_Group_B_Simple.md](AccessMgmt_WAF_Group_B_Simple.md) |
 | 21 | ✅ | Sub-step 16.4 investigation — Group B scenario-based consumers blocked on Yuniql schema provisioning in `ApiFixture` | Phase 2.2 | [AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md](AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md) |
 | 22 | ✅ | Sub-step 16.4-prep — `LegacyApiFixture` plumbing (Yuniql + EF schema) | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md](AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md) |
+| 23 | ✅ | Sub-step 16.4a — Migrate `V2ResourceControllerTest`, `ConsentControllerTestEnterprise`, `MaskinPorten.ConsentControllerTest` to `LegacyApiFixture` | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md](AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Item 1 requires Podman Desktop (working as of
 Step 12); items 2–4 have no container-runtime dependency.
 
-1. **Sub-step 16.4a** — Migrate the three unblocked `WebApplicationFixture`
+1. **Sub-step 16.4b** — Migrate the remaining `WebApplicationFixture`
    consumers to `LegacyApiFixture`:
-   - `V2ResourceControllerTest`
-   - `ConsentControllerTestEnterprise`
-   - `ConsentControllerTest` (MaskinPorten)
-   - **Why it is priority 1:** `LegacyApiFixture` plumbing landed in Step 22
-     (smoke-tested — Dapper insert against `accessmanagement.resource`
-     round-trips) and these three classes are the ones the 16.4 investigation
-     attempted and had to revert. Their failure traces (`relation
-     "accessmanagement.resource" does not exist` /
-     `'consent.status_type' was not found`) are the exact failure mode
-     `LegacyApiFixture` resolves.
-   - **Recipe:** follow the canonical `ApiFixture` migration recipe from
-     [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
-     but use `IClassFixture<LegacyApiFixture>` instead of
-     `IClassFixture<ApiFixture>`. The reverted attempt in the 16.4
-     investigation already figured out the DI overrides needed
-     (`SigningKeyResolverMock` instead of `PublicSigningKeyProviderMock`,
-     `PdpPermitMock` legacy flavour) — re-apply those on top of
-     `LegacyApiFixture`.
-   - **Follow-ups:**
-     - **16.4b:** `ConsentControllerTestBFF` (adds `EnsureSeedOnce<T>`
-       pattern for `SeedResources()`), `V2MaskinportenSchemaControllerTest`,
-       `V2RightsInternalControllerTest` (all `[Skip]`ped today — confirm
-       skip-state is still desired before porting).
-     - **16.5:** retire `WebApplicationFixture`, `PostgresFixture`,
-       `PostgresServer`, `AcceptanceCriteriaComposer`, `Scenarios/*`
-       once no consumers remain.
+   - `ConsentControllerTestBFF` (needs `EnsureSeedOnce<T>` pattern for
+     `SeedResources()`)
+   - `V2MaskinportenSchemaControllerTest`
+   - `V2RightsInternalControllerTest`
+   - **Status:** all three are currently `[Skip]`ped. Before porting, confirm
+     with the owners whether the skip-state is still desired — if the tests
+     are meant to be re-enabled, `LegacyApiFixture` is now the fixture they
+     should land on.
+   - **Recipe:** same as 16.4a (see
+     [AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md](AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md)).
+   - **Follow-up (16.5):** once 16.4b lands, retire `WebApplicationFixture`,
+     `PostgresFixture`, `PostgresServer`, `AcceptanceCriteriaComposer`, and
+     `Scenarios/*`.
 
-2. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
+2. **Phase 4.2b — FluentAssertions guidelines**
    - Create usage guidelines and patterns documentation
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
