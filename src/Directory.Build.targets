@@ -9,6 +9,11 @@
                 <GenerateDocumentationFile Condition=" '$(EnableReferenceTrimmer)' == '' ">false</GenerateDocumentationFile>
                 <OutputType Condition=" '$(IsTestProject)' == 'true' And '$(XUnitVersion)' == 'v3' ">Exe</OutputType>
 
+                <!-- xUnit v3 runs on Microsoft Testing Platform, not VSTest.
+                     This opt-in makes `dotnet test` route to MTP so xUnit v3
+                     tests are actually discovered & executed in CI. -->
+                <TestingPlatformDotnetTestSupport Condition=" '$(IsTestProject)' == 'true' And '$(XUnitVersion)' == 'v3' ">true</TestingPlatformDotnetTestSupport>
+
                 <!-- Coverage output format for coverlet -->
                 <CoverletOutputFormat>cobertura</CoverletOutputFormat>
             </PropertyGroup>

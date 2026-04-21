@@ -1,9 +1,13 @@
-<Project>
+﻿<Project>
     <Import Project="..\..\Directory.Build.props" />
 
     <PropertyGroup>
         <XUnitVersion>v3</XUnitVersion>
         <IsTestProject>true</IsTestProject>
+        <!-- Use TargetFrameworks (plural) so `dotnet test` routes xUnit v3
+             tests through Microsoft Testing Platform instead of VSTest. -->
+        <TargetFramework></TargetFramework>
+        <TargetFrameworks>net9.0</TargetFrameworks>
     </PropertyGroup>
 
 </Project>
