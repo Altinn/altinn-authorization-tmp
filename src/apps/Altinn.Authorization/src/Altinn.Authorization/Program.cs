@@ -435,6 +435,14 @@ void Configure()
 
 /// <summary>
 /// Make the auto-generated Program class public so test projects can
-/// reference it as the entry point for <see cref="Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory{TEntryPoint}"/>.
+/// reference it as the entry point for <c>WebApplicationFactory&lt;TEntryPoint&gt;</c>.
 /// </summary>
-public partial class Program { }
+public partial class Program
+{
+    /// <summary>
+    /// Prevents external instantiation of the entry-point marker type.
+    /// </summary>
+    protected Program()
+    {
+    }
+}
