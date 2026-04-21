@@ -32,7 +32,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
             });
             _client = fixture.BuildClient(client =>
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("appliation/xml"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
             });
         }
 

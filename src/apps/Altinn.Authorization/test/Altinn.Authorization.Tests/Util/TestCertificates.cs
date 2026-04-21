@@ -6,18 +6,23 @@ using Microsoft.IdentityModel.Tokens;
 namespace Altinn.Platform.Authorization.IntegrationTests.Util;
 
 /// <summary>
-/// Provides deterministic, in-memory X.509 certificates for use in integration tests.
+/// Provides in-memory, self-signed X.509 certificates for use in integration tests.
 /// Eliminates the need for certificate files checked into the repository.
 /// </summary>
+/// <remarks>
+/// The certificate is generated lazily on first access using <see cref="DateTimeOffset.UtcNow"/>
+/// for its validity window, so the produced certificate (serial, thumbprint, NotBefore/NotAfter)
+/// will vary between test runs. Within a single process it is cached and reused.
+/// </remarks>
 internal static class TestCertificates
 {
-    private static readonly Lazy<(X509Certificate2 Cert, RSA Key)> _default = new(CreateCertificate);
+    private static readonly Lazy<X509Certificate2> _default = new(CreateCertificate);
 
     /// <summary>
     /// Self-signed certificate used for signing and verifying test JWTs.
     /// Replaces the former <c>selfSignedTestCertificate.pfx</c> / <c>.cer</c> files.
     /// </summary>
-    public static X509Certificate2 Default => _default.Value.Cert;
+    public static X509Certificate2 Default => _default.Value;
 
     /// <summary>
     /// Signing credentials wrapping <see cref="Default"/> for token generation.
@@ -30,9 +35,13 @@ internal static class TestCertificates
     /// </summary>
     public static SecurityKey SecurityKey => new X509SecurityKey(Default);
 
-    private static (X509Certificate2, RSA) CreateCertificate()
+    private static X509Certificate2 CreateCertificate()
     {
-        var rsa = RSA.Create(2048);
+        // The RSA instance is only needed to build and sign the temporary certificate. Once the
+        // PFX bytes are exported and re-imported with EphemeralKeySet the returned certificate
+        // owns its own key material, so we dispose the original RSA (and the temp cert) here to
+        // avoid leaking CNG / OpenSSL handles across large test runs.
+        using var rsa = RSA.Create(2048);
 
         var req = new CertificateRequest(
             "CN=AuthorizationTest",
@@ -43,15 +52,13 @@ internal static class TestCertificates
         req.CertificateExtensions.Add(
             new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
 
-        var temp = req.CreateSelfSigned(
+        using var temp = req.CreateSelfSigned(
             DateTimeOffset.UtcNow.AddDays(-1),
             DateTimeOffset.UtcNow.AddYears(1));
 
-        var cert = X509CertificateLoader.LoadPkcs12(
+        return X509CertificateLoader.LoadPkcs12(
             temp.Export(X509ContentType.Pfx),
             password: null,
             keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet);
-
-        return (cert, rsa);
     }
 }

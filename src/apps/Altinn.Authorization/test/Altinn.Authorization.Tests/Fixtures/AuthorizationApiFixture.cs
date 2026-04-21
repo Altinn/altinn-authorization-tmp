@@ -36,10 +36,17 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Fixtures;
 public class AuthorizationApiFixture : WebApplicationFactory<Program>
 {
     private readonly List<Action<IServiceCollection>> _configureServicesActions = [];
+    private int _hostBuilt;
 
     /// <inheritdoc />
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Freeze further ConfigureServices calls once the host is being built —
+        // additional actions wouldn't affect the already-constructed service
+        // provider and silently growing the list across test-class instances
+        // would be a source of flakiness.
+        Interlocked.Exchange(ref _hostBuilt, 1);
+
         builder.ConfigureTestServices(services =>
         {
             // Authentication stubs
@@ -73,10 +80,31 @@ public class AuthorizationApiFixture : WebApplicationFactory<Program>
 
     /// <summary>
     /// Registers a callback that modifies the <see cref="IServiceCollection"/>
-    /// when building the test host. Call from the test class constructor only.
+    /// when building the test host.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// xUnit instantiates the test class once per test method but a class-level
+    /// fixture is shared across the class, so this method is typically called
+    /// from the test class constructor and will run on every test. Callbacks
+    /// registered after the underlying host has been constructed would have
+    /// no effect (<see cref="WebApplicationFactory{TEntryPoint}"/> caches the
+    /// host on first client/server creation), so such late registrations are
+    /// silently ignored rather than silently appended to a list that never
+    /// executes. This prevents unbounded growth of the callback list across
+    /// a test session.
+    /// </para>
+    /// </remarks>
     public void ConfigureServices(Action<IServiceCollection> configureServices)
     {
+        ArgumentNullException.ThrowIfNull(configureServices);
+
+        // Host already built → adding has no effect; drop it instead of leaking.
+        if (Volatile.Read(ref _hostBuilt) != 0)
+        {
+            return;
+        }
+
         _configureServicesActions.Add(configureServices);
     }
 
