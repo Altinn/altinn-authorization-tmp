@@ -86,13 +86,14 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 17 | ✅ | Sub-step 16.1 — Group A easy wins (`PolicyInformationPointControllerTest`, `DelegationsControllerTest`) | Phase 2.2 | [AccessMgmt_WAF_Group_A_Easy_Wins.md](AccessMgmt_WAF_Group_A_Easy_Wins.md) |
 | 18 | ✅ | Sub-step 16.2a — Group A single-configuration migrations (`Altinn2RightsControllerTest`, `AppsInstanceDelegationControllerTest`) | Phase 2.2 | [AccessMgmt_WAF_Group_A_Single_Config.md](AccessMgmt_WAF_Group_A_Single_Config.md) |
 | 19 | ✅ | Sub-step 16.2b — Group A nested-class splits (`MaskinportenSchemaControllerTest`, `RightsInternalControllerTest`); `CustomWebApplicationFactory` deleted | Phase 2.2 | [AccessMgmt_WAF_Group_A_Nested_Splits.md](AccessMgmt_WAF_Group_A_Nested_Splits.md) |
+| 20 | ✅ | Sub-step 16.3 — Group B simple (`HealthCheckTests`, `PartyControllerTests`) | Phase 2.2 | [AccessMgmt_WAF_Group_B_Simple.md](AccessMgmt_WAF_Group_B_Simple.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Items 1 requires Podman Desktop (working as of
 Step 12); items 2–4 have no container-runtime dependency.
 
-1. **Sub-steps 16.3–16.5** — Group B (scenario-based `WebApplicationFixture` consumers) + legacy infrastructure retirement.
+1. **Sub-steps 16.4–16.5** — Group B scenario-based `WebApplicationFixture` consumers + legacy infrastructure retirement.
 
 2. **Phase 4.2b — FluentAssertions guidelines** (quick documentation task)
    - Create usage guidelines and patterns documentation
