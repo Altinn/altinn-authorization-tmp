@@ -94,23 +94,13 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 25 | ✅ | Sub-step 16.4b-continued — `ConsentControllerTestBFF` migrated to per-test `LegacyApiFixture` via `IAsyncLifetime`; `WebApplicationFixture` has no remaining consumers | Phase 2.2 | [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md) |
 | 26 | ✅ | Sub-step 16.5 — Retired `WebApplicationFixture`, `AcceptanceCriteriaComposer`, `Scenarios/*`, `ControllerTestTemplate`; `PostgresServer` retained (still used by `PostgresFixture`) | Phase 2.2 | [AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md](AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md) |
 | 27 | ✅ | FluentAssertions usage guidelines (`docs/testing/FLUENT_ASSERTIONS_GUIDELINES.md`) | Phase 4.2b | [FluentAssertions_Guidelines.md](FluentAssertions_Guidelines.md) |
+| 28 | ✅ | CI coverage thresholds for AccessManagement (4 enforced + 1 warn-only) | Phase 5.1b | [CI_Coverage_Thresholds_AccessManagement.md](CI_Coverage_Thresholds_AccessManagement.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable and have no container-runtime dependency.
 
-1. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
-   - Extend the CI coverage gate (Step 8) to the 4 AccessManagement assemblies already above 60%:
-     - `Altinn.AccessMgmt.PersistenceEF` → 90% (currently 98.59)
-     - `AccessManagement.Api.Maskinporten` → 75% (currently 80.36)
-     - `AccessManagement.Api.Enterprise` → 60% (currently 66.39)
-     - `AccessManagement.Core` → 60% (currently 63.43)
-   - Leave `AccessManagement` (main app, 58.19%) as a **warning-only** ratchet until it crosses 60%.
-   - Do **not** enforce thresholds on the low-coverage assemblies — those are covered by 6.7b–6.7d below.
-   - Maps to overhaul plan Phase 5.1 / 5.4. Prevents regression on assemblies we've already invested in, without blocking CI on known gaps.
-   - Read [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for the existing Authorization-app threshold pattern.
-
-2. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+1. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
@@ -135,25 +125,26 @@ See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Ba
 
 **236 new tests** added across Phase 6 (184 Authorization + 52 PEP).
 
-**AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
-point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
-threshold we'd enforce in CI once reached (see priority 2 in
-[Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
+**AccessManagement app** — Step 12 baseline; four assemblies are now
+**CI-enforced** as of Step 28 (see [CI_Coverage_Thresholds_AccessManagement.md](CI_Coverage_Thresholds_AccessManagement.md)).
+The main app is a warning-only ratchet until it crosses 60%. Other assemblies
+are tracked under priority 1 in [Recommended Next Steps](#recommended-next-steps-priority-order)
+and will be enforced as their coverage improves. Source:
 [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
 
-| Assembly | Line% | Branch% | Target | Status |
+| Assembly | Line% | Branch% | Threshold | Status |
 |---|---|---|---|---|
-| Altinn.AccessMgmt.PersistenceEF | 98.59 | 90.78 | 60% | ✅ |
-| AccessManagement.Api.Maskinporten | 80.36 | 80.00 | 60% | ✅ |
-| AccessManagement.Api.Enterprise | 66.39 | 56.52 | 60% | ✅ |
-| AccessManagement.Core | 63.43 | 61.49 | 60% | ✅ |
-| AccessManagement (main app) | 58.19 | 60.93 | 60% | ⚠️ Near |
-| AccessManagement.Integration | 47.57 | 43.75 | 60% | ❌ Gap |
-| AccessManagement.Api.Internal | 46.74 | 46.20 | 60% | ❌ Gap |
-| AccessManagement.Persistence | 44.94 | 30.23 | 60% | ❌ Gap |
-| AccessMgmt.Persistence | 32.51 | 9.42 | 60% | ❌ Gap |
-| AccessMgmt.Core | 17.31 | 12.00 | 60% | ❌ Gap |
-| AccessManagement.Api.Metadata | 16.59 | 13.33 | 60% | ❌ Gap |
-| AccessMgmt.Persistence.Core | 8.78 | 3.21 | 60% | ❌ Gap |
-| AccessManagement.Api.Enduser | 1.19 | 0.15 | 60% | ❌ Gap |
-| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | 60% | ❌ Gap |
+| Altinn.AccessMgmt.PersistenceEF | 98.59 | 90.78 | 90% (enforced) | ✅ |
+| AccessManagement.Api.Maskinporten | 80.36 | 80.00 | 75% (enforced) | ✅ |
+| AccessManagement.Api.Enterprise | 66.39 | 56.52 | 60% (enforced) | ✅ |
+| AccessManagement.Core | 63.43 | 61.49 | 60% (enforced) | ✅ |
+| AccessManagement (main app) | 58.19 | 60.93 | 60% (⚠ warn-only) | ⚠️ Near |
+| AccessManagement.Integration | 47.57 | 43.75 | — | ❌ Gap |
+| AccessManagement.Api.Internal | 46.74 | 46.20 | — | ❌ Gap |
+| AccessManagement.Persistence | 44.94 | 30.23 | — | ❌ Gap |
+| AccessMgmt.Persistence | 32.51 | 9.42 | — | ❌ Gap |
+| AccessMgmt.Core | 17.31 | 12.00 | — | ❌ Gap |
+| AccessManagement.Api.Metadata | 16.59 | 13.33 | — | ❌ Gap |
+| AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
+| AccessManagement.Api.Enduser | 1.19 | 0.15 | — | ❌ Gap |
+| AccessManagement.Api.ServiceOwner | 0.00 | 0.00 | — | ❌ Gap |

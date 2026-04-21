@@ -67,9 +67,11 @@ if ($coverageFiles.Count -eq 0) {
 
 Write-Host "`n=== Coverage Summary ===" -ForegroundColor Cyan
 $belowThreshold = @()
+$warningsBelow = @()
 
 # Load per-assembly thresholds if provided
 $assemblyThresholds = @{}
+$assemblyWarnings = @{}
 $globalFloor = $Threshold
 if (-not $ThresholdsFile) {
     $defaultPath = Join-Path $PSScriptRoot 'coverage-thresholds.json'
@@ -80,6 +82,9 @@ if ($ThresholdsFile -and (Test-Path $ThresholdsFile)) {
     if ($cfg.globalThreshold -and $globalFloor -eq 0) { $globalFloor = $cfg.globalThreshold }
     if ($cfg.assemblies) {
         $cfg.assemblies.PSObject.Properties | ForEach-Object { $assemblyThresholds[$_.Name] = [int]$_.Value }
+    }
+    if ($cfg.warnings) {
+        $cfg.warnings.PSObject.Properties | ForEach-Object { $assemblyWarnings[$_.Name] = [int]$_.Value }
     }
     Write-Host "  Loaded thresholds from $ThresholdsFile" -ForegroundColor DarkGray
 }
@@ -97,8 +102,19 @@ foreach ($file in $coverageFiles) {
             if ($floor -gt 0 -and $lr -lt $floor) {
                 $belowThreshold += "$n ($lr% < $floor%)"
             }
+            if ($assemblyWarnings.ContainsKey($n)) {
+                $warnFloor = $assemblyWarnings[$n]
+                if ($warnFloor -gt 0 -and $lr -lt $warnFloor) {
+                    $warningsBelow += "$n ($lr% < $warnFloor%)"
+                }
+            }
         }
     }
+}
+
+if ($warningsBelow.Count -gt 0) {
+    Write-Host "`nWarning — below ratchet (non-fatal):" -ForegroundColor Yellow
+    $warningsBelow | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
 }
 
 if ($belowThreshold.Count -gt 0) {
@@ -107,7 +123,7 @@ if ($belowThreshold.Count -gt 0) {
     exit 1
 }
 elseif ($globalFloor -gt 0 -or $assemblyThresholds.Count -gt 0) {
-    Write-Host "`nAll assemblies meet their coverage thresholds." -ForegroundColor Green
+    Write-Host "`nAll enforced assemblies meet their coverage thresholds." -ForegroundColor Green
 }
 
 $rg = Get-Command reportgenerator -ErrorAction SilentlyContinue

@@ -82,8 +82,15 @@ jobs:
         shell: pwsh
         working-directory: ${{ inputs.path }}
         run: |
-          $thresholdsFile = Join-Path $env:GITHUB_WORKSPACE 'docs/testing/coverage-thresholds.json'
-          if (-not (Test-Path $thresholdsFile)) { Write-Host "No thresholds file, skipping"; exit 0 }
+          # Prefer a per-vertical thresholds file (colocated with the vertical),
+          # fall back to the global one under docs/testing/.
+          $localThresholds = Join-Path (Get-Location) 'coverage-thresholds.json'
+          $globalThresholds = Join-Path $env:GITHUB_WORKSPACE 'docs/testing/coverage-thresholds.json'
+          $thresholdsFile = if (Test-Path $localThresholds) { $localThresholds }
+                            elseif (Test-Path $globalThresholds) { $globalThresholds }
+                            else { $null }
+          if (-not $thresholdsFile) { Write-Host "No thresholds file, skipping"; exit 0 }
+          Write-Host "Using thresholds file: $thresholdsFile"
           dotnet tool install -g dotnet-coverage 2>$null
           $testProjs = Get-ChildItem -Path . -Filter '*.Tests.csproj' -Recurse | Select-Object -ExpandProperty FullName
           if ($testProjs.Count -eq 0) { Write-Host "No test projects found, skipping"; exit 0 }
