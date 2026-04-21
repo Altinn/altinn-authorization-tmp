@@ -360,11 +360,18 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.ResourceNotExists, "$QUERY/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
-        var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
-
-        if (!serviceResource.Delegable)
+        try
         {
-            errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/package", [new("package", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+            var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
+
+            if (!serviceResource.Delegable)
+            {
+                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+            }
+        }
+        catch
+        {
+            // errorBuilder.Add(ValidationErrors.ResourceNotExists, "$QUERY/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -428,7 +435,7 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package}'.")]);
         }
 
-        if (!packageObj.Entity.IsAssignable)
+        if (packageObj != null && !packageObj.Entity.IsAssignable)
         {
             errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package '{package}' is not assignable.")]);
         }

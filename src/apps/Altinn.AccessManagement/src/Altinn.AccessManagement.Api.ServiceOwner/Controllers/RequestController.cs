@@ -122,6 +122,11 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
+        if (string.IsNullOrEmpty(data.Package))
+        {
+            errorBuilder.Add(ValidationErrorDescriptors.InvalidUrn, "BODY/package", [new("package", "Package must be defined.")]);
+        }
+
         var fromResult = await GetEntity(data.From, "BODY/from", ct);
         fromResult.Problems(ref errorBuilder);
 
@@ -133,7 +138,7 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.PackageNotExists, "BODY/package", [new("package", $"No package was found with value '{data.Package}'.")]);
         }
 
-        if (!packageObj.Entity.IsAssignable)
+        if (packageObj != null && !packageObj.Entity.IsAssignable)
         {
             errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package '{data.Package}' is not assignable.")]);
         }
@@ -249,11 +254,18 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
-        var serviceResource = await resourceRegistryClient.GetResource(resourceRef.ReferenceId, ct);
+        try 
+        { 
+            var serviceResource = await resourceRegistryClient.GetResource(resourceRef.ReferenceId, ct);
 
-        if (!serviceResource.Delegable)
+            if (!serviceResource.Delegable)
+            {
+                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not delegable.")]);
+            }
+        }
+        catch
         {
-            errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/package", [new("package", $"Resource with reference ID '{resourceRef.ReferenceId}' is not delegable.")]);
+            // errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
