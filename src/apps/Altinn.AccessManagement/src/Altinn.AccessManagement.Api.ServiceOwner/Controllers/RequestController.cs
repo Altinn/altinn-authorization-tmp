@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
@@ -29,6 +30,7 @@ public class RequestController(
     IEntityService entityService,
     IResourceService resourceService,
     IAuditAccessor auditAccessor,
+    IResourceRegistryClient resourceRegistryClient,
     IOptions<GeneralSettings> generalSettings
     ) : ControllerBase
 {
@@ -129,6 +131,11 @@ public class RequestController(
         if (!PackageConstants.TryGetByAll(data.Package, out var packageObj))
         {
             errorBuilder.Add(ValidationErrors.PackageNotExists, "BODY/package", [new("package", $"No package was found with value '{data.Package}'.")]);
+        }
+
+        if (!packageObj.Entity.IsAssignable)
+        {
+            errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package '{data.Package}' is not assignable.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -242,6 +249,13 @@ public class RequestController(
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
+        var serviceResource = await resourceRegistryClient.GetResource(resourceRef.ReferenceId, ct);
+
+        if (!serviceResource.Delegable)
+        {
+            errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/package", [new("package", $"Resource with reference ID '{resourceRef.ReferenceId}' is not delegable.")]);
+        }
+
         if (errorBuilder.TryBuild(out var problem))
         {
             return problem.ToActionResult();
@@ -289,6 +303,11 @@ public class RequestController(
         if (!PackageConstants.TryGetByAll(package.ReferenceId, out var packageObj))
         {
             errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package.ReferenceId}'.")]);
+        }
+
+        if (!packageObj.Entity.IsAssignable)
+        {
+            errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package with reference ID '{package.ReferenceId}' is not assignable.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))

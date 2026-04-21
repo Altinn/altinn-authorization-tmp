@@ -2,6 +2,7 @@
 using System.Net.Mime;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
@@ -36,6 +37,7 @@ public class RequestController(
     ConnectionQuery connectionQuery,
     IResourceService resourceService,
     IEntityService entityService,
+    IResourceRegistryClient resourceRegistryClient,
     IPDP Pdp
     ) : ControllerBase
 {
@@ -358,6 +360,13 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.ResourceNotExists, "$QUERY/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
+        var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
+
+        if (!serviceResource.Delegable)
+        {
+            errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "$QUERY/package", [new("package", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+        }
+
         if (errorBuilder.TryBuild(out var problem))
         {
             return problem.ToActionResult();
@@ -417,6 +426,11 @@ public class RequestController(
         if (!PackageConstants.TryGetByAll(package, out var packageObj))
         {
             errorBuilder.Add(ValidationErrors.PackageNotExists, "$QUERY/package", [new("package", $"No package was found with value '{package}'.")]);
+        }
+
+        if (!packageObj.Entity.IsAssignable)
+        {
+            errorBuilder.Add(ValidationErrors.PackageIsNotAssignable, "$QUERY/package", [new("package", $"Package '{package}' is not assignable.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
