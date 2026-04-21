@@ -88,38 +88,34 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 19 | ✅ | Sub-step 16.2b — Group A nested-class splits (`MaskinportenSchemaControllerTest`, `RightsInternalControllerTest`); `CustomWebApplicationFactory` deleted | Phase 2.2 | [AccessMgmt_WAF_Group_A_Nested_Splits.md](AccessMgmt_WAF_Group_A_Nested_Splits.md) |
 | 20 | ✅ | Sub-step 16.3 — Group B simple (`HealthCheckTests`, `PartyControllerTests`) | Phase 2.2 | [AccessMgmt_WAF_Group_B_Simple.md](AccessMgmt_WAF_Group_B_Simple.md) |
 | 21 | ✅ | Sub-step 16.4 investigation — Group B scenario-based consumers blocked on Yuniql schema provisioning in `ApiFixture` | Phase 2.2 | [AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md](AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md) |
+| 22 | ✅ | Sub-step 16.4-prep — `LegacyApiFixture` plumbing (Yuniql + EF schema) | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md](AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable. Item 1 requires Podman Desktop (working as of
 Step 12); items 2–4 have no container-runtime dependency.
 
-1. **Sub-step 16.4-prep** — Provision full production schema (Yuniql +
-   EF) for Group B `WebApplicationFixture` consumers so the mechanical
-   migration can proceed.
-   - **Why it is priority 1:** Sub-step 16.4 (the originally-planned
-     priority 1) was attempted and reverted — all three migrated classes
-     failed at runtime because `ApiFixture`/`EFPostgresFactory` only
-     provisions the EF `dbo` schema, but the six remaining
-     `WebApplicationFixture` consumers hit Dapper repositories and
-     `MapEnum` bindings that require the Yuniql `accessmanagement.*`,
-     `consent.*`, and `delegation.*` schemas + enum types. See
-     [AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md](AccessMgmt_WAF_Group_B_Scenarios_16_4_Investigation.md)
-     for the full failure trace and rationale.
-   - **Recommended approach (Option 2 in the investigation doc):**
-     introduce a `LegacyApiFixture : ApiFixture` (or a fixture mixin) that
-     runs Yuniql migrations against the template database on top of EF
-     migrations, and wire it through `EFPostgresFactory` so cloned
-     per-test databases inherit the complete schema. Keep `ApiFixture`
-     lean for EF-only tests (all Group A consumers).
-   - **Scope boundary:** this sub-step delivers the fixture plumbing
-     **only** — do not migrate the six blocked tests in the same commit.
-     Verify the plumbing by writing a single tiny test that calls a
-     Dapper repository endpoint (e.g. resource lookup) through the new
-     fixture. Leave 16.4a/b as follow-ups once the plumbing is green.
-   - **Follow-ups (unblocked once 16.4-prep is done):**
-     - **16.4a:** `V2ResourceControllerTest`, `ConsentControllerTestEnterprise`,
-       MaskinPorten `ConsentControllerTest` → `LegacyApiFixture`.
+1. **Sub-step 16.4a** — Migrate the three unblocked `WebApplicationFixture`
+   consumers to `LegacyApiFixture`:
+   - `V2ResourceControllerTest`
+   - `ConsentControllerTestEnterprise`
+   - `ConsentControllerTest` (MaskinPorten)
+   - **Why it is priority 1:** `LegacyApiFixture` plumbing landed in Step 22
+     (smoke-tested — Dapper insert against `accessmanagement.resource`
+     round-trips) and these three classes are the ones the 16.4 investigation
+     attempted and had to revert. Their failure traces (`relation
+     "accessmanagement.resource" does not exist` /
+     `'consent.status_type' was not found`) are the exact failure mode
+     `LegacyApiFixture` resolves.
+   - **Recipe:** follow the canonical `ApiFixture` migration recipe from
+     [AccessMgmt_WAF_Consolidation_Plan_and_POC.md](AccessMgmt_WAF_Consolidation_Plan_and_POC.md)
+     but use `IClassFixture<LegacyApiFixture>` instead of
+     `IClassFixture<ApiFixture>`. The reverted attempt in the 16.4
+     investigation already figured out the DI overrides needed
+     (`SigningKeyResolverMock` instead of `PublicSigningKeyProviderMock`,
+     `PdpPermitMock` legacy flavour) — re-apply those on top of
+     `LegacyApiFixture`.
+   - **Follow-ups:**
      - **16.4b:** `ConsentControllerTestBFF` (adds `EnsureSeedOnce<T>`
        pattern for `SeedResources()`), `V2MaskinportenSchemaControllerTest`,
        `V2RightsInternalControllerTest` (all `[Skip]`ped today — confirm
