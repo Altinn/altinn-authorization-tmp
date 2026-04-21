@@ -27,6 +27,11 @@ public static class PackageConstants
             return true;
         }
 
+        if (TryGetByCode(value, out result))
+        {
+            return true;
+        }
+
         if (Guid.TryParse(value, out var packageGuid) && TryGetById(packageGuid, out result))
         {
             return true;
@@ -34,6 +39,12 @@ public static class PackageConstants
 
         return false;
     }
+
+    /// <summary>
+    /// Try to get <see cref="Package"/> using Guid.
+    /// </summary>
+    public static bool TryGetByCode(string code, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
+        => ConstantLookup.TryGetByCode(typeof(PackageConstants), code, out result);
 
     /// <summary>
     /// Try to get <see cref="Package"/> using Guid.
