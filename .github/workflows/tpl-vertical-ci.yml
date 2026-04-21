@@ -73,14 +73,31 @@ jobs:
         run: dotnet build -c Release -bl:binlog/build.binlog
         working-directory: ${{ inputs.path }}
 
+      - name: Install dotnet-coverage
+        # Installed once per job so the Test step below can wrap `dotnet test`
+        # under `dotnet-coverage collect`. Keeping install in a separate step
+        # keeps the Test step's run log focused on test output and makes the
+        # install failure (if any) easy to spot as its own red checkmark.
+        run: dotnet tool install -g dotnet-coverage
+        shell: bash
+
       - name: Test
-        # `--` forwards args to the Microsoft Testing Platform runner used by
-        # xUnit v3. Exit code 8 means "no tests ran" (e.g. every test in the
-        # vertical is currently `[Skip]`ed because the required infrastructure
-        # such as Azurite is unavailable in CI). We don't want that to fail the
-        # job; real test failures still exit with code 2.
+        # Single test execution that ALSO collects coverage — this replaces
+        # the old "run tests twice" pattern (once for pass/fail, once under
+        # `dotnet-coverage` for XML). The Coverage threshold check step below
+        # is now parse-only and completes in seconds.
+        #
+        # `dotnet-coverage collect -- dotnet test` propagates the test
+        # command's exit code, so:
+        #   * exit 0 = tests passed
+        #   * exit 2 = real test failures (fails this step, red ❌)
+        #   * exit 8 = no tests ran (e.g. every test `[Skip]`ed because
+        #             required infra like Azurite is missing in CI) — we
+        #             swallow this via `--ignore-exit-code 8`
+        # The cobertura XML is written to TestResults/coverage.cobertura.xml
+        # relative to the vertical's working directory.
         id: test
-        run: dotnet test -c Release --no-build -bl:binlog/test.binlog -- --ignore-exit-code 8
+        run: dotnet-coverage collect --nologo --output TestResults/coverage.cobertura.xml --output-format cobertura -- dotnet test -c Release --no-build -bl:binlog/test.binlog -- --ignore-exit-code 8
         working-directory: ${{ inputs.path }}
 
       - name: Report failed tests
@@ -146,7 +163,10 @@ jobs:
           Write-Host "Total failing tests: $total"
 
       - name: Coverage threshold check
-        if: hashFiles(format('{0}/**/test/**/*.Tests.csproj', inputs.path)) != ''
+        # Parse-only: reads TestResults/coverage.cobertura.xml produced by the
+        # Test step above and enforces per-assembly thresholds. Completes in
+        # seconds — no test re-run. See eng/testing/check-coverage-thresholds.ps1.
+        if: hashFiles(format('{0}/TestResults/coverage.cobertura.xml', inputs.path)) != ''
         shell: pwsh
         working-directory: ${{ inputs.path }}
         run: |
@@ -159,10 +179,8 @@ jobs:
                             else { $null }
           if (-not $thresholdsFile) { Write-Host "No thresholds file, skipping"; exit 0 }
           Write-Host "Using thresholds file: $thresholdsFile"
-          dotnet tool install -g dotnet-coverage 2>$null
-          $testProjs = Get-ChildItem -Path . -Filter '*.Tests.csproj' -Recurse | Select-Object -ExpandProperty FullName
-          if ($testProjs.Count -eq 0) { Write-Host "No test projects found, skipping"; exit 0 }
-          & (Join-Path $env:GITHUB_WORKSPACE 'eng/testing/run-coverage.ps1') -Projects $testProjs -NoBuild -ThresholdsFile $thresholdsFile
+          $cov = Join-Path (Get-Location) 'TestResults/coverage.cobertura.xml'
+          & (Join-Path $env:GITHUB_WORKSPACE 'eng/testing/check-coverage-thresholds.ps1') -CoverageFiles $cov -ThresholdsFile $thresholdsFile -OwnedRoot (Get-Location).Path
 
       - name: Pack
         run: dotnet pack -c Release --no-build -bl:binlog/pack.binlog
@@ -170,13 +188,12 @@ jobs:
         if: inputs.type == 'pkg'
 
       - name: Upload test results
-        # On failure only: capture MTP per-project logs, TRX reports and
-        # coverage-run logs so the cause can be diagnosed from GHA artifacts.
-        # The workflow `6_Test.txt` log contains only summary lines like
-        # "Failed: N, Passed: M"; the coverage step redirects per-project test
-        # stdout to files under <repoRoot>/TestResults to keep its own log
-        # readable. We intentionally skip this on success — the logs aren't
-        # needed and uploading them every run added 10+ MB per CI pipeline.
+        # On failure only: capture MTP per-project logs and TRX reports so the
+        # cause can be diagnosed from GHA artifacts. The workflow `6_Test.txt`
+        # log contains only summary lines like "Failed: N, Passed: M"; per-test
+        # detail lives in bin/.../TestResults/<Project>_<tfm>_<arch>.log.
+        # We intentionally skip this on success — the logs aren't needed and
+        # uploading them every run added 10+ MB per CI pipeline.
         # Cobertura XML is not uploaded (it's reproducible locally via
         # eng/testing/run-coverage.ps1 and was the bulk of the artifact size).
         if: failure()
@@ -186,7 +203,6 @@ jobs:
           path: |
             ${{ inputs.path }}/**/TestResults/*.log
             ${{ inputs.path }}/**/TestResults/*.trx
-            TestResults/*.coverage.log
           if-no-files-found: ignore
           retention-days: 3
 

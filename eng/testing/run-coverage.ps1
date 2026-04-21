@@ -1,4 +1,16 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Local-dev helper: builds and runs every *.Tests project in the repo under
+    `dotnet-coverage collect`, producing a per-project Cobertura XML, then
+    delegates threshold enforcement to check-coverage-thresholds.ps1.
+
+.DESCRIPTION
+    CI does NOT use this script. The CI pipeline runs tests once under
+    `dotnet-coverage collect 'dotnet test'` in the workflow itself and then
+    invokes check-coverage-thresholds.ps1 directly on the resulting
+    cobertura file. This script exists for developer use on a workstation.
+#>
 param(
     [int]$Threshold = 0,
     [string[]]$Projects,
@@ -37,16 +49,23 @@ if (-not $NoBuild) {
 $failed = @()
 $coverageFiles = @()
 
-foreach ($proj in $Projects) {
+# Run per-project coverage collection in parallel so the dominant project
+# (e.g. AccessMgmt.Tests at ~2m) sets the wall-clock, instead of the sum
+# of all project times. Each project writes to a distinct output + log.
+$configurationLocal = $Configuration
+$resultsDirLocal = $resultsDir
+$throttle = [Math]::Min($Projects.Count, [Math]::Max(2, [Environment]::ProcessorCount))
+
+$collectResults = $Projects | ForEach-Object -Parallel {
+    $proj = $_
     $projName = [System.IO.Path]::GetFileNameWithoutExtension($proj)
     $projDir = [System.IO.Path]::GetDirectoryName($proj)
-    Write-Host "`n=== $projName ===" -ForegroundColor Green
 
-    $binDir = Join-Path $projDir "bin" $Configuration "net9.0"
+    $binDir = Join-Path $projDir "bin" $using:configurationLocal "net9.0"
     $dllPath = Join-Path $binDir "$projName.dll"
     $runtimeConfig = Join-Path $binDir "$projName.runtimeconfig.json"
-    $outFile = Join-Path $resultsDir "$projName.cobertura.xml"
-    $logFile = Join-Path $resultsDir "$projName.coverage.log"
+    $outFile = Join-Path $using:resultsDirLocal "$projName.cobertura.xml"
+    $logFile = Join-Path $using:resultsDirLocal "$projName.coverage.log"
 
     # xUnit v3 test projects build as executables (OutputType=Exe) and run on
     # Microsoft Testing Platform. A runtimeconfig.json is always emitted for
@@ -54,35 +73,42 @@ foreach ($proj in $Projects) {
     # cross-platform (Windows, Linux, macOS) under dotnet-coverage.
     $isV3Exe = (Test-Path $dllPath) -and (Test-Path $runtimeConfig)
 
+    $start = Get-Date
     if ($isV3Exe) {
-        Write-Host "  dotnet-coverage collect (xUnit v3 / MTP) -> log: $logFile" -ForegroundColor DarkGray
-        # Note: running the managed dll directly invokes xUnit v3's native
-        # in-process runner (not MTP). That runner exits 0 when every test is
-        # [Skip]ped, so no --ignore-exit-code handling is required here
-        # (unlike the `dotnet test -- --ignore-exit-code 8` path used by the
-        # workflow's Build and Test step).
-        #
-        # Capture test stdout/stderr to a per-project log file rather than
-        # streaming it to the console — the full output (Testcontainers,
-        # ILogger, MTP progress, etc.) would otherwise bury the coverage
-        # summary under tens of thousands of lines in CI. The MTP per-project
-        # logs at bin/.../TestResults/*.log are already uploaded as artifacts.
+        # Invoking the managed dll directly uses xUnit v3's native in-process
+        # runner (not MTP). It exits 0 when every test is [Skip]ped, so no
+        # --ignore-exit-code handling is required. Test stdout is captured to
+        # a per-project log to keep the coverage summary readable.
         dotnet-coverage collect --nologo --output $outFile --output-format cobertura -- dotnet $dllPath *>&1 | Out-File -FilePath $logFile -Encoding utf8
+        $mode = 'xUnit v3 / MTP'
     }
     else {
-        Write-Host "  dotnet test (vstest fallback) -> log: $logFile" -ForegroundColor DarkGray
-        $tmpDir = Join-Path $resultsDir $projName
-        dotnet test $proj --no-build --configuration $Configuration --collect:"XPlat Code Coverage" --results-directory $tmpDir --logger "console;verbosity=minimal" *>&1 | Out-File -FilePath $logFile -Encoding utf8
+        $tmpDir = Join-Path $using:resultsDirLocal $projName
+        dotnet test $proj --no-build --configuration $using:configurationLocal --collect:"XPlat Code Coverage" --results-directory $tmpDir --logger "console;verbosity=minimal" *>&1 | Out-File -FilePath $logFile -Encoding utf8
         $cobFile = Get-ChildItem -Path $tmpDir -Filter 'coverage.cobertura.xml' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($cobFile) { Copy-Item $cobFile.FullName $outFile }
+        $mode = 'vstest fallback'
     }
 
-    if ($LASTEXITCODE -ne 0) {
-        $failed += $projName
-        Write-Host "  FAILED (exit $LASTEXITCODE) — tail of $logFile :" -ForegroundColor Red
-        if (Test-Path $logFile) { Get-Content $logFile -Tail 80 | ForEach-Object { Write-Host "    $_" } }
+    [pscustomobject]@{
+        Name      = $projName
+        Mode      = $mode
+        Exit      = $LASTEXITCODE
+        OutFile   = $outFile
+        LogFile   = $logFile
+        DurationS = [int]((Get-Date) - $start).TotalSeconds
     }
-    if (Test-Path $outFile) { $coverageFiles += $outFile }
+} -ThrottleLimit $throttle
+
+foreach ($r in $collectResults) {
+    Write-Host "`n=== $($r.Name) ===" -ForegroundColor Green
+    Write-Host "  dotnet-coverage collect ($($r.Mode)) in $($r.DurationS)s -> log: $($r.LogFile)" -ForegroundColor DarkGray
+    if ($r.Exit -ne 0) {
+        $failed += $r.Name
+        Write-Host "  FAILED (exit $($r.Exit)) - tail of $($r.LogFile) :" -ForegroundColor Red
+        if (Test-Path $r.LogFile) { Get-Content $r.LogFile -Tail 80 | ForEach-Object { Write-Host "    $_" } }
+    }
+    if (Test-Path $r.OutFile) { $coverageFiles += $r.OutFile }
 }
 
 if ($coverageFiles.Count -eq 0) {
@@ -90,88 +116,17 @@ if ($coverageFiles.Count -eq 0) {
     exit 1
 }
 
-Write-Host "`n=== Coverage Summary ===" -ForegroundColor Cyan
-$belowThreshold = @()
-$warningsBelow = @()
-
-# Load per-assembly thresholds if provided
-$assemblyThresholds = @{}
-$assemblyWarnings = @{}
-$globalFloor = $Threshold
-if (-not $ThresholdsFile) {
-    $defaultPath = Join-Path $PSScriptRoot 'coverage-thresholds.json'
-    if (Test-Path $defaultPath) { $ThresholdsFile = $defaultPath }
+# Delegate threshold enforcement + pretty summary to the parse-only script
+# (shared with CI, so there's no drift between local and CI output).
+$checkScript = Join-Path $PSScriptRoot 'check-coverage-thresholds.ps1'
+$checkArgs = @{
+    CoverageFiles = $coverageFiles
+    OwnedRoot     = $OwnedRoot
 }
-if ($ThresholdsFile -and (Test-Path $ThresholdsFile)) {
-    $cfg = Get-Content $ThresholdsFile -Raw | ConvertFrom-Json
-    if ($cfg.globalThreshold -and $globalFloor -eq 0) { $globalFloor = $cfg.globalThreshold }
-    if ($cfg.assemblies) {
-        $cfg.assemblies.PSObject.Properties | ForEach-Object { $assemblyThresholds[$_.Name] = [int]$_.Value }
-    }
-    if ($cfg.warnings) {
-        $cfg.warnings.PSObject.Properties | ForEach-Object { $assemblyWarnings[$_.Name] = [int]$_.Value }
-    }
-    Write-Host "  Loaded thresholds from $ThresholdsFile" -ForegroundColor DarkGray
-}
-
-$ownedRootFull = try { (Resolve-Path $OwnedRoot -ErrorAction Stop).Path } catch { $OwnedRoot }
-$ownedRootPrefix = $ownedRootFull.TrimEnd('\', '/')
-Write-Host "  Enforcing thresholds only for assemblies owned by: $ownedRootPrefix" -ForegroundColor DarkGray
-
-function Test-IsOwnedByVertical {
-    param($pkg, [string]$rootPrefix)
-    if (-not $rootPrefix) { return $true }
-    $classes = $pkg.classes.class
-    if (-not $classes) { return $false }
-    foreach ($cls in $classes) {
-        $fn = $cls.filename
-        if (-not $fn) { continue }
-        if ($fn.StartsWith($rootPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $true
-        }
-    }
-    return $false
-}
-
-foreach ($file in $coverageFiles) {
-    [xml]$xml = Get-Content $file
-    foreach ($pkg in $xml.coverage.packages.package) {
-        $n = $pkg.name
-        $lr = [math]::Round([double]$pkg.'line-rate' * 100, 2)
-        $br = [math]::Round([double]$pkg.'branch-rate' * 100, 2)
-        if ($n -match '^Altinn\.' -and $n -notmatch 'Tests|TestUtils|Mocks') {
-            $owned = Test-IsOwnedByVertical -pkg $pkg -rootPrefix $ownedRootPrefix
-            $marker = if ($owned) { '' } else { ' (ref)' }
-            $c = if ($lr -lt 50) { 'Red' } elseif ($lr -lt 70) { 'Yellow' } else { 'Green' }
-            Write-Host ("  {0,-50} {1,7}% line  {2,7}% branch{3}" -f $n, $lr, $br, $marker) -ForegroundColor $c
-            if (-not $owned) { continue }
-            $floor = if ($assemblyThresholds.ContainsKey($n)) { $assemblyThresholds[$n] } else { $globalFloor }
-            if ($floor -gt 0 -and $lr -lt $floor) {
-                $belowThreshold += "$n ($lr% < $floor%)"
-            }
-            if ($assemblyWarnings.ContainsKey($n)) {
-                $warnFloor = $assemblyWarnings[$n]
-                if ($warnFloor -gt 0 -and $lr -lt $warnFloor) {
-                    $warningsBelow += "$n ($lr% < $warnFloor%)"
-                }
-            }
-        }
-    }
-}
-
-if ($warningsBelow.Count -gt 0) {
-    Write-Host "`nWarning — below ratchet (non-fatal):" -ForegroundColor Yellow
-    $warningsBelow | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
-}
-
-if ($belowThreshold.Count -gt 0) {
-    Write-Host "`nBelow threshold:" -ForegroundColor Red
-    $belowThreshold | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
-    exit 1
-}
-elseif ($globalFloor -gt 0 -or $assemblyThresholds.Count -gt 0) {
-    Write-Host "`nAll enforced assemblies meet their coverage thresholds." -ForegroundColor Green
-}
+if ($ThresholdsFile) { $checkArgs['ThresholdsFile'] = $ThresholdsFile }
+if ($Threshold -gt 0) { $checkArgs['Threshold'] = $Threshold }
+& $checkScript @checkArgs
+$thresholdExit = $LASTEXITCODE
 
 $rg = Get-Command reportgenerator -ErrorAction SilentlyContinue
 if ($rg) {
@@ -186,5 +141,8 @@ else {
 if ($failed.Count -gt 0) {
     Write-Host "`nTest failures: $($failed -join ', ')" -ForegroundColor Red
     exit 1
+}
+if ($thresholdExit -ne 0) {
+    exit $thresholdExit
 }
 Write-Host "`nDone." -ForegroundColor Green
