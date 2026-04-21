@@ -42,13 +42,16 @@ public class StringExtensionsTest
     [Fact]
     public void AsFileName_InvalidChars_ThrowExceptionTrue_Throws()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => "invalid<name".AsFileName(throwExceptionOnInvalidCharacters: true));
+        // Use the null character which is invalid in file names on all platforms
+        // (Path.GetInvalidFileNameChars() returns different sets on Windows vs Linux,
+        // e.g. '<' is only invalid on Windows).
+        Assert.Throws<ArgumentOutOfRangeException>(() => "invalid\0name".AsFileName(throwExceptionOnInvalidCharacters: true));
     }
 
     [Fact]
     public void AsFileName_InvalidChars_ThrowExceptionFalse_ReplacesWithHyphen()
     {
-        string result = "invalid<name".AsFileName(throwExceptionOnInvalidCharacters: false);
+        string result = "invalid\0name".AsFileName(throwExceptionOnInvalidCharacters: false);
         Assert.Equal("invalid-name", result);
     }
 
