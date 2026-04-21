@@ -55,6 +55,11 @@ foreach ($proj in $Projects) {
 
     if ($isV3Exe) {
         Write-Host "  dotnet-coverage collect (xUnit v3 / MTP)" -ForegroundColor DarkGray
+        # Note: running the managed dll directly invokes xUnit v3's native
+        # in-process runner (not MTP). That runner exits 0 when every test is
+        # [Skip]ped, so no --ignore-exit-code handling is required here
+        # (unlike the `dotnet test -- --ignore-exit-code 8` path used by the
+        # workflow's Build and Test step).
         dotnet-coverage collect --output $outFile --output-format cobertura -- dotnet $dllPath 2>&1 | Out-Default
     }
     else {

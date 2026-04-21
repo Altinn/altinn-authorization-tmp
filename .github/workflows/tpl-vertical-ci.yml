@@ -88,9 +88,9 @@ jobs:
         working-directory: ${{ inputs.path }}
         run: |
           # Prefer a per-vertical thresholds file (colocated with the vertical),
-          # fall back to the global one under docs/testing/.
+          # fall back to the global one under eng/testing/.
           $localThresholds = Join-Path (Get-Location) 'coverage-thresholds.json'
-          $globalThresholds = Join-Path $env:GITHUB_WORKSPACE 'docs/testing/coverage-thresholds.json'
+          $globalThresholds = Join-Path $env:GITHUB_WORKSPACE 'eng/testing/coverage-thresholds.json'
           $thresholdsFile = if (Test-Path $localThresholds) { $localThresholds }
                             elseif (Test-Path $globalThresholds) { $globalThresholds }
                             else { $null }
@@ -99,7 +99,7 @@ jobs:
           dotnet tool install -g dotnet-coverage 2>$null
           $testProjs = Get-ChildItem -Path . -Filter '*.Tests.csproj' -Recurse | Select-Object -ExpandProperty FullName
           if ($testProjs.Count -eq 0) { Write-Host "No test projects found, skipping"; exit 0 }
-          & (Join-Path $env:GITHUB_WORKSPACE 'docs/testing/run-coverage.ps1') -Projects $testProjs -NoBuild -ThresholdsFile $thresholdsFile
+          & (Join-Path $env:GITHUB_WORKSPACE 'eng/testing/run-coverage.ps1') -Projects $testProjs -NoBuild -ThresholdsFile $thresholdsFile
 
       - name: Pack
         run: dotnet pack -c Release --no-build -bl:binlog/pack.binlog
@@ -167,7 +167,15 @@ jobs:
             /d:sonar.cs.vscoveragexml.reportsPaths="TestResults/coverage.xml"
 
           dotnet build --no-incremental
-          dotnet coverage collect 'dotnet test --no-build --results-directory TestResults/' \
+          # xUnit v3 routes `dotnet test` through Microsoft Testing Platform (MTP).
+          # Everything after `--` is forwarded to each per-project MTP runner:
+          #   --results-directory   emit artifacts (including the TRX below) under TestResults/
+          #   --report-xunit-trx    generate .trx files so Sonar's sonar.cs.vstest.reportsPaths picks them up
+          #                         (xUnit v3's built-in TRX reporter; the generic MTP
+          #                         --report-trx would need the separate
+          #                         Microsoft.Testing.Extensions.TrxReport package)
+          #   --ignore-exit-code 8  treat "all tests [Skip]ped" (e.g. Host.Lease without Azurite) as success
+          dotnet coverage collect 'dotnet test --no-build -- --results-directory TestResults/ --report-xunit-trx --ignore-exit-code 8' \
             -f xml -o 'TestResults/coverage.xml'
 
           dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
