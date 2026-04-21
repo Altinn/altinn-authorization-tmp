@@ -41,7 +41,7 @@ public static class PackageConstants
     }
 
     /// <summary>
-    /// Try to get <see cref="Package"/> using Guid.
+    /// Try to get <see cref="Package"/> using code.
     /// </summary>
     public static bool TryGetByCode(string code, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
         => ConstantLookup.TryGetByCode(typeof(PackageConstants), code, out result);
