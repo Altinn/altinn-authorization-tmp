@@ -46,6 +46,7 @@ foreach ($proj in $Projects) {
     $dllPath = Join-Path $binDir "$projName.dll"
     $runtimeConfig = Join-Path $binDir "$projName.runtimeconfig.json"
     $outFile = Join-Path $resultsDir "$projName.cobertura.xml"
+    $logFile = Join-Path $resultsDir "$projName.coverage.log"
 
     # xUnit v3 test projects build as executables (OutputType=Exe) and run on
     # Microsoft Testing Platform. A runtimeconfig.json is always emitted for
@@ -54,23 +55,33 @@ foreach ($proj in $Projects) {
     $isV3Exe = (Test-Path $dllPath) -and (Test-Path $runtimeConfig)
 
     if ($isV3Exe) {
-        Write-Host "  dotnet-coverage collect (xUnit v3 / MTP)" -ForegroundColor DarkGray
+        Write-Host "  dotnet-coverage collect (xUnit v3 / MTP) -> log: $logFile" -ForegroundColor DarkGray
         # Note: running the managed dll directly invokes xUnit v3's native
         # in-process runner (not MTP). That runner exits 0 when every test is
         # [Skip]ped, so no --ignore-exit-code handling is required here
         # (unlike the `dotnet test -- --ignore-exit-code 8` path used by the
         # workflow's Build and Test step).
-        dotnet-coverage collect --output $outFile --output-format cobertura -- dotnet $dllPath 2>&1 | Out-Default
+        #
+        # Capture test stdout/stderr to a per-project log file rather than
+        # streaming it to the console — the full output (Testcontainers,
+        # ILogger, MTP progress, etc.) would otherwise bury the coverage
+        # summary under tens of thousands of lines in CI. The MTP per-project
+        # logs at bin/.../TestResults/*.log are already uploaded as artifacts.
+        dotnet-coverage collect --nologo --output $outFile --output-format cobertura -- dotnet $dllPath *>&1 | Out-File -FilePath $logFile -Encoding utf8
     }
     else {
-        Write-Host "  dotnet test (vstest fallback)" -ForegroundColor DarkGray
+        Write-Host "  dotnet test (vstest fallback) -> log: $logFile" -ForegroundColor DarkGray
         $tmpDir = Join-Path $resultsDir $projName
-        dotnet test $proj --no-build --configuration $Configuration --collect:"XPlat Code Coverage" --results-directory $tmpDir --logger "console;verbosity=minimal" 2>&1 | Out-Default
+        dotnet test $proj --no-build --configuration $Configuration --collect:"XPlat Code Coverage" --results-directory $tmpDir --logger "console;verbosity=minimal" *>&1 | Out-File -FilePath $logFile -Encoding utf8
         $cobFile = Get-ChildItem -Path $tmpDir -Filter 'coverage.cobertura.xml' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($cobFile) { Copy-Item $cobFile.FullName $outFile }
     }
 
-    if ($LASTEXITCODE -ne 0) { $failed += $projName }
+    if ($LASTEXITCODE -ne 0) {
+        $failed += $projName
+        Write-Host "  FAILED (exit $LASTEXITCODE) — tail of $logFile :" -ForegroundColor Red
+        if (Test-Path $logFile) { Get-Content $logFile -Tail 80 | ForEach-Object { Write-Host "    $_" } }
+    }
     if (Test-Path $outFile) { $coverageFiles += $outFile }
 }
 

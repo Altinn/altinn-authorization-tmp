@@ -107,18 +107,25 @@ jobs:
         if: inputs.type == 'pkg'
 
       - name: Upload test results
-        # Capture MTP per-project logs and TRX reports so test failures can be
-        # diagnosed from GHA artifacts (the `6_Test.txt` workflow log only
-        # contains summary lines like "Failed: N, Passed: M").
-        if: always()
+        # On failure only: capture MTP per-project logs, TRX reports and
+        # coverage-run logs so the cause can be diagnosed from GHA artifacts.
+        # The workflow `6_Test.txt` log contains only summary lines like
+        # "Failed: N, Passed: M"; the coverage step redirects per-project test
+        # stdout to files under <repoRoot>/TestResults to keep its own log
+        # readable. We intentionally skip this on success — the logs aren't
+        # needed and uploading them every run added 10+ MB per CI pipeline.
+        # Cobertura XML is not uploaded (it's reproducible locally via
+        # eng/testing/run-coverage.ps1 and was the bulk of the artifact size).
+        if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ inputs.slug }}-test-results
           path: |
             ${{ inputs.path }}/**/TestResults/*.log
             ${{ inputs.path }}/**/TestResults/*.trx
+            TestResults/*.coverage.log
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 3
 
       - name: Create binlog artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
