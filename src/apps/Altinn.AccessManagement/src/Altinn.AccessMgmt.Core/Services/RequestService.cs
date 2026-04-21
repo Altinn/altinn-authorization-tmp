@@ -370,6 +370,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
                 ct
             );
         }
+
         if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
         {
             // ToId: organization / person that request approves / declines request.

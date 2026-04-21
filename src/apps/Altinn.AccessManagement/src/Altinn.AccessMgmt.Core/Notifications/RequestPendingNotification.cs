@@ -50,7 +50,7 @@ public static class RequestPendingNotification
             refId: $"{Handler}_{requesterId}_{recipientId}",
             handler: Handler,
             addValueFactory: msg => new(),
-            updateValueFactory: (msg, data) => RemoveValue(resourceId, packageId, msg, data),
+            updateValueFactory: (msg, data) => RemoveValue(resourceId, packageId, data),
             cancellationToken: ct
         );
     }
@@ -58,7 +58,6 @@ public static class RequestPendingNotification
     private static ResourceRequestPendingNotificationMessage RemoveValue(
         Guid? resourceId,
         Guid? packageId,
-        OutboxMessage msg,
         ResourceRequestPendingNotificationMessage data
     )
     {

@@ -118,7 +118,7 @@ public class RequestPendingNotificationHandler(
 
         async Task<List<Resource>> GetResources(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.ResourceIds is { } && content.ResourceIds.Any())
+            if (content.ResourceIds is { } && content.ResourceIds.Count > 0)
             {
                 return await db.Resources
                     .AsNoTracking()
@@ -131,7 +131,7 @@ public class RequestPendingNotificationHandler(
 
         async Task<List<Package>> GetPackages(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.PackageIds is { } && content.PackageIds.Any())
+            if (content.PackageIds is { } && content.PackageIds.Count > 0)
             {
                 return await db.Packages
                     .AsNoTracking()
