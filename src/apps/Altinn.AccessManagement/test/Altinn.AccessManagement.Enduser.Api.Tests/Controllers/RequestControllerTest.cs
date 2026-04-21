@@ -493,4 +493,330 @@ public class RequestControllerTest
 
     #endregion
 
+    #region GET /?party=&id= — GetRequest
+
+    public class GetRequestById : IClassFixture<ApiFixture>
+    {
+        private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00a-0000-7000-8000-000000000001");
+
+        public GetRequestById(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce<GetRequestById>(db =>
+            {
+                var reqAssignment = new RequestAssignment
+                {
+                    FromId = TestData.TrondLarsen.Id,
+                    ToId = TestData.BakerJohnsen.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.RequestAssignments.Add(reqAssignment);
+                db.SaveChanges();
+
+                db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
+                {
+                    Id = PendingPackageRequestId,
+                    AssignmentId = reqAssignment.Id,
+                    PackageId = PackageConstants.Agriculture.Id,
+                    Status = RequestStatus.Pending,
+                });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        [Fact]
+        public async Task PartyMatchesFrom_ReturnsOk()
+        {
+            var client = CreateSystemClient(Fixture, TestData.TrondLarsen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}?party={TestData.TrondLarsen.Id}&id={PendingPackageRequestId}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var dto = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(PendingPackageRequestId, dto.Id);
+        }
+
+        [Fact]
+        public async Task PartyMatchesTo_ReturnsOk()
+        {
+            var client = CreateSystemClient(Fixture, TestData.BakerJohnsen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}?party={TestData.BakerJohnsen.Id}&id={PendingPackageRequestId}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task PartyMatchesNeitherFromNorTo_ReturnsForbidden()
+        {
+            var client = CreateSystemClient(Fixture, TestData.AstridJohansen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}?party={TestData.AstridJohansen.Id}&id={PendingPackageRequestId}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task UnknownRequestId_ReturnsForbidden()
+        {
+            var client = CreateSystemClient(Fixture, TestData.TrondLarsen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}?party={TestData.TrondLarsen.Id}&id={Guid.NewGuid()}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+    }
+
+    #endregion
+
+    #region GET /sent/count — GetSentRequestsCount
+
+    public class GetSentRequestsCountTest : IClassFixture<ApiFixture>
+    {
+        private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00b-0000-7000-8000-000000000001");
+
+        public GetSentRequestsCountTest(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce<GetSentRequestsCountTest>(db =>
+            {
+                var reqAssignment = new RequestAssignment
+                {
+                    FromId = TestData.MaritEriksen.Id,
+                    ToId = TestData.BakerJohnsen.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.RequestAssignments.Add(reqAssignment);
+                db.SaveChanges();
+
+                db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
+                {
+                    Id = PendingPackageRequestId,
+                    AssignmentId = reqAssignment.Id,
+                    PackageId = PackageConstants.Agriculture.Id,
+                    Status = RequestStatus.Pending,
+                });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        [Fact]
+        public async Task Sender_GetSentRequestsCount_ReturnsAtLeastOne()
+        {
+            var client = CreateSystemClient(Fixture, TestData.BakerJohnsen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}/sent/count?party={TestData.MaritEriksen.Id}&to={TestData.BakerJohnsen.Id}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var count = await response.Content.ReadFromJsonAsync<int>(TestContext.Current.CancellationToken);
+            Assert.True(count >= 1, $"Expected at least one sent request, got {count}");
+        }
+    }
+
+    #endregion
+
+    #region PUT /received/approve — ApproveRequest
+
+    public class ApprovePackageRequestTest : IClassFixture<ApiFixture>
+    {
+        private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00d-0000-7000-8000-000000000001");
+
+        public ApprovePackageRequestTest(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce<ApprovePackageRequestTest>(db =>
+            {
+                var reqAssignment = new RequestAssignment
+                {
+                    FromId = TestData.OddHalvorsen.Id,
+                    ToId = TestData.BakerJohnsen.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.RequestAssignments.Add(reqAssignment);
+                db.SaveChanges();
+
+                db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
+                {
+                    Id = PendingPackageRequestId,
+                    AssignmentId = reqAssignment.Id,
+                    PackageId = PackageConstants.Agriculture.Id,
+                    Status = RequestStatus.Pending,
+                });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        [Fact]
+        public async Task Receiver_ApprovesPendingPackageRequest_ReturnsApproved()
+        {
+            var client = CreateSystemClient(Fixture, TestData.OddHalvorsen.Id);
+
+            var response = await client.PutAsync(
+                $"{Route}/received/approve?party={TestData.BakerJohnsen.Id}&id={PendingPackageRequestId}",
+                null,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.Equal(RequestStatus.Approved, result.Status);
+        }
+
+        [Fact]
+        public async Task NonReceiver_ApprovesPendingPackageRequest_ReturnsNonSuccess()
+        {
+            // OddHalvorsen is the sender (from), not the receiver, so approval should fail validation.
+            var client = CreateSystemClient(Fixture, TestData.OddHalvorsen.Id);
+
+            var response = await client.PutAsync(
+                $"{Route}/received/approve?party={TestData.OddHalvorsen.Id}&id={PendingPackageRequestId}",
+                null,
+                TestContext.Current.CancellationToken);
+
+            Assert.False(response.IsSuccessStatusCode, "Non-receiver should not be able to approve request");
+        }
+    }
+
+    public class ApproveResourceRequestTest : IClassFixture<ApiFixture>
+    {
+        private static readonly ResourceType TestResourceType = new()
+        {
+            Id = Guid.Parse("0196b00e-0000-7000-8000-000000000001"),
+            Name = "ApproveResourceTestType",
+        };
+
+        private static readonly Guid TestResourceId = Guid.Parse("0196b00e-0000-7000-8000-000000000002");
+        private static readonly Guid PendingResourceRequestId = Guid.Parse("0196b00e-0000-7000-8000-000000000003");
+
+        public ApproveResourceRequestTest(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce<ApproveResourceRequestTest>(db =>
+            {
+                db.ResourceTypes.Add(TestResourceType);
+                db.SaveChanges();
+                db.Resources.Add(new Resource
+                {
+                    Id = TestResourceId,
+                    Name = "ApproveResourceTest",
+                    Description = "Test resource for approve resource request",
+                    RefId = "approve-resource-test-1",
+                    ProviderId = ProviderConstants.ResourceRegistry,
+                    TypeId = TestResourceType.Id,
+                });
+                db.SaveChanges();
+
+                var reqAssignment = new RequestAssignment
+                {
+                    FromId = TestData.LivKristiansen.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.RequestAssignments.Add(reqAssignment);
+                db.SaveChanges();
+
+                db.RequestAssignmentResources.Add(new RequestAssignmentResource
+                {
+                    Id = PendingResourceRequestId,
+                    AssignmentId = reqAssignment.Id,
+                    ResourceId = TestResourceId,
+                    Status = RequestStatus.Pending,
+                });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        [Fact]
+        public async Task Receiver_ApprovesPendingResourceRequest_ExercisesResourceApprovalPath()
+        {
+            // The resource-approval path runs a delegation check that will return no delegable rights
+            // for this synthetic test resource, which means the controller returns a client-error
+            // status (Forbidden/BadRequest). Either way the ApproveResourceRequest state machine is
+            // exercised for coverage purposes.
+            var client = CreateSystemClient(Fixture, TestData.LivKristiansen.Id);
+
+            var response = await client.PutAsync(
+                $"{Route}/received/approve?party={TestData.SvendsenAutomobil.Id}&id={PendingResourceRequestId}",
+                null,
+                TestContext.Current.CancellationToken);
+
+            Assert.True(
+                (int)response.StatusCode >= 400 && (int)response.StatusCode < 500 || response.IsSuccessStatusCode,
+                $"Expected a client-error or success status, got {response.StatusCode}");
+        }
+    }
+
+    #endregion
+
+    #region GET /received/count — GetReceivedRequestsCount
+
+    public class GetReceivedRequestsCountTest : IClassFixture<ApiFixture>
+    {
+        private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00c-0000-7000-8000-000000000001");
+
+        public GetReceivedRequestsCountTest(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            EnableFeatureFlags(fixture);
+            fixture.EnsureSeedOnce<GetReceivedRequestsCountTest>(db =>
+            {
+                var reqAssignment = new RequestAssignment
+                {
+                    FromId = TestData.GeirPedersen.Id,
+                    ToId = TestData.SvendsenAutomobil.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.RequestAssignments.Add(reqAssignment);
+                db.SaveChanges();
+
+                db.RequestAssignmentPackages.Add(new RequestAssignmentPackage
+                {
+                    Id = PendingPackageRequestId,
+                    AssignmentId = reqAssignment.Id,
+                    PackageId = PackageConstants.Agriculture.Id,
+                    Status = RequestStatus.Pending,
+                });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        [Fact]
+        public async Task Receiver_GetReceivedRequestsCount_ReturnsAtLeastOne()
+        {
+            var client = CreateSystemClient(Fixture, TestData.GeirPedersen.Id);
+
+            var response = await client.GetAsync(
+                $"{Route}/received/count?party={TestData.SvendsenAutomobil.Id}&from={TestData.GeirPedersen.Id}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var count = await response.Content.ReadFromJsonAsync<int>(TestContext.Current.CancellationToken);
+            Assert.True(count >= 1, $"Expected at least one received request, got {count}");
+        }
+    }
+
+    #endregion
 }

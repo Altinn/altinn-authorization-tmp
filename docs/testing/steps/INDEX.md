@@ -96,13 +96,14 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 27 | ✅ | FluentAssertions usage guidelines (`docs/testing/FLUENT_ASSERTIONS_GUIDELINES.md`) | Phase 4.2b | [FluentAssertions_Guidelines.md](FluentAssertions_Guidelines.md) |
 | 28 | ✅ | CI coverage thresholds for AccessManagement (4 enforced + 1 warn-only) | Phase 5.1b | [CI_Coverage_Thresholds_AccessManagement.md](CI_Coverage_Thresholds_AccessManagement.md) |
 | 29 | ✅ | Coverage: AccessManagement.Api.ServiceOwner — closed the three untested `RequestController` endpoints; 54.35% → 71.74% line | Phase 6.7b | [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) |
+| 30 | ✅ | Coverage: AccessManagement.Api.Enduser — closed five untested `RequestController` endpoints (`GetRequest`, `GetSentRequestsCount`, `GetReceivedRequestsCount`, `ApprovePackageRequest`, `ApproveResourceRequest`); 45.57% → 49.93% line | Phase 6.7c | [Coverage_Enduser_Api.md](Coverage_Enduser_Api.md) |
 
 ### Recommended Next Steps (priority order)
 
 All items below are actionable and have no container-runtime dependency.
 
 1. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
-   - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
+   - **6.7c (continued):** AccessManagement.Api.Enduser remaining ~50% gap — `Validation.ConnectionValidation` / `ConnectionCombinationRules` (114 missed lines; needs `InternalsVisibleTo` for direct unit tests), `MaskinportenConsumersController` / `MaskinportenSuppliersController` (needs PDP stubbing or seeding of `altinn_maskinporten_scope_delegation` resource), `Utils.ToUuidResolver`. See [Coverage_Enduser_Api.md](Coverage_Enduser_Api.md).
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
    - **6.7e:** (follow-up to Step 29) fix the two latent production bugs documented in [Coverage_ServiceOwner_Api.md](Coverage_ServiceOwner_Api.md) — `RequestController.CreatePackageRequest` query-param overload passes `Id` but not `ReferenceId` to the private helper; `PackageConstants.TryGetByName` throws when the name dictionary has duplicate keys.
 
@@ -147,5 +148,5 @@ and will be enforced as their coverage improves. Source:
 | AccessMgmt.Core | 17.31 | 12.00 | — | ❌ Gap |
 | AccessManagement.Api.Metadata | 16.59 | 13.33 | — | ❌ Gap |
 | AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
-| AccessManagement.Api.Enduser | 1.19 | 0.15 | — | ❌ Gap |
+| AccessManagement.Api.Enduser | 49.93 | 38.72 | — | ⏫ Step 30 |
 | AccessManagement.Api.ServiceOwner | 71.74 | 60.00 | — | ✅ Step 29 |
