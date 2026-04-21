@@ -42,12 +42,20 @@ foreach ($proj in $Projects) {
     $projDir = [System.IO.Path]::GetDirectoryName($proj)
     Write-Host "`n=== $projName ===" -ForegroundColor Green
 
-    $exePath = Join-Path $projDir "bin" $Configuration "net9.0" "$projName.exe"
+    $binDir = Join-Path $projDir "bin" $Configuration "net9.0"
+    $dllPath = Join-Path $binDir "$projName.dll"
+    $runtimeConfig = Join-Path $binDir "$projName.runtimeconfig.json"
     $outFile = Join-Path $resultsDir "$projName.cobertura.xml"
 
-    if (Test-Path $exePath) {
-        Write-Host "  dotnet-coverage collect (xUnit v3 exe)" -ForegroundColor DarkGray
-        dotnet-coverage collect --output $outFile --output-format cobertura $exePath 2>&1 | Out-Default
+    # xUnit v3 test projects build as executables (OutputType=Exe) and run on
+    # Microsoft Testing Platform. A runtimeconfig.json is always emitted for
+    # Exe output; running the managed dll via `dotnet <dll>` works
+    # cross-platform (Windows, Linux, macOS) under dotnet-coverage.
+    $isV3Exe = (Test-Path $dllPath) -and (Test-Path $runtimeConfig)
+
+    if ($isV3Exe) {
+        Write-Host "  dotnet-coverage collect (xUnit v3 / MTP)" -ForegroundColor DarkGray
+        dotnet-coverage collect --output $outFile --output-format cobertura -- dotnet $dllPath 2>&1 | Out-Default
     }
     else {
         Write-Host "  dotnet test (vstest fallback)" -ForegroundColor DarkGray

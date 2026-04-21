@@ -102,6 +102,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 33 | ✅ | Coverage: AccessManagement.Api.Enduser `Utils.ToUuidResolver` — 13 direct unit tests (Moq) for both resolve branches; 65.94% → 68.32% line | Phase 6.7c | [Coverage_Enduser_Api_ToUuidResolver.md](Coverage_Enduser_Api_ToUuidResolver.md) |
 | 34 | ✅ | CI fix — scope coverage threshold enforcement to the owning vertical (unblocks `app: Authorization`, `lib: Integration`, `pkg: PEP`) | Phase 6.6 follow-up | [CI_Coverage_Threshold_Scoping.md](CI_Coverage_Threshold_Scoping.md) |
 | 35 | ✅ | CI fix — route `dotnet test` to Microsoft Testing Platform so xUnit v3 tests are actually discovered (fixes "No test is available" across all verticals) | Phase 6.6 follow-up | [CI_Tests_MTP_Discovery.md](CI_Tests_MTP_Discovery.md) |
+| 36 | ✅ | CI fix — post‑MTP hardening: make `FluentAssertions` available to test-helper libraries (fixes TestUtils CS0400) and detect xUnit v3 MTP executables cross‑platform in `run-coverage.ps1` (fixes Linux "No coverage files generated") | Phase 6.6 follow-up | [CI_Post_MTP_Hardening.md](CI_Post_MTP_Hardening.md) |
 
 ### Recommended Next Steps (priority order)
 

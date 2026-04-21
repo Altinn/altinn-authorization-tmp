@@ -40,9 +40,6 @@
                     <PrivateAssets>all</PrivateAssets>
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                 </PackageReference>
-
-                <!-- FluentAssertions for improved test assertions -->
-                <PackageReference Include="FluentAssertions" />
             </ItemGroup>
 
             <ItemGroup Condition=" '$(IsTestLibrary)' == 'true' ">
@@ -50,6 +47,13 @@
                 <PackageReference Include="xunit.extensibility.core" Condition=" '$(XUnitVersion)' == 'v2' " />
                 <PackageReference Include="xunit.v3.assert" Condition=" '$(XUnitVersion)' == 'v3' " />
                 <PackageReference Include="xunit.v3.extensibility.core" Condition=" '$(XUnitVersion)' == 'v3' " />
+            </ItemGroup>
+
+            <!-- FluentAssertions is available in both runnable test projects and
+                 shared test-helper libraries so the global using below resolves
+                 in either context. -->
+            <ItemGroup>
+                <PackageReference Include="FluentAssertions" />
             </ItemGroup>
 
             <ItemGroup>
