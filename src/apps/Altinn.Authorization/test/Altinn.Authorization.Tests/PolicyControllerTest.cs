@@ -30,10 +30,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
             {
                 services.AddScoped<IContextHandler, ContextHandlerMock>();
             });
-            _client = fixture.BuildClient(client =>
-            {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
-            });
+            _client = fixture.BuildClient();
         }
 
         /// <summary>

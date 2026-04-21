@@ -127,6 +127,25 @@ Implementation notes:
 - The step is additive; the existing failure upload artifact (item 2)
   still runs so the raw logs remain downloadable.
 
+### 7. `PolicyControllerTest` XML `Accept` header — follow-up fix
+
+**File:** `src/apps/Altinn.Authorization/test/Altinn.Authorization.Tests/PolicyControllerTest.cs`.
+
+Step 3 (WAF consolidation) introduced a default
+`Accept: application/xml` request header on the shared `_client` in
+`PolicyControllerTest`'s constructor. The `GetPolicies` and
+`roleswithaccess` endpoints honour content negotiation and therefore
+returned XML, which the tests then fed into
+`JsonConvert.DeserializeObject<...>` — failing with
+`Unexpected character encountered while parsing value: <. Path '', line 0, position 0.`
+on the first `<` of the XML payload (all 8 JSON-parsing tests in the
+class were failing; the 8 `WritePolicy_*` cases were unaffected).
+
+Fix: removed the `Accept.Add("application/xml")` configuration callback
+so the client uses the default content negotiation (JSON), matching the
+pre-consolidation behaviour. Local re-run:
+`16/16 PolicyControllerTest tests passing`.
+
 ## Verification
 
 - The first green CI run logs (`logs_65554721527`) confirmed tests really
