@@ -92,35 +92,18 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 23 | ✅ | Sub-step 16.4a — Migrate `V2ResourceControllerTest`, `ConsentControllerTestEnterprise`, `MaskinPorten.ConsentControllerTest` to `LegacyApiFixture` | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md](AccessMgmt_WAF_Group_B_16_4a_Consent_Migrations.md) |
 | 24 | ⚠️ Partial | Sub-step 16.4b — Delete two 100%-`[Skip]`ped WAF consumers; `ConsentControllerTestBFF` migration blocked on per-test DB isolation gap | Phase 2.2 | [AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md](AccessMgmt_WAF_Group_B_16_4b_Final_Consumers.md) |
 | 25 | ✅ | Sub-step 16.4b-continued — `ConsentControllerTestBFF` migrated to per-test `LegacyApiFixture` via `IAsyncLifetime`; `WebApplicationFixture` has no remaining consumers | Phase 2.2 | [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md) |
+| 26 | ✅ | Sub-step 16.5 — Retired `WebApplicationFixture`, `AcceptanceCriteriaComposer`, `Scenarios/*`, `ControllerTestTemplate`; `PostgresServer` retained (still used by `PostgresFixture`) | Phase 2.2 | [AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md](AccessMgmt_WAF_16_5_Retire_Legacy_Harness.md) |
 
 ### Recommended Next Steps (priority order)
 
-All items below are actionable. Item 1 requires Podman Desktop (working as of
-Step 12); items 2–4 have no container-runtime dependency.
+All items below are actionable and have no container-runtime dependency.
 
-1. **Sub-step 16.5 — Retire `WebApplicationFixture`, `PostgresServer`,
-   `AcceptanceCriteriaComposer`, `Scenarios/*`.**
-   - **Unblocked by Step 25** — `ConsentControllerTestBFF` was the last
-     consumer and is now on `LegacyApiFixture`.
-   - Delete: `test/AccessMgmt.Tests/Fixtures/WebApplicationFixture.cs`,
-     `test/AccessMgmt.Tests/Scenarios/*`, `AcceptanceCriteriaComposer`, and
-     the `PostgresServer` helper that backs them.
-     `test/AccessMgmt.Tests/Templates/ControllerTestTemplate.cs` references
-     `WebApplicationFixture` — either port the template to `ApiFixture` /
-     `LegacyApiFixture` or delete it.
-   - **Out of scope:** `PostgresFixture` still has four active consumers
-     (`ConnectionQueryTests`, `RequestServiceTests`,
-     `TranslationServiceTests`, `DeepTranslationExtensionsTests`, plus
-     `DatabaseTestTemplate`). Retiring it is a separate follow-up.
-   - Read [AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md](AccessMgmt_WAF_16_4b_Continued_BFF_Migration.md)
-     for the current consumer audit.
-
-2. **Phase 4.2b — FluentAssertions guidelines**
+1. **Phase 4.2b — FluentAssertions guidelines**
    - Create usage guidelines and patterns documentation
    - **Status: Ready** — Package installed (Step 14), can document best practices
    - Read [Add_FluentAssertions_Package.md](Add_FluentAssertions_Package.md)
 
-3. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
+2. **Phase 5.1b — CI coverage thresholds for AccessManagement** (lock in the ratchet)
    - Extend the CI coverage gate (Step 8) to the 4 AccessManagement assemblies already above 60%:
      - `Altinn.AccessMgmt.PersistenceEF` → 90% (currently 98.59)
      - `AccessManagement.Api.Maskinporten` → 75% (currently 80.36)
@@ -131,7 +114,7 @@ Step 12); items 2–4 have no container-runtime dependency.
    - Maps to overhaul plan Phase 5.1 / 5.4. Prevents regression on assemblies we've already invested in, without blocking CI on known gaps.
    - Read [CI_Coverage_Threshold.md](CI_Coverage_Threshold.md) for the existing Authorization-app threshold pattern.
 
-4. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
+3. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
    - **6.7b:** AccessManagement.Api.ServiceOwner (0% coverage)
    - **6.7c:** AccessManagement.Api.Enduser (1.19% coverage)
    - **6.7d:** AccessMgmt persistence layers (8-45% coverage)
@@ -158,7 +141,7 @@ See [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Ba
 
 **AccessManagement app** — Step 12 baseline, **not yet CI-enforced**. Numbers are a
 point-in-time measurement from Phase 6.7a; the `Target` column is the aspirational
-threshold we'd enforce in CI once reached (see priority 4 in
+threshold we'd enforce in CI once reached (see priority 3 in
 [Recommended Next Steps](#recommended-next-steps-priority-order)). Source:
 [AccessManagement_Coverage_Baseline_Success.md](AccessManagement_Coverage_Baseline_Success.md).
 
