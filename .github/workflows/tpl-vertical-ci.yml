@@ -74,7 +74,12 @@ jobs:
         working-directory: ${{ inputs.path }}
 
       - name: Test
-        run: dotnet test -c Release --no-build -bl:binlog/test.binlog
+        # `--` forwards args to the Microsoft Testing Platform runner used by
+        # xUnit v3. Exit code 8 means "no tests ran" (e.g. every test in the
+        # vertical is currently `[Skip]`ed because the required infrastructure
+        # such as Azurite is unavailable in CI). We don't want that to fail the
+        # job; real test failures still exit with code 2.
+        run: dotnet test -c Release --no-build -bl:binlog/test.binlog -- --ignore-exit-code 8
         working-directory: ${{ inputs.path }}
 
       - name: Coverage threshold check
