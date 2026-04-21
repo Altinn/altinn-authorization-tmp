@@ -2238,6 +2238,54 @@ public partial class ConnectionService
         return GetConnectionsAsSystemUserClientConnectionDto(result);
     }
 
+    /// <inheritdoc />
+    public async Task<Result<bool>> RemoveRoleAssignment(
+        Guid fromId,
+        Guid toId,
+        string roleCode,
+        Action<ConnectionOptions> configureConnections = null,
+        CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        // Validate roleId if proveder is not Altinn 2 then the assignmnet is not alowed to be removed
+        var role = await dbContext.Roles
+            .AsNoTracking()
+            .Where(r => r.Code == roleCode.ToLower())
+            .Where(r => r.ProviderId == ProviderConstants.Altinn2.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (role == null)
+        {
+            return Problems.InvalidRoleCode;
+        }
+
+        // Fetch assignment
+        var existingAssignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
+            .Where(e => e.RoleId == role.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignment is null)
+        {
+            return false;
+        }
+        
+        // Remove and save revoked assignment
+        dbContext.Remove(existingAssignment);
+        var result = await dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
     #region Mappers
 
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)

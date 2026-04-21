@@ -4606,7 +4606,7 @@ public static class RoleConstants
             IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "c"),
+            KeyValuePair.Create("Name", "Bankruptcy read"),
             KeyValuePair.Create("Description", "Reading rights for information in the service Konkursbehandling (bankruptcy proceedings)")
         ),
         NN = TranslationEntryList.Create(
@@ -4837,7 +4837,7 @@ public static class RoleConstants
             IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "c"),
+            KeyValuePair.Create("Name", "Municipal services"),
             KeyValuePair.Create("Description", "Role for municipal services. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4969,7 +4969,7 @@ public static class RoleConstants
             IsAvailableForServiceOwners = true,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "c"),
+            KeyValuePair.Create("Name", "Limited rights for an individual"),
             KeyValuePair.Create("Description", "Delegable rights to services for individuals. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.")
         ),
         NN = TranslationEntryList.Create(

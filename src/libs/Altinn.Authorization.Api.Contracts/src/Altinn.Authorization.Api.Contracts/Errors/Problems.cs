@@ -145,4 +145,8 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor MissingRightKey { get; }
     = _factory.Create(33, HttpStatusCode.BadRequest, "No right key provided");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidRoleCode { get; }
+    = _factory.Create(34, HttpStatusCode.BadRequest, "The provided rolecode was not found");
 }
