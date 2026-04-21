@@ -257,6 +257,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignmentinstance_assignmentid");
 
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId"), new[] { "Id", "ResourceId", "InstanceId" });
+
                     b.HasIndex("InstanceSourceTypeId")
                         .HasDatabaseName("ix_assignmentinstance_instancesourcetypeid");
 
@@ -369,6 +371,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_assignmentresource_assignmentid");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId"), new[] { "Id", "ResourceId" });
 
                     b.HasIndex("Audit_ChangedBy")
                         .HasDatabaseName("ix_assignmentresource_audit_changedby");
@@ -3164,9 +3168,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("PackageId")
                         .HasDatabaseName("ix_requestassignmentpackage_packageid");
 
-                    b.HasIndex("AssignmentId", "PackageId", "Status")
-                        .IsUnique()
-                        .HasDatabaseName("ix_requestassignmentpackage_assignmentid_packageid_status");
+                    b.HasIndex("AssignmentId", "PackageId")
+                        .HasDatabaseName("ix_requestassignmentpackage_assignmentid_packageid");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId", "PackageId"), new[] { "Status" });
 
                     b.ToTable("requestassignmentpackage", "dbo");
 
@@ -3221,9 +3226,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("ResourceId")
                         .HasDatabaseName("ix_requestassignmentresource_resourceid");
 
-                    b.HasIndex("AssignmentId", "ResourceId", "Action", "Status")
-                        .IsUnique()
-                        .HasDatabaseName("ix_requestassignmentresource_assignmentid_resourceid_action_st~");
+                    b.HasIndex("AssignmentId", "ResourceId")
+                        .HasDatabaseName("ix_requestassignmentresource_assignmentid_resourceid");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("AssignmentId", "ResourceId"), new[] { "Status" });
 
                     b.ToTable("requestassignmentresource", "dbo");
 
@@ -3909,7 +3915,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_delegationpackage_assignmentpackage_assignmentpackageid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
-                        .WithMany()
+                        .WithMany("DelegationPackages")
                         .HasForeignKey("DelegationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -4296,6 +4302,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
+                {
+                    b.Navigation("DelegationPackages");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>
                 {
                     b.Navigation("DelegationPackages");
                 });

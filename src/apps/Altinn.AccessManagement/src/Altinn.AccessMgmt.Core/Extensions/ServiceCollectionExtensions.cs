@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IMaskinportenSupplierService, MaskinportenSupplierService>();
         services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<IRoleService, RoleService>();
@@ -47,7 +48,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
-        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>("newConnectionQueryOnlyImplementation");
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
