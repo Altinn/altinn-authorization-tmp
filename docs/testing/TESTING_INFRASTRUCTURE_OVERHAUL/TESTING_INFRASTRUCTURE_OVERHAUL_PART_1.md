@@ -1,13 +1,13 @@
-﻿# Testing Infrastructure Overhaul — Audit & Plan
+# Testing Infrastructure Overhaul — Audit & Plan
 
 > **Status:** ✅ **Complete** — all phases delivered across Steps 1–60.
 > **Branches:** `feature/2842_Optimize_Test_Infrastructure_and_Performance` (Steps 1–41) → `feature/2842_Optimize_Test_Infrastructure_and_Performance_Part_Two` (Steps 42–60).
-> **Step log:** See [`steps/INDEX.md`](steps/INDEX.md) for the ordered record of
+> **Step log:** See [`STEPS_PART_1/INDEX.md`](STEPS_PART_1/INDEX.md) for the ordered record of
 > every step, including verification results and per-step docs.
 >
 > This document is retained as the original audit and issue ledger (IDs C1–C5,
 > M1–M8, L1–L3). Check marks below point at the step(s) that resolved each
-> item. Future work is tracked in `steps/INDEX.md`, not here.
+> item. Future work is tracked in `STEPS_PART_1/INDEX.md`, not here.
 
 ---
 
@@ -156,7 +156,7 @@ Significant mock duplication exists:
 
 ### Phase 1: Foundation — Unify xUnit Version & Target Framework ✅
 > **Goal:** Single xUnit version and TFM across all test projects. Resolves **C1**, **C2**.
-> **Delivered by:** Step 2 ([2_Unify_xUnit_and_TFM.md](steps/2_Unify_xUnit_and_TFM.md)).
+> **Delivered by:** Step 2 ([2_Unify_xUnit_and_TFM.md](STEPS_PART_1/2_Unify_xUnit_and_TFM.md)).
 
 - [x] **1.1** All test projects migrated to xUnit v3 via `<XUnitVersion>v3</XUnitVersion>` in each `test/Directory.Build.props`.
 - [x] **1.2** `ABAC.Tests` now targets `net9.0` alongside every other project.
@@ -173,7 +173,7 @@ Significant mock duplication exists:
 - [x] **2.3** Scenario-based tests migrated to `ApiFixture` / `LegacyApiFixture` + composable seeding (Steps 22–25).
 - [x] **2.4** `AuthorizationApiFixture` created for `Altinn.Authorization.Tests` (Step 9).
 - [x] **2.5** `CustomWebApplicationFactory` (both copies), `WebApplicationFixture`, `AcceptanceCriteriaComposer`, and `Scenarios/*` retired (Steps 19, 26). `PostgresServer` retained only as a `LegacyApiFixture` implementation detail.
-- [x] **2.6** Yuniql retained *only* behind `LegacyApiFixture` for the small tail of legacy consent tests that need the full Yuniql schema; the EF Core migration path is the default everywhere else. Full Yuniql removal is deferred until those tests are rewritten on EF seed data (tracked in `steps/INDEX.md`).
+- [x] **2.6** Yuniql retained *only* behind `LegacyApiFixture` for the small tail of legacy consent tests that need the full Yuniql schema; the EF Core migration path is the default everywhere else. Full Yuniql removal is deferred until those tests are rewritten on EF seed data (tracked in `STEPS_PART_1/INDEX.md`).
 
 ### Phase 3: Deduplicate Mocks & Certificates ✅
 > **Goal:** Single source of truth for each mock / certificate. Resolves **C4**, **M8**.
@@ -202,7 +202,7 @@ Significant mock duplication exists:
 
 - [x] **5.1** `dotnet-coverage` + `run-coverage.ps1` wired up (Step 5). Per-assembly thresholds configured in `eng/testing/coverage-thresholds.json` (Steps 8, 28).
 - [x] **5.2** Cobertura reports produced and uploaded as CI artifacts (Steps 40, 41).
-- [x] **5.3** Coverage gap backlog tracked in `steps/INDEX.md` priority list.
+- [x] **5.3** Coverage gap backlog tracked in `STEPS_PART_1/INDEX.md` priority list.
 - [x] **5.4** PR-gating `check-coverage-thresholds.ps1` added; single-run hybrid design eliminates duplicate test execution (Step 41). CI routing hardened across Steps 34–40.
 
 ### Phase 6: Maximize Code Coverage ✅
@@ -210,9 +210,9 @@ Significant mock duplication exists:
 > **Delivered by:** Steps 7, 29–33, 42–60.
 
 - [x] **6.1** `AccessMgmt.Core` — pure-logic coverage added across Parts 1–10 (Steps 42–46, 53–55, 59).
-- [x] **6.2** `Altinn.AccessMgmt.PersistenceEF` at **98.59%** line / 90.78% branch (threshold 90%, enforced). `AccessMgmt.Persistence` / `AccessManagement.Persistence` remain Npgsql-dominated — non-Npgsql services (`AMPartyService`, `EntityService`, `PartyService`, `RoleService`, `RelationService`, `StatusService`, `AuditService`) covered in Steps 56, 58, 59. Live-DB Npgsql repository coverage is tracked as follow-up in `steps/INDEX.md`.
+- [x] **6.2** `Altinn.AccessMgmt.PersistenceEF` at **98.59%** line / 90.78% branch (threshold 90%, enforced). `AccessMgmt.Persistence` / `AccessManagement.Persistence` remain Npgsql-dominated — non-Npgsql services (`AMPartyService`, `EntityService`, `PartyService`, `RoleService`, `RelationService`, `StatusService`, `AuditService`) covered in Steps 56, 58, 59. Live-DB Npgsql repository coverage is tracked as follow-up in `STEPS_PART_1/INDEX.md`.
 - [x] **6.3** API endpoint coverage closed across `ServiceOwner` (Step 29, 47), `Enduser` (Steps 30–33, 57), `Api.Internal` (Steps 46, 49), `Api.Metadata` (Steps 42, 52), `Integration` (Steps 46, 50), `Integration.Platform` (Step 60).
-- [x] **6.4** `Altinn.Authorization.Host.*` — addressed in Step 7. `Host.Lease` remains blocked on Azurite (see `steps/INDEX.md` Blocked Items).
+- [x] **6.4** `Altinn.Authorization.Host.*` — addressed in Step 7. `Host.Lease` remains blocked on Azurite (see `STEPS_PART_1/INDEX.md` Blocked Items).
 - [x] **6.5** `Altinn.Authorization.ABAC` 63.41% and `Altinn.Authorization.PEP` 77.75% — both above their enforced thresholds (Step 7).
 - [x] **6.6** CI coverage thresholds are enforced per vertical (Steps 8, 28, 34). Latent production bugs uncovered while writing tests were fixed inline (Steps 47, 48, 51).
 
@@ -255,7 +255,7 @@ Phase 6 (Max coverage)  ←  depends on Phases 2-5 being complete
 
 All six phases are delivered. Open follow-up work — live-DB Npgsql repository
 coverage, `Host.Lease` (blocked on Azurite), and a fresh infrastructure audit —
-is tracked in [`steps/INDEX.md`](steps/INDEX.md) under *Recommended Next Steps*
+is tracked in [`STEPS_PART_1/INDEX.md`](STEPS_PART_1/INDEX.md) under *Recommended Next Steps*
 and *Blocked Items*. This file is now a historical record; new work should
 be logged as new steps, not as edits to this plan.
 

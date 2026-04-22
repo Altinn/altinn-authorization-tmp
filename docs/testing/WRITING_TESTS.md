@@ -16,7 +16,7 @@ Choose the simplest thing that exercises the code:
 | Repository / EF Core query | **Integration test** with `ApiFixture` (template-cloned DB). |
 
 **Default to unit tests.** They're orders of magnitude faster and more
-precise. The [coverage steps 42–60](TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md) demonstrate that almost
+precise. The [coverage steps 42–60](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md) demonstrate that almost
 all controller and service coverage can be achieved with Moq-based unit
 tests; integration tests are reserved for the cases that genuinely need the
 pipeline.

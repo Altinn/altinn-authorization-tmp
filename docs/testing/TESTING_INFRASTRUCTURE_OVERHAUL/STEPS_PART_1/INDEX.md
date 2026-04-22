@@ -1,10 +1,10 @@
-﻿# Testing Infrastructure Overhaul — Step Log
+# Testing Infrastructure Overhaul — Step Log
 
 ## Getting Started & Workflow
 
 **New chat?** Read these docs **in order** to get full context:
 
-1. **This file** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md`) — step log, coverage results,
+1. **This file** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md`) — step log, coverage results,
    recommended next steps, deferred work, and workflow rules.
 2. **[TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md)** —
    original audit, issue IDs (C1–C5, M1–M8, L1–L3), and the phase plan.
@@ -13,7 +13,7 @@
 
 **When completing a step:**
 
-- **Create a step doc** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/<Step_Name>.md`) describing the goal,
+- **Create a step doc** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/<Step_Name>.md`) describing the goal,
   what changed, verification results, and any deferred items. Add a row to the
   step log table below linking to the new doc.
 - **Run all tests that were changed or impacted by the step** and record the
@@ -24,8 +24,8 @@
   now unblocked by the completed step. If so, move it into
   `### Recommended Next Steps (priority order)` at an appropriate priority and
   remove it from the Blocked Items table.
-- **Sweep `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/` for obsoleted docs.** Review every file under
-  `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/` and check whether any have been superseded or
+- **Sweep `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/` for obsoleted docs.** Review every file under
+  `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/` and check whether any have been superseded or
   invalidated by the completed step (e.g. plans that are now fully executed,
   audits whose findings have all been addressed, POCs whose follow-up work is
   done). For each obsolete doc, either delete it and update links, or add a
@@ -38,7 +38,7 @@
   > Continue the testing infrastructure overhaul on branch
   > `feature/2842_Optimize_Test_Infrastructure_and_Performance`.
   >
-  > Start by reading `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md` — it's the entry point and tells
+  > Start by reading `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md` — it's the entry point and tells
   > you exactly what to read next, how to pick the next step, and the workflow
   > rules for completing one.
   >

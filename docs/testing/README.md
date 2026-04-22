@@ -27,7 +27,7 @@ self-contained; none of them is a wall of text.
 | Doc | Purpose |
 |---|---|
 | [TESTING_INFRASTRUCTURE_OVERHAUL.md](TESTING_INFRASTRUCTURE_OVERHAUL/TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md) | The 2025 audit and the phased plan that produced the current setup. Marked complete; retained as a ledger of the issues (C1–C5, M1–M8, L1–L3) and the decisions taken. |
-| [steps/INDEX.md](TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md) | Chronological step log. Every individual change has a numbered step doc; this index is where follow-up work and blocked items are tracked. |
+| [steps/INDEX.md](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md) | Chronological step log. Every individual change has a numbered step doc; this index is where follow-up work and blocked items are tracked. |
 
 ## TL;DR for newcomers
 

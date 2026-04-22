@@ -112,7 +112,7 @@ haven't been rewritten against EF seed data yet.
 This fixture exists as an explicit bridge. New tests should **not** use it —
 prefer `ApiFixture`. The expected outcome is that the last `LegacyApiFixture`
 consumers get rewritten on EF seed data over time and the fixture is retired.
-See [`TESTING_INFRASTRUCTURE_OVERHAUL/steps/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md).
+See [`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md).
 
 ---
 
@@ -137,7 +137,7 @@ uses; it is not intended for direct consumption by new tests.
 Both `EFPostgresFactory` and `PostgresFixture` detect the absence of a Docker /
 Podman socket and call `Assert.Skip(...)` so the suite doesn't fail on
 developer machines without a runtime. See
-[`TESTING_INFRASTRUCTURE_OVERHAUL/steps/40_CI_First_Green_Run_Hardening.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/40_CI_First_Green_Run_Hardening.md).
+[`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md).
 
 ---
 

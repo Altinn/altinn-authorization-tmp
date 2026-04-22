@@ -22,7 +22,7 @@ If neither is available, integration tests will **skip gracefully** with
 
 Testcontainers requires a Docker-compatible socket. If you use Podman, make sure
 `podman machine` is running and the `DOCKER_HOST` environment variable points at
-Podman's socket. See [`TESTING_INFRASTRUCTURE_OVERHAUL/steps/12_AccessManagement_Coverage_Baseline_Success.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/12_AccessManagement_Coverage_Baseline_Success.md)
+Podman's socket. See [`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/12_AccessManagement_Coverage_Baseline_Success.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/12_AccessManagement_Coverage_Baseline_Success.md)
 for the exact configuration that's known to work.
 
 ## Running the tests
@@ -75,8 +75,8 @@ See [COVERAGE.md](COVERAGE.md) for the full flow.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `"Docker/Podman not available"` skips | Container runtime not running | Start Docker Desktop / `podman machine start` |
-| `No test is available in <dll>` | MTP routing regressed for that project | Ensure the `.csproj` has `<TargetFramework>net9.0</TargetFramework>` (singular). See [`TESTING_INFRASTRUCTURE_OVERHAUL/steps/37_CI_MTP_Routing_TargetFramework_Clear.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/37_CI_MTP_Routing_TargetFramework_Clear.md). |
+| `No test is available in <dll>` | MTP routing regressed for that project | Ensure the `.csproj` has `<TargetFramework>net9.0</TargetFramework>` (singular). See [`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/37_CI_MTP_Routing_TargetFramework_Clear.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/37_CI_MTP_Routing_TargetFramework_Clear.md). |
 | Tests hang on Postgres container start | Stale containers from a previous run | `docker ps -a` → remove any `testcontainers`-prefixed containers |
-| `JsonReaderException: Unexpected character '<'` | Client's default `Accept` header is `application/xml`; server returned XML, test tried to parse it as JSON | Remove the default `Accept` header or override per-request. See [`TESTING_INFRASTRUCTURE_OVERHAUL/steps/40_CI_First_Green_Run_Hardening.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/40_CI_First_Green_Run_Hardening.md). |
+| `JsonReaderException: Unexpected character '<'` | Client's default `Accept` header is `application/xml`; server returned XML, test tried to parse it as JSON | Remove the default `Accept` header or override per-request. See [`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md). |
 
 ## Next: [TEST_PROJECTS.md](TEST_PROJECTS.md)

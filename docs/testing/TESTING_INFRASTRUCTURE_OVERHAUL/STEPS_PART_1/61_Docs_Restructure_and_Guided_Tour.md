@@ -1,4 +1,4 @@
-﻿# Step 61 — Docs Restructure + Guided-Tour Suite
+# Step 61 — Docs Restructure + Guided-Tour Suite
 
 **Phase:** Post-overhaul housekeeping (follows Step 60, the final coverage step).
 
@@ -60,10 +60,10 @@ All intra-doc links + C# source-comment paths re-pointed to the new folder
 structure:
 
 - 4 files inside the moved folder: parent link `../TESTING_INFRASTRUCTURE_OVERHAUL.md` → `../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md`.
-- 9 sibling docs in `docs/testing/`: prefix `steps/` → `TESTING_INFRASTRUCTURE_OVERHAUL/steps/`; rename of the plan doc.
+- 9 sibling docs in `docs/testing/`: prefix `steps/` → `TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/`; rename of the plan doc.
 - 7 C# source files (controller test comments in AccessMgmt.Tests + one in
   Altinn.AccessManagement.Enduser.Api.Tests): `docs/testing/steps/` →
-  `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/`.
+  `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/`.
 - `INDEX.md` self-references updated (parent-link + description of its own path).
 
 ### 4. INDEX.md cleanup (performed in this step)
@@ -106,6 +106,6 @@ priority 2 in `INDEX.md`:
 
 - **New:** `docs/testing/{README,GETTING_STARTED,TEST_PROJECTS,FIXTURES,MOCKS_AND_TESTUTILS,WRITING_TESTS,COVERAGE,CI}.md` (8 files).
 - **Renamed:** `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL.md` → `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md` (via `git mv`).
-- **Moved:** `docs/testing/steps/` → `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/` (60 step docs + `INDEX.md`, via `git mv`).
+- **Moved:** `docs/testing/steps/` → `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/` (60 step docs + `INDEX.md`, via `git mv`).
 - **Edited (links only):** 4 files inside moved folder, 9 sibling docs, 7 C# test files, `INDEX.md` (self-refs + cleanup described above).
 - **New step doc:** this file.

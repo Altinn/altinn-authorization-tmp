@@ -38,7 +38,7 @@ Grouped by the production vertical they cover.
 
 | Test project | Covers | Blocked? |
 |---|---|---|
-| `Altinn.Authorization.Host.Lease.Tests` | Distributed lease primitive | ⚠️ Needs Azurite — skipped in CI, see [steps/INDEX.md#blocked-items](TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md#blocked-items) |
+| `Altinn.Authorization.Host.Lease.Tests` | Distributed lease primitive | ⚠️ Needs Azurite — skipped in CI, see [steps/INDEX.md#blocked-items](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md#blocked-items) |
 
 ### `pkg: ABAC`
 
@@ -67,7 +67,7 @@ automatically based on those flags — individual `.csproj` files stay tiny.
 `[InternalsVisibleTo("<AssemblyName>.Tests")]` for every project. You do **not**
 need to add the attribute manually. `DynamicProxyGenAssembly2` is added where
 Moq needs to proxy `internal` interfaces (see
-[`TESTING_INFRASTRUCTURE_OVERHAUL/steps/58_Coverage_AccessMgmt_Persistence_Services_StatusService_AuditService.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/58_Coverage_AccessMgmt_Persistence_Services_StatusService_AuditService.md)).
+[`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/58_Coverage_AccessMgmt_Persistence_Services_StatusService_AuditService.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/58_Coverage_AccessMgmt_Persistence_Services_StatusService_AuditService.md)).
 
 ### Shared test library
 

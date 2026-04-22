@@ -97,7 +97,7 @@ pwsh eng/testing/check-coverage-thresholds.ps1 \
 ```
 
 Design rationale: see
-[`TESTING_INFRASTRUCTURE_OVERHAUL/steps/41_CI_Coverage_Single_Run.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/41_CI_Coverage_Single_Run.md).
+[`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/41_CI_Coverage_Single_Run.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/41_CI_Coverage_Single_Run.md).
 Before Step 41, tests ran twice (once for Test, once for Coverage), which
 doubled pipeline time.
 
@@ -115,7 +115,7 @@ doubled pipeline time.
 ## Current coverage
 
 See the *Final Coverage (measured)* table at the bottom of
-[`TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md`](TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md) for the latest measured numbers per
+[`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md) for the latest measured numbers per
 assembly.
 
 ## Next: [CI.md](CI.md)
