@@ -1,5 +1,4 @@
-﻿
-// test/helpers/assertHelpers.js
+﻿// test/helpers/assertHelper.js
 
 /**
  * Normalize an array of strings to lowercase
@@ -25,4 +24,3 @@ module.exports = {
   toLowerArray,
   assertIncludeMembersIgnoreCase
 };
-``
