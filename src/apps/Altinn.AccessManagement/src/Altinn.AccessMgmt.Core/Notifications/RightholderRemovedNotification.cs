@@ -9,11 +9,13 @@ public static class RightholderRemovedNotification
 {
     public const string Handler = "rightholder_removed";
 
+    public const int DefaultNotifyInSeconds = 60 * 2;
+
     public static async Task Upsert(
         AppDbContext db,
         Guid from,
         Guid to,
-        int notifyRemovedRightholderPendingInSeconds = 120,
+        int notifyRemovedRightholderPendingInSeconds = DefaultNotifyInSeconds,
         CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(

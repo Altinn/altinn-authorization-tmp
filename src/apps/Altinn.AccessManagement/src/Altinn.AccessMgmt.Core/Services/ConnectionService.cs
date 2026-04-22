@@ -528,6 +528,16 @@ public partial class ConnectionService(
         }
 
         dbContext.Remove(existingAssignmentPackages);
+        await AccessRemovedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            null,
+            packageId,
+            appsettings.Value.Connections.NotifyAccessAddedPendingInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;
@@ -572,6 +582,7 @@ public partial class ConnectionService(
             .Where(a => a.ToId == toId)
             .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
             .FirstOrDefaultAsync(cancellationToken);
+        
         if (assignment == null)
         {
             assignment = new Assignment()
@@ -604,6 +615,16 @@ public partial class ConnectionService(
         };
 
         await dbContext.AssignmentPackages.AddAsync(newAssignmentPackage, cancellationToken);
+        await AccessAddedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            null,
+            packageId,
+            appsettings.Value.Connections.NotifyAccessAddedPendingInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (from.PartyId.HasValue && to.PartyId.HasValue)

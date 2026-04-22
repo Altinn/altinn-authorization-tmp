@@ -10,13 +10,15 @@ public static class RequestPendingNotification
 {
     public const string Handler = "request_pending";
 
+    public const int DefaultNotifyInSeconds = 60 * 15;
+
     public static async Task Upsert(
         AppDbContext db,
         Guid requesterId,
         Guid recipientId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyRequestPendingInSeconds = 60 * 15,
+        int notifyRequestPendingInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(

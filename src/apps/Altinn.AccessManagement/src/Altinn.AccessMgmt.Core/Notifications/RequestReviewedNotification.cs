@@ -10,6 +10,8 @@ public static class RequestReviewedNotification
 {
     public const string Handler = "request_reviewed";
 
+    public const int DefaultNotifyInSeconds = 60 * 10;
+
     public static async Task Upsert(
         AppDbContext db,
         Guid requesterId,
@@ -17,7 +19,7 @@ public static class RequestReviewedNotification
         Guid? resourceId,
         Guid? packageId,
         bool isApproved,
-        int notifyRequestReviewedInSeconds = 60 * 15,
+        int notifyRequestReviewedInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(

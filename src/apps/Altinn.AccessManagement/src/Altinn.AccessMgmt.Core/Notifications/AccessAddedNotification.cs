@@ -10,13 +10,15 @@ public static class AccessAddedNotification
 {
     public const string Handler = "access_added";
 
+    public const int DefaultNotifyInSeconds = 60 * 15;
+
     public static async Task Upsert(
         AppDbContext db,
         Guid fromId,
         Guid toId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyAccessAddedInSeconds = 60 * 15,
+        int notifyAccessAddedInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(

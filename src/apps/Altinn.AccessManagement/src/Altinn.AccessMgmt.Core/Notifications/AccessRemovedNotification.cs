@@ -10,13 +10,15 @@ public static class AccessRemovedNotification
 {
     public const string Handler = "access_removed";
 
+    public const int DefaultNotifyInSeconds = 60 * 15;
+
     public static async Task Upsert(
         AppDbContext db,
         Guid fromId,
         Guid toId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyAccessRemovedInSeconds = 60 * 15,
+        int notifyAccessRemovedInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(

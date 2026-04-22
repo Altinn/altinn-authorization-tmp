@@ -21,6 +21,12 @@ public class CoreAppsettings
     public class ConnectionsOptions
     {
         public int NotifyAddRightholderPendingInSeconds { get; set; } = 60 * 2;
+
+        public int NotifyRemovedRightholderPendingInSeconds { get; set; } = 60 * 2;
+
+        public int NotifyAccessAddedPendingInSeconds { get; set; } = 60 * 15;
+
+        public int NotifyAccessRemovedPendingInSeconds { get; set; } = 60 * 5;
     }
 
     public class RequestOptions
