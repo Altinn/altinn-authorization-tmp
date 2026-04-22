@@ -559,7 +559,6 @@ namespace Altinn.AccessManagement.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ApiExplorerSettings(IgnoreApi = false)]
         public async Task<IActionResult> DelegateInstance([FromBody] InstanceDelegationRequest input, CancellationToken cancellationToken = default)
         {
             // Validate ModelState
@@ -608,7 +607,6 @@ namespace Altinn.AccessManagement.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> RevokeInstance([FromBody] InstanceRevokeRequest input, CancellationToken cancellationToken = default)
         {
             // Validate ModelState
