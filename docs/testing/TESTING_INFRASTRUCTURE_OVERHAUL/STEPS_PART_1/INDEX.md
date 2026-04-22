@@ -1,4 +1,4 @@
-# Testing Infrastructure Overhaul — Step Log
+﻿# Testing Infrastructure Overhaul — Step Log
 
 ## Getting Started & Workflow
 
@@ -134,7 +134,15 @@ All items below are actionable and have no container-runtime dependency.
    - **6.7d (continued):** AccessMgmt persistence/core layers — Parts 1–10 added FuzzySearch/GenericFilterBuilder/Metadata controllers, ValidationComposer/OrgUtil/DbHelperMethods/PostgresQueryBuilder, all internal validation-rule classes + DbConverter, all DtoMapper partial-class methods, all Api.Internal consent extensions + EventMapperService, Api.Internal controllers (Step 49), `DelegationRequestProxy` (Step 50), `ResourceValidation`/`DelegationCheckDtoMapper`/`QueryWrapper`/`DelegationCheckHelper`/`SearchCache`/`DbDefinitionBuilder` (Step 53), `IdentifierUtil`/`HashUtil`/`DtoMapperEntityVariant` (Step 54), all `DtoMapper` connection-query overloads + `Extract*` + all remaining `DelegationCheckHelper` methods (Step 55), `RoleService`/`RelationService` (Step 59), `RequestComposer`/`ResponseComposer` in `Integration.Platform` (Step 60). Remaining targets: `AccessMgmt.Persistence` (32.51%→↑), `AccessManagement.Persistence` (44.94%) — both dominated by Npgsql repository code that needs a live DB. Also: `PaginatorStream<T>` and `TokenGenerator` in `Integration.Platform` deferred (thin logic / key-vault dependency).
    - **6.7c (completed):** ~~`MaskinportenConsumersController` / `MaskinportenSuppliersController`~~ — **done in Step 57** (36 direct Moq unit tests, no container). Only remaining Enduser gap is `Program.cs` startup (conventionally excluded).
    - **6.7f (remaining):** ~~`PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_PermitWithActionFilterMatch` flaky~~ — **fixed in Step 51** (`ResourceRegistryMock` cache-hit bug). `Sender_ConfirmsDraftRequest_ReturnsPending` remains `[Skip]`ped — separate environmental investigation needed.
-2. **Fresh audit** — With all easily-reachable pure-logic coverage addressed, the next highest-value work is a **fresh infrastructure audit**: re-measure actual assembly-level coverage numbers (many have changed materially since the Step 12 baseline), identify any remaining pure-logic targets missed, assess whether `Host.Pipeline`/`Host.Database`/`Host.MassTransit` warrant dedicated test projects, and refresh the coverage-threshold enforcement list. Produce an updated audit doc + refreshed recommended-next-steps list.
+2. **Fresh audit — now tracked in Part 2.** All easily-reachable pure-logic
+   coverage is addressed. The fresh infrastructure audit (re-measure
+   assembly-level coverage, identify remaining pure-logic targets, assess
+   whether `Host.Pipeline`/`Host.Database`/`Host.MassTransit` warrant
+   dedicated test projects, refresh the coverage-threshold enforcement list)
+   has been **moved out of Part 1** and is the kickoff step of Part 2. See:
+   - [`../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md`](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md) — new audit & plan doc (scaffold, awaiting kickoff).
+   - [`../STEPS_PART_2/INDEX.md`](../STEPS_PART_2/INDEX.md) — Part 2 step log + Recommended Next Steps.
+   - [`../TRACKING_RETROSPECTIVE.md`](../TRACKING_RETROSPECTIVE.md) — what made Part 1 tracking effective for Copilot + concrete improvements to apply before the Part 2 kickoff audit begins.
 
 See [12_AccessManagement_Coverage_Baseline_Success.md](12_AccessManagement_Coverage_Baseline_Success.md) for detailed coverage metrics.
 
