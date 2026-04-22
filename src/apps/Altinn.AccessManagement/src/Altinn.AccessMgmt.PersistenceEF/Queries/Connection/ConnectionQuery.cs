@@ -113,6 +113,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
+            _rightholderAssignments = null;
             bool delayChildNesting = true;
             bool delayFromFilter = true;
             if (direction == ConnectionQueryDirection.ToOthers || (filter.FromIds?.Count > 0 && filter.FromIds?.Count <= 20))
