@@ -554,7 +554,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [ActionName(nameof(DelegateInstance))]
-        [HttpPost("internal/instance/delegation")]
+        [HttpPost("internal-a2/instance/delegation")]
         [ProducesResponseType(typeof(void), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -603,7 +603,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [ActionName(nameof(RevokeInstance))]
-        [HttpPost("internal/instance/revoke")]
+        [HttpPost("internal-a2/instance/revoke")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
