@@ -1517,7 +1517,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         }
 
         // Fetch the AssignmentInstance record for fetching the correct policy file
-        var normalizedInstanceId
+        var normalizedInstanceId = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.CorrespondenceInstanceAttribute}:{input.InstanceId}".ToLowerInvariant();
         var assignmentInstance = await db.AssignmentInstances
             .AsNoTracking()
             .Where(ai => ai.AssignmentId == assignment.Id)
@@ -1606,7 +1606,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         }
     }
 
-    private static InstanceRight CreateInstanceRightFromInstanceDelegationRequest
+    private static InstanceRight CreateInstanceRightFromInstanceDelegationRequest(InstanceDelegationRequest input)
     {
         List<InstanceRule> rules = [];
         List<UrnJsonTypeValue> resourceList = new();
