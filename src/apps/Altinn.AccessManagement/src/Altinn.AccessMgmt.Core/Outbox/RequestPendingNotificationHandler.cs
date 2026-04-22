@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -25,18 +25,26 @@ public class RequestPendingNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyApproved}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
 
-        var (recipient, requester, resources, packages, idempotencyId) = await GetContext(message, cancellationToken);
+        var (recipient, requester, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+
+        if (!packages.Any() && !resources.Any())
+        {
+            db.OutboxMessageLogs.Add(message, $"Both lists of resources and packages are empty. Request is most likely withdrawn.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         var content = new NotificationOrderChainRequestExt()
         {
             IdempotencyId = idempotencyId,
+            SendersReference = idempotencyId,
             Recipient = CreateRecipient(recipient, requester, resources, packages),
         };
 
@@ -80,7 +88,7 @@ public class RequestPendingNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> GetContext(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<ResourceRequestPendingNotificationMessage>(message.Data);
         if (content is null)
@@ -105,12 +113,12 @@ public class RequestPendingNotificationHandler(
             entityRequester,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityRecipient.Id}_{entityRequester.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_pending_{entityRecipient.Id}_{entityRequester.Id}_{message.CreatedAt.Ticks}"
         );
 
         async Task<List<Resource>> GetResources(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.ResourceIds is { } && content.ResourceIds.Any())
+            if (content.ResourceIds is { } && content.ResourceIds.Count > 0)
             {
                 return await db.Resources
                     .AsNoTracking()
@@ -123,9 +131,9 @@ public class RequestPendingNotificationHandler(
 
         async Task<List<Package>> GetPackages(ResourceRequestPendingNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.PackageIds is { } && content.PackageIds.Any())
+            if (content.PackageIds is { } && content.PackageIds.Count > 0)
             {
-                var packages = await db.Packages
+                return await db.Packages
                     .AsNoTracking()
                     .Where(r => content.PackageIds.Contains(r.Id))
                     .ToListAsync(cancellationToken);
@@ -172,7 +180,7 @@ public class RequestPendingNotificationHandler(
 
             AddResourcesAndPackage(resources, packages, emailContent);
 
-            emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du har tilgangspakken hovedaministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
+            emailContent.AppendLine($"<p>Du mottar denne forespørselen fordi du er hovedadministrator for {recipient.Name} i Altinn. Logg inn i Altinn velg riktig aktør og gå til tilgangsstyring og forespørsler for å behandle forespørselen.</p>");
             emailContent.AppendLine($"<p>Med vennlig hilsen</br>Altinn</p>");
 
             return new NotificationRecipientExt
@@ -199,6 +207,7 @@ public class RequestPendingNotificationHandler(
         {
             if (resources.Any())
             {
+                emailContent.Append("<strong>Ressurser:</strong>");
                 emailContent.AppendLine("<ul>");
                 foreach (var resource in resources)
                 {
@@ -210,7 +219,7 @@ public class RequestPendingNotificationHandler(
 
             if (packages.Any())
             {
-                emailContent.AppendLine("<p>og/eller følgende pakkeløsninger:</p>");
+                emailContent.Append("<strong>Tilgangspakker:</strong>");
                 emailContent.AppendLine("<ul>");
                 foreach (var package in packages)
                 {
@@ -241,17 +250,12 @@ public class ResourceRequestPendingNotificationMessage
     /// <summary>
     /// Guid of resource.
     /// </summary>
-    public IEnumerable<Guid> ResourceIds { get; set; }
+    public List<Guid> ResourceIds { get; set; }
 
     /// <summary>
     /// Guid of package
     /// </summary>
-    public IEnumerable<Guid> PackageIds { get; set; }
-
-    /// <summary>
-    /// Used for idempotency.
-    /// </summary>
-    public DateTime InitiatedAt { get; set; }
+    public List<Guid> PackageIds { get; set; }
 
     /// <summary>
     /// Number of updates.

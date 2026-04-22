@@ -39,8 +39,7 @@ public partial class ConnectionsControllerTest
         public GetConnections(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<GetConnections>(db =>
             {
                 var rightholderFromNordisToVerdiq = new Assignment()
                 {

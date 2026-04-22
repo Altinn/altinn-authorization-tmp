@@ -62,9 +62,7 @@ public partial class ConnectionsControllerTest
         public UpdateResourceRights(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerConnections);
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.ResourceDelegationEF);
-            Fixture.ConfiureServices(services =>
+            Fixture.ConfigureServices(services =>
             {
                 services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
                 services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
@@ -72,7 +70,7 @@ public partial class ConnectionsControllerTest
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
                 services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueueMock>();
             });
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<UpdateResourceRights>(db =>
             {
                 var rightholderFromDumboToMille = new Assignment()
                 {

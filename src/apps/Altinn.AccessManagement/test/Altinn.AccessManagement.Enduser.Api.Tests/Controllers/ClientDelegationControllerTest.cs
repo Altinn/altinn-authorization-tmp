@@ -9,12 +9,12 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -32,8 +32,7 @@ public class ClientDelegationControllerTest
         public GetMyClients(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<GetMyClients>(db =>
             {
                 var rightholderFromNordisToVerdiq = new Assignment()
                 {
@@ -236,8 +235,7 @@ public class ClientDelegationControllerTest
         public GetClients(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<GetClients>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -410,7 +408,7 @@ public class ClientDelegationControllerTest
             Assert.NotNull(organizationOkernBorettslag);
             var organizationOkernBorettslagAccess = organizationOkernBorettslag.Access.FirstOrDefault(r => r.Role.Id == RoleConstants.BusinessManager);
             Assert.NotNull(organizationOkernBorettslagAccess);
-            Assert.Contains(organizationOkernBorettslagAccess.Packages,  package =>
+            Assert.Contains(organizationOkernBorettslagAccess.Packages, package =>
             {
                 return package.Id == PackageConstants.BusinessManagerRealEstate;
             });
@@ -428,8 +426,7 @@ public class ClientDelegationControllerTest
         public GetAgents(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<GetAgents>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -547,7 +544,6 @@ public class ClientDelegationControllerTest
         public AddAgent(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
         }
 
         public ApiFixture Fixture { get; }
@@ -634,8 +630,7 @@ public class ClientDelegationControllerTest
         public DeleteAgent(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<DeleteAgent>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -753,6 +748,170 @@ public class ClientDelegationControllerTest
     }
     #endregion
 
+    #region DELETE accessmanagement/api/v1/enduser/clientdelegations/agents/clients
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.RemoveAgentsClient(Guid, Guid, Guid, bool, CancellationToken)/>
+    /// </summary>
+    public class RemoveAnAgentsClient : IClassFixture<ApiFixture>
+    {
+        public RemoveAnAgentsClient(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<RemoveAnAgentsClient>(db =>
+            {
+                var rightholderfromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var agentFromVerdiqToOrjan = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonOrjan,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentPackageCustomsFromNordisToVerdiq = new AssignmentPackage()
+                {
+                    AssignmentId = rightholderfromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Customs.Id,
+                };
+
+                var assignmentPackageExplicitServiceDelegationFromNordisToVerdiq = new AssignmentPackage()
+                {
+                    AssignmentId = rightholderfromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.ExplicitServiceDelegation.Id,
+                };
+
+                var delegationFromNordisToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = rightholderfromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationFromNordisToOrjan = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = rightholderfromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToOrjan.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationPackageFromNordisToPaula = new DelegationPackage()
+                {
+                    AssignmentPackageId = assignmentPackageCustomsFromNordisToVerdiq.Id,
+                    DelegationId = delegationFromNordisToPaula.Id,
+                    PackageId = PackageConstants.Customs.Id,
+                };
+
+                var delegationPackageFromNordisToOrjan = new DelegationPackage()
+                {
+                    AssignmentPackageId = assignmentPackageExplicitServiceDelegationFromNordisToVerdiq.Id,
+                    DelegationId = delegationFromNordisToOrjan.Id,
+                    PackageId = PackageConstants.ExplicitServiceDelegation.Id,
+                };
+
+                db.Assignments.Add(rightholderfromNordisToVerdiq);
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.Assignments.Add(agentFromVerdiqToOrjan);
+
+                db.AssignmentPackages.Add(assignmentPackageCustomsFromNordisToVerdiq);
+                db.AssignmentPackages.Add(assignmentPackageExplicitServiceDelegationFromNordisToVerdiq);
+
+                db.Delegations.Add(delegationFromNordisToPaula);
+                db.Delegations.Add(delegationFromNordisToOrjan);
+
+                db.DelegationPackages.Add(delegationPackageFromNordisToPaula);
+                db.DelegationPackages.Add(delegationPackageFromNordisToOrjan);
+      
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ}"));
+            });
+
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeFalse_ReturnsBadRequest()
+        {
+            // Create Delegation
+            var client = CreateClient();
+            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            // Ensure proper error returned
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data);
+            Assert.Single(problem.Errors);
+            Assert.All(problem.Errors, error =>
+            {
+                Assert.Equal(ValidationErrors.DelegationHasActiveConnections.ErrorCode, error.ErrorCode);
+            });
+        }
+
+        [Fact]
+        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeTrue_ReturnsOk()
+        {
+            // Create Delegation
+            var client = CreateClient();
+
+            // Ensure delegation exists
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Where(a => a.To.ToId == TestEntities.PersonOrjan)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(delegation);
+            });
+
+            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonOrjan}&cascade=true", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            // Ensure delegation has been deleted.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Where(a => a.To.ToId == TestEntities.PersonOrjan)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.Null(delegation);
+            });
+        }
+    }
+    #endregion
+
     #region GET accessmanagement/api/v1/enduser/clientdelegations/clients/accesspackages
     #endregion
 
@@ -769,8 +928,7 @@ public class ClientDelegationControllerTest
         public DelegateAccessPackageToAgentWithAgentRole(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<DelegateAccessPackageToAgentWithAgentRole>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -964,8 +1122,7 @@ public class ClientDelegationControllerTest
         public DelegateAccessPackageToAgentWithCCRRole(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<DelegateAccessPackageToAgentWithCCRRole>(db =>
             {
                 var accountantFromNordisToVerdiq = new Assignment()
                 {
@@ -1166,8 +1323,7 @@ public class ClientDelegationControllerTest
         public DeleteAgentAccessPackageAndDelegation(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<DeleteAgentAccessPackageAndDelegation>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -1431,8 +1587,7 @@ public class ClientDelegationControllerTest
         public DeleteAgentAccessPackage(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<DeleteAgentAccessPackage>(db =>
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
@@ -1594,35 +1749,5 @@ public class ClientDelegationControllerTest
             }
         }
     }
-    #endregion
-
-    #region Feature Flag Disabled Tests
-    public class FeatureFlagClientDelegationEnabledCollection : IClassFixture<ApiFixture>
-    {
-        public FeatureFlagClientDelegationEnabledCollection(ApiFixture fixture)
-        {
-            Fixture = fixture;
-            Fixture.WithDisabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-        }
-
-        [Fact]
-        public async Task ListClient_WithDisabledFeatureFlag_ReturnsNotFound()
-        {
-            Fixture.WithDisabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
-            var client = Fixture.Server.CreateClient();
-            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
-            {
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ));
-            });
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
-            var result = await client.GetAsync($"{Route}/clients?party={Guid.NewGuid()}", TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-        }
-
-        public ApiFixture Fixture { get; }
-    }
-
     #endregion
 }

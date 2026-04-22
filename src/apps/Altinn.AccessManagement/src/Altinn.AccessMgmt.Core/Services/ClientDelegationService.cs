@@ -324,6 +324,50 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
     }
 
     /// <inheritdoc/>
+    public async Task<ValidationProblemInstance?> RemoveAnAgentsClient(Guid partyUuid, Guid fromUuid, Guid toUuid, bool cascade, CancellationToken cancellationToken = default)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+
+        var existingDelegation = await db.Delegations
+            .AsTracking()
+            .Where(d =>
+                d.FacilitatorId == partyUuid &&
+                d.To.ToId == toUuid && d.To.FromId == partyUuid && d.To.RoleId == RoleConstants.Agent &&
+                d.From.ToId == partyUuid && d.From.FromId == fromUuid)
+            .Include(d => d.DelegationPackages)
+            .ThenInclude(d => d.Package)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (existingDelegation is null)
+        {
+            return null;
+        }
+
+        foreach (var delegationPackage in existingDelegation.DelegationPackages)
+        {
+            if (!cascade)
+            {
+                errorBuilder.Add(
+                    ValidationErrors.DelegationHasActiveConnections,
+                    "$QUERY/cascade",
+                    [
+                        new($"{delegationPackage.PackageId}", $"Cannot remove delegation '{delegationPackage.DelegationId}' because party '{toUuid}' still has active delegated package '{delegationPackage.Package?.Name ?? delegationPackage.PackageId.ToString()}' from '{fromUuid}'.")
+                    ]
+                );
+            }
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
+        }
+
+        db.Delegations.Remove(existingDelegation);
+        await db.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+
+    /// <inheritdoc/>
     public async Task<ValidationProblemInstance?> RemoveAgent(Guid partyUuid, Guid toUuid, bool cascade, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errorBuilder = default;
@@ -332,10 +376,16 @@ public class ClientDelegationService(AppDbContext db) : IClientDelegationService
             .AsTracking()
             .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.Agent)
             .FirstOrDefaultAsync(cancellationToken);
+        
+        if (existingAssignment is null)
+        {
+            return null;
+        }
 
         var existingDelegations = await db.Delegations
             .AsNoTracking()
             .Where(p => p.ToId == existingAssignment.Id)
+            .Include(p => p.DelegationPackages)
             .Join(db.DelegationPackages, d => d.Id, dp => dp.DelegationId, (d, dp) => new
             {
                 Delegation = d,
@@ -1000,6 +1050,12 @@ public interface IClientDelegationService
         Guid toUuid,
         bool cascade,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes an a client from an agent.
+    /// If <paramref name="cascade"/> is false, removal fails when active delegations exist.
+    /// </summary>
+    Task<ValidationProblemInstance?> RemoveAnAgentsClient(Guid partyUuid, Guid fromUuid, Guid toUuid, bool cascade, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets packages delegated from a specific client via the party, grouped by agent.

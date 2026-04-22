@@ -21,7 +21,7 @@ public static class AccessMgmtFeatureFlags
     public const string HostedServicesRegisterSyncImport = $"AccessMgmt.Core.HostedServices.RegisterSync.Import";
 
     /// <summary>
-    /// Specifies if the register data should be streamed from register service to access management database
+    /// Specifies if the resource registry data should be streamed from resource registry service to access management database
     /// </summary>
     public const string HostedServicesResourceRegistrySync = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync";
 
@@ -49,16 +49,6 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if the altinn bankruptcyestate roles data should be streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
-
-    /// <summary>
-    /// Specifies if AuthorizedPartiesServiceEf should be used
-    /// </summary>
-    public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
-
-    /// <summary>
-    /// Specifies Client Delegation should be enabled in enduser API.
-    /// </summary>
-    public const string EnduserControllerClientDelegation = $"AccessMgmt.Enduser.Controller.ClientDelegation";
 
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
@@ -110,12 +100,6 @@ public static class AccessMgmtFeatureFlags
     /// <summary>
     /// Specifies if notifications for approved requests are enabled.
     /// </summary>
-    [Obsolete($"will be removed once {nameof(AccessMgmtCoreOutboxRequestNotifyReviewed)} is in production.")]
-    public const string AccessMgmtCoreOutboxRequestNotifyApproved = $"AccessMgmt.Core.Outbox.RequestNotifyApproved";
-
-    /// <summary>
-    /// Specifies if notifications for approved requests are enabled.
-    /// </summary>
     public const string AccessMgmtCoreOutboxRequestNotifyReviewed = $"AccessMgmt.Core.Outbox.RequestNotifyReviewed";
 
     /// <summary>
@@ -131,12 +115,12 @@ public static class AccessMgmtFeatureFlags
     /// <summary>
     /// Specifies if notifications should be sent if package is added.
     /// </summary>
-    public const string AccessMgmtCoreOutboxPackageNotifyAdded = $"AccessMgmt.Core.Outbox.PackageNotifyAdded";
+    public const string AccessMgmtCoreOutboxAccessNotifyAdded = $"AccessMgmt.Core.Outbox.PackageNotifyAdded";
 
     /// <summary>
     /// Specifies if notifications should be sent if package is removed.
     /// </summary>
-    public const string AccessMgmtCoreOutboxPackageNotifyRemoved = $"AccessMgmt.Core.Outbox.PackageNotifyRemoved";
+    public const string AccessMgmtCoreOutboxAccessNotifyRemoved = $"AccessMgmt.Core.Outbox.PackageNotifyRemoved";
 
     /// <summary>
     /// Specifies if notifications should be sent if resource is added.
@@ -171,9 +155,9 @@ public static class AccessMgmtFeatureFlags
     #endregion
 
     /// <summary>
-    /// Feature flag for Controller Enduser Connections
+    /// Enables the Maskinporten admin API endpoints (consumers and suppliers) in the enduser API.
     /// </summary>
-    public const string EnduserControllerConnections = "AccessManagement.Enduser.Connections";
+    public const string EnableEnduserMaskinportenAdminApi = "AccessManagement.Enduser.MaskinportenAdminApi";
 
     /// <summary>
     /// Enables request assignment resource endpoints in enduser and serviceowner APIs.
@@ -186,12 +170,12 @@ public static class AccessMgmtFeatureFlags
     public const string EnableRequestAssignmentPackage = "AccessMgmt.Controller.RequestAssignment.Package";
 
     /// <summary>
-    /// Specifies if entity framework implementation of instance delegations should be used.
+    /// Specifies if AuthorizedParty should still perform SBL Bridge lookup of AuthorizedParties from Altinn 2.
     /// </summary>
-    public const string InstanceDbEf = $"AccessManagement.InstanceDelegation.EF";
+    public const string AuthorizedPartiesIncludeAltinn2 = "AccessManagement.AuthorizedParties.IncludeAltinn2";
 
     /// <summary>
-    /// Specifies if entity framework implementation of resource delegations should be used.
+    /// Specifies if AuthorizedParty should use the new implementation based on lookup of all connection info (roles, packages, resources and instances) through the ConnectionQuery.
     /// </summary>
-    public const string ResourceDelegationEF = "AccessManagement.ResourceDelegation.EF";
+    public const string AuthorizedPartiesUsingConnectionQueryOnly = "AccessManagement.AuthorizedParties.UsingConnectionQueryOnly";
 }
