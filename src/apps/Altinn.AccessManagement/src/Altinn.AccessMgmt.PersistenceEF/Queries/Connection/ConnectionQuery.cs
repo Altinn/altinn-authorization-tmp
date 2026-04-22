@@ -1247,7 +1247,7 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        foreach (var key in allKeys)
+        foreach (var key in allKeys.Where(k => k.AssignmentId.HasValue && rightholderAssignmentIds.Contains((Guid)k.AssignmentId) && k.Reason != ConnectionReason.Hierarchy))
         {
             if (key.AssignmentId.HasValue && instancesByAssignment.TryGetValue((Guid)key.AssignmentId!, out var list))
             {
