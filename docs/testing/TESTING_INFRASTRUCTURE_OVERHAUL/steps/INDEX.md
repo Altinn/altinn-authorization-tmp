@@ -4,16 +4,16 @@
 
 **New chat?** Read these docs **in order** to get full context:
 
-1. **This file** (`docs/testing/steps/INDEX.md`) — step log, coverage results,
+1. **This file** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md`) — step log, coverage results,
    recommended next steps, deferred work, and workflow rules.
-2. **[TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)** —
+2. **[TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md)** —
    original audit, issue IDs (C1–C5, M1–M8, L1–L3), and the phase plan.
 3. **The step doc for the work you're about to do** (linked in the table below or
    in the Recommended Next Steps section).
 
 **When completing a step:**
 
-- **Create a step doc** (`docs/testing/steps/<Step_Name>.md`) describing the goal,
+- **Create a step doc** (`docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/<Step_Name>.md`) describing the goal,
   what changed, verification results, and any deferred items. Add a row to the
   step log table below linking to the new doc.
 - **Run all tests that were changed or impacted by the step** and record the
@@ -24,8 +24,8 @@
   now unblocked by the completed step. If so, move it into
   `### Recommended Next Steps (priority order)` at an appropriate priority and
   remove it from the Blocked Items table.
-- **Sweep `docs/testing/steps/` for obsoleted docs.** Review every file under
-  `docs/testing/steps/` and check whether any have been superseded or
+- **Sweep `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/` for obsoleted docs.** Review every file under
+  `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/` and check whether any have been superseded or
   invalidated by the completed step (e.g. plans that are now fully executed,
   audits whose findings have all been addressed, POCs whose follow-up work is
   done). For each obsolete doc, either delete it and update links, or add a
@@ -38,7 +38,7 @@
   > Continue the testing infrastructure overhaul on branch
   > `feature/2842_Optimize_Test_Infrastructure_and_Performance`.
   >
-  > Start by reading `docs/testing/steps/INDEX.md` — it's the entry point and tells
+  > Start by reading `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/steps/INDEX.md` — it's the entry point and tells
   > you exactly what to read next, how to pick the next step, and the workflow
   > rules for completing one.
   >
@@ -51,10 +51,10 @@
 1. If `### Recommended Next Steps (priority order)` still has actionable
    items, take the highest-priority one.
 2. If that list is empty or only contains blocked/unactionable items, consult
-   [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md)
+   [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md)
    for the next actionable item from the phase plan, and add it back to the
    list below before starting.
-3. If `TESTING_INFRASTRUCTURE_OVERHAUL.md` is also exhausted of actionable
+3. If `TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md` is also exhausted of actionable
    work, the next step should itself be **a fresh audit of the current
    testing infrastructure** to identify the next most valuable improvements
    — produce an updated audit doc and a refreshed recommended-next-steps
@@ -63,7 +63,7 @@
 ---
 
 Steps are listed in the order they were **actually completed**, not by the
-original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL.md).
+original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md).
 
 | # | Completed | Topic | Plan Phase | Doc |
 |---|-----------|-------|------------|-----|
@@ -119,9 +119,7 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 | 49 | ✅ | Coverage 6.7d Part 6 — 34 direct Moq-based unit tests for `Api.Internal` controllers: `InternalConnectionsController` (17 tests, 6 actions × 2 branches), `SystemUserClientDelegationController` (13 tests, 5 actions × multi-branch), `PartyController` (6 tests, JWT app-claim + service paths); resolved `PersistenceEF.Models` vs `Persistence.Models` type ambiguity; `Result<T>` constructor usage documented | Phase 6.7d | [49_Coverage_Api_Internal_Controllers.md](49_Coverage_Api_Internal_Controllers.md) |
 | 50 | ✅ | Coverage: `AccessManagement.Integration` `DelegationRequestProxy` — 5 pure-unit tests via `FakeHttpMessageHandler` covering 200 OK deserialization, non-OK → null, query-string param inclusion/omission, multi-item response | Phase 6.7d | [50_Coverage_Integration_DelegationRequestProxy.md](50_Coverage_Integration_DelegationRequestProxy.md) |
 | 51 | ✅ | Fix 6.7f — `ResourceRegistryMock.GetMembershipsForResourceForParty` cache-hit bug: on cache hit the method fell through to `return Enumerable.Empty<>()` instead of returning cached memberships; `DenyActionFilterNotMatching` primed the cache for `ttd-accesslist-resource-with-actionfilter`, `PermitWithActionFilterMatch` got empty on the subsequent cache hit → Deny; fixed with `return memberships ?? Enumerable.Empty<>()` after the block; `[Skip]` removed; all 21 `ResourceRegistry_DecisionTests` pass deterministically | Phase 6.7f | [51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md](51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md) |
-
-| 51 | ✅ | Fix 6.7f — `ResourceRegistryMock.GetMembershipsForResourceForParty` cache-hit bug: on cache hit, method fell through to `return Enumerable.Empty<>()` instead of returning cached memberships; `DenyActionFilterNotMatching` primed the cache, `PermitWithActionFilterMatch` got empty on cache hit → Deny; fixed with `return memberships ?? Enumerable.Empty<>()` after the block; `[Skip]` removed; all 21 `ResourceRegistry_DecisionTests` pass deterministically | Phase 6.7f | [51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md](51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md) |
-| 52 | ✅ | Coverage: `AccessManagement.Api.Metadata` `RolesController` — 14 direct unit tests covering all 6 endpoints (GetAll, GetId, GetPackages/GetResources by code, GetPackages/GetResources by id); pass-through `ITranslationService` mock; no containers required | Phase 6.7d | [52_Coverage_Api_Metadata_RolesController.md](52_Coverage_Api_Metadata_RolesController.md) |
+| 52 |
 | 53 | ✅ | Coverage 6.7d Part 7 — 54 new pure-logic unit tests (no container required): `ResourceValidation` (18: all 8 internal factory methods); `DelegationCheckDtoMapper.Convert` (4: grouping + any-true semantics); `QueryWrapper.WrapQueryResponse` (3: non-empty, empty, single); `DelegationCheckHelper.IsAccessListModeEnabledAndApplicable` (5: enabled/disabled × org/person/empty); `SearchCache<T>` (6: null before set, round-trip, defensive copy, overwrite); `DbDefinitionBuilder<T>` (18: all fluent methods + chaining) | Phase 6.7d | [53_Coverage_6_7d_Part7.md](53_Coverage_6_7d_Part7.md) |
 | 54 | ✅ | Coverage 6.7d Part 8 — 24 new pure-logic unit tests (no container required): `IdentifierUtil` (13: `IsValidOrganizationNumber` ×6, `MaskSSN` ×1, `GetIdentifierAsAttributeMatch` ×6 covering org/person/party-id happy + error paths); `HashUtil.GetOrderIndependentHashCode<T>` (5: empty, order-independence, single, distinct elements, strings); `DtoMapperEntityVariant` (3: explicit Type, null-Type fallback to `EntityTypeConstants`, `EntityType` mapping) | Phase 6.7d | [54_Coverage_IdentifierUtil_HashUtil_DtoMapperEntityVariant.md](54_Coverage_IdentifierUtil_HashUtil_DtoMapperEntityVariant.md) |
 | 55 | ✅ | Coverage 6.7d Part 9 — 63 new pure-logic unit tests (no container required): `DtoMapper` connection-query overloads (`ConvertToOthers`/`ConvertFromOthers`/`ConvertSubConnections*`/`ConvertPackages`/`ConvertResources`/`ConvertToAgentDto`/`Convert(ConnectionQueryPackage|Resource)`) + all `Extract*` instance methods (38 tests); `DelegationCheckHelper` deferred methods — `GetFirstAccessorValuesFromPolicy`/`DecomposePolicy`/`BuildDelegationRuleTarget`/`CalculateRightKeys`/`IsAppResource`/`CheckIfErrorShouldBePushedToErrorQueue` (25 tests, XACML object graph constructed directly) | Phase 6.7d | [55_Coverage_6_7d_Part9_DtoMapper_ConnectionQuery_DelegationCheckHelper.md](55_Coverage_6_7d_Part9_DtoMapper_ConnectionQuery_DelegationCheckHelper.md) |
@@ -145,7 +143,7 @@ See [12_AccessManagement_Coverage_Baseline_Success.md](12_AccessManagement_Cover
 
 | Item | Blocker | Notes |
 |---|---|---|
-| Phase 6.5: Host.Lease tests | Azure Storage Emulator/Azurite required | See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL.md) Phase 6.5 |
+| Phase 6.5: Host.Lease tests | Azure Storage Emulator/Azurite required | See [TESTING_INFRASTRUCTURE_OVERHAUL.md](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md) Phase 6.5 |
 
 ### Final Coverage (measured)
 
