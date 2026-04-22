@@ -1,21 +1,22 @@
 meta {
-  name: GET_EUS_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithSubUnitPartyFilter
+  name: POST_Admin_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithMainAndSubUnitPartyFilter
   type: http
-  seq: 9
+  seq: 17
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true&partyFilter={{partySubUnitFilter}}
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true
   body: json
   auth: inherit
 }
 
 params:query {
+  includeAltinn2: true
+  includeAltinn3: true
   includeRoles: true
   includeAccessPackages: true
   includeResources: true
   includeInstances: true
-  partyFilter: {{partySubUnitFilter}}
 }
 
 headers {
@@ -23,21 +24,38 @@ headers {
   Accept: application/json
 }
 
+body:json {
+  {
+    "type": "urn:altinn:person:identifier-no",
+    "value": "{{personId}}",
+    "partyFilter": [
+      {
+        "type": "urn:altinn:party:uuid",
+        "value": "{{filterMainUnitParty}}"
+      },
+      {
+        "type": "urn:altinn:party:uuid",
+        "value": "{{filterSubUnitParty}}"
+      }
+    ]
+  }
+}
+
 script:pre-request {
   
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_EUS_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithSubUnitPartyFilter");
-  bru.setVar("partySubUnitFilter", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.partyUuid);
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Person_MainUnitDelgRolePcgRes_WithMainAndSubUnitPartyFilter");
+  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
+  bru.setVar("filterMainUnitParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.partyUuid);
+  bru.setVar("filterSubUnitParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.partyUuid);
   
   var getTokenParameters = {
-    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
-    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
-    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
-    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
-    auth_tokenType: sharedtestdata.authTokenType.personal,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedParties
+    auth_org: sharedtestdata.serviceOwners.digdir.org,
+    auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
+    auth_tokenType: sharedtestdata.authTokenType.enterprise,
+    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
   }
   
   
@@ -55,7 +73,7 @@ tests {
   ``
   
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
-  const body = res.getBody().data;
+  const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
   const expectedMainUnit = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2;
@@ -127,42 +145,34 @@ tests {
       expectedMainUnit.instanceIdDelegatedToPerson,
       expectedMainUnit.instanceIdDelegatedToKeyRoleUnit
     ];
-    const expectedInstanceRefsMainUnit = [
-      expectedMainUnit.instanceRefDelegatedToPerson,
-      expectedMainUnit.instanceRefDelegatedToKeyRoleUnit
-    ];
     const expectedInstancesSubUnit = [
       expectedMainUnit.subunit.instanceIdDelegatedToPerson,
       expectedMainUnit.subunit.instanceIdDelegatedToKeyRoleUnit
     ];
-    const expectedInstanceRefsSubUnit = [
-      expectedMainUnit.subunit.instanceRefDelegatedToPerson,
-      expectedMainUnit.subunit.instanceRefDelegatedToKeyRoleUnit
-    ];
     
-    assertInstances(actualMainUnit.authorizedInstances, expectedInstanceResourceId, expectedInstancesMainUnit, expectedInstanceRefsMainUnit);
-    assertInstances(actualSubUnit.authorizedInstances, expectedInstanceResourceId, expectedInstancesSubUnit, expectedInstanceRefsSubUnit);
+    assertInstances(actualMainUnit.authorizedInstances, expectedInstancesMainUnit, expectedInstanceResourceId);
+    assertInstances(actualSubUnit.authorizedInstances, expectedInstancesSubUnit, expectedInstanceResourceId);
   });
-    
-  test(requestName + "|Inheirits all mainunit accesses on subunits", function() {  
+  
+  test(requestName + "|Inherits all mainunit accesses on subunits", function() {  
     // Test that all authorized rights on main units also exists on all subunits
     body.forEach((party, partyIndex) => {
       if (party.subunits && party.subunits.length > 0) {
         party.subunits.forEach((subunit, subunitIndex) => {
           try {
-            assert.includeMembers(
+            assertIncludeMembersIgnoreCase(
               subunit.authorizedAccessPackages,
               party.authorizedAccessPackages,
               `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedAccessPackages`
             );
   
-            assert.includeMembers(
+            assertIncludeMembersIgnoreCase(
               subunit.authorizedResources,
               party.authorizedResources,
               `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedResources`
             );
   
-            assert.includeMembers(
+            assertIncludeMembersIgnoreCase(
               subunit.authorizedRoles,
               party.authorizedRoles,
               `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedRoles`
@@ -177,7 +187,7 @@ tests {
     
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
+  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
     // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
@@ -236,7 +246,7 @@ tests {
   });
   
   // Helper to assert instances against expected IDs (order-agnostic)
-  function assertInstances(actualInstances, expectedResourceId, expectedInstanceIds, expectedInstanceRefs) {
+  function assertInstances(actualInstances, expectedInstanceIds, expectedResourceId) {
     expect(actualInstances, 'authorizedInstances must be an array').to.be.an('array');
     expect(actualInstances.length, 'unexpected number of instances').to.equal(expectedInstanceIds.length);
   
@@ -245,7 +255,6 @@ tests {
       expect(inst, `instance object at index ${idx} must be an object`).to.be.an('object');
       expect(inst).to.have.property('resourceId', expectedResourceId);
       expect(inst).to.have.property('instanceId').that.is.a('string').and.is.not.empty;
-      expect(inst).to.have.property('instanceRef').that.is.a('string').and.is.not.empty;
     });
   
     // Compare sets of instanceIds (order-agnostic)
@@ -256,15 +265,6 @@ tests {
     // Ensure uniqueness
     const uniqueCount = new Set(actualIds).size;
     expect(uniqueCount, 'duplicate instanceIds found').to.equal(actualIds.length);
-    
-    // Compare sets of instanceRefs (order-agnostic)
-    const actualRefs = actualInstances.map(i => i.instanceRef).sort();
-    const expectedRefsSorted = [...expectedInstanceRefs].sort();
-    expect(actualRefs).to.deep.equal(expectedRefsSorted);
-  
-    // Ensure uniqueness
-    const uniqueRefsCount = new Set(actualRefs).size;
-    expect(uniqueRefsCount, 'duplicate instanceRefs found').to.equal(actualRefs.length);
   }
   
   
