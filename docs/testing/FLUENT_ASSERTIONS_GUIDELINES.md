@@ -1,4 +1,4 @@
-# FluentAssertions Usage Guidelines
+﻿# FluentAssertions Usage Guidelines
 
 **Status:** Adopted (see [14_Add_FluentAssertions_Package.md](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/14_Add_FluentAssertions_Package.md))
 **Scope:** All test projects in this repository.
@@ -221,7 +221,7 @@ omit it.
 ## References
 
 - [FluentAssertions docs](https://fluentassertions.com/)
-- [Step 13 — Evaluation](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/FluentAssertions_Evaluation.md)
-- [Step 14 — Package install](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/Add_FluentAssertions_Package.md)
+- [Step 13 — Evaluation](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/13_FluentAssertions_Evaluation.md)
+- [Step 14 — Package install](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/14_Add_FluentAssertions_Package.md)
 - [TEST_NAMING_CONVENTION.md](TEST_NAMING_CONVENTION.md)
 - [TESTING_INFRASTRUCTURE_OVERHAUL.md — Phase 4.2](TESTING_INFRASTRUCTURE_OVERHAUL/TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md)
