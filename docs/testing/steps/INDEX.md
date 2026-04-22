@@ -122,11 +122,12 @@ original phase numbers in the [overhaul plan](../TESTING_INFRASTRUCTURE_OVERHAUL
 
 | 51 | ✅ | Fix 6.7f — `ResourceRegistryMock.GetMembershipsForResourceForParty` cache-hit bug: on cache hit, method fell through to `return Enumerable.Empty<>()` instead of returning cached memberships; `DenyActionFilterNotMatching` primed the cache, `PermitWithActionFilterMatch` got empty on cache hit → Deny; fixed with `return memberships ?? Enumerable.Empty<>()` after the block; `[Skip]` removed; all 21 `ResourceRegistry_DecisionTests` pass deterministically | Phase 6.7f | [51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md](51_Fix_6_7f_AccessListAuthorizationMockCacheBug.md) |
 | 52 | ✅ | Coverage: `AccessManagement.Api.Metadata` `RolesController` — 14 direct unit tests covering all 6 endpoints (GetAll, GetId, GetPackages/GetResources by code, GetPackages/GetResources by id); pass-through `ITranslationService` mock; no containers required | Phase 6.7d | [52_Coverage_Api_Metadata_RolesController.md](52_Coverage_Api_Metadata_RolesController.md) |
+| 53 | ✅ | Coverage 6.7d Part 7 — 54 new pure-logic unit tests (no container required): `ResourceValidation` (18: all 8 internal factory methods); `DelegationCheckDtoMapper.Convert` (4: grouping + any-true semantics); `QueryWrapper.WrapQueryResponse` (3: non-empty, empty, single); `DelegationCheckHelper.IsAccessListModeEnabledAndApplicable` (5: enabled/disabled × org/person/empty); `SearchCache<T>` (6: null before set, round-trip, defensive copy, overwrite); `DbDefinitionBuilder<T>` (18: all fluent methods + chaining) | Phase 6.7d | [53_Coverage_6_7d_Part7.md](53_Coverage_6_7d_Part7.md) |
 
 All items below are actionable and have no container-runtime dependency.
 
 1. **Phase 6 coverage improvements** — Fill identified gaps (can use FluentAssertions!):
-   - **6.7d (continued):** AccessMgmt persistence/core layers — Parts 1–6 added FuzzySearch/GenericFilterBuilder/Metadata controllers, ValidationComposer/OrgUtil/DbHelperMethods/PostgresQueryBuilder, all internal validation-rule classes + DbConverter, all DtoMapper partial-class methods, all Api.Internal consent extensions + EventMapperService, Api.Internal controllers (Step 49), and `DelegationRequestProxy` (Step 50). Remaining targets: `AccessMgmt.Persistence` (32.51%), `AccessManagement.Persistence` (44.94%) — both dominated by Npgsql repository code that needs a live DB. Also: `DtoMapper.Extract*`/`ConvertToOthers`/`ConvertFromOthers` (deferred; complex `Connection` graph setup).
+   - **6.7d (continued):** AccessMgmt persistence/core layers — Parts 1–7 added FuzzySearch/GenericFilterBuilder/Metadata controllers, ValidationComposer/OrgUtil/DbHelperMethods/PostgresQueryBuilder, all internal validation-rule classes + DbConverter, all DtoMapper partial-class methods, all Api.Internal consent extensions + EventMapperService, Api.Internal controllers (Step 49), `DelegationRequestProxy` (Step 50), and `ResourceValidation`/`DelegationCheckDtoMapper`/`QueryWrapper`/`DelegationCheckHelper`/`SearchCache`/`DbDefinitionBuilder` (Step 53). Remaining targets: `AccessMgmt.Persistence` (32.51%), `AccessManagement.Persistence` (44.94%) — both dominated by Npgsql repository code that needs a live DB. Also: `DtoMapper.Extract*`/`ConvertToOthers`/`ConvertFromOthers` (deferred; complex `Connection` graph setup); `DelegationCheckHelper.GetFirstAccessorValuesFromPolicy`/`DecomposePolicy`/`BuildDelegationRuleTarget` (deferred; require XACML object graph setup).
    - **6.7c (last follow-up):** `MaskinportenConsumersController` / `MaskinportenSuppliersController` — requires PDP stubbing or seeding of `altinn_maskinporten_scope_delegation` resource (controller-level integration test, distinct from the unit-test direction taken in Steps 31–33). See [33_Coverage_Enduser_Api_ToUuidResolver.md](33_Coverage_Enduser_Api_ToUuidResolver.md).
    - **6.7f (remaining):** ~~`PDP_Decision_ResourceRegistry_AccessListAuthorization_Json_PermitWithActionFilterMatch` flaky~~ — **fixed in Step 51** (`ResourceRegistryMock` cache-hit bug). `Sender_ConfirmsDraftRequest_ReturnsPending` remains `[Skip]`ped — separate environmental investigation needed.
 
@@ -168,8 +169,8 @@ and will be enforced as their coverage improves. Source:
 | AccessManagement.Api.Internal | 46.74→↑ | 46.20→↑ | — | ⏫ Step 49 |
 | AccessManagement.Persistence | 44.94 | 30.23 | — | ❌ Gap |
 | AccessMgmt.Persistence | 32.51 | 9.42 | — | ❌ Gap |
-| AccessMgmt.Core | 17.31→↑ | 12.00→↑ | — | ⏫ Step 45 |
-| AccessManagement.Api.Metadata | 16.59→↑ | 13.33→↑ | — | ⏫ Step 52 |
-| AccessMgmt.Persistence.Core | 8.78 | 3.21 | — | ❌ Gap |
+| AccessMgmt.Core | 17.31→↑ | 12.00→↑ | — | ⏫ Step 53 |
+| AccessManagement.Api.Metadata | 16.59→↑ | 13.33→↑ | — | ⏫ Step 52/53 |
+| AccessMgmt.Persistence.Core | 8.78→↑ | 3.21→↑ | — | ⏫ Step 53 |
 | AccessManagement.Api.Enduser | 68.32 | 58.90 | — | ⏫ Step 33 |
 | AccessManagement.Api.ServiceOwner | 71.74→↑ | 60.00→↑ | — | ⏫ Step 47 |
