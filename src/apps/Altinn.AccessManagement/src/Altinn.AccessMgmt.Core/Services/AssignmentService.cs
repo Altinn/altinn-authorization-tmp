@@ -1312,14 +1312,15 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
     public async Task<Result<bool>> RevokeInstanceAssignmentFromAltinn2(InstanceRevokeRequest input, CancellationToken cancellationToken = default)
     {
         // Create audit values
-        AuditValues audit = new AuditValues(input.PerformedBy, SystemEntityConstants.A2CorrespondenceInstanceRightImportSystem, input.AuthorizationRuleID.ToString(), input.Created);
+        AuditValues audit = new AuditValues(input.PerformedBy, SystemEntityConstants.A2CorrespondenceInstanceRightImportSystem, $"A2-AuthorizationRuleId: {input.AuthorizationRuleID}", input.Created);
 
         var resource = await db.Resources
             .AsNoTracking()
             .Where(a => a.RefId == input.ResourceId)
+            .Include(r => r.Type)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (resource is null)
+        if (resource is null || resource.Type.Name != "CorrespondenceService")
         {
             return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
@@ -1342,16 +1343,6 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         if (fromParty is null || toParty is null || performedByParty is null)
         {
             return AccessManagement.Core.Errors.Problems.PartyNotFound;
-        }
-
-        var resourceType = await db.ResourceTypes
-            .AsNoTracking()
-            .Where(a => a.Name == "CorrespondenceService")
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (resourceType is null || resource.TypeId != resourceType.Id)
-        {
-            return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
 
         var assignment = await db.Assignments
@@ -1462,14 +1453,15 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
     public async Task<Result<bool>> ImportInstanceAssignmentFromAltinn2(InstanceDelegationRequest input, CancellationToken cancellationToken = default)
     {
         // Create audit values
-        AuditValues audit = new AuditValues(input.PerformedBy, SystemEntityConstants.A2CorrespondenceInstanceRightImportSystem, input.AuthorizationRuleID.ToString(), input.Created);
+        AuditValues audit = new AuditValues(input.PerformedBy, SystemEntityConstants.A2CorrespondenceInstanceRightImportSystem, $"A2-AuthorizationRuleId: {input.AuthorizationRuleID}", input.Created);
 
         var resource = await db.Resources
             .AsNoTracking()
             .Where(a => a.RefId == input.ResourceId)
+            .Include(r => r.Type)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (resource is null)
+        if (resource is null || resource.Type.Name != "CorrespondenceService")
         {
             return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
@@ -1498,16 +1490,6 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         if (fromParty is null || toParty is null || performedByParty is null)
         {
             return AccessManagement.Core.Errors.Problems.PartyNotFound;
-        }
-
-        var resourceType = await db.ResourceTypes
-            .AsNoTracking()
-            .Where(a => a.Name == "CorrespondenceService")
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (resourceType is null || resource.TypeId != resourceType.Id)
-        {
-            return AccessManagement.Core.Errors.Problems.InvalidResource;
         }
 
         var assignment = await db.Assignments
@@ -1605,7 +1587,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 instanceRight.InstanceId,
                 path,
                 policyVersionId,
-                input.AuthorizationRuleID,
+                0, // delegationEventId is not used for instance delegation comming from A2 but it is not null in db, set to 0 to not make any errors or craches with legitime data.
                 InstanceSourceTypeConstants.EndUser,
                 audit,
                 cancellationToken);
