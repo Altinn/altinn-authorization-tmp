@@ -22,7 +22,6 @@ script:pre-request {
     
     bru.setVar("party", testdata.Bot_package_person_reject.partyuuid);
     bru.setVar("to", testdata.Bot_package_Org.partyuuid);
-    bru.setVar("resource", testdata.resource_to_delegate.resource_id_privatperson);
     
     var getTokenParameters = {
       auth_userId: testdata.Bot_package_person_reject.userid,
