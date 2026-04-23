@@ -9,14 +9,12 @@
     skattetaten_ressurs: "ske-informasjon-om-trekkpaalegg",
   },
   package_to_delegate: {
-    package_id_privatperson:
-      "urn:altinn:accesspackage:innbygger-samliv",
+    package_id_privatperson: "urn:altinn:accesspackage:innbygger-samliv",
     package_id_privatperson_withdraw:
       "urn:altinn:accesspackage:innbygger-vapen",
     package_id_privatperson_reject:
       "urn:altinn:accesspackage:innbygger-byggesoknad",
-    package_id_virksomhet:
-      "urn:altinn:accesspackage:posttjenester",
+    package_id_virksomhet: "urn:altinn:accesspackage:posttjenester",
   },
   Bot_person: {
     lastname: "INGREDIENS",
@@ -98,7 +96,7 @@
     userid: 20159085,
     partyuuid: "1ee055c5-53ae-4e35-8c47-1ab1d30cbc29",
   },
-    Bot_package_person_withdraw: {
+  Bot_package_person_withdraw: {
     lastname: "ADAPTER",
     pid: "18919173986",
     partyid: 50465896,
@@ -132,7 +130,7 @@
       partyuuid: "1676408c-c492-4878-a0f9-219f132c0315",
     },
   },
-    Bot_package_Org: {
+  Bot_package_Org: {
     name: "KREATIV SNÅL PIGGSVIN",
     org_no: "313696057",
     partyid: 51255656,
