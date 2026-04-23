@@ -10,13 +10,13 @@
   },
   package_to_delegate: {
     package_id_privatperson:
-    "urn:altinn:accesspackage:innbygger-samliv",
+      "urn:altinn:accesspackage:innbygger-samliv",
     package_id_privatperson_withdraw:
-    "urn:altinn:accesspackage:innbygger-vapen",
+      "urn:altinn:accesspackage:innbygger-vapen",
     package_id_privatperson_reject:
-    "urn:altinn:accesspackage:innbygger-byggesoknad",
+      "urn:altinn:accesspackage:innbygger-byggesoknad",
     package_id_virksomhet:
-    "urn:altinn:accesspackage:posttjenester",
+      "urn:altinn:accesspackage:posttjenester",
   },
   Bot_person: {
     lastname: "INGREDIENS",
