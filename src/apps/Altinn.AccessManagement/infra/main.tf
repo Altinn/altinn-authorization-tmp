@@ -223,6 +223,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.Outbox.RequestNotifyReviewed"
+      description = "Specifies if notifications for reviewed requests are enabled."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.Outbox.RequestNotifyApproved"
       description = "Specifies if notifications for approved requests are enabled."
       label       = "${lower(var.environment)}-access-management"
@@ -465,6 +471,24 @@ module "appsettings" {
     {
       name        = "AccessMgmt.Controller.RequestAssignment.Package"
       description = "Enables request assignment package endpoints in enduser and serviceowner APIs."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Enduser.MaskinportenAdminApi"
+      description = "Enables the Maskinporten admin API endpoints (consumers and suppliers) in the enduser API."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.AuthorizedParties.IncludeAltinn2"
+      description = "Specifies if AuthorizedParty should still perform SBL Bridge lookup of AuthorizedParties from Altinn 2."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
+    {
+      name        = "AccessManagement.AuthorizedParties.UsingConnectionQueryOnly"
+      description = "Specifies if AuthorizedParty should use the new implementation based on lookup of all connection info (roles, packages, resources and instances) through the ConnectionQuery."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

@@ -36,6 +36,11 @@ public static class AuditDefaults
     public const string InstanceRightImportSystem = "07ab1b35-0299-4667-9dde-4c3f75d9bbeb";
 
     /// <summary>
+    /// A2CorrespondenceInstanceRightImportSystem
+    /// </summary>
+    public const string A2CorrespondenceInstanceRightImportSystem = "ad63e2cc-e49d-435c-8e50-16589908e79b";
+
+    /// <summary>
     /// EnduserApi
     /// </summary>
     public const string EnduserApi = "ed771364-42a8-4934-801e-b482ed20ec3e";
@@ -74,6 +79,11 @@ public static class AuditDefaults
     /// LegacyMaskinportenSchemaApi
     /// </summary>
     public const string LegacyMaskinportenSchemaApi = "cfd2991c-bbdf-43b5-8b10-1ba1dfaed167";
+
+    /// <summary>
+    /// ManuellSanering
+    /// </summary>
+    public const string ManuellSanering = "019d85eb-5255-700d-8214-0dcdec1df3d1";
 
     /// <summary>
     /// DBA

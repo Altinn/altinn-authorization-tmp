@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IMaskinportenSupplierService, MaskinportenSupplierService>();
         services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<IRoleService, RoleService>();
@@ -47,18 +48,26 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>("newConnectionQueryOnlyImplementation");
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
         services.AddScoped<IServiceOwnerConnectionService, ServiceOwnerConnectionService>();
-        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
-        services.AddTransient<RequestApprovedNotificationHandler>();
+        // NOTE: can be removed once RequestReviewedNotificationHandler is in production.
+        services.AddTransient<RightholderAddedNotificationHandler>();
+        services.AddTransient<RightholderRemovedNotificationHandler>();
+
+        services.AddTransient<AccessAddedNotificationHandler>();
+        services.AddTransient<AccessRemovedNotificationHandler>();
+
+        services.AddTransient<RequestReviewedNotificationHandler>();
         services.AddTransient<RequestPendingNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
-        
+
         services.AddOptions<CoreAppsettings>()
             .Configure(configureAppsettings);
 

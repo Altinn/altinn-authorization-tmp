@@ -946,7 +946,10 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            ValidateRequiredMetadata(ref problemsBuilder, consentRight, resourceDetails);
+            if (!fromAltinn2)
+            {
+                ValidateRequiredMetadata(ref problemsBuilder, consentRight, resourceDetails);
+            }
         }
 
         private static void ValidateRequiredMetadata(ref MultipleProblemBuilder problemsBuilder, ConsentRight consentRight, ServiceResource resourceDetails)
@@ -1036,6 +1039,12 @@ namespace Altinn.AccessManagement.Core.Services
             return requests;
         }
 
+        /// <inheritdoc/>
+        public async Task<Result<int>> GetConsentRequestCountForParty(Guid offeredByParty, ConsentRequestStatusType status, CancellationToken cancellationToken)
+        {
+            return await _consentRepository.GetConsentRequestCountForParty(offeredByParty, status, cancellationToken);
+        }
+
         private List<ConsentRequestEvent> AddExpiredEventIfConsentIsExpired(List<ConsentRequestEvent> consentRequestEvents, DateTimeOffset validTo,  ConsentPartyUrn to)
         {
             if (validTo < _timeProvider.GetUtcNow() && !consentRequestEvents.Exists(r => r.EventType.Equals(ConsentRequestEventType.Expired)))
@@ -1092,7 +1101,22 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRight.AddMetadataValues(tempResourceMetadata);
 
                 string searchParam = $"reference={resource.ServiceEditionVersionID}&ResourceType=Consent&id={resource.ServiceCode}_{resource.ServiceEditionCode}";
-                List<ServiceResource> resourceDetails = await _resourceRegistryClient.GetResources(cancellationToken, searchParam);
+                string cacheKey = $"consent:resources:{searchParam}";
+
+                List<ServiceResource> resourceDetails;
+                if (_memoryCache.TryGetValue(cacheKey, out List<ServiceResource> resourceDetailsCache))
+                {
+                    resourceDetails = resourceDetailsCache;
+                }
+                else
+                {
+                    resourceDetails = await _resourceRegistryClient.GetResources(cancellationToken, searchParam);
+                    
+                    if (resourceDetails != null && resourceDetails.Count > 0)
+                    {
+                        _memoryCache.Set(cacheKey, resourceDetails, TimeSpan.FromHours(24));
+                    }
+                }
 
                 if (resourceDetails != null)
                 {
