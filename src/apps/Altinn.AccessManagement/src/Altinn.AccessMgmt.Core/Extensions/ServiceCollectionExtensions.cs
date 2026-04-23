@@ -50,13 +50,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRequestService, RequestService>();
         services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>("newConnectionQueryOnlyImplementation");
         services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
+        services.AddScoped<IServiceOwnerConnectionService, ServiceOwnerConnectionService>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
         // NOTE: can be removed once RequestReviewedNotificationHandler is in production.
-        services.AddTransient<RequestApprovedNotificationHandler>();
+        services.AddTransient<RightholderAddedNotificationHandler>();
+        services.AddTransient<RightholderRemovedNotificationHandler>();
+
+        services.AddTransient<AccessAddedNotificationHandler>();
+        services.AddTransient<AccessRemovedNotificationHandler>();
+
         services.AddTransient<RequestReviewedNotificationHandler>();
         services.AddTransient<RequestPendingNotificationHandler>();
 
@@ -70,6 +76,10 @@ public static class ServiceCollectionExtensions
                 .ValidateDataAnnotations()
                 .ValidateOnStart()
                 .BindConfiguration("ConsentMigration");
+
+        // Resource Owner Delegation - Configuration
+        services.AddOptions<ServiceOwnerDelegationSettings>()
+                .BindConfiguration("ServiceOwnerDelegation");
 
         // Consent Migration - Services (Core - Scoped)
         services.AddScoped<IConsentMigrationService, ConsentMigrationService>();

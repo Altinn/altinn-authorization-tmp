@@ -21,6 +21,7 @@ public static class TestDataSeeds
     {
         #region Resource Types
         db.ResourceTypes.Add(TestData.TestResourceType);
+        db.ResourceTypes.Add(TestData.CorrespondenceResourceType);
         #endregion
 
         #region Entities
@@ -38,6 +39,10 @@ public static class TestDataSeeds
 
         #region TestData Entities
         db.Entities.AddRange([
+            TestData.HanSoloEnterprise,
+            TestData.HanSolo,
+            TestData.BenSolo,
+            TestData.LeiaOrgana,
             TestData.BakerJohnsen,
             TestData.SvendsenAutomobil,
             TestData.FredriksonsFabrikk,
@@ -45,6 +50,7 @@ public static class TestDataSeeds
             TestData.RegnskapNorge,
             TestData.MittRegnskap,
             TestData.RpcAS,
+            TestData.StorMektigTenesteeier,
             TestData.LarsBakke,
             TestData.HildeStrand,
             TestData.KnutVik,
@@ -109,6 +115,7 @@ public static class TestDataSeeds
         db.Resources.Add(TestData.DiheOmsetningsoppgaveAlkohol);
         db.Resources.Add(TestData.NavSykepengerSykmelding);
         db.Resources.Add(TestData.SkattResource);
+        db.Resources.Add(TestData.TestdirektoratetCorrespondenceService);
         db.Resources.AddRange(TestData.MvaResource);
 
         #endregion
