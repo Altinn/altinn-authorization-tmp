@@ -40,7 +40,7 @@ public class ServiceOwnerConnectionsControllerTest
                 dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:1"] = "another-allowed-package";
             });
 
-            Fixture.EnsureSeedOnce(db =>
+            Fixture.EnsureSeedOnce<AddPackages>(db =>
             {
                 // Seed any initial data needed for tests
                 db.SaveChanges();
