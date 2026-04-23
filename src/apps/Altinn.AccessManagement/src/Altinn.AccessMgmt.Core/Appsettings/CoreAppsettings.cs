@@ -1,3 +1,6 @@
+using Altinn.AccessMgmt.Core.Notifications;
+using Altinn.AccessMgmt.Core.Outbox;
+
 namespace Altinn.AccessMgmt.Core.Appsettings;
 
 public class CoreAppsettings
@@ -16,19 +19,28 @@ public class CoreAppsettings
 
     public RequestOptions Request { get; set; } = new();
 
-    public ConnectionsOptions Connections { get; set; } = new();
+    public NotificationsOptions Notifications { get; set; } = new();
 
-    public class ConnectionsOptions
+    public class NotificationsOptions
     {
-        public int NotifyAddRightholderPendingInSeconds { get; set; } = 60 * 2;
+        public int RequestReviewedNotifyInSeconds { get; set; } = RequestReviewedNotification.DefaultNotifyInSeconds;
 
-        public int NotifyRemovedRightholderPendingInSeconds { get; set; } = 60 * 2;
+        public int RequestPendingNotifyInSeconds { get; set; } = RequestPendingNotification.DefaultNotifyInSeconds;
 
-        public int NotifyAccessAddedPendingInSeconds { get; set; } = 60 * 15;
+        public int AccessAddedNotifyInSeconds { get; set; } = AccessAddedNotification.DefaultNotifyInSeconds;
 
-        public int NotifyAccessRemovedPendingInSeconds { get; set; } = 60 * 5;
+        public int AccessRemovedNotifyInSeconds { get; set; } = AccessRemovedNotification.DefaultNotifyInSeconds;
+
+        public int AgentRemovedNotifyInSeconds { get; set; } = AgentRemovedNotification.DefaultNotifyInSeconds;
+
+        public int AgentAddedNotifyInSeconds { get; set; } = AgentAddedNotification.DefaultNotifyInSeconds;
+
+        public int ClientAddedNotifyInSeconds { get; set; } = ClientAddedNotification.DefaultNotifyInSeconds;
+
+        public int ClientRemovedNotifyInSeconds { get; set; } = ClientRemovedNotification.DefaultNotifyInSeconds;
     }
 
+    [Obsolete]
     public class RequestOptions
     {
         public int NotifyRequestApprovedInSeconds { get; set; } = 60 * 15;

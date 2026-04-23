@@ -28,7 +28,7 @@ public static class RequestPendingNotification
     ///
     /// If a matching pending message already exists, it is updated with the new resource or package.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyRequestPendingInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -45,7 +45,7 @@ public static class RequestPendingNotification
     /// <param name="packageId">
     /// Optional identifier of the package being requested.
     /// </param>
-    /// <param name="notifyRequestPendingInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
     /// Defaults to 900 seconds (15 minutes).
     /// </param>
@@ -61,14 +61,14 @@ public static class RequestPendingNotification
         Guid recipientId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyRequestPendingInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{requesterId}_{recipientId}",
             handler: Handler,
-            addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, msg, notifyRequestPendingInSeconds),
-            updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, msg, data, notifyRequestPendingInSeconds),
+            addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, msg, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, msg, data, notifyInSeconds),
             cancellationToken: ct
         );
     }
@@ -178,10 +178,10 @@ public static class RequestPendingNotification
         Guid? resourceId,
         Guid? packageId,
         OutboxMessage msg,
-        int notifyRequestPendingInSeconds
+        int notifyInSeconds
     )
     {
-        var processAfter = TimeSpan.FromSeconds(notifyRequestPendingInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
         var schedule = now.Add(processAfter);
         msg.Schedule = schedule;
@@ -204,13 +204,13 @@ public static class RequestPendingNotification
         Guid? packageId,
         OutboxMessage msg,
         ResourceRequestPendingNotificationMessage data,
-        int notifyRequestPendingInSeconds
+        int notifyInSeconds
     )
     {
         if (data is null)
         {
             Activity.Current?.AddTag(nameof(RequestPendingNotification), $"Current outbox message {nameof(ResourceRequestPendingNotificationMessage)} is null? Creating new object.");
-            return AddValue(requesterId, recipientId, resourceId, packageId, msg, notifyRequestPendingInSeconds);
+            return AddValue(requesterId, recipientId, resourceId, packageId, msg, notifyInSeconds);
         }
 
         data.Updated++;
@@ -225,7 +225,7 @@ public static class RequestPendingNotification
             data.PackageIds.Add(packageId.Value);
         }
 
-        var processAfter = TimeSpan.FromSeconds(notifyRequestPendingInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
 
         var candidate = now.Add(processAfter / (data.Updated + 1));

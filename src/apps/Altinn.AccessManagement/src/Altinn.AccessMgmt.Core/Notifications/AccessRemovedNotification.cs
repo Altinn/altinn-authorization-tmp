@@ -29,7 +29,7 @@ public static class AccessRemovedNotification
     ///
     /// If a matching pending message already exists, it is updated with the new resource or package.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyAccessRemovedInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -46,7 +46,7 @@ public static class AccessRemovedNotification
     /// <param name="packageId">
     /// Optional identifier of the package for which access was removed.
     /// </param>
-    /// <param name="notifyAccessRemovedInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
     /// Defaults to 900 seconds (15 minutes).
     /// </param>
@@ -62,14 +62,14 @@ public static class AccessRemovedNotification
         Guid toId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyAccessRemovedInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{fromId}_{toId}",
             handler: Handler,
-            addValueFactory: msg => AddValue(fromId, toId, resourceId, packageId, msg, notifyAccessRemovedInSeconds),
-            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, resourceId, packageId, msg, data, notifyAccessRemovedInSeconds),
+            addValueFactory: msg => AddValue(fromId, toId, resourceId, packageId, msg, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, resourceId, packageId, msg, data, notifyInSeconds),
             cancellationToken: ct
         );
 
@@ -181,10 +181,10 @@ public static class AccessRemovedNotification
         Guid? resourceId,
         Guid? packageId,
         OutboxMessage msg,
-        int notifyAccessRemovedInSeconds
+        int notifyInSeconds
     )
     {
-        var processAfter = TimeSpan.FromSeconds(notifyAccessRemovedInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
         var schedule = now.Add(processAfter);
         msg.Schedule = schedule;
@@ -207,13 +207,13 @@ public static class AccessRemovedNotification
         Guid? packageId,
         OutboxMessage msg,
         AccessRemovedNotificationMessage data,
-        int notifyAccessRemovedInSeconds
+        int notifyInSeconds
     )
     {
         if (data is null)
         {
             Activity.Current?.AddTag(nameof(RequestPendingNotification), $"Current outbox message {nameof(AccessRemovedNotification)} is null? Creating new object.");
-            return AddValue(fromId, toId, resourceId, packageId, msg, notifyAccessRemovedInSeconds);
+            return AddValue(fromId, toId, resourceId, packageId, msg, notifyInSeconds);
         }
 
         data.Updated++;
@@ -228,7 +228,7 @@ public static class AccessRemovedNotification
             data.PackageIds.Add(packageId.Value);
         }
 
-        var processAfter = TimeSpan.FromSeconds(notifyAccessRemovedInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
 
         var candidate = now.Add(processAfter / (data.Updated + 1));

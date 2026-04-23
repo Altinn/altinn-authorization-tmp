@@ -27,7 +27,7 @@ public static class RightholderRemovedNotification
     ///
     /// If a matching pending message already exists, its payload is left unchanged.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyRemovedRightholderPendingInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -38,7 +38,7 @@ public static class RightholderRemovedNotification
     /// <param name="to">
     /// The identifier of the rightholder being removed.
     /// </param>
-    /// <param name="notifyRemovedRightholderPendingInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
     /// Defaults to 120 seconds (2 minutes).
     /// </param>
@@ -52,14 +52,14 @@ public static class RightholderRemovedNotification
         AppDbContext db,
         Guid from,
         Guid to,
-        int notifyRemovedRightholderPendingInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{from}_{to}",
             handler: Handler,
             updateValueFactory: (_, data) => data,
-            addValueFactory: (msg) => AddValue(msg, notifyRemovedRightholderPendingInSeconds, from, to),
+            addValueFactory: (msg) => AddValue(msg, notifyInSeconds, from, to),
             cancellationToken: cancellationToken
         );
     }
@@ -106,7 +106,7 @@ public static class RightholderRemovedNotification
     /// <param name="msg">
     /// The outbox message being initialized.
     /// </param>
-    /// <param name="notifyRemovedRightholderPendingInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the message should be processed.
     /// </param>
     /// <param name="from">
@@ -118,9 +118,9 @@ public static class RightholderRemovedNotification
     /// <returns>
     /// A <see cref="RightholderRemovedNotificationMessage"/> payload.
     /// </returns>
-    private static RightholderRemovedNotificationMessage AddValue(OutboxMessage msg, int notifyRemovedRightholderPendingInSeconds, Guid from, Guid to)
+    private static RightholderRemovedNotificationMessage AddValue(OutboxMessage msg, int notifyInSeconds, Guid from, Guid to)
     {
-        var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyRemovedRightholderPendingInSeconds));
+        var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyInSeconds));
         msg.Schedule = processAfter;
         msg.Timeout = TimeSpan.FromMinutes(1);
 

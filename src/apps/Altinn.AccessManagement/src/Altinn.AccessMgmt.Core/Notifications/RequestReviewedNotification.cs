@@ -28,7 +28,7 @@ public static class RequestReviewedNotification
     ///
     /// If a matching pending message already exists, it is updated with the new resource or package and approval status.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyRequestReviewedInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -48,7 +48,7 @@ public static class RequestReviewedNotification
     /// <param name="isApproved">
     /// Indicates whether the request was approved or denied.
     /// </param>
-    /// <param name="notifyRequestReviewedInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
     /// Defaults to 600 seconds (10 minutes).
     /// </param>
@@ -65,14 +65,14 @@ public static class RequestReviewedNotification
         Guid? resourceId,
         Guid? packageId,
         bool isApproved,
-        int notifyRequestReviewedInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{requesterId}_{recipientId}",
             handler: Handler,
-            addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, isApproved, msg, notifyRequestReviewedInSeconds),
-            updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, isApproved, msg, data, notifyRequestReviewedInSeconds),
+            addValueFactory: msg => AddValue(requesterId, recipientId, resourceId, packageId, isApproved, msg, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(requesterId, recipientId, resourceId, packageId, isApproved, msg, data, notifyInSeconds),
             cancellationToken: ct
         );
     }
@@ -118,10 +118,10 @@ public static class RequestReviewedNotification
         Guid? packageId,
         bool isApproved,
         OutboxMessage msg,
-        int notifyRequestReviewedInSeconds
+        int notifyInSeconds
     )
     {
-        var processAfter = TimeSpan.FromSeconds(notifyRequestReviewedInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
         var schedule = now.Add(processAfter);
         msg.Schedule = schedule;
@@ -145,13 +145,13 @@ public static class RequestReviewedNotification
         bool isApproved,
         OutboxMessage msg,
         RequestReviewNotificationMessage data,
-        int notifyRequestPendingInSeconds
+        int notifyInSeconds
     )
     {
         if (data is null)
         {
             Activity.Current?.AddTag(nameof(RequestReviewedNotification), $"Current outbox message {nameof(RequestReviewNotificationMessage)} is null? Creating new object.");
-            return AddValue(reviewerId, recipientId, resourceId, packageId, isApproved, msg, notifyRequestPendingInSeconds);
+            return AddValue(reviewerId, recipientId, resourceId, packageId, isApproved, msg, notifyInSeconds);
         }
 
         data.Updated++;
@@ -198,7 +198,7 @@ public static class RequestReviewedNotification
             data.Packages = list;
         }
 
-        var processAfter = TimeSpan.FromSeconds(notifyRequestPendingInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
 
         var candidate = now.Add(processAfter / (data.Updated + 1));

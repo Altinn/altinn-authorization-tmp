@@ -27,7 +27,7 @@ public static class RightholderAddedNotification
     ///
     /// If a matching pending message already exists, its payload is left unchanged.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyAddRightholderPendingInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -38,9 +38,9 @@ public static class RightholderAddedNotification
     /// <param name="to">
     /// The identifier of the entity receiving rights.
     /// </param>
-    /// <param name="notifyAddRightholderPendingInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
-    /// Defaults to 120 seconds.
+    /// Defaults to 120 seconds (2 minutes).
     /// </param>
     /// <param name="cancellationToken">
     /// A token used to observe cancellation while querying the database.
@@ -52,14 +52,14 @@ public static class RightholderAddedNotification
         AppDbContext db,
         Guid from,
         Guid to,
-        int notifyAddRightholderPendingInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{from}_{to}",
             handler: Handler,
             updateValueFactory: (_, data) => data,
-            addValueFactory: (msg) => AddValue(msg, notifyAddRightholderPendingInSeconds, from, to),
+            addValueFactory: (msg) => AddValue(msg, notifyInSeconds, from, to),
             cancellationToken: cancellationToken
         );
 
@@ -106,7 +106,7 @@ public static class RightholderAddedNotification
     /// <param name="msg">
     /// The outbox message being initialized.
     /// </param>
-    /// <param name="notifyAddRightholderPendingInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the message should be processed.
     /// </param>
     /// <param name="from">
@@ -118,9 +118,9 @@ public static class RightholderAddedNotification
     /// <returns>
     /// A <see cref="RightholderAddedNotificationMessage"/> payload.
     /// </returns>
-    private static RightholderAddedNotificationMessage AddValue(OutboxMessage msg, int notifyAddRightholderPendingInSeconds, Guid from, Guid to)
+    private static RightholderAddedNotificationMessage AddValue(OutboxMessage msg, int notifyInSeconds, Guid from, Guid to)
     {
-        var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyAddRightholderPendingInSeconds));
+        var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyInSeconds));
         msg.Schedule = processAfter;
         msg.Timeout = TimeSpan.FromMinutes(1);
         

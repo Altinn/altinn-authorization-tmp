@@ -29,4 +29,6 @@ public class ClientRemovedNotificationMessage
     public Guid ProviderId { get; set; }
 
     public List<Guid> Clients { get; set; }
+
+    public int Updated { get; set; }
 }

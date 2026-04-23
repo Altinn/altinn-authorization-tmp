@@ -28,7 +28,7 @@ public static class AccessAddedNotification
     ///
     /// If a matching pending message already exists, it is updated with the new resource or package.
     /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyAccessAddedInSeconds"/>.
+    /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
@@ -45,7 +45,7 @@ public static class AccessAddedNotification
     /// <param name="packageId">
     /// Optional identifier of the package for which access was granted.
     /// </param>
-    /// <param name="notifyAccessAddedInSeconds">
+    /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
     /// Defaults to 900 seconds (15 minutes).
     /// </param>
@@ -61,14 +61,14 @@ public static class AccessAddedNotification
         Guid toId,
         Guid? resourceId,
         Guid? packageId,
-        int notifyAccessAddedInSeconds = DefaultNotifyInSeconds,
+        int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{fromId}_{toId}",
             handler: Handler,
-            addValueFactory: msg => AddValue(fromId, toId, resourceId, packageId, msg, notifyAccessAddedInSeconds),
-            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, resourceId, packageId, msg, data, notifyAccessAddedInSeconds),
+            addValueFactory: msg => AddValue(fromId, toId, resourceId, packageId, msg, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, resourceId, packageId, msg, data, notifyInSeconds),
             cancellationToken: ct
         );
 
@@ -180,10 +180,10 @@ public static class AccessAddedNotification
         Guid? resourceId,
         Guid? packageId,
         OutboxMessage msg,
-        int notifyAccessAddedInSeconds
+        int notifyInSeconds
     )
     {
-        var processAfter = TimeSpan.FromSeconds(notifyAccessAddedInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
         var schedule = now.Add(processAfter);
         msg.Schedule = schedule;
@@ -206,13 +206,13 @@ public static class AccessAddedNotification
         Guid? packageId,
         OutboxMessage msg,
         AccessAddedNotificationMessage data,
-        int notifyAccessAddedInSeconds
+        int notifyInSeconds
     )
     {
         if (data is null)
         {
             Activity.Current?.AddTag(nameof(RequestPendingNotification), $"Current outbox message {nameof(AccessAddedNotification)} is null? Creating new object.");
-            return AddValue(fromId, toId, resourceId, packageId, msg, notifyAccessAddedInSeconds);
+            return AddValue(fromId, toId, resourceId, packageId, msg, notifyInSeconds);
         }
 
         data.Updated++;
@@ -227,7 +227,7 @@ public static class AccessAddedNotification
             data.PackageIds.Add(packageId.Value);
         }
 
-        var processAfter = TimeSpan.FromSeconds(notifyAccessAddedInSeconds);
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
 
         var candidate = now.Add(processAfter / (data.Updated + 1));

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -12,57 +13,11 @@ namespace Altinn.AccessMgmt.Core.Notifications;
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
 /// handled by <c>agent_added_client</c>.
 /// </remarks>
-public static class AgentAddedClientNotification
+public static class ClientAddedNotification
 {
-    public const string Handler = "agent_added_client";
+    public const string Handler = "client_added";
 
     public const int DefaultNotifyInSeconds = 60 * 15;
-
-    /// <summary>
-    /// Creates or updates a pending outbox message for an agent added to client notification.
-    /// </summary>
-    /// <remarks>
-    /// This method performs an upsert operation for an outbox message identified by the
-    /// combination of <paramref name="providerId"/> and <paramref name="agentId"/>.
-    ///
-    /// If a matching pending message already exists, its payload is left unchanged.
-    /// If no matching message exists, a new one is created with a scheduled processing time
-    /// based on <paramref name="notifyInSeconds"/>.
-    /// </remarks>
-    /// <param name="db">
-    /// The <see cref="AppDbContext"/> used to access the outbox messages.
-    /// </param>
-    /// <param name="providerId">
-    /// The identifier of the provider granting agent rights for the client.
-    /// </param>
-    /// <param name="agentId">
-    /// The identifier of the agent being added to the client.
-    /// </param>
-    /// <param name="notifyInSeconds">
-    /// The delay, in seconds, before the outbox message should be processed.
-    /// Defaults to 900 seconds (15 minutes).
-    /// </param>
-    /// <param name="cancellationToken">
-    /// A token used to observe cancellation while querying the database.
-    /// </param>
-    /// <returns>
-    /// A task that represents the asynchronous upsert operation.
-    /// </returns>
-    public static async Task Upsert(
-        AppDbContext db,
-        Guid providerId,
-        Guid agentId,
-        int notifyInSeconds = DefaultNotifyInSeconds,
-        CancellationToken cancellationToken = default)
-    {
-        await db.OutboxMessages.UpsertOutboxAsync(
-            refId: $"{Handler}_{providerId}_{agentId}",
-            handler: Handler,
-            updateValueFactory: (_, data) => data,
-            addValueFactory: (msg) => AddValue(msg, notifyInSeconds, providerId, agentId),
-            cancellationToken: cancellationToken
-        );
-    }
 
     /// <summary>
     /// Cancels a pending agent added to client notification by removing its outbox message.
@@ -99,24 +54,72 @@ public static class AgentAddedClientNotification
     }
 
     /// <summary>
+    /// Creates or updates a pending outbox message for an agent added to client notification.
+    /// </summary>
+    /// <remarks>
+    /// This method performs an upsert operation for an outbox message identified by the
+    /// combination of <paramref name="providerId"/> and <paramref name="agentId"/>.
+    ///
+    /// If a matching pending message already exists, its payload is left unchanged.
+    /// If no matching message exists, a new one is created with a scheduled processing time
+    /// based on <paramref name="notifyInSeconds"/>.
+    /// </remarks>
+    /// <param name="db">
+    /// The <see cref="AppDbContext"/> used to access the outbox messages.
+    /// </param>
+    /// <param name="providerId">
+    /// The identifier of the provider granting agent rights for the client.
+    /// </param>
+    /// <param name="agentId">
+    /// The identifier of the agent being added to the client.
+    /// </param>
+    /// <param name="notifyInSeconds">
+    /// The delay, in seconds, before the outbox message should be processed.
+    /// Defaults to 900 seconds (15 minutes).
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to observe cancellation while querying the database.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous upsert operation.
+    /// </returns>
+    public static async Task Upsert(
+        AppDbContext db,
+        Guid providerId,
+        Guid clientId,
+        Guid agentId,
+        int notifyInSeconds = DefaultNotifyInSeconds,
+        CancellationToken cancellationToken = default)
+    {
+        await db.OutboxMessages.UpsertOutboxAsync(
+            refId: $"{Handler}_{providerId}_{agentId}",
+            handler: Handler,
+            updateValueFactory: (_, data) => data,
+            addValueFactory: (msg) => AddValue(msg, providerId, clientId, agentId, notifyInSeconds),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    /// <summary>
     /// Creates the payload and schedules processing for a new agent added notification.
     /// </summary>
     /// <param name="msg">
     /// The outbox message being initialized.
     /// </param>
+    /// <param name="clientId"></param>
     /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the message should be processed.
     /// </param>
-    /// <param name="provider">
+    /// <param name="providerId">
     /// The identifier of the provider.
     /// </param>
-    /// <param name="agent">
+    /// <param name="agentId">
     /// The identifier of the agent.
     /// </param>
     /// <returns>
-    /// A <see cref="AgentAddedNotificationMessage"/> payload.
+    /// A <see cref="ClientAddedNotificationMessage"/> payload.
     /// </returns>
-    private static AgentAddedNotificationMessage AddValue(OutboxMessage msg, int notifyInSeconds, Guid provider, Guid agent)
+    private static ClientAddedNotificationMessage AddValue(OutboxMessage msg, Guid providerId, Guid clientId, Guid agentId, int notifyInSeconds)
     {
         var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyInSeconds));
         msg.Schedule = processAfter;
@@ -124,8 +127,45 @@ public static class AgentAddedClientNotification
 
         return new()
         {
-            ProviderId = provider,
-            AgentId = agent,
+            ProviderId = providerId,
+            AgentId = agentId,
+            Clients = [clientId]
         };
+    }
+
+    private static ClientAddedNotificationMessage UpdateValue(
+        AppDbContext db,
+        Guid providerId,
+        Guid clientId,
+        Guid agentId,
+        OutboxMessage msg,
+        ClientAddedNotificationMessage data,
+        int notifyInSeconds = DefaultNotifyInSeconds
+    )
+    {
+        if (data is null)
+        {
+            Activity.Current?.AddTag(nameof(ClientAddedNotificationMessage), $"Current outbox message {nameof(ClientAddedNotificationMessage)} is null? Creating new object.");
+            return AddValue(msg, providerId, clientId, agentId, notifyInSeconds);
+        }
+
+        data.Clients ??= [];
+
+        if (data.Clients.Count > 0)
+        {
+            if (!data.Clients.Contains(clientId))
+            {
+                data.Clients.Add(clientId);
+            }
+
+            data.Updated++;
+        }
+
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
+        var now = DateTime.UtcNow;
+        var candidate = now.Add(processAfter / (data.Updated + 1));
+        msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
+
+        return data;
     }
 }

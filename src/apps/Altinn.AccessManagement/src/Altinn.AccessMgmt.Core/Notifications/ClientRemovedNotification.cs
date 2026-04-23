@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -12,9 +13,9 @@ namespace Altinn.AccessMgmt.Core.Notifications;
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
 /// handled by <c>agent_removed_client</c>.
 /// </remarks>
-public static class AgentRemovedClientNotification
+public static class ClientRemovedNotification
 {
-    public const string Handler = "agent_removed_client";
+    public const string Handler = "client_removed";
 
     public const int DefaultNotifyInSeconds = 60 * 15;
 
@@ -51,15 +52,16 @@ public static class AgentRemovedClientNotification
     public static async Task Upsert(
         AppDbContext db,
         Guid providerId,
+        Guid clientId,
         Guid agentId,
         int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.UpsertOutboxAsync(
-            refId: $"{Handler}_{providerId}_{agentId}",
+            refId: $"{Handler}_{providerId}_{agentId}_{clientId}",
             handler: Handler,
-            updateValueFactory: (_, data) => data,
-            addValueFactory: (msg) => AddValue(msg, notifyInSeconds, providerId, agentId),
+            updateValueFactory: (msg, data) => UpdateValue(db, providerId, clientId, agentId, notifyInSeconds, msg, data),
+            addValueFactory: (msg) => AddValue(msg, providerId, clientId, agentId, notifyInSeconds),
             cancellationToken: cancellationToken
         );
     }
@@ -89,10 +91,10 @@ public static class AgentRemovedClientNotification
     /// <returns>
     /// A task that represents the asynchronous operation.
     /// </returns>
-    public static async Task Cancel(AppDbContext db, Guid provider, Guid agent, CancellationToken cancellationToken = default)
+    public static async Task Cancel(AppDbContext db, Guid providerId, Guid clientId, Guid agentId, CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.CancelOutboxAsync(
-            refId: $"{Handler}_{provider}_{agent}",
+            refId: $"{Handler}_{providerId}_{agentId}_{clientId}",
             handler: Handler,
             cancellationToken
         );
@@ -110,13 +112,14 @@ public static class AgentRemovedClientNotification
     /// <param name="provider">
     /// The identifier of the provider.
     /// </param>
+    /// <param name="clientId"></param>
     /// <param name="agent">
     /// The identifier of the agent.
     /// </param>
     /// <returns>
     /// A <see cref="ClientRemovedNotificationMessage"/> payload.
     /// </returns>
-    private static ClientRemovedNotificationMessage AddValue(OutboxMessage msg, int notifyInSeconds, Guid provider, Guid agent)
+    private static ClientRemovedNotificationMessage AddValue(OutboxMessage msg, Guid providerId, Guid clientId, Guid agentId, int notifyInSeconds)
     {
         var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyInSeconds));
         msg.Schedule = processAfter;
@@ -124,8 +127,45 @@ public static class AgentRemovedClientNotification
 
         return new()
         {
-            ProviderId = provider,
-            AgentId = agent,
+            ProviderId = providerId,
+            AgentId = agentId,
+            Clients = [clientId],
         };
+    }
+
+    private static ClientRemovedNotificationMessage UpdateValue(
+        AppDbContext db,
+        Guid providerId,
+        Guid clientId,
+        Guid agentId,
+        int notifyInSeconds,
+        OutboxMessage msg,
+        ClientRemovedNotificationMessage data
+    )
+    {
+        if (data is null)
+        {
+            Activity.Current?.AddTag(nameof(ClientRemovedNotificationMessage), $"Current outbox message {nameof(ClientRemovedNotificationMessage)} is null? Creating new object.");
+            return AddValue(msg, providerId, clientId, agentId, notifyInSeconds);
+        }
+
+        data.Clients ??= [];
+
+        if (data.Clients.Count > 0)
+        {
+            if (!data.Clients.Contains(clientId))
+            {
+                data.Clients.Add(clientId);
+            }
+
+            data.Updated++;
+        }
+
+        var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
+        var now = DateTime.UtcNow;
+        var candidate = now.Add(processAfter / (data.Updated + 1));
+        msg.Schedule = candidate < msg.Schedule ? msg.Schedule : candidate;
+
+        return data;
     }
 }
