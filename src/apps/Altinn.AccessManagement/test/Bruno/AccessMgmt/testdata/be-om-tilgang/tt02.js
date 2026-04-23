@@ -130,13 +130,6 @@
       partyuuid: "3968fdd2-b13b-47d1-9fdc-ea9db7314676",
     },
   },
-  Bot_package_person_serviceowner: {
-    lastname: "DOKTOR",
-    pid: "06814398054",
-    partyid: 50866073,
-    userid: 1793984,
-    partyuuid: "4c844434-929d-4ead-9e6b-35ed60918c5f",
-  },
   Bot_package_Org: {
     name: "KREATIV SNÅL PIGGSVIN",
     org_no: "313696057",
