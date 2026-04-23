@@ -11,9 +11,9 @@ public class AgentAddedNotificationHandler(AppDbContext db, IFeatureManager feat
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxAgentNotifyAdded, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxAgentAddedNotify, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxAgentNotifyAdded}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxAgentAddedNotify}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }

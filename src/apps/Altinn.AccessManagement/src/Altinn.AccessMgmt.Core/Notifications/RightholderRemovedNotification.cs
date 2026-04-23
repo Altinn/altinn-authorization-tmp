@@ -5,12 +5,49 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.Core.Notifications;
 
+/// <summary>
+/// Provides helper methods for managing outbox notifications related to removing a rightholder.
+/// </summary>
+/// <remarks>
+/// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
+/// handled by <c>rightholder_removed</c>.
+/// </remarks>
 public static class RightholderRemovedNotification
 {
     public const string Handler = "rightholder_removed";
 
     public const int DefaultNotifyInSeconds = 60 * 2;
 
+    /// <summary>
+    /// Creates or updates a pending outbox message for a rightholder removal notification.
+    /// </summary>
+    /// <remarks>
+    /// This method performs an upsert operation for an outbox message identified by the
+    /// combination of <paramref name="from"/> and <paramref name="to"/>.
+    ///
+    /// If a matching pending message already exists, its payload is left unchanged.
+    /// If no matching message exists, a new one is created with a scheduled processing time
+    /// based on <paramref name="notifyRemovedRightholderPendingInSeconds"/>.
+    /// </remarks>
+    /// <param name="db">
+    /// The <see cref="AppDbContext"/> used to access the outbox messages.
+    /// </param>
+    /// <param name="from">
+    /// The identifier of the entity removing the rightholder.
+    /// </param>
+    /// <param name="to">
+    /// The identifier of the rightholder being removed.
+    /// </param>
+    /// <param name="notifyRemovedRightholderPendingInSeconds">
+    /// The delay, in seconds, before the outbox message should be processed.
+    /// Defaults to 120 seconds (2 minutes).
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to observe cancellation while querying the database.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous upsert operation.
+    /// </returns>
     public static async Task Upsert(
         AppDbContext db,
         Guid from,
@@ -27,6 +64,31 @@ public static class RightholderRemovedNotification
         );
     }
 
+    /// <summary>
+    /// Cancels a pending rightholder removal notification by removing its outbox message.
+    /// </summary>
+    /// <remarks>
+    /// This method attempts to locate a pending outbox message matching the specified
+    /// <paramref name="from"/> and <paramref name="to"/> identifiers.
+    ///
+    /// If such a message exists, it is removed from the database.
+    /// If no matching pending message is found, no action is taken.
+    /// </remarks>
+    /// <param name="db">
+    /// The <see cref="AppDbContext"/> used to access the outbox messages.
+    /// </param>
+    /// <param name="from">
+    /// The identifier of the entity removing the rightholder.
+    /// </param>
+    /// <param name="to">
+    /// The identifier of the rightholder being removed.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token used to observe cancellation while querying the database.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous operation.
+    /// </returns>
     public static async Task Cancel(AppDbContext db, Guid from, Guid to, CancellationToken cancellationToken = default)
     {
         await db.OutboxMessages.CancelOutboxAsync(
@@ -34,14 +96,34 @@ public static class RightholderRemovedNotification
             handler: Handler,
             cancellationToken
         );
+
+        await RightholderAddedNotification.Cancel(db, from, to, cancellationToken);
     }
 
+    /// <summary>
+    /// Creates the payload and schedules processing for a new rightholder removed notification.
+    /// </summary>
+    /// <param name="msg">
+    /// The outbox message being initialized.
+    /// </param>
+    /// <param name="notifyRemovedRightholderPendingInSeconds">
+    /// The delay, in seconds, before the message should be processed.
+    /// </param>
+    /// <param name="from">
+    /// The identifier of the entity removing the rightholder.
+    /// </param>
+    /// <param name="to">
+    /// The identifier of the rightholder being removed.
+    /// </param>
+    /// <returns>
+    /// A <see cref="RightholderRemovedNotificationMessage"/> payload.
+    /// </returns>
     private static RightholderRemovedNotificationMessage AddValue(OutboxMessage msg, int notifyRemovedRightholderPendingInSeconds, Guid from, Guid to)
     {
         var processAfter = DateTime.UtcNow.Add(TimeSpan.FromSeconds(notifyRemovedRightholderPendingInSeconds));
         msg.Schedule = processAfter;
         msg.Timeout = TimeSpan.FromMinutes(1);
-        
+
         return new()
         {
             From = from,

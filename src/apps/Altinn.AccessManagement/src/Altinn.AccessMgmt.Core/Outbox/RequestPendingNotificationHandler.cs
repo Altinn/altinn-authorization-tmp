@@ -25,9 +25,9 @@ public class RequestPendingNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxRequestPendingNotify, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyPending}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxRequestPendingNotify}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }

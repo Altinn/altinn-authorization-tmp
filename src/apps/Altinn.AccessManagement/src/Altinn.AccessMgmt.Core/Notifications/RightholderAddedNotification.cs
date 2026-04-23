@@ -62,6 +62,8 @@ public static class RightholderAddedNotification
             addValueFactory: (msg) => AddValue(msg, notifyAddRightholderPendingInSeconds, from, to),
             cancellationToken: cancellationToken
         );
+
+        await RightholderRemovedNotification.Cancel(db, from, to, cancellationToken);
     }
 
     /// <summary>
