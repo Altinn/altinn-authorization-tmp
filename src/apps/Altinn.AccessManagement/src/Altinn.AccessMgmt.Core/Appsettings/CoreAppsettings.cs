@@ -27,6 +27,10 @@ public class CoreAppsettings
 
         public int RequestPendingNotifyInSeconds { get; set; } = RequestPendingNotification.DefaultNotifyInSeconds;
 
+        public int RightholderAddedNotifyInSeconds { get; set; } = RightholderAddedNotification.DefaultNotifyInSeconds;
+
+        public int RightholderRemovedNotifyInSeconds { get; set; } = RightholderRemovedNotification.DefaultNotifyInSeconds;
+
         public int AccessAddedNotifyInSeconds { get; set; } = AccessAddedNotification.DefaultNotifyInSeconds;
 
         public int AccessRemovedNotifyInSeconds { get; set; } = AccessRemovedNotification.DefaultNotifyInSeconds;

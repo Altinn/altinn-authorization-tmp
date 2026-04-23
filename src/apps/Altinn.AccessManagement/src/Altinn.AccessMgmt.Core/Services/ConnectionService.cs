@@ -136,7 +136,7 @@ public partial class ConnectionService(
             dbContext,
             from.Id,
             to.Id,
-            appsettings?.Value?.Access?.NotifyAddRightholderPendingInSeconds ?? RightholderAddedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.RightholderAddedNotifyInSeconds ?? RightholderAddedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
@@ -206,7 +206,7 @@ public partial class ConnectionService(
             dbContext,
             fromId,
             toId,
-            appsettings?.Value?.Access?.NotifyRemovedRightholderPendingInSeconds ?? RightholderRemovedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.RightholderRemovedNotifyInSeconds ?? RightholderRemovedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
@@ -428,7 +428,7 @@ public partial class ConnectionService(
             toId,
             resourceId,
             null,
-            appsettings?.Value?.Access?.NotifyAccessRemovedPendingInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.AccessRemovedNotifyInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
@@ -557,7 +557,7 @@ public partial class ConnectionService(
             toId,
             null,
             packageId,
-            appsettings?.Value?.Access?.NotifyAccessAddedPendingInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.AccessRemovedNotifyInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
@@ -644,7 +644,7 @@ public partial class ConnectionService(
             toId,
             null,
             packageId,
-            appsettings?.Value?.Access?.NotifyAccessAddedPendingInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
@@ -1287,7 +1287,7 @@ public partial class ConnectionService(
             to.Id,
             resourceObj.Id,
             null,
-            appsettings?.Value?.Access?.NotifyAccessRemovedPendingInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
+            appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
 
