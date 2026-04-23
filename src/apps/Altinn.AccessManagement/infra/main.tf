@@ -250,12 +250,6 @@ module "appsettings" {
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.RequestApprovedNotify"
-      description = "Specifies if notifications for approved requests are enabled."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
       name        = "AccessMgmt.Core.Outbox.RightholderAddedNotify"
       description = "Specifies if notifications should be sent if rightholder assignemnt is added."
       label       = "${lower(var.environment)}-access-management"
