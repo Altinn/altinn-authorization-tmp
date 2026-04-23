@@ -11,7 +11,7 @@ namespace Altinn.AccessMgmt.Core.Notifications;
 /// </summary>
 /// <remarks>
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
-/// handled by <c>agent_removed_client</c>.
+/// handled by <c>client_removed</c>.
 /// </remarks>
 public static class ClientRemovedNotification
 {
@@ -24,9 +24,9 @@ public static class ClientRemovedNotification
     /// </summary>
     /// <remarks>
     /// This method performs an upsert operation for an outbox message identified by the
-    /// combination of <paramref name="providerId"/> and <paramref name="agentId"/>.
+    /// combination of <paramref name="providerId"/>, <paramref name="agentId"/>, and <paramref name="clientId"/>.
     ///
-    /// If a matching pending message already exists, its payload is left unchanged.
+    /// If a matching pending message already exists, it is updated with the new client ID.
     /// If no matching message exists, a new one is created with a scheduled processing time
     /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
@@ -35,6 +35,9 @@ public static class ClientRemovedNotification
     /// </param>
     /// <param name="providerId">
     /// The identifier of the provider removing the agent from the client.
+    /// </param>
+    /// <param name="clientId">
+    /// The identifier of the client being removed.
     /// </param>
     /// <param name="agentId">
     /// The identifier of the agent being removed from the client.
@@ -71,7 +74,7 @@ public static class ClientRemovedNotification
     /// </summary>
     /// <remarks>
     /// This method attempts to locate a pending outbox message matching the specified
-    /// <paramref name="provider"/> and <paramref name="agent"/> identifiers.
+    /// <paramref name="providerId"/>, <paramref name="clientId"/>, and <paramref name="agentId"/> identifiers.
     ///
     /// If such a message exists, it is removed from the database.
     /// If no matching pending message is found, no action is taken.
@@ -79,10 +82,13 @@ public static class ClientRemovedNotification
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
-    /// <param name="provider">
+    /// <param name="providerId">
     /// The identifier of the provider.
     /// </param>
-    /// <param name="agent">
+    /// <param name="clientId">
+    /// The identifier of the client.
+    /// </param>
+    /// <param name="agentId">
     /// The identifier of the agent.
     /// </param>
     /// <param name="cancellationToken">
@@ -101,20 +107,22 @@ public static class ClientRemovedNotification
     }
 
     /// <summary>
-    /// Creates the payload and schedules processing for a new agent removed from client notification.
+    /// Creates the payload and schedules processing for a new client removed notification.
     /// </summary>
     /// <param name="msg">
     /// The outbox message being initialized.
     /// </param>
-    /// <param name="notifyInSeconds">
-    /// The delay, in seconds, before the message should be processed.
-    /// </param>
-    /// <param name="provider">
+    /// <param name="providerId">
     /// The identifier of the provider.
     /// </param>
-    /// <param name="clientId"></param>
-    /// <param name="agent">
+    /// <param name="clientId">
+    /// The identifier of the client.
+    /// </param>
+    /// <param name="agentId">
     /// The identifier of the agent.
+    /// </param>
+    /// <param name="notifyInSeconds">
+    /// The delay, in seconds, before the message should be processed.
     /// </param>
     /// <returns>
     /// A <see cref="ClientRemovedNotificationMessage"/> payload.
@@ -151,15 +159,12 @@ public static class ClientRemovedNotification
 
         data.Clients ??= [];
 
-        if (data.Clients.Count > 0)
+        if (!data.Clients.Contains(clientId))
         {
-            if (!data.Clients.Contains(clientId))
-            {
-                data.Clients.Add(clientId);
-            }
-
-            data.Updated++;
+            data.Clients.Add(clientId);
         }
+
+        data.Updated++;
 
         var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;

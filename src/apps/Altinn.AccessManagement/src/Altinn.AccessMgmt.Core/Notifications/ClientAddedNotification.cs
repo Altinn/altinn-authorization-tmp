@@ -11,7 +11,7 @@ namespace Altinn.AccessMgmt.Core.Notifications;
 /// </summary>
 /// <remarks>
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
-/// handled by <c>agent_added_client</c>.
+/// handled by <c>client_added</c>.
 /// </remarks>
 public static class ClientAddedNotification
 {
@@ -60,7 +60,7 @@ public static class ClientAddedNotification
     /// This method performs an upsert operation for an outbox message identified by the
     /// combination of <paramref name="providerId"/> and <paramref name="agentId"/>.
     ///
-    /// If a matching pending message already exists, its payload is left unchanged.
+    /// If a matching pending message already exists, it is updated with the new client ID.
     /// If no matching message exists, a new one is created with a scheduled processing time
     /// based on <paramref name="notifyInSeconds"/>.
     /// </remarks>
@@ -69,6 +69,9 @@ public static class ClientAddedNotification
     /// </param>
     /// <param name="providerId">
     /// The identifier of the provider granting agent rights for the client.
+    /// </param>
+    /// <param name="clientId">
+    /// The identifier of the client being added.
     /// </param>
     /// <param name="agentId">
     /// The identifier of the agent being added to the client.
@@ -94,27 +97,29 @@ public static class ClientAddedNotification
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{providerId}_{agentId}",
             handler: Handler,
-            updateValueFactory: (_, data) => data,
+            updateValueFactory: (msg, data) => UpdateValue(db, providerId, clientId, agentId, msg, data, notifyInSeconds),
             addValueFactory: (msg) => AddValue(msg, providerId, clientId, agentId, notifyInSeconds),
             cancellationToken: cancellationToken
         );
     }
 
     /// <summary>
-    /// Creates the payload and schedules processing for a new agent added notification.
+    /// Creates the payload and schedules processing for a new client added notification.
     /// </summary>
     /// <param name="msg">
     /// The outbox message being initialized.
     /// </param>
-    /// <param name="clientId"></param>
-    /// <param name="notifyInSeconds">
-    /// The delay, in seconds, before the message should be processed.
-    /// </param>
     /// <param name="providerId">
     /// The identifier of the provider.
     /// </param>
+    /// <param name="clientId">
+    /// The identifier of the client.
+    /// </param>
     /// <param name="agentId">
     /// The identifier of the agent.
+    /// </param>
+    /// <param name="notifyInSeconds">
+    /// The delay, in seconds, before the message should be processed.
     /// </param>
     /// <returns>
     /// A <see cref="ClientAddedNotificationMessage"/> payload.
@@ -151,15 +156,12 @@ public static class ClientAddedNotification
 
         data.Clients ??= [];
 
-        if (data.Clients.Count > 0)
+        if (!data.Clients.Contains(clientId))
         {
-            if (!data.Clients.Contains(clientId))
-            {
-                data.Clients.Add(clientId);
-            }
-
-            data.Updated++;
+            data.Clients.Add(clientId);
         }
+
+        data.Updated++;
 
         var processAfter = TimeSpan.FromSeconds(notifyInSeconds);
         var now = DateTime.UtcNow;
