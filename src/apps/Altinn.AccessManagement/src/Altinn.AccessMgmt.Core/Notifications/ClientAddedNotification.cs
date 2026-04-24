@@ -158,6 +158,7 @@ public static class ClientAddedNotification
 
         if (!data.Clients.Contains(clientId))
         {
+            data.Clients ??= [];
             data.Clients.Add(clientId);
         }
 

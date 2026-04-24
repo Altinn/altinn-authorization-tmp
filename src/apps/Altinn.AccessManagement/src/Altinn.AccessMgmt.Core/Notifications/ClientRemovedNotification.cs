@@ -161,6 +161,7 @@ public static class ClientRemovedNotification
 
         if (!data.Clients.Contains(clientId))
         {
+            data.Clients ??= [];
             data.Clients.Add(clientId);
         }
 

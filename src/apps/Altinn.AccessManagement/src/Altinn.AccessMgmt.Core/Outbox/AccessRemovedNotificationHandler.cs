@@ -28,9 +28,9 @@ public class AccessRemovedNotificationMessage
 
     public Guid ToId { get; set; }
 
-    public List<Guid> PackageIds { get; set; }
+    public List<Guid> PackageIds { get; set; } = [];
 
-    public List<Guid> ResourceIds { get; set; }
+    public List<Guid> ResourceIds { get; set; } = [];
 
     public int Updated { get; set; }
 }

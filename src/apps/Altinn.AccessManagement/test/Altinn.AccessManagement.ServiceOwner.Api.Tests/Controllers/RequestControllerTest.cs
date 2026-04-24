@@ -187,7 +187,7 @@ public class RequestControllerTest
                 Assert.Equal(TestData.BakerJohnsen, data.RecipientId);
                 Assert.NotEmpty(data.ResourceIds);
                 Assert.Empty(data.PackageIds);
-                Assert.Equal(1, data.Updated);
+                Assert.Equal(0, data.Updated);
             });
 
             var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);

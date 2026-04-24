@@ -220,11 +220,13 @@ public static class AccessRemovedNotification
 
         if (resourceId.HasValue && !data.ResourceIds.Contains(resourceId.Value))
         {
+            data.ResourceIds ??= [];
             data.ResourceIds.Add(resourceId.Value);
         }
 
         if (packageId.HasValue && !data.PackageIds.Contains(packageId.Value))
         {
+            data.PackageIds ??= [];
             data.PackageIds.Add(packageId.Value);
         }
 

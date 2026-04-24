@@ -250,12 +250,12 @@ public class ResourceRequestPendingNotificationMessage
     /// <summary>
     /// Guid of resource.
     /// </summary>
-    public List<Guid> ResourceIds { get; set; }
+    public List<Guid> ResourceIds { get; set; } = [];
 
     /// <summary>
     /// Guid of package
     /// </summary>
-    public List<Guid> PackageIds { get; set; }
+    public List<Guid> PackageIds { get; set; } = [];
 
     /// <summary>
     /// Number of updates.
