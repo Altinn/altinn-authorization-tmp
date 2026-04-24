@@ -157,4 +157,12 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor InvalidRightKey { get; }
     = _factory.Create(36, HttpStatusCode.BadRequest, "Policy does not contain all rightkeys in delegation request");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageNotAvailableForEntity { get; }
+    = _factory.Create(37, HttpStatusCode.BadRequest, "The from entity does not match the package entity requirement");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageNotRevokableFromAssignment { get; }
+    = _factory.Create(38, HttpStatusCode.BadRequest, "Given the rules for revocation this package could not be revoked");
 }

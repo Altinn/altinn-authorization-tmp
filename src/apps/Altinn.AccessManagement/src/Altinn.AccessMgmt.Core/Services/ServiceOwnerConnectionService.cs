@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+﻿using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -10,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class ServiceOwnerConnectionService(
-        AppDbContext dbContext) : IServiceOwnerConnectionService
+        AppDbContext dbContext,
+        IConnectionService connectionService) : IServiceOwnerConnectionService
     {
         /// <summary>
         /// Allows service owners to 
@@ -25,7 +27,7 @@ namespace Altinn.AccessMgmt.Core.Services
                 .Where(a => a.ToId == toId)
                 .Where(a => a.RoleId == RoleConstants.Rightholder)
                 .FirstOrDefaultAsync(cancellationToken);
-            
+
             if (assignment == null)
             {
                 assignment = new Assignment()
@@ -36,7 +38,7 @@ namespace Altinn.AccessMgmt.Core.Services
                 };
 
                 await dbContext.Assignments.AddAsync(assignment, cancellationToken);
-             }
+            }
 
             // Check if package already assigned
             AssignmentPackage existingAssignmentPackage = await dbContext.AssignmentPackages
@@ -60,6 +62,72 @@ namespace Altinn.AccessMgmt.Core.Services
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return DtoMapper.Convert(newAssignmentPackage);
+        }
+
+        /// <summary>
+        /// Allows service owners to 
+        /// </summary>
+        public async Task<Result<bool>> RevokePackage(Guid fromId, Guid toId, Guid packageId, Guid autentcatedServiceOwnerId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+        {
+            ConnectionOptions options = new(configureConnection);
+
+            // Look for existing direct rightholder assignment
+            Assignment assignment = await dbContext.Assignments
+                .Where(a => a.FromId == fromId)
+                .Where(a => a.ToId == toId)
+                .Where(a => a.RoleId == RoleConstants.Rightholder)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Return if no assignment exsists
+            if (assignment == null)
+            {
+                return false;
+            }
+
+            // Fetch assigned package
+            AssignmentPackage assignmentPackage = await dbContext.AssignmentPackages
+                .AsNoTracking()
+                .Where(a => a.AssignmentId == assignment.Id)
+                .Where(a => a.PackageId == packageId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // Return if no assignment package exsists
+            if (assignmentPackage == null)
+            {
+                return false;
+            }
+
+            // Check if assignment package is delegated by authorized entity
+            if (assignmentPackage.Audit_ChangedBy != autentcatedServiceOwnerId)
+            {
+                return Problems.PackageNotRevokableFromAssignment;
+            }
+
+            // Revoke assignment package
+            dbContext.AssignmentPackages.Remove(assignmentPackage);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            // Check if assignment has any more packages, if not revoke assignment as well
+            await RemoveAssignment(assignment, false, cancellationToken);
+            return true;
+        }
+
+        private async Task<ValidationProblemInstance> RemoveAssignment(Assignment assignment, bool cascade = false, CancellationToken cancellationToken = default)
+        {
+            if (!cascade)
+            {
+                var problem = await connectionService.CheckAssignmentForConnectedReffernces(assignment.Id, cancellationToken);
+
+                if (problem is { })
+                {
+                    return problem;
+                }
+            }
+
+            dbContext.Remove(assignment);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            return null;
         }
     }
 }
