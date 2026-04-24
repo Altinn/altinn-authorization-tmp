@@ -1,5 +1,14 @@
 ﻿# Step 48 — Fix 6.7f: `ApprovePackageRequest` production bug
 
+> ⚠️ **Superseded / reverted by [Step 61](61_Revert_Step_48_ApprovePackageRequest.md).**
+> A post-hoc tech-lead review found that the changes described below were a
+> security regression, not a bug fix: the "fix" removed the approver's
+> delegation-rights check (`CheckPackage` → `GetAssignableAccessPackages`),
+> misidentified what that check actually validates, and silently relaxed
+> `GetOrCreateAssignment`'s party-type validation. Step 61 reverts all three
+> code changes and `[Skip]`s the mis-seeded test that motivated this step.
+> Read Step 61 first for the authoritative account.
+
 ## Goal
 
 Fix the two `RequestControllerTest` failures that were previously masked by the
