@@ -17,7 +17,7 @@ public static class ClientRemovedNotification
 {
     public const string Handler = "client_removed";
 
-    public const int DefaultNotifyInSeconds = 60 * 15;
+    public const int DefaultNotifyInSeconds = 60 * 10;
 
     /// <summary>
     /// Creates or updates a pending outbox message for an agent removed from client notification.
@@ -63,7 +63,7 @@ public static class ClientRemovedNotification
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{providerId}_{agentId}_{clientId}",
             handler: Handler,
-            updateValueFactory: (msg, data) => UpdateValue(db, providerId, clientId, agentId, notifyInSeconds, msg, data),
+            updateValueFactory: (msg, data) => UpdateValue(providerId, clientId, agentId, notifyInSeconds, msg, data),
             addValueFactory: (msg) => AddValue(msg, providerId, clientId, agentId, notifyInSeconds),
             cancellationToken: cancellationToken
         );
@@ -142,7 +142,6 @@ public static class ClientRemovedNotification
     }
 
     private static ClientRemovedNotificationMessage UpdateValue(
-        AppDbContext db,
         Guid providerId,
         Guid clientId,
         Guid agentId,

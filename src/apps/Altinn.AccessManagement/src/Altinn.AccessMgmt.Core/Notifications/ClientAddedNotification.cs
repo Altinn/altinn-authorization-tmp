@@ -97,7 +97,7 @@ public static class ClientAddedNotification
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{providerId}_{agentId}",
             handler: Handler,
-            updateValueFactory: (msg, data) => UpdateValue(db, providerId, clientId, agentId, msg, data, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(providerId, clientId, agentId, msg, data, notifyInSeconds),
             addValueFactory: (msg) => AddValue(msg, providerId, clientId, agentId, notifyInSeconds),
             cancellationToken: cancellationToken
         );
@@ -139,7 +139,6 @@ public static class ClientAddedNotification
     }
 
     private static ClientAddedNotificationMessage UpdateValue(
-        AppDbContext db,
         Guid providerId,
         Guid clientId,
         Guid agentId,

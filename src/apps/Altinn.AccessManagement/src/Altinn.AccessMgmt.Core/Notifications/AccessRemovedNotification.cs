@@ -18,7 +18,7 @@ public static class AccessRemovedNotification
 {
     public const string Handler = "access_removed";
 
-    public const int DefaultNotifyInSeconds = 60 * 15;
+    public const int DefaultNotifyInSeconds = 60 * 10;
 
     /// <summary>
     /// Creates or updates a pending outbox message for an access removed notification.
