@@ -39,6 +39,11 @@ features = {
 }
 
 config = {
+  maskinporten = {
+    client_id = "47a5f435-3201-40fe-82e3-2136c5ad028c"
+    scope     = "folkeregister:deling/offentligmedhjemmel"
+  }
+
   a2_party_import = {
     max_db_size_in_gib = 100
   }
