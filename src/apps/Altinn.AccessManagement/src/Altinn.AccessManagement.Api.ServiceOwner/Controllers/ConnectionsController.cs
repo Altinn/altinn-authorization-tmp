@@ -171,7 +171,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 return Problems.PartyNotFound.ToActionResult();
             }
 
-            Result<bool> result = await connectionService.RevokePackage(fromEntity.Value, toEntity.Value, package, authenticatedServiceOwnerEntity.Id, ConfigureConnections, cancellationToken);
+            Result<bool> result = await connectionService.RevokePackage(fromEntity.Value, toEntity.Value, package.Id, authenticatedServiceOwnerEntity.Id, ConfigureConnections, cancellationToken);
 
             if (result.IsProblem)
             {
