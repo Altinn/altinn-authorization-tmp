@@ -7,13 +7,13 @@ using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
-public class RightholderRemovedNotificationHandler(AppDbContext db, IFeatureManager featureManager) : IOutboxHandler
+public class ClientRemovedNotificationHandler(AppDbContext db, IFeatureManager featureManager) : IOutboxHandler
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxRightholderRemovedNotify, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxClientRemovedNotify, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxRightholderRemovedNotify}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxClientRemovedNotify}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -22,9 +22,13 @@ public class RightholderRemovedNotificationHandler(AppDbContext db, IFeatureMana
     }
 }
 
-public class RightholderRemovedNotificationMessage
+public class ClientRemovedNotificationMessage
 {
-    public Guid From { get; set; }
+    public Guid AgentId { get; set; }
 
-    public Guid To { get; set; }
+    public Guid ProviderId { get; set; }
+
+    public List<Guid> Clients { get; set; } = [];
+
+    public int Updated { get; set; }
 }
