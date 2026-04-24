@@ -1,5 +1,5 @@
 meta {
-  name: PUT_Approve_Received_Request_On_Resource_Already_approved
+  name: PUT_Approve_Received_Request_On_Package_Already_approved
   type: http
   seq: 8
 }
@@ -39,7 +39,7 @@ script:pre-request {
 tests {
   const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
     
-    test("PUT_Approve_Received_Request_On_Resource_AlreadyApproved", function() {
+    test("PUT_Approve_Received_Request_On_Package_AlreadyApproved", function() {
       const data = res.getBody();
       
       expect(res.status).to.equal(400);
