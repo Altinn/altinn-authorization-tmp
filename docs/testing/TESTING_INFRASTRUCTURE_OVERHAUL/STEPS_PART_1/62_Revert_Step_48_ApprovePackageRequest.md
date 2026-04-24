@@ -79,9 +79,15 @@ summarises the findings and the actions taken.
 
 - **`AssignmentService.GetOrCreateAssignment`** — the
   `ValidatePartyIsOrg(toEntity, ref errors, "$QUERY/to")` check is restored
-  alongside the existing `from`-side check.
+  alongside the existing `from`-side check. The same silent removal was
+  present in **both** `AssignmentService.cs` files (the newer
+  `AccessMgmt.Core` EF implementation and the older `AccessMgmt.Persistence`
+  repository-based implementation used by `RightsInternalController` and the
+  admin role-sync path). Both are restored.
 
-  File: `src/apps/Altinn.AccessManagement/src/Altinn.AccessMgmt.Core/Services/AssignmentService.cs`
+  Files:
+  - `src/apps/Altinn.AccessManagement/src/Altinn.AccessMgmt.Core/Services/AssignmentService.cs`
+  - `src/apps/Altinn.AccessManagement/src/Altinn.AccessMgmt.Persistence/Services/AssignmentService.cs`
 
 ### Test change
 

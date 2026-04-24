@@ -433,6 +433,7 @@ public class AssignmentService(
         ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
 
         var roleResult = await roleRepository.Get(t => t.Code, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
