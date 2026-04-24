@@ -662,7 +662,7 @@ public class RequestControllerTest
 
         public ApiFixture Fixture { get; }
 
-        // TODO (step 61 follow-up): rewrite fixture before un-skipping.
+        // TODO (step 62 follow-up): rewrite fixture before un-skipping.
         // The happy-path approval exercises the real delegation-rights path
         // (ConnectionService.AddPackage -> CheckPackage -> GetAssignableAccessPackages)
         // which requires the authenticated principal to hold a role on the *receiver*
@@ -675,13 +675,13 @@ public class RequestControllerTest
         // validation error and the endpoint returns 400. Step 48 masked this by
         // bypassing CheckPackage entirely via ImportAssignmentPackages, which is the
         // A2 role-import helper and must not be used from the public approval
-        // endpoint — see step 61.
+        // endpoint — see step 62.
         //
         // A proper rewrite should e.g. authenticate as MalinEmilie (MD of
         // DumboAdventures), seed the RequestAssignment with To=DumboAdventures and
         // From=<an entity that already has a Rightholder connection with Dumbo>, and
         // request a package Malin's MD role permits her to delegate.
-        [Fact(Skip = "Fixture mis-seeded: authenticates as the sender/Person with no delegation rights on the receiver. Needs rewrite — see step 61 for context.")]
+        [Fact(Skip = "Fixture mis-seeded: authenticates as the sender/Person with no delegation rights on the receiver. Needs rewrite — see step 62 for context.")]
         public async Task Receiver_ApprovesPendingPackageRequest_ReturnsApproved()
         {
             var client = CreateSystemClient(Fixture, TestData.OddHalvorsen.Id);

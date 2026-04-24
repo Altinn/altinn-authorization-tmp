@@ -1,4 +1,4 @@
-﻿# Step 61 — Revert Step 48: `ApprovePackageRequest` security regression
+﻿# Step 62 — Revert Step 48: `ApprovePackageRequest` security regression
 
 ## Goal
 
@@ -116,7 +116,7 @@ after the reverts. Results recorded in the commit accompanying this step.
 ## Impact on the step log / coverage accounting
 
 Step 30 had noted that `ApprovePackageRequest` was among the "five untested
-`RequestController` endpoints" closed in that step. After Step 61 that endpoint
+`RequestController` endpoints" closed in that step. After Step 62 that endpoint
 is again exercised only by the `NonReceiver_…` negative test plus the
 `[Skip]`ped happy path — so the real coverage of the authorization path is
 back to what it was before Step 48. The coverage % measured in Step 30 will
