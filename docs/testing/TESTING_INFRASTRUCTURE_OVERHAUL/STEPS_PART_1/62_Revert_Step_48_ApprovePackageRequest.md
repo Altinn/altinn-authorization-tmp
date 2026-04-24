@@ -59,13 +59,21 @@ summarises the findings and the actions taken.
 ### Code reverts
 
 - **`RequestController.ApprovePackageRequest`** restored to the pre-Step-48
-  shape: call `assignmentService.GetOrCreateAssignment(request.From.Id,
-  request.To.Id, Rightholder)` and then
+  shape: call `assignmentService.GetOrCreateAssignment(request.To.Id,
+  request.From.Id, Rightholder)` and then
   `connectionService.AddPackage(request.To.Id, request.From.Id,
   request.Package.Id.Value, ConfigureConnections, ct)`. This restores the
   validated delegation path (`CheckPackage` →
   `PackageValidation.AuthorizePackageAssignment` +
   `PackageValidation.PackageIsAssignableToRecipient`).
+
+  Note on argument order: on an approve, the approver (`request.To`) is the
+  delegator and the request sender (`request.From`) is the recipient, so the
+  call is `GetOrCreateAssignment(fromEntityId: request.To.Id,
+  toEntityId: request.From.Id, …)`. PR #2918 (`cd9be59b`) had fixed this
+  exact mixup on `main` after Step 48; Step 61's initial revert accidentally
+  re-swapped the arguments because it copied the pre-Step-48 text verbatim
+  without merging the #2918 follow-up. Corrected here.
 
   File: `src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Api.Enduser/Controllers/RequestController.cs`
 
