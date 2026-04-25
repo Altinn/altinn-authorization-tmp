@@ -572,12 +572,17 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
-            var url = $"{Route}/resource"
-                + $"?from={Uri.EscapeDataString(from)}"
-                + $"&to={Uri.EscapeDataString(to)}"
-                + $"&resource={Uri.EscapeDataString("test-resource-query-1")}";
+            var body = new RequestResourceDto
+            {
+                From = from,
+                To = to,
+                Resource = "test-resource-query-1"
+            };
 
-            var response = await client.PostAsync(url, null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/resource",
+                body,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             var dto = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
@@ -592,12 +597,17 @@ public class RequestControllerTest
             var from = "urn:invalid:prefix:12345";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
-            var url = $"{Route}/resource"
-                + $"?from={Uri.EscapeDataString(from)}"
-                + $"&to={Uri.EscapeDataString(to)}"
-                + $"&resource={Uri.EscapeDataString("test-resource-query-1")}";
+            var body = new RequestResourceDto
+            {
+                From = from,
+                To = to,
+                Resource = "test-resource-query-1"
+            };
 
-            var response = await client.PostAsync(url, null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/resource",
+                body,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -624,12 +634,17 @@ public class RequestControllerTest
             var from = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
-            var url = $"{Route}/package"
-                + $"?from={Uri.EscapeDataString(from)}"
-                + $"&to={Uri.EscapeDataString(to)}"
-                + $"&package={Uri.EscapeDataString(PackageConstants.Agriculture.Entity.Urn)}";
+            var body = new RequestPackageDto
+            {
+                From = from,
+                To = to,
+                Package = PackageConstants.Agriculture.Entity.Urn
+            };
 
-            var response = await client.PostAsync(url, null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/package",
+                body,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             var dto = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
@@ -644,12 +659,17 @@ public class RequestControllerTest
             var from = "urn:invalid:prefix:12345";
             var to = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
 
-            var url = $"{Route}/package"
-                + $"?from={Uri.EscapeDataString(from)}"
-                + $"&to={Uri.EscapeDataString(to)}"
-                + $"&package={Uri.EscapeDataString(PackageConstants.Agriculture.Entity.Urn)}";
+            var body = new RequestPackageDto
+            {
+                From = from,
+                To = to,
+                Package = PackageConstants.Agriculture.Entity.Urn
+            };
 
-            var response = await client.PostAsync(url, null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/package",
+                body,
+                TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
