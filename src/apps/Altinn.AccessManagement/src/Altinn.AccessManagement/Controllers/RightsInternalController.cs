@@ -555,12 +555,11 @@ namespace Altinn.AccessManagement.Controllers
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [ActionName(nameof(DelegateInstance))]
-        [HttpPost("internal/instance/delegation")]
+        [HttpPost("internal-a2/instance/delegation")]
         [ProducesResponseType(typeof(void), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ApiExplorerSettings(IgnoreApi = false)]
         public async Task<IActionResult> DelegateInstance([FromBody] InstanceDelegationRequest input, CancellationToken cancellationToken = default)
         {
             // Validate ModelState
@@ -604,12 +603,11 @@ namespace Altinn.AccessManagement.Controllers
         /// <returns></returns>
         [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [ActionName(nameof(RevokeInstance))]
-        [HttpPost("internal/instance/revoke")]
+        [HttpPost("internal-a2/instance/revoke")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-        [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> RevokeInstance([FromBody] InstanceRevokeRequest input, CancellationToken cancellationToken = default)
         {
             // Validate ModelState
