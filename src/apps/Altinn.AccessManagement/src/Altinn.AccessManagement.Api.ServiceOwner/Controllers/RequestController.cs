@@ -75,21 +75,8 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateResourceRequest(
-        [FromQuery] string? from = null,
-        [FromQuery] string? to = null,
-        [FromQuery] string? resource = null,
-        [FromBody] RequestResourceDto? body = null,
-        CancellationToken ct = default)
+    public async Task<IActionResult> CreateResourceRequest([FromBody] RequestResourceDto data, CancellationToken ct = default)
     {
-        var data = new RequestResourceDto
-        {
-            From = body?.From ?? from,
-            To = body?.To ?? to,
-            Resource = body?.Resource ?? resource,
-            RightKeys = body?.RightKeys,
-        };
-
         ValidationErrorBuilder errorBuilder = default;
 
         var fromResult = await GetEntity(data.From, "/from", ct);
@@ -131,20 +118,8 @@ public class RequestController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreatePackageRequest(
-        [FromQuery] string? from = null,
-        [FromQuery] string? to = null,
-        [FromQuery] string? package = null,
-        [FromBody] RequestPackageDto? body = null,
-        CancellationToken ct = default)
+    public async Task<IActionResult> CreatePackageRequest([FromBody] RequestPackageDto data, CancellationToken ct = default)
     {
-        var data = new RequestPackageDto
-        {
-            From = body?.From ?? from,
-            To = body?.To ?? to,
-            Package = body?.Package ?? package,
-        };
-
         ValidationErrorBuilder errorBuilder = default;
 
         if (string.IsNullOrEmpty(data.Package))
@@ -173,6 +148,7 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
+        /*
         /*
         NAV (authUserUuid) ber om tilgang for Kari (party) til App (resource) hos Org (to).
         ==
