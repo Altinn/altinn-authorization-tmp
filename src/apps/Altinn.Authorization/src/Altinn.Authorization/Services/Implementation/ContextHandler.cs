@@ -233,6 +233,10 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.AppInstanceIdValue));           
                 requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, resourceAttributes.ResourceInstanceValue));
             }
+            else if (resourceAttributes.ResourceInstanceValue != null && !resourceAttributes.ResourceInstanceValue.StartsWith(XacmlRequestAttribute.InstanceAttribute) && resourceAttributes.OrgValue != null && resourceAttributes.AppValue != null && resourceAttributes.ResourcePartyValue != null)
+            {
+                requestResourceAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.ResourceRegistryInstanceAttribute, $"{XacmlRequestAttribute.InstanceAttribute}:{resourceAttributes.ResourcePartyValue}/{resourceAttributes.ResourceInstanceValue}"));
+            }
 
             return requestResourceAttributes;
         }
