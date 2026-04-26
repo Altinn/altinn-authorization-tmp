@@ -1497,7 +1497,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
                 FromId = input.FromUuid,
                 ToId = input.ToUuid,
                 RoleId = RoleConstants.Rightholder.Id,
-                Audit_ValidFrom = audit.ValidFrom,
+                Audit_ValidFrom = audit?.ValidFrom ?? DateTimeOffset.UtcNow,
             };
             await db.Assignments.AddAsync(assignment, cancellationToken);
             await db.SaveChangesAsync(audit, cancellationToken);
