@@ -38,6 +38,7 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:0"] = "innbygger-skatteforhold-privatpersoner";
                 dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:1"] = "another-allowed-package";
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "jordbruk";
             });
 
             Fixture.EnsureSeedOnce<AddPackages>(db =>
@@ -176,7 +177,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithOrganizationIdentifiers_ReturnsOk()
+        public async Task AddPackage_WithFromAsOrganizationIdentifiersForPersonPackage_BadRequest()
         {
             // Arrange
             var client = CreateClient();
@@ -199,6 +200,239 @@ public class ServiceOwnerConnectionsControllerTest
             var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             
             // Update this assertion once organization support is added
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddPackage_ToOrganisation_ReturnsOk()
+        {
+            // Arrange
+            var client = CreateClient();
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.VegardSolberg.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.SvendsenAutomobil.Entity.OrganizationIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+
+            string responsejson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignmentPackage = await db.AssignmentPackages
+                    .Include(ap => ap.Assignment)
+                    .Where(ap => ap.Assignment.FromId == TestData.BakerJohnsen.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.SvendsenAutomobil.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.Agriculture.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(assignmentPackage);
+            });
+        }
+
+        [Fact]
+        public async Task AddPackage_FromOrganisationOnPackageThatSupportsOrganisation_ReturnsOk()
+        {
+            // Arrange
+            var client = CreateClient();
+
+            Fixture.WithInMemoryAppsettings(dict =>
+            {
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "jordbruk";
+            });
+
+            ServiceOwnerConnectionPartyUrn.OrganizationId from = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.FredriksonsFabrikk.Entity.OrganizationIdentifier));
+            ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.RegnskapNorge.Entity.OrganizationIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("jordbruk"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokePackage_WhereAssignmentIsRevoked_ReturnsNoContent()
+        {
+            // Arrange - First create a package delegation, then revoke it
+            var client = CreateClient();
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.SiljeHaugen.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.EinarBerg.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation addRequest = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // First add the package
+            var addResponse = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, addResponse.StatusCode);
+
+            // Act - Revoke the package
+            var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", addRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokePackage_WhereAssignmentIsNotRevoked_ReturnsNoContent()
+        {
+            // Arrange - Create an assignment with two packages via service owner, revoke one
+            var client = CreateClient();
+
+            Fixture.WithInMemoryAppsettings(dict =>
+            {
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "another-allowed-package";
+            });
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.ToneKvam.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.ArneLund.Entity.PersonIdentifier));
+
+            // Add first package
+            ServiceOwnerAccessPackageDelegation addRequest1 = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"))
+            };
+            var addResponse1 = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest1, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, addResponse1.StatusCode);
+
+            // Act - Revoke the first package (assignment should still exist if there were other packages)
+            var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", addRequest1, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokePackage_WhereAssignmentDoesNotExist_ReturnsBadRequest()
+        {
+            // Arrange
+            var client = CreateClient();
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.OddHalvorsen.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LivKristiansen.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", request, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokePackage_WhereAssignmentPackageDoesNotExist_ReturnsBadRequest()
+        {
+            // Arrange - Create an assignment with one package, then try to revoke a different package
+            var client = CreateClient();
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.HelgeNilsen.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.SteinarAndreassen.Entity.PersonIdentifier));
+
+            // Add a package to create an assignment
+            ServiceOwnerAccessPackageDelegation addRequest = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"))
+            };
+            var addResponse = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, addResponse.StatusCode);
+
+            // Try to revoke a different package that was never added
+            Fixture.WithInMemoryAppsettings(dict =>
+            {
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "another-allowed-package";
+            });
+
+            ServiceOwnerAccessPackageDelegation revokeRequest = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("another-allowed-package"))
+            };
+
+            // Act
+            var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", revokeRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, revokeResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task RevokePackage_WhereAssignmentWasNotPerformedByServiceOwner_ReturnsBadRequest()
+        {
+            // Arrange - Seed an assignment+package that was NOT created by the service owner
+            var client = CreateClient();
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignment = new Assignment()
+                {
+                    FromId = TestData.GeirPedersen.Id,
+                    ToId = TestData.MaritEriksen.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+                db.Assignments.Add(assignment);
+                await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+                var pkg = new AssignmentPackage()
+                {
+                    AssignmentId = assignment.Id,
+                    PackageId = PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id,
+                };
+                db.AssignmentPackages.Add(pkg);
+                await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            });
+
+            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.GeirPedersen.Entity.PersonIdentifier));
+            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.MaritEriksen.Entity.PersonIdentifier));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+
+            ServiceOwnerAccessPackageDelegation request = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = package
+            };
+
+            // Act
+            var response = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", request, TestContext.Current.CancellationToken);
+
+            // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 

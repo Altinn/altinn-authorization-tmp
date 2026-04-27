@@ -105,10 +105,14 @@ namespace Altinn.AccessMgmt.Core.Services
 
             // Revoke assignment package
             dbContext.AssignmentPackages.Remove(assignmentPackage);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            var deletedData = await dbContext.SaveChangesAsync(cancellationToken);
 
-            // Check if assignment has any more packages, if not revoke assignment as well
-            await RemoveAssignment(assignment, false, cancellationToken);
+            // Remove assignment if we now deleted the last connection to the assignment.
+            if (deletedData > 0)
+            {
+                await RemoveAssignment(assignment, false, cancellationToken);
+            }
+
             return true;
         }
 
