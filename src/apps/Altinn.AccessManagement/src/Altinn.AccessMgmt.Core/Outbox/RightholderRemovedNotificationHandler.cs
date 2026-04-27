@@ -31,9 +31,9 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
         }
 
         var (from, to, idempotencyId) = await UnwrapMessage(message, cancellationToken);
-        if (to.TypeId != EntityTypeConstants.Person && to.TypeId != EntityTypeConstants.Organization)
+        if (to.TypeId != EntityTypeConstants.Person)
         {
-            db.OutboxMessageLogs.Add(message, "to entity type is not of type <Person | Organization>");
+            db.OutboxMessageLogs.Add(message, "to entity type is not of type <Person>");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -94,7 +94,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
 
     private async Task<(Entity From, Entity To, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
-        var content = JsonSerializer.Deserialize<RightholderAddedNotificationMessage>(message.Data);
+        var content = JsonSerializer.Deserialize<RightholderRemovedNotificationMessage>(message.Data);
         if (content is null)
         {
             throw new InvalidOperationException("Data is empty. Can't send notification without content.");
@@ -133,7 +133,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
             {
                 RecipientPerson = new RecipientPersonExt
                 {
-                    NationalIdentityNumber = from.PersonIdentifier,
+                    NationalIdentityNumber = to.PersonIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
                     EmailSettings = new EmailSendingOptionsExt
                     {
@@ -151,7 +151,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
             {
                 RecipientOrganization = new RecipientOrganizationExt
                 {
-                    OrgNumber = from.OrganizationIdentifier,
+                    OrgNumber = to.OrganizationIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
                     ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()

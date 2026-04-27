@@ -33,9 +33,9 @@ public class RightholderAddedNotificationHandler(
         }
 
         var (from, to, idempotencyId) = await UnwrapMessage(message, cancellationToken);
-        if (to.TypeId != EntityTypeConstants.Person && to.TypeId != EntityTypeConstants.Organization)
+        if (to.TypeId != EntityTypeConstants.Person)
         {
-            db.OutboxMessageLogs.Add(message, "to entity type is not of type <Person | Organization>");
+            db.OutboxMessageLogs.Add(message, "to entity type is not of type <Person>");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -117,7 +117,7 @@ public class RightholderAddedNotificationHandler(
         return (
             fromEntity,
             toEntity,
-            $"auth_{AccessAddedNotification.Handler}_{fromEntity.Id}_{toEntity.Id}_{message.CreatedAt.Ticks}"
+            $"auth_{RightholderAddedNotification.Handler}_{fromEntity.Id}_{toEntity.Id}_{message.CreatedAt.Ticks}"
         );
     }
 
@@ -135,7 +135,7 @@ public class RightholderAddedNotificationHandler(
             {
                 RecipientPerson = new RecipientPersonExt
                 {
-                    NationalIdentityNumber = from.PersonIdentifier,
+                    NationalIdentityNumber = to.PersonIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
                     EmailSettings = new EmailSendingOptionsExt
                     {
@@ -153,7 +153,7 @@ public class RightholderAddedNotificationHandler(
             {
                 RecipientOrganization = new RecipientOrganizationExt
                 {
-                    OrgNumber = from.OrganizationIdentifier,
+                    OrgNumber = to.OrganizationIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
                     ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
                     EmailSettings = new()
