@@ -256,15 +256,8 @@ jobs:
           dotnet-sonarscanner begin \
             /key:"$SONAR_KEY" \
             /name:"$SONAR_NAME" \
-            /o:"altinn" /d:sonar.token="$SONAR_TOKEN" \
-            /d:sonar.scanner.scanAll=false \
-            /d:sonar.project.monorepo.enabled=true \
-            /d:sonar.exclusions="**/Migration/**,**/Altinn.AccessMgmt.FFB/**,**/Altinn.AccessMgmt.WebComponents/**" \
-            /d:sonar.coverage.exclusions="**/Migration/**,**/Altinn.AccessMgmt.FFB/**,**/Altinn.AccessMgmt.WebComponents/**" \
-            /d:sonar.test.exclusions="**/test/**/*" \
-            /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.vstest.reportsPaths="**/*.trx" \
-            /d:sonar.cs.vscoveragexml.reportsPaths="TestResults/coverage.xml"
+            /d:sonar.token="$SONAR_TOKEN" \
+            /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml"
 
           dotnet build --no-incremental
           # xUnit v3 routes `dotnet test` through Microsoft Testing Platform (MTP).
