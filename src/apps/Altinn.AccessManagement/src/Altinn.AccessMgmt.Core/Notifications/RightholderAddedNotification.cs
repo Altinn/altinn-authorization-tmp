@@ -126,7 +126,7 @@ public static class RightholderAddedNotification
         
         return new()
         {
-            From = from,
+            FromId = from,
             To = to,
         };
     }
