@@ -231,24 +231,18 @@ audit cleanly distinct from Part 1.
   only if (a) the licensing situation changes, (b) AutoMapper publishes
   a free 14.x patch, or (c) usage patterns change in a way that makes
   the advisory relevant.
-- **C5'** — **`eng/testing/check-coverage-thresholds.ps1` produces
-  false-positive threshold failures in workstation mode.** When
-  `run-coverage.ps1` feeds it 11 separate cobertura files (one per test
-  project), the script's
-  [`foreach ($pkg in $xml.coverage.packages.package)`](../../eng/testing/check-coverage-thresholds.ps1)
-  loop checks each per-test-project occurrence of an assembly
-  independently. Example from this audit:
-  `Altinn.AccessManagement.Core` is canonically 63.29% in
-  `AccessMgmt.Tests.cobertura` (well above the 60% floor) but appears as
-  0.7% / 1.0% / 14.11% / 0.69% / etc. in five other test projects'
-  cobertura files (transitive partial coverage), each of which the
-  script reports as a separate `Below threshold` failure. CI is
-  **unaffected** because Part 1 Step 41's CI flow runs a single
-  `dotnet-coverage collect -- dotnet test` invocation that emits ONE
-  merged cobertura. Local-dev sees `Below threshold:` listing 22+ false
-  failures and the run exits 1. Fix: aggregate per-assembly across input
-  files (max line% / branch%) before applying the threshold, or
-  `dotnet-coverage merge` the inputs into one before parsing.
+- ~~**C5'** — **`eng/testing/check-coverage-thresholds.ps1` produces
+  false-positive threshold failures in workstation mode.**~~ —
+  **Resolved by Part 2 Step 2** ([02_Fix_Coverage_Threshold_Aggregation.md](STEPS_PART_2/02_Fix_Coverage_Threshold_Aggregation.md)).
+  `run-coverage.ps1` now invokes `dotnet-coverage merge` before the
+  threshold check + ReportGenerator so each assembly appears exactly
+  once; `check-coverage-thresholds.ps1` was additionally hardened with a
+  two-phase aggregate-then-check (max line%/branch%, union Owned) so
+  multi-file inputs no longer cascade into one spurious failure per
+  per-test-project view. Side effect: the corrected aggregation
+  reveals that the §1.4 baseline below *under-counted* several
+  assemblies — see Step 2 verification for the deltas; the §1.4 table
+  will be re-baselined when T1 (#2947) closes.
 
 ### Medium (coverage & cleanup)
 
@@ -400,9 +394,9 @@ Block almost everything else until done. Small, well-scoped:
 - **A.2** — Resolve **C2'** failing `ValidateParty` test: triage — real
   auth regression in `PartiesController` vs mock drift; fix root cause,
   not the assertion.
-- **A.3** — Resolve **C5'** `check-coverage-thresholds.ps1`
+- ~~**A.3** — Resolve **C5'** `check-coverage-thresholds.ps1`
   false-positive: refactor to aggregate per-assembly across input files
-  before threshold check.
+  before threshold check.~~ — **Done in Part 2 Step 2**.
 - ~~**A.4** — Investigate **C4'** AutoMapper 14.0.0 CVE.~~ — **Dropped**
   per dismissal of C4' (see §2). No work item.
 - **A.5** — Plan **C3'** `Host.Pipeline` test project: scaffold an empty
