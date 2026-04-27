@@ -38,15 +38,15 @@ public static class PackageValidation
     /// Checks the list of packages that all are assignable to the recipient entity type.
     /// </summary>
     /// <param name="packageUrns">list of packages</param>
-    /// <param name="toEntity">entity the assignment is to be made to</param>
+    /// <param name="toEntityType">entity the assignment is to be made to</param>
     /// <param name="paramName">name of the query parameter</param>
     /// <returns></returns>
-    internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, EntityType toEntity, string paramName = "packageId") => () =>
+    internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, EntityType toEntityType, string paramName = "packageId") => () =>
     {
         ArgumentNullException.ThrowIfNull(packageUrns);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (toEntity.Id == EntityTypeConstants.Organization)
+        if (toEntityType.Id == EntityTypeConstants.Organization)
         {
             var packagesNotAssignableToOrg = packageUrns
                 .Where(p => p.Equals(PackageConstants.MainAdministrator.Entity.Urn));
@@ -56,6 +56,74 @@ public static class PackageValidation
                 return (ref ValidationErrorBuilder errors) =>
                     errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
             }
+        }
+
+        return null;
+    };
+
+    /// <summary>
+    /// Checks the list of packages that all are assignable from the recipient entity type.
+    /// </summary>
+    /// <param name="packageUrns">list of packages</param>
+    /// <param name="fromEntityType">entity the assignment is to be made from</param>
+    /// <param name="paramName">name of the query parameter</param>
+    /// <returns></returns>
+    internal static RuleExpression PackageIsAssignableFromRecipient(IEnumerable<string> packageUrns, EntityType fromEntityType, string paramName = "packageId") => () =>
+    {
+        ArgumentNullException.ThrowIfNull(packageUrns);
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+        var packagesNotAssignableFromOrg = new List<string>();
+
+        foreach (var p in packageUrns)
+        {
+            if (PackageConstants.TryGetByUrn(p, out var package))
+            {
+                if (package.Entity.EntityTypeId != fromEntityType.Id)
+                {
+                    packagesNotAssignableFromOrg.Add(package.Entity.Urn);
+                }
+            }
+        }
+
+        if (packagesNotAssignableFromOrg.Any())
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {fromEntityType.Name}.")]);
+        }
+
+        return null;
+    };
+
+    /// <summary>
+    /// Checks the list of packages that all are assignable from the recipient entity type.
+    /// </summary>
+    /// <param name="packageUrns">list of packages</param>
+    /// <param name="fromEntityType">entity the assignment is to be made from</param>
+    /// <param name="paramName">name of the query parameter</param>
+    /// <returns></returns>
+    internal static RuleExpression PackageIsAssignableFromRecipient(IEnumerable<Guid> packageUrns, EntityType fromEntityType, string paramName = "packageId") => () =>
+    {
+        ArgumentNullException.ThrowIfNull(packageUrns);
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+        var packagesNotAssignableFromOrg = new List<string>();
+
+        foreach (var p in packageUrns)
+        {
+            if (PackageConstants.TryGetById(p, out var package))
+            {
+                if (package.Entity.EntityTypeId != fromEntityType.Id)
+                {
+                    packagesNotAssignableFromOrg.Add(package.Entity.Urn);
+                }
+            }
+        }
+
+        if (packagesNotAssignableFromOrg.Any())
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {fromEntityType.Name}.")]);
         }
 
         return null;

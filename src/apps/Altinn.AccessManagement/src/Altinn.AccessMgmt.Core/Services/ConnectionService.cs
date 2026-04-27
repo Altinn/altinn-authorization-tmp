@@ -590,7 +590,8 @@ public partial class ConnectionService(
 
         problem = ValidationComposer.Validate(
             PackageValidation.AuthorizePackageAssignment(check.Value),
-            PackageValidation.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), to.Type, queryParamName)
+            PackageValidation.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), to.Type, queryParamName),
+            PackageValidation.PackageIsAssignableFromRecipient(check.Value.Select(p => p.Package.Urn), from.Type, queryParamName)
         );
 
         if (problem is { })

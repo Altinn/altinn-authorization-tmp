@@ -2,9 +2,9 @@
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Notifications;
-using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettings) : IRequestService
+public class RequestService(AppDbContext db, IEntityService entityService, IOptions<CoreAppsettings> appsettings) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -160,11 +160,22 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
     {
         ValidationErrorBuilder error = default;
 
-        if (toId == fromId)
+        var to = await entityService.GetEntity(toId, ct);
+        if (to is null)
         {
-            error.Add(ValidationErrors.RequestFromSelfNotAllowed);
+            error.Add(ValidationErrors.RequestMissingFromOrTo);
             error.TryBuild(out var inputProblems);
             return inputProblems;
+        }
+
+        var problem = ValidationComposer.Validate(
+           PackageValidation.PackageIsAssignableFromRecipient([packageId], to.Type, "package"),
+           RequestValidation.RequestNotFromSelf(fromId, toId)
+        );
+
+        if (problem is { })
+        {
+            return problem;
         }
 
         var requestAssignmentResult = await GetOrCreateRequestAssignment(
