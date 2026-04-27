@@ -215,10 +215,16 @@ audit cleanly distinct from Part 1.
   regression in `PartiesController.ValidateParty(...)` or a mock-graph
   drift (e.g. `PartiesMock` permits cross-user lookups it shouldn't). Must
   be triaged — if it's a real auth bug it's a security finding.
-- **C3'** — **`Altinn.Authorization.Host.Pipeline` has no test project
+- ~~**C3'** — **`Altinn.Authorization.Host.Pipeline` has no test project
   and 0% coverage** despite being ~1.4k LOC of substantive logic
   (hosted services, builders, segment/sink/source services, telemetry).
-  Largest untested production library in the repo.
+  Largest untested production library in the repo.~~ — **Scaffold
+  landed in Part 2 Step 4** ([04_Scaffold_Host_Pipeline_Tests.md](STEPS_PART_2/04_Scaffold_Host_Pipeline_Tests.md)):
+  new `Altinn.Authorization.Host.Pipeline.Tests` project with a single
+  `PipelineMessage<T>` smoke test (one passing test confirms wiring + 
+  prevents the C1' empty-project recurrence). The 0 %-coverage gap on
+  the production assembly itself remains until Phase D.1 populates
+  real tests; this step only paves the way.
 - ~~**C4'** — **`AutoMapper 14.0.0` has a known high-severity vulnerability**
   (NU1903 / GHSA-rvv3-g6hj-g44x) — pinned in
   [`src/Directory.Packages.props:27`](../../src/Directory.Packages.props:27)
@@ -402,9 +408,11 @@ Block almost everything else until done. Small, well-scoped:
   before threshold check.~~ — **Done in Part 2 Step 2**.
 - ~~**A.4** — Investigate **C4'** AutoMapper 14.0.0 CVE.~~ — **Dropped**
   per dismissal of C4' (see §2). No work item.
-- **A.5** — Plan **C3'** `Host.Pipeline` test project: scaffold an empty
+- ~~**A.5** — Plan **C3'** `Host.Pipeline` test project: scaffold an empty
   `Altinn.Authorization.Host.Pipeline.Tests` project (xUnit v3 + the
-  central wiring) without tests yet — paves the way for Phase D.
+  central wiring) without tests yet — paves the way for Phase D.~~ —
+  **Done in Part 2 Step 4** (scaffolded with a single `PipelineMessage<T>`
+  smoke test to avoid the C1' empty-project pattern).
 
 ### Phase B — Pure-logic coverage (M5', M6', M7')
 

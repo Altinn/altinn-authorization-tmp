@@ -332,6 +332,7 @@ the phase numbers in the
 | 1 | 2026-04-27 | KICKOFF | Part 2 kickoff audit — measured 2535 tests across 11 projects (1 fail, 16 skip), 23 owned assemblies; surfaced **5 critical** (`ABAC.Tests` empty (C1'); `ValidateParty…Forbidden` failing 200≠403 (C2'); `Host.Pipeline` 0% / no test project (~1.4k LOC, C3'); `AutoMapper 14.0.0` CVE GHSA-rvv3-g6hj-g44x (C4'); `check-coverage-thresholds.ps1` false-positive in workstation mode (C5')), **8 medium**, **5 low** issues | n/a (audit-only) | [01_Part_2_Kickoff_Audit.md](01_Part_2_Kickoff_Audit.md) |
 | 2 | 2026-04-27 | A | Fix **C5'** workstation false-positive coverage failures — `run-coverage.ps1` now invokes `dotnet-coverage merge` to produce one canonical `coverage.cobertura.xml` before threshold check + ReportGenerator; `check-coverage-thresholds.ps1` hardened with two-phase aggregate-then-check (max line%/branch%, union Owned) so multi-file inputs no longer cause one spurious failure per per-test-project view. Side effect: merged-cobertura aggregation reveals the Step 1 audit *under-counted* several assemblies (e.g. `Api.Internal` 48.56% → **73.63%** ✅, `Persistence` 44.90% → 57.29%, `AccessMgmt.Core` 33.66% → 44.96%) — audit baseline refresh deferred to T1 closing | n/a (tooling fix; baseline refresh deferred) | [02_Fix_Coverage_Threshold_Aggregation.md](02_Fix_Coverage_Threshold_Aggregation.md) |
 | 3 | 2026-04-27 | A | Resolve **C1'** by deleting the empty `Altinn.Authorization.ABAC.Tests` project (only auto-generated `.cs` files; the test runner discovered 0 tests). Removed the project + the orphan `test/Directory.Build.props` from both the root `Altinn.Authorization.sln` and the per-package `src/pkgs/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.sln`; updated `docs/testing/TEST_PROJECTS.md` § `pkg: ABAC` to document that ABAC is exercised indirectly via `Altinn.Authorization.Tests` (~63 % line / 61 % branch). ABAC's centrally-enforced 60 % threshold continues to gate the indirect coverage. Per-package `dotnet build` clean (net8.0 + net9.0). Test-project count: 11 → **10** | n/a (no production code; ABAC indirect coverage unchanged) | [03_Delete_Empty_ABAC_Tests.md](03_Delete_Empty_ABAC_Tests.md) |
+| 4 | 2026-04-27 | A | Scaffold `Altinn.Authorization.Host.Pipeline.Tests` for **C3'/A.5** — new test project under `src/libs/Altinn.Authorization.Host/test/` mirroring `Lease.Tests` wiring (empty TFM trick + `xunit.runner.json` + ProjectReference to the production assembly). Added one `PipelineMessage<T>` ctor round-trip smoke test (1 passed) to keep test-discovery non-zero and avoid recreating C1'. Added to both root and per-package Host `.sln` files; build clean (0/0); xUnit v3 in-process runner discovers + passes the test. **The 0 % coverage on the production `Altinn.Authorization.Host.Pipeline` assembly itself is unchanged** — populating real Pipeline tests is Phase D.1, deferred. Test-project count: 10 → **11** | n/a (production assembly unchanged; smoke test only) | [04_Scaffold_Host_Pipeline_Tests.md](04_Scaffold_Host_Pipeline_Tests.md) |
 
 ### Recommended Next Steps (priority order)
 
@@ -360,9 +361,11 @@ All items below are actionable unless otherwise noted. Ordering follows
    2026-04-27**: AutoMapper went paid in ≥ 15.x and the advisory
    doesn't apply to this codebase. See dismissal in
    [PART_2 §2 C4'](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#critical-correctness-security-dead-code).
-5. **A.5 — Scaffold empty `Altinn.Authorization.Host.Pipeline.Tests`
-   project (C3').** No tests yet — just the csproj wired into the
-   central infrastructure. Unblocks D.1.
+5. ~~**A.5 — Scaffold empty `Altinn.Authorization.Host.Pipeline.Tests`
+   project (C3').**~~ — **Done in Step 4**
+   ([04_Scaffold_Host_Pipeline_Tests.md](04_Scaffold_Host_Pipeline_Tests.md)):
+   project + 1 smoke test added (`PipelineMessage<T>` ctor round-trip);
+   added to both sln files; D.1 unblocked.
 
 **Phase B — Pure-logic coverage (parallel with A):**
 
@@ -445,9 +448,9 @@ shows up immediately.
 
 | Item | Blocker | Notes | Last re-checked |
 |---|---|---|---|
-| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 3 |
-| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 3 |
-| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 3 |
+| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 4 |
+| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 4 |
+| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 4 |
 
 ### Final Coverage (measured)
 
