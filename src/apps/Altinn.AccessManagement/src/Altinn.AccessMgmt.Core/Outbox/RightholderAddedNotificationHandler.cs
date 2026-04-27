@@ -180,7 +180,6 @@ public class RightholderAddedNotificationHandler(
                 </p>
                 <p>
                     {from.Name} har registrert deg som sin bruker i Altinn. Du kan nå be om fullmakter.
-                    <br>
                     Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
                 </p>
                 <p>
@@ -201,7 +200,6 @@ public class RightholderAddedNotificationHandler(
                 </p>
                 <p>
                     {from.Name}, {from.OrganizationIdentifier} har registrert deg som sin bruker i Altinn. Du kan nå be om fullmakter.
-                    <br>
                     Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
                 </p>
                 <p>
@@ -222,7 +220,6 @@ public class RightholderAddedNotificationHandler(
                 </p>
                 <p>
                     {from.Name} har registrert dere som sin bruker i Altinn. Dere kan nå be om fullmakter.
-                    <br>
                     Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
                 </p>
                 <p>
@@ -243,7 +240,6 @@ public class RightholderAddedNotificationHandler(
                 </p>
                 <p>
                     {from.Name}, {from.OrganizationIdentifier} har registrert dere som sin bruker i Altinn. Dere kan nå be om fullmakter.
-                    <br>
                     Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
                 </p>
                 <p>

@@ -10,6 +10,8 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.Authorization.Integration.Platform.Notification;
 using Altinn.Authorization.Integration.Platform.Notification.Models;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Email;
+using Altinn.Authorization.Integration.Platform.Notification.Models.Recipient;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
@@ -123,7 +125,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
         ArgumentNullException.ThrowIfNull(to);
 
         var pronoun = to.TypeId == EntityTypeConstants.Person ? "Du" : "Dere";
-        var subject = $"{pronoun} har fått en ny aktør i Altinn";
+        var subject = $"{pronoun} har mistet en aktør i Altinn";
 
         if (to.TypeId == EntityTypeConstants.Person)
         {
@@ -175,9 +177,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
                     Hei,
                 </p>
                 <p>
-                    {from.Name} har registrert deg som sin bruker i Altinn. Du kan nå be om fullmakter.
-                    <br>
-                    Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
+                    {from.Name} har fjernet deg som sin bruker i Altinn.
                 </p>
                 <p>
                     Med vennlig hilsen,<br>
@@ -196,9 +196,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
                     Hei,
                 </p>
                 <p>
-                    {from.Name}, {from.OrganizationIdentifier} har registrert deg som sin bruker i Altinn. Du kan nå be om fullmakter.
-                    <br>
-                    Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
+                    {from.Name}, {from.OrganizationIdentifier} har fjernet deg som sin bruker i Altinn.
                 </p>
                 <p>
                     Med vennlig hilsen,<br>
@@ -217,9 +215,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
                     Hei,
                 </p>
                 <p>
-                    {from.Name} har registrert dere som sin bruker i Altinn. Dere kan nå be om fullmakter.
-                    <br>
-                    Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
+                    {from.Name} har fjernet dere som sin bruker i Altinn.
                 </p>
                 <p>
                     Med vennlig hilsen,<br>
@@ -238,9 +234,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
                     Hei,
                 </p>
                 <p>
-                    {from.Name}, {from.OrganizationIdentifier} har registrert dere som sin bruker i Altinn. Dere kan nå be om fullmakter.
-                    <br>
-                    Dette finner du ved å logge inn på Altinn, gå til Tilgangsstyring og Fullmakter hos andre.
+                    {from.Name}, {from.OrganizationIdentifier} har fjernet dere som sin bruker i Altinn.
                 </p>
                 <p>
                     Med vennlig hilsen,<br>
