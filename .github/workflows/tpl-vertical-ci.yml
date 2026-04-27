@@ -85,12 +85,23 @@ jobs:
       - name: Detect SonarCloud config
         # Single source of truth for "should Sonar run?". Exposed as a step
         # output so the conditional Sonar steps below all reference one
-        # condition instead of repeating the inputs / fork check inline.
+        # condition instead of repeating the checks inline.
+        # Sonar is disabled when:
+        #   - the vertical opted out (sonarProjectKey == 'false')
+        #   - the PR is from a fork (no SONAR_TOKEN access on forks)
+        #   - the PR was opened by Renovate / Dependabot — bot PRs only
+        #     touch dependency manifests and produce no useful Sonar
+        #     findings, so analysing them just burns Sonar minutes per
+        #     vertical. On push events `github.event.pull_request.user.login`
+        #     is null, so the bot checks pass and Sonar still runs on
+        #     merges to main (including the merge of a bot-authored PR).
         id: sonar
         shell: bash
         run: |
           if [[ "${{ inputs.sonarProjectKey }}" != "false" \
-             && "${{ github.event.pull_request.head.repo.fork }}" != "true" ]]; then
+             && "${{ github.event.pull_request.head.repo.fork }}" != "true" \
+             && "${{ github.event.pull_request.user.login }}" != "renovate[bot]" \
+             && "${{ github.event.pull_request.user.login }}" != "dependabot[bot]" ]]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"

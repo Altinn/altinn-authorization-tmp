@@ -64,6 +64,20 @@ To onboard a new vertical: create the SonarCloud project under the `altinn`
 organization (Sonar UI → New project → GitHub → pick the repo → set monorepo
 mode), then add `"sonarcloud": { "projectKey": "..." }` to its `conf.json`.
 
+### Automatic skips
+
+Even when a vertical opts in, the `Detect SonarCloud config` step skips
+Sonar when:
+
+- the PR is from a fork (no `SONAR_TOKEN` access)
+- the PR was opened by `renovate[bot]` or `dependabot[bot]` — bot PRs only
+  touch dependency manifests and produce no useful Sonar findings, so
+  analysing them just burns Sonar minutes per vertical
+
+Pushes to `main` (including the merge commit of a bot-authored PR) always
+run Sonar — the bot author check uses `pull_request.user.login`, which is
+null on push events.
+
 ## Exclusions
 
 `SonarQube.Analysis.xml` defines four orthogonal exclusion lists:
