@@ -217,7 +217,20 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-    if: inputs.sonarProjectKey != 'false' && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
+    # Skip Sonar when:
+    #   - the vertical opted out (sonarProjectKey == 'false')
+    #   - the PR is from a fork (no SONAR_TOKEN access)
+    #   - the PR was opened by Renovate / Dependabot — these only touch
+    #     dependency manifests and produce no useful Sonar findings, so
+    #     analysing them just burns Sonar minutes per vertical.
+    # On push events `github.event.pull_request.user.login` is null, so the
+    # bot checks pass and Sonar still runs on merges into main (including
+    # the merge of a bot-authored PR).
+    if: >-
+      inputs.sonarProjectKey != 'false'
+      && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
+      && github.event.pull_request.user.login != 'renovate[bot]'
+      && github.event.pull_request.user.login != 'dependabot[bot]'
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
