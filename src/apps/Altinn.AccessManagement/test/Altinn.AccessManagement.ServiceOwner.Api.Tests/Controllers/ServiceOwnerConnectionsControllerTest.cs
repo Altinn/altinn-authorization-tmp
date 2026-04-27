@@ -8,10 +8,9 @@ using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Altinn.AccessManagement.ServiceOwner.Api.Tests.Controllers;
 
@@ -36,9 +35,9 @@ public class ServiceOwnerConnectionsControllerTest
             // Configure the whitelist for the test service owner
             Fixture.WithInMemoryAppsettings(dict =>
             {
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:0"] = "innbygger-skatteforhold-privatpersoner";
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:1"] = "another-allowed-package";
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "jordbruk";
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:0"] = PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code;
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:1"] = PackageConstants.InnbyggerBankFinans.Entity.Code;
+                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = PackageConstants.Agriculture.Entity.Code;
             });
 
             Fixture.EnsureSeedOnce<AddPackages>(db =>
@@ -76,7 +75,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.VegardSolberg.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.IngerNygard.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -135,7 +134,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -146,7 +145,6 @@ public class ServiceOwnerConnectionsControllerTest
 
             // Act
             HttpResponseMessage response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
-            string contentText = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -184,7 +182,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.OrganizationId from = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.MittRegnskap.Entity.OrganizationIdentifier));
             ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.RpcAS.Entity.OrganizationIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -211,7 +209,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.VegardSolberg.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.SvendsenAutomobil.Entity.OrganizationIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -223,8 +221,6 @@ public class ServiceOwnerConnectionsControllerTest
             // Act
             var response = await client.PostAsJsonAsync($"{Route}/accesspackages", request, TestContext.Current.CancellationToken);
 
-            string responsejson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -232,9 +228,9 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 var assignmentPackage = await db.AssignmentPackages
                     .Include(ap => ap.Assignment)
-                    .Where(ap => ap.Assignment.FromId == TestData.BakerJohnsen.Id)
+                    .Where(ap => ap.Assignment.FromId == TestData.VegardSolberg.Id)
                     .Where(ap => ap.Assignment.ToId == TestData.SvendsenAutomobil.Id)
-                    .Where(ap => ap.PackageId == PackageConstants.Agriculture.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id)
                     .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
 
                 Assert.NotNull(assignmentPackage);
@@ -247,14 +243,9 @@ public class ServiceOwnerConnectionsControllerTest
             // Arrange
             var client = CreateClient();
 
-            Fixture.WithInMemoryAppsettings(dict =>
-            {
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "jordbruk";
-            });
-
             ServiceOwnerConnectionPartyUrn.OrganizationId from = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.FredriksonsFabrikk.Entity.OrganizationIdentifier));
             ServiceOwnerConnectionPartyUrn.OrganizationId to = ServiceOwnerConnectionPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(TestData.RegnskapNorge.Entity.OrganizationIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("jordbruk"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.Agriculture.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -268,6 +259,18 @@ public class ServiceOwnerConnectionsControllerTest
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignmentPackage = await db.AssignmentPackages
+                    .Include(ap => ap.Assignment)
+                    .Where(ap => ap.Assignment.FromId == TestData.FredriksonsFabrikk.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.RegnskapNorge.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.Agriculture.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(assignmentPackage);
+            });
         }
 
         [Fact]
@@ -278,7 +281,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.SiljeHaugen.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.EinarBerg.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation addRequest = new()
             {
@@ -296,6 +299,16 @@ public class ServiceOwnerConnectionsControllerTest
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignment = await db.Assignments
+                    .Where(ap => ap.FromId == TestData.SiljeHaugen.Id)
+                    .Where(ap => ap.ToId == TestData.EinarBerg.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.Null(assignment);
+            });
         }
 
         [Fact]
@@ -303,11 +316,6 @@ public class ServiceOwnerConnectionsControllerTest
         {
             // Arrange - Create an assignment with two packages via service owner, revoke one
             var client = CreateClient();
-
-            Fixture.WithInMemoryAppsettings(dict =>
-            {
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "another-allowed-package";
-            });
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.ToneKvam.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.ArneLund.Entity.PersonIdentifier));
@@ -317,27 +325,63 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 From = from,
                 To = to,
-                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"))
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code))
             };
+
             var addResponse1 = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest1, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, addResponse1.StatusCode);
+
+            // Add second package
+            ServiceOwnerAccessPackageDelegation addRequest2 = new()
+            {
+                From = from,
+                To = to,
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerBankFinans.Entity.Code))
+            };
+
+            var addResponse2 = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest2, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, addResponse2.StatusCode);
 
             // Act - Revoke the first package (assignment should still exist if there were other packages)
             var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", addRequest1, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignmentPackage = await db.AssignmentPackages
+                    .Include(ap => ap.Assignment)
+                    .Where(ap => ap.Assignment.FromId == TestData.ToneKvam.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.ArneLund.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.Null(assignmentPackage);
+            });
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignmentPackage = await db.AssignmentPackages
+                    .Include(ap => ap.Assignment)
+                    .Where(ap => ap.Assignment.FromId == TestData.ToneKvam.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.ArneLund.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.InnbyggerBankFinans.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(assignmentPackage);
+            });
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentDoesNotExist_ReturnsBadRequest()
+        public async Task RevokePackage_WhereAssignmentDoesNotExist_ReturnsNoContent()
         {
             // Arrange
             var client = CreateClient();
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.OddHalvorsen.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LivKristiansen.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -350,11 +394,11 @@ public class ServiceOwnerConnectionsControllerTest
             var response = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", request, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentPackageDoesNotExist_ReturnsBadRequest()
+        public async Task RevokePackage_WhereAssignmentPackageDoesNotExist_ReturnsNoContent()
         {
             // Arrange - Create an assignment with one package, then try to revoke a different package
             var client = CreateClient();
@@ -367,29 +411,35 @@ public class ServiceOwnerConnectionsControllerTest
             {
                 From = from,
                 To = to,
-                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"))
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code))
             };
             var addResponse = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, addResponse.StatusCode);
-
-            // Try to revoke a different package that was never added
-            Fixture.WithInMemoryAppsettings(dict =>
-            {
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = "another-allowed-package";
-            });
 
             ServiceOwnerAccessPackageDelegation revokeRequest = new()
             {
                 From = from,
                 To = to,
-                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("another-allowed-package"))
+                PackageUrn = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerBankFinans.Entity.Code))
             };
 
             // Act
             var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", revokeRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, revokeResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var assignmentPackage = await db.AssignmentPackages
+                    .Include(ap => ap.Assignment)
+                    .Where(ap => ap.Assignment.FromId == TestData.HelgeNilsen.Id)
+                    .Where(ap => ap.Assignment.ToId == TestData.SteinarAndreassen.Id)
+                    .Where(ap => ap.PackageId == PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(assignmentPackage);
+            });
         }
 
         [Fact]
@@ -420,7 +470,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.GeirPedersen.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.MaritEriksen.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -434,6 +484,9 @@ public class ServiceOwnerConnectionsControllerTest
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>(TestContext.Current.CancellationToken);
+            Assert.Equal("AM-00038", problemDetails.Extensions["code"].ToString());
         }
 
         [Fact]
@@ -444,7 +497,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -474,7 +527,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
@@ -529,7 +582,7 @@ public class ServiceOwnerConnectionsControllerTest
 
             ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.BjornMoe.Entity.PersonIdentifier));
             ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier("innbygger-skatteforhold-privatpersoner"));
+            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
 
             ServiceOwnerAccessPackageDelegation request = new()
             {
