@@ -42,9 +42,18 @@ Grouped by the production vertical they cover.
 
 ### `pkg: ABAC`
 
-| Test project | Covers |
-|---|---|
-| `Altinn.Authorization.ABAC.Tests` | XACML parsing, evaluation, combining algorithms |
+No dedicated test project. `Altinn.Authorization.ABAC` is exercised
+indirectly by `Altinn.Authorization.Tests` (PEP → ABAC paths during
+the end-to-end XACML decision tests). Coverage typically lands around
+63 % line / 61 % branch — see the
+[`COVERAGE.md`](COVERAGE.md) ratchet (60 % enforced).
+
+If a direct ABAC unit-test suite is wanted later, recreate
+`src/pkgs/Altinn.Authorization.ABAC/test/` with the standard
+`Directory.Build.props` (`<XUnitVersion>v3</XUnitVersion>`,
+`<IsTestProject>true</IsTestProject>`) and a single test csproj. The
+prior empty shell was deleted in the Part 2 testing-infrastructure
+overhaul (audit ID `C1'`).
 
 ### `pkg: PEP`
 
