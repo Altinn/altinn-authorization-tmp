@@ -10,8 +10,8 @@ in **monorepo mode** so projects are isolated despite sharing a repository.
 
 | File | What it controls |
 |---|---|
-| [`SonarQube.Analysis.xml`](../SonarQube.Analysis.xml) | Shared analysis settings: organization, host, exclusions, coverage report paths, duplication exclusions. The single source of truth — referenced from CI via `/s:`. |
-| [`.github/workflows/tpl-vertical-ci.yml`](../.github/workflows/tpl-vertical-ci.yml) | The `analyze` job. Passes per-vertical key/name and `SONAR_TOKEN` to `dotnet-sonarscanner`; everything else comes from the XML. |
+| [`SonarQube.Analysis.xml`](../SonarQube.Analysis.xml) | Shared analysis settings: host URL, exclusions, coverage report paths, duplication exclusions, monorepo flag. Referenced from CI via `/s:`. |
+| [`.github/workflows/tpl-vertical-ci.yml`](../.github/workflows/tpl-vertical-ci.yml) | The `analyze` job. Passes the four CLI-only properties (key / name / org / token) inline; everything else comes from the XML. |
 | `src/apps/<vertical>/conf.json` | Per-vertical opt-in / project key (see below). |
 
 The CI invocation is intentionally minimal:
@@ -20,12 +20,24 @@ The CI invocation is intentionally minimal:
 dotnet-sonarscanner begin \
   /key:"$SONAR_KEY" \
   /name:"$SONAR_NAME" \
+  /o:"altinn" \
   /d:sonar.token="$SONAR_TOKEN" \
   /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml"
 ```
 
-If you need to change exclusions, coverage paths, or the quality-gate-wait
-behaviour, edit the XML — not the workflow.
+The scanner restricts four properties to CLI flags only — they cannot be
+moved into `SonarQube.Analysis.xml`:
+
+| Property | CLI flag |
+|---|---|
+| `sonar.projectKey` | `/k:` |
+| `sonar.projectName` | `/n:` |
+| `sonar.projectVersion` | `/v:` |
+| `sonar.organization` | `/o:` |
+
+Everything else (host URL, exclusions, coverage paths, monorepo flag,
+quality-gate-wait, etc.) lives in the XML. If you need to change one of
+those, edit the XML — not the workflow.
 
 ## Per-vertical setup
 

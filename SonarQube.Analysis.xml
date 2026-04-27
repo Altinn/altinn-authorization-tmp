@@ -3,16 +3,20 @@
   Shared SonarCloud analysis settings for the Altinn Authorization monorepo.
 
   Consumed by `dotnet-sonarscanner` when passed via the `/s:` flag, e.g.
-      dotnet-sonarscanner begin /k:<key> /n:<name> /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml" ...
+      dotnet-sonarscanner begin /k:<key> /n:<name> /o:<org> /s:".../SonarQube.Analysis.xml" ...
 
-  Per-vertical values (sonar.projectKey, sonar.projectName, sonar.token) are
-  supplied by CI — keep them out of this file.
+  IMPORTANT: the scanner does NOT allow these properties to be set in this
+  file — they MUST come from CLI flags:
+      sonar.projectKey      → /k:
+      sonar.projectName     → /n:
+      sonar.projectVersion  → /v:
+      sonar.organization    → /o:
+  Every other property listed here is shared across all verticals.
 -->
-<SonarQubeAnalysisProperties xmlns="http://www.sonarsource.com/msbuild/analysisproperties/1.0">
+<SonarQubeAnalysisProperties xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/integration/2015/1">
 
   <!-- SonarCloud target -->
   <Property Name="sonar.host.url">https://sonarcloud.io</Property>
-  <Property Name="sonar.organization">altinn</Property>
 
   <!-- Monorepo: each vertical is scanned as its own SonarCloud project -->
   <Property Name="sonar.project.monorepo.enabled">true</Property>
@@ -27,16 +31,7 @@
     Keep this list narrow — prefer sonar.coverage.exclusions / sonar.cpd.exclusions
     when the code should still be analyzed for issues.
   -->
-  <Property Name="sonar.exclusions">
-    **/Migration/**/*,
-    **/Migrations/**/*,
-    **/Altinn.AccessMgmt.FFB/**/*,
-    **/Altinn.AccessMgmt.WebComponents/**/*,
-    **/*.g.cs,
-    **/*.Designer.cs,
-    **/bin/**/*,
-    **/obj/**/*
-  </Property>
+  <Property Name="sonar.exclusions">**/Migration/**/*,**/Migrations/**/*,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*,**/*.g.cs,**/*.Designer.cs,**/bin/**/*,**/obj/**/*</Property>
 
   <!--
     Test code is detected automatically by dotnet-sonarscanner via MSBuild
@@ -44,48 +39,20 @@
     *test analysis* — i.e. Sonar will not raise issues on test files. Source
     code under src/.../src/ is unaffected.
   -->
-  <Property Name="sonar.test.exclusions">
-    **/test/**/*,
-    **/*.Tests/**/*,
-    **/*.TestUtils/**/*,
-    **/*.Mocks/**/*
-  </Property>
+  <Property Name="sonar.test.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*</Property>
 
   <!--
     Coverage exclusions: tests, generated code, and migrations don't need
     line coverage. Mirrors the runsettings under src/coverage.runsettings.
   -->
-  <Property Name="sonar.coverage.exclusions">
-    **/test/**/*,
-    **/*.Tests/**/*,
-    **/*.TestUtils/**/*,
-    **/*.Mocks/**/*,
-    **/Migration/**/*,
-    **/Migrations/**/*,
-    **/Program.cs,
-    **/Startup.cs,
-    **/*.g.cs,
-    **/*.Designer.cs,
-    **/Properties/AssemblyInfo.cs,
-    **/Altinn.AccessMgmt.FFB/**/*,
-    **/Altinn.AccessMgmt.WebComponents/**/*
-  </Property>
+  <Property Name="sonar.coverage.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*,**/Migration/**/*,**/Migrations/**/*,**/Program.cs,**/Startup.cs,**/*.g.cs,**/*.Designer.cs,**/Properties/AssemblyInfo.cs,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*</Property>
 
   <!--
     Copy/paste detector exclusions: model / DTO classes are intentionally
     repetitive (property bags) and trip duplication checks for no real
     signal. Real source files keep duplication enforcement.
   -->
-  <Property Name="sonar.cpd.exclusions">
-    **/Models/**/*,
-    **/Dto/**/*,
-    **/Dtos/**/*,
-    **/Entities/**/*,
-    **/Contracts/**/*,
-    **/*Dto.cs,
-    **/*Request.cs,
-    **/*Response.cs
-  </Property>
+  <Property Name="sonar.cpd.exclusions">**/Models/**/*,**/Dto/**/*,**/Dtos/**/*,**/Entities/**/*,**/Contracts/**/*,**/*Dto.cs,**/*Request.cs,**/*Response.cs</Property>
 
   <!-- .NET reports — produced by `dotnet-coverage` + xUnit v3 TRX in CI -->
   <Property Name="sonar.cs.vscoveragexml.reportsPaths">TestResults/coverage.xml</Property>

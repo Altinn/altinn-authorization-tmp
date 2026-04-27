@@ -275,6 +275,7 @@ jobs:
           dotnet-sonarscanner begin \
             /key:"$SONAR_KEY" \
             /name:"$SONAR_NAME" \
+            /o:"altinn" \
             /d:sonar.token="$SONAR_TOKEN" \
             /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml"
 
