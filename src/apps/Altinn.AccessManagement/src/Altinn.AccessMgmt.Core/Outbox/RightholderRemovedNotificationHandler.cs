@@ -252,7 +252,7 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
 
 public class RightholderRemovedNotificationMessage
 {
-    public Guid From { get; set; }
+    public Guid FromId { get; set; }
 
-    public Guid To { get; set; }
+    public Guid ToId { get; set; }
 }
