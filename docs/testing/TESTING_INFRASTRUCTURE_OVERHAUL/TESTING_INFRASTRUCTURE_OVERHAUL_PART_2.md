@@ -207,14 +207,25 @@ audit cleanly distinct from Part 1.
   `Altinn.Authorization.Tests` (~63 % line / 61 % branch). The
   centrally-enforced 60 % `Altinn.Authorization.ABAC` threshold
   continues to gate that indirect coverage.
-- **C2'** — **1 failing test**: `ValidateParty_NotAsAuthenticatedUser_Forbidden`
+- ~~**C2'** — **1 failing test**: `ValidateParty_NotAsAuthenticatedUser_Forbidden`
   in [`PartiesControllerTest.cs:167`](../../src/apps/Altinn.Authorization/test/Altinn.Authorization.Tests/PartiesControllerTest.cs:167)
-  expected `HTTP 403 Forbidden` but received `HTTP 200 OK`. The test
-  validates that an authenticated user cannot validate a party for a
-  *different* user id. A `200 OK` here is either a real authorization
-  regression in `PartiesController.ValidateParty(...)` or a mock-graph
-  drift (e.g. `PartiesMock` permits cross-user lookups it shouldn't). Must
-  be triaged — if it's a real auth bug it's a security finding.
+  expected `HTTP 403 Forbidden` but received `HTTP 200 OK`.~~ —
+  **Resolved by Part 2 Step 5** ([05_Remove_AccessManagementAuthorizedParties_Flag.md](STEPS_PART_2/05_Remove_AccessManagementAuthorizedParties_Flag.md)).
+  Triage outcome: the failing test was hitting the legacy `else`
+  branch of `PartiesController.ValidateSelectedParty`, which was
+  gated by the `AccessManagementAuthorizedParties` feature flag. The
+  team architect confirmed the flag has been always-on in production
+  for some time and is ready to be removed entirely. Step 5 deletes
+  the flag, the legacy code paths it gated (the `else` branches in
+  both `GetPartyList` and `ValidateSelectedParty`), and the
+  now-orphaned `IParties.GetParties` / `IParties.ValidateSelectedParty`
+  methods plus their `PartiesWrapper` / `PartiesMock` impls. With the
+  legacy path gone the test passes naturally, and the originally-
+  flagged "authorization regression" framing turns out to have been a
+  test-hits-dead-code artefact rather than a security-relevant
+  condition in production. **No security advisory needed** — the
+  flag's always-on prod state means the bug was never reachable in
+  the field.
 - ~~**C3'** — **`Altinn.Authorization.Host.Pipeline` has no test project
   and 0% coverage** despite being ~1.4k LOC of substantive logic
   (hosted services, builders, segment/sink/source services, telemetry).
@@ -400,9 +411,11 @@ Block almost everything else until done. Small, well-scoped:
   drop its INDEX.md / coverage row) OR add direct ABAC unit tests.~~ —
   **Done in Part 2 Step 3** (deleted; coverage stays indirect via
   `Altinn.Authorization.Tests`).
-- **A.2** — Resolve **C2'** failing `ValidateParty` test: triage — real
+- ~~**A.2** — Resolve **C2'** failing `ValidateParty` test: triage — real
   auth regression in `PartiesController` vs mock drift; fix root cause,
-  not the assertion.
+  not the assertion.~~ — **Done in Part 2 Step 5** (architect confirmed
+  the gating feature flag is always-on in prod and removable; deleted
+  flag + legacy code paths; test passes naturally).
 - ~~**A.3** — Resolve **C5'** `check-coverage-thresholds.ps1`
   false-positive: refactor to aggregate per-assembly across input files
   before threshold check.~~ — **Done in Part 2 Step 2**.

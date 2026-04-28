@@ -333,6 +333,7 @@ the phase numbers in the
 | 2 | 2026-04-27 | A | Fix **C5'** workstation false-positive coverage failures — `run-coverage.ps1` now invokes `dotnet-coverage merge` to produce one canonical `coverage.cobertura.xml` before threshold check + ReportGenerator; `check-coverage-thresholds.ps1` hardened with two-phase aggregate-then-check (max line%/branch%, union Owned) so multi-file inputs no longer cause one spurious failure per per-test-project view. Side effect: merged-cobertura aggregation reveals the Step 1 audit *under-counted* several assemblies (e.g. `Api.Internal` 48.56% → **73.63%** ✅, `Persistence` 44.90% → 57.29%, `AccessMgmt.Core` 33.66% → 44.96%) — audit baseline refresh deferred to T1 closing | n/a (tooling fix; baseline refresh deferred) | [02_Fix_Coverage_Threshold_Aggregation.md](02_Fix_Coverage_Threshold_Aggregation.md) |
 | 3 | 2026-04-27 | A | Resolve **C1'** by deleting the empty `Altinn.Authorization.ABAC.Tests` project (only auto-generated `.cs` files; the test runner discovered 0 tests). Removed the project + the orphan `test/Directory.Build.props` from both the root `Altinn.Authorization.sln` and the per-package `src/pkgs/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.sln`; updated `docs/testing/TEST_PROJECTS.md` § `pkg: ABAC` to document that ABAC is exercised indirectly via `Altinn.Authorization.Tests` (~63 % line / 61 % branch). ABAC's centrally-enforced 60 % threshold continues to gate the indirect coverage. Per-package `dotnet build` clean (net8.0 + net9.0). Test-project count: 11 → **10** | n/a (no production code; ABAC indirect coverage unchanged) | [03_Delete_Empty_ABAC_Tests.md](03_Delete_Empty_ABAC_Tests.md) |
 | 4 | 2026-04-27 | A | Scaffold `Altinn.Authorization.Host.Pipeline.Tests` for **C3'/A.5** — new test project under `src/libs/Altinn.Authorization.Host/test/` mirroring `Lease.Tests` wiring (empty TFM trick + `xunit.runner.json` + ProjectReference to the production assembly). Added one `PipelineMessage<T>` ctor round-trip smoke test (1 passed) to keep test-discovery non-zero and avoid recreating C1'. Added to both root and per-package Host `.sln` files; build clean (0/0); xUnit v3 in-process runner discovers + passes the test. **The 0 % coverage on the production `Altinn.Authorization.Host.Pipeline` assembly itself is unchanged** — populating real Pipeline tests is Phase D.1, deferred. Test-project count: 10 → **11** | n/a (production assembly unchanged; smoke test only) | [04_Scaffold_Host_Pipeline_Tests.md](04_Scaffold_Host_Pipeline_Tests.md) |
+| 5 | 2026-04-27 | A | Resolve **C2'/A.2** — architect confirmed the `AccessManagementAuthorizedParties` feature flag has been always-on in production for some time and is ready to remove. The failing test `ValidateParty_NotAsAuthenticatedUser_Forbidden` was hitting the dead legacy `else` branch of `PartiesController.ValidateSelectedParty` only because the test class flipped the flag to `false` mid-class. Removed: the flag constant from `FeatureFlags.cs`; the `if(flag) { … } else { … }` branching from both `GetPartyList` and `ValidateSelectedParty` (keeping only the `AuthorizedParties` paths); the now-unused `_partiesWrapper` and `_featureManager` ctor params/fields from `PartiesController`; the now-orphaned `IParties.GetParties` and `IParties.ValidateSelectedParty` methods + their `PartiesWrapper` and `PartiesMock` impls; the `_featureManageMock` setup + flag-flipping legacy-vs-new comparison from `PartiesControllerTest.GetPartyList_AsAuthenticatedUser_Ok`. **No security-relevant condition in production** (the flag was always on); the originally-flagged "auth regression" was a test-hits-dead-code artefact. `Altinn.Authorization.Tests` 402/402/0/0/0 (was 402/401/1/0/0); 0 sibling regressions | n/a (dead-code removal; coverage of `Altinn.Authorization` largely unchanged) | [05_Remove_AccessManagementAuthorizedParties_Flag.md](05_Remove_AccessManagementAuthorizedParties_Flag.md) |
 
 ### Recommended Next Steps (priority order)
 
@@ -345,13 +346,13 @@ All items below are actionable unless otherwise noted. Ordering follows
 1. ~~**A.3 — Fix `check-coverage-thresholds.ps1` false-positive (C5').**~~ —
    **Done in Step 2** ([02_Fix_Coverage_Threshold_Aggregation.md](02_Fix_Coverage_Threshold_Aggregation.md)).
    Phase F (L2') is now unblocked.
-2. **A.2 — Triage failing test (C2').**
-   `ValidateParty_NotAsAuthenticatedUser_Forbidden` in
-   [`PartiesControllerTest.cs:167`](../../../../src/apps/Altinn.Authorization/test/Altinn.Authorization.Tests/PartiesControllerTest.cs:167)
-   expects 403, returns 200. Determine whether it's a real auth
-   regression in `PartiesController.ValidateParty(...)` or `PartiesMock`
-   drift — fix root cause, not the assertion. *Possibly a security
-   finding* — handle ahead of E.x cleanups.
+2. ~~**A.2 — Triage failing test (C2').**~~ — **Done in Step 5**
+   ([05_Remove_AccessManagementAuthorizedParties_Flag.md](05_Remove_AccessManagementAuthorizedParties_Flag.md)).
+   Architect confirmed the gating `AccessManagementAuthorizedParties`
+   feature flag is always-on in prod and ready to remove; deleted
+   the flag + legacy `else` branches in `PartiesController` + the
+   now-dead `IParties.GetParties` / `ValidateSelectedParty` methods.
+   Test passes naturally.
 3. ~~**A.1 — Resolve empty `ABAC.Tests` (C1').**~~ — **Done in Step 3**
    ([03_Delete_Empty_ABAC_Tests.md](03_Delete_Empty_ABAC_Tests.md)):
    project + orphan props deleted; removed from both sln files;
@@ -448,9 +449,9 @@ shows up immediately.
 
 | Item | Blocker | Notes | Last re-checked |
 |---|---|---|---|
-| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 4 |
-| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 4 |
-| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 4 |
+| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 5 |
+| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 5 |
+| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 5 |
 
 ### Final Coverage (measured)
 
