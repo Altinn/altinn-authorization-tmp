@@ -67,7 +67,7 @@ public static class PackageValidation
     };
 
     /// <summary>
-    /// Checks the list of packages that all are assignable to the recipient entity type.
+    /// Checks the list of packages that all are assignable by the entity type of the from party.
     /// </summary>
     /// <param name="packages">list of packages</param>
     /// <param name="assignedFromType">entity the assignment is to be made from</param>
