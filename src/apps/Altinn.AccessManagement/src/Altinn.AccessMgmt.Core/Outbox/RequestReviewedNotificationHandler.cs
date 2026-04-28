@@ -25,9 +25,9 @@ public class RequestReviewedNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxRequestReviewedNotify, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxRequestReviewedNotify}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -165,7 +165,8 @@ public class RequestReviewedNotificationHandler(
         var emailContent = new StringBuilder();
         AddEmailIngress(emailContent, reviewer);
         AddResourcesAndPackage(emailContent, resources, packages);
-        emailContent.AppendLine($"<p>Med vennlig hilsen<br>Altinn</p>");
+        emailContent.AppendLine($"<p>Med vennlig hilsen,<br>Altinn</p>");
+        emailContent.AppendLine(@"<em>Denne meldingen er automatisk generert. Svar til denne adressen vil ikke bli behandlet.</em>");
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {

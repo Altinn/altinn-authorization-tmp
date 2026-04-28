@@ -129,7 +129,13 @@ public partial class ConnectionService(
         };
 
         await dbContext.Assignments.AddAsync(assignment, cancellationToken);
-        await RightholderAddedNotification.Upsert(dbContext, from.Id, to.Id, appsettings?.Value?.Connections?.NotifyAddRightholderPendingInSeconds ?? 60 * 2 , cancellationToken);
+        await RightholderAddedNotification.Upsert(
+            dbContext,
+            from.Id,
+            to.Id,
+            appsettings?.Value?.Notifications?.RightholderAddedNotifyInSeconds ?? RightholderAddedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -217,6 +223,14 @@ public partial class ConnectionService(
         }
 
         dbContext.Remove(existingAssignment);
+        await RightholderRemovedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            appsettings?.Value?.Notifications?.RightholderRemovedNotifyInSeconds ?? RightholderRemovedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (from.PartyId.HasValue && to.PartyId.HasValue)
@@ -429,6 +443,15 @@ public partial class ConnectionService(
 
         var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, cancellationToken);
         existingAssignmentResources.PolicyVersion = newVersion;
+        await AccessRemovedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            resourceId,
+            null,
+            appsettings?.Value?.Notifications?.AccessRemovedNotifyInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
 
         dbContext.Remove(existingAssignmentResources);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -549,6 +572,16 @@ public partial class ConnectionService(
         }
 
         dbContext.Remove(existingAssignmentPackages);
+        await AccessRemovedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            null,
+            packageId,
+            appsettings?.Value?.Notifications?.AccessRemovedNotifyInSeconds ?? AccessRemovedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;
@@ -578,7 +611,8 @@ public partial class ConnectionService(
 
         problem = ValidationComposer.Validate(
             PackageValidation.AuthorizePackageAssignment(check.Value),
-            PackageValidation.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), to.Type, queryParamName)
+            PackageValidation.PackageIsAssignableTo(check.Value.Select(p => p.Package.Urn), to.Type, queryParamName),
+            PackageValidation.PackageIsAssignableFrom(check.Value.Select(p => p.Package.Urn), from.Type, queryParamName)
         );
 
         if (problem is { })
@@ -593,6 +627,7 @@ public partial class ConnectionService(
             .Where(a => a.ToId == toId)
             .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
             .FirstOrDefaultAsync(cancellationToken);
+
         if (assignment == null)
         {
             assignment = new Assignment()
@@ -625,6 +660,16 @@ public partial class ConnectionService(
         };
 
         await dbContext.AssignmentPackages.AddAsync(newAssignmentPackage, cancellationToken);
+        await AccessAddedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            null,
+            packageId,
+            appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (from.PartyId.HasValue && to.PartyId.HasValue)
@@ -1084,7 +1129,7 @@ public partial class ConnectionService(
             true,
             cancellationToken
         );
-        return connectionsToFromParty.Any(c => c.RoleId == RoleConstants.Hadm.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
+        return connectionsToFromParty.Any(c => c.RoleId == RoleConstants.MainAdministratorA2.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
     }
 
     private async Task<RightCheckDto> MapFromInternalToExternalRight(Models.Right right, string resource, ResourceAccessListMode accessListMode, MinimalParty fromParty, List<RightDto> rightKeys, bool isResourceDelegable, bool isMaskinPortenSchema, CancellationToken cancellationToken)
@@ -1257,6 +1302,16 @@ public partial class ConnectionService(
         }
 
         List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, keys, by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
+
+        await AccessAddedNotification.Upsert(
+            dbContext,
+            from.Id,
+            to.Id,
+            resourceObj.Id,
+            null,
+            appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
 
         if (!result.All(r => r.CreatedSuccessfully))
         {
@@ -2266,6 +2321,58 @@ public partial class ConnectionService
             .ToListAsync(cancellationToken);
 
         return GetConnectionsAsSystemUserClientConnectionDto(result);
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<bool>> RemoveRoleAssignment(
+        Guid fromId,
+        Guid toId,
+        string roleCode,
+        Action<ConnectionOptions> configureConnections = null,
+        CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        // Validate roleId if proveder is not Altinn 2 then the assignmnet is not alowed to be removed
+        var role = await dbContext.Roles
+            .AsNoTracking()
+            .Where(r => r.Code == roleCode.ToLowerInvariant())
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (role == null)
+        {
+            return Problems.InvalidRoleCode;
+        }
+
+        if (role.ProviderId != ProviderConstants.Altinn2.Id)
+        {
+            return Problems.RoleAssignmentNotRevocable;
+        }
+
+        // Fetch assignment
+        var existingAssignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
+            .Where(e => e.RoleId == role.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (existingAssignment is null)
+        {
+            return false;
+        }
+        
+        // Remove and save revoked assignment
+        dbContext.Remove(existingAssignment);
+
+        var result = await dbContext.SaveChangesAsync(cancellationToken);
+        return result > 0;
     }
 
     #region Mappers
