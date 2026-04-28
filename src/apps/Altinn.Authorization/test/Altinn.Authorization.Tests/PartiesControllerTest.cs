@@ -1,41 +1,24 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Altinn.Common.AccessToken.Services;
-using Altinn.Platform.Authorization.Controllers;
-using Altinn.Platform.Authorization.IntegrationTests.MockServices;
-using Altinn.Platform.Authorization.IntegrationTests.Util;
-using Altinn.Platform.Authorization.IntegrationTests.Webfactory;
-using Altinn.Platform.Authorization.Services.Interface;
+using Altinn.Platform.Authorization.IntegrationTests.Fixtures;
 using Altinn.Platform.Register.Models;
-using AltinnCore.Authentication.JwtCookie;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.FeatureManagement;
-using Moq;
+using Altinn.Platform.Authorization.IntegrationTests.Util;
 
 namespace Altinn.Platform.Authorization.IntegrationTests
 {
-    public class PartiesControllerTest : IClassFixture<CustomWebApplicationFactory<PartiesController>>
+    public class PartiesControllerTest : IClassFixture<AuthorizationApiFixture>
     {
-        private readonly Mock<IFeatureManager> _featureManageMock = new Mock<IFeatureManager>();
-        private readonly CustomWebApplicationFactory<PartiesController> _factory;
         private readonly HttpClient _client;
-  
-        public PartiesControllerTest(CustomWebApplicationFactory<PartiesController> fixture)
+
+        public PartiesControllerTest(AuthorizationApiFixture fixture)
         {
-            _factory = fixture;
-            _featureManageMock
-                .Setup(m => m.IsEnabledAsync("AccessManagementAuthorizedParties"))
-                .Returns(Task.FromResult(true));
-            _client = GetTestClient();
+            _client = fixture.BuildClient();
         }
 
         /// <summary>
-        /// Test case: Get the party list for for the authenticated user.
-        /// Expected: Should return status code 200 OK with the expected party list
+        /// Test case: Get the party list for the authenticated user.
+        /// Expected: Should return status code 200 OK with a non-null party list.
         /// </summary>
         [Fact]
         public async Task GetPartyList_AsAuthenticatedUser_Ok()
@@ -45,21 +28,12 @@ namespace Altinn.Platform.Authorization.IntegrationTests
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             // Act
-            HttpResponseMessage newResponse = await _client.GetAsync("authorization/api/v1/parties?userid=20000490");
-
-            _featureManageMock
-                .Setup(m => m.IsEnabledAsync("AccessManagementAuthorizedParties"))
-                .Returns(Task.FromResult(false));
-
-            HttpResponseMessage originalResponse = await _client.GetAsync("authorization/api/v1/parties?userid=20000490");
+            HttpResponseMessage response = await _client.GetAsync("authorization/api/v1/parties?userid=20000490");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, newResponse.StatusCode);
-            Assert.Equal(HttpStatusCode.OK, originalResponse.StatusCode);
-
-            var originalPartiesList = await originalResponse.Content.ReadFromJsonAsync<List<Party>>();
-            var newPartiesList = await newResponse.Content.ReadFromJsonAsync<List<Party>>();
-            AssertionUtil.AssertCollections(originalPartiesList, newPartiesList, AssertionUtil.AssertParty);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var partiesList = await response.Content.ReadFromJsonAsync<List<Party>>();
+            Assert.NotNull(partiesList);
         }
 
         /// <summary>
@@ -191,21 +165,5 @@ namespace Altinn.Platform.Authorization.IntegrationTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
-        private HttpClient GetTestClient()
-        {
-            HttpClient client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                    services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
-                    services.AddSingleton<IParties, PartiesMock>();
-                    services.AddSingleton<IAccessManagementWrapper, AccessManagementWrapperMock>();
-                    services.AddSingleton(_featureManageMock.Object);
-                });
-            }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-
-            return client;
+            }
         }
-    }
-}

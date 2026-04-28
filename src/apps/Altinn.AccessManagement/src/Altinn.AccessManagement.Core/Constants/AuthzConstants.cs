@@ -29,11 +29,21 @@
         /// Policy tag for reading an maskinporten delegation
         /// </summary>
         public const string POLICY_MASKINPORTEN_DELEGATION_READ = "MaskinportenDelegationRead";
-        
+
         /// <summary>
         /// Policy tag for writing an maskinporten delegation
         /// </summary>
         public const string POLICY_MASKINPORTEN_DELEGATION_WRITE = "MaskinportenDelegationWrite";
+
+        /// <summary>
+        /// Policy tag for reading maskinporten delegation for end users
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ = "MaskinportenDelegationEndUserRead";
+
+        /// <summary>
+        /// Policy tag for writing maskinporten delegation for end users
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE = "MaskinportenDelegationEndUserWrite";
 
         /// <summary>
         /// Policy tag for reading access management information
@@ -229,6 +239,11 @@
         /// Scope giving access to creating consentrequests
         /// </summary>
         public const string SCOPE_CONSENTREQUEST_READ = "altinn:consentrequests.read";
+
+        /// <summary>
+        /// Scope giving service owners access to delegate access packages betweeen two parties. Limited to packages "owned" by the service owner. Very limited access to this scope
+        /// </summary>
+        public const string SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE = "altinn:serviceowner/delegations:accesspackage.write";
 
         /// <summary>
         /// Claim for scopes from maskinporten token

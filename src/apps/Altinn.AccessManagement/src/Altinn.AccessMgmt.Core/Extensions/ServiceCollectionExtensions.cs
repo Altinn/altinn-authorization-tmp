@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IMaskinportenSupplierService, MaskinportenSupplierService>();
         services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<IRoleService, RoleService>();
@@ -47,16 +48,29 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
-        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>("newConnectionQueryOnlyImplementation");
+        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
+        services.AddScoped<IServiceOwnerConnectionService, ServiceOwnerConnectionService>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
 
         // NOTE: can be removed once RequestReviewedNotificationHandler is in production.
-        services.AddTransient<RequestApprovedNotificationHandler>();
+        services.AddTransient<RightholderAddedNotificationHandler>();
+        services.AddTransient<RightholderRemovedNotificationHandler>();
+
+        services.AddTransient<AccessAddedNotificationHandler>();
+        services.AddTransient<AccessRemovedNotificationHandler>();
+
         services.AddTransient<RequestReviewedNotificationHandler>();
         services.AddTransient<RequestPendingNotificationHandler>();
+
+        services.AddTransient<AgentAddedNotificationHandler>();
+        services.AddTransient<AgentRemovedNotificationHandler>();
+
+        services.AddTransient<ClientAddedNotificationHandler>();
+        services.AddTransient<ClientRemovedNotificationHandler>();
 
         services.AddSingleton<AuditMiddleware>();
 
@@ -68,6 +82,10 @@ public static class ServiceCollectionExtensions
                 .ValidateDataAnnotations()
                 .ValidateOnStart()
                 .BindConfiguration("ConsentMigration");
+
+        // Resource Owner Delegation - Configuration
+        services.AddOptions<ServiceOwnerDelegationSettings>()
+                .BindConfiguration("ServiceOwnerDelegation");
 
         // Consent Migration - Services (Core - Scoped)
         services.AddScoped<IConsentMigrationService, ConsentMigrationService>();

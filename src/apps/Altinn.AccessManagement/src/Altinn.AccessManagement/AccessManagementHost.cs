@@ -10,8 +10,10 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
+using Altinn.AccessManagement.Telemetry;
 using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.Extensions;
+using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -84,8 +86,10 @@ internal static partial class AccessManagementHost
             }
         }
 
-        builder.Services.ConfigureOpenTelemetryMeterProvider(provider =>
-                    provider.AddMeter("Altinn.AccessManagement.ConsentMigration"));
+        builder.Services.AddSingleton<AuthorizedPartiesTelemetry>();
+        builder.Services.ConfigureOpenTelemetryMeterProvider(provider => provider
+            .AddMeter("Altinn.AccessManagement.ConsentMigration")
+            .AddMeter(AuthorizedPartiesTelemetry.MeterName));
 
         var connectionStrings = GetConnectionStrings(builder.Configuration);
 
@@ -102,9 +106,26 @@ internal static partial class AccessManagementHost
             options.AppConnectionString = connectionStrings.AppSource;
             options.MigrationConnectionString = connectionStrings.MigrationSource;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
-            options.AddOutboxHandler<RequestReviewedNotificationHandler>("request_reviewed");
-            options.AddOutboxHandler<RequestApprovedNotificationHandler>("request_approved");
-            options.AddOutboxHandler<RequestPendingNotificationHandler>("request_pending");
+            
+            // Request
+            options.AddOutboxHandler<RequestReviewedNotificationHandler>(RequestReviewedNotification.Handler);
+            options.AddOutboxHandler<RequestPendingNotificationHandler>(RequestPendingNotification.Handler);
+            
+            // Connections
+            options.AddOutboxHandler<RightholderAddedNotificationHandler>(RightholderAddedNotification.Handler);
+            options.AddOutboxHandler<RightholderRemovedNotificationHandler>(RightholderRemovedNotification.Handler);
+
+            // Access
+            options.AddOutboxHandler<AccessAddedNotificationHandler>(AccessAddedNotification.Handler);
+            options.AddOutboxHandler<AccessRemovedNotificationHandler>(AccessRemovedNotification.Handler);
+
+            // Agent
+            options.AddOutboxHandler<AgentAddedNotificationHandler>(AgentAddedNotification.Handler);
+            options.AddOutboxHandler<AgentRemovedNotificationHandler>(AgentRemovedNotification.Handler);
+
+            // Client
+            options.AddOutboxHandler<ClientAddedNotificationHandler>(ClientAddedNotification.Handler);
+            options.AddOutboxHandler<ClientRemovedNotificationHandler>(ClientRemovedNotification.Handler);
         });
 
         builder.Services.AddAccessMgmtCore(builder.Configuration, options =>
@@ -314,6 +335,8 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.INTERNAL_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "internal.authorization")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_maskinporten_scope_delegation")))
+            .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation", false)))
+            .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_maskinporten_scope_delegation", false)))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATIONS_PROXY, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/delegations", "altinn:maskinporten/delegations.admin"])))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/consent.read"])))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_access_management")))
@@ -335,6 +358,7 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_READ])))
             .AddPolicy(AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])))
+            .AddPolicy(AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDRECTIONAL_READ, policy => policy.AddRequirementConditionalScope(
                 new ConditionalScope(ConditionalScope.FromOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ),
                 new ConditionalScope(ConditionalScope.ToOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ)

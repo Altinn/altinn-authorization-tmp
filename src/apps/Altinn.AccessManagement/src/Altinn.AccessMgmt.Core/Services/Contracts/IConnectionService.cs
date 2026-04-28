@@ -43,6 +43,14 @@ public interface IConnectionService
     Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks for connected references for a specific assignment.
+    /// </summary>
+    /// <param name="assignmentId">The ID of the assignment to check.</param>
+    /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a validation problem instance.</returns>
+    Task<ValidationProblemInstance> CheckAssignmentForConnectedRefernces(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the roles associated with a given entity.
     /// </summary>
     /// <param name="party">The user is operating on behalf of.</param>
@@ -191,9 +199,10 @@ public interface IConnectionService
     /// <param name="configureConnection">ConnectionOptions</param>
     /// <param name="languageCode">the requested language code fallback "nb"</param>
     /// <param name="ignoreDelegableFlag">When true, the resource's Delegable flag is ignored and only the user's access is checked. Used for consent scenarios where re-delegation should not be allowed but access verification is still needed.</param>
+    /// <param name="allowMaskinportenSchema">When true, allows delegation of MaskinportenSchema resources even if delegable=false, but still requires valid access rights. Used for Maskinporten scope delegation scenarios.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>The result on all the resource/action that is delegable on the resource and a reason behind if the user can or can not delegate a given action</returns>
-    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, CancellationToken cancellationToken = default);
+    Task<Result<ResourceCheckDto>> ResourceDelegationCheck(Guid authenticatedUserUuid, Guid party, string resource, Action<ConnectionOptions> configureConnection = null, string languageCode = "nb", bool ignoreDelegableFlag = false, bool allowMaskinportenSchema = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Method to check if a resource instance is delegable by an authenticated user on behalf of a party
@@ -395,4 +404,16 @@ public interface IConnectionService
     /// </list>
     /// </returns>
     Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the specified role assignment between two parties identified by <paramref name="fromId"/> and <paramref name="toId"/>.
+    /// </summary>
+    /// <param name="fromId">The unique identifier of the from party the assigned role is for.</param>
+    /// <param name="toId">The unique identifier of the to party the assigned role is given to.</param>
+    /// <param name="roleCode">The unique code of the assigned role to remove.</param>
+    /// <param name="configureConnections">An optional delegate to configure connection options for the operation. If null, default connection settings are used.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A result indicating whether the role was successfully removed. The result value is true if the role was removed, false if nothing was removed and a 
+    /// problem if something is wrong.</returns>
+    Task<Result<bool>> RemoveRoleAssignment(Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 }

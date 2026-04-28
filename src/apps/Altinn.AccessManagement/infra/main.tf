@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.51.0"
+      version = "4.70.0"
     }
     static = {
       source  = "tiwood/static"
@@ -216,6 +216,7 @@ module "appsettings" {
   ]
 
   feature_flags = [
+    ## BEGIN -- Deprecated
     {
       name        = "AccessMgmt.Core.Outbox.RequestNotifyPending"
       description = "Specifies if notifications for pending requests are enabled."
@@ -228,73 +229,75 @@ module "appsettings" {
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
-    # Deprecated
     {
       name        = "AccessMgmt.Core.Outbox.RequestNotifyApproved"
       description = "Specifies if notifications for approved requests are enabled."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
+    ## END
+    ## Notifications
     {
-      name        = "AccessMgmt.Core.Outbox.RightholderNotifyAdded"
-      description = "Specifies if notifications should be sent if rightholder assignemnt is added."
+      name        = "AccessMgmt.Core.Outbox.RequestPendingNotify"
+      description = "Specifies if notifications for pending access requests are enabled."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.RightholderNotifyRemoved"
-      description = "Specifies if notifications should be sent if rightholder assignemnt is removed."
+      name        = "AccessMgmt.Core.Outbox.RequestReviewedNotify"
+      description = "Specifies if notifications for reviewed access requests are enabled."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.PackageNotifyAdded"
-      description = "Specifies if notifications should be sent if package is added."
+      name        = "AccessMgmt.Core.Outbox.RightholderAddedNotify"
+      description = "Specifies if notifications should be sent when a rightholder assignment is added."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.PackageNotifyRemoved"
-      description = "Specifies if notifications should be sent if package is removed."
+      name        = "AccessMgmt.Core.Outbox.RightholderRemovedNotify"
+      description = "Specifies if notifications should be sent when a rightholder assignment is removed."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.ResourceNotifyAdded"
-      description = "Specifies if notifications should be sent if resource is added."
+      name        = "AccessMgmt.Core.Outbox.AccessAddedNotify"
+      description = "Specifies if notifications should be sent when access to a resource or package is granted."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.ResourceNotifyRemoved"
-      description = "Specifies if notifications should be sent if resource is removed."
+      name        = "AccessMgmt.Core.Outbox.AccessRemovedNotify"
+      description = "Specifies if notifications should be sent when access to a resource or package is revoked."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.AgentNotifyAdded"
-      description = "Specifies if notifications should be sent if aggent is added."
+      name        = "AccessMgmt.Core.Outbox.AgentAddedNotify"
+      description = "Specifies if notifications should be sent when an agent is added."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.AgentNotifyRemoved"
-      description = "Specifies if notifications should be sent if agent is removed."
+      name        = "AccessMgmt.Core.Outbox.AgentRemovedNotify"
+      description = "Specifies if notifications should be sent when an agent is removed."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.ClientNotifyAdded"
-      description = "Specifies if notifications should be sent if client is added."
+      name        = "AccessMgmt.Core.Outbox.ClientAddedNotify"
+      description = "Specifies if notifications should be sent when an agent is added for a client."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Outbox.ClientNotifyRemoved"
-      description = "Specifies if notifications should be sent if client is removed."
+      name        = "AccessMgmt.Core.Outbox.ClientRemovedNotify"
+      description = "Specifies if notifications should be sent when an agent is removed from a client."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
+    # Outbox
     {
       name        = "AccessMgmt.Core.HostedServices.Outbox.Handler"
       description = "Specifies if the outbox handler should be enabled."
@@ -470,8 +473,32 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Controller.Connection.RevokeRole"
+      description = "Enables Altinn 2 Revoke role endpoints in enduser APIs."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Controller.RequestAssignment.Package"
       description = "Enables request assignment package endpoints in enduser and serviceowner APIs."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Enduser.MaskinportenAdminApi"
+      description = "Enables the Maskinporten admin API endpoints (consumers and suppliers) in the enduser API."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.AuthorizedParties.IncludeAltinn2"
+      description = "Specifies if AuthorizedParty should still perform SBL Bridge lookup of AuthorizedParties from Altinn 2."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
+    {
+      name        = "AccessManagement.AuthorizedParties.UsingConnectionQueryOnly"
+      description = "Specifies if AuthorizedParty should use the new implementation based on lookup of all connection info (roles, packages, resources and instances) through the ConnectionQuery."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

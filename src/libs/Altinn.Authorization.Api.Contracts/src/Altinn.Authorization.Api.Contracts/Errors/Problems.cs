@@ -94,9 +94,9 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor MissingRightHolder { get; }
     = _factory.Create(20, HttpStatusCode.BadRequest, "Missing rightholder");
-    
+
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor ConnectionEntitiesDoNotExist { get; }  
+    public static ProblemDescriptor ConnectionEntitiesDoNotExist { get; }
     = _factory.Create(21, HttpStatusCode.BadRequest, "From and to parties do not exists.");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
@@ -111,7 +111,7 @@ public static class Problems
     public static ProblemDescriptor PersonInputRequiredForPersonAssignment { get; }
     = _factory.Create(24, HttpStatusCode.BadRequest, "Target party is a person. Include a PersonInput object in the request body with both personIdentifier and lastName to perform this operation.");
 
-    public static ProblemDescriptor AgentHasExistingDelegations { get; }  
+    public static ProblemDescriptor AgentHasExistingDelegations { get; }
         = _factory.Create(25, HttpStatusCode.BadRequest, "Agent has existing delegations.");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
@@ -145,4 +145,32 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor MissingRightKey { get; }
     = _factory.Create(33, HttpStatusCode.BadRequest, "No right key provided");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageDelegationNotAuthorized { get; }
+    = _factory.Create(34, HttpStatusCode.Forbidden, "Service owner is not authorized to delegate this access package");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageNotFound { get; }
+    = _factory.Create(35, HttpStatusCode.BadRequest, "Unknown Access Package");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidRightKey { get; }
+    = _factory.Create(36, HttpStatusCode.BadRequest, "Policy does not contain all rightkeys in delegation request");
+        
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageNotAvailableForEntity { get; }
+    = _factory.Create(37, HttpStatusCode.BadRequest, "The from entity does not match the package entity requirement");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PackageNotRevocableFromAssignment { get; }
+    = _factory.Create(38, HttpStatusCode.BadRequest, "The package is not delegated by the entity trying to revoke so it is denied");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidRoleCode { get; }
+    = _factory.Create(39, HttpStatusCode.BadRequest, "The provided rolecode was not found");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor RoleAssignmentNotRevocable { get; }
+    = _factory.Create(40, HttpStatusCode.BadRequest, "Given the rules for revocation this role could not be revoked");
 }

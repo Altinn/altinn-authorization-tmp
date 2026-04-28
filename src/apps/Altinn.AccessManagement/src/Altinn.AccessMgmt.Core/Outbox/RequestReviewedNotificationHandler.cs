@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -25,9 +25,9 @@ public class RequestReviewedNotificationHandler(
 {
     public async Task<OutboxStatus> Handle(OutboxMessage message, CancellationToken cancellationToken)
     {
-        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed, cancellationToken))
+        if (await featureManager.IsDisabledAsync(AccessMgmtFeatureFlags.OutboxRequestReviewedNotify, cancellationToken))
         {
-            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.AccessMgmtCoreOutboxRequestNotifyReviewed}' is disabled.");
+            db.OutboxMessageLogs.Add(message, $"Feature flag '{AccessMgmtFeatureFlags.OutboxRequestReviewedNotify}' is disabled.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -37,6 +37,7 @@ public class RequestReviewedNotificationHandler(
         NotificationOrderChainRequestExt content = new()
         {
             IdempotencyId = idempotencyId,
+            SendersReference = idempotencyId,
             Recipient = CreateRecipient(recipient, reviewer, resources, packages),
         };
 
@@ -111,7 +112,7 @@ public class RequestReviewedNotificationHandler(
             entityReviewer,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_review_{entityRecipient.Id}_{entityReviewer.Id}_{content.InitiatedAt.Ticks}"
+            $"auth_resource_request_review_{entityRecipient.Id}_{entityReviewer.Id}_{message.CreatedAt.Ticks}"
         );
 
         async Task<IEnumerable<RequestReviewNotificationMessageResponse<Resource>>> GetResources(RequestReviewNotificationMessage content, CancellationToken cancellationToken)
@@ -164,7 +165,8 @@ public class RequestReviewedNotificationHandler(
         var emailContent = new StringBuilder();
         AddEmailIngress(emailContent, reviewer);
         AddResourcesAndPackage(emailContent, resources, packages);
-        emailContent.AppendLine($"<p>Med vennlig hilsen<br>Altinn</p>");
+        emailContent.AppendLine($"<p>Med vennlig hilsen,<br>Altinn</p>");
+        emailContent.AppendLine(@"<em>Denne meldingen er automatisk generert. Svar til denne adressen vil ikke bli behandlet.</em>");
 
         if (recipient.TypeId == EntityTypeConstants.Person)
         {
@@ -322,11 +324,6 @@ public class RequestReviewNotificationMessage
     /// Guids of approved / rejected package.
     /// </summary>
     public List<RequestReviewNotificationMessageResponse<Guid>> Packages { get; set; } = [];
-
-    /// <summary>
-    /// Used for idempotency.
-    /// </summary>
-    public DateTime InitiatedAt { get; set; }
 
     /// <summary>
     /// Number of updates.

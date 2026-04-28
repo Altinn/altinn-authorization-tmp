@@ -16,9 +16,28 @@ public static class TestData
         Name = "Test",
     };
 
+    /// <summary>
+    /// A generic test resource type used across integration tests.
+    /// </summary>
+    public static ResourceType CorrespondenceResourceType { get; } = new()
+    {
+        Id = Guid.Parse("019d95d1-95c7-7887-91cc-30fc9af97191"),
+        Name = "CorrespondenceService",
+    };
+
     #endregion
 
     #region Resources
+
+    public static readonly Resource TestdirektoratetCorrespondenceService = new()
+    {
+        Id = Guid.Parse("019d95d3-92d5-750f-a594-a8b08e756a4a"),
+        Name = "Testdirektoratet Correspondence Service",
+        Description = "Messaging service for testing instance delegation from Altinn II",
+        RefId = "ttd-migratedcorrespondence-4471-1",
+        TypeId = TestData.CorrespondenceResourceType.Id,
+        ProviderId = ProviderConstants.Altinn2.Id,
+    };
 
     public static readonly Resource MattilsynetBakeryService = new()
     {
@@ -91,6 +110,28 @@ public static class TestData
     #endregion
 
     #region Firmaer
+
+    public static ConstantDefinition<Entity> HanSoloEnterprise { get; } = new("c3af1102-9ea6-4335-800d-fb9a80b322ae")
+    {
+        Entity = new()
+        {
+            DateOfBirth = null,
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Han Solo Enterprise",
+            OrganizationIdentifier = "305000043",
+            Parent = null,
+            ParentId = null,
+            PartyId = 50300004,
+            PersonIdentifier = null,
+            RefId = "305000043",
+            TypeId = EntityTypeConstants.Organization,
+            UserId = null,
+            Username = null,
+            VariantId = EntityVariantConstants.AS,
+        }
+    };
 
     public static ConstantDefinition<Entity> BakerJohnsen { get; } = new("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d")
     {
@@ -211,12 +252,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "Kaos Magic Design and Arts",
-            OrganizationIdentifier = "315678901",
+            OrganizationIdentifier = "315678900",
             Parent = null,
             ParentId = null,
             PartyId = 50315678,
             PersonIdentifier = null,
-            RefId = "315678901",
+            RefId = "315678900",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -270,12 +311,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "RegnskapNorge",
-            OrganizationIdentifier = "310000004",
+            OrganizationIdentifier = "310000000",
             Parent = null,
             ParentId = null,
             PartyId = 50100004,
             PersonIdentifier = null,
-            RefId = "310000004",
+            RefId = "310000000",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -292,12 +333,12 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "MittRegnskap",
-            OrganizationIdentifier = "310000005",
+            OrganizationIdentifier = "314265971",
             Parent = null,
             ParentId = null,
-            PartyId = 50100005,
+            PartyId = 50265971,
             PersonIdentifier = null,
-            RefId = "310000005",
+            RefId = "314265971",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -318,12 +359,38 @@ public static class TestData
             DeletedAt = null,
             IsDeleted = false,
             Name = "RPC AS",
-            OrganizationIdentifier = "310000006",
+            OrganizationIdentifier = "312889285",
             Parent = null,
             ParentId = null,
-            PartyId = 50100006,
+            PartyId = 50189285,
             PersonIdentifier = null,
-            RefId = "310000006",
+            RefId = "312889285",
+            TypeId = EntityTypeConstants.Organization,
+            UserId = null,
+            Username = null,
+            VariantId = EntityVariantConstants.AS,
+        }
+    };
+
+    #endregion
+
+    #region Tjenesteeier
+
+    public static ConstantDefinition<Entity> StorMektigTenesteeier { get; } = new("5f6ed073-0aba-4562-a6d1-e31539e2f938")
+    {
+        Entity = new()
+        {
+            DateOfBirth = null,
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Stor og Mektig Tjenesteeier",
+            OrganizationIdentifier = "974761076",
+            Parent = null,
+            ParentId = null,
+            PartyId = 501161076,
+            PersonIdentifier = null,
+            RefId = "974761076",
             TypeId = EntityTypeConstants.Organization,
             UserId = null,
             Username = null,
@@ -348,8 +415,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200001,
-            PersonIdentifier = "12037500001",
-            RefId = "12037500001",
+            PersonIdentifier = "29814997306",
+            RefId = "29814997306",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100001,
             Username = "lars.bakke",
@@ -370,8 +437,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200002,
-            PersonIdentifier = "22076800002",
-            RefId = "22076800002",
+            PersonIdentifier = "22076800077",
+            RefId = "22076800077",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100002,
             Username = "hilde.strand",
@@ -392,8 +459,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200003,
-            PersonIdentifier = "05118200003",
-            RefId = "05118200003",
+            PersonIdentifier = "05118200081",
+            RefId = "05118200081",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100003,
             Username = "knut.vik",
@@ -418,8 +485,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200004,
-            PersonIdentifier = "18027900004",
-            RefId = "18027900004",
+            PersonIdentifier = "18027900190",
+            RefId = "18027900190",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100004,
             Username = "morten.dahl",
@@ -440,8 +507,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200005,
-            PersonIdentifier = "30097000005",
-            RefId = "30097000005",
+            PersonIdentifier = "30097000030",
+            RefId = "30097000030",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100005,
             Username = "grete.holm",
@@ -462,8 +529,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200006,
-            PersonIdentifier = "14048500006",
-            RefId = "14048500006",
+            PersonIdentifier = "14048500189",
+            RefId = "14048500189",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100006,
             Username = "arne.lund",
@@ -554,8 +621,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200023,
-            PersonIdentifier = "15036000023",
-            RefId = "15036000023",
+            PersonIdentifier = "15036000187",
+            RefId = "15036000187",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100023,
             Username = "bodil.farmor",
@@ -606,8 +673,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50401001,
-            PersonIdentifier = "22079340101",
-            RefId = "22079340101",
+            PersonIdentifier = "22079340306",
+            RefId = "22079340306",
             TypeId = EntityTypeConstants.Person,
             UserId = 20401001,
             Username = "jinx.arcane",
@@ -628,8 +695,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50401002,
-            PersonIdentifier = "14038840102",
-            RefId = "14038840102",
+            PersonIdentifier = "14038840283",
+            RefId = "14038840283",
             TypeId = EntityTypeConstants.Person,
             UserId = 20401002,
             Username = "alex.theartist",
@@ -654,8 +721,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200007,
-            PersonIdentifier = "21068800007",
-            RefId = "21068800007",
+            PersonIdentifier = "21068800185",
+            RefId = "21068800185",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100007,
             Username = "silje.haugen",
@@ -676,8 +743,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200008,
-            PersonIdentifier = "08016500008",
-            RefId = "08016500008",
+            PersonIdentifier = "08016500047",
+            RefId = "08016500047",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100008,
             Username = "einar.berg",
@@ -698,8 +765,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200009,
-            PersonIdentifier = "03129100009",
-            RefId = "03129100009",
+            PersonIdentifier = "03129100000",
+            RefId = "03129100000",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100009,
             Username = "tone.kvam",
@@ -724,8 +791,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200010,
-            PersonIdentifier = "15087200010",
-            RefId = "15087200010",
+            PersonIdentifier = "22847596388",
+            RefId = "22847596388",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100010,
             Username = "bjorn.moe",
@@ -746,8 +813,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200011,
-            PersonIdentifier = "28056700011",
-            RefId = "28056700011",
+            PersonIdentifier = "28056700090",
+            RefId = "28056700090",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100011,
             Username = "randi.lie",
@@ -767,9 +834,9 @@ public static class TestData
             OrganizationIdentifier = null,
             Parent = null,
             ParentId = null,
-            PartyId = 50200012,
-            PersonIdentifier = "07108300012",
-            RefId = "07108300012",
+            PartyId = 502099111,
+            PersonIdentifier = "07905999111",
+            RefId = "07905999111",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100012,
             Username = "vegard.solberg",
@@ -789,9 +856,9 @@ public static class TestData
             OrganizationIdentifier = null,
             Parent = null,
             ParentId = null,
-            PartyId = 50200013,
-            PersonIdentifier = "19038000013",
-            RefId = "19038000013",
+            PartyId = 50299121,
+            PersonIdentifier = "03834199121",
+            RefId = "03834199121",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100013,
             Username = "inger.nygard",
@@ -816,8 +883,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200014,
-            PersonIdentifier = "25117600014",
-            RefId = "25117600014",
+            PersonIdentifier = "25117600079",
+            RefId = "25117600079",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100014,
             Username = "astrid.johansen",
@@ -838,8 +905,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200015,
-            PersonIdentifier = "02046900015",
-            RefId = "02046900015",
+            PersonIdentifier = "02046900076",
+            RefId = "02046900076",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100015,
             Username = "trond.larsen",
@@ -860,8 +927,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200016,
-            PersonIdentifier = "16078700016",
-            RefId = "16078700016",
+            PersonIdentifier = "16078700088",
+            RefId = "16078700088",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100016,
             Username = "marit.eriksen",
@@ -882,8 +949,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200017,
-            PersonIdentifier = "11097400017",
-            RefId = "11097400017",
+            PersonIdentifier = "11097400182",
+            RefId = "11097400182",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100017,
             Username = "geir.pedersen",
@@ -908,8 +975,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200018,
-            PersonIdentifier = "09026600018",
-            RefId = "09026600018",
+            PersonIdentifier = "09026600097",
+            RefId = "09026600097",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100018,
             Username = "odd.halvorsen",
@@ -930,8 +997,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200019,
-            PersonIdentifier = "20127300019",
-            RefId = "20127300019",
+            PersonIdentifier = "20127300020",
+            RefId = "20127300020",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100019,
             Username = "liv.kristiansen",
@@ -952,8 +1019,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200020,
-            PersonIdentifier = "04068100020",
-            RefId = "04068100020",
+            PersonIdentifier = "04068100033",
+            RefId = "04068100033",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100020,
             Username = "steinar.andreassen",
@@ -974,8 +1041,8 @@ public static class TestData
             Parent = null,
             ParentId = null,
             PartyId = 50200021,
-            PersonIdentifier = "27087700021",
-            RefId = "27087700021",
+            PersonIdentifier = "27087700130",
+            RefId = "27087700130",
             TypeId = EntityTypeConstants.Person,
             UserId = 20100021,
             Username = "helge.nilsen",
@@ -985,9 +1052,105 @@ public static class TestData
 
     #endregion
 
+    #region Personer - Han Solo Enterprise
+    public static ConstantDefinition<Entity> HanSolo { get; } = new("ffe29638-80d9-4f34-a8d8-a172a6f360c8")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1976, 3, 10),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Han Solo",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50300001,
+            PersonIdentifier = "10837612174",
+            RefId = "10837612174",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20300001,
+            Username = null,
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
+    public static ConstantDefinition<Entity> BenSolo { get; } = new("1e984aef-7edc-4435-8dd6-cdf1ff2899f1")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(2010, 9, 28),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Ben Solo",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50300002,
+            PersonIdentifier = "28091080186",
+            RefId = "28091080186",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20300002,
+            Username = null,
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
+    public static ConstantDefinition<Entity> LeiaOrgana { get; } = new("60c29841-a339-43d6-8244-a5957a961000")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1986, 10, 7),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Leia Organa",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50300003,
+            PersonIdentifier = "07108640094",
+            RefId = "07108640094",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20300003,
+            Username = null,
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
+    public static ConstantDefinition<Entity> LukeSkyWalker { get; } = new("758de848-89cd-4d92-b4e7-3697c22594e7")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1989, 7, 21),
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Luke Skywalker",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 50300005,
+            PersonIdentifier = "21078942743",
+            RefId = "07108640094",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 20300005,
+            Username = null,
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+    #endregion
+
     #region Assignments
 
     // UUIDv7 format: 0196a0b1-xxxx-7xxx-8xxx-xxxxxxxxxxxx
+
+    // Han Solo Enterprise - personroller
+    private static readonly Guid AssignHanSoloEnterpriseHanSoloMD = Guid.Parse("019d9613-c654-7a01-8998-a46f9c983067");
+    private static readonly Guid AssignHanSoloEnterpriseBenSoloRS = Guid.Parse("019dba1e-4b53-765b-b671-248cb31e3094");
+    private static readonly Guid AssignHanSoloEnterpriseLukeSkywalkerRS = Guid.Parse("019dba4a-6a75-7852-b595-d1d026169101");
+    private static readonly Guid AssignHanSoloEnterpriseLeiaOrganaCB = Guid.Parse("019dba3a-484e-70bd-b79a-231025c33c19");
 
     // Baker Johnsen - personroller
     private static readonly Guid AssignBakerJohnsenLarsBakkeMD = Guid.Parse("0196a0b1-0001-7001-8001-000000000001");
@@ -1046,7 +1209,11 @@ public static class TestData
     private static readonly Guid AssignJosephinePriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000042");
     private static readonly Guid AssignMilenaPriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000043");
     private static readonly Guid AssignJinxArcanePriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000044");
-    private static readonly Guid AssignAlexTheArtistPriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000045");
+    private static readonly Guid AssignAlexTheArtistPriv = Guid.Parse("0196a0b1-0001-7001-8001-000000000045");    
+    private static readonly Guid AssignHanSoloPriv = Guid.Parse("019dba34-78cc-7b38-b91b-393fc2488c4a");
+    private static readonly Guid AssignBenSoloPriv = Guid.Parse("019dba34-a7ce-7ec3-9cc7-beb6e3c7dbce");
+    private static readonly Guid AssignLeiaOrganaPriv = Guid.Parse("019dba34-bcf3-7285-8ad8-7709b37cd47a");
+    private static readonly Guid AssignLukeSkywalkerPriv = Guid.Parse("019dba4a-fa99-738e-aedd-5b324de37fc7");
 
     // Org-til-org assignments
     private static readonly Guid AssignBakerJohnsenRegnskapNorgeAcc = Guid.Parse("0196a0b1-0001-7001-8001-000000000016");
@@ -1062,6 +1229,12 @@ public static class TestData
     public static List<Assignment> Assignments = new()
 #pragma warning restore SA1401 // Fields should be private
     {
+        // Han Solo Enterprise - personroller
+        new Assignment() { Id = AssignHanSoloEnterpriseHanSoloMD, FromId = HanSoloEnterprise.Id, ToId = HanSolo.Id, RoleId = RoleConstants.ManagingDirector.Id },
+        new Assignment() { Id = AssignHanSoloEnterpriseBenSoloRS, FromId = HanSoloEnterprise.Id, ToId = BenSolo.Id, RoleId = RoleConstants.ReporterSender.Id },
+        new Assignment() { Id = AssignHanSoloEnterpriseLukeSkywalkerRS, FromId = HanSoloEnterprise.Id, ToId = LukeSkyWalker.Id, RoleId = RoleConstants.ReporterSender.Id },
+        new Assignment() { Id = AssignHanSoloEnterpriseLeiaOrganaCB, FromId = HanSoloEnterprise.Id, ToId = LeiaOrgana.Id, RoleId = RoleConstants.ChairOfTheBoard.Id },
+            
         // Baker Johnsen - personroller
         new Assignment() { Id = AssignBakerJohnsenLarsBakkeMD, FromId = BakerJohnsen, ToId = LarsBakke, RoleId = RoleConstants.ManagingDirector },
         new Assignment() { Id = AssignBakerJohnsenHildeStrandCB, FromId = BakerJohnsen, ToId = HildeStrand, RoleId = RoleConstants.ChairOfTheBoard },
@@ -1114,7 +1287,11 @@ public static class TestData
         new Assignment() { Id = AssignMilenaPriv, FromId = Milena, ToId = Milena, RoleId = RoleConstants.PrivatePerson },
         new Assignment() { Id = AssignJinxArcanePriv, FromId = JinxArcane, ToId = JinxArcane, RoleId = RoleConstants.PrivatePerson },
         new Assignment() { Id = AssignAlexTheArtistPriv, FromId = AlexTheArtist, ToId = AlexTheArtist, RoleId = RoleConstants.PrivatePerson },
-
+        new Assignment() { Id = AssignHanSoloPriv, FromId = HanSolo, ToId = HanSolo, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignBenSoloPriv, FromId = BenSolo, ToId = BenSolo, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignLeiaOrganaPriv, FromId = LeiaOrgana, ToId = LeiaOrgana, RoleId = RoleConstants.PrivatePerson },
+        new Assignment() { Id = AssignLukeSkywalkerPriv, FromId = LukeSkyWalker, ToId = LukeSkyWalker, RoleId = RoleConstants.PrivatePerson },
+        
         // RPC AS - personroller
         new Assignment() { Id = AssignRpcOddHalvorsenMD, FromId = RpcAS, ToId = OddHalvorsen, RoleId = RoleConstants.ManagingDirector },
         new Assignment() { Id = AssignRpcLivKristiansenCB, FromId = RpcAS, ToId = LivKristiansen, RoleId = RoleConstants.ChairOfTheBoard },
@@ -1142,10 +1319,37 @@ public static class TestData
 #pragma warning restore SA1401 // Fields should be private
     {
         // Dumbo Adventures - Thea has Rightholder with a package
-        new AssignmentPackage() 
-        { 
-            AssignmentId = AssignDumboAdventuresThea, 
-            PackageId = PackageConstants.SalarySpecialCategory.Id 
+        new AssignmentPackage()
+        {
+            AssignmentId = AssignDumboAdventuresThea,
+            PackageId = PackageConstants.SalarySpecialCategory.Id
+        },
+    };
+
+    #endregion
+
+    #region Assignment Resources
+
+#pragma warning disable SA1401 // Fields should be private
+    public static List<AssignmentResource> AssignmentResources = new()
+#pragma warning restore SA1401 // Fields should be private
+    {
+        // Josephine has instance rights for Kaos on SiriusSkattemelding
+        new AssignmentResource()
+        {
+            AssignmentId = AssignKaosJosephineRightholder,
+            ResourceId = SiriusSkattemelding.Id,
+            PolicyPath = "sirius-skattemelding-v1/50315678/p5049963/delegationpolicy.xml",
+            PolicyVersion = "1.0",
+        },
+
+        // Josephine has instance rights for Kaos on MattilsynetBakeryService
+        new AssignmentResource()
+        {
+            AssignmentId = AssignKaosJosephineRightholder,
+            ResourceId = MattilsynetBakeryService.Id,
+            PolicyPath = "mattilsynet-baker-konditorvare/50315678/p5049963/delegationpolicy.xml",
+            PolicyVersion = "1.0",
         },
     };
 

@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
@@ -53,17 +55,9 @@ await app.RunAsync();
 
 async Task Init()
 {
-    if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbEf))
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await dbContext.Database.MigrateAsync();
-        await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
-    }
-    else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
-    {
-        bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
-        await app.UseAccessMgmtDb(generateBasicData);
-    }
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+    await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
 
     using var cts = new CancellationTokenSource();
     AppDomain.CurrentDomain.ProcessExit += (s, e) =>
@@ -86,6 +80,10 @@ async Task PersistenceFeatures()
 {
     // Delete me after next prod release
     Altinn.AccessMgmt.PersistenceEF.Utils.Settings.FeatureFlags.UseInstanceDelegationEF = await featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
+
+    // Delete me after june 19th and Altinn 2 is no more
+    AuthorizedPartiesSettings.IncludeAltinn2 = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesIncludeAltinn2);
+    AuthorizedPartiesSettings.UsingConnectionQueryOnly = await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesUsingConnectionQueryOnly);
 }
 
 /// <summary>

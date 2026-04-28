@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessManagement.Persistence;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -13,7 +14,7 @@ using ResourceRegistryResourceType = Altinn.AccessManagement.Core.Models.Resourc
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
 /// <inheritdoc/>
-public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbContext) : IDelegationMetadataRepository
+public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbContext, DelegationMetadataRepo LegacyRepo) : IDelegationMetadataRepository
 {
     private string ConvertFromAppResourceId(string resourceId)
     {
@@ -37,26 +38,26 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     {
         return new DelegationChange()
         {
-            DelegationChangeId = assignmentResource.Resource.Type.Name == "AltinnApp"
+            DelegationChangeId = assignmentResource.Resource.Type.Name == "AltinnApp" || assignmentResource.Resource.Type.Name == "MigratedApp"
             ? assignmentResource.DelegationChangeId
-            : 0,            
-            ResourceRegistryDelegationChangeId = assignmentResource.Resource.Type.Name != "AltinnApp" 
+            : 0,
+            ResourceRegistryDelegationChangeId = assignmentResource.Resource.Type.Name != "AltinnApp" && assignmentResource.Resource.Type.Name != "MigratedApp"
             ? assignmentResource.DelegationChangeId
             : 0,
             Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
-            
-            ResourceId = assignmentResource.Resource.Type.Name == "AltinnApp"
+
+            ResourceId = assignmentResource.Resource.Type.Name == "AltinnApp" || assignmentResource.Resource.Type.Name == "MigratedApp"
             ? ConvertFromAppResourceId(assignmentResource.Resource.RefId)
-            : assignmentResource.Resource.RefId, 
+            : assignmentResource.Resource.RefId,
 
             ResourceType = assignmentResource.Resource.Type.Name,
             BlobStoragePolicyPath = assignmentResource.PolicyPath,
             BlobStorageVersionId = assignmentResource.PolicyVersion,
-            
+
             FromUuid = assignmentResource.Assignment.FromId,
             FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
-            OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
-            
+            OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,
+
             PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
             PerformedByPartyId = assignmentResource.ChangedBy.PartyId,
             PerformedByUserId = assignmentResource.ChangedBy.UserId,
@@ -75,10 +76,10 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     {
         return new DelegationChange()
         {
-            DelegationChangeId = assignmentResource.Resource.Type.Name == "AltinnApp"
+            DelegationChangeId = assignmentResource.Resource.Type.Name == "AltinnApp" || assignmentResource.Resource.Type.Name == "MigratedApp"
             ? assignmentResource.DelegationChangeId
             : 0,
-            ResourceRegistryDelegationChangeId = assignmentResource.Resource.Type.Name != "AltinnApp"
+            ResourceRegistryDelegationChangeId = assignmentResource.Resource.Type.Name != "AltinnApp" && assignmentResource.Resource.Type.Name != "MigratedApp"
             ? assignmentResource.DelegationChangeId
             : 0,
             Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
@@ -934,20 +935,17 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         return result.Select(ConvertForAuthorizedParties).ToList();
     }
 
-    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageAppDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageAppDelegationChanges(startFeedIndex, cancellationToken);
 
-    Task<List<DelegationChange>> IDelegationMetadataRepository.GetNextPageResourceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageResourceDelegationChanges(startFeedIndex, cancellationToken);
 
-    Task<List<InstanceDelegationChange>> IDelegationMetadataRepository.GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    /// <inheritdoc/>
+    public Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long startFeedIndex, CancellationToken cancellationToken)
+        => LegacyRepo.GetNextPageInstanceDelegationChanges(startFeedIndex, cancellationToken);
 
     private static string MapResourceTypeToResourceTypeName(ResourceRegistryResourceType resourceType)
     {
@@ -961,6 +959,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             ResourceRegistryResourceType.BrokerService => "BrokerService",
             ResourceRegistryResourceType.CorrespondenceService => "CorrespondenceService",
             ResourceRegistryResourceType.Consent => "Consent",
+            ResourceRegistryResourceType.MigratedApp => "MigratedApp",
             _ => throw new ArgumentOutOfRangeException(nameof(resourceType), $"Not expected resource type value: {resourceType}"),
         };
     }

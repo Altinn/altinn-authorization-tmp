@@ -29,7 +29,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/connections")]
-[FeatureGate(AccessMgmtFeatureFlags.EnduserControllerConnections)]
 public class ConnectionsController(
     IConnectionService ConnectionService,
     IInputValidation inputValidation,
@@ -401,25 +400,19 @@ public class ConnectionsController(
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ApiExplorerSettings(IgnoreApi = true)] //// Should stay hidden/closed until role service is ready.
+    [FeatureGate(AccessMgmtFeatureFlags.Altinn2RoleRevoke)]    
     public async Task<IActionResult> RemoveRole(
         [Required][FromQuery(Name = "party")] Guid party,
+        [Required][FromQuery(Name = "from")] Guid from,
         [Required][FromQuery(Name = "to")] Guid to,
-        [FromQuery] string roleCode,
+        [Required][FromQuery(Name = "rolecode")] string roleCode,
         CancellationToken cancellationToken = default)
     {
-        return NotFound();
+        var result = await ConnectionService.RemoveRoleAssignment(from, to, roleCode, ConfigureConnections, cancellationToken);
 
-        async Task<ValidationProblemInstance> RemoveRole()
+        if (result.IsProblem)
         {
-            return await Task.FromResult<ValidationProblemInstance>(null); // ToDo: Implement when role service is ready
-        }
-
-        var problem = await RemoveRole();
-
-        if (problem is { })
-        {
-            return problem.ToActionResult();
+            return result.Problem.ToActionResult();
         }
 
         return NoContent();
@@ -894,7 +887,6 @@ public class ConnectionsController(
     /// 2. Using PersonInput in body to create new rightholder and delegate in one operation
     /// </summary>
     [HttpPost("resources/instances/rights")]
-    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
     [Authorize(Policy = AuthzConstants.POLICY_INSTANCE_DELEGATION)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -997,7 +989,6 @@ public class ConnectionsController(
     /// Update resource instance rights for an existing rightholder connection
     /// </summary>
     [HttpPut("resources/instances/rights")]
-    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
@@ -1048,7 +1039,6 @@ public class ConnectionsController(
     /// Remove resource instance from rightholder connection and all actions
     /// </summary>
     [HttpDelete("resources/instances")]
-    [FeatureGate(AccessMgmtFeatureFlags.InstanceDbEf)]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]

@@ -1,16 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <XUnitVersion>v3</XUnitVersion>
+    <!-- Clear the singular TargetFramework inherited from src/Directory.Build.props so
+         dotnet test routes to the Microsoft Testing Platform (required for xUnit v3). -->
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    
+
     <ProjectReference Include="..\Altinn.AccessManagement.TestUtils\Altinn.AccessManagement.TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Altinn.AccessMgmt.Core\Altinn.AccessMgmt.Core.csproj" />
-    
+    <ProjectReference Include="..\..\src\Altinn.AccessMgmt.Persistence.Core\Altinn.AccessMgmt.Persistence.Core.csproj" />
+    <ProjectReference Include="..\..\src\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

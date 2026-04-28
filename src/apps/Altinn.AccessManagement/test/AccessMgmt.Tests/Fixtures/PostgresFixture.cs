@@ -56,14 +56,14 @@ public class PostgresFixture : IAsyncLifetime
     public PostgresDatabase SharedDb { get; private set; }
 
     /// <inheritdoc/>
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         PostgresServer.StopUsing(this);
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         PostgresServer.StartUsing(this);
 
@@ -77,7 +77,7 @@ public class PostgresFixture : IAsyncLifetime
         db.Database.MigrateAsync().Wait();
         AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(db).Wait();
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 
@@ -128,7 +128,21 @@ public static class PostgresServer
 
             if (Consumers.Values.Sum() == 1)
             {
-                Server.StartAsync().Wait();
+                try
+                {
+                    Server.StartAsync().Wait();
+                }
+                catch (Exception ex)
+                {
+                    // On Linux CI runners a Docker daemon outage or image-pull
+                    // failure (rate limiting, network) would otherwise surface
+                    // as an opaque Testcontainers timeout. Convert to a clear
+                    // xUnit v3 skip so all-skipped verticals exit 8, which the
+                    // `Test` workflow step already tolerates via
+                    // `--ignore-exit-code 8`.
+                    Assert.Skip($"Docker/Testcontainers unavailable: {ex.GetBaseException().Message}");
+                }
+
                 var result = Server.ExecScriptAsync($@"
                 DO
                 $$
@@ -376,7 +390,7 @@ public static class DelegationChangeComposer
     /// <param name="resource">resource</param>
     public static Action<DelegationChange> WithResource(IAccessManagementResource resource) => delegation =>
     {
-        if (resource.Resource.ResourceType == ResourceType.AltinnApp)
+        if (resource.Resource.ResourceType == ResourceType.AltinnApp || resource.Resource.ResourceType == ResourceType.MigratedApp)
         {
             var org = resource.Resource.AuthorizationReference.FirstOrDefault(attr => attr.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute);
             var app = resource.Resource.AuthorizationReference.FirstOrDefault(attr => attr.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
