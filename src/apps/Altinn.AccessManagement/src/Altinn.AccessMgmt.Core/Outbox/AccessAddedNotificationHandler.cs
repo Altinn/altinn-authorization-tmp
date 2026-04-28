@@ -36,7 +36,7 @@ public class AccessAddedNotificationHandler(
 
         if (!packages.Any() && !resources.Any())
         {
-            db.OutboxMessageLogs.Add(message, $"Both lists of resources and packages are empty. Request is most likely withdrawn.");
+            db.OutboxMessageLogs.Add(message, $"Both lists of resources and packages are empty. Access was most likely added and immediately removed.");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
