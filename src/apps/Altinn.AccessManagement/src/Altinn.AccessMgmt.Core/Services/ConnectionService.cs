@@ -2274,7 +2274,7 @@ public partial class ConnectionService
             return Problems.InvalidRoleCode;
         }
 
-        if (role.Provider.Id != ProviderConstants.Altinn2.Id)
+        if (role.ProviderId != ProviderConstants.Altinn2.Id)
         {
             return Problems.RoleAssignmentNotRevocable;
         }
