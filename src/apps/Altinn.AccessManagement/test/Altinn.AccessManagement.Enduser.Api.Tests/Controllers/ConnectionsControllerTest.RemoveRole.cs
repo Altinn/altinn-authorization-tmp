@@ -32,7 +32,8 @@ public partial class ConnectionsControllerTest
     {
         public RemoveRole(ApiFixture fixture)
         {
-            Fixture = fixture;            
+            Fixture = fixture;
+            fixture.WithEnabledFeatureFlag("AccessMgmt.Controller.Connection.RevokeRole");
         }
 
         public ApiFixture Fixture { get; }
