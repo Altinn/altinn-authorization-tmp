@@ -228,7 +228,7 @@ public class AccessAddedNotificationHandler(
             access.Append("</ul>");
         }
 
-        var ingress = Ingress(from, to, access);
+        var ingress = Ingress(from, to);
 
         return @$"
             <p>
