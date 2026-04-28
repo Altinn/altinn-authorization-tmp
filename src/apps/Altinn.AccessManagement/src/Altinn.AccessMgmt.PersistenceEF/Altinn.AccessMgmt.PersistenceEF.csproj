@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Utils\Settings\" />
   </ItemGroup>
   
   <ItemGroup>

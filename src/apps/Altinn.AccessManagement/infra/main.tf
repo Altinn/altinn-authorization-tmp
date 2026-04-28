@@ -449,18 +449,6 @@ module "appsettings" {
       value       = true
     },
     {
-      name        = "AccessManagement.InstanceDelegation.EF"
-      description = "Specifies if singlerights instaince delegation should use ef."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.ResourceDelegation.EF"
-      description = "Specifies if singlerights resource delegation should use ef."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
       name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
       description = "Specifies if consent migration service should start"
       label       = "${lower(var.environment)}-access-management"

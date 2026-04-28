@@ -307,18 +307,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc />
         public async Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
-            bool useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
-            bool validPath;
-            string path;
-
-            if (useEF)
-            {
-                validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
-            else
-            {
-                validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
+            bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
             if (validPath)
             {
@@ -369,26 +358,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception ex)
             {
-                bool useEF = false;
-                bool validPath;
-                string path;
-
-                try
-                {
-                    useEF = await _featureManager.IsEnabledAsync("AccessManagement.InstanceDelegation.EF");
-                }
-                catch (Exception)
-                {
-                }
-                
-                if (useEF)
-                {
-                    validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
-                else
-                {
-                    validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
+                bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
                 if (validPath)
                 {

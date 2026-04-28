@@ -385,9 +385,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return delegations;
             }
 
-            List<DelegationChange> delegationChanges = await _featureManager.IsEnabledAsync("AccessManagement.ResourceDelegation.EF")
-                ? await _delegationRepository.GetResourceRegistryDelegationChanges(resources.Select(d => d.Identifier).ToList(), consumerPartyUuid, supplierPartyUuid, ResourceType.MaskinportenSchema, cancellationToken)
-                : await _delegationRepository.GetResourceRegistryDelegationChanges(resources.Select(d => d.Identifier).ToList(), consumerPartyId, supplierPartyId, ResourceType.MaskinportenSchema, cancellationToken);
+            List<DelegationChange> delegationChanges = await _delegationRepository.GetResourceRegistryDelegationChanges(resources.Select(d => d.Identifier).ToList(), consumerPartyUuid, supplierPartyUuid, ResourceType.MaskinportenSchema, cancellationToken);
             if (delegationChanges.Count == 0)
             {
                 return delegations;

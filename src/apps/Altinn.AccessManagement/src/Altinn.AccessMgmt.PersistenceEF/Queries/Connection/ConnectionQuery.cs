@@ -4,7 +4,6 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils.Settings;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
@@ -224,7 +223,6 @@ public class ConnectionQuery(AppDbContext db)
         var direct =
             db.Assignments
                 .Where(a1 => a1.ToId == toId)
-                .WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
                 .Select(a1 => new ConnectionQueryBaseRecord
                 {
                     AssignmentId = a1.Id,
@@ -250,7 +248,7 @@ public class ConnectionQuery(AppDbContext db)
                 )
                 .Where(x => x.r.IsKeyRole)
                 .Join(
-                    db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem),
+                    db.Assignments,
                     x => x.d.FromId,
                     a2 => a2.ToId,
                     (x, a2) => new ConnectionQueryBaseRecord
@@ -297,7 +295,6 @@ public class ConnectionQuery(AppDbContext db)
             db.Assignments
                 .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
-                .WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
                 .Join(
                     db.Delegations,
                     dkr => dkr.Id,
@@ -305,7 +302,7 @@ public class ConnectionQuery(AppDbContext db)
                     (dkr, d) => new { dkr, d }
                 )
                 .Join(
-                    db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem),
+                    db.Assignments,
                     x => x.d.FromId,
                     fa => fa.Id,
                     (x, fa) => new ConnectionQueryBaseRecord
@@ -350,7 +347,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var innehaverConnections =
             from reviRegnConnection in a2
-            join innehaverConnection in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
+            join innehaverConnection in db.Assignments on reviRegnConnection.FromId equals innehaverConnection.FromId
             join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where reviRegnRoleSet.Contains(reviRegnConnection.RoleId)
@@ -426,7 +423,7 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find all direct KeyRole assignments
         var keyRoleAssignments =
-            from keyRoleAssignment in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
+            from keyRoleAssignment in db.Assignments
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
             select new ConnectionQueryBaseRecord()
@@ -477,7 +474,7 @@ public class ConnectionQuery(AppDbContext db)
         #region Find KeyRole assignments to ToParty
         var inheritedKeyRoleAssignments =
             from keyRoleAssignment in allKeyRoleAssignments
-            join inheritedAssignment in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on keyRoleAssignment.FromId equals inheritedAssignment.ToId
+            join inheritedAssignment in db.Assignments on keyRoleAssignment.FromId equals inheritedAssignment.ToId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = inheritedAssignment.Id,
@@ -496,7 +493,7 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find direct assignments to ToParty
         var directAssignments =
-            from assignments in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
+            from assignments in db.Assignments
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = assignments.Id,
@@ -547,7 +544,7 @@ public class ConnectionQuery(AppDbContext db)
         var delegations =
             from toAssignment in allAssignments
             join delegation in db.Delegations on toAssignment.AssignmentId equals delegation.ToId
-            join fromAssignment in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on delegation.FromId equals fromAssignment.Id
+            join fromAssignment in db.Assignments on delegation.FromId equals fromAssignment.Id
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = null,
@@ -593,7 +590,7 @@ public class ConnectionQuery(AppDbContext db)
         #region Include all Innehavere connections through Revisor/Regnskapsfører connections to Enkeltpersonforetak
         var innehaverConnections =
             from reviRegnConnection in allBaseConnections
-            join innehaverConnection in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on reviRegnConnection.FromId equals innehaverConnection.FromId
+            join innehaverConnection in db.Assignments on reviRegnConnection.FromId equals innehaverConnection.FromId
             join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id)
@@ -665,7 +662,7 @@ public class ConnectionQuery(AppDbContext db)
         */
 
         var direct =
-            from childAss in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
+            from childAss in db.Assignments
             where childAss.FromId == fromId
             select new ConnectionQueryBaseRecord()
             {
@@ -688,7 +685,7 @@ public class ConnectionQuery(AppDbContext db)
         var mainAssignments =
             from e in db.Entities
             where e.Id == fromId
-            join ass in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on e.ParentId equals ass.FromId
+            join ass in db.Assignments on e.ParentId equals ass.FromId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = ass.Id,
@@ -736,7 +733,7 @@ public class ConnectionQuery(AppDbContext db)
         var directDelegations =
            from delegation in db.Delegations
            join fromAssignment in allAssignments on delegation.FromId equals fromAssignment.AssignmentId
-           join toAssignment in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on delegation.ToId equals toAssignment.Id
+           join toAssignment in db.Assignments on delegation.ToId equals toAssignment.Id
            select new ConnectionQueryBaseRecord()
            {
                AssignmentId = null,
@@ -757,7 +754,7 @@ public class ConnectionQuery(AppDbContext db)
         */
         var keyRoleAssignments =
             from all in allAssignments.Concat(roleMapAssignments) // Must include RoleMap assignments
-            join keyRoleAssignment in db.Assignments.WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem) on all.ToId equals keyRoleAssignment.FromId
+            join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
             select new ConnectionQueryBaseRecord()

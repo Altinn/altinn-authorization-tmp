@@ -34,7 +34,6 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
-    private const string InstanceDelegationEfFeatureFlag = "AccessManagement.InstanceDelegation.EF";
     private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
@@ -246,27 +245,23 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
-        bool useEF = await _featureManager.IsEnabledAsync(InstanceDelegationEfFeatureFlag);
         string instanceId = request.InstanceId;
 
-        if (useEF)
+        // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+        MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
+
+        if (party == null) 
         {
-            // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
-            MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
-
-            if (party == null) 
+            ValidationErrorBuilder errors = default;
+            errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+            if (errors.TryBuild(out var invalidParty))
             {
-                ValidationErrorBuilder errors = default;
-                errors.Add(ValidationErrors.InvalidPartyUrn, "From");
-                if (errors.TryBuild(out var invalidParty))
-                {
-                    return invalidParty;
-                }
+                return invalidParty;
             }
-
-            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-            request.InstanceId = instanceUrn;
         }
+
+        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
+        request.InstanceId = instanceUrn;
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
         request.InstanceId = instanceId;
