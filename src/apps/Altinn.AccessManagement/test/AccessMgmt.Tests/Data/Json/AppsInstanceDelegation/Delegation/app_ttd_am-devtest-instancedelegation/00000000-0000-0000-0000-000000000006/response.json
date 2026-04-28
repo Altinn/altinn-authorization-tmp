@@ -11,13 +11,6 @@
 			"paths": [
 				"From"
 			]
-		},
-		{
-			"code": "AM.VLD-00001",
-			"detail": "Invalid party URN.",
-			"paths": [
-				"To"
-			]
 		}
 	]
 }
