@@ -1,8 +1,7 @@
-﻿using System.Net.Mime;
-using System.Security.Claims;
-using Altinn.AccessManagement.Api.Enterprise.Extensions;
+﻿using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
@@ -11,7 +10,11 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.PEP.Helpers;
 using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
+using System.Security.Claims;
+using System.Text;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 {
@@ -98,33 +101,56 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         }
 
         /// <summary>
-        /// Returns the consent request. Only returns request details for the authenticated party.
+        /// Get a list of consents that had status changes for the authenticated enterprise.
+        /// Returns consents ordered by when the status change occurred (newest first).
+        /// Uses cursor-based pagination.
         /// </summary>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
-        [Route("consentrequests/{consentRequestId:guid}", Name= GetRouteName)]
+        [Route("consentrequests/changes")]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ConsentRequestDetailsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<ConsentStatusChangeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> GetRequest([FromRoute] Guid consentRequestId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetConsentStatusChanges(
+            [FromQuery] Guid partyUuid,
+            [FromQuery] string? continuationToken = null,
+            [FromQuery] int pageSize = 100,
+            CancellationToken cancellationToken = default)
         {
-            Core.Models.Consent.ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+            Core.Models.Consent.ConsentPartyUrn? authenticatedParty = OrgUtil.GetAuthenticatedParty(User);
 
-            if (consentPartyUrn == null)
+            if (authenticatedParty == null)
             {
                 return Unauthorized();
             }
-            
-            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.GetRequest(consentRequestId, consentPartyUrn, false, cancellationToken);
 
-            if (consentRequestStatus.IsProblem)
+            Result<List<ConsentStatusChange>> result = await _consentService.GetConsentStatusChangesForParty(authenticatedParty, continuationToken, pageSize, cancellationToken);
+
+            if (result.IsProblem)
             {
-                return consentRequestStatus.Problem.ToActionResult();
+                return result.Problem.ToActionResult();
             }
 
-            return Ok(consentRequestStatus.Value.ToConsentRequestDetailsExternal());
+            List<ConsentStatusChange> changes = result.Value;
+            // Convert to DTOs
+            List<ConsentStatusChangeDto> dtos = changes.Select(c => c.ToDto()).ToList();
+
+            // Calculate next continuation token if there are more results
+            string? nextLink = null;
+            if (dtos.Count == pageSize)
+            {
+                DateTimeOffset created = changes.Last().ChangedDate;
+                Guid consenteventid = changes.Last().ConsentEventId;
+                var token = $"{created:O}|{consenteventid}";
+                string nextToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?partyUuid={partyUuid}&continuationToken={Uri.EscapeDataString(nextToken)}&pageSize={pageSize}";
+            }
+
+            // Return paginated result
+            return Ok(PaginatedResult.Create(dtos, nextLink));
         }
 
         private async Task<bool> AuthorizeCreateConsentRequest(string consentResource, ClaimsPrincipal claimsPrincipal)
