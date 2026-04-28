@@ -173,5 +173,4 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor RoleAssignmentNotRevocable { get; }
     = _factory.Create(40, HttpStatusCode.BadRequest, "Given the rules for revocation this role could not be revoked");
-
 }
