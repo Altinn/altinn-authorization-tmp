@@ -38,15 +38,20 @@ public static class PackageValidation
     /// Checks the list of packages that all are assignable to the recipient entity type.
     /// </summary>
     /// <param name="packageUrns">list of packages</param>
-    /// <param name="toEntity">entity the assignment is to be made to</param>
+    /// <param name="toEntityType">entity the assignment is to be made to</param>
     /// <param name="paramName">name of the query parameter</param>
     /// <returns></returns>
-    internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, EntityType toEntity, string paramName = "packageId") => () =>
+    internal static RuleExpression PackageIsAssignableTo(IEnumerable<string> packageUrns, EntityType toEntityType, string paramName = "packageId") => () =>
     {
         ArgumentNullException.ThrowIfNull(packageUrns);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (toEntity.Id == EntityTypeConstants.Organization)
+        if (toEntityType is null)
+        {
+            return null;
+        }
+
+        if (toEntityType is { } && toEntityType.Id == EntityTypeConstants.Organization)
         {
             var packagesNotAssignableToOrg = packageUrns
                 .Where(p => p.Equals(PackageConstants.MainAdministrator.Entity.Urn));
@@ -56,6 +61,88 @@ public static class PackageValidation
                 return (ref ValidationErrorBuilder errors) =>
                     errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
             }
+        }
+
+        return null;
+    };
+
+    /// <summary>
+    /// Checks the list of packages that all are assignable to the recipient entity type.
+    /// </summary>
+    /// <param name="packageUrns">list of packages</param>
+    /// <param name="fromEntityType">entity the assignment is to be made to</param>
+    /// <param name="paramName">name of the query parameter</param>
+    /// <returns></returns>
+    internal static RuleExpression PackageIsAssignableFrom(IEnumerable<string> packageUrns, EntityType fromEntityType, string paramName = "packageId") => () =>
+    {
+        ArgumentNullException.ThrowIfNull(packageUrns);
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+        if (fromEntityType is null)
+        {
+            return null;
+        }
+
+        var packagesNotAssignableFromOrg = new List<string>();
+
+        foreach (var p in packageUrns)
+        {
+            if (PackageConstants.TryGetByUrn(p, out var package))
+            {
+                if (package.Entity.EntityTypeId != fromEntityType.Id)
+                {
+                    packagesNotAssignableFromOrg.Add(package.Entity.Urn);
+                }
+            }
+        }
+
+        if (packagesNotAssignableFromOrg.Any())
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {fromEntityType.Name}.")]);
+        }
+
+        return null;
+    };
+
+    /// <summary>
+    /// Checks if package is assignable.
+    /// </summary>
+    /// <param name="package">package</param>
+    /// <param name="paramName">name of the query parameter</param>
+    /// <returns></returns>
+    internal static RuleExpression PackageIsAssignable(string package, string paramName = "packageId") => () =>
+    {
+        if (PackageConstants.TryGetByAll(package, out var packageObj))
+        {
+            if (!packageObj.Entity.IsAssignable)
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                        errors.Add(ValidationErrors.PackageIsNotAssignable, paramName, [new(paramName, $"Package '{package}' is not assignable.")]);
+            }
+        }
+        else
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                   errors.Add(ValidationErrors.PackageNotExists, paramName, [new(paramName, $"No package was found with value '{package}'.")]);
+        }
+
+        return null;
+    };
+
+    /// <summary>
+    /// Checks if request is from self
+    /// </summary>
+    /// <param name="fromId">From</param>
+    /// <param name="toId">To</param>
+    /// <param name="paramName">name of the query parameter</param>
+    /// <returns></returns>
+    internal static RuleExpression SelfAssignmentNotAllowed(Guid fromId, Guid toId, string paramName = "from/to") => () =>
+    {
+        if (fromId == toId)
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.RequestFromSelfNotAllowed, $"QUERY/{paramName}", [new("from/to", $"From and To cannot be the same for assignment.")]);
         }
 
         return null;
