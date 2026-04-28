@@ -48,7 +48,7 @@ public static class PackageValidation
 
         if (assignedToType is null)
         {
-            return null;
+            throw new ArgumentNullException(nameof(assignedToType));
         }
 
         if (assignedToType.Id == EntityTypeConstants.Organization)
@@ -80,7 +80,7 @@ public static class PackageValidation
 
         if (assignedFromType is null)
         {
-            return null;
+            throw new ArgumentNullException(nameof(assignedFromType));
         }
 
         var packagesNotAssignableFromOrg = new List<string>();
@@ -120,14 +120,6 @@ public static class PackageValidation
                 return (ref ValidationErrorBuilder errors) =>
                         errors.Add(ValidationErrors.PackageIsNotAssignable, paramName, [new(paramName, $"Package '{package}' is not assignable.")]);
             }
-
-
-            // From er den som ber : Kari
-            // To er den som gir : Baker Hansen
-
-            /*
-             Baker Hansen kan ikke gi Hovedadministrator pakken til en organisasjon.
-             */
         }
         else
         {
