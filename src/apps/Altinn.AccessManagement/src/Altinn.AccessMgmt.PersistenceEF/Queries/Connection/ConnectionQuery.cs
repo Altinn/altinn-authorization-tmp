@@ -217,7 +217,7 @@ public class ConnectionQuery(AppDbContext db)
             RoleConstants.AccountantWithSigningRights.Id,
             RoleConstants.AccountantSalary.Id,
             RoleConstants.AssistantAuditor,
-            RoleConstants.A0237.Id
+            RoleConstants.AuditorInCharge.Id
         };
 
         var direct =

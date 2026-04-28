@@ -43,6 +43,14 @@ public interface IConnectionService
     Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks for connected references for a specific assignment.
+    /// </summary>
+    /// <param name="assignmentId">The ID of the assignment to check.</param>
+    /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a validation problem instance.</returns>
+    Task<ValidationProblemInstance> CheckAssignmentForConnectedRefernces(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the roles associated with a given entity.
     /// </summary>
     /// <param name="party">The user is operating on behalf of.</param>
@@ -396,4 +404,16 @@ public interface IConnectionService
     /// </list>
     /// </returns>
     Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the specified role assignment between two parties identified by <paramref name="fromId"/> and <paramref name="toId"/>.
+    /// </summary>
+    /// <param name="fromId">The unique identifier of the from party the assigned role is for.</param>
+    /// <param name="toId">The unique identifier of the to party the assigned role is given to.</param>
+    /// <param name="roleCode">The unique code of the assigned role to remove.</param>
+    /// <param name="configureConnections">An optional delegate to configure connection options for the operation. If null, default connection settings are used.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A result indicating whether the role was successfully removed. The result value is true if the role was removed, false if nothing was removed and a 
+    /// problem if something is wrong.</returns>
+    Task<Result<bool>> RemoveRoleAssignment(Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 }
