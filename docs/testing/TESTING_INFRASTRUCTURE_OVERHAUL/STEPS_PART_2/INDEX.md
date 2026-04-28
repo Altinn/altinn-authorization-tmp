@@ -334,6 +334,7 @@ the phase numbers in the
 | 3 | 2026-04-27 | A | Resolve **C1'** by deleting the empty `Altinn.Authorization.ABAC.Tests` project (only auto-generated `.cs` files; the test runner discovered 0 tests). Removed the project + the orphan `test/Directory.Build.props` from both the root `Altinn.Authorization.sln` and the per-package `src/pkgs/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.sln`; updated `docs/testing/TEST_PROJECTS.md` § `pkg: ABAC` to document that ABAC is exercised indirectly via `Altinn.Authorization.Tests` (~63 % line / 61 % branch). ABAC's centrally-enforced 60 % threshold continues to gate the indirect coverage. Per-package `dotnet build` clean (net8.0 + net9.0). Test-project count: 11 → **10** | n/a (no production code; ABAC indirect coverage unchanged) | [03_Delete_Empty_ABAC_Tests.md](03_Delete_Empty_ABAC_Tests.md) |
 | 4 | 2026-04-27 | A | Scaffold `Altinn.Authorization.Host.Pipeline.Tests` for **C3'/A.5** — new test project under `src/libs/Altinn.Authorization.Host/test/` mirroring `Lease.Tests` wiring (empty TFM trick + `xunit.runner.json` + ProjectReference to the production assembly). Added one `PipelineMessage<T>` ctor round-trip smoke test (1 passed) to keep test-discovery non-zero and avoid recreating C1'. Added to both root and per-package Host `.sln` files; build clean (0/0); xUnit v3 in-process runner discovers + passes the test. **The 0 % coverage on the production `Altinn.Authorization.Host.Pipeline` assembly itself is unchanged** — populating real Pipeline tests is Phase D.1, deferred. Test-project count: 10 → **11** | n/a (production assembly unchanged; smoke test only) | [04_Scaffold_Host_Pipeline_Tests.md](04_Scaffold_Host_Pipeline_Tests.md) |
 | 5 | 2026-04-27 | A | Resolve **C2'/A.2** — architect confirmed the `AccessManagementAuthorizedParties` feature flag has been always-on in production for some time and is ready to remove. The failing test `ValidateParty_NotAsAuthenticatedUser_Forbidden` was hitting the dead legacy `else` branch of `PartiesController.ValidateSelectedParty` only because the test class flipped the flag to `false` mid-class. Removed: the flag constant from `FeatureFlags.cs`; the `if(flag) { … } else { … }` branching from both `GetPartyList` and `ValidateSelectedParty` (keeping only the `AuthorizedParties` paths); the now-unused `_partiesWrapper` and `_featureManager` ctor params/fields from `PartiesController`; the now-orphaned `IParties.GetParties` and `IParties.ValidateSelectedParty` methods + their `PartiesWrapper` and `PartiesMock` impls; the `_featureManageMock` setup + flag-flipping legacy-vs-new comparison from `PartiesControllerTest.GetPartyList_AsAuthenticatedUser_Ok`. **No security-relevant condition in production** (the flag was always on); the originally-flagged "auth regression" was a test-hits-dead-code artefact. `Altinn.Authorization.Tests` 402/402/0/0/0 (was 402/401/1/0/0); 0 sibling regressions | n/a (dead-code removal; coverage of `Altinn.Authorization` largely unchanged) | [05_Remove_AccessManagementAuthorizedParties_Flag.md](05_Remove_AccessManagementAuthorizedParties_Flag.md) |
+| 6 | 2026-04-27 | A | T1 closing sweep — re-baselined PART_2.md §§1.1/1.4/1.5/1.6/2/4 + INDEX Final Coverage + Phase B/F priorities against the post-C5'-fix and post-Step-5 merged-cobertura view. Re-scoped Phase B.1 to drop `Api.Internal` (true coverage 73.63%, not the Step 1 figure of 48.56%); added `Api.Internal` as a NEW Phase F (L2') promotion candidate at floor 70. Re-scoped Phase F floor-raise list (Maskinporten 75→80, PEP 75→78, PersistenceEF 90→95). Updated §1.6 drift summary to flag that 5 of the Step 1 "regressions" were measurement artefacts. Coverage run 2536/2520/0/16; threshold check exit 0 ✅. **T1 (#2947) is now ready for the bundled PR.** | n/a (closing-sweep; no production code) | [06_T1_Closing_Sweep_and_Baseline_Refresh.md](06_T1_Closing_Sweep_and_Baseline_Refresh.md) |
 
 ### Recommended Next Steps (priority order)
 
@@ -368,20 +369,22 @@ All items below are actionable unless otherwise noted. Ordering follows
    project + 1 smoke test added (`PipelineMessage<T>` ctor round-trip);
    added to both sln files; D.1 unblocked.
 
-**Phase B — Pure-logic coverage (parallel with A):**
+**Phase B — Pure-logic coverage (re-scoped at Step 6 after C5' fix):**
 
-6. **B.1 — Controller gaps (M6').** Direct Moq tests for
-   `Altinn.AccessManagement.Api.Internal` (48.56%) and
-   `Altinn.AccessManagement.Api.Metadata` (51.53%). Mirror the Part 1
-   Step 49 / Step 53 pattern. Estimated +10–20pp each.
+6. **B.1 — Controller gap (M6').** Direct Moq tests for
+   `Altinn.AccessManagement.Api.Metadata` (51.53%) only. Mirror the
+   Part 1 Step 49 / Step 53 pattern. *(`Altinn.AccessManagement.Api.Internal`
+   was the other half of M6' — Step 6 re-baseline confirmed it's
+   actually 73.63% under proper aggregation, not the Step 1 figure of
+   48.56%; dropped from B.1.)*
 7. **B.2 — Domain pure-logic (M5').** Identify remaining reachable
-   targets in `Altinn.AccessMgmt.Core` (33.66%) and
-   `Altinn.AccessMgmt.Persistence.Core` (25.34%). Continues Part 1
-   Steps 42–60.
+   targets in `Altinn.AccessMgmt.Persistence.Core` (25.39% — largest
+   remaining pure-logic gap) and `Altinn.AccessMgmt.Core` (44.96%).
+   Continues Part 1 Steps 42–60.
 8. **B.3 — `Integration.Platform` tail (M7').**
    `PaginatorStream<T>` and (if feasible without key-vault)
    `TokenGenerator` in `Altinn.Authorization.Integration.Platform`
-   (45.38%).
+   (54.94%).
 
 **Phase C — Live-DB coverage (M3'):**
 
@@ -425,15 +428,24 @@ All items below are actionable unless otherwise noted. Ordering follows
 
 **Phase F — Coverage threshold ratchet (last; depends on A.3):**
 
-19. **F.1 — Promote tier-2 enforced (L2').** Add to `eng/testing/coverage-thresholds.json`:
+19. **F.1 — Promote tier-2 enforced (L2').** Now safely sequenceable:
+    A.3 (C5') is fixed so the threshold check can be trusted. Add to
+    `eng/testing/coverage-thresholds.json`:
+    `Altinn.Authorization.Host` (91.67% → floor 85),
     `Altinn.AccessManagement.Integration` (88.35% → floor 80),
-    `Altinn.AccessManagement.Api.Enduser` (73.88% → 70),
-    `Altinn.AccessManagement.Api.ServiceOwner` (69.58% → 65),
-    `Altinn.Authorization.Host` (91.67% → 85). Consider raising
-    Maskinporten 75→80, PEP 75→78, AccessMgmt.PersistenceEF 90→95.
+    `Altinn.AccessManagement.Api.Enduser` (73.88% → floor 70),
+    **`Altinn.AccessManagement.Api.Internal`** (73.63% → floor 70 —
+    NEW candidate revealed by Step 6 re-baseline),
+    `Altinn.AccessManagement.Api.ServiceOwner` (69.58% → floor 65).
+    Consider raising existing floors: Maskinporten 75→80 (now
+    80.36%), PEP 75→78 (now 79.60%), AccessMgmt.PersistenceEF 90→95
+    (now 99.03%).
 20. **F.2 — Resolve `Altinn.AccessManagement` warn-only floor
-    (L3').** Either drop to 55% (interim, while M2' is investigated)
-    or hold at 60% and treat the warning as an action item.
+    (L3').** Now at 57.57% (was reported as 56.47% in Step 1; the
+    -0.62pp regression vs Part 1 is real but materially smaller than
+    Step 1 indicated). Either drop to 55% (interim, while M2' is
+    investigated) or hold at 60% and treat the warning as an action
+    item.
 
 **Recommended early hygiene (any time during A–E, low-effort):**
 
@@ -449,42 +461,43 @@ shows up immediately.
 
 | Item | Blocker | Notes | Last re-checked |
 |---|---|---|---|
-| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 5 |
-| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 5 |
-| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 5 |
+| `Host.Lease` tests (Part 1 Phase 6.5 carry-over) | Azurite / Azure Storage Emulator required | Confirmed at Step 1 audit: 2 tests, both `Skip`ped, `Altinn.Authorization.Host.Lease` at 6.87% line. Tracked as **M4'** in [PART_2 §2](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#2-findings--issues); Phase D.2 unblocks (Azurite Testcontainers fixture). | step 6 |
+| `Sender_ConfirmsDraftRequest_ReturnsPending` (Part 1 carry-over) | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix landed. Confirmed still skipped at Step 1 audit. Will be reviewed under **L1'** / Phase E.3. | step 6 |
+| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` (Part 1 carry-over) | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO describing the proper rewrite (auth as MD of receiver + pre-existing Rightholder connection). Confirmed still skipped at Step 1. Will be reviewed under **L1'** / Phase E.3. | step 6 |
 
 ### Final Coverage (measured)
 
-Baseline at Step 1 (2026-04-27). Owned assemblies only (foreign /
-indirect packages omitted). Sorted by line% descending. Numbers are
-**max-across-files** from the 11 per-test-project cobertura inputs —
-the workstation `run-coverage.ps1` does not yet aggregate (issue
-**C5'**); CI's single-cobertura output will agree by construction once
-Phase A.3 lands. See [PART_2 §1.4](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#14-coverage-baseline-line--branch-owned-assemblies-max-across-files)
-for full classification + Part 1 deltas.
+**Re-baselined at Step 6 (2026-04-27)** against the post-C5'-fix and
+post-Step-5 merged-cobertura view (`TestResults/coverage.cobertura.xml`).
+Owned assemblies only (foreign / indirect packages omitted). Sorted
+by line% descending. Numbers are now reliable — see
+[PART_2 §1.4](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#14-coverage-baseline-line--branch-owned-assemblies-merged-cobertura)
+for full classification, Part 1 deltas, and the (large) Step 1 →
+Step 6 deltas where the C5' fix surfaced previously-mis-counted
+coverage.
 
-| # | Assembly | Line% | Branch% | Threshold (json) | Step 1 status |
+| # | Assembly | Line% | Branch% | Threshold (json) | Status |
 |---|---|---:|---:|---|---|
-| 1 | `Altinn.AccessMgmt.PersistenceEF` | 98.78 | 91.75 | 90 (enf) | ✅ |
-| 2 | `Altinn.Authorization.Host` | 91.67 | 50.00 | — | ✅ (newly measured) |
-| 3 | `Altinn.AccessManagement.Integration` | 88.35 | 87.50 | — | ✅ (Phase F candidate L2') |
-| 4 | `Altinn.AccessManagement.Api.Maskinporten` | 80.36 | 80.00 | 75 (enf) | ✅ |
-| 5 | `Altinn.Authorization.PEP` | 78.99 | 78.68 | 75 (enf) | ✅ |
-| 6 | `Altinn.AccessManagement.Api.Enduser` | 73.88 | 65.32 | — | ✅ (Phase F candidate L2') |
-| 7 | `Altinn.AccessManagement.Api.ServiceOwner` | 69.58 | 57.94 | — | ✅ (Phase F candidate L2') |
-| 8 | `Altinn.Authorization` | 69.00 | 72.61 | 60 (enf) | ✅ |
-| 9 | `Altinn.AccessManagement.Api.Enterprise` | 66.39 | 56.52 | 60 (enf) | ✅ |
-| 10 | `Altinn.AccessManagement.Core` | 63.29 | 60.38 | 60 (enf) | ✅ |
-| 11 | `Altinn.Authorization.ABAC` | 63.17 | 61.29 | 60 (enf) | ✅ (but coverage is *indirect* — see C1') |
-| 12 | `Altinn.Authorization.Host.Database` | 59.42 | 65.62 | — | ⚠ Just under 60 (M8') |
-| 13 | `Altinn.AccessManagement` (main app) | 56.47 | 59.35 | 60 (warn) | ⚠ Warn-only ratchet failing; -1.72pp regression (M2'/L3') |
-| 14 | `Altinn.AccessManagement.Api.Metadata` | 51.53 | 51.11 | — | ⏫ M6' Phase B.1 |
-| 15 | `Altinn.AccessManagement.Api.Internal` | 48.56 | 49.46 | — | ⏫ M6' Phase B.1 |
-| 16 | `Altinn.AccessMgmt.Persistence` | 47.32 | 33.40 | — | ⏫ M3' Phase C (live-DB) |
-| 17 | `Altinn.Authorization.Integration.Platform` | 45.38 | 64.12 | — | ⏫ M7' Phase B.3 |
-| 18 | `Altinn.AccessManagement.Persistence` | 44.90 | 29.05 | — | ⏫ M3' Phase C (live-DB) |
-| 19 | `Altinn.AccessMgmt.Core` | 33.66 | 25.37 | — | ⏫ M5' Phase B.2 |
-| 20 | `Altinn.AccessMgmt.Persistence.Core` | 25.34 | 24.30 | — | ⏫ M5' Phase B.2 |
-| 21 | `Altinn.Authorization.Api.Contracts` | 23.57 | 12.58 | — | DTO-heavy; low priority |
-| 22 | `Altinn.Authorization.Host.Lease` | 6.87 | 7.41 | — | 🚫 Blocked on Azurite (M4' / Phase D.2) |
-| 23 | `Altinn.Authorization.Host.Pipeline` | 0.00 | 0.00 | — | 🚫 No test project (~1.4k LOC; C3' / Phase D.1) |
+| 1 | `Altinn.AccessMgmt.PersistenceEF` | 99.03 | 95.53 | 90 (enf) | ✅ Phase F floor-raise candidate (90→95) |
+| 2 | `Altinn.Authorization.Host` | 91.67 | 100.00 | — | ✅ Phase F promote (floor 85, L2') |
+| 3 | `Altinn.AccessManagement.Integration` | 88.35 | 85.71 | — | ✅ Phase F promote (floor 80, L2') |
+| 4 | `Altinn.AccessManagement.Api.Maskinporten` | 80.36 | 80.00 | 75 (enf) | ✅ Phase F floor-raise candidate (75→80) |
+| 5 | `Altinn.Authorization.PEP` | 79.60 | 83.48 | 75 (enf) | ✅ Phase F floor-raise candidate (75→78) |
+| 6 | `Altinn.AccessManagement.Api.Enduser` | 73.88 | 65.36 | — | ✅ Phase F promote (floor 70, L2') |
+| 7 | `Altinn.AccessManagement.Api.Internal` | 73.63 | 75.56 | — | ✅ Phase F promote (floor 70, L2') — **NEW: C5' fix surfaced +25pp** |
+| 8 | `Altinn.AccessManagement.Api.ServiceOwner` | 69.58 | 57.94 | — | ✅ Phase F promote (floor 65, L2') |
+| 9 | `Altinn.Authorization` | 69.14 | 72.72 | 60 (enf) | ✅ |
+| 10 | `Altinn.AccessManagement.Core` | 66.49 | 63.37 | 60 (enf) | ✅ |
+| 11 | `Altinn.AccessManagement.Api.Enterprise` | 66.39 | 56.52 | 60 (enf) | ✅ |
+| 12 | `Altinn.Authorization.ABAC` | 63.28 | 63.52 | 60 (enf) | ✅ (coverage is *indirect* via `Altinn.Authorization.Tests`) |
+| 13 | `Altinn.Authorization.Host.Database` | 59.42 | 76.92 | — | ⚠ Just under 60 (M8') |
+| 14 | `Altinn.AccessManagement` (main app) | 57.57 | 60.64 | 60 (warn) | ⚠ Warn-only ratchet failing; -0.62pp regression vs Part 1 (M2'/L3') |
+| 15 | `Altinn.AccessManagement.Persistence` | 57.29 | 34.14 | — | ⏫ M3' Phase C (live-DB; closer to threshold than Step 1 indicated) |
+| 16 | `Altinn.Authorization.Integration.Platform` | 54.94 | 69.08 | — | ⏫ M7' Phase B.3 |
+| 17 | `Altinn.AccessManagement.Api.Metadata` | 51.53 | 51.11 | — | ⏫ M6' Phase B.1 (only remaining controller gap) |
+| 18 | `Altinn.AccessMgmt.Persistence` | 47.32 | 34.27 | — | ⏫ M3' Phase C (live-DB) |
+| 19 | `Altinn.AccessMgmt.Core` | 44.96 | 35.05 | — | ⏫ M5' Phase B.2 |
+| 20 | `Altinn.Authorization.Api.Contracts` | 34.68 | 16.85 | — | DTO-heavy; low priority |
+| 21 | `Altinn.AccessMgmt.Persistence.Core` | 25.39 | 23.44 | — | ⏫ M5' Phase B.2 (largest pure-logic gap) |
+| 22 | `Altinn.Authorization.Host.Lease` | 6.87 | 4.17 | — | 🚫 Blocked on Azurite (M4' / Phase D.2) |
+| 23 | `Altinn.Authorization.Host.Pipeline` | 0.24 | 0.00 | — | 🌱 Scaffold + 1 smoke test (Step 4); real tests = Phase D.1 |
