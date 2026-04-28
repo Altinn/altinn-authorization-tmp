@@ -34,12 +34,11 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     private readonly IResourceRegistryClient _resourceRegistryClient;
     private readonly AppsInstanceDelegationSettings _appsInstanceDelegationSettings;
     private readonly string appInstanceResourcePath = "appInstanceDelegationRequest.Resource";
-    private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
+    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap)
     {
         _partiesClient = partiesClient;
         _partyService = partyService;
@@ -47,7 +46,6 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         _resourceRegistryClient = resourceRegistryClient;
         _pap = pap;
         _appsInstanceDelegationSettings = appsInstanceDelegationSettings.Value;
-        _featureManager = featureManager;
     }
 
     private async Task<(UuidType DelegationType, Guid? Uuid)> TranslatePartyUuidToPersonOrganizationUuid(PartyUrn partyId)
