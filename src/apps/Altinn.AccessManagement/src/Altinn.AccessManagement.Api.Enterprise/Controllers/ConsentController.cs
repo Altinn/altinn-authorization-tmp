@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Api.Enterprise.Extensions;
+﻿using System.Net.Mime;
+using System.Security.Claims;
+using System.Text;
+using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -12,9 +15,6 @@ using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
-using System.Security.Claims;
-using System.Text;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 {
@@ -107,7 +107,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// </summary>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
-        [Route("consentrequests/changes")]
+        [Route("consentrequests/latestchanges")]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(PaginatedResult<ConsentStatusChangeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -135,6 +135,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             }
 
             List<ConsentStatusChange> changes = result.Value;
+            
             // Convert to DTOs
             List<ConsentStatusChangeDto> dtos = changes.Select(c => c.ToDto()).ToList();
 

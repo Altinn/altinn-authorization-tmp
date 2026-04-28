@@ -1,4 +1,10 @@
-﻿using AccessMgmt.Tests.Mocks;
+﻿using System;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using AccessMgmt.Tests.Mocks;
 using AccessMgmt.Tests.Moqdata;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -29,12 +35,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Moq;
-using System;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using static Altinn.AccessMgmt.Persistence.Services.Models.SystemUserClientConnectionDto;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
@@ -209,7 +209,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             Guid partyUuid = Guid.NewGuid();
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}";
             HttpResponseMessage response = await client.GetAsync(url);
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -228,7 +228,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.wite");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}";
             HttpResponseMessage response = await client.GetAsync(url);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -250,7 +250,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=5";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=5";
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -282,7 +282,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             // pageSize=50 but there are only 5 => no next link
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=50";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=50";
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -293,7 +293,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(5, result.Items.Count());
 
             // pageSize=5 and there are 5 => there is a next link but it should return empty results
-            url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=5";
+            url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=5";
             response = await client.GetAsync(url);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -324,7 +324,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -400,7 +400,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             // 4. Fetch status changes
             token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=5";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=5";
             response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -430,7 +430,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             // Fetch first page (pageSize=5)
             string readToken = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", readToken);
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=5";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=5";
             HttpResponseMessage responsePage1 = await client.GetAsync(url);
             string responseContent1 = await responsePage1.Content.ReadAsStringAsync();
 
@@ -497,7 +497,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", readToken);
 
             // Fetch first page
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/changes?partyUuid={partyUuid}&pageSize=5";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=5";
             HttpResponseMessage responsePage1 = await client.GetAsync(url);
             string responseContent1 = await responsePage1.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, responsePage1.StatusCode);
@@ -542,6 +542,91 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 //        $"ConsentEventId {prev.ConsentEventId} should be after {curr.ConsentEventId} when timestamps are equal.");
                 //}
             }
+        }
+
+        [Fact]
+        public async Task GetConsentStatusChanges_PageSizeOne_PaginatesCorrectly()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+            Guid partyUuid = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181");
+
+            await CreateAndUpdateConsentsForGet(3);
+
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=1";
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(responseContent, _jsonOptions);
+
+            Assert.Single(result.Items);
+            Assert.NotNull(result.Links.Next);
+        }
+
+        [Fact]
+        public async Task GetConsentStatusChanges_OnlyCreatedEvents_NotReturned()
+        {
+            SetupMockPartyRepository();
+            HttpClient client = GetTestClient();
+            Guid partyUuid = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181");
+
+            // Create 2 consents but do not accept/reject/revoke (only 'created' event)
+            for (int i = 0; i < 2; i++)
+            {
+                var consentRequest = new ConsentRequestDto
+                {
+                    Id = Guid.CreateVersion7(),
+                    From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                    To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                    ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                    ConsentRights = new List<ConsentRightDto>
+            {
+                new ConsentRightDto
+                {
+                    Action = new List<string> { "read" },
+                    Resource = new List<ConsentResourceAttributeDto>
+                    {
+                        new ConsentResourceAttributeDto
+                        {
+                            Type = "urn:altinn:resource",
+                            Value = "ttd_inntektsopplysninger"
+                        }
+                    },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "INNTEKTSAAR", "2026" }
+                    }
+                }
+            },
+                    RequestMessage = new Dictionary<string, string>
+            {
+                { "en", "Please approve this consent request" }
+            },
+                    RedirectUrl = "https://www.dnb.no"
+                };
+
+                string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.write");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                StringContent stringContent = new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync("/accessmanagement/api/v1/enterprise/consentrequests", stringContent);
+                response.EnsureSuccessStatusCode();
+            }
+
+            string readToken = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", readToken);
+
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?partyUuid={partyUuid}&pageSize=10";
+            HttpResponseMessage responseGet = await client.GetAsync(url);
+            string responseContent = await responseGet.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, responseGet.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(responseContent, _jsonOptions);
+
+            Assert.Empty(result.Items);
         }
 
         private async Task CreateAndUpdateConsentsForGet(int numberOfConsents)
