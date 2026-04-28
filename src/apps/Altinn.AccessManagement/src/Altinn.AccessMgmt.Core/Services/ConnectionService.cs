@@ -2266,13 +2266,17 @@ public partial class ConnectionService
         // Validate roleId if proveder is not Altinn 2 then the assignmnet is not alowed to be removed
         var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.Code == roleCode.ToLower())
-            .Where(r => r.ProviderId == ProviderConstants.Altinn2.Id)
+            .Where(r => r.Code == roleCode.ToLowerInvariant())
             .FirstOrDefaultAsync(cancellationToken);
 
         if (role == null)
         {
             return Problems.InvalidRoleCode;
+        }
+
+        if (role.Provider.Id != ProviderConstants.Altinn2.Id)
+        {
+            return Problems.RoleAssignmentNotRevocable;
         }
 
         // Fetch assignment
@@ -2290,9 +2294,9 @@ public partial class ConnectionService
         
         // Remove and save revoked assignment
         dbContext.Remove(existingAssignment);
-        var result = await dbContext.SaveChangesAsync(cancellationToken);
 
-        return true;
+        var result = await dbContext.SaveChangesAsync(cancellationToken);
+        return result > 0;
     }
 
     #region Mappers

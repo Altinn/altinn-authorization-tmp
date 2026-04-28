@@ -7,9 +7,9 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
@@ -152,12 +152,17 @@ public partial class ConnectionsControllerTest
             string deleteContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.NoContent, $"Expected NoContent but got {response.StatusCode}. Body: {deleteContent}");
 
-            // Verify role is removed so the user is not allowed to check for it anymore (403 Forbidden expected)
-            HttpClient readClient2 = CreateClient(TestData.LukeSkyWalker.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
-            HttpResponseMessage getAfter = await readClient2.GetAsync(
-                $"{Route}/roles?party={TestData.LukeSkyWalker.Id}&from={TestData.HanSoloEnterprise.Id}&to={TestData.LukeSkyWalker.Id}",
-                TestContext.Current.CancellationToken);
-            Assert.Equal(HttpStatusCode.Forbidden, getAfter.StatusCode);
+            // Verify the assignment was revoked in the database
+            await Fixture.QueryDb(async db =>
+            {
+                var assignment = await db.Assignments
+                    .Where(a => a.FromId == TestData.HanSoloEnterprise.Id)
+                    .Where(a => a.ToId == TestData.LukeSkyWalker.Id)
+                    .Where(a => a.RoleId == RoleConstants.ReporterSender.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.Null(assignment);
+            });
         }
 
         /// <summary>

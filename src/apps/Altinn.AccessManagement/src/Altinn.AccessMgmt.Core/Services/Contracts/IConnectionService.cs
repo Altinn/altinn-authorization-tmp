@@ -398,10 +398,10 @@ public interface IConnectionService
     Task<ValidationProblemInstance> RemoveInstance(Guid fromId, Guid toId, string resource, string instanceId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes the specified role assignment between two parties defined by from and to..
+    /// Removes the specified role assignment between two parties identified by <paramref name="fromId"/> and <paramref name="toId"/>.
     /// </summary>
-    /// <param name="fromId">The unique identifier of the from part the assigned role is for.</param>
-    /// <param name="toId">The unique identifier of the to part the assigned role is given to.</param>
+    /// <param name="fromId">The unique identifier of the from party the assigned role is for.</param>
+    /// <param name="toId">The unique identifier of the to party the assigned role is given to.</param>
     /// <param name="roleCode">The unique code of the assigned role to remove.</param>
     /// <param name="configureConnections">An optional delegate to configure connection options for the operation. If null, default connection settings are used.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>

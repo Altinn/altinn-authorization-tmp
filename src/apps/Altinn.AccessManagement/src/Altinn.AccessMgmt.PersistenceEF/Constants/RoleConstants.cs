@@ -220,7 +220,7 @@ public static class RoleConstants
     /// <remarks>
     /// - <c>Id:</c> 1c6eeec1-fe70-4fc5-8b45-df4a2255dea6
     /// - <c>URN:</c> urn:altinn:role:privatperson
-    /// - <c>Provider:</c> Altinn2
+    /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> privatperson
     /// - <c>Description:</c> Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester.
     /// </remarks>
@@ -256,7 +256,7 @@ public static class RoleConstants
     /// <remarks>
     /// - <c>Id:</c> e16ab886-1e1e-4f45-8f79-46f06f720f3e
     /// - <c>URN:</c> urn:altinn:role:selvregistrert
-    /// - <c>Provider:</c> Altinn2
+    /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> selvregistrert
     /// - <c>Description:</c> Selvregistrert bruker
     /// </remarks>
