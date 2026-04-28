@@ -111,7 +111,7 @@ namespace Altinn.AccessMgmt.Core.Services
         {
             if (!cascade)
             {
-                var problem = await connectionService.CheckAssignmentForConnectedReffernces(assignment.Id, cancellationToken);
+                var problem = await connectionService.CheckAssignmentForConnectedRefernces(assignment.Id, cancellationToken);
 
                 if (problem is { })
                 {

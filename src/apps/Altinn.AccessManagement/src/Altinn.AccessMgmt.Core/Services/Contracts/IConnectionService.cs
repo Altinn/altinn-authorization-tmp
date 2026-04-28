@@ -45,10 +45,10 @@ public interface IConnectionService
     /// <summary>
     /// Checks for connected references for a specific assignment.
     /// </summary>
-    /// <param name="assignmentid">The ID of the assignment to check.</param>
+    /// <param name="assignmentId">The ID of the assignment to check.</param>
     /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a validation problem instance.</returns>
-    Task<ValidationProblemInstance> CheckAssignmentForConnectedReffernces(Guid assignmentid, CancellationToken cancellationToken = default);
+    Task<ValidationProblemInstance> CheckAssignmentForConnectedRefernces(Guid assignmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the roles associated with a given entity.
