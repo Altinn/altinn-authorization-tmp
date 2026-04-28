@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
+using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -112,7 +113,7 @@ public class AccessRemovedNotificationHandler(
             entityTo,
             await GetResources(content, cancellationToken),
             await GetPackages(content, cancellationToken),
-            $"auth_resource_request_pending_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
+            $"auth_{AccessRemovedNotification.Handler}_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
         );
 
         async Task<List<Resource>> GetResources(AccessRemovedNotificationMessage content, CancellationToken cancellationToken)
@@ -242,7 +243,7 @@ public class AccessRemovedNotificationHandler(
                 Denne meldingen er automatisk generert. Svar til denne adressen vil ikke bli behandlet.
             </em>";
 
-        static string Ingress(Entity from, Entity to, StringBuilder builder)
+        static string Ingress(Entity from, Entity to)
         {
             if (from.TypeId == EntityTypeConstants.Person && to.TypeId == EntityTypeConstants.Person)
             {
