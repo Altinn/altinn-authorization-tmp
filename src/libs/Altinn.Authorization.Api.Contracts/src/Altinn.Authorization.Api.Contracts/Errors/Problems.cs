@@ -164,7 +164,7 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor PackageNotRevocableFromAssignment { get; }
-    = _factory.Create(38, HttpStatusCode.BadRequest, "Given the rules for revocation this package could not be revoked");
+    = _factory.Create(38, HttpStatusCode.BadRequest, "The package is not delegated by the entity trying to revoke so it is denied");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor InvalidRoleCode { get; }

@@ -26,9 +26,9 @@ public class ServiceOwnerConnectionsControllerTest
     /// <summary>
     /// Tests for <see cref="ConnectionsController.AddPackages(ServiceOwnerAccessPackageDelegation, CancellationToken)"/>
     /// </summary>
-    public class AddPackages : IClassFixture<ApiFixture>
+    public class AddRevokePackages : IClassFixture<ApiFixture>
     {
-        public AddPackages(ApiFixture fixture)
+        public AddRevokePackages(ApiFixture fixture)
         {
             Fixture = fixture;
 
@@ -40,7 +40,7 @@ public class ServiceOwnerConnectionsControllerTest
                 dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = PackageConstants.Agriculture.Entity.Code;
             });
 
-            Fixture.EnsureSeedOnce<AddPackages>(db =>
+            Fixture.EnsureSeedOnce<AddRevokePackages>(db =>
             {
                 // Seed any initial data needed for tests
                 db.SaveChanges();
