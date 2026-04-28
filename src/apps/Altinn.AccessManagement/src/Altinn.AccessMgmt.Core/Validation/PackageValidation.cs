@@ -38,20 +38,20 @@ public static class PackageValidation
     /// Checks the list of packages that all are assignable to the recipient entity type.
     /// </summary>
     /// <param name="packageUrns">list of packages</param>
-    /// <param name="toEntityType">entity the assignment is to be made to</param>
+    /// <param name="assignedToType">entity the assignment is to be made to</param>
     /// <param name="paramName">name of the query parameter</param>
     /// <returns></returns>
-    internal static RuleExpression PackageIsAssignableTo(IEnumerable<string> packageUrns, EntityType toEntityType, string paramName = "packageId") => () =>
+    internal static RuleExpression PackageIsAssignableTo(IEnumerable<string> packageUrns, EntityType assignedToType, string paramName = "packageId") => () =>
     {
         ArgumentNullException.ThrowIfNull(packageUrns);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (toEntityType is null)
+        if (assignedToType is null)
         {
             return null;
         }
 
-        if (toEntityType is { } && toEntityType.Id == EntityTypeConstants.Organization)
+        if (assignedToType.Id == EntityTypeConstants.Organization)
         {
             var packagesNotAssignableToOrg = packageUrns
                 .Where(p => p.Equals(PackageConstants.MainAdministrator.Entity.Urn));
@@ -69,27 +69,27 @@ public static class PackageValidation
     /// <summary>
     /// Checks the list of packages that all are assignable to the recipient entity type.
     /// </summary>
-    /// <param name="packageUrns">list of packages</param>
-    /// <param name="fromEntityType">entity the assignment is to be made to</param>
+    /// <param name="packages">list of packages</param>
+    /// <param name="assignedFromType">entity the assignment is to be made from</param>
     /// <param name="paramName">name of the query parameter</param>
     /// <returns></returns>
-    internal static RuleExpression PackageIsAssignableFrom(IEnumerable<string> packageUrns, EntityType fromEntityType, string paramName = "packageId") => () =>
+    internal static RuleExpression PackageIsAssignableFrom(IEnumerable<string> packages, EntityType assignedFromType, string paramName = "packageId") => () =>
     {
-        ArgumentNullException.ThrowIfNull(packageUrns);
+        ArgumentNullException.ThrowIfNull(packages);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (fromEntityType is null)
+        if (assignedFromType is null)
         {
             return null;
         }
 
         var packagesNotAssignableFromOrg = new List<string>();
 
-        foreach (var p in packageUrns)
+        foreach (var p in packages)
         {
-            if (PackageConstants.TryGetByUrn(p, out var package))
+            if (PackageConstants.TryGetByAll(p, out var package))
             {
-                if (package.Entity.EntityTypeId != fromEntityType.Id)
+                if (package.Entity.EntityTypeId != assignedFromType.Id)
                 {
                     packagesNotAssignableFromOrg.Add(package.Entity.Urn);
                 }
@@ -99,7 +99,7 @@ public static class PackageValidation
         if (packagesNotAssignableFromOrg.Any())
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {fromEntityType.Name}.")]);
+                errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {assignedFromType.Name}.")]);
         }
 
         return null;
@@ -120,6 +120,14 @@ public static class PackageValidation
                 return (ref ValidationErrorBuilder errors) =>
                         errors.Add(ValidationErrors.PackageIsNotAssignable, paramName, [new(paramName, $"Package '{package}' is not assignable.")]);
             }
+
+
+            // From er den som ber : Kari
+            // To er den som gir : Baker Hansen
+
+            /*
+             Baker Hansen kan ikke gi Hovedadministrator pakken til en organisasjon.
+             */
         }
         else
         {

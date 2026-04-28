@@ -159,15 +159,15 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> CreatePackageRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, string package, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
     {
-        var to = await db.Entities.FirstOrDefaultAsync(e => e.Id == toId, ct);
-        var from = await db.Entities.FirstOrDefaultAsync(e => e.Id == fromId, ct);
+        var to = await db.Entities.Include(t => t.Type).FirstOrDefaultAsync(e => e.Id == toId, ct);
+        var from = await db.Entities.Include(t => t.Type).FirstOrDefaultAsync(e => e.Id == fromId, ct);
 
         var problem = ValidationComposer.Validate(
             EntityValidation.ToExists(to),
             EntityValidation.ToExists(from),
             PackageValidation.PackageIsAssignable(package),
-            PackageValidation.PackageIsAssignableTo([package], to?.Type),
-            PackageValidation.PackageIsAssignableFrom([package], from?.Type),
+            PackageValidation.PackageIsAssignableTo([package], from?.Type),
+            PackageValidation.PackageIsAssignableFrom([package], to?.Type),
             PackageValidation.SelfAssignmentNotAllowed(fromId, toId)
         );
 

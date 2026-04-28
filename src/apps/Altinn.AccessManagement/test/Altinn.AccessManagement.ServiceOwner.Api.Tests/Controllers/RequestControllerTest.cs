@@ -678,8 +678,8 @@ public class RequestControllerTest
         public async Task CreatePackageRequest_WithInvalidFromType_Returns400()
         {
             var client = CreateClient(Fixture, TestData.NAV.Entity.OrganizationIdentifier);
-            var to = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
             var from = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
+            var to = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
 
             var body = new RequestPackageDto
             {
