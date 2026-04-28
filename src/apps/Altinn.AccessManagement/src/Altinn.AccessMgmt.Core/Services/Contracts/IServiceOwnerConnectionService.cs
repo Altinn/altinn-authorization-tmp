@@ -25,10 +25,9 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
         /// <param name="fromId">The unique identifier of the entity from which the package is being revoked.</param>
         /// <param name="toId">The unique identifier of the entity to which the package was previously assigned.</param>
         /// <param name="packageId">The unique identifier of the package to revoke.</param>
-        /// <param name="autentcatedServiceOwnerId">The unique identifier of the authenticated service owner performing the revocation.</param>
-        /// <param name="configureConnection">An optional action to configure connection options.</param>
+        /// <param name="autenticatedServiceOwnerId">The unique identifier of the authenticated service owner performing the revocation.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>It returns a result indicating whether the operation was successful or not. It returns a bool value indication if an actual package was removed or not</returns>
-        Task<Result<bool>> RevokePackage(Guid fromId, Guid toId, Guid packageId, Guid autentcatedServiceOwnerId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+        Task<Result<bool>> RevokePackage(Guid fromId, Guid toId, Guid packageId, Guid autenticatedServiceOwnerId, CancellationToken cancellationToken = default);
     }
 }

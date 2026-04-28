@@ -163,6 +163,6 @@ public static class Problems
     = _factory.Create(37, HttpStatusCode.BadRequest, "The from entity does not match the package entity requirement");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor PackageNotRevokableFromAssignment { get; }
+    public static ProblemDescriptor PackageNotRevocableFromAssignment { get; }
     = _factory.Create(38, HttpStatusCode.BadRequest, "Given the rules for revocation this package could not be revoked");
 }

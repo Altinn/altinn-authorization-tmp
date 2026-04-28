@@ -14,9 +14,7 @@ namespace Altinn.AccessMgmt.Core.Services
         AppDbContext dbContext,
         IConnectionService connectionService) : IServiceOwnerConnectionService
     {
-        /// <summary>
-        /// Allows service owners to 
-        /// </summary>
+        /// <inheritdoc />
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
             ConnectionOptions options = new(configureConnection);
@@ -64,13 +62,9 @@ namespace Altinn.AccessMgmt.Core.Services
             return DtoMapper.Convert(newAssignmentPackage);
         }
 
-        /// <summary>
-        /// Allows service owners to 
-        /// </summary>
-        public async Task<Result<bool>> RevokePackage(Guid fromId, Guid toId, Guid packageId, Guid autentcatedServiceOwnerId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
+        /// <inheritdoc />>
+        public async Task<Result<bool>> RevokePackage(Guid fromId, Guid toId, Guid packageId, Guid autenticatedServiceOwnerId, CancellationToken cancellationToken = default)
         {
-            ConnectionOptions options = new(configureConnection);
-
             // Look for existing direct rightholder assignment
             Assignment assignment = await dbContext.Assignments
                 .Where(a => a.FromId == fromId)
@@ -98,21 +92,18 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             // Check if assignment package is delegated by authorized entity
-            if (assignmentPackage.Audit_ChangedBy != autentcatedServiceOwnerId)
+            if (assignmentPackage.Audit_ChangedBy != autenticatedServiceOwnerId)
             {
-                return Problems.PackageNotRevokableFromAssignment;
+                return Problems.PackageNotRevocableFromAssignment;
             }
 
             // Revoke assignment package
             dbContext.AssignmentPackages.Remove(assignmentPackage);
-            var deletedData = await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             // Remove assignment if we now deleted the last connection to the assignment.
-            if (deletedData > 0)
-            {
-                await RemoveAssignment(assignment, false, cancellationToken);
-            }
-
+            await RemoveAssignment(assignment, false, cancellationToken);
+            
             return true;
         }
 

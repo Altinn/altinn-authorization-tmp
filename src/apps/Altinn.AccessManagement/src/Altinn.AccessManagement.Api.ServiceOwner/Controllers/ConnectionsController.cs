@@ -114,7 +114,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [HttpPost("accesspackages/revoke")]
         [Authorize(Policy = AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE)]
         [AuditServiceOwnerConsumer]
-        [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -171,7 +171,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
                 return Problems.PartyNotFound.ToActionResult();
             }
 
-            Result<bool> result = await connectionService.RevokePackage(fromEntity.Value, toEntity.Value, package.Id, authenticatedServiceOwnerEntity.Id, ConfigureConnections, cancellationToken);
+            Result<bool> result = await connectionService.RevokePackage(fromEntity.Value, toEntity.Value, package.Id, authenticatedServiceOwnerEntity.Id, cancellationToken);
 
             if (result.IsProblem)
             {
