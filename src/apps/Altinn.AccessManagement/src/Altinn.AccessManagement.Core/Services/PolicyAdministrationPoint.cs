@@ -1,19 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
-using System.Threading;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.Authorization.ABAC.Xacml;
-using Altinn.Platform.Register.Models;
 using Azure;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -28,7 +23,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IPolicyFactory _policyFactory;
         private readonly IDelegationMetadataRepository _delegationRepository;
         private readonly IDelegationChangeEventQueue _eventQueue;
-        private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
         private readonly int delegationChangeEventQueueErrorId = 911;
 
         /// <summary>
@@ -39,14 +33,13 @@ namespace Altinn.AccessManagement.Core.Services
         /// <param name="delegationRepository">The delegation change repository (postgresql).</param>
         /// <param name="eventQueue">The delegation change event queue service to post events for any delegation change.</param>
         /// <param name="logger">Logger instance.</param>
-        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, Microsoft.FeatureManagement.IFeatureManager featureManager)
+        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger)
         {
             _prp = policyRetrievalPoint;
             _policyFactory = policyFactory;
             _delegationRepository = delegationRepository;
             _eventQueue = eventQueue;
             _logger = logger;
-            _featureManager = featureManager;
         }
 
         /// <inheritdoc/>
