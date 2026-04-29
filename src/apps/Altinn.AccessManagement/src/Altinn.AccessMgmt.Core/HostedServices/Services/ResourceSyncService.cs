@@ -255,13 +255,13 @@ public partial class ResourceSyncService : IResourceSyncService
 
     private static string ParseResourceIdentifier(string resourceUrn)
     {
-        if (resourceUrn.StartsWith(ResourceUrnPrefix))
+        if (resourceUrn.StartsWith(ResourceUrnPrefix, StringComparison.InvariantCultureIgnoreCase))
         {
-            Activity.Current?.AddTag("ResourceUrn", "Couldn't parse urn suffix");
-            return string.Empty;
+            return resourceUrn[ResourceUrnPrefix.Length..];
         }
 
-        return resourceUrn[ResourceUrnPrefix.Length..];
+        Activity.Current?.AddTag("ResourceUrn", "Couldn't parse urn suffix");
+        return string.Empty;
     }
 
     public IEnumerable<ResourceType> ResourceTypes { get; set; }
