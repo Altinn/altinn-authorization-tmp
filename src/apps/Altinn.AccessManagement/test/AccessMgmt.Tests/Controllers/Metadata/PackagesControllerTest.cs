@@ -30,6 +30,14 @@ public class PackagesControllerTest
             .ReturnsAsync((PackageDto dto, string _, bool __) => dto);
         mock.Setup(x => x.TranslateAsync(It.IsAny<AreaGroupDto>(), It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync((AreaGroupDto dto, string _, bool __) => dto);
+        mock.Setup(x => x.TranslateAsync(It.IsAny<AreaDto>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .ReturnsAsync((AreaDto dto, string _, bool __) => dto);
+        mock.Setup(x => x.TranslateAsync(It.IsAny<ResourceDto>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .ReturnsAsync((ResourceDto dto, string _, bool __) => dto);
+        mock.Setup(x => x.TranslateAsync(It.IsAny<TypeDto>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .ReturnsAsync((TypeDto dto, string _, bool __) => dto);
+        mock.Setup(x => x.TranslateAsync(It.IsAny<ProviderDto>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .ReturnsAsync((ProviderDto dto, string _, bool __) => dto);
         return mock;
     }
 
@@ -212,6 +220,264 @@ public class PackagesControllerTest
         var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
 
         var result = await controller.GetGroup(Guid.NewGuid());
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetGroupAreas ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetGroupAreas_WhenAreasFound_Returns200Ok()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetAreas(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AreaDto> { new AreaDto { Id = Guid.NewGuid() } });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetGroupAreas(id);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<IEnumerable<AreaDto>>(ok.Value);
+        // GetAreaGroup must NOT be hit when areas were found.
+        serviceMock.Verify(s => s.GetAreaGroup(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetGroupAreas_WhenNoAreasButGroupExists_Returns204NoContent()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetAreas(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<AreaDto>());
+        serviceMock.Setup(s => s.GetAreaGroup(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AreaGroupDto { Id = id });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetGroupAreas(id);
+
+        Assert.IsType<NoContentResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetGroupAreas_WhenNoAreasAndGroupMissing_Returns404NotFound()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetAreas(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<AreaDto>)null);
+        serviceMock.Setup(s => s.GetAreaGroup(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AreaGroupDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetGroupAreas(id);
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetArea ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetArea_WhenFound_Returns200Ok()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AreaDto { Id = id });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetArea(id);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.NotNull(ok.Value);
+    }
+
+    [Fact]
+    public async Task GetArea_WhenNotFound_Returns404()
+    {
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetArea(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AreaDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetArea(Guid.NewGuid());
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetAreaPackages ─────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetAreaPackages_WhenPackagesFound_Returns200Ok()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackagesByArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PackageDto> { new PackageDto { Id = Guid.NewGuid() } });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetAreaPackages(id);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<IEnumerable<PackageDto>>(ok.Value);
+        // GetArea must NOT be hit when packages were found.
+        serviceMock.Verify(s => s.GetArea(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetAreaPackages_WhenNoPackagesButAreaExists_Returns204NoContent()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackagesByArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<PackageDto>());
+        serviceMock.Setup(s => s.GetArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AreaDto { Id = id });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetAreaPackages(id);
+
+        Assert.IsType<NoContentResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetAreaPackages_WhenNoPackagesAndAreaMissing_Returns404NotFound()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackagesByArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<PackageDto>)null);
+        serviceMock.Setup(s => s.GetArea(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AreaDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetAreaPackages(id);
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetPackage ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPackage_WhenFound_Returns200Ok()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackage(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageDto { Id = id });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackage(id);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.NotNull(ok.Value);
+    }
+
+    [Fact]
+    public async Task GetPackage_WhenNotFound_Returns404()
+    {
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackage(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PackageDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackage(Guid.NewGuid());
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetPackageByUrn ─────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPackageByUrn_WhenFound_Returns200Ok()
+    {
+        const string urn = "skattnaering";
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackageByUrnValue(urn, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageDto { Id = Guid.NewGuid() });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackageByUrn(urn);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.NotNull(ok.Value);
+    }
+
+    [Fact]
+    public async Task GetPackageByUrn_WhenNotFound_Returns404()
+    {
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackageByUrnValue(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PackageDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackageByUrn("missing");
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    // ── GetPackageResources ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPackageResources_WhenResourcesFound_Returns200Ok()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackageResources(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ResourceDto> { new ResourceDto { Id = Guid.NewGuid() } });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackageResources(id);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<IEnumerable<ResourceDto>>(ok.Value);
+        // GetPackage must NOT be hit when resources were found.
+        serviceMock.Verify(s => s.GetPackage(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetPackageResources_WhenNoResourcesButPackageExists_Returns204NoContent()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackageResources(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Enumerable.Empty<ResourceDto>());
+        serviceMock.Setup(s => s.GetPackage(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageDto { Id = id });
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackageResources(id);
+
+        Assert.IsType<NoContentResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetPackageResources_WhenNoResourcesAndPackageMissing_Returns404NotFound()
+    {
+        var id = Guid.NewGuid();
+        var serviceMock = new Mock<IPackageService>();
+        serviceMock.Setup(s => s.GetPackageResources(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<ResourceDto>)null);
+        serviceMock.Setup(s => s.GetPackage(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PackageDto)null);
+
+        var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
+
+        var result = await controller.GetPackageResources(id);
 
         Assert.IsType<NotFoundResult>(result.Result);
     }
