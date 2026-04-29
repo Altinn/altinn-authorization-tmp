@@ -23,7 +23,7 @@ touchedFiles: 4
 ## Goal
 
 Add unit tests for the first real-logic class identified after the
-audit's per-assembly coverage-% framing was dismissed at Step 7
+audit's per-assembly coverage-% framing was superseded at Step 7
 (see [Decision Log entry 2026-04-29](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#decision-log)).
 Bundle the long-overdue plan-realignment edits to `PART_2.md` and
 this `INDEX.md` into the same PR, per the rule that tracking-doc
@@ -33,8 +33,8 @@ The test target — [`Altinn.AccessMgmt.Persistence.Core.Utilities.Search.Search
 — is the fluent builder used directly by `PackageService.Search` to
 register weighted properties for fuzzy matching. It has expression-tree
 introspection with non-trivial branching, no DB or external
-dependencies — the kind of *real-logic* target the architect's
-filter endorses.
+dependencies — a real-logic target under the *"real logic vs
+pass-through wiring"* filter.
 
 ## What changed
 
@@ -60,9 +60,10 @@ regression net.
 
 `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md`
 
-- **Top-of-doc banner** added immediately under the title summarizing
-  the architect + tech-lead feedback (Norwegian quotes preserved
-  verbatim) and enumerating the practical effect on Phases A through F.
+- **Top-of-doc banner** added immediately under the title stating the
+  two standing testing principles (mock tests must exercise real
+  logic; coverage % is informational, not a planning lens) and
+  enumerating the practical effect on Phases A through F.
 - **Phase B section banner** marks the entire phase as needing
   per-candidate re-scope under a *"real logic vs pass-through wiring"*
   filter.
@@ -71,9 +72,11 @@ regression net.
   floors as *catastrophic-regression tripwires*, not as quality gates;
   cross-references the SonarCloud-side eventual follow-up.
 - **Decision Log entry** dated *2026-04-29 (Part 2 Step 7)* records
-  all three feedback quotes verbatim (architect on mock tests; tech
-  lead on coverage-as-quality; tech lead on docs-only PRs) and
-  enumerates the resulting decisions.
+  the realignment decisions: B.1 closed in original Moq form,
+  addressed in integration-test form (Step 7); Phase B per-candidate
+  filter; Phase F deprioritized; step-doc front matter adds
+  `bugClassesCovered` as the lead field; tracking-doc edits bundle
+  with code PRs rather than shipping as standalone PRs.
 
 `docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_2/INDEX.md`
 
@@ -83,8 +86,8 @@ regression net.
   **lead measurement field**, ahead of `verifiedTests` and
   `coverageDelta`. `coverageDelta` is explicitly marked
   *"informational only — not a goal"*. Adds a paragraph explaining
-  that step docs unable to name at least one bug class probably fall
-  under the architect's "low-value mock test" rule.
+  that step docs unable to name at least one bug class probably
+  violate the *"mock tests must exercise real logic"* convention.
 - **Step log rows 7, 8, 9** added for: PR [apps#2984](https://github.com/Altinn/altinn-authorization-tmp/pull/2984)
   (Metadata integration tests + 4 PackageService bug fixes — the
   effective replacement for the closed B.1 attempt at PR
@@ -141,13 +144,14 @@ run remains 0.
   stays scoped.
 - **Existing closed PRs preserved as historical context** — the
   closed-without-merging Task #2977 / PR #2978 (B.1 Moq attempt) and
-  Feature #2979 / Task #2980 / PR #2982 (docs-only realignment) are
-  the canonical record of *why* the realignment happened. The
-  Decision Log entry quotes the architect + tech-lead feedback
-  verbatim so the lesson survives even if those PRs get archived.
+  Feature #2979 / Task #2980 / PR #2982 (docs-only realignment) sit
+  in the issue tracker as the historical record of the realignment
+  pivot. The Decision Log entry records the resulting decisions; the
+  PR threads themselves are the canonical context for anyone
+  curious.
 - **SonarCloud-side exclusions for pass-through code** — eventual
   follow-up; Sonar's coverage gate should also exclude pass-through
-  code so the dismissed pattern doesn't re-emerge via Sonar pressure.
+  code so the same pattern doesn't re-emerge via Sonar pressure.
   Not in scope for this step.
 - **Phase F reframing as catastrophic-regression tripwires** — only
   if/when the team decides such a Task is worth opening; not on the

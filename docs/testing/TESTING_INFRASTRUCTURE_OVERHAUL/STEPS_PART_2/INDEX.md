@@ -2,11 +2,11 @@
 
 > ## ⚠ Plan realigned at Step 7 (2026-04-29)
 >
-> The Recommended Next Steps below have been re-ordered after team
-> review of an earlier closed PR ([apps#2978](https://github.com/Altinn/altinn-authorization-tmp/pull/2978))
-> dismissed coverage-percentage as a quality measure and dismissed
-> mock-only coverage tests as low-value. The audit's per-assembly %
-> targets in
+> The Recommended Next Steps below have been re-ordered around the
+> standing testing conventions: tests are picked / scoped by the
+> *bug class they catch*, not by per-assembly coverage % targets;
+> mock-based unit tests must exercise real logic in the SUT, not
+> just pass-through wiring. The audit's per-assembly % targets in
 > [`../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md`](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md)
 > are no longer the primary planning lens. Read the
 > **[top-of-doc banner there](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#testing-infrastructure-overhaul--part-2-audit--plan)**
@@ -174,8 +174,8 @@ coverageDelta:         # **informational only** — not a goal; see Decision Log
 **`bugClassesCovered` is the lead field as of Step 7's realignment
 ([Decision Log 2026-04-29](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#decision-log)).**
 If a step doc cannot name at least one concrete bug class its tests
-defend against, the work probably falls under the architect's
-"low-value mock test" rule and shouldn't merge as written. Steps that
+defend against, the work probably violates the *"mock tests must
+exercise real logic"* rule and shouldn't merge as written. Steps that
 genuinely produce no new test coverage (tooling, doc revisions, dead-
 code removals) can use `bugClassesCovered: []` or omit the field.
 
@@ -365,7 +365,7 @@ the phase numbers in the
 | 6 | 2026-04-27 | A | T1 closing sweep — re-baselined PART_2.md §§1.1/1.4/1.5/1.6/2/4 + INDEX Final Coverage + Phase B/F priorities against the post-C5'-fix and post-Step-5 merged-cobertura view. Re-scoped Phase B.1 to drop `Api.Internal` (true coverage 73.63%, not the Step 1 figure of 48.56%); added `Api.Internal` as a NEW Phase F (L2') promotion candidate at floor 70. Re-scoped Phase F floor-raise list (Maskinporten 75→80, PEP 75→78, PersistenceEF 90→95). Updated §1.6 drift summary to flag that 5 of the Step 1 "regressions" were measurement artefacts. Coverage run 2536/2520/0/16; threshold check exit 0 ✅. **T1 (#2947) is now ready for the bundled PR.** | n/a (closing-sweep; no production code) | [06_T1_Closing_Sweep_and_Baseline_Refresh.md](06_T1_Closing_Sweep_and_Baseline_Refresh.md) |
 | 7 | 2026-04-29 | B | Metadata API DB-backed integration tests + 4 production fixes (PR [apps#2984](https://github.com/Altinn/altinn-authorization-tmp/pull/2984), Task #2983 — replaces the closed-without-merging B.1 attempt at Task #2977 / PR [apps#2978](https://github.com/Altinn/altinn-authorization-tmp/pull/2978) which used the dismissed mock-only pattern). Added 22 `IClassFixture<PostgresFixture>` integration tests for `PackagesController` actions, mirroring Bruno's seed-data IDs / URNs / names and asserting on populated DTO fields (mapping, translation, `IsAssignable`). The test run caught **four pre-existing bugs in `Altinn.AccessMgmt.Core.Services.PackageService` that the same PR fixes**: `GetPackage(Guid)`, `GetAreaGroup(Guid)`, `GetArea(Guid)` used `SingleAsync` (throws on missing) where the controller's `if (res == null) return NotFound()` clearly intended `SingleOrDefaultAsync`; `GetAreas(Guid groupId)` ignored its parameter and returned every area row regardless of group, so `GetGroupAreas(<random guid>)` returned 200 OK with all areas instead of 404. End-user effect: missing entities now correctly return 404 instead of 500-style InvalidOperationException. 22/22 new pass; 1232/1232 in AccessMgmt.Tests, no regressions. | n/a (Persistence.Core untouched; Api.Metadata behavior corrected, not coverage-driven) | (no separate step doc — see PR [apps#2984](https://github.com/Altinn/altinn-authorization-tmp/pull/2984) body) |
 | 8 | 2026-04-29 | CI | Fix `Report failed tests` workflow step (PR [apps#2987](https://github.com/Altinn/altinn-authorization-tmp/pull/2987), Task #2986). The Test step passes `--results-directory TestResults/` to MTP, which makes per-project `<Project>_<tfm>_<arch>.log` files land in `<vertical>/TestResults/` rather than the per-project `bin/Release/net9.0/TestResults/`. The Report step's `Where-Object` filter still pinned to the old path, so it printed `No MTP per-project logs found under bin/Release/net9.0/TestResults/.` and exited early on every CI failure run, defeating its purpose. Replaced the path-pinning filter with `Directory.Name -eq 'TestResults'`; the filename pattern `*_net9.0_x64.log` already constrains to MTP-shaped logs. End-user effect: failing tests now appear in the CI workflow log + as `::error::` annotations on PR checks again, instead of forcing reviewers to download the artifact. | n/a (CI tooling) | (no separate step doc — see PR [apps#2987](https://github.com/Altinn/altinn-authorization-tmp/pull/2987) body) |
-| 9 | 2026-04-29 | B | Pure-logic unit tests for `Altinn.AccessMgmt.Persistence.Core.Utilities.Search.SearchPropertyBuilder<T>` — the fluent builder used by `PackageService.Search` to register weighted properties for fuzzy matching (Task #2988, this PR). 19 tests pinning down: nested-member property-name extraction (`pkg.Area.Group.Name` → `Area_Group_Name`); unary/box wrapping for value-type members; method-call expressions falling through to method name; `Add` overwrite semantics for repeated keys; `AddCollection` combined (`,`-joined) vs detailed (` | `-joined) modes; fluent `this`-return contract on both `Add` and `AddCollection`; `Build()` returning the live internal dictionary. Bug classes the tests defend against are listed in the step doc; this is the first step using the realigned `bugClassesCovered`-led step-doc template. **Picked from Recommended Next Steps item 7 (B.2)**, scoped under the architect's "real logic vs pass-through wiring" filter — Persistence.Core's `SearchPropertyBuilder` qualifies as real logic (expression-tree introspection); the assembly's repository / EF-adjacent classes do not and are out of scope here. | n/a (informational only; +X pp on `Persistence.Core` measured locally) | [09_SearchPropertyBuilder_Tests_And_Realignment.md](09_SearchPropertyBuilder_Tests_And_Realignment.md) |
+| 9 | 2026-04-29 | B | Pure-logic unit tests for `Altinn.AccessMgmt.Persistence.Core.Utilities.Search.SearchPropertyBuilder<T>` — the fluent builder used by `PackageService.Search` to register weighted properties for fuzzy matching (Task #2988, this PR). 19 tests pinning down: nested-member property-name extraction (`pkg.Area.Group.Name` → `Area_Group_Name`); unary/box wrapping for value-type members; method-call expressions falling through to method name; `Add` overwrite semantics for repeated keys; `AddCollection` combined (`,`-joined) vs detailed (` | `-joined) modes; fluent `this`-return contract on both `Add` and `AddCollection`; `Build()` returning the live internal dictionary. Bug classes the tests defend against are listed in the step doc; this is the first step using the realigned `bugClassesCovered`-led step-doc template. **Picked from Recommended Next Steps item 7 (B.2)**, scoped under the *"real logic vs pass-through wiring"* filter — Persistence.Core's `SearchPropertyBuilder` qualifies as real logic (expression-tree introspection); the assembly's repository / EF-adjacent classes do not and are out of scope here. | n/a (informational only; +X pp on `Persistence.Core` measured locally) | [09_SearchPropertyBuilder_Tests_And_Realignment.md](09_SearchPropertyBuilder_Tests_And_Realignment.md) |
 
 ### Recommended Next Steps (priority order)
 
@@ -400,10 +400,10 @@ All items below are actionable unless otherwise noted. Ordering follows
    project + 1 smoke test added (`PipelineMessage<T>` ctor round-trip);
    added to both sln files; D.1 unblocked.
 
-**Phase B — Pure-logic coverage (re-scoped at Step 7 after architect + tech-lead feedback):**
+**Phase B — Pure-logic coverage (re-scoped at Step 7):**
 
 > The original "direct Moq tests on each gap assembly" framing was
-> dismissed during Step 7's review (see [PART_2 § Decision Log
+> superseded at Step 7 (see [PART_2 § Decision Log
 > 2026-04-29](../TESTING_INFRASTRUCTURE_OVERHAUL_PART_2.md#decision-log)).
 > The replacement framing: per-candidate filter for *real logic vs
 > pass-through wiring*, name the bug classes the test would catch.
@@ -471,14 +471,15 @@ All items below are actionable unless otherwise noted. Ordering follows
 **Phase F — Coverage threshold ratchet — DEPRIORITIZED:**
 
 > ⚠ **Deprioritized at Step 7 (2026-04-29)** — adding more enforced
-> coverage floors entrenches coverage-as-quality-gate, the very thing
-> the tech lead has explicitly dismissed. Do not open F.1 / F.2 Tasks
-> without explicit team endorsement. If a small Phase F Task does
-> open eventually, scope it as *"reframe existing
-> `coverage-thresholds.json` floors as catastrophic-regression
-> tripwires"*, not as "add more floors". SonarCloud's coverage gate
-> should also exclude pass-through code so the dismissed pattern
-> doesn't re-emerge via Sonar pressure (separate eventual follow-up).
+> coverage floors entrenches coverage-as-quality-gate, which conflicts
+> with the standing convention that coverage % is informational
+> rather than a planning lens. Do not open F.1 / F.2 Tasks as written.
+> If a small Phase F Task does open eventually, scope it as
+> *"reframe existing `coverage-thresholds.json` floors as
+> catastrophic-regression tripwires"*, not as "add more floors".
+> SonarCloud's coverage gate should also exclude pass-through code so
+> the same pattern doesn't re-emerge via Sonar pressure (separate
+> eventual follow-up).
 
 19. ~~**F.1 — Promote tier-2 enforced (L2').**~~ — **Deprioritized 2026-04-29**.
 20. ~~**F.2 — Resolve `Altinn.AccessManagement` warn-only floor (L3').**~~ — **Deprioritized 2026-04-29**.
