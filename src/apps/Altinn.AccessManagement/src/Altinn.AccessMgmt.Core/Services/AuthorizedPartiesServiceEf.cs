@@ -50,7 +50,7 @@ public class AuthorizedPartiesServiceEf(
             return await Task.FromResult(new List<AuthorizedParty>());
         }
 
-        if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0)
+        if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Length > 0)
         {
             filter = await ProcessProviderAndResourceFilters(filter, cancellationToken);
 
@@ -427,7 +427,7 @@ public class AuthorizedPartiesServiceEf(
         List<ConnectionQueryExtendedRecord> connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
 
         // Post-query filtering of connections when resource/provider filters are active
-        if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0)
+        if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Length > 0)
         {
             connections = FilterConnections(connections, filter);
         }
@@ -522,16 +522,7 @@ public class AuthorizedPartiesServiceEf(
             {
                 if (filters.IncludeRoles && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
                 {
-                    if (filters.RoleFilter == null || filters.RoleFilter.Count == 0)
-                    {
-                        party.EnrichWithRole(role.Entity.Code);
-
-                        if (role.Entity.LegacyCode != null)
-                        {
-                            party.EnrichWithRole(role.Entity.LegacyCode);
-                        }
-                    }
-                    else if (filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
+                    if (filters.RoleFilter == null || filters.RoleFilter.Count == 0 || filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
                     {
                         party.EnrichWithRole(role.Entity.Code);
 
@@ -595,12 +586,10 @@ public class AuthorizedPartiesServiceEf(
 
             // Roles: keep the connection if the role matches, but do not trim the role here.
             // Role filtering during enrichment is handled in EnrichWithPartiesWithAccessInfo.
-            if (hasRoleFilter && RoleConstants.TryGetById(connection.RoleId, out var role))
+            if (hasRoleFilter && RoleConstants.TryGetById(connection.RoleId, out var role) &&
+                (filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode))))
             {
-                if (filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
-                {
-                    matchesFilter = true;
-                }
+                matchesFilter = true;
             }
 
             // Packages: trim to only matching packages
