@@ -101,6 +101,36 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         }
 
         /// <summary>
+        /// Returns the consent request. Only returns request details for the authenticated party.
+        /// </summary>
+        [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
+        [HttpGet]
+        [Route("consentrequests/{consentRequestId:guid}", Name = GetRouteName)]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(ConsentRequestDetailsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetRequest([FromRoute] Guid consentRequestId, CancellationToken cancellationToken = default)
+        {
+            Core.Models.Consent.ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+
+            if (consentPartyUrn == null)
+            {
+                return Unauthorized();
+            }
+
+            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.GetRequest(consentRequestId, consentPartyUrn, false, cancellationToken);
+
+            if (consentRequestStatus.IsProblem)
+            {
+                return consentRequestStatus.Problem.ToActionResult();
+            }
+
+            return Ok(consentRequestStatus.Value.ToConsentRequestDetailsExternal());
+        }
+
+        /// <summary>
         /// Get a list of consents that had status changes for the authenticated enterprise.
         /// Returns consents ordered by when the status change occurred (newest first).
         /// Uses cursor-based pagination.
