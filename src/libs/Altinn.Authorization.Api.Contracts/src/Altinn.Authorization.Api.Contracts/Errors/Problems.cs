@@ -173,4 +173,8 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor RoleAssignmentNotRevocable { get; }
     = _factory.Create(40, HttpStatusCode.BadRequest, "Given the rules for revocation this role could not be revoked");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor DelegationCheckFailureInvalidPackage { get; }
+    = _factory.Create(41, HttpStatusCode.BadRequest, "Delegation check of package failed. Package is not valid for delegation.");
 }
