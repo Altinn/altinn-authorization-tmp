@@ -522,7 +522,7 @@ public class AuthorizedPartiesServiceEf(
             {
                 if (filters.IncludeRoles && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
                 {
-                    if (filters.RoleFilter == null || filters.RoleFilter.Count == 0 || filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
+                    if (filters.RoleFilter == null || filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
                     {
                         party.EnrichWithRole(role.Entity.Code);
 
@@ -775,24 +775,6 @@ public class AuthorizedPartiesServiceEf(
                 foreach (var roleCode in roleCodes)
                 {
                     filter.RoleFilter[roleCode] = roleCode;
-                }
-
-                // Find all Roles for the PackageResources found above, as we need to include roles giving access via packages as well.
-                List<RolePackage> rolePackages = await repoService.GetRolePackages(packageIds: filter.PackageFilter.Keys, ct: cancellationToken);
-                foreach (var group in rolePackages.GroupBy(rp => rp.PackageId))
-                {
-                    foreach (var role in group.Select(rp => rp.Role))
-                    {
-                        if (!filter.RoleFilter.ContainsKey(role.Code))
-                        {
-                            filter.RoleFilter[role.Code] = role.Code;
-                        }
-
-                        if (role.LegacyCode != null && !filter.RoleFilter.ContainsKey(role.LegacyCode))
-                        {
-                            filter.RoleFilter[role.LegacyCode] = role.LegacyCode;
-                        }
-                    }
                 }
 
                 cachedFilters.ResourceFilter = filter.ResourceFilter;

@@ -206,6 +206,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             .Include(rp => rp.Role)
             .WhereIf(roleIds != null, rp => roleIds.Contains(rp.RoleId))
             .WhereIf(packageIds != null, rp => packageIds.Contains(rp.PackageId))
+            .Where(t => t.HasAccess == true)
             .ToListAsync(ct);
     }
 }
