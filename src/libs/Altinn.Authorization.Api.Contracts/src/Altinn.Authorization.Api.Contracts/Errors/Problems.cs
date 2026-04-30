@@ -176,5 +176,5 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor DelegationCheckFailureInvalidPackage { get; }
-    = _factory.Create(41, HttpStatusCode.BadRequest, "On or more of the provided packages are either invalid or not eligible for delegation by the type of from-party of the delegation.");
+    = _factory.Create(41, HttpStatusCode.BadRequest, "One or more of the provided packages are either invalid or not eligible for delegation by the type of from-party of the delegation.");
 }
