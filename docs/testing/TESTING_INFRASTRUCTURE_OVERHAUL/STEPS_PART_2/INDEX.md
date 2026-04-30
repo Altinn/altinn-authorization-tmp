@@ -107,6 +107,7 @@ or the audit doc.
 | 12 | 2026-04-30 | B | `PipelineSinkService` retry-semantics unit tests (#2990) | [12](12_PipelineSinkService_Tests.md) |
 | 13 | 2026-04-30 | B | `AccessMgmt.Core.Authorization` unit tests — `ConditionalScope`, `ScopeConditionAuthorizationHandler`, `DefaultAuthorizationScopeProvider` (#2990) | [13](13_AccessMgmt_Core_Authorization_Tests.md) |
 | 14 | 2026-04-30 | B | `TranslationExtensions` null-short-circuit + service-delegation unit tests (#2990) | [14](14_TranslationExtensions_Tests.md) |
+| 15 | 2026-04-30 | B | `TranslationMiddleware` (q-value parsing + normalization) + `ControllerExtensions` (language-code resolution) unit tests (#2990) | [15](15_TranslationMiddleware_And_ControllerExtensions_Tests.md) |
 
 ---
 
@@ -118,9 +119,9 @@ nothing changed.
 
 | Item | Blocker | Notes | Last re-checked |
 |---|---|---|---|
-| `Altinn.Authorization.Host.Lease` tests | Azurite / Azure Storage Emulator required | 2 tests `[Skip]`ped; assembly at 6.87% line. Unblocked once an Azurite Testcontainers fixture lands. | step 14 |
-| `Sender_ConfirmsDraftRequest_ReturnsPending` | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix. Will be reviewed under skipped-test audit. | step 14 |
-| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO (auth as MD of receiver + pre-existing Rightholder connection). | step 14 |
+| `Altinn.Authorization.Host.Lease` tests | Azurite / Azure Storage Emulator required | 2 tests `[Skip]`ped; assembly at 6.87% line. Unblocked once an Azurite Testcontainers fixture lands. | step 15 |
+| `Sender_ConfirmsDraftRequest_ReturnsPending` | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix. Will be reviewed under skipped-test audit. | step 15 |
+| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO (auth as MD of receiver + pre-existing Rightholder connection). | step 15 |
 
 ---
 
