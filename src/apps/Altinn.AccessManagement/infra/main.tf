@@ -39,6 +39,16 @@ locals {
   conf_json                 = jsondecode(file(local.conf_json_path))
   conf_json_path            = abspath("${path.module}/../conf.json")
 
+  app_settings = {
+    "Platform:Notifications:Endpoint"    = var.appconfiguration.platform_notifications_endpoint
+    "Platform:SblBridge:Endpoint"        = var.appconfiguration.platform_sbl_bridge_endpoint
+    "Platform:ResourceRegistry:Endpoint" = var.appconfiguration.platform_resource_registry_endpoint
+    "Platform:Register:Endpoint"         = var.appconfiguration.platform_register_endpoint
+    "Platform:AccessManagement:Endpoint" = var.appconfiguration.platform_accessmanagement_endpoint
+    "Lease:StorageAccount:BlobEndpoint"  = azurerm_storage_account.storage.primary_blob_endpoint
+    "Altinn:MaskinPorten:Endpoint"       = var.appconfiguration.maskinporten_endpoint
+  }
+
   default_tags = {
     ProductName = var.product_name
     Environment = var.environment
@@ -196,8 +206,15 @@ module "appsettings" {
       values = {
         "ConsentMigration:BatchSize"                  = { value = tostring(var.configuration.consent.batch_size) }
         "ConsentMigration:MaxDegreeOfParallelism"     = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
-        "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) }
-        "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }
+        "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) } # Deprecated
+        "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }  # Deprecated
+
+        "Core:Notifications:RequestReviewedNotifyInSeconds"    = { value = tostring(var.configuration.core.notifications.request_reviewed_notify_in_seconds) }
+        "Core:Notifications:RequestPendingNotifyInSeconds"     = { value = tostring(var.configuration.core.notifications.request_pending_notify_in_seconds) }
+        "Core:Notifications:RightholderAddedNotifyInSeconds"   = { value = tostring(var.configuration.core.notifications.rightholder_added_notify_in_seconds) }
+        "Core:Notifications:RightholderRemovedNotifyInSeconds" = { value = tostring(var.configuration.core.notifications.rightholder_removed_notify_in_seconds) }
+        "Core:Notifications:AccessAddedNotifyInSeconds"        = { value = tostring(var.configuration.core.notifications.access_added_notify_in_seconds) }
+        "Core:Notifications:AccessRemovedNotifyInSeconds"      = { value = tostring(var.configuration.core.notifications.access_removed_notify_in_seconds) }
       }
     }
   }
