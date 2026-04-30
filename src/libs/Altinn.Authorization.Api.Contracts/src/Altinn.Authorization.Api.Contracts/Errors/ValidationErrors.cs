@@ -255,7 +255,7 @@ public static class ValidationErrors
         = _factory.Create(49, $"One or more resources is not delegable.");
 
     /// <summary>
-    /// Gets a validation error descriptor
+    /// Invalid page size for consent status changes. The page size must be between 1 and 1000
     /// </summary>
     public static ValidationErrorDescriptor InvalidPageSizeForConsentStatusChanges { get; }
     = _factory.Create(50, $"Page size must be between 1 and 1000.");
