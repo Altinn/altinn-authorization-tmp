@@ -114,6 +114,7 @@ or the audit doc.
 | 19 | 2026-04-30 | B | `Api.Internal.UserUtil` party-uuid claim extraction unit tests (#2990) | [19](19_UserUtil_Tests.md) |
 | 20 | 2026-04-30 | B | `PersonIdentifier` SSN modulo-11 validation + equality + JSON round-trip unit tests (#2990) | [20](20_PersonIdentifier_Tests.md) |
 | 21 | 2026-04-30 | B | `ConnectionQueryFilter.HasAny` + default-flag pin — gates connection scans; pins which collections count and which intentionally don't (#2990) | [21](21_ConnectionQueryFilter_Tests.md) |
+| 22 | 2026-04-30 | B | Api.Enduser `DecisionHelper` accessor + PDP-decision validation unit tests — auth-bypass / DoS bug classes (#2990) | [22](22_DecisionHelper_Tests.md) |
 
 ---
 
@@ -125,9 +126,9 @@ nothing changed.
 
 | Item | Blocker | Notes | Last re-checked |
 |---|---|---|---|
-| `Altinn.Authorization.Host.Lease` tests | Azurite / Azure Storage Emulator required | 2 tests `[Skip]`ped; assembly at 6.87% line. Unblocked once an Azurite Testcontainers fixture lands. | step 21 |
-| `Sender_ConfirmsDraftRequest_ReturnsPending` | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix. Will be reviewed under skipped-test audit. | step 21 |
-| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO (auth as MD of receiver + pre-existing Rightholder connection). | step 21 |
+| `Altinn.Authorization.Host.Lease` tests | Azurite / Azure Storage Emulator required | 2 tests `[Skip]`ped; assembly at 6.87% line. Unblocked once an Azurite Testcontainers fixture lands. | step 22 |
+| `Sender_ConfirmsDraftRequest_ReturnsPending` | Environmental investigation needed | `[Skip]`ped during Part 1 Step 51 after the `ResourceRegistryMock` cache-hit fix. Will be reviewed under skipped-test audit. | step 22 |
+| `Receiver_ApprovesPendingPackageRequest_ReturnsApproved` | Fixture mis-seed — needs rewrite | `[Skip]`ped during Part 1 Step 62 with a TODO (auth as MD of receiver + pre-existing Rightholder connection). | step 22 |
 
 ---
 
