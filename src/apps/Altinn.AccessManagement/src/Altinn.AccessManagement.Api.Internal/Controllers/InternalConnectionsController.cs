@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 using Altinn.AccessManagement.Api.Internal.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -32,6 +33,20 @@ public class InternalConnectionsController(IConnectionService connectionService)
         options.FilterFromEntityTypes = [EntityTypeConstants.Organization];
         options.FilterToEntityTypes = [EntityTypeConstants.SystemUser];
     };
+
+    [HttpPost("selfidentifiedusers")]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> PostSelfIdentifiedUsers(
+        [FromQuery(Name = "from")][Required] Guid from,
+        [FromQuery(Name = "to")][Required] Guid to,
+        CancellationToken cancellationToken = default)
+    {
+        
+    }
 
     /// <summary>
     /// Get connections between organizations and systemusers.
@@ -98,7 +113,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     #endregion
 
     #region Packages
-    
+
     /// <summary>
     /// Lists all packages assigned from to / systemuser and organization. 
     /// </summary>
