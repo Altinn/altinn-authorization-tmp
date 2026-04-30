@@ -4,7 +4,7 @@ title: PipelineSourceService unit tests
 phase: B
 status: complete
 linkedIssues:
-  task: 2997
+  task: 2990
 bugClassesCovered:
   - "Pre-cancelled CancellationToken — loop must exit before emitting any messages, queue must be completed in finally"
   - "Natural enumerator termination (MoveNextAsync returns false) — break with completion log; queue completed; finally cancels CTS"

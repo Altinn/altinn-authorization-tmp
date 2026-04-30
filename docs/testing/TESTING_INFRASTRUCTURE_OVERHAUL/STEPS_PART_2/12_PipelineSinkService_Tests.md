@@ -4,7 +4,7 @@ title: PipelineSinkService unit tests
 phase: B
 status: complete
 linkedIssues:
-  task: 2998
+  task: 2990
 bugClassesCovered:
   - "Empty inbound queue → sink delegate never invoked, no crash"
   - "Success on first attempt → no retry, no backoff, single delegate call"

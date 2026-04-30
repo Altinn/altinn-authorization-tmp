@@ -103,8 +103,8 @@ or the audit doc.
 | 8 | 2026-04-29 | CI | Fix `Report-failed-tests` MTP-log path lookup (PR [apps#2987](https://github.com/Altinn/altinn-authorization-tmp/pull/2987), #2986) | (PR body) |
 | 9 | 2026-04-29 | B | `SearchPropertyBuilder<T>` pure-logic unit tests (PR [apps#2989](https://github.com/Altinn/altinn-authorization-tmp/pull/2989), #2988) | [09](09_SearchPropertyBuilder_Tests_And_Realignment.md) |
 | 10 | 2026-04-29 | B/DOC | `PaginatorStream<T>` unit tests + Part 1 `// See:` comment sweep + collapse PART_2/INDEX duplication (#2990) | [10](10_PaginatorStream_Tests_And_Doc_Collapse.md) |
-| 11 | 2026-04-30 | B | `PipelineSourceService` async-enumerator unit tests (#2997) | [11](11_PipelineSourceService_Tests.md) |
-| 12 | 2026-04-30 | B | `PipelineSinkService` retry-semantics unit tests (#2998) | [12](12_PipelineSinkService_Tests.md) |
+| 11 | 2026-04-30 | B | `PipelineSourceService` async-enumerator unit tests (#2990) | [11](11_PipelineSourceService_Tests.md) |
+| 12 | 2026-04-30 | B | `PipelineSinkService` retry-semantics unit tests (#2990) | [12](12_PipelineSinkService_Tests.md) |
 
 ---
 
