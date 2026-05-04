@@ -193,11 +193,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             _fixture = new LegacyApiFixture();
             _fixture.ConfigureServices(services =>
             {
-                // Override ConsentSettings for this test class only
-                services.PostConfigure<ConsentSettings>(settings =>
-                {
-                    settings.LatestChangesPageSize = 5;
-                });
                 // PlatformAccessToken / maskinporten tokens are signed by
                 // {issuer}-org.pem; default PublicSigningKeyProviderMock only
                 // accepts the static test key.
