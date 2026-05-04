@@ -20,9 +20,68 @@ public class PackageService : IPackageService
         DbContext = appDbContext;
     }
 
-    /// <inheritdoc/>
-    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, CancellationToken cancellationToken = default)
     {
+        var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
+        var scoredData = new List<SearchObject<PackageDto>>();
+
+        foreach (var package in data)
+        {
+            var scoredPackage = new SearchObject<PackageDto>() { Object = package, Score = 0, Fields = [] };
+
+            if (package.Name.StartsWith(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            {
+                scoredPackage.Score += 100;
+            }
+
+            if (package.Name.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            {
+                scoredPackage.Score += 50;
+            }
+
+            if (package.Description.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            {
+                scoredPackage.Score += 10;
+            }
+
+            if (package.Area.Name.StartsWith(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            {
+                scoredPackage.Score += 25;
+            }
+
+            if (package.Area.Description.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            {
+                scoredPackage.Score += 5;
+            }
+
+            if (searchInResources)
+            {
+                foreach (var resource in package.Resources)
+                {
+                    if (resource.Name.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        scoredPackage.Score += 2;
+                    }
+                }
+            }
+
+            if (scoredPackage.Score > 0)
+            {
+                scoredData.Add(scoredPackage);
+            }
+        }
+
+        return scoredData.OrderByDescending(t => t.Score).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, bool useSimpleSearch = true, CancellationToken cancellationToken = default)
+    {
+        if (useSimpleSearch)
+        {
+            return await SimpleSearch(term, resourceProviderCodes, searchInResources, typeId, cancellationToken);
+        }
+
         var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
 
         if (string.IsNullOrEmpty(term))
