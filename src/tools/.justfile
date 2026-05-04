@@ -11,7 +11,7 @@ set dotenv-load := true
   just --choose
 
 @register-export-errors ENV='at22':
-  dotnet run --project './Altinn.Authorization.Cli/src/Altinn.Authorization.Cli' --no-launch-profile -- sb export-errors 'sb://sbaltinnauth001{{ENV}}.servicebus.windows.net?tenantId=${ALTINN_ENV_{{uppercase(ENV)}}_AZURE_TENANT_ID}'
+  dotnet run --project './Altinn.Authorization.Cli/src/Altinn.Authorization.Cli' --no-launch-profile -- sb export-errors '${REGISTER_SB_{{uppercase(ENV)}}}'
 
 @register-retry-errors ENV='at22':
-  dotnet run --project './Altinn.Authorization.Cli/src/Altinn.Authorization.Cli' --no-launch-profile -- register retry 'sb://sbaltinnauth001{{ENV}}.servicebus.windows.net?tenantId=${ALTINN_ENV_{{uppercase(ENV)}}_AZURE_TENANT_ID}' '{kv:kvregaltinnauth001{{ENV}}/db-psqlsrvaltinnauthregister001{{ENV}}-register-app}'
+  dotnet run --project './Altinn.Authorization.Cli/src/Altinn.Authorization.Cli' --no-launch-profile -- register retry '${REGISTER_SB_{{uppercase(ENV)}}}' '${REGISTER_DB_{{uppercase(ENV)}}}'

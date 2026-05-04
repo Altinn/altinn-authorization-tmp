@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Spectre.Console.Cli;
 
@@ -83,7 +82,7 @@ public sealed partial class ExpandEnvironmentVariablesAttribute
     private sealed partial class AzureKeyVaultSecretReferenceSubstitutor
         : StringSubstitutor
     {
-        [GeneratedRegex("""\{kv:(?<vault>[0-9a-z-]{3,24})/(?<secret>[0-9a-zA-Z-]{1,127})(?:/(?<version>[0-9a-f]{32}))?\}""")]
+        [GeneratedRegex("""\{kv://(?<vault>[0-9a-z-]{3,24})/(?<secret>[0-9a-zA-Z-]{1,127})(?:/(?<version>[0-9a-f]{32}))?(?<query>\?[^\}]*?)?\}""")]
         private static partial Regex GetKeyVaultReferenceRegex();
 
         public override bool TrySubstitute(string input, [NotNullWhen(true)] out string output)
@@ -94,7 +93,9 @@ public sealed partial class ExpandEnvironmentVariablesAttribute
                 var secret = match.Groups["secret"].Value;
                 var version = match.Groups["version"].Success ? match.Groups["version"].Value : null;
 
-                SecretClient client = new(new Uri($"https://{vault}.vault.azure.net/"), new DefaultAzureCredential());
+                Uri.TryCreate(match.Value[1..^1], UriKind.Absolute, out var asUri);
+                var credentials = AzureCredentialHelper.GetCredential(asUri);
+                SecretClient client = new(new Uri($"https://{vault}.vault.azure.net/"), credentials);
                 var response = version is null
                     ? client.GetSecret(secret)
                     : client.GetSecret(secret, version);
