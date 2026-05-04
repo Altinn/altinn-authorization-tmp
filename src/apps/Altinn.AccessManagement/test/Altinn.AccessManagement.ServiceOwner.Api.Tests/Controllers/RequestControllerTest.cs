@@ -338,6 +338,38 @@ public class RequestControllerTest
         }
 
         [Fact]
+        public async Task CreateRequest_AndWithdraw_ReturnsOk()
+        {
+            var client = CreateClient(Fixture, TestData.NAV.Entity.OrganizationIdentifier);
+            var to = $"urn:altinn:organization:identifier-no:{TestData.BakerJohnsen.Entity.OrganizationIdentifier}";
+            var from = $"urn:altinn:person:identifier-no:{TestData.LarsBakke.Entity.PersonIdentifier}";
+
+            var body = new RequestPackageDto
+            {
+                From = from,
+                To = to,
+                Package = PackageConstants.Agriculture.Entity.Urn
+            };
+
+            var response = await client.PostAsJsonAsync(
+                Route + "/package",
+                body,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+            var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
+            Assert.NotNull(obj);
+
+            var withdrawResponse = await client.PutAsync(
+                Route + $"/{obj.Id}/withdraw",
+                null,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, withdrawResponse.StatusCode);
+        }
+
+        [Fact]
         public async Task CreateRequest_WithEmptyPackageUrn_Returns400()
         {
             var client = CreateClient(Fixture, TestData.NAV.Entity.OrganizationIdentifier);

@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.ServiceOwner.Validation;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -12,11 +11,13 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -62,6 +63,60 @@ public class RequestController(
     {
         var result = await requestService.GetRequest(id, ct);
         return result.IsSuccess ? Ok(result.Value.Status) : result.Problem.ToActionResult();
+    }
+
+    /// <summary>
+    /// Get resource requests for a given party
+    /// </summary>
+    [HttpPut("{id}/withdraw")]
+    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
+    [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
+    [AuditServiceOwnerConsumer]
+    [ProducesResponseType<RequestStatus>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> WithdrawRequest([FromRoute] Guid id, CancellationToken ct = default)
+    {
+        var result = await requestService.GetRequest(id, ct);
+
+        if (result is { })
+        {
+            var request = result.Value;
+
+            if (request.By.Id == auditAccessor.AuditValues.ChangedBy)
+            {
+                if (request.Status == RequestStatus.Draft)
+                {
+                    var res = await requestService.UpdateRequest(request.From.Id, request.Id, RequestStatus.Withdrawn, ct);
+                    if (res.IsSuccess)
+                    {
+                        return Ok(res.Value.Status);
+                    }
+
+                    return res.Problem.ToActionResult();
+                }
+
+                if (request.Status == RequestStatus.Pending)
+                {
+                    var res = await requestService.UpdateRequest(request.From.Id, request.Id, RequestStatus.Withdrawn, ct);
+                    if (res.IsSuccess)
+                    {
+                        return Ok(res.Value.Status);
+                    }
+
+                    return res.Problem.ToActionResult();
+                }
+
+                return BadRequest($"Unable to withdraw request with status '{request.Status}'");
+            }
+
+            return Forbid();
+        }
+        else
+        {
+            return result.Problem.ToActionResult();
+        }
     }
 
     /// <summary>

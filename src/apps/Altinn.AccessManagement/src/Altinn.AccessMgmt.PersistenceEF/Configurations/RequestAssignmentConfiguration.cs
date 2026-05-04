@@ -4,6 +4,8 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Reflection.Emit;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
@@ -19,6 +21,8 @@ public class RequestAssignmentConfiguration : IEntityTypeConfiguration<RequestAs
         builder.PropertyWithReference(navKey: t => t.From, foreignKey: t => t.FromId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.To, foreignKey: t => t.ToId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Role, foreignKey: t => t.RoleId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+
+        builder.HasOne<Entity>(t => t.By).WithMany().HasForeignKey(t => t.ById).IsRequired(false);
     }
 }
 
