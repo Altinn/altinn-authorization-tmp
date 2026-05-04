@@ -21,7 +21,7 @@ public partial class DtoMapper : IDtoMapper
             LastUpdatedBy = request.Audit_ChangedBy,
             From = ConvertToPartyEntityDto(request.Assignment.From),
             To = ConvertToPartyEntityDto(request.Assignment.To),
-            By = ConvertToPartyEntityDtoOrStub(request.Assignment.By, request.Assignment.ById),
+            By = ConvertToPartyEntityDtoOrStub(request.Assignment.By, request.Assignment.ById.HasValue ? request.Assignment.ById.Value : request.Audit_ChangedBy),
             Status = request.Status,
             Package = new RequestReferenceDto() { Id = request.PackageId, ReferenceId = request.Package?.Urn },
         };
@@ -37,7 +37,7 @@ public partial class DtoMapper : IDtoMapper
             LastUpdatedBy = request.Audit_ChangedBy,
             From = ConvertToPartyEntityDto(request.Assignment.From),
             To = ConvertToPartyEntityDto(request.Assignment.To),
-            By = ConvertToPartyEntityDtoOrStub(request.Assignment.By, request.Assignment.ById),
+            By = ConvertToPartyEntityDtoOrStub(request.Assignment.By, request.Assignment.ById.HasValue ? request.Assignment.ById.Value : request.Audit_ChangedBy),
             Status = request.Status,
             Resource = new RequestReferenceDto() { Id = request.ResourceId, ReferenceId = request.Resource?.RefId },
         };
