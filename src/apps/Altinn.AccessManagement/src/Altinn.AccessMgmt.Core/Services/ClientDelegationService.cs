@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Data.Common;
 using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Appsettings;
@@ -13,11 +12,12 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> appsettings) : IClientDelegationService
+public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> appsettings, IFeatureManager featureManager) : IClientDelegationService
 {
     private IEnumerable<ConstantDefinition<EntityType>> SupportedToTypes { get; } = [
         EntityTypeConstants.Person,
@@ -355,9 +355,15 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             return null;
         }
 
-        foreach (var delegationPackage in existingDelegation.DelegationPackages)
+        List<(Guid ToId, Guid FromId, Guid RoleId)> rolesToDelete = [];
+
+        if (cascade)
         {
-            if (!cascade)
+            rolesToDelete.AddRange(await MapAuditorAcountantClientPackageToRoles(existingDelegation.FromId, toUuid, existingDelegation.DelegationPackages.Select(dp => dp.PackageId), cancellationToken));
+        }
+        else
+        {
+            foreach (var delegationPackage in existingDelegation.DelegationPackages)
             {
                 errorBuilder.Add(
                     ValidationErrors.DelegationHasActiveConnections,
@@ -373,6 +379,9 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         {
             return problem;
         }
+
+        // If there exist any packages that is conected to the REVI/REGN then the connected roles should be removed in the same cleanup.
+        await RemoveClientDelegatedRoles(rolesToDelete, cancellationToken);
 
         db.Delegations.Remove(existingDelegation);
         await ClientRemovedNotification.Upsert(
@@ -415,6 +424,8 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .GroupBy(d => d.Delegation.Id)
             .ToListAsync(cancellationToken);
 
+        List<(Guid ToId, Guid FromId, Guid RoleId)> rolesToDelete = [];
+
         foreach (var existingDelegation in existingDelegations)
         {
             var first = existingDelegation.FirstOrDefault();
@@ -424,11 +435,16 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 continue;
             }
 
-            var pkgs = string.Join(", ", existingDelegation.Select(p => p.DelegationPackage.PackageId));
-            var fromId = first.Delegation.FromId;
-            var delegationId = first.Delegation.Id;
+            var packageIds = existingDelegation.Select(p => p.DelegationPackage.PackageId);
+            var pkgs = string.Join(", ", packageIds);
+            var fromId = first.Delegation.FromId;            
+            var delegationId = first.Delegation.Id;            
 
-            if (!cascade)
+            if (cascade)
+            {
+                rolesToDelete.AddRange(await MapAuditorAcountantClientPackageToRoles(fromId, toUuid, packageIds, cancellationToken));
+            }
+            else
             {
                 errorBuilder.Add(
                     ValidationErrors.DelegationHasActiveConnections,
@@ -453,9 +469,77 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             cancellationToken
         );
 
+        // If there exist any packages that is conected to the REVI/REGN then the connected roles should be removed in the same cleanup.
+        await RemoveClientDelegatedRoles(rolesToDelete, cancellationToken);
         db.Assignments.Remove(existingAssignment);
         await db.SaveChangesAsync(cancellationToken);
         return null;
+    }
+
+    private async Task<IEnumerable<(Guid ToId, Guid FromId, Guid RoleId)>> MapAuditorAcountantClientPackageToRoles(Guid fromAsignmentId, Guid toId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
+    {
+        List<(Guid ToId, Guid FromId, Guid RoleId)> rolesToDelete = [];
+
+        if (!await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAllAltinnRoleSync))
+        {
+            return rolesToDelete;
+        }
+
+        // Lookup client based on fromId
+        var clientAssignment = await db.Assignments
+            .AsTracking()
+            .Where(p => p.Id == fromAsignmentId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // Loop packages to insert for REGN/REVI
+        foreach (Guid packageId in packageIds)
+        {
+            Guid? currentRoleId = null;
+            switch (packageId.ToString().ToLowerInvariant())
+            {
+                case "2f176732-b1e9-449b-9918-090d1fa986f6": // ansvarlig-revisor
+                    currentRoleId = RoleConstants.AuditorInCharge.Id;
+                    break;
+                case "96120c32-389d-46eb-8212-0a6540540c25": // revisormedarbeider
+                    currentRoleId = RoleConstants.AssistantAuditor.Id;
+                    break;
+                case "955d5779-3e2b-4098-b11d-0431dc41ddbe": // regnskapsforer-med-signeringsrettighet
+                    currentRoleId = RoleConstants.AccountantWithSigningRights.Id;
+                    break;
+                case "a5f7f72a-9b89-445d-85bb-06f678a3d4d1": // regnskapsforer-uten-signeringsrettighet
+                    currentRoleId = RoleConstants.AccountantWithoutSigningRights.Id;
+                    break;
+                case "43becc6a-8c6c-4e9e-bb2f-08fe588ada21": // regnskapsforer-lonn
+                    currentRoleId = RoleConstants.AccountantSalary.Id;
+                    break;
+            }
+
+            if (currentRoleId == null)
+            {
+                continue;
+            }
+
+            rolesToDelete.Add((toId, clientAssignment.FromId, currentRoleId.Value));
+        }
+
+        return rolesToDelete;
+    }
+
+    private async Task<int> RemoveClientDelegatedRoles(IEnumerable<(Guid ToId, Guid FromId, Guid RoleId)> rolesToRevoke, CancellationToken cancellationToken = default)
+    {
+        foreach (var assignmentData in rolesToRevoke)
+        {
+            var assignment = await db.Assignments
+                .Where(a => a.ToId == assignmentData.ToId && a.FromId == assignmentData.FromId && a.RoleId == assignmentData.RoleId)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (assignment is not null)
+            {
+                db.Assignments.Remove(assignment);
+            }
+        }
+
+        int rowsdeleted = await db.SaveChangesAsync(cancellationToken);
+        return rowsdeleted;
     }
 
     /// <inheritdoc/>
