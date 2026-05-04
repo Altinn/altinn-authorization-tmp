@@ -173,7 +173,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
             // Calculate next continuation token if there are more results
             string? nextLink = null;
-            if (dtos.Any())
+            if (dtos.Count == pageSize)
             {
                 DateTimeOffset created = changes.Last().ChangedDate;
                 Guid consenteventid = changes.Last().ConsentEventId;

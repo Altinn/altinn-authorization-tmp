@@ -458,6 +458,37 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.DoesNotContain("pageSize", result.Links.Next, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public async Task GetConsentStatusChanges_ExactMultipleOfPageSize_LastPageIsEmpty()
+        {
+            // 10 consents seeded, pageSize = 5 → 2 full pages, then an empty 3rd page with no nextLink
+            HttpClient client = GetTestClient();
+
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Page 1
+            var response1 = await client.GetAsync("/accessmanagement/api/v1/enterprise/consentrequests/latestchanges");
+            var page1 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response1.Content.ReadAsStringAsync(), _jsonOptions);
+            Assert.Equal(5, page1.Items.Count());
+            Assert.NotNull(page1.Links.Next);
+
+            // Page 2
+            var response2 = await client.GetAsync(page1.Links.Next);
+            var page2 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response2.Content.ReadAsStringAsync(), _jsonOptions);
+            Assert.Equal(5, page2.Items.Count());
+            Assert.NotNull(page2.Links.Next); // Full page → link exists (accepted extra round-trip behavior)
+
+            // Page 3 - empty, terminates pagination
+            var response3 = await client.GetAsync(page2.Links.Next);
+            var page3 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response3.Content.ReadAsStringAsync(), _jsonOptions);
+            Assert.Empty(page3.Items);
+            Assert.Null(page3.Links.Next); // No more data → terminates correctly
+        }
+
         private async Task CreateAndUpdateConsentsForGet(int numberOfConsents)
         {
             var createdConsentIds = new List<Guid>();
