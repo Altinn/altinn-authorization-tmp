@@ -37,9 +37,11 @@ public class DeepTranslationExtensionsTest
         public ValueTask<IEnumerable<T>> TranslateCollectionAsync<T>(IEnumerable<T> sources, string languageCode, bool allowPartial = true)
         {
             // Collection-level call counts as one call against the element type
-            // for the purposes of these tests (the deep extension typically
-            // iterates and calls the singular method per element instead).
-            Counts.AddOrUpdate(typeof(IEnumerable<T>), 1, (_, n) => n + 1);
+            // (recorded under typeof(T) so Of<T>() reflects both singular and
+            // collection paths). The deep extensions typically iterate and call
+            // the singular method per element instead, so this branch is mostly
+            // exercised by direct collection-API tests.
+            Counts.AddOrUpdate(typeof(T), 1, (_, n) => n + 1);
             return ValueTask.FromResult(sources);
         }
 
