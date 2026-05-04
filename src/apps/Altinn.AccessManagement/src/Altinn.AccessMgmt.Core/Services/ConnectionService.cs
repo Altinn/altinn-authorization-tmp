@@ -34,6 +34,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -50,7 +51,8 @@ public partial class ConnectionService(
     IPolicyRetrievalPoint policyRetrievalPoint,
     IRoleService roleService,
     ITranslationService translationService,
-    ISingleRightsService singleRightsService) : IConnectionService
+    ISingleRightsService singleRightsService,
+    IFeatureManager featureManager) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -219,6 +221,21 @@ public partial class ConnectionService(
             if (problem is { })
             {
                 return problem;
+            }
+        }
+
+        if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.Altinn2RoleRevoke))
+        {
+            var a2Assignmens = await dbContext.Assignments
+                .AsTracking()
+                .Where(e => e.FromId == fromId)
+                .Where(e => e.ToId == toId)
+                .Where(e => e.Role.ProviderId == ProviderConstants.Altinn2.Id)
+                .ToListAsync(cancellationToken);
+
+            foreach (Assignment assignment in a2Assignmens)
+            {
+                dbContext.Remove(assignment);
             }
         }
 
