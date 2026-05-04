@@ -10,10 +10,12 @@ namespace Altinn.AccessMgmt.Core.Tests.Extensions;
 /// <summary>
 /// Pure-unit tests for <see cref="DeepTranslationExtensions"/>. Pins
 /// recursion topology across the nested DTO graph (PackageDto → AreaDto →
-/// AreaGroupDto, ResourceDto → ProviderDto → TypeDto, RoleDto → ProviderDto)
-/// and the asymmetric *deep-vs-shallow* pattern where some Type / Provider
-/// children are recursed into and others are translated via the singular
-/// <see cref="ITranslationService.TranslateAsync"/> only.
+/// AreaGroupDto, ResourceDto → ProviderDto → ProviderTypeDto, TypeDto →
+/// ProviderDto, RoleDto → ProviderDto) and the *deep-vs-shallow* pattern
+/// where some children (PackageDto.Type as TypeDto, TypeDto.Provider) are
+/// recursed into deep, while leaf children (ProviderDto.Type as
+/// ProviderTypeDto, ResourceDto.Type as ResourceTypeDto) are translated
+/// via the singular <see cref="ITranslationService.TranslateAsync"/> only.
 /// </summary>
 public class DeepTranslationExtensionsTest
 {
@@ -219,28 +221,26 @@ public class DeepTranslationExtensionsTest
         Assert.Equal(2, svc.Of<AreaDto>());      // both areas
     }
 
-    // ── Asymmetry: Provider→Type is shallow; Type→Provider is deep ───────────
+    // ── Provider→Type (ProviderTypeDto leaf) is shallow; Type→Provider is deep ─
 
     [Fact]
-    public async Task TranslateDeepAsync_Provider_WithType_DoesNotRecurseIntoTypeProvider()
+    public async Task TranslateDeepAsync_Provider_WithType_TranslatesProviderTypeShallow()
     {
-        // Asymmetry pin: ProviderDto.TranslateDeepAsync uses TranslateAsync
-        // (shallow) for its Type, NOT TypeDto.TranslateDeepAsync. So a nested
-        // Type.Provider is reached but never translated through this path.
+        // ProviderDto.TranslateDeepAsync uses TranslateAsync (shallow) for its
+        // Type, which is ProviderTypeDto — a leaf with no nested children. So
+        // exactly one ProviderTypeDto translation is recorded and no further
+        // recursion occurs through this path.
         var svc = new CountingTranslationService();
         var provider = new ProviderDto
         {
-            Type = new TypeDto
-            {
-                Provider = new ProviderDto(), // would be translated if Type recursed deep
-            },
+            Type = new ProviderTypeDto(),
         };
 
         await provider.TranslateDeepAsync(svc, "nob");
 
-        Assert.Equal(1, svc.Of<ProviderDto>()); // only the outer provider
-        Assert.Equal(1, svc.Of<TypeDto>());     // shallow translation of Type
-        // Type.Provider is NOT translated through this path
+        Assert.Equal(1, svc.Of<ProviderDto>());     // the outer provider
+        Assert.Equal(1, svc.Of<ProviderTypeDto>()); // shallow translation of Type
+        Assert.Equal(0, svc.Of<TypeDto>());         // ProviderDto.Type is NOT TypeDto
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class DeepTranslationExtensionsTest
         var svc = new CountingTranslationService();
         var resource = new ResourceDto
         {
-            Provider = new ProviderDto { Type = new TypeDto() },
+            Provider = new ProviderDto { Type = new ProviderTypeDto() },
             Type = new ResourceTypeDto(),
         };
 
@@ -271,7 +271,7 @@ public class DeepTranslationExtensionsTest
 
         Assert.Equal(1, svc.Of<ResourceDto>());
         Assert.Equal(1, svc.Of<ProviderDto>());      // deep into provider
-        Assert.Equal(1, svc.Of<TypeDto>());          // shallow via Provider.Type
+        Assert.Equal(1, svc.Of<ProviderTypeDto>());  // shallow via Provider.Type
         Assert.Equal(1, svc.Of<ResourceTypeDto>());  // Resource.Type translated
     }
 
@@ -283,14 +283,14 @@ public class DeepTranslationExtensionsTest
         var svc = new CountingTranslationService();
         var role = new RoleDto
         {
-            Provider = new ProviderDto { Type = new TypeDto() },
+            Provider = new ProviderDto { Type = new ProviderTypeDto() },
         };
 
         await role.TranslateDeepAsync(svc, "nob");
 
         Assert.Equal(1, svc.Of<RoleDto>());
-        Assert.Equal(1, svc.Of<ProviderDto>()); // deep into role's provider
-        Assert.Equal(1, svc.Of<TypeDto>());     // shallow via Provider.Type
+        Assert.Equal(1, svc.Of<ProviderDto>());     // deep into role's provider
+        Assert.Equal(1, svc.Of<ProviderTypeDto>()); // shallow via Provider.Type
     }
 
     // ── Collection variants ───────────────────────────────────────────────────
