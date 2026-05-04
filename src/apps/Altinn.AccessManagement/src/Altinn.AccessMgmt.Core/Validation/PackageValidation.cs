@@ -58,7 +58,7 @@ public static class PackageValidation
             foreach (var package in packages)
             {
                 PackageConstants.TryGetByAll(package, out var packageObj);
-                if (packageObj.Id == PackageConstants.MainAdministrator.Id)
+                if (packageObj is { } && packageObj.Id == PackageConstants.MainAdministrator.Id)
                 {
                     notAssignablePackages.Add(package);
                 }
@@ -97,7 +97,7 @@ public static class PackageValidation
         {
             if (PackageConstants.TryGetByAll(p, out var package))
             {
-                if (package.Entity.EntityTypeId != assignedFromType.Id)
+                if (package is { } && package.Entity.EntityTypeId != assignedFromType.Id)
                 {
                     packagesNotAssignableFromOrg.Add(package.Entity.Urn);
                 }
