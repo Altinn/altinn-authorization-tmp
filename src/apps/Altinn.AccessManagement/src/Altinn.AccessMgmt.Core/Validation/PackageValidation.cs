@@ -57,10 +57,12 @@ public static class PackageValidation
         {
             foreach (var package in packages)
             {
-                PackageConstants.TryGetByAll(package, out var packageObj);
-                if (packageObj is { } && packageObj.Id == PackageConstants.MainAdministrator.Id)
+                if (PackageConstants.TryGetByAll(package, out var packageObj))
                 {
-                    notAssignablePackages.Add(package);
+                    if (packageObj.Id == PackageConstants.MainAdministrator.Id)
+                    {
+                        notAssignablePackages.Add(package);
+                    }
                 }
             }
         }
