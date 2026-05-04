@@ -1,5 +1,5 @@
 import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
-import { getEnterpriseToken, getPersonalToken, uuidv4, randomIntBetween } from './common/testimports.js';
+import { getEnterpriseToken, getPersonalToken, uuidv4, randomIntBetween } from './testimports.js';
 
 const subscription_key = __ENV.subscription_key;
 const traceCalls = __ENV.TRACE_CALLS == "true" || __ENV.TRACE_CALLS == "1" || __ENV.TRACE_CALLS == "yes" || __ENV.TRACE_CALLS == "YES" || __ENV.TRACE_CALLS == "Yes";
