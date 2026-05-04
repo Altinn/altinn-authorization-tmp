@@ -121,7 +121,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -313,6 +313,6 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 }
