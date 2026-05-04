@@ -6,9 +6,9 @@ namespace Altinn.AccessManagement.Api.Tests.Internal;
 
 /// <summary>
 /// Pure-unit tests for <see cref="UserUtil.GetUserUuid"/>. Pins the
-/// null-claim / null-principal / invalid-Guid defaults — a regression
-/// would NRE on missing claims or attribute actions to <c>Guid.Empty</c>
-/// instead of returning <see langword="null"/>.
+/// null-principal / null-claim / invalid-Guid defaults — a regression
+/// would NRE on missing claims or default to <c>Guid.Empty</c> instead
+/// of returning <see langword="null"/>.
 /// </summary>
 public class UserUtilTest
 {
