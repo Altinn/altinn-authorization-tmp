@@ -64,9 +64,8 @@ resource "azurerm_virtual_network_gateway" "vpn" {
 
   type     = "Vpn"
   vpn_type = "RouteBased"
-  sku      = "VpnGw1"
+  sku      = "VpnGw1AZ"
 
-  enable_bgp                 = false
   active_active              = false
   dns_forwarding_enabled     = false
   private_ip_address_enabled = false
