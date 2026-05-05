@@ -36,7 +36,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
 
     [HttpPost("selfidentifiedusers")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -45,7 +45,13 @@ public class InternalConnectionsController(IConnectionService connectionService)
         [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        
+        var result = await connectionService.ConnectSIUserAndPerson(from, to, cancellationToken);
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -69,6 +75,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     }
 
     #region Assignments
+    
     /// <summary>
     /// Creates "rettighetshaver" relation between an organization and systemuser.
     /// </summary>
