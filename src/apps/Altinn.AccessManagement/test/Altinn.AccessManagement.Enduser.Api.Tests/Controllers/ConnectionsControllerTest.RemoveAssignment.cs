@@ -281,11 +281,6 @@ public partial class ConnectionsControllerTest
                     };
                     db.Assignments.Add(rightholder);
                     await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-                    rightholderAssignmentId = rightholder.Id;
-                }
-                else
-                {
-                    rightholderAssignmentId = existing.Id;
                 }
             });
 
