@@ -520,7 +520,7 @@ public class AuthorizedPartiesServiceEf(
         {
             if (parties.TryGetValue(connection.FromId, out AuthorizedParty party))
             {
-                if (filters.IncludeRoles && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
+                if (filters.IncludeRoles && connection.AssignmentId.HasValue && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
                 {
                     if (filters.RoleFilter == null || filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
                     {
