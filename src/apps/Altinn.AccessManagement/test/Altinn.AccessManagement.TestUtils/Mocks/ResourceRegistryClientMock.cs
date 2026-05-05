@@ -136,7 +136,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         #region Code from resource registry to support mocking of rights decomposition in access management tests
         public static List<Models.ResourceRegistry.Right> DecomposePolicy(XacmlPolicy policy, string resourceId, bool includeServiceOwnerRights, bool includeAppRights)
         {
-            Dictionary<string, Models.ResourceRegistry.Right> rights = new Dictionary<string, Models.ResourceRegistry.Right >();
+            Dictionary<string, Models.ResourceRegistry.Right> rights = new Dictionary<string, Models.ResourceRegistry.Right>();
 
             foreach (XacmlRule rule in policy.Rules)
             {
