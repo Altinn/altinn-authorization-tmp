@@ -1,5 +1,5 @@
 meta {
-  name: POST_EndUser_PackageDelegationRequest_Person_Konkursbo_Cannot_Be_Approved
+  name: POST_EndUser_PackageDelegationRequest_Person_Cannot_Request_Konkursbo
   type: http
   seq: 10
 }
@@ -45,6 +45,16 @@ script:post-response {
     expect(data).to.exist;
       expect(data.id).to.exist;
     bru.setEnvVar("resourcerequestId", data.id);
+  
+}
+
+tests {
+  const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
+    
+    test("POST_EndUser_PackageDelegationRequest_Person_Cannot_Request_Konkursbo-Tilgangsstyrer", function() {
+      expect(res.status).to.equal(400);
+  });
+  
 }
 
 settings {
