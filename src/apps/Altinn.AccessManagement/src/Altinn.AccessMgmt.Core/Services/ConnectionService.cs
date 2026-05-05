@@ -226,17 +226,14 @@ public partial class ConnectionService(
 
         if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.Altinn2RoleRevoke))
         {
-            var a2Assignmens = await dbContext.Assignments
+            var a2Assignments = await dbContext.Assignments
                 .AsTracking()
                 .Where(e => e.FromId == fromId)
                 .Where(e => e.ToId == toId)
                 .Where(e => e.Role.ProviderId == ProviderConstants.Altinn2.Id)
                 .ToListAsync(cancellationToken);
 
-            foreach (Assignment assignment in a2Assignmens)
-            {
-                dbContext.Remove(assignment);
-            }
+            dbContext.RemoveRange(a2Assignments);
         }
 
         dbContext.Remove(existingAssignment);
