@@ -382,7 +382,7 @@ namespace Altinn.AccessManagement.Core.Services
                 catch (Exception)
                 {
                 }
-                
+
                 if (useEF)
                 {
                     validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
@@ -1074,7 +1074,5 @@ namespace Altinn.AccessManagement.Core.Services
 
             return currentRules;
         }
-
-        
     }
 }

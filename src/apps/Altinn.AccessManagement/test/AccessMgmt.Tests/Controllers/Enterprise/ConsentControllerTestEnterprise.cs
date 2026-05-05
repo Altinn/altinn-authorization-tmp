@@ -1,4 +1,8 @@
-﻿using AccessMgmt.Tests.Mocks;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using AccessMgmt.Tests.Mocks;
 using AccessMgmt.Tests.Moqdata;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
@@ -6,14 +10,14 @@ using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
-using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
+using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
@@ -22,10 +26,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 
 // Migrated from WebApplicationFixture to LegacyApiFixture as part of
 // sub-step 16.4a (Phase 2.2). The consent flow goes through the Dapper-backed
@@ -88,7 +88,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -119,7 +119,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 {
                     { "en", "Please approve this consent request" }
                 },
-                RedirectUrl = "https://www.dnb.no"   
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -224,7 +224,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestByOrg_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -293,7 +293,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestByOrg_InvalidUrl()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -404,7 +404,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestDuplicatePost_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -483,7 +483,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestDuplicatePost_InvalidDifferentFrom()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -556,7 +556,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_AndCheckStatus_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -598,7 +598,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
-            string location = response.Headers.Location.ToString();   
+            string location = response.Headers.Location.ToString();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
             ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
@@ -637,7 +637,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestRequiredDelegator_AndCheckStatus_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -719,7 +719,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestHandledByParty_AndCheckStatus_Valid()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -805,7 +805,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_ValidWithoutMetadata()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -867,7 +867,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_IncompatibleTemplates()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -942,7 +942,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingMetadata()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -995,7 +995,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_WrongNamingMetadata()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1072,7 +1072,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_UnknownMetadata()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1132,7 +1132,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingRights()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1171,7 +1171,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingAction()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1230,7 +1230,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_FromIsNonExistingPerson()
         {
             SetupMockPartyRepository();
-            
+
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1261,7 +1261,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 {
                     { "en", "Please approve this consent request" }
                 },
-                RedirectUrl = "https://www.dnb.no"  
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -1282,7 +1282,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Empty(problemDetails.Errors);
             Assert.Single(problemDetails.Extensions);
         }
-    
+
         private HttpClient GetTestClient()
         {
             HttpClient client = _fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });

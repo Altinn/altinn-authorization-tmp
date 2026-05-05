@@ -1,4 +1,10 @@
-﻿using AccessMgmt.Tests.Mocks;
+﻿using System;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using AccessMgmt.Tests.Mocks;
 using AccessMgmt.Tests.Moqdata;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
@@ -34,12 +40,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Moq;
-using System;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using static Altinn.AccessMgmt.Persistence.Services.Models.SystemUserClientConnectionDto;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
@@ -189,7 +189,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         public async ValueTask InitializeAsync()
-        {            
+        {
             _fixture = new LegacyApiFixture();
             _fixture.ConfigureServices(services =>
             {
@@ -327,7 +327,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 // All returned events should be the latest for their consentrequest
                 var allItems = resultPage1.Items.Concat(resultPage2.Items).ToList();
                 Assert.Equal(numberOfConsents, allItems.Count);
-                
+
                 Assert.Equal(revoked, allItems.FindAll(i => i.EventType.Equals("revoked", StringComparison.OrdinalIgnoreCase)).Count());
                 Assert.Equal(rejected, allItems.FindAll(i => i.EventType.Equals("rejected", StringComparison.OrdinalIgnoreCase)).Count());
                 Assert.Equal(accepted - revoked, allItems.FindAll(i => i.EventType.Equals("accepted", StringComparison.OrdinalIgnoreCase)).Count());
@@ -383,12 +383,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
                 // NOTE: Tie-breaker by ConsentEventId cannot be tested as ConsentEventId is not exposed in the DTO.
                 // Only ordering by ChangedDate descending is asserted here.
-                //else if (dateCompare == 0)
-                //{
+                // else if (dateCompare == 0)
+                // {
                 //    // Tie-breaker: ConsentEventId descending
                 //    Assert.True(string.CompareOrdinal(prev.ConsentEventId.ToString(), curr.ConsentEventId.ToString()) > 0,
                 //        $"ConsentEventId {prev.ConsentEventId} should be after {curr.ConsentEventId} when timestamps are equal.");
-                //}
+                // }
             }
         }
 
@@ -449,6 +449,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 await response.Content.ReadAsStringAsync(), _jsonOptions);
 
             Assert.NotNull(result.Links.Next);
+
             // pageSize is no longer a valid query param — it should not appear in the next link
             Assert.DoesNotContain("pageSize", result.Links.Next, StringComparison.OrdinalIgnoreCase);
         }
@@ -561,14 +562,14 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 if (acceptedConsentIdsToBeRevoked.Count < 3)
                 {
                     acceptedConsentIdsToBeRevoked.Add(consentId);
-                }                   
+                }
             }
 
             foreach (var consentId in createdConsentIds.Skip(skip).Take(rejectTake))
             {
                 HttpClient rejectClient = GetTestClient();
                 IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
-               
+
                 string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
                 rejectClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage rejectResponse = await rejectClient.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{consentId}/reject/", null);

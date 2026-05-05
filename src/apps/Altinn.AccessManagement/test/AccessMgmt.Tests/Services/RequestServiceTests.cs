@@ -26,7 +26,6 @@ using Microsoft.Extensions.Options;
 //          as-is. Each test seeds a unique Resource to avoid inter-test
 //          interference so the class must remain IClassFixture<ApiFixture>
 //          (Pattern A-isolated) — not eligible for sharing.
-
 namespace AccessMgmt.Tests.Services;
 
 public class RequestServiceTests : IClassFixture<PostgresFixture>
@@ -164,7 +163,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
 
     [Fact]
     public async Task GetRequest_WithPackageRequestId_ReturnsRequestDto()
-    {        
+    {
         var created = (await _requestService.CreatePackageRequest(OrgFrom.Id, PersonTo.Id, PersonTo.Id, RoleConstants.Rightholder.Id, PackageConstants.Agriculture.Id, RequestStatus.Draft)).Value;
 
         var result = await _requestService.GetRequest(created.Id);
@@ -211,7 +210,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
     #endregion
 
     #region CreateRequestAssignmentPackage
-    
+
     [Fact]
     public async Task CreateRequestAssignmentPackage_WithValidInput_CreatesDraftRequest()
     {
@@ -294,7 +293,7 @@ public class RequestServiceTests : IClassFixture<PostgresFixture>
         Assert.Equal(created.Id, fetched.Value.Id);
 
         // 5. Enduser accepts
-        var accepted = (await _requestService.UpdateRequest(OrgFrom.Id,created.Id, RequestStatus.Approved)).Value;
+        var accepted = (await _requestService.UpdateRequest(OrgFrom.Id, created.Id, RequestStatus.Approved)).Value;
         Assert.Equal(RequestStatus.Approved, accepted.Status);
     }
 
