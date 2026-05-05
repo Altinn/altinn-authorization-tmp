@@ -1625,11 +1625,5 @@ namespace Altinn.AccessManagement.Tests.Controllers
             delegations = TestDataUtil.GetAdminDelegations(supplierOrg, consumerOrg, resourceIds);
             return delegations;
         }
-<<<<<<< feat/3043_stylecop_analyzer_codefixes
-            }
-        }
-=======
-
     }
 }
->>>>>>> main

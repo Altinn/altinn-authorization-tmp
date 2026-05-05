@@ -473,11 +473,5 @@ namespace Altinn.Platform.Authorization.IntegrationTests
 
             return policies;
         }
-<<<<<<< feat/3043_stylecop_analyzer_codefixes
-            }
-        }
-=======
-
     }
 }
->>>>>>> main

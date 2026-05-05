@@ -1072,10 +1072,5 @@ namespace Altinn.AccessManagement.Core.Services
 
             return currentRules;
         }
-<<<<<<< feat/3043_stylecop_analyzer_codefixes
-=======
-
-
->>>>>>> main
     }
 }

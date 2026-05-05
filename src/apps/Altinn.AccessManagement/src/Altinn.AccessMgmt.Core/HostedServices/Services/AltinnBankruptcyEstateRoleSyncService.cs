@@ -35,10 +35,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public async Task SyncBankruptcyEstateRoles(ILease lease, CancellationToken cancellationToken)
         {
-<<<<<<< feat/3043_stylecop_analyzer_codefixes
-=======
-
->>>>>>> main
             var leaseData = await lease.Get<AltinnBankruptcyEstateRoleLease>(cancellationToken);
             var adminDelegations = await _role.StreamRoles("13", leaseData.AltinnBankruptcyEstateRoleStreamNextPageLink, cancellationToken);
 
