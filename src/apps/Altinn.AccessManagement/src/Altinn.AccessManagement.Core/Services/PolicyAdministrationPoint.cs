@@ -39,6 +39,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <param name="delegationRepository">The delegation change repository (postgresql).</param>
         /// <param name="eventQueue">The delegation change event queue service to post events for any delegation change.</param>
         /// <param name="logger">Logger instance.</param>
+        /// <param name="featureManager">Feature manager for runtime feature flags.</param>
         public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, Microsoft.FeatureManagement.IFeatureManager featureManager)
         {
             _prp = policyRetrievalPoint;
