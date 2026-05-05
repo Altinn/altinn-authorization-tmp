@@ -27,7 +27,7 @@ public class PackageService : IPackageService
 
     private const StringComparison Ic = StringComparison.InvariantCultureIgnoreCase;
 
-    private record ScoringRule(
+    private sealed record ScoringRule(
         string FieldName,
         Func<PackageDto, string> Field,
         Func<string, string, bool> Match,
