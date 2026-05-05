@@ -25,64 +25,89 @@ public class PackageService : IPackageService
         TranslationService = translationService;
     }
 
-    public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default)
+    private const StringComparison Ic = StringComparison.InvariantCultureIgnoreCase;
+
+    private record ScoringRule(
+        string FieldName,
+        Func<PackageDto, string> Field,
+        Func<string, string, bool> Match,
+        int Points);
+
+    private static readonly ScoringRule[] PackageRules =
+    [
+        new("name.prefix",      p => p.Name,             (f, t) => f.StartsWith(t, Ic), 100),
+        new("name",             p => p.Name,             (f, t) => f.Contains(t, Ic),    50),
+        new("description",      p => p.Description,      (f, t) => f.Contains(t, Ic),    10),
+        new("area.name.prefix", p => p.Area.Name,        (f, t) => f.StartsWith(t, Ic),  25),
+        new("area.description", p => p.Area.Description, (f, t) => f.Contains(t, Ic),     5),
+    ];
+
+    private static SearchObject<PackageDto> ScorePackage(
+    PackageDto package,
+    string term,
+    bool searchInResources)
     {
-        var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId, languageCode: languageCode, allowPartialTranslation: allowPartialTranslation);
-        var scoredData = new List<SearchObject<PackageDto>>();
+        var totalScore = 0;
+        var fields = new List<SearchField>();
 
-        foreach (var package in data)
+        foreach (var rule in PackageRules)
         {
-            var scoredPackage = new SearchObject<PackageDto>() { Object = package, Score = 0, Fields = [] };
-
-            if (package.Name.StartsWith(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
+            var value = rule.Field(package);
+            if (rule.Match(value, term))
             {
-                scoredPackage.Score += 100;
-            }
-
-            if (package.Name.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
-            {
-                scoredPackage.Score += 50;
-            }
-
-            if (package.Description.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
-            {
-                scoredPackage.Score += 10;
-            }
-
-            if (package.Area.Name.StartsWith(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
-            {
-                scoredPackage.Score += 25;
-            }
-
-            if (package.Area.Description.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
-            {
-                scoredPackage.Score += 5;
-            }
-
-            if (searchInResources)
-            {
-                foreach (var resource in package.Resources)
+                totalScore += rule.Points;
+                fields.Add(new SearchField
                 {
-                    if (resource.Name.Contains(term, comparisonType: StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        scoredPackage.Score += 2;
-                    }
-                }
-            }
-
-            if (scoredPackage.Score > 0)
-            {
-                scoredData.Add(scoredPackage);
+                    Field = rule.FieldName,
+                    Value = value,
+                    Score = rule.Points,
+                });
             }
         }
 
-        return scoredData.OrderByDescending(t => t.Score).ToList();
+        if (searchInResources)
+        {
+            foreach (var resource in package.Resources.Where(t => t.Name.Contains(term, Ic)))
+            {                
+                totalScore += 2;
+                fields.Add(new SearchField
+                {
+                    Field = "resources.name",
+                    Value = resource.Name,
+                    Score = 2,
+                });   
+            }
+        }
+
+        return new SearchObject<PackageDto>
+        {
+            Object = package,
+            Score = totalScore,
+            Fields = fields,
+        };
+    }
+
+    public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default)
+    {
+        var data = await GetSearchData(
+        resourceProviderCodes: resourceProviderCodes,
+        typeId: typeId,
+        languageCode: languageCode,
+        allowPartialTranslation: allowPartialTranslation,
+        cancellationToken: cancellationToken
+        );
+
+        return data
+            .Select(p => ScorePackage(p, term, searchInResources))
+            .Where(s => s.Score > 0)
+            .OrderByDescending(s => s.Score)
+            .ToList();
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<SearchObject<PackageDto>>> FuzzySearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default)
     {
-        var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId, languageCode: languageCode, allowPartialTranslation: allowPartialTranslation);
+        var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId, languageCode: languageCode, allowPartialTranslation: allowPartialTranslation, cancellationToken: cancellationToken);
 
         if (string.IsNullOrEmpty(term))
         {
