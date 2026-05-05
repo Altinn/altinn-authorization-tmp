@@ -168,7 +168,7 @@ public static class PersistenceDependencyInjectionExtensions
                 ConsentPortalViewMode.Show => "show",
                 _ => null,
             }))
-            .AddYuniqlMigrations(typeof(Marker), cfg =>
+            .AddYuniqlMigrations(cfg =>
             {
                 cfg.Workspace = "/";
                 cfg.WorkspaceFileProvider = fs;
