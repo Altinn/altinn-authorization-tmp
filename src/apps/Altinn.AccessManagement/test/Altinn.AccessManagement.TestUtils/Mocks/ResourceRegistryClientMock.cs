@@ -115,7 +115,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
         private static string GetResourcePath(string resourceRegistryId)
         {
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(ResourceRegistryClientMock).Assembly.Location).LocalPath);
-            return Path.Combine(unitTestFolder, "..", "..", "..","..", "AccessMgmt.Tests", "Data", "ResourceRegistryResources", $"{resourceRegistryId}", "resource.json");
+            return Path.Combine(unitTestFolder, "..", "..", "..", "..", "AccessMgmt.Tests", "Data", "ResourceRegistryResources", $"{resourceRegistryId}", "resource.json");
         }
 
         private static string GetDataPathForResources()
@@ -285,7 +285,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
                 {
                     result.Add(urn);
                 }
-            } 
+            }
 
             return result;
         }

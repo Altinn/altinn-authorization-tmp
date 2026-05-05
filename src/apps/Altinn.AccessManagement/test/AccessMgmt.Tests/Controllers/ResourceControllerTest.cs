@@ -90,7 +90,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
             string responseContent = await response.Content.ReadAsStringAsync();
             List<AccessManagementResource> actual = JsonSerializer.Deserialize<List<AccessManagementResource>>(responseContent, options);
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             AssertionUtil.ListAccessManagementResourceAreEqual(expected, actual);
@@ -105,7 +105,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
         {
             // Arrange
             _client.DefaultRequestHeaders.Remove("Authorization");
-            
+
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
             StreamContent content = new StreamContent(dataStream);
 
@@ -135,7 +135,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
 
             // Act
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
@@ -163,7 +163,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             // Act
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
             string actual = await response.Content.ReadAsStringAsync();
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal(expected, actual);
@@ -191,7 +191,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             // Act
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
             string responseContent = await response.Content.ReadAsStringAsync();
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -255,7 +255,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             // Act
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
             string actual = await response.Content.ReadAsStringAsync();
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal(expected, actual);

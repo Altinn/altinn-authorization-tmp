@@ -35,6 +35,10 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public async Task SyncBankruptcyEstateRoles(ILease lease, CancellationToken cancellationToken)
         {
+<<<<<<< feat/3043_stylecop_analyzer_codefixes
+=======
+
+>>>>>>> main
             var leaseData = await lease.Get<AltinnBankruptcyEstateRoleLease>(cancellationToken);
             var adminDelegations = await _role.StreamRoles("13", leaseData.AltinnBankruptcyEstateRoleStreamNextPageLink, cancellationToken);
 
@@ -104,7 +108,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid bankruptcy estate delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
                                 };
                                 await errorQueueService.AddErrorQueue(error, values, cancellationToken);
-                                continue;                                
+                                continue;
                             }
 
                             int revokes = await assignmentService.RevokeImportedAssignmentPackages(
@@ -139,7 +143,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     ErrorItem = JsonSerializer.Serialize(item),
                                     ErrorMessage = $"The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
                                 };
-                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);                                 
+                                await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                                 continue;
                             }
 
@@ -154,7 +158,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     ErrorMessage = $"Failed to import delegation for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
                                 };
                                 await errorQueueService.AddErrorQueue(error, values, cancellationToken);
-                                continue;                                
+                                continue;
                             }
                         }
 
@@ -174,7 +178,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         private List<string> GetBankruptcyEstatePackageFromRoleTypeCode(string roleTypeCode, CancellationToken cancellationToken = default)
         {
             List<string> packages = new List<string>();
-            
+
             switch (roleTypeCode.ToUpper())
             {
                 case "BOBEL":
@@ -182,7 +186,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     break;
                 case "BOBES":
                     packages.Add(PackageConstants.BankruptcyEstateWriteAccess.Entity.Urn);
-                    break;                
+                    break;
             }
 
             return packages;

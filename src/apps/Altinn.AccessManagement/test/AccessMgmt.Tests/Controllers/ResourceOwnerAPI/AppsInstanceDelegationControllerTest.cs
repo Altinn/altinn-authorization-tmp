@@ -151,7 +151,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         Paginated<AppsInstanceRevokeResponseDto> actual = JsonSerializer.Deserialize<Paginated<AppsInstanceRevokeResponseDto>>(await response.Content.ReadAsStringAsync(), options);
-        AssertionUtil.AssertPagination(expected, actual, AssertionUtil.AssertAppsInstanceRevokeResponseDto);        
+        AssertionUtil.AssertPagination(expected, actual, AssertionUtil.AssertAppsInstanceRevokeResponseDto);
     }
 
     [Theory]
@@ -180,7 +180,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
         HttpResponseMessage response = await client.DeleteAsync($"accessmanagement/api/v1/app/delegationrevoke/resource/{resourceId}/instance/{instanceId}");
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);                
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     /// <summary>

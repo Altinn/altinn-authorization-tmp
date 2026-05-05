@@ -90,7 +90,7 @@ public class DelegationCheckHelperTest
             anyOfs.Add(new XacmlAnyOf([new XacmlAllOf([MakeXacmlMatch(
                 XacmlConstants.MatchAttributeCategory.Subject,
                 subject.Value.attrId,
-                subject.Value.value)])]));  
+                subject.Value.value)])]));
         }
 
         if (resources != null)
@@ -336,7 +336,7 @@ public class DelegationCheckHelperTest
             "urn:oasis:names:tc:xacml:1.0:action:action-id", "write");
 
         var resourceAllOf = new XacmlAllOf([orgMatch, appMatch]);
-        var actionAllOf   = new XacmlAllOf([actionMatch]);
+        var actionAllOf = new XacmlAllOf([actionMatch]);
         var rule = new XacmlRule("r", XacmlEffectType.Permit)
         {
             Target = new XacmlTarget(
