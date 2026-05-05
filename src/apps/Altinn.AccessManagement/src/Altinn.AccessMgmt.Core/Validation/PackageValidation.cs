@@ -67,7 +67,7 @@ public static class PackageValidation
             }
         }
 
-        if (notAssignablePackages.Any())
+        if (notAssignablePackages.Count() > 0)
         {
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", notAssignablePackages)} are not assignable to an organization.")]);
@@ -106,7 +106,7 @@ public static class PackageValidation
             }
         }
 
-        if (packagesNotAssignableFromOrg.Any())
+        if (packagesNotAssignableFromOrg.Count() > 0)
         {
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.PackageIsNotAssignable, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableFromOrg)} are not assignable from {assignedFromType.Name}.")]);
