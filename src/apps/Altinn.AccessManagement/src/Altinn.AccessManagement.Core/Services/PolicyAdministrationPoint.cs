@@ -15,6 +15,7 @@ using Azure;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -28,7 +29,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IPolicyFactory _policyFactory;
         private readonly IDelegationMetadataRepository _delegationRepository;
         private readonly IDelegationChangeEventQueue _eventQueue;
-        private readonly Microsoft.FeatureManagement.IFeatureManager _featureManager;
+        private readonly IFeatureManager _featureManager;
         private readonly int delegationChangeEventQueueErrorId = 911;
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <param name="eventQueue">The delegation change event queue service to post events for any delegation change.</param>
         /// <param name="logger">Logger instance.</param>
         /// <param name="featureManager">Feature manager for runtime feature flags.</param>
-        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, Microsoft.FeatureManagement.IFeatureManager featureManager)
+        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyFactory policyFactory, IDelegationMetadataRepository delegationRepository, IDelegationChangeEventQueue eventQueue, ILogger<IPolicyAdministrationPoint> logger, IFeatureManager featureManager)
         {
             _prp = policyRetrievalPoint;
             _policyFactory = policyFactory;
