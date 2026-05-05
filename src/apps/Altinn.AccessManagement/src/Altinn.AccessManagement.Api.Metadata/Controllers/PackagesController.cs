@@ -54,32 +54,29 @@ public class PackagesController : ControllerBase
         }
 
         var res = simpleSearch
-            ? await packageService.SimpleSearch(term, resourceProviderCode, searchInResources, typeId)
-            : await packageService.FuzzySearch(term, resourceProviderCode, searchInResources, typeId);
+            ? await packageService.SimpleSearch(
+                term: term, 
+                resourceProviderCodes: resourceProviderCode, 
+                searchInResources: searchInResources, 
+                typeId: typeId, 
+                languageCode: this.GetLanguageCode(), 
+                allowPartialTranslation: this.AllowPartialTranslation()
+                )
+            : await packageService.FuzzySearch(
+                term: term,
+                resourceProviderCodes: resourceProviderCode,
+                searchInResources: searchInResources,
+                typeId: typeId,
+                languageCode: this.GetLanguageCode(),
+                allowPartialTranslation: this.AllowPartialTranslation()
+                );
 
         if (res == null || !res.Any())
         {
             return NoContent();
         }
 
-        // Translate each search result with deep translation for nested objects
-        var translatedResults = new List<SearchObject<PackageDto>>();
-        foreach (var searchResult in res)
-        {
-            var translatedDto = await searchResult.Object.TranslateDeepAsync(
-                translationService,
-                this.GetLanguageCode(),
-                this.AllowPartialTranslation());
-            
-            translatedResults.Add(new SearchObject<PackageDto> 
-            { 
-                Object = translatedDto,
-                Score = searchResult.Score,
-                Fields = searchResult.Fields
-            });
-        }
-
-        return Ok(translatedResults);
+        return Ok(res);
     }
 
     /// <summary>

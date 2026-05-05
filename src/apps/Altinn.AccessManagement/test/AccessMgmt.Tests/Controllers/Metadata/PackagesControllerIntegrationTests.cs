@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Api.Metadata.Controllers;
+﻿using Altinn.AccessManagement.Api.Metadata.Controllers;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -96,7 +96,7 @@ public class PackagesControllerIntegrationTests : IClassFixture<PostgresFixture>
         // Fully qualify: the namespace-less Persistence `PackageService` (six-arg
         // ctor) is in the global namespace, so an unqualified `PackageService(_db)`
         // would bind there.
-        _packageService = new Altinn.AccessMgmt.Core.Services.PackageService(_db);
+        _packageService = new Altinn.AccessMgmt.Core.Services.PackageService(_db, _translationService);
     }
 
     private PackagesController CreateController(string acceptLanguage = "nb-NO")
