@@ -999,7 +999,8 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        var rolePackagesRaw = await db.RolePackages.Where(r => r.HasAccess && keys.Select(k => k.RoleId).Distinct().ToList().Contains(r.RoleId))
+        var rpKeys = keys.Where(k => k.AssignmentId.HasValue).Select(k => k.RoleId).Distinct().ToList();
+        var rolePackagesRaw = await db.RolePackages.Where(r => r.HasAccess && rpKeys.Contains(r.RoleId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
             .Select(rp => new { rp.PackageId, rp.RoleId, rp.EntityVariantId })
             .ToListAsync(ct);
