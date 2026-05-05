@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Text;
 using Altinn.AccessManagement.Core.Extensions;
