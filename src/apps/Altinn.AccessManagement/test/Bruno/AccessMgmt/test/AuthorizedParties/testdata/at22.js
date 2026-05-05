@@ -5,6 +5,7 @@ module.exports =
     "clientDelgResourceId": "devtest_gar_bruno_client_resource",
     "directDelgResourceId": "devtest_gar_bruno_direct_resource",
     "forretningsforer-eiendomResourceId": "devtest_gar_bruno_forretningsforer_eiendom",
+    "regnskapsforer": "devtest_gar_bruno_client_resource",
     "appResourceId": "app_ttd_authz-bruno-testapp1",
     "appInstanceDelegation": {
             "resourceId": "app_ttd_authz-bruno-instancedelegation",
