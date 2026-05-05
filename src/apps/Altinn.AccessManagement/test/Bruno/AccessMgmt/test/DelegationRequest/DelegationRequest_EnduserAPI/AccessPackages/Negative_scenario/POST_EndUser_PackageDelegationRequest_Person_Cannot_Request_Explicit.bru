@@ -1,11 +1,11 @@
 meta {
-  name: POST_EndUser_DelegationRequest_To_user_without_rettighetshaver
+  name: POST_EndUser_PackageDelegationRequest_Person_Cannot_Request_Explicit
   type: http
-  seq: 3
+  seq: 9
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/request/package?party={{party}}&to={{toUser}}&package={{resource}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/request/package?party={{party}}&to={{toUser}}&package={{package}}
   body: none
   auth: inherit
 }
@@ -13,7 +13,7 @@ post {
 params:query {
   party: {{party}}
   to: {{toUser}}
-  package: {{resource}}
+  package: {{package}}
 }
 
 script:pre-request {
@@ -21,8 +21,8 @@ script:pre-request {
     const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
     
     bru.setVar("party", testdata.Bot_package_Org.partyuuid);
-    bru.setVar("toUser", testdata.user_uten_rettighetshaver.partyuuid);
-    bru.setVar("resource", testdata.package_to_delegate.package_id_privatperson);
+    bru.setVar("toUser", testdata.Bot_package_person.partyuuid);
+    bru.setVar("package", testdata.package_to_delegate.eksplisitt);
     
     var getTokenParameters = {
       auth_userId: testdata.Bot_package_Org.innehaver.userid,
@@ -43,20 +43,12 @@ script:pre-request {
 tests {
   const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
     
-    test("Person_A request for access on resources to Org_user", function() {
+    test("POST_EndUser_PackageDelegationRequest_Person_Cannot_Request_OrgPackage", function() {
       const data = res.getBody();
-      const expectedTo = `No connection between party:'${testdata.Bot_package_Org.partyuuid.toLowerCase()}' and to:'${testdata.user_uten_rettighetshaver.partyuuid.toLowerCase()}'`;
-      
       expect(res.status).to.equal(400);
-      expect(data).to.have.property("validationErrors");
-      const validationError = data.validationErrors[0];
-      expect(validationError).to.have.property("detail", "Initial connection between parties not found.");
-      expect(validationError).to.have.property("paths");
-      expect(validationError.paths).to.be.an("array").with.length.greaterThan(0);
-      expect(validationError.paths[0]).to.equal("/to");
-      expect(validationError).to.have.property("to", expectedTo);
-      
-    });
+      expect(data.validationErrors.some(error => error.Packages === "urn:altinn:accesspackage:eksplisitt are not assignable from Person.")).to.equal(true);
+  });
+  
 }
 
 settings {
