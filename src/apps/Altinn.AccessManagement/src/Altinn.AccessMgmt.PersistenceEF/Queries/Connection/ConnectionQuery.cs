@@ -974,7 +974,7 @@ public class ConnectionQuery(AppDbContext db)
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
-        var apKeys = keys.Where(k => k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
+        var apKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
         SortedSet<Guid> apPackageIds = [];
@@ -1042,7 +1042,7 @@ public class ConnectionQuery(AppDbContext db)
         }
 
         SortedList<Guid, Guid> entityVariants = [];
-        var entityKeys = keys.Where(k => rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
+        var entityKeys = keys.Where(k => k.AssignmentId.HasValue && rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
         if (entityKeys.Count > 0)
         {
             var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
