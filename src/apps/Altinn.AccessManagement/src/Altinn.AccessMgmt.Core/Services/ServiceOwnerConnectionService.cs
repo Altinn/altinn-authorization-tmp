@@ -116,7 +116,7 @@ namespace Altinn.AccessMgmt.Core.Services
                     if (skatteforholdRole is not null)
                     {
                         // Revoke PrivateTaxAffairs assignment
-                        await RemoveAssignment(skatteforholdRole, true, cancellationToken);
+                        dbContext.Assignments.Remove(skatteforholdRole);
                     }
                 }
             }
