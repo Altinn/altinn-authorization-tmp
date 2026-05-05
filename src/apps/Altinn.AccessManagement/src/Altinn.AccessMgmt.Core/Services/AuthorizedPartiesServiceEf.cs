@@ -586,7 +586,7 @@ public class AuthorizedPartiesServiceEf(
 
             // Roles: keep the connection if the role matches, but do not trim the role here.
             // Role filtering during enrichment is handled in EnrichWithPartiesWithAccessInfo.
-            if (hasRoleFilter && RoleConstants.TryGetById(connection.RoleId, out var role) &&
+            if (hasRoleFilter && connection.AssignmentId.HasValue && RoleConstants.TryGetById(connection.RoleId, out var role) &&
                 (filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode))))
             {
                 matchesFilter = true;
