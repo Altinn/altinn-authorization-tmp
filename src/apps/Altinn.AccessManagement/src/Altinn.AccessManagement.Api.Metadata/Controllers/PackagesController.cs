@@ -53,7 +53,10 @@ public class PackagesController : ControllerBase
             typeId = type.Id;
         }
 
-        var res = await packageService.Search(term, resourceProviderCode, searchInResources, typeId, simpleSearch);
+        var res = simpleSearch
+            ? await packageService.SimpleSearch(term, resourceProviderCode, searchInResources, typeId)
+            : await packageService.FuzzySearch(term, resourceProviderCode, searchInResources, typeId);
+
         if (res == null || !res.Any())
         {
             return NoContent();

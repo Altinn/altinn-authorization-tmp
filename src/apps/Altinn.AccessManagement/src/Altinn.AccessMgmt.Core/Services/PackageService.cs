@@ -75,13 +75,8 @@ public class PackageService : IPackageService
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, bool useSimpleSearch = true, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> FuzzySearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, CancellationToken cancellationToken = default)
     {
-        if (useSimpleSearch)
-        {
-            return await SimpleSearch(term, resourceProviderCodes, searchInResources, typeId, cancellationToken);
-        }
-
         var data = await GetSearchData(resourceProviderCodes: resourceProviderCodes, typeId: typeId);
 
         if (string.IsNullOrEmpty(term))
@@ -104,7 +99,7 @@ public class PackageService : IPackageService
                 ////.AddCollection(pkg => pkg.Resources, r => r.Description, 0.7, FuzzynessLevel.Low, detailed);
         }
 
-        var results = FuzzySearch.PerformFuzzySearch(data, term, builder);
+        var results = Utils.FuzzySearch.PerformFuzzySearch(data, term, builder);
 
         foreach (var res in results.OrderByDescending(t => t.Score))
         {

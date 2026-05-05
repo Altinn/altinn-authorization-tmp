@@ -39,7 +39,7 @@ public class PackagesControllerTest
     public async Task Search_WhenResultsFound_Returns200Ok()
     {
         var serviceMock = new Mock<IPackageService>();
-        serviceMock.Setup(s => s.Search(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), true, It.IsAny<CancellationToken>()))
+        serviceMock.Setup(s => s.FuzzySearch(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<SearchObject<PackageDto>>
             {
                 new() { Object = new PackageDto { Id = Guid.NewGuid(), Name = "Tax" }, Score = 0.9 },
@@ -58,7 +58,7 @@ public class PackagesControllerTest
     public async Task Search_WhenNoResults_Returns204NoContent()
     {
         var serviceMock = new Mock<IPackageService>();
-        serviceMock.Setup(s => s.Search(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), true, It.IsAny<CancellationToken>()))
+        serviceMock.Setup(s => s.FuzzySearch(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<SearchObject<PackageDto>>());
 
         var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
@@ -72,7 +72,7 @@ public class PackagesControllerTest
     public async Task Search_WhenServiceReturnsNull_Returns204NoContent()
     {
         var serviceMock = new Mock<IPackageService>();
-        serviceMock.Setup(s => s.Search(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), true, It.IsAny<CancellationToken>()))
+        serviceMock.Setup(s => s.FuzzySearch(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((IEnumerable<SearchObject<PackageDto>>)null);
 
         var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
@@ -100,7 +100,7 @@ public class PackagesControllerTest
     {
         Guid? capturedTypeId = null;
         var serviceMock = new Mock<IPackageService>();
-        serviceMock.Setup(s => s.Search(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), true, It.IsAny<CancellationToken>()))
+        serviceMock.Setup(s => s.FuzzySearch(It.IsAny<string>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .Callback<string, List<string>, bool, Guid?, CancellationToken>((_, __, ___, id, ____) => capturedTypeId = id)
             .ReturnsAsync(new List<SearchObject<PackageDto>> { new() { Object = new PackageDto { Id = Guid.NewGuid() }, Score = 1.0 } });
 
