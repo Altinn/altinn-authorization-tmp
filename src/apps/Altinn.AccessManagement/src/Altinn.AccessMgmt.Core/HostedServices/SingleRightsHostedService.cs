@@ -126,7 +126,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             {
                 Log.SyncError(_logger, ex);
             }
-
         }
 
         private async Task SyncSingleResourceRegistryRights(ILease lease, CancellationToken cancellationToken)
@@ -163,7 +162,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             {
                 Log.SyncError(_logger, ex);
             }
-
         }
 
         private async Task SyncFailedSingleResourceRegistryRights(CancellationToken cancellationToken)
@@ -212,7 +210,10 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             GC.SuppressFinalize(this);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Releases the unmanaged resources used by the service and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         public void Dispose(bool disposing)
         {
             if (disposing)

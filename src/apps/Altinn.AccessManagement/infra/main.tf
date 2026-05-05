@@ -196,6 +196,7 @@ module "appsettings" {
       values = {
         "ConsentMigration:BatchSize"                  = { value = tostring(var.configuration.consent.batch_size) }
         "ConsentMigration:MaxDegreeOfParallelism"     = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
+        "Consent:LatestChangesPageSize"               = { value = tostring(var.configuration.consent.latest_changes_page_size) }
         "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) } # Deprecated
         "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }  # Deprecated
 
@@ -481,7 +482,7 @@ module "appsettings" {
     },
     {
       name        = "AccessMgmt.Controller.Connection.RevokeRole"
-      description = "Enables Altinn 2 Revoke role endpoints in enduser APIs."
+      description = "Enables to revoke Altinn 2 role assignments in enduser and serviceowner APIs."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

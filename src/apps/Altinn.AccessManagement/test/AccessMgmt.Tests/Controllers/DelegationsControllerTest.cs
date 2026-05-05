@@ -8,11 +8,11 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
-using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.Tests.Utils;
+using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
@@ -27,8 +27,7 @@ using Microsoft.Extensions.Options;
 // as part of Phase 2.2 (Step 16.1 — AccessMgmt.Tests WAF consolidation, Group A easy wins).
 // The tests mock the delegation repositories, the PDP and the policy retrieval/factory, so
 // the Postgres DB that ApiFixture provisions is unused by this class.
-// See docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/AccessMgmt_WAF_Consolidation_Plan_and_POC.md.
-
+// See: overhaul part-1 step 16
 namespace Altinn.AccessManagement.Tests.Controllers
 {
     /// <summary>
@@ -106,9 +105,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -147,9 +146,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string expectedRuleId = "99e5cced-3bcb-42b6-9089-63c834f89e77";
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -187,9 +186,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -222,7 +221,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -257,9 +256,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -291,9 +290,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -332,9 +331,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -366,9 +365,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -400,9 +399,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -441,9 +440,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeleteRules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -483,9 +482,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -525,9 +524,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -561,9 +560,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string expectedErrorMessage = "\"Unable to complete deletion\"";
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -593,7 +592,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -629,9 +628,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -663,9 +662,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -694,9 +693,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -728,9 +727,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/DeletePolicy", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -758,7 +757,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -781,7 +780,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -804,7 +803,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -835,9 +834,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -875,9 +874,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -916,9 +915,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -960,9 +959,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             List<Rule> expected = new List<Rule> { rule1, rule2 };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1000,9 +999,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             List<Rule> expected = new List<Rule> { rule1, rule2 };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1039,9 +1038,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1079,9 +1078,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1123,9 +1122,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1161,8 +1160,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync("accessmanagement/api/v1/delegations/addrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actual = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1190,8 +1189,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             List<Rule> expectedRules = GetExpectedRulesForUser();
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1214,8 +1213,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             expectedRules.Add(TestDataUtil.GetRuleModel(20001337, 50001337, "50001338", AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, "sign", "skd", "taxreport", ruleType: RuleType.InheritedViaKeyRole));
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1239,8 +1238,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             expectedRules.Add(TestDataUtil.GetRuleModel(20001339, 50001335, "50001337", AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, "read", "skd", "taxreport", ruleType: RuleType.InheritedAsSubunitViaKeyrole));
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1263,8 +1262,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             expectedRules.Add(TestDataUtil.GetRuleModel(20001339, 50001338, "50001336", AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, "sign", "skd", "taxreport", ruleType: RuleType.InheritedAsSubunit));
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1285,8 +1284,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -1305,8 +1304,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -1326,8 +1325,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             List<Rule> expectedRules = new List<Rule>();
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1350,8 +1349,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             expectedRules.AddRange(GetExpectedRulesForParty());
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/delegations/getrules", content, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<Rule> actualRules = JsonSerializer.Deserialize<List<Rule>>(responseContent, options);
 
             // Assert
@@ -1382,8 +1381,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
             string scope = "altinn:test/theworld.write";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<MPDelegationExternal> actualDelegations = JsonSerializer.Deserialize<List<MPDelegationExternal>>(responseContent);
 
             // Assert
@@ -1414,8 +1413,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
             string scope = "altinn:test/theworld.write";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<MPDelegationExternal> actualDelegations = JsonSerializer.Deserialize<List<MPDelegationExternal>>(responseContent);
 
             // Assert
@@ -1440,8 +1439,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418362;
             int consumerOrg = 810418532;
             string scope = "altinn:instances.read";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             ProblemDetails errorResponse = JsonSerializer.Deserialize<ValidationProblemDetails>(responseContent, options);
 
             // Assert
@@ -1466,8 +1465,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418362;
             int consumerOrg = 810418532;
             string scope = "altinn:test/theworld.write";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1496,8 +1495,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
 
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope=");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope=", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<MPDelegationExternal> actualDelegations = JsonSerializer.Deserialize<List<MPDelegationExternal>>(responseContent);
 
             // Assert
@@ -1522,8 +1521,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string supplierOrg = "12345";
             string consumerOrg = "810418532";
             string scope = "altinn:test/theworld.write";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             ValidationProblemDetails errorResponse = JsonSerializer.Deserialize<ValidationProblemDetails>(responseContent, options);
 
             // Assert
@@ -1548,8 +1547,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string supplierOrg = "810418362";
             string consumerOrg = "12345";
             string scope = "altinn:test/theworld.write";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             ValidationProblemDetails errorResponse = JsonSerializer.Deserialize<ValidationProblemDetails>(responseContent, options);
 
             // Assert
@@ -1574,8 +1573,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
             string scope = "altinn:test/test";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1597,8 +1596,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
             string scope = "altinn:maskinporten:urn:scope:test";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}", TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1626,6 +1625,5 @@ namespace Altinn.AccessManagement.Tests.Controllers
             delegations = TestDataUtil.GetAdminDelegations(supplierOrg, consumerOrg, resourceIds);
             return delegations;
         }
-
-            }
-        }
+    }
+}

@@ -106,11 +106,11 @@ internal static partial class AccessManagementHost
             options.AppConnectionString = connectionStrings.AppSource;
             options.MigrationConnectionString = connectionStrings.MigrationSource;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
-            
+
             // Request
             options.AddOutboxHandler<RequestReviewedNotificationHandler>(RequestReviewedNotification.Handler);
             options.AddOutboxHandler<RequestPendingNotificationHandler>(RequestPendingNotification.Handler);
-            
+
             // Connections
             options.AddOutboxHandler<RightholderAddedNotificationHandler>(RightholderAddedNotification.Handler);
             options.AddOutboxHandler<RightholderRemovedNotificationHandler>(RightholderRemovedNotification.Handler);
@@ -297,6 +297,7 @@ internal static partial class AccessManagementHost
         builder.Services.Configure<OidcProviderSettings>(config.GetSection("OidcProviders"));
         builder.Services.Configure<UserProfileLookupSettings>(config.GetSection("UserProfileLookupSettings"));
         builder.Services.Configure<AppsInstanceDelegationSettings>(config.GetSection("AppsInstanceDelegationSettings"));
+        builder.Services.Configure<ConsentSettings>(config.GetSection("Consent"));
     }
 
     private static void ConfigureAuthorization(this WebApplicationBuilder builder)

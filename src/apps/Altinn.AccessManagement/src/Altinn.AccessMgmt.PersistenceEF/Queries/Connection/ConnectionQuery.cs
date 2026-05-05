@@ -56,7 +56,7 @@ public class ConnectionQuery(AppDbContext db)
         {
             var assignments = db.Assignments.AsNoTracking()
                 .Where(t => t.FromId == fromId && t.ToId == toId);
-        
+
             if (await assignments.AnyAsync())
             {
                 return (true, ConnectionReason.Assignment);
@@ -122,7 +122,7 @@ public class ConnectionQuery(AppDbContext db)
                 delayFromFilter = false;
             }
 
-            var baseQuery = direction == ConnectionQueryDirection.FromOthers 
+            var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(
                         db,
                         filter,
@@ -974,20 +974,20 @@ public class ConnectionQuery(AppDbContext db)
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
-        var apKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
+        var assignmentPackageKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
-        SortedSet<Guid> apPackageIds = [];
-        if (apKeys.Count > 0)
+        SortedSet<Guid> assignmentPackageIds = [];
+        if (assignmentPackageKeys.Count > 0)
         {
-            var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => apKeys.Contains(a.AssignmentId))
+            var assignmentPackagesRaw = await db.AssignmentPackages.Where(a => assignmentPackageKeys.Contains(a.AssignmentId))
                 .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
                 .Select(ap => new { ap.PackageId, ap.AssignmentId })
                 .ToListAsync(ct);
 
             foreach (var assignmentPackage in assignmentPackagesRaw)
             {
-                apPackageIds.Add(assignmentPackage.PackageId);
+                assignmentPackageIds.Add(assignmentPackage.PackageId);
                 if (assignmentPackages.TryGetValue(assignmentPackage.AssignmentId, out var ids))
                 {
                     ids.Add(assignmentPackage.PackageId);
@@ -999,8 +999,8 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        var rpKeys = keys.Where(k => k.AssignmentId.HasValue).Select(k => k.RoleId).Distinct().ToList();
-        var rolePackagesRaw = await db.RolePackages.Where(r => r.HasAccess && rpKeys.Contains(r.RoleId))
+        var rolePackageKeys = keys.Where(k => k.AssignmentId.HasValue).Select(k => k.RoleId).Distinct().ToList();
+        var rolePackagesRaw = await db.RolePackages.Where(r => r.HasAccess && rolePackageKeys.Contains(r.RoleId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
             .Select(rp => new { rp.PackageId, rp.RoleId, rp.EntityVariantId })
             .ToListAsync(ct);
@@ -1075,7 +1075,7 @@ public class ConnectionQuery(AppDbContext db)
             }
         }
 
-        var packageIds = apPackageIds
+        var packageIds = assignmentPackageIds
             .Union(rolePackageIds)
             .Union(delegationPackageIds)
             .Distinct()

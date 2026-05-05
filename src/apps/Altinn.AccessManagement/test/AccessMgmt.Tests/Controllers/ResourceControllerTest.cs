@@ -27,7 +27,6 @@ using Microsoft.Extensions.Options;
 // - IResourceMetadataRepository is mocked, so the real Postgres DB created by
 //   ApiFixture is unused by these tests. The container overhead is acceptable
 //   and already paid by other AccessMgmt.Tests consumers.
-
 namespace Altinn.AccessManagement.Tests.Controllers
 {
     /// <summary>
@@ -75,8 +74,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
             StreamContent content = new StreamContent(dataStream);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            string dataElement1 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string.json").ReadToEndAsync();
-            string dataElement2 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string2.json").ReadToEndAsync();
+            string dataElement1 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string.json").ReadToEndAsync(TestContext.Current.CancellationToken);
+            string dataElement2 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string2.json").ReadToEndAsync(TestContext.Current.CancellationToken);
             string expectedText = $"[{dataElement1},{dataElement2}]";
             List<AccessManagementResource> expected = JsonSerializer.Deserialize<List<AccessManagementResource>>(expectedText, options);
 
@@ -88,10 +87,10 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<AccessManagementResource> actual = JsonSerializer.Deserialize<List<AccessManagementResource>>(responseContent, options);
-            
+
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             AssertionUtil.ListAccessManagementResourceAreEqual(expected, actual);
@@ -106,12 +105,12 @@ namespace Altinn.AccessManagement.Tests.Controllers
         {
             // Arrange
             _client.DefaultRequestHeaders.Remove("Authorization");
-            
+
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
             StreamContent content = new StreamContent(dataStream);
 
             // Act
-            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/internal/resources", content);
+            HttpResponseMessage response = await _client.PostAsync($"accessmanagement/api/v1/internal/resources", content, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -135,8 +134,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("UnitTest", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
@@ -162,9 +161,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            string actual = await response.Content.ReadAsStringAsync();
-            
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+            string actual = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal(expected, actual);
@@ -190,9 +189,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            string responseContent = await response.Content.ReadAsStringAsync();
-            
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -212,8 +211,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input4.json");
             StreamContent content = new StreamContent(dataStream);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            string dataElement1 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string.json").ReadToEndAsync();
-            string dataElement2 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string2.json").ReadToEndAsync();
+            string dataElement1 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string.json").ReadToEndAsync(TestContext.Current.CancellationToken);
+            string dataElement2 = await File.OpenText("Data/Json/InsertAccessManagementResource/InsertData_string2.json").ReadToEndAsync(TestContext.Current.CancellationToken);
             string expectedText = $"[{dataElement1},{dataElement2}]";
             List<AccessManagementResource> expected = JsonSerializer.Deserialize<List<AccessManagementResource>>(expectedText, options);
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, $"accessmanagement/api/v1/internal/resources")
@@ -224,8 +223,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             List<AccessManagementResource> actual = JsonSerializer.Deserialize<List<AccessManagementResource>>(responseContent, options);
 
             // Assert
@@ -254,9 +253,9 @@ namespace Altinn.AccessManagement.Tests.Controllers
             httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "resourceregistry"));
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
-            string actual = await response.Content.ReadAsStringAsync();
-            
+            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
+            string actual = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal(expected, actual);
