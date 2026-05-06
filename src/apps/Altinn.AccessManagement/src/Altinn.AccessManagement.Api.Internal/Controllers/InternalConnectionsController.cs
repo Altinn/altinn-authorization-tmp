@@ -44,7 +44,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
         [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        var result = await connectionService.ConnectSIUserAndPerson(from, to, cancellationToken);
+        var result = await connectionService.ConnectSIUserAndEmailUser(from, to, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

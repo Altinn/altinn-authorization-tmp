@@ -1681,7 +1681,7 @@ public partial class ConnectionService(
         return policy;
     }
 
-    public async Task<Result<AssignmentDto>> ConnectSIUserAndPerson(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentDto>> ConnectSIUserAndEmailUser(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
     {
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         ValidationErrorBuilder errorBuilder = default;

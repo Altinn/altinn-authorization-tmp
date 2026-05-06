@@ -419,10 +419,10 @@ public interface IConnectionService
     Task<Result<bool>> RemoveRoleAssignment(Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates assignment with role <see cref="RoleConstants.SelfRegisteredUser"/> from a self identified user to a person
+    /// Creates assignment with role <see cref="RoleConstants.SelfRegisteredUser"/> from a self identified user to a email user.
     /// </summary>
     /// <param name="fromId">The unique identifier of the self identified user.</param>
-    /// <param name="toId">The unique identifier of the person the <see cref="RoleConstants.SelfRegisteredUser"/> is given to.</param>
+    /// <param name="toId">The unique identifier of the email user the <see cref="RoleConstants.SelfRegisteredUser"/> is given to.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    Task<Result<AssignmentDto>> ConnectSIUserAndPerson(Guid fromId, Guid toId, CancellationToken cancellationToken = default);
+    Task<Result<AssignmentDto>> ConnectSIUserAndEmailUser(Guid fromId, Guid toId, CancellationToken cancellationToken = default);
 }
