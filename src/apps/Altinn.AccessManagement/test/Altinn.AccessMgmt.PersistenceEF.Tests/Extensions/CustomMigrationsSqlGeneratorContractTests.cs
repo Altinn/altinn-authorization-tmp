@@ -6,18 +6,32 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 namespace Altinn.AccessMgmt.PersistenceEF.Tests.Extensions;
 
 /// <summary>
-/// Pins the EF1001 contract that <see cref="CustomMigrationsSqlGenerator"/>
+/// Documents the EF1001 contract that <see cref="CustomMigrationsSqlGenerator"/>
 /// depends on. The base class' constructor takes
 /// <c>Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal.INpgsqlSingletonOptions</c>,
-/// which Npgsql has marked internal — meaning it can move or be removed
-/// without notice on a minor / patch upgrade of
-/// <c>Npgsql.EntityFrameworkCore.PostgreSQL</c>. If that happens the
-/// production project would still need to compile (it pins the type via the
-/// generator subclass), so the failure mode is silent until something at
-/// runtime trips. These tests run in CI on every package change and surface
-/// the breakage as an explicit signal: re-shape the generator, find a
-/// replacement extension point, or pin the package version.
+/// which Npgsql has marked internal — meaning it can move, be renamed, or be
+/// removed without notice on a minor / patch upgrade of
+/// <c>Npgsql.EntityFrameworkCore.PostgreSQL</c>.
 /// </summary>
+/// <remarks>
+/// Most such breakages already surface as a compile error in the production
+/// project (which references the type directly via a <c>using</c> directive
+/// and the constructor parameter); these tests don't replace that signal.
+/// What they add is twofold:
+/// <list type="bullet">
+///   <item>An executable record of the dependency in the test suite, so the
+///   constraint is searchable by anyone auditing "what breaks on an Npgsql
+///   upgrade" rather than discoverable only by tracing a build failure.</item>
+///   <item>A metadata-level full-name canary in
+///   <see cref="NpgsqlMigrationsSqlGenerator_keeps_INpgsqlSingletonOptions_constructor"/>
+///   for the narrow case where Npgsql renames the type but ships a
+///   backwards-compatible alias — the production build would stay green,
+///   but the assertion would catch it.</item>
+/// </list>
+/// On any failure here the upgrade needs an explicit re-evaluation: re-shape
+/// the generator around a replacement type, find a public-surface
+/// alternative, or pin the package version.
+/// </remarks>
 public class CustomMigrationsSqlGeneratorContractTests
 {
     private const string InternalOptionsTypeFullName =
@@ -40,10 +54,13 @@ public class CustomMigrationsSqlGeneratorContractTests
     [Fact]
     public void NpgsqlMigrationsSqlGenerator_keeps_INpgsqlSingletonOptions_constructor()
     {
-        // The base constructor is what we forward our argument into. If a future
-        // Npgsql upgrade renames or removes the internal options type, this lookup
-        // returns null before the production project's compile fails — same
-        // failure mode, but framed as a test rather than a build error.
+        // A removal, rename, or namespace move of INpgsqlSingletonOptions also
+        // surfaces as a compile error in the production project, which references
+        // the type directly. This assembly-level lookup is the canary for the
+        // narrow case where Npgsql renames the type but ships a backwards-
+        // compatible alias — the build would stay green, but `GetType` would
+        // return null because the literal full name is no longer the canonical
+        // type definition in the assembly's metadata.
         var optionsType = typeof(NpgsqlMigrationsSqlGenerator).Assembly
             .GetType(InternalOptionsTypeFullName);
 
