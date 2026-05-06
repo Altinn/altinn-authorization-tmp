@@ -1701,14 +1701,14 @@ public partial class ConnectionService(
             return problem;
         }
 
-        if (from.TypeId != EntityTypeConstants.SelfIdentified)
+        if (from.VariantId != EntityVariantConstants.SI)
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity type is not of type '{EntityTypeConstants.SelfIdentified}'.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI}'.")]);
         }
 
-        if (to.TypeId != EntityTypeConstants.Person)
+        if (to.TypeId != EntityVariantConstants.SI_EMAIL)
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity type is not of type '{EntityTypeConstants.Person}'.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL}'.")]);
         }
 
         if (errorBuilder.TryBuild(out problem))
@@ -1730,6 +1730,7 @@ public partial class ConnectionService(
         };
 
         dbContext.Assignments.Add(newAssignment);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return DtoMapper.Convert(newAssignment);
     }

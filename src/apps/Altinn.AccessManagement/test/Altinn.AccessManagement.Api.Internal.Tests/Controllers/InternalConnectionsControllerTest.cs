@@ -31,7 +31,7 @@ public class InternalConnectionsControllerTest
         private HttpClient CreateClient()
         {
             var client = Fixture.Server.CreateClient();
-            var token = TestTokenGenerator.CreateToken("www.altinn.no", new ClaimsIdentity("mock"), claims => { });
+            var token = TestTokenGenerator.CreateToken("platform", new ClaimsIdentity("mock"), claims => { });
 
             client.DefaultRequestHeaders.Add("PlatformAccessToken", token);
             return client;

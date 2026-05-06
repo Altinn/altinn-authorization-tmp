@@ -35,6 +35,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
 
     [HttpPost("selfidentifiedusers")]
     [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+    [AuditStaticDb(System = AuditDefaults.InternalApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
