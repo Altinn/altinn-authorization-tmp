@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Internal.Controllers;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -31,8 +32,7 @@ public class InternalConnectionsControllerTest
         private HttpClient CreateClient()
         {
             var client = Fixture.Server.CreateClient();
-            var token = TestTokenGenerator.CreateToken("platform", new ClaimsIdentity("mock"), claims => { });
-
+            var token = TestTokenGenerator.CreateToken(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_BFF, new ClaimsIdentity("mock"), claims => { });
             client.DefaultRequestHeaders.Add("PlatformAccessToken", token);
             return client;
         }
@@ -42,7 +42,7 @@ public class InternalConnectionsControllerTest
         {
             var client = CreateClient();
 
-            var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={TestEntities.SIUserMarius.Id}&to={TestEntities.PersonOrjan}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={TestEntities.SIUserMarius.Id}&to={TestEntities.EmailUserMarius}", null, TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<AssignmentDto>(data);
@@ -64,7 +64,7 @@ public class InternalConnectionsControllerTest
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
-        #endregion
-        
+    #endregion
+
     }
 }

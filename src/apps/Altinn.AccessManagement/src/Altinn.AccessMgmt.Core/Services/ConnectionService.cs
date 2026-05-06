@@ -1703,12 +1703,12 @@ public partial class ConnectionService(
 
         if (from.VariantId != EntityVariantConstants.SI)
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI}'.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
         }
 
-        if (to.TypeId != EntityVariantConstants.SI_EMAIL)
+        if (to.VariantId != EntityVariantConstants.SI_EMAIL)
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL}'.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
         }
 
         if (errorBuilder.TryBuild(out problem))

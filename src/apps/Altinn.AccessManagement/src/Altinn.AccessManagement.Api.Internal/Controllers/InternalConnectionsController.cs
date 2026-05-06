@@ -20,7 +20,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/internal/connections")]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class InternalConnectionsController(IConnectionService connectionService) : ControllerBase
 {
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
@@ -34,7 +33,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     };
 
     [HttpPost("selfidentifiedusers")]
-    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_BFF)]
     [AuditStaticDb(System = AuditDefaults.InternalApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -51,7 +50,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result);
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -59,6 +58,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -75,13 +75,14 @@ public class InternalConnectionsController(IConnectionService connectionService)
     }
 
     #region Assignments
-    
+
     /// <summary>
     /// Creates "rettighetshaver" relation between an organization and systemuser.
     /// </summary>
     [HttpPost]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -102,6 +103,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     /// </summary>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -126,6 +128,7 @@ public class InternalConnectionsController(IConnectionService connectionService)
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [ProducesResponseType<PaginatedResult<PackagePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -146,8 +149,9 @@ public class InternalConnectionsController(IConnectionService connectionService)
     /// Assigns package to system user from organization. 
     /// </summary>
     [HttpPost("accesspackages")]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -177,8 +181,9 @@ public class InternalConnectionsController(IConnectionService connectionService)
     /// Removes package given to system user from an organization. 
     /// </summary>
     [HttpDelete("accesspackages")]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
