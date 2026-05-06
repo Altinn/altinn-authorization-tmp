@@ -778,18 +778,18 @@ public class ConnectionQuery(AppDbContext db)
         /*
         Combine everything
         */
-        IQueryable<ConnectionQueryBaseRecord> allCombinded = allAssignments.Union(roleMapAssignments);
+        IQueryable<ConnectionQueryBaseRecord> allCombined = allAssignments.Union(roleMapAssignments);
         if (filter.IncludeDelegation)
         {
-            allCombinded = allCombinded.Union(clientDelegations);
+            allCombined = allCombined.Union(clientDelegations);
         }
 
         if (filter.IncludeKeyRole)
         {
-            allCombinded = allCombinded.Union(keyRoleAssignments);
+            allCombined = allCombined.Union(keyRoleAssignments);
         }
 
-        return allCombinded
+        return allCombined
             .ToIdContains(toSet)
             .ViaIdContains(viaSet)
             .ViaRoleIdContains(viaRoleSet)
