@@ -68,7 +68,7 @@ public class RequestController(
     /// Get resource requests for a given party
     /// </summary>
     [HttpPut("{id}/withdraw")]
-    [FeatureGate(AccessMgmtFeatureFlags.EnableRequestAssignmentResource)]
+    [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
     [Authorize(Policy = AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE)]
     [AuditServiceOwnerConsumer]
     [ProducesResponseType<RequestStatus>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
