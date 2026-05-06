@@ -7,12 +7,14 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class ServiceOwnerConnectionService(
         AppDbContext dbContext,
-        IConnectionService connectionService) : IServiceOwnerConnectionService
+        IConnectionService connectionService,
+        IFeatureManager featureManager) : IServiceOwnerConnectionService
     {
         /// <inheritdoc />
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
@@ -97,13 +99,35 @@ namespace Altinn.AccessMgmt.Core.Services
                 return Problems.PackageNotRevocableFromAssignment;
             }
 
+            // If the revoked package is InnbyggerSkatteforholdPrivatpersoner, we need to check if there is an existing
+            // PrivateTaxAffairs assignment delegated by the serviceowner that also needs to be revoked.
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.Altinn2RoleRevoke))
+            {
+                if (packageId == PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Id)
+                {
+                    // Look for existing direct PrivateTaxAffairs assignment delegated by the serviceowner
+                    Assignment skatteforholdRole = await dbContext.Assignments
+                        .Where(a => a.FromId == fromId)
+                        .Where(a => a.ToId == toId)
+                        .Where(a => a.RoleId == RoleConstants.PrivateTaxAffairs)
+                        .Where(a => a.Audit_ChangedBy == autenticatedServiceOwnerId)
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (skatteforholdRole is not null)
+                    {
+                        // Revoke PrivateTaxAffairs assignment
+                        dbContext.Assignments.Remove(skatteforholdRole);
+                    }
+                }
+            }
+
             // Revoke assignment package
             dbContext.AssignmentPackages.Remove(assignmentPackage);
             await dbContext.SaveChangesAsync(cancellationToken);
 
             // Remove assignment if we now deleted the last connection to the assignment.
             await RemoveAssignment(assignment, false, cancellationToken);
-            
+
             return true;
         }
 

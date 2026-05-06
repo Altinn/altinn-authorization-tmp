@@ -11,9 +11,9 @@ using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.Utilities;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
@@ -28,7 +28,6 @@ using Microsoft.Extensions.Options;
 // single-configuration migrations). All tests share a single mock set (WithServiceMoq),
 // so the DI can be registered once in the constructor; per-test HttpClients are built
 // via fixture.CreateClient(). See docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/AccessMgmt_WAF_Consolidation_Plan_and_POC.md.
-
 namespace Altinn.AccessManagement.Tests.Controllers;
 
 /// <summary>
@@ -66,7 +65,7 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
     {
         var client = NewDefaultClient(WithHeader(header, value));
 
-        var response = await client.GetAsync($"internal/{GetUrlParameter(header, value)}/rights/delegation/offered");
+        var response = await client.GetAsync($"internal/{GetUrlParameter(header, value)}/rights/delegation/offered", TestContext.Current.CancellationToken);
 
         assert(response);
     }
@@ -103,7 +102,7 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
     {
         var client = NewDefaultClient(WithHeader(header, value));
 
-        var response = await client.GetAsync($"internal/{GetUrlParameter(header, value)}/rights/delegation/received");
+        var response = await client.GetAsync($"internal/{GetUrlParameter(header, value)}/rights/delegation/received", TestContext.Current.CancellationToken);
 
         assert(response);
     }
@@ -135,7 +134,7 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
         var client = NewClient(WithClientRoute("accessmanagement/api/v1/"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authnUserToken);
 
-        HttpResponseMessage response = await client.PutAsync($"internal/{party}/accesscache/clear", new StringContent(JsonSerializer.Serialize(toAttribute), Encoding.UTF8, MediaTypeNames.Application.Json));
+        HttpResponseMessage response = await client.PutAsync($"internal/{party}/accesscache/clear", new StringContent(JsonSerializer.Serialize(toAttribute), Encoding.UTF8, MediaTypeNames.Application.Json), TestContext.Current.CancellationToken);
 
         assert(response);
     }
@@ -178,7 +177,7 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
         var client = NewClient(WithClientRoute("accessmanagement/api/v1/"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authnUserToken);
 
-        HttpResponseMessage response = await client.PutAsync($"internal/{party}/accesscache/clear", new StringContent(JsonSerializer.Serialize(toAttribute), Encoding.UTF8, MediaTypeNames.Application.Json));
+        HttpResponseMessage response = await client.PutAsync($"internal/{party}/accesscache/clear", new StringContent(JsonSerializer.Serialize(toAttribute), Encoding.UTF8, MediaTypeNames.Application.Json), TestContext.Current.CancellationToken);
 
         assert(response);
     }

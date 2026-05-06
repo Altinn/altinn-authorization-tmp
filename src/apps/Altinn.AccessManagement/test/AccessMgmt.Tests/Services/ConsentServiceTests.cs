@@ -6,10 +6,10 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
-using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Api.Contracts.Register;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,7 +26,6 @@ public class ConsentServiceTests
     private readonly Mock<IConsentRepository> _consentRepositoryMock;
     private readonly Mock<IAltinn2ConsentClient> _altinn2ConsentClientMock;
     private readonly Mock<IPartiesClient> _partiesClientMock;
-    private readonly Mock<ISingleRightsService> _singleRightsServiceMock;
     private readonly Mock<IResourceRegistryClient> _resourceRegistryClientMock;
     private readonly Mock<IAMPartyService> _amPartyServiceMock;
     private readonly Mock<IMemoryCache> _memoryCacheMock;
@@ -218,7 +217,7 @@ public class ConsentServiceTests
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
         // Allow listener to process
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsProblem);
@@ -262,7 +261,7 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsProblem);
         Assert.NotNull(result.Value);
@@ -298,7 +297,7 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsProblem || result.Value == null);
         Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
@@ -340,7 +339,7 @@ public class ConsentServiceTests
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
         // Allow listener to process
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(result.IsProblem);
@@ -365,7 +364,6 @@ public class ConsentServiceTests
     // Test naming follows MethodUnderTest_Scenario_ExpectedResult; assertions
     // use FluentAssertions (`.Should()`).
     // =======================================================================
-
     [Fact]
     public async Task GetConsentStatusChangesForParty_RepositoryReturnsList_ReturnsValueUnchanged()
     {
@@ -546,7 +544,6 @@ public class ConsentServiceTests
     //    docs/testing/FIXTURES.md "EFPostgresFactory" for the seeding
     //    strategy.
     // -----------------------------------------------------------------------
-
     private ConsentService CreateService()
     {
         return new ConsentService(

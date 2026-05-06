@@ -82,7 +82,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
         var toUuid = TestData.BenSolo.Id;
         var performedBy = TestData.HanSolo.Id;
         var resourceId = TestData.TestdirektoratetCorrespondenceService.RefId;
-            
+
         // First, create a delegation to revoke
         var delegationRequest = new InstanceDelegationRequest
         {
@@ -102,9 +102,9 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
             MediaTypeNames.Application.Json);
 
         var client = CreateClient();
-            
+
         // Create the delegation first
-        var delegationResponse = await client.PostAsync(RouteDelegation, delegationContent);
+        var delegationResponse = await client.PostAsync(RouteDelegation, delegationContent, TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, delegationResponse.StatusCode);
 
         // Verify
@@ -113,7 +113,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
                 a =>
                     a.FromId == fromUuid &&
                     a.ToId == toUuid &&
-                    a.RoleId == RoleConstants.Rightholder, 
+                    a.RoleId == RoleConstants.Rightholder,
                 cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(existingAssignment);
 
@@ -156,7 +156,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
                     a.ToId == toUuid &&
                     a.RoleId == RoleConstants.Rightholder,
                 cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Null(revokedAssignment);            
+        Assert.Null(revokedAssignment);
     }
 
     /// <summary>
@@ -402,7 +402,6 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
             ResourceId = resourceId,
             InstanceId = InstanceId,
             Actions = new List<string> { "read", "subscribe" }
-
         };
 
         var content = new StringContent(

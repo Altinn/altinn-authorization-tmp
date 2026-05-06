@@ -36,10 +36,11 @@ public class PackagesController : ControllerBase
     /// <param name="resourceProviderCode">Tjenesteeier OrgCode (DIGDIR, KRT, NAV, SKATT)</param>   
     /// <param name="searchInResources">Søk i ressurs verdier</param>
     /// <param name="typeName">Package for type (e.g. Organization, Person)</param>
+    /// <param name="simpleSearch">Use new simple search</param>
     /// <returns>Liste over søkeresultater.</returns>
     [Route("search")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false, [FromQuery] string? typeName = null)
+    public async Task<ActionResult<IEnumerable<SearchObject<PackageDto>>>> Search([FromQuery] string term, [FromQuery] List<string> resourceProviderCode = null, [FromQuery] bool searchInResources = false, [FromQuery] string? typeName = null, [FromQuery] bool simpleSearch = true)
     {
         Guid? typeId = null;
         if (!string.IsNullOrEmpty(typeName))
@@ -52,30 +53,30 @@ public class PackagesController : ControllerBase
             typeId = type.Id;
         }
 
-        var res = await packageService.Search(term, resourceProviderCode, searchInResources, typeId);
+        var res = simpleSearch
+            ? await packageService.SimpleSearch(
+                term: term,
+                resourceProviderCodes: resourceProviderCode,
+                searchInResources: searchInResources,
+                typeId: typeId,
+                languageCode: this.GetLanguageCode(),
+                allowPartialTranslation: this.AllowPartialTranslation()
+                )
+            : await packageService.FuzzySearch(
+                term: term,
+                resourceProviderCodes: resourceProviderCode,
+                searchInResources: searchInResources,
+                typeId: typeId,
+                languageCode: this.GetLanguageCode(),
+                allowPartialTranslation: this.AllowPartialTranslation()
+                );
+
         if (res == null || !res.Any())
         {
             return NoContent();
         }
 
-        // Translate each search result with deep translation for nested objects
-        var translatedResults = new List<SearchObject<PackageDto>>();
-        foreach (var searchResult in res)
-        {
-            var translatedDto = await searchResult.Object.TranslateDeepAsync(
-                translationService,
-                this.GetLanguageCode(),
-                this.AllowPartialTranslation());
-            
-            translatedResults.Add(new SearchObject<PackageDto> 
-            { 
-                Object = translatedDto,
-                Score = searchResult.Score,
-                Fields = searchResult.Fields
-            });
-        }
-
-        return Ok(translatedResults);
+        return Ok(res);
     }
 
     /// <summary>
@@ -121,7 +122,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -177,7 +178,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -200,7 +201,7 @@ public class PackagesController : ControllerBase
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
-        
+
         return Ok(translated);
     }
 
@@ -233,7 +234,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -313,6 +314,6 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 }

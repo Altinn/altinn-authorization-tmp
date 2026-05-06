@@ -7,9 +7,9 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using AuditDefaults = Altinn.AccessMgmt.Persistence.Data.AuditDefaults;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using AuditDefaults = Altinn.AccessMgmt.Persistence.Data.AuditDefaults;
 
 // Audit:
 //   Pattern: A-isolated
@@ -23,7 +23,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 //          this could technically share a fixture, but because the constructor
 //          builds its own AppDbContext instance it is simpler to keep as
 //          IClassFixture<ApiFixture> (Pattern A-isolated).
-
 namespace AccessMgmt.Tests.Services;
 
 /// <summary>
@@ -44,7 +43,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
             .Options;
 
         _db = new AppDbContext(options);
-        
+
         // Set up audit accessor with test values
         _db.AuditAccessor = new AuditAccessor
         {
@@ -53,7 +52,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
                 changedBySystem: AuditDefaults.StaticDataIngest
             )
         };
-        
+
         _cache = new MemoryCache(new MemoryCacheOptions());
         _translationService = new TranslationService(_db, _cache, NullLogger<TranslationService>.Instance);
     }
@@ -467,11 +466,11 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
         };
 
         // Act
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest, TestContext.Current.CancellationToken);
 
         // Assert
         var saved = await _db.TranslationEntries
-            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name");
+            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name", cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(saved);
         Assert.Equal("Test Translation", saved.Value);
     }
@@ -490,17 +489,17 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
             Value = "Original"
         };
 
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest, TestContext.Current.CancellationToken);
 
         // Update the value
         translationEntry.Value = "Updated";
 
         // Act
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest, TestContext.Current.CancellationToken);
 
         // Assert
         var saved = await _db.TranslationEntries
-            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name");
+            .FirstOrDefaultAsync(t => t.Id == customId && t.LanguageCode == "eng" && t.FieldName == "Name", cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(saved);
         Assert.Equal("Updated", saved.Value);
     }
@@ -518,7 +517,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
             FieldName = "Name",
             Value = "Cached Translation"
         };
-        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest);
+        await _translationService.UpsertTranslationAsync(translationEntry, AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest, TestContext.Current.CancellationToken);
 
         var role = new RoleDto
         {
@@ -528,10 +527,10 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
 
         // Act - First call (should query database) - Using normalized language code
         var result1 = await _translationService.TranslateAsync(role, "eng");
-        
+
         // Reset the object
         role.Name = "Original";
-        
+
         // Second call (should use cache)
         var result2 = await _translationService.TranslateAsync(role, "eng");
 
