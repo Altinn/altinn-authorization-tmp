@@ -1,11 +1,11 @@
 meta {
-  name: POST_Admin_AuthorizedParties_RegnAgent_ENK
+  name: POST_Admin_AuthorizedParties_RegnAgent_ENK_WithResourceFilter
   type: http
-  seq: 19
+  seq: 20
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includeRoles=true
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includeRoles=true&anyOfResourceIds=devtest_gar_bruno_client_resource
   body: json
   auth: inherit
 }
@@ -15,6 +15,7 @@ params:query {
   includeAltinn3: true
   includeAccessPackages: true
   includeRoles: true
+  anyOfResourceIds: devtest_gar_bruno_client_resource
 }
 
 headers {
@@ -94,12 +95,12 @@ tests {
     // Expect correct access packages pr. party
     expectArrayResult(
         targetPartyEnk.authorizedAccessPackages,
-        ['posttjenester', 'regnskapsforer-lonn'],
+        ['regnskapsforer-lonn'],
         'ENK MainUnit authorizedAccessPackages mismatch'
       );
     expectArrayResult(
         targetPartyEnkSubUnit.authorizedAccessPackages,
-        ['posttjenester', 'regnskapsforer-lonn'],
+        ['regnskapsforer-lonn'],
         'ENK SubUnit authorizedAccessPackages mismatch'
       );
     expectArrayResult(
