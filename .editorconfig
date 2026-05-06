@@ -69,8 +69,9 @@ dotnet_diagnostic.S2259.severity = warning
 dotnet_diagnostic.S6678.severity = warning
 
 # S6674: Logger arguments should match the placeholders in the template
-# (12 existing instances)
-dotnet_diagnostic.S6674.severity = warning
+# (cleared in the sweep that introduced this `error` severity; any new
+# violation is a regression that should fail CI's Sonar scan)
+dotnet_diagnostic.S6674.severity = error
 
 # S2955: Generic parameters not constrained to reference types should not be
 # compared to "null" (silent runtime mismatch; 4 existing instances)
