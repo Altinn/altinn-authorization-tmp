@@ -14,6 +14,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessManagement.Core.Services;
 
@@ -22,7 +23,8 @@ public class AuthorizedPartiesServiceEf(
     IAltinnRolesClient altinnRolesClient,
     IContextRetrievalService contextRetrievalService,
     IAuthorizedPartyRepoServiceEf repoService,
-    IMemoryCache memoryCache) : IAuthorizedPartiesService
+    IMemoryCache memoryCache,
+    ILogger<AuthorizedPartiesServiceEf> logger) : IAuthorizedPartiesService
 {
     private static readonly MemoryCacheEntryOptions _cacheEntryOptions = new() { AbsoluteExpirationRelativeToNow = new TimeSpan(0, 5, 0) };
 
@@ -370,7 +372,8 @@ public class AuthorizedPartiesServiceEf(
     {
         List<AuthorizedParty> result = a3AuthorizedParties.ToList();
 
-        // Merge Altinn 2 authorized parties with Altinn 3 authorized parties, ensuring no duplicates
+        //// Merge Altinn 2 authorized parties with Altinn 3 authorized parties, ensuring no duplicates
+
         foreach (AuthorizedParty a2Party in a2AuthorizedParties)
         {
             if (allParties.TryGetValue(a2Party.PartyUuid, out AuthorizedParty existingA3Party))
@@ -380,35 +383,48 @@ public class AuthorizedPartiesServiceEf(
                     // Only set to false if Altinn 2 party has actual access
                     existingA3Party.OnlyHierarchyElementWithNoAccess = false;
                 }
-
                 foreach (AuthorizedParty a2SubUnit in a2Party.Subunits)
                 {
-                    if (allParties.TryGetValue(a2SubUnit.PartyUuid, out AuthorizedParty existingSubUnit))
+                    if (allParties.ContainsKey(a2SubUnit.PartyUuid))
                     {
-                        // No longer need to enrich with role info, so can just continue
+                        // Already known, no enrichment needed
                         continue;
                     }
-                    else
-                    {
-                        // Add new Altinn 2 subunit
-                        var enhancedA2SubUnit = BuildAuthorizedPartyFromEntity(allA2Parties[a2SubUnit.PartyUuid]);
 
-                        existingA3Party.Subunits.Add(enhancedA2SubUnit);
-                        allParties.Add(enhancedA2SubUnit.PartyUuid, enhancedA2SubUnit);
+                    if (!allA2Parties.TryGetValue(a2SubUnit.PartyUuid, out Entity subUnitEntity))
+                    {
+                        logger.LogWarning("A2 subunit {PartyUuid} missing from allA2Parties, skipping", a2SubUnit.PartyUuid);
+                        continue;
                     }
+
+                    // Add new Altinn 2 subunit
+                    var enhancedA2SubUnit = BuildAuthorizedPartyFromEntity(subUnitEntity);
+                    existingA3Party.Subunits.Add(enhancedA2SubUnit);
+                    allParties.Add(enhancedA2SubUnit.PartyUuid, enhancedA2SubUnit);
                 }
             }
             else
             {
                 // Add new Altinn 2 party and its subunits
-                var enhancedA2Party = BuildAuthorizedPartyFromEntity(allA2Parties[a2Party.PartyUuid], onlyHierarchyElement: a2Party.OnlyHierarchyElementWithNoAccess);
+                if (!allA2Parties.TryGetValue(a2Party.PartyUuid, out Entity partyEntity))
+                {
+                    logger.LogWarning("A2 party {PartyUuid} missing from allA2Parties, skipping", a2Party.PartyUuid);
+                    continue;
+                }
 
+                var enhancedA2Party = BuildAuthorizedPartyFromEntity(partyEntity, onlyHierarchyElement: a2Party.OnlyHierarchyElementWithNoAccess);
                 allParties.Add(a2Party.PartyUuid, enhancedA2Party);
+
                 foreach (AuthorizedParty a2SubUnit in a2Party.Subunits)
                 {
-                    var enhancedA2SubUnit = BuildAuthorizedPartyFromEntity(allA2Parties[a2SubUnit.PartyUuid]);
-                    enhancedA2Party.Subunits.Add(enhancedA2SubUnit);
+                    if (!allA2Parties.TryGetValue(a2SubUnit.PartyUuid, out Entity subUnitEntity))
+                    {
+                        logger.LogWarning("A2 subunit {PartyUuid} missing from allA2Parties, skipping", a2SubUnit.PartyUuid);
+                        continue;
+                    }
 
+                    var enhancedA2SubUnit = BuildAuthorizedPartyFromEntity(subUnitEntity);
+                    enhancedA2Party.Subunits.Add(enhancedA2SubUnit);
                     allParties.Add(enhancedA2SubUnit.PartyUuid, enhancedA2SubUnit);
                 }
 
