@@ -47,8 +47,8 @@ public class InternalConnectionsControllerTest
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<AssignmentDto>(data);
 
-            Assert.Equal(TestEntities.SIUserMarius, result.FromId);
-            Assert.Equal(TestEntities.PersonOrjan, result.ToId);
+            Assert.Equal(TestEntities.SIUserMarius.Id, result.FromId);
+            Assert.Equal(TestEntities.EmailUserMarius.Id, result.ToId);
             Assert.Equal(RoleConstants.SelfRegisteredUser, result.RoleId);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
