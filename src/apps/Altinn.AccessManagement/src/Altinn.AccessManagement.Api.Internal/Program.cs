@@ -22,3 +22,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 await app.RunAsync();
+
+internal partial class Program { }
