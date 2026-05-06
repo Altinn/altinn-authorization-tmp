@@ -705,7 +705,7 @@ public class ConnectionQuery(AppDbContext db)
             };
 
         /*
-        Combine main and subunit assignments based on filter request
+        Combine direct and mainunit assignments based on filter request
         */
         var allAssignments = filter.IncludeMainUnitConnections ? direct.Union(mainAssignments) : direct;
 
