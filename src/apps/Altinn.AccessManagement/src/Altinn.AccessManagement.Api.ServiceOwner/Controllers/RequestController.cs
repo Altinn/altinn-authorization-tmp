@@ -78,33 +78,30 @@ public class RequestController(
     public async Task<IActionResult> WithdrawRequest([FromRoute] Guid id, CancellationToken ct = default)
     {
         var result = await requestService.GetRequest(id, ct);
-
-        if (result is { })
-        {
-            var request = result.Value;
-
-            if (request.By.Id == auditAccessor.AuditValues.ChangedBy)
-            {
-                if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Pending)
-                {
-                    var res = await requestService.UpdateRequest(request.From.Id, request.Id, RequestStatus.Withdrawn, ct);
-                    if (res.IsSuccess)
-                    {
-                        return Ok(res.Value.Status);
-                    }
-
-                    return res.Problem.ToActionResult();
-                }
-
-                return BadRequest($"Unable to withdraw request with status '{request.Status}'");
-            }
-
-            return Forbid();
-        }
-        else
+        if (!result.IsSuccess)
         {
             return result.Problem.ToActionResult();
         }
+
+        var request = result.Value;
+
+        if (request.By.Id == auditAccessor.AuditValues.ChangedBy)
+        {
+            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Pending)
+            {
+                var res = await requestService.UpdateRequest(request.From.Id, request.Id, RequestStatus.Withdrawn, ct);
+                if (res.IsSuccess)
+                {
+                    return Ok(res.Value.Status);
+                }
+
+                return res.Problem.ToActionResult();
+            }
+
+            return BadRequest($"Unable to withdraw request with status '{request.Status}'");
+        }
+
+        return Forbid();
     }
 
     /// <summary>
