@@ -42,41 +42,53 @@ dotnet_diagnostic.CA1822.severity = none
 # rules (each <10 instances) keep their default severity.
 #
 # Categories:
-#   error      — bug-class defects we want CI to gate on
-#   warning    — code smells worth fixing; visible in build output
+#   warning    — bug-class defects + code smells worth fixing; visible in
+#                build output. SonarCloud's quality gate still enforces these
+#                on new code at PR time.
 #   suggestion — IDE-only nudge; doesn't add to build noise
 #   none       — accepted convention / false-positive-prone for this codebase
+#
+# `error` severity is intentionally NOT used here. With dotnet-sonarscanner
+# loading these analyzers in CI, an `error` on a rule that fires on existing
+# code would fail every PR's build until the underlying violations are
+# cleared — blocking the whole team. Each followup sweep PR (one rule per PR,
+# mechanical fix of every occurrence) flips its rule from `warning` to
+# `error` in the same commit so enforcement tightens gradually instead of
+# being switched on top-down.
 # ----------------------------------------------------------------------------
 
-# --- Bug-class rules (gate CI) ---
+# --- Bug-class rules (warning for now — promote to error per-rule once the
+#     existing violations are cleared in a sweep PR) ---
 
-# S2259: Null pointers should not be dereferenced
-dotnet_diagnostic.S2259.severity = error
+# S2259: Null pointers should not be dereferenced (17 existing instances)
+dotnet_diagnostic.S2259.severity = warning
 
 # S6678: Use PascalCase for named placeholders in logging templates
 # (Microsoft.Extensions.Logging — mismatched / wrong-cased templates produce
-# wrong structured-log output, real defect)
-dotnet_diagnostic.S6678.severity = error
+# wrong structured-log output, real defect; 112 existing instances)
+dotnet_diagnostic.S6678.severity = warning
 
 # S6674: Logger arguments should match the placeholders in the template
-dotnet_diagnostic.S6674.severity = error
+# (12 existing instances)
+dotnet_diagnostic.S6674.severity = warning
 
 # S2955: Generic parameters not constrained to reference types should not be
-# compared to "null" (silent runtime mismatch)
-dotnet_diagnostic.S2955.severity = error
+# compared to "null" (silent runtime mismatch; 4 existing instances)
+dotnet_diagnostic.S2955.severity = warning
 
 # S3265: Non-flags enums should not be used in bitwise operations
-dotnet_diagnostic.S3265.severity = error
+# (58 existing instances)
+dotnet_diagnostic.S3265.severity = warning
 
 # S1699: Constructors should only call non-overridable methods (virtual call
-# in ctor is a known C# footgun)
-dotnet_diagnostic.S1699.severity = error
+# in ctor is a known C# footgun; 17 existing instances)
+dotnet_diagnostic.S1699.severity = warning
 
-# S3949: Calculations on integers should not overflow
-dotnet_diagnostic.S3949.severity = error
+# S3949: Calculations on integers should not overflow (1 existing instance)
+dotnet_diagnostic.S3949.severity = warning
 
-# S2583: Conditionally executed code should be reachable
-dotnet_diagnostic.S2583.severity = error
+# S2583: Conditionally executed code should be reachable (1 existing instance)
+dotnet_diagnostic.S2583.severity = warning
 
 # --- Mechanical / high-volume code smells (worth fixing, visible in build) ---
 
