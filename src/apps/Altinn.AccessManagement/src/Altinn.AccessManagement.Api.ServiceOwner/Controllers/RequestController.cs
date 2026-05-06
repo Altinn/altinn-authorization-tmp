@@ -65,7 +65,7 @@ public class RequestController(
     }
 
     /// <summary>
-    /// Get resource requests for a given party
+    /// Withdraw a delegation request
     /// </summary>
     [HttpPut("{id}/withdraw")]
     [FeatureGate(RequirementType.Any, AccessMgmtFeatureFlags.EnableRequestAssignmentResource, AccessMgmtFeatureFlags.EnableRequestAssignmentPackage)]
