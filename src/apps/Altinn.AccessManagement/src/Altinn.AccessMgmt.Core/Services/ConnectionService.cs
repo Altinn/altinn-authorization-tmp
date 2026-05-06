@@ -598,7 +598,7 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || !connection.Value.Any())
+        if ((!connection.IsSuccess || !connection.Value.Any()) && to.TypeId != EntityTypeConstants.SystemUser)
         {
             return Problems.MissingConnection;
         }
@@ -1308,7 +1308,7 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(from.Id, from.Id, to.Id, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        if ((!connection.IsSuccess || connection.Value.Count() == 0) && to.TypeId != EntityTypeConstants.SystemUser)
         {
             return Problems.MissingConnection;
         }
