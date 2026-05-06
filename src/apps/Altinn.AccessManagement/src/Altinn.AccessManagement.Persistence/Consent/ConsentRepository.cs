@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Core.Extensions;
+﻿using System.Data;
+using System.Globalization;
+using System.Text;
+using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Persistence.Extensions;
@@ -6,10 +9,6 @@ using Altinn.Authorization.ProblemDetails;
 using Newtonsoft.Json.Linq;
 using Npgsql;
 using NpgsqlTypes;
-using System.Data;
-using System.Diagnostics.Tracing;
-using System.Globalization;
-using System.Text;
 
 namespace Altinn.AccessManagement.Persistence.Consent
 {
@@ -307,7 +306,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 await eventCommand.PrepareAsync(cancellationToken);
                 await eventCommand.ExecuteNonQueryAsync(cancellationToken);
             }
-            
+
             await tx.CommitAsync(cancellationToken);
 
             return await GetRequest(consentRequest.Id, cancellationToken);
@@ -586,9 +585,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             return consentContext;
         }
-        
+
         public async Task<Result<List<ConsentStatusChange>>> GetConsentStatusChangesForParty(Guid partyUuid, string? continuationToken, int pageSize, CancellationToken cancellationToken)
-        {          
+        {
             // Parse continuation token to get cursor UUID
             Guid cursorEventId = default;
             DateTimeOffset cursorCreated = default;
@@ -602,7 +601,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     {
                         throw new FormatException("Invalid continuation token format.");
                     }
-                        
+
                     cursorCreated = DateTimeOffset.Parse(parts[0], null, DateTimeStyles.RoundtripKind);
                     cursorEventId = Guid.Parse(parts[1]);
                 }
@@ -613,7 +612,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             }
 
             var consentStatusChanges = new List<ConsentStatusChange>();
-            
+
             string consentChangesQuery = $@"WITH latest_events AS (
                                 SELECT
                                 ce.consenteventid,

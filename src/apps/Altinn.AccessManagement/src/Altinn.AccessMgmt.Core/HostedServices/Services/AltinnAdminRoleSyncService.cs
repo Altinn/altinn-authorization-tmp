@@ -36,7 +36,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         private readonly IAltinnSblBridge _role;
         private readonly ILogger<AltinnAdminRoleSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
-        private readonly IAMPartyService _partyService;
 
         public async Task SyncAdminRoles(ILease lease, CancellationToken cancellationToken)
         {
@@ -174,7 +173,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     {
                         packages.Add("urn:altinn:accesspackage:tilgangsstyrer");
                     }
-                    
+
                     break;
                 case "APIADM":
                     packages.Add("urn:altinn:accesspackage:maskinporten-administrator");

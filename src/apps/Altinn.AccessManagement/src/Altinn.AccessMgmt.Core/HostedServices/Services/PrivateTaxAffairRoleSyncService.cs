@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using System.Text.Json;
+using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -10,7 +11,6 @@ using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -116,7 +116,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                     ErrorMessage = $"Failed to delete assignmentpackages for FromParty: {item.FromPartyUuid}, ToParty: {item.ToUserPartyUuid}, PackageUrns: {string.Join(", ", packageUrns)}"
                                 };
                                 await errorQueueService.AddErrorQueue(error, values, cancellationToken);
-                                continue;                                
+                                continue;
                             }
                         }
                         else
@@ -133,7 +133,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 await errorQueueService.AddErrorQueue(error, values, cancellationToken);
                                 continue;
                             }
-                            
+
                             if (item.ToUserPartyUuid == null)
                             {
                                 ErrorQueue error = new ErrorQueue

@@ -50,7 +50,7 @@ namespace Altinn.Authorization.Tests
             };
 
             // Act
-            var receipt = await client.EnqueueAuthorizationEvent(evt);
+            var receipt = await client.EnqueueAuthorizationEvent(evt, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.True(receipt.Success);
@@ -99,13 +99,13 @@ namespace Altinn.Authorization.Tests
             };
 
             // Act
-            var receipt = await client.EnqueueAuthorizationEvent(evt);
+            var receipt = await client.EnqueueAuthorizationEvent(evt, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.True(receipt.Success);
             Assert.NotNull(sentData);
 
-            //var bytes = sentData.ToArray();
+            // var bytes = sentData.ToArray();
 
             // Decompress the payload (skip the first two bytes for version header)
             using var ms = new MemoryStream(sentData, 2, sentData.Length - 2);
@@ -147,7 +147,7 @@ namespace Altinn.Authorization.Tests
             };
 
             // Act
-            var receipt = await client.EnqueueAuthorizationEvent(evt);
+            var receipt = await client.EnqueueAuthorizationEvent(evt, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.True(receipt.Success);
@@ -157,9 +157,9 @@ namespace Altinn.Authorization.Tests
             using var ms = new MemoryStream(sentData, 2, sentData.Length - 2);
             using var brotli = new BrotliStream(ms, CompressionMode.Decompress);
             var decompressed = JsonSerializer.Deserialize<AuthorizationEvent>(brotli, JsonSerializerOptions.Web);
-           
+
             Assert.Equal(evt.Operation, decompressed.Operation);
-            
+
             // Ensure the original JSON is preserved (fallback was NOT triggered)
             Assert.True(JsonElement.DeepEquals(evt.ContextRequestJson, decompressed.ContextRequestJson));
         }
@@ -169,7 +169,7 @@ namespace Altinn.Authorization.Tests
             var buffer = data.ToArray();
             Base64.DecodeFromUtf8InPlace(buffer, out var written);
             Base64.DecodeFromUtf8InPlace(buffer.AsSpan(0, written), out var finalWritten);
-            
+
             return buffer.AsMemory(0, finalWritten).ToArray();
         }
     }

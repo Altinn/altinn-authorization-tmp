@@ -13,6 +13,7 @@ using ValidationErrors = Altinn.AccessMgmt.Core.Utils.Models.ValidationErrors;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Controllers;
 
+#pragma warning disable SA1649 // file holds both Consumers/Suppliers controller tests
 public class MaskinportenConsumersControllerTest
 {
     private static readonly Guid Party = Guid.NewGuid();
@@ -42,7 +43,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumers(Party, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ConnectionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetConsumers(Party);
+        var result = await CreateSut(svc.Object).GetConsumers(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -54,7 +55,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumers(Party, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetConsumers(Party);
+        var result = await CreateSut(svc.Object).GetConsumers(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -66,7 +67,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetEntity("123456789", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetConsumers(Party, consumer: "123456789");
+        var result = await CreateSut(svc.Object).GetConsumers(Party, consumer: "123456789", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -80,7 +81,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumers(Party, EntityId, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ConnectionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetConsumers(Party, consumer: "123456789");
+        var result = await CreateSut(svc.Object).GetConsumers(Party, consumer: "123456789", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -96,7 +97,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -110,7 +111,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.RemoveSupplier(EntityId, Party, false, It.IsAny<CancellationToken>()))
            .ReturnsAsync((ValidationProblemInstance)null);
 
-        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -124,7 +125,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.RemoveSupplier(EntityId, Party, false, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveConsumer(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -140,7 +141,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumerResources(Party, null, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ResourcePermissionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetResources(Party);
+        var result = await CreateSut(svc.Object).GetResources(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -152,7 +153,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumerResources(Party, null, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party);
+        var result = await CreateSut(svc.Object).GetResources(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -164,7 +165,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party, consumer: "org1");
+        var result = await CreateSut(svc.Object).GetResources(Party, consumer: "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -176,7 +177,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetResourceByRefId("res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party, resource: "res1");
+        var result = await CreateSut(svc.Object).GetResources(Party, resource: "res1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -192,7 +193,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetConsumerResources(Party, EntityId, ResourceId, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ResourcePermissionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetResources(Party, consumer: "org1", resource: "res1");
+        var result = await CreateSut(svc.Object).GetResources(Party, consumer: "org1", resource: "res1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -208,7 +209,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -222,7 +223,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.RemoveResource(EntityId, Party, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync((ValidationProblemInstance)null);
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -236,7 +237,7 @@ public class MaskinportenConsumersControllerTest
         svc.Setup(s => s.RemoveResource(EntityId, Party, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -286,7 +287,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -300,7 +301,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.AddSupplier(Party, EntityId, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<AssignmentDto>(new AssignmentDto()));
 
-        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1", TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -314,7 +315,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.AddSupplier(Party, EntityId, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).AddSupplier(Party, "org1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -330,7 +331,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetSuppliers(Party, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ConnectionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetSuppliers(Party);
+        var result = await CreateSut(svc.Object).GetSuppliers(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -342,7 +343,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetSuppliers(Party, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetSuppliers(Party);
+        var result = await CreateSut(svc.Object).GetSuppliers(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -354,7 +355,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetSuppliers(Party, supplier: "org1");
+        var result = await CreateSut(svc.Object).GetSuppliers(Party, supplier: "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -370,7 +371,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -384,7 +385,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.RemoveSupplier(Party, EntityId, false, It.IsAny<CancellationToken>()))
            .ReturnsAsync((ValidationProblemInstance)null);
 
-        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -398,7 +399,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.RemoveSupplier(Party, EntityId, false, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1");
+        var result = await CreateSut(svc.Object).RemoveSupplier(Party, "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -414,7 +415,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.ResourceDelegationCheck(UserUuid, Party, "res1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<ResourceCheckDto>(new ResourceCheckDto { Resource = new ResourceDto(), Rights = [] }));
 
-        var result = await CreateSutWithClaim(svc.Object, UserUuid).DelegationCheck(Party, "res1");
+        var result = await CreateSutWithClaim(svc.Object, UserUuid).DelegationCheck(Party, "res1", TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -426,7 +427,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.ResourceDelegationCheck(UserUuid, Party, "res1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSutWithClaim(svc.Object, UserUuid).DelegationCheck(Party, "res1");
+        var result = await CreateSutWithClaim(svc.Object, UserUuid).DelegationCheck(Party, "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -442,7 +443,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -456,7 +457,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.AddResource(Party, EntityId, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<bool>(true));
 
-        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -470,7 +471,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.AddResource(Party, EntityId, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).AddResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -486,7 +487,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetSupplierResources(Party, null, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(new Result<IEnumerable<ResourcePermissionDto>>([]));
 
-        var result = await CreateSut(svc.Object).GetResources(Party);
+        var result = await CreateSut(svc.Object).GetResources(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -498,7 +499,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetSupplierResources(Party, null, null, It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party);
+        var result = await CreateSut(svc.Object).GetResources(Party, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -510,7 +511,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party, supplier: "org1");
+        var result = await CreateSut(svc.Object).GetResources(Party, supplier: "org1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -522,7 +523,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetResourceByRefId("res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).GetResources(Party, resource: "res1");
+        var result = await CreateSut(svc.Object).GetResources(Party, resource: "res1", cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.IsNotType<OkObjectResult>(result);
     }
@@ -538,7 +539,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.GetEntity("org1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }
@@ -552,7 +553,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.RemoveResource(Party, EntityId, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync((ValidationProblemInstance)null);
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsType<NoContentResult>(result);
     }
@@ -566,7 +567,7 @@ public class MaskinportenSuppliersControllerTest
         svc.Setup(s => s.RemoveResource(Party, EntityId, "res1", It.IsAny<CancellationToken>()))
            .ReturnsAsync(MakeValidationProblem());
 
-        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1");
+        var result = await CreateSut(svc.Object).RemoveResource(Party, "org1", "res1", TestContext.Current.CancellationToken);
 
         Assert.IsNotType<NoContentResult>(result);
     }

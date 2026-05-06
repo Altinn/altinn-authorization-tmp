@@ -55,11 +55,11 @@ public class PackagesController : ControllerBase
 
         var res = simpleSearch
             ? await packageService.SimpleSearch(
-                term: term, 
-                resourceProviderCodes: resourceProviderCode, 
-                searchInResources: searchInResources, 
-                typeId: typeId, 
-                languageCode: this.GetLanguageCode(), 
+                term: term,
+                resourceProviderCodes: resourceProviderCode,
+                searchInResources: searchInResources,
+                typeId: typeId,
+                languageCode: this.GetLanguageCode(),
                 allowPartialTranslation: this.AllowPartialTranslation()
                 )
             : await packageService.FuzzySearch(
@@ -122,7 +122,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -178,7 +178,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -201,7 +201,7 @@ public class PackagesController : ControllerBase
             translationService,
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
-        
+
         return Ok(translated);
     }
 
@@ -234,7 +234,7 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 
     /// <summary>
@@ -314,6 +314,6 @@ public class PackagesController : ControllerBase
             this.GetLanguageCode(),
             this.AllowPartialTranslation());
 
-        return Ok(translated);
+        return Ok(translated.OrderBy(t => t.Name));
     }
 }
