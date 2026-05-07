@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using System.Net.Http;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
@@ -258,13 +259,21 @@ public class RequestController(
         {
             var serviceResource = await resourceRegistryClient.GetResource(resourceRef.ReferenceId, ct);
 
-            if (!serviceResource.Delegable)
+            if (serviceResource is null)
+            {
+                errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found in the resource registry.")]);
+            }
+            else if (!serviceResource.Delegable)
             {
                 errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not delegable.")]);
             }
         }
-        catch
+        catch (HttpRequestException)
         {
+            // Resource registry unreachable. Surface as a validation failure on the
+            // resource — the request can't be processed without confirming delegability,
+            // and the caller's view is the same as for a missing resource.
+            errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Unable to reach the resource registry to validate '{resourceRef.ReferenceId}'.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Models;
@@ -360,17 +361,28 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
-        try
+        if (resourceObj is { })
         {
-            var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
-
-            if (!serviceResource.Delegable)
+            try
             {
-                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+                var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
+
+                if (serviceResource is null)
+                {
+                    errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' was not found in the resource registry.")]);
+                }
+                else if (!serviceResource.Delegable)
+                {
+                    errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+                }
             }
-        }
-        catch
-        {
+            catch (HttpRequestException)
+            {
+                // Resource registry unreachable. Surface as a validation failure on the
+                // resource — the request can't be processed without confirming delegability,
+                // and the caller's view is the same as for a missing resource.
+                errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to reach the resource registry to validate '{resourceObj.RefId}'.")]);
+            }
         }
 
         if (errorBuilder.TryBuild(out var problem))
