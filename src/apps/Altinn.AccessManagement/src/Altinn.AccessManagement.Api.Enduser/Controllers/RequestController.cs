@@ -371,7 +371,6 @@ public class RequestController(
         }
         catch
         {
-            // errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))

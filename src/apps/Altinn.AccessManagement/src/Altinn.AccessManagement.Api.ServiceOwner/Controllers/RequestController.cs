@@ -265,7 +265,6 @@ public class RequestController(
         }
         catch
         {
-            // errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
         }
 
         if (errorBuilder.TryBuild(out var problem))
