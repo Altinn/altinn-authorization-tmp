@@ -74,7 +74,7 @@ public partial class StorageAccountLeaseService(ILogger<StorageAccountLeaseServi
         while (true)
         {
             var lease = await TryAcquireNonBlocking(leaseName, cancellationToken);
-            if (lease is not null)
+            if (lease is { })
             {
                 return lease;
             }
