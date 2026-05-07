@@ -68,8 +68,9 @@ public class AuthorizationContextService : IAuthorizationContextService
             IncludeInstances = true,
             IncludeDelegation = true,
             IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
             EnrichEntities = false,
-            ExcludeDeleted = true,
+            ExcludeDeleted = false,
         };
 
         return await _connectionQuery.GetConnectionsFromOthersAsync(queryFilter, ct: cancellationToken);

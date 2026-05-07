@@ -350,7 +350,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
                     resourceAttributes.ResourceRegistryId = attribute.AttributeValues.First().Value;
                 }
 
-                if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrganizationNumberAttribute))
+                if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrganizationIdentifierAttribute))
                 {
                     resourceAttributes.OrganizationNumber = attribute.AttributeValues.First().Value;
                 }

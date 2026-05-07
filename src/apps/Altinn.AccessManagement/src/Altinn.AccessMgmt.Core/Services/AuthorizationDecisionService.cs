@@ -134,7 +134,9 @@ public class AuthorizationDecisionService : IAuthorizationDecisionService
         }
 
         // 3. Get policy for the resource
-        XacmlPolicy policy = await _prp.GetPolicyAsync(decisionRequest, cancellationToken);
+        XacmlPolicy policy = !string.IsNullOrWhiteSpace(resourceAttributes.ResourceRegistryId) ?
+            await _prp.GetPolicyAsync(resourceAttributes.ResourceRegistryId, cancellationToken) : 
+            await _prp.GetPolicyAsync(resourceAttributes.OrgValue, resourceAttributes.AppValue, cancellationToken);
         if (policy == null)
         {
             return CreateIndeterminateResponse("Policy not found for resource");
@@ -406,8 +408,8 @@ public class AuthorizationDecisionService : IAuthorizationDecisionService
                 case XacmlRequestAttribute.OrgAttribute: result.OrgValue = value; break;
                 case XacmlRequestAttribute.AppAttribute: result.AppValue = value; break;
                 case XacmlRequestAttribute.PartyAttribute: result.ResourcePartyValue = value; break;
-                case XacmlRequestAttribute.OrganizationNumberAttribute: result.OrganizationNumber = value; break;
-                case "urn:altinn:person:identifier-no": result.PersonId = value; break;
+                case XacmlRequestAttribute.OrganizationIdentifierAttribute: result.OrganizationNumber = value; break;
+                case XacmlRequestAttribute.PersonIdentifierAttribute: result.PersonId = value; break;
                 case XacmlRequestAttribute.ResourceRegistryAttribute:
                     if (value.StartsWith("app_"))
                     {
@@ -421,7 +423,7 @@ public class AuthorizationDecisionService : IAuthorizationDecisionService
                     }
 
                     break;
-                case "urn:altinn:party:uuid":
+                case XacmlRequestAttribute.PartyUuidAttribute:
                     if (Guid.TryParse(value, out var uuid))
                     {
                         result.PartyUuid = uuid;
@@ -461,17 +463,23 @@ public class AuthorizationDecisionService : IAuthorizationDecisionService
                     }
 
                     break;
-                case "urn:altinn:person:identifier-no": result.PersonId = value; break;
-                case XacmlRequestAttribute.OrganizationNumberAttribute: result.OrganizationNumber = value; break;
-                case "urn:altinn:organization:identifier-no": result.OrganizationNumber = value; break;
-                case "urn:altinn:party:uuid":
+                case XacmlRequestAttribute.PartyAttribute:
+                    if (int.TryParse(value, out int partyId))
+                    {
+                        result.PartyId = partyId;
+                    }
+
+                    break;
+                case XacmlRequestAttribute.PersonIdentifierAttribute: result.PersonId = value; break;
+                case XacmlRequestAttribute.OrganizationIdentifierAttribute: result.OrganizationNumber = value; break;
+                case XacmlRequestAttribute.PartyUuidAttribute:
                     if (Guid.TryParse(value, out var pUuid))
                     {
                         result.PartyUuid = pUuid;
                     }
 
                     break;
-                case "urn:altinn:systemuser:uuid":
+                case XacmlRequestAttribute.SystemUserAttribute:
                     if (Guid.TryParse(value, out var sUuid))
                     {
                         result.SystemUserUuid = sUuid;
@@ -646,6 +654,7 @@ public class AuthorizationDecisionService : IAuthorizationDecisionService
     private sealed class SubjectAttributeValues
     {
         public int UserId { get; set; }
+        public int PartyId { get; set; }
         public string PersonId { get; set; }
         public string OrganizationNumber { get; set; }
         public Guid PartyUuid { get; set; }

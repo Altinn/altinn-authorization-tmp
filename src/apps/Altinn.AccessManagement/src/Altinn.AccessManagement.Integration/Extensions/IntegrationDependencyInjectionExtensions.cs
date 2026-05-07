@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Integration.Clients;
 using Altinn.AccessManagement.Integration.Services;
 using Altinn.AccessManagement.Integration.Services.Interfaces;
 using Altinn.AccessManagement.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -33,6 +34,15 @@ public static class IntegrationDependencyInjectionExtensions
         builder.Services.AddHttpClient<IAltinn2RightsClient, Altinn2RightsClient>();
         builder.Services.AddHttpClient<IAuthenticationClient, AuthenticationClient>();
         builder.Services.AddSingleton<IResourceRegistryClient, ResourceRegistryClient>();
+
+        builder.Services.AddHttpClient<IOedRoleAssignmentService, OedRoleAssignmentClient>(client =>
+        {
+            var endpoint = builder.Configuration["OedAuthzSettings:ApiEndpoint"];
+            if (!string.IsNullOrEmpty(endpoint))
+            {
+                client.BaseAddress = new Uri(endpoint);
+            }
+        });
 
         builder.Services.AddHttpClient<IAltinnRolesClient, AltinnRolesClient>()
             .ReplaceResilienceHandler(static c =>
