@@ -4,6 +4,7 @@ namespace Altinn.Authorization.Host.Lease;
 /// Defines the contract for managing leases in a system.
 /// Provides asynchronous, non-blocking operations for acquiring, updating, releasing, and refreshing leases.
 /// This interface allows safe coordination of access to shared resources using lease semantics.
+/// </summary>
 public interface ILeaseService
 {
     /// <summary>

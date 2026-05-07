@@ -71,7 +71,7 @@ async Task Init()
 
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var leaseService = scope.ServiceProvider.GetRequiredService<ILeaseService>();
-    await using var lease = await leaseService.AcquireBlocking("accessmgmt_init", cts.Token);
+    await using var lease = await leaseService.AcquireBlocking("access_management_init", cts.Token);
     await dbContext.Database.MigrateAsync();
     await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
 
