@@ -251,6 +251,21 @@
         public const string SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE = "altinn:serviceowner/delegations:accesspackage.write";
 
         /// <summary>
+        /// Scope giving access to the authorize endpoint for service/resource owners
+        /// </summary>
+        public const string SCOPE_AUTHORIZE = "altinn:authorization/authorize";
+
+        /// <summary>
+        /// Scope giving admin access to the authorize endpoint across service/resource owners
+        /// </summary>
+        public const string SCOPE_AUTHORIZE_ADMIN = "altinn:authorization/authorize.admin";
+
+        /// <summary>
+        /// Policy tag for authorizing access to the authorize endpoint
+        /// </summary>
+        public const string POLICY_AUTHORIZE = "AuthorizeScopeAccess";
+
+        /// <summary>
         /// Claim for scopes from maskinporten token
         /// </summary>
         public const string CLAIM_MASKINPORTEN_SCOPE = "scope";

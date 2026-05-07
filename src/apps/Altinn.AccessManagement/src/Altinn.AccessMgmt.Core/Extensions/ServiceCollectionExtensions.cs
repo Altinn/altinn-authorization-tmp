@@ -52,6 +52,8 @@ public static class ServiceCollectionExtensions
         services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
         services.AddScoped<IServiceOwnerConnectionService, ServiceOwnerConnectionService>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
+        services.AddScoped<IAuthorizationContextService, AuthorizationContextService>();
+        services.AddScoped<IAuthorizationDecisionService, AuthorizationDecisionService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
