@@ -1,0 +1,45 @@
+{
+  "identifier": "test-resource-so-1",
+  "title": {
+    "en": "Test Resource ServiceOwner 1",
+    "nb": "Testressurs ServiceOwner 1",
+    "nn": "Testressurs ServiceOwner 1"
+  },
+  "description": {
+    "en": "Delegable test resource used by ServiceOwner.Api.Tests CreateResourceRequest happy-path cases.",
+    "nb": "Delegerbar testressurs brukt av ServiceOwner.Api.Tests CreateResourceRequest happy-path-tester.",
+    "nn": "Delegerbar testressurs bruka av ServiceOwner.Api.Tests CreateResourceRequest happy-path-tester."
+  },
+  "rightDescription": {
+    "en": "Delegate test access.",
+    "nb": "Deleger testtilgang.",
+    "nn": "Deleger testtilgong."
+  },
+  "homepage": "https://www.altinn.no",
+  "status": "Active",
+  "contactPoints": [],
+  "isPartOf": "",
+  "resourceReferences": [],
+  "delegable": true,
+  "visible": true,
+  "hasCompetentAuthority": {
+    "organization": "991825827",
+    "orgcode": "ttd",
+    "name": {
+      "en": "Test departement",
+      "nb": "Testdepartement",
+      "nn": "Testdepartement"
+    }
+  },
+  "keywords": [],
+  "limitedByRRR": false,
+  "selfIdentifiedUserEnabled": false,
+  "enterpriseUserEnabled": false,
+  "resourceType": "GenericAccessResource",
+  "authorizationReference": [
+    {
+      "id": "urn:altinn:resource",
+      "value": "test-resource-so-1"
+    }
+  ]
+}

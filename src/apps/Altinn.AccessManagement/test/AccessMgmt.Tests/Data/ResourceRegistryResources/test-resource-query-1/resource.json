@@ -1,0 +1,45 @@
+{
+  "identifier": "test-resource-query-1",
+  "title": {
+    "en": "Test Resource Query 1",
+    "nb": "Testressurs Query 1",
+    "nn": "Testressurs Query 1"
+  },
+  "description": {
+    "en": "Delegable test resource used by ServiceOwner.Api.Tests CreateResourceRequest_WithValidQueryParams_Returns202Accepted.",
+    "nb": "Delegerbar testressurs brukt av CreateResourceRequest_WithValidQueryParams_Returns202Accepted.",
+    "nn": "Delegerbar testressurs bruka av CreateResourceRequest_WithValidQueryParams_Returns202Accepted."
+  },
+  "rightDescription": {
+    "en": "Delegate test access.",
+    "nb": "Deleger testtilgang.",
+    "nn": "Deleger testtilgong."
+  },
+  "homepage": "https://www.altinn.no",
+  "status": "Active",
+  "contactPoints": [],
+  "isPartOf": "",
+  "resourceReferences": [],
+  "delegable": true,
+  "visible": true,
+  "hasCompetentAuthority": {
+    "organization": "991825827",
+    "orgcode": "ttd",
+    "name": {
+      "en": "Test departement",
+      "nb": "Testdepartement",
+      "nn": "Testdepartement"
+    }
+  },
+  "keywords": [],
+  "limitedByRRR": false,
+  "selfIdentifiedUserEnabled": false,
+  "enterpriseUserEnabled": false,
+  "resourceType": "GenericAccessResource",
+  "authorizationReference": [
+    {
+      "id": "urn:altinn:resource",
+      "value": "test-resource-query-1"
+    }
+  ]
+}
