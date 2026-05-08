@@ -393,10 +393,6 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
         var package = await db.Packages.SingleAsync(t => t.Id == packageId, cancellationToken);
 
-        var userAssignments = await db.Assignments.AsNoTracking()
-            .Where(t => t.FromId == assignment.FromId && t.ToId == userId)
-            .ToListAsync(cancellationToken);
-
         if (!await HasPackage(assignment.FromId, userId, package.Id, cancellationToken))
         {
             throw new Exception(string.Format("User '{0}' does not have package '{1}'", user.Name, package.Name));

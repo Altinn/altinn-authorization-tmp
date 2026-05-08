@@ -19,8 +19,6 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <inheritdoc />
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
-            ConnectionOptions options = new(configureConnection);
-
             // Look for existing direct rightholder assignment
             Assignment assignment = await dbContext.Assignments
                 .Where(a => a.FromId == fromId)

@@ -2018,12 +2018,6 @@ public partial class ConnectionService
 
         #region Data
 
-        var baseQuery = dbContext.AssignmentResources.AsNoTracking()
-            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
-            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value);
-
         // Direct
         var direct = dbContext.AssignmentResources.AsNoTracking()
             .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
