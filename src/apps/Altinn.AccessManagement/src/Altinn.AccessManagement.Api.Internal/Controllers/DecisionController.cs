@@ -9,20 +9,19 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
 /// <summary>
 /// Controller for authorization decisions.
-/// Provides the authorize endpoint for service owners to check access.
+/// Provides the internal decision endpoint for authorization of access.
 /// </summary>
 [ApiController]
-[Route("accessmanagement/api/v1/serviceowner")]
+[Route("accessmanagement/api/v1/internal")]
 public class DecisionController(IAuthorizationDecisionService authorizationDecisionService) : ControllerBase
 {
     /// <summary>
-    /// Authorize endpoint for service owners.
+    /// Decision endpoint for internal authorization.
     /// Evaluates an XACML JSON authorization request and returns the decision.
     /// </summary>
     /// <param name="request">The authorization request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-    [HttpPost("authorize")]
-    [Authorize(Policy = AuthzConstants.POLICY_AUTHORIZE)]
+    [HttpPost("decision")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType<AuthorizationResponseDto>(StatusCodes.Status200OK)]
