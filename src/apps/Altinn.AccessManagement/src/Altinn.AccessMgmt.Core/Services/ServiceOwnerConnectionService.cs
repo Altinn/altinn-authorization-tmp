@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -19,6 +20,26 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <inheritdoc />
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
         {
+            var options = new ConnectionOptions(configureConnection);
+
+            // Validate From / To entity types against the configured options. The
+            // shape mirrors ConnectionService.ValidateWriteOpInput; keep them in sync
+            // (or DRY into a shared helper) if either changes.
+            var entities = await dbContext.Entities
+                .AsNoTracking()
+                .Where(e => e.Id == fromId || e.Id == toId)
+                .Include(e => e.Type)
+                .ToListAsync(cancellationToken);
+
+            var fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
+            var toEntity = entities.FirstOrDefault(e => e.Id == toId);
+
+            var problem = ValidateWriteOpInput(fromEntity, toEntity, options);
+            if (problem is not null)
+            {
+                return problem;
+            }
+
             // Look for existing direct rightholder assignment
             Assignment assignment = await dbContext.Assignments
                 .Where(a => a.FromId == fromId)
@@ -145,6 +166,41 @@ namespace Altinn.AccessMgmt.Core.Services
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return null;
+        }
+
+        private static ValidationProblemInstance ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options)
+        {
+            var problem = ValidationComposer.Validate(
+                EntityValidation.FromExists(from),
+                EntityValidation.ToExists(to)
+            );
+
+            if (problem is { })
+            {
+                return problem;
+            }
+
+            if (options.AllowedWriteFromEntityTypes.Any() && options.AllowedWriteToEntityTypes.Any())
+            {
+                problem = ValidationComposer.Validate(
+                    EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes]),
+                    EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
+                );
+            }
+            else if (options.AllowedWriteFromEntityTypes.Any())
+            {
+                problem = ValidationComposer.Validate(
+                    EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes])
+                );
+            }
+            else if (options.AllowedWriteToEntityTypes.Any())
+            {
+                problem = ValidationComposer.Validate(
+                    EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
+                );
+            }
+
+            return problem;
         }
     }
 }
