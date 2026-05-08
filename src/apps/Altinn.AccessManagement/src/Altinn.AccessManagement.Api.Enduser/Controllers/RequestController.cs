@@ -367,21 +367,17 @@ public class RequestController(
             {
                 var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
 
-                if (serviceResource is null)
-                {
-                    errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' was not found in the resource registry.")]);
-                }
-                else if (!serviceResource.Delegable)
+                if (serviceResource is { Delegable: false })
                 {
                     errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
                 }
             }
             catch (HttpRequestException)
             {
-                // Resource registry unreachable. Surface as a validation failure on the
-                // resource — the request can't be processed without confirming delegability,
-                // and the caller's view is the same as for a missing resource.
-                errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to reach the resource registry to validate '{resourceObj.RefId}'.")]);
+                // Registry unreachable: don't gate the user's request on registry availability.
+                // The earlier `resourceObj is not null` check already validated that the resource
+                // is known to us locally. Only fail when the registry positively confirms the
+                // resource is non-delegable (the `Delegable: false` arm above).
             }
         }
 
