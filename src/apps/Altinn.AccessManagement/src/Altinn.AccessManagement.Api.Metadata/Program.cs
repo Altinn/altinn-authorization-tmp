@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Metadata;
+﻿using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Api.Metadata;
 using Altinn.AccessMgmt.Core.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,4 +28,8 @@ app.MapControllers();
 
 await app.RunAsync();
 
-internal partial class Program { }
+/// <summary>
+/// Startup class.
+/// </summary>
+[ExcludeFromCodeCoverage]
+internal sealed partial class Program { }

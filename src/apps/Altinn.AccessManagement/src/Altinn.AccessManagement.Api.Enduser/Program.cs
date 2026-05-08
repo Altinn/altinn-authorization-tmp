@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Enduser;
+﻿using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Api.Enduser;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,4 +24,8 @@ app.MapControllers();
 
 await app.RunAsync();
 
-internal partial class Program { }
+/// <summary>
+/// Startup class.
+/// </summary>
+[ExcludeFromCodeCoverage]
+internal sealed partial class Program { }

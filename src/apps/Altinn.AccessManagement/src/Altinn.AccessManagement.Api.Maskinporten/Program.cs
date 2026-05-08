@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -12,4 +14,8 @@ app.MapControllers();
 
 await app.RunAsync();
 
-internal partial class Program { }
+/// <summary>
+/// Startup class.
+/// </summary>
+[ExcludeFromCodeCoverage]
+internal sealed partial class Program { }
