@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Altinn.AccessManagement.Api.ServiceOwner;
+﻿using Altinn.AccessManagement.Api.ServiceOwner;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,5 +26,9 @@ await app.RunAsync();
 /// <summary>
 /// Startup class.
 /// </summary>
-[ExcludeFromCodeCoverage]
-internal sealed partial class Program { }
+internal sealed partial class Program
+{
+    private Program()
+    {
+    }
+}

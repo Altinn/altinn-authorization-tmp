@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Altinn.AccessManagement.Api.Metadata;
+﻿using Altinn.AccessManagement.Api.Metadata;
 using Altinn.AccessMgmt.Core.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,5 +30,9 @@ await app.RunAsync();
 /// <summary>
 /// Startup class.
 /// </summary>
-[ExcludeFromCodeCoverage]
-internal sealed partial class Program { }
+internal sealed partial class Program
+{
+    private Program()
+    {
+    }
+}

@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -17,5 +15,9 @@ await app.RunAsync();
 /// <summary>
 /// Startup class.
 /// </summary>
-[ExcludeFromCodeCoverage]
-internal sealed partial class Program { }
+internal sealed partial class Program
+{
+    private Program()
+    {
+    }
+}
