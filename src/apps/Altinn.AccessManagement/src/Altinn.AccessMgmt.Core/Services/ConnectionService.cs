@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
@@ -34,6 +35,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -50,7 +52,8 @@ public partial class ConnectionService(
     IPolicyRetrievalPoint policyRetrievalPoint,
     IRoleService roleService,
     ITranslationService translationService,
-    ISingleRightsService singleRightsService) : IConnectionService
+    ISingleRightsService singleRightsService,
+    IFeatureManager featureManager) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
@@ -81,7 +84,7 @@ public partial class ConnectionService(
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
                 IncludeDelegation = includeClientDelegations,
-                IncludePackages = true,
+                IncludePackages = false,
                 IncludeResources = false,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
@@ -220,6 +223,18 @@ public partial class ConnectionService(
             {
                 return problem;
             }
+        }
+
+        if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.Altinn2RoleRevoke))
+        {
+            var a2Assignments = await dbContext.Assignments
+                .AsTracking()
+                .Where(e => e.FromId == fromId)
+                .Where(e => e.ToId == toId)
+                .Where(e => e.Role.ProviderId == ProviderConstants.Altinn2.Id)
+                .ToListAsync(cancellationToken);
+
+            dbContext.RemoveRange(a2Assignments);
         }
 
         dbContext.Remove(existingAssignment);
@@ -598,7 +613,12 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(fromId, fromId, toId, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || !connection.Value.Any())
+        if (!connection.IsSuccess)
+        {
+            return Problems.MissingConnection;
+        }
+
+        if (!connection.Value.Any() && to.TypeId != EntityTypeConstants.SystemUser)
         {
             return Problems.MissingConnection;
         }
@@ -920,7 +940,7 @@ public partial class ConnectionService(
         };
 
         var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
-        return connections.GroupBy(r => r.RoleId).Select(connection =>
+        return connections.Where(c => c.AssignmentId.HasValue).GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
             return new RolePermissionDto
@@ -1308,7 +1328,12 @@ public partial class ConnectionService(
         }
 
         var connection = await Get(from.Id, from.Id, to.Id, configureConnections: configureConnection, cancellationToken: cancellationToken);
-        if (!connection.IsSuccess || connection.Value.Count() == 0)
+        if (!connection.IsSuccess)
+        {
+            return Problems.MissingConnection;
+        }
+
+        if (!connection.Value.Any() && to.TypeId != EntityTypeConstants.SystemUser)
         {
             return Problems.MissingConnection;
         }
@@ -1678,6 +1703,60 @@ public partial class ConnectionService(
         }
 
         return policy;
+    }
+
+    public async Task<Result<AssignmentDto>> ConnectSIUserAndEmailUser(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        ValidationErrorBuilder errorBuilder = default;
+
+        if (from is null)
+        {
+            errorBuilder.Add(ValidationErrors.EntityNotExists, "$QUERY/from");
+        }
+
+        if (to is null)
+        {
+            errorBuilder.Add(ValidationErrors.EntityNotExists, "$QUERY/to");
+        }
+
+        if (errorBuilder.TryBuild(out var problem))
+        {
+            return problem;
+        }
+
+        if (from.VariantId != EntityVariantConstants.SI)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
+        }
+
+        if (to.VariantId != EntityVariantConstants.SI_EMAIL)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+        }
+
+        if (errorBuilder.TryBuild(out problem))
+        {
+            return problem;
+        }
+
+        var existingAssignment = await dbContext.Assignments.FirstOrDefaultAsync(a => a.FromId == fromId && a.ToId == toId && a.RoleId == RoleConstants.SelfRegisteredUser, cancellationToken);
+        if (existingAssignment is { })
+        {
+            return DtoMapper.Convert(existingAssignment);
+        }
+
+        var newAssignment = new Assignment()
+        {
+            FromId = from.Id,
+            ToId = to.Id,
+            RoleId = RoleConstants.SelfRegisteredUser,
+        };
+
+        dbContext.Assignments.Add(newAssignment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return DtoMapper.Convert(newAssignment);
     }
 }
 

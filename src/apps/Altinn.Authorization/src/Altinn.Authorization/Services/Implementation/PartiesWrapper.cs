@@ -53,7 +53,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     return System.Text.Json.JsonSerializer.Deserialize<Party>(responseContent, _serializerOptions);
                 }
 
-                _logger.LogError("SBL-Bridge // PartiesWrapper // GetParty // Failed // Unexpected HttpStatusCode: {statusCode}\n {responseContent}", response.StatusCode, responseContent);
+                _logger.LogError("SBL-Bridge // PartiesWrapper // GetParty // Failed // Unexpected HttpStatusCode: {StatusCode}\n {ResponseContent}", response.StatusCode, responseContent);
                 return null;
             }
             catch (Exception ex)
@@ -79,7 +79,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     return JsonConvert.DeserializeObject<List<int>>(responseBody);
                 }
 
-                _logger.LogError("SBL-Bridge // PartiesWrapper // partieswithkeyroleaccess // Failed // Unexpected HttpStatusCode: {response.StatusCode}\n {responseBody}", response.StatusCode, responseBody);
+                _logger.LogError("SBL-Bridge // PartiesWrapper // partieswithkeyroleaccess // Failed // Unexpected HttpStatusCode: {StatusCode}\n {ResponseBody}", response.StatusCode, responseBody);
             }
             catch (Exception ex)
             {
@@ -112,7 +112,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     return JsonConvert.DeserializeObject<List<MainUnit>>(responseBody);
                 }
 
-                _logger.LogError("SBL-Bridge // PartiesWrapper // partyparents // Failed // Unexpected HttpStatusCode: {response.StatusCode}\n {responseBody}", response.StatusCode, responseBody);
+                _logger.LogError("SBL-Bridge // PartiesWrapper // partyparents // Failed // Unexpected HttpStatusCode: {StatusCode}\n {ResponseBody}", response.StatusCode, responseBody);
             }
             catch (Exception ex)
             {
