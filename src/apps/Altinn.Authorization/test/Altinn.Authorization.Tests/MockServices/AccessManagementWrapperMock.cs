@@ -1,8 +1,7 @@
 ﻿using System.Text.Json;
+using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Enums;
-using Altinn.Authorization.Models;
 using Altinn.Platform.Authenticaiton.Extensions;
-using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.IntegrationTests.Data;
 using Altinn.Platform.Authorization.Models;
@@ -10,7 +9,6 @@ using Altinn.Platform.Authorization.Models.AccessManagement;
 using Altinn.Platform.Authorization.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic;
 
 namespace Altinn.Platform.Authorization.IntegrationTests.MockServices;
@@ -200,5 +198,10 @@ public class AccessManagementWrapperMock : IAccessManagementWrapper
         }
 
         return null;
+    }
+
+    public Task<PipResponseDto> GetRolesAndAccessPackages(Guid to, Guid from, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }
