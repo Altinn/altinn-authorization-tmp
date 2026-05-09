@@ -334,6 +334,7 @@ internal static class TestDataSet
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-717a-85a5-0e127816ed69"), FromId = Entities.First(t => t.Name == "Regnskaperne").Id, ToId = Entities.First(t => t.Name == "Revi").Id, RoleId = RoleConstants.Auditor }, // Revisor 
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-708d-beec-13141fd0fae3"), FromId = Entities.First(t => t.Name == "Revi").Id, ToId = Entities.First(t => t.Name == "William").Id, RoleId = RoleConstants.ManagingDirector }, // Daglig leder
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-759a-8a59-ce8abd161c1b"), FromId = Entities.First(t => t.Name == "Revi").Id, ToId = Entities.First(t => t.Name == "Terje").Id, RoleId = RoleConstants.ChairOfTheBoard }, // Styreleder
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7311-a2df-21bd3352ba24"), FromId = Entities.First(t => t.Name == "Terje").Id, ToId = Entities.First(t => t.Name == "Terje").Id, RoleId = RoleConstants.PrivatePerson }, // Privatperson (self)
     };
 
     internal static Assignment GetAssignment(string fromName, string toName, Guid roleId)

@@ -232,6 +232,35 @@ public class PolicyInformationPointRolesAndAccessPackagesTest : IClassFixture<Ap
     }
 
     [Fact]
+    public async Task Terje_ShouldGetPrivatePersonRoleAndInnbyggerPackages_ForHimself()
+    {
+        // Terje has a PrivatePerson self-assignment (Terje→Terje)
+        var from = TestData.GetEntity("Terje").Id;
+        var to = TestData.GetEntity("Terje").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/roles-and-accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        // PrivatePerson role should be present
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:role:privatperson"));
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:priv"));
+
+        // RoleMap: PrivatePerson should grant mapped A2 roles
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:utinn")); // Utfyller/Innsender
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:regna")); // Regnskapsmedarbeider
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:admai")); // Tilgangsstyring
+
+        // RolePackage: PrivatePerson should grant Innbygger access packages
+        Assert.NotEmpty(result.AccessPackages);
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:innbygger-skatteforhold-privatpersoner"));
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:innbygger-kjoretoy"));
+    }
+
+    [Fact]
     public async Task NoConnection_ShouldReturnEmptyResult()
     {
         var from = Guid.NewGuid();
