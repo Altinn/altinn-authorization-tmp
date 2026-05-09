@@ -50,8 +50,8 @@ public class PolicyInformationPointController(
     /// <summary>
     /// Endpoint to lookup all access packages a given to-party uuid has for a given from-party uuid
     /// </summary>
-    /// <param name="from">The uuid of the party to lookop if the to-party has access packages for</param>
-    /// <param name="to">The uuid of the party to lookup access packages og behalf of the from-party</param>
+    /// <param name="from">The uuid of the party to lookup if the to-party has access packages for</param>
+    /// <param name="to">The uuid of the party to lookup access packages on behalf of the from-party</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>A list of all access package urns to-party has access to on behalf of the from-party</returns>
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -74,10 +74,10 @@ public class PolicyInformationPointController(
     /// <summary>
     /// Endpoint to lookup all roles and access packages a given to-party uuid has for a given from-party uuid
     /// </summary>
-    /// <param name="from">The uuid of the party to lookop if the to-party has access packages for</param>
-    /// <param name="to">The uuid of the party to lookup access packages og behalf of the from-party</param>
+    /// <param name="from">The uuid of the party to lookup if the to-party has access packages for</param>
+    /// <param name="to">The uuid of the party to lookup access packages on behalf of the from-party</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>A lists of all roles and access package urns to-party has access to on behalf of the from-party</returns>
+    /// <returns>Lists of all roles and access package urns to-party has access to on behalf of the from-party</returns>
     [ApiExplorerSettings(IgnoreApi = true)]
     [HttpGet]
     [Route("roles-and-accesspackages")]

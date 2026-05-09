@@ -42,6 +42,6 @@ public interface IAccessManagementWrapper
     /// <summary>
     /// Endpoint to find all roles and access packages a given to-party has for a given from-party
     /// </summary>
-    /// <returns>Tuple of all role urns and access package urns</returns>
+    /// <returns>Dto response of all role and access package urns</returns>
     public Task<PipResponseDto> GetRolesAndAccessPackages(Guid to, Guid from, CancellationToken cancellationToken = default);
 }

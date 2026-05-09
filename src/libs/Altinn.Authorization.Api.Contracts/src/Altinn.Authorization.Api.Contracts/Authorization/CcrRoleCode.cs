@@ -29,7 +29,7 @@ public class CcrRoleCode
     /// <summary>
     /// Creates a new <see cref="CcrRoleCode"/> from the specified value without validation.
     /// </summary>
-    /// <param name="value">The package identifier.</param>
+    /// <param name="value">The CCR role code value.</param>
     /// <returns>A <see cref="CcrRoleCode"/>.</returns>
     public static CcrRoleCode CreateUnchecked(string value)
         => new(value);

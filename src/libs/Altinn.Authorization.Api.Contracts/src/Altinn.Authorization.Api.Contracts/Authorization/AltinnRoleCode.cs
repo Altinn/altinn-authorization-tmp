@@ -29,7 +29,7 @@ public class AltinnRoleCode
     /// <summary>
     /// Creates a new <see cref="AltinnRoleCode"/> from the specified value without validation.
     /// </summary>
-    /// <param name="value">The package identifier.</param>
+    /// <param name="value">The Altinn role code value.</param>
     /// <returns>A <see cref="AltinnRoleCode"/>.</returns>
     public static AltinnRoleCode CreateUnchecked(string value)
         => new(value);

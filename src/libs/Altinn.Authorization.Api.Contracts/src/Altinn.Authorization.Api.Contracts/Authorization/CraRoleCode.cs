@@ -1,7 +1,5 @@
 ﻿#nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -29,7 +27,7 @@ public class CraRoleCode
     /// <summary>
     /// Creates a new <see cref="CraRoleCode"/> from the specified value without validation.
     /// </summary>
-    /// <param name="value">The package identifier.</param>
+    /// <param name="value">The CRA role code value.</param>
     /// <returns>A <see cref="CraRoleCode"/>.</returns>
     public static CraRoleCode CreateUnchecked(string value)
         => new(value);

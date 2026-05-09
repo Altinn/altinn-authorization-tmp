@@ -162,13 +162,15 @@ public class AccessManagementWrapper : IAccessManagementWrapper
             {
                 result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_serializerOptions, cancellationToken);
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetPriority(CacheItemPriority.High)
-                .SetAbsoluteExpiration(new TimeSpan(0, 0, _generalSettings.RoleCacheTimeout, 0));
+                if (result != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetPriority(CacheItemPriority.High)
+                    .SetAbsoluteExpiration(new TimeSpan(0, 0, _generalSettings.RoleCacheTimeout, 0));
 
-                _memoryCache.Set(cacheKey, result, cacheEntryOptions);
-
-                return result;
+                    _memoryCache.Set(cacheKey, result, cacheEntryOptions);
+                    return result;
+                }
             }
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
