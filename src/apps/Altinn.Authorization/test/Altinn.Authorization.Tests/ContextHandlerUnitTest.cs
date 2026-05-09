@@ -4,6 +4,7 @@ using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Models;
+using Altinn.Platform.Authorization.Models.AccessManagement;
 using Altinn.Platform.Authorization.Models.Oed;
 using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Implementation;
@@ -37,6 +38,7 @@ public class ContextHandlerUnitTest : IDisposable
     private readonly Mock<IFeatureManager> _featureManagerMock = new();
     private readonly Mock<IResourceRegistry> _resourceRegistryMock = new();
     private readonly TestableContextHandler _sut;
+    private TestableContextHandler _cachingSut;
 
     public ContextHandlerUnitTest()
     {
@@ -537,12 +539,12 @@ public class ContextHandlerUnitTest : IDisposable
             AccessPackages = [],
         };
 
-        SetupEnrichSubjectMocks(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: false);
+        var cachingWrapper = SetupEnrichSubjectWithCachingWrapper(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: false);
 
         var (request, resourceAttrs) = CreateEnrichSubjectRequest(subjectUserId, resourcePartyId, resourcePartyUuid);
 
         // Act
-        await _sut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
+        await _cachingSut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
 
         // Assert
         var subjectAttrs = request.GetSubjectAttributes();
@@ -550,7 +552,7 @@ public class ContextHandlerUnitTest : IDisposable
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:rolecode", "dagl");
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:rolecode", "hadm");
 
-        _accessMgmtMock.Verify(a => a.GetRolesAndAccessPackages(subjectPartyUuid, resourcePartyUuid, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(1, cachingWrapper.GetRolesAndAccessPackagesCallCount);
     }
 
     [Fact]
@@ -572,23 +574,23 @@ public class ContextHandlerUnitTest : IDisposable
             ],
         };
 
-        SetupEnrichSubjectMocks(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: false, policyHasAccessPackages: true);
+        var cachingWrapper = SetupEnrichSubjectWithCachingWrapper(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: false, policyHasAccessPackages: true);
 
         var (request, resourceAttrs) = CreateEnrichSubjectRequest(subjectUserId, resourcePartyId, resourcePartyUuid);
 
         // Act
-        await _sut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
+        await _cachingSut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
 
         // Assert
         var subjectAttrs = request.GetSubjectAttributes();
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:accesspackage", "klientadministrator");
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:accesspackage", "tilgangsstyrer");
 
-        _accessMgmtMock.Verify(a => a.GetRolesAndAccessPackages(subjectPartyUuid, resourcePartyUuid, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Equal(1, cachingWrapper.GetRolesAndAccessPackagesCallCount);
     }
 
     [Fact]
-    public async Task EnrichSubjectAttributes_WithFeatureFlag_EnrichesRolesAndAccessPackagesTogether()
+    public async Task EnrichSubjectAttributes_WithFeatureFlag_EnrichesRolesAndAccessPackages_CacheEnsuresSingleApiCall()
     {
         // Arrange
         int subjectUserId = 1001;
@@ -609,12 +611,12 @@ public class ContextHandlerUnitTest : IDisposable
             ],
         };
 
-        SetupEnrichSubjectMocks(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: true);
+        var cachingWrapper = SetupEnrichSubjectWithCachingWrapper(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: true);
 
         var (request, resourceAttrs) = CreateEnrichSubjectRequest(subjectUserId, resourcePartyId, resourcePartyUuid);
 
         // Act
-        await _sut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
+        await _cachingSut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
 
         // Assert
         var subjectAttrs = request.GetSubjectAttributes();
@@ -622,8 +624,9 @@ public class ContextHandlerUnitTest : IDisposable
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:rolecode", "dagl");
         AssertContainsAttributeValue(subjectAttrs, "urn:altinn:accesspackage", "hovedadministrator");
 
-        // Both AddRoleAttributes and AddAccessPackageAttributes call GetRolesAndAccessPackages
-        _accessMgmtMock.Verify(a => a.GetRolesAndAccessPackages(subjectPartyUuid, resourcePartyUuid, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        // Both AddRoleAttributes and AddAccessPackageAttributes call GetRolesAndAccessPackages,
+        // but the cache ensures only one actual fetch occurs
+        Assert.Equal(1, cachingWrapper.GetRolesAndAccessPackagesCallCount);
     }
 
     [Fact]
@@ -673,12 +676,12 @@ public class ContextHandlerUnitTest : IDisposable
 
         var pipResponse = new PipResponseDto { Roles = [], AccessPackages = [] };
 
-        SetupEnrichSubjectMocks(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: true);
+        SetupEnrichSubjectWithCachingWrapper(subjectUserId, resourcePartyId, subjectPartyUuid, resourcePartyUuid, pipResponse, policyHasRoles: true, policyHasAccessPackages: true);
 
         var (request, resourceAttrs) = CreateEnrichSubjectRequest(subjectUserId, resourcePartyId, resourcePartyUuid);
 
         // Act
-        await _sut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
+        await _cachingSut.TestEnrichSubjectAttributes(request, resourceAttrs, isExternalRequest: false, TestContext.Current.CancellationToken);
 
         // Assert: only the original user attribute should remain (no role/accesspackage attributes added)
         var subjectAttrs = request.GetSubjectAttributes();
@@ -686,7 +689,13 @@ public class ContextHandlerUnitTest : IDisposable
         Assert.Equal(XacmlRequestAttribute.UserAttribute, subjectAttrs.Attributes.First().AttributeId.OriginalString);
     }
 
-    private void SetupEnrichSubjectMocks(int subjectUserId, int resourcePartyId, Guid subjectPartyUuid, Guid resourcePartyUuid, PipResponseDto pipResponse, bool policyHasRoles, bool policyHasAccessPackages)
+    /// <summary>
+    /// Sets up mocks and creates a <see cref="TestableContextHandler"/> backed by a
+    /// <see cref="CachingAccessManagementWrapperStub"/> so that cache behaviour can be verified.
+    /// </summary>
+    private CachingAccessManagementWrapperStub SetupEnrichSubjectWithCachingWrapper(
+        int subjectUserId, int resourcePartyId, Guid subjectPartyUuid, Guid resourcePartyUuid,
+        PipResponseDto pipResponse, bool policyHasRoles, bool policyHasAccessPackages)
     {
         _featureManagerMock.Setup(f => f.IsEnabledAsync(FeatureFlags.AccessManagementAsPipForRoles)).ReturnsAsync(true);
         _featureManagerMock.Setup(f => f.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization)).ReturnsAsync(true);
@@ -698,11 +707,26 @@ public class ContextHandlerUnitTest : IDisposable
         _registerServiceMock.Setup(r => r.GetPartiesAsync(It.Is<List<int>>(l => l.Contains(resourcePartyId)), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Party> { new() { PartyId = resourcePartyId, PartyUuid = resourcePartyUuid } });
 
-        _accessMgmtMock.Setup(a => a.GetRolesAndAccessPackages(subjectPartyUuid, resourcePartyUuid, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(pipResponse);
-
         var policy = CreatePolicyWithSubjectAttributes(policyHasRoles, policyHasAccessPackages);
         _prpMock.Setup(p => p.GetPolicyAsync(It.IsAny<XacmlContextRequest>())).ReturnsAsync(policy);
+
+        var cachingWrapper = new CachingAccessManagementWrapperStub(_memoryCache, pipResponse);
+
+        _cachingSut = new TestableContextHandler(
+            _policyInfoRepoMock.Object,
+            _rolesMock.Object,
+            _oedRolesMock.Object,
+            _partiesMock.Object,
+            _profileMock.Object,
+            _memoryCache,
+            Options.Create(new GeneralSettings { RoleCacheTimeout = 5, MainUnitCacheTimeout = 5 }),
+            _registerServiceMock.Object,
+            _prpMock.Object,
+            cachingWrapper,
+            _featureManagerMock.Object,
+            _resourceRegistryMock.Object);
+
+        return cachingWrapper;
     }
 
     private static (XacmlContextRequest request, XacmlResourceAttributes resourceAttrs) CreateEnrichSubjectRequest(int subjectUserId, int resourcePartyId, Guid? resourcePartyUuid = null)
@@ -862,5 +886,59 @@ public class ContextHandlerUnitTest : IDisposable
 
         public XacmlAttribute TestGetPartyIdsAttribute(List<int> partyIds)
             => GetPartyIdsAttribute(partyIds);
+    }
+
+    /// <summary>
+    /// A test double for <see cref="IAccessManagementWrapper"/> that wraps <see cref="GetRolesAndAccessPackages"/>
+    /// with the same <see cref="IMemoryCache"/> logic as the real <see cref="AccessManagementWrapper"/>.
+    /// Tracks how many times the underlying data source was actually consulted (cache misses).
+    /// </summary>
+    private sealed class CachingAccessManagementWrapperStub : IAccessManagementWrapper
+    {
+        private readonly IMemoryCache _memoryCache;
+        private readonly PipResponseDto _pipResponse;
+        private int _getRolesAndAccessPackagesCallCount;
+
+        public int GetRolesAndAccessPackagesCallCount => _getRolesAndAccessPackagesCallCount;
+
+        public CachingAccessManagementWrapperStub(IMemoryCache memoryCache, PipResponseDto pipResponse)
+        {
+            _memoryCache = memoryCache;
+            _pipResponse = pipResponse;
+        }
+
+        public Task<PipResponseDto> GetRolesAndAccessPackages(Guid to, Guid from, CancellationToken cancellationToken = default)
+        {
+            var cacheKey = $"RolesAndAccPkgs|f:{from}|t:{to}";
+
+            if (!_memoryCache.TryGetValue(cacheKey, out PipResponseDto result))
+            {
+                Interlocked.Increment(ref _getRolesAndAccessPackagesCallCount);
+                result = _pipResponse;
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetPriority(CacheItemPriority.High)
+                    .SetAbsoluteExpiration(new TimeSpan(0, 5, 0));
+
+                _memoryCache.Set(cacheKey, result, cacheEntryOptions);
+            }
+
+            return Task.FromResult(result);
+        }
+
+        public Task<IEnumerable<AccessPackageUrn>> GetAccessPackages(Guid to, Guid from, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+
+        public Task<IEnumerable<DelegationChangeExternal>> GetAllDelegationChanges(DelegationChangeInput input, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+
+        public Task<IEnumerable<DelegationChangeExternal>> GetAllDelegationChanges(CancellationToken cancellationToken = default, params Action<DelegationChangeInput>[] actions)
+            => throw new NotImplementedException();
+
+        public Task<IEnumerable<AuthorizedPartyDto>> GetAuthorizedParties(CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+
+        public Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
     }
 }
