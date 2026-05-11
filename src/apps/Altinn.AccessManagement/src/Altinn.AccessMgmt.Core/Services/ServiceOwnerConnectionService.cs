@@ -22,19 +22,9 @@ namespace Altinn.AccessMgmt.Core.Services
         {
             var options = new ConnectionOptions(configureConnection);
 
-            // Validate From / To entity types against the configured options. The
-            // shape mirrors ConnectionService.ValidateWriteOpInput; keep them in sync
-            // (or DRY into a shared helper) if either changes.
-            var entities = await dbContext.Entities
-                .AsNoTracking()
-                .Where(e => e.Id == fromId || e.Id == toId)
-                .Include(e => e.Type)
-                .ToListAsync(cancellationToken);
-
-            var fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
-            var toEntity = entities.FirstOrDefault(e => e.Id == toId);
-
-            var problem = ValidateWriteOpInput(fromEntity, toEntity, options);
+            // Validate From / To entity types against the configured options.
+            var (fromEntity, toEntity) = await ConnectionWriteValidation.GetFromAndToEntitiesAsync(dbContext, fromId, toId, cancellationToken);
+            var problem = ConnectionWriteValidation.ValidateWriteOpInput(fromEntity, toEntity, options);
             if (problem is not null)
             {
                 return problem;
@@ -166,41 +156,6 @@ namespace Altinn.AccessMgmt.Core.Services
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return null;
-        }
-
-        private static ValidationProblemInstance ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options)
-        {
-            var problem = ValidationComposer.Validate(
-                EntityValidation.FromExists(from),
-                EntityValidation.ToExists(to)
-            );
-
-            if (problem is { })
-            {
-                return problem;
-            }
-
-            if (options.AllowedWriteFromEntityTypes.Any() && options.AllowedWriteToEntityTypes.Any())
-            {
-                problem = ValidationComposer.Validate(
-                    EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes]),
-                    EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
-                );
-            }
-            else if (options.AllowedWriteFromEntityTypes.Any())
-            {
-                problem = ValidationComposer.Validate(
-                    EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes])
-                );
-            }
-            else if (options.AllowedWriteToEntityTypes.Any())
-            {
-                problem = ValidationComposer.Validate(
-                    EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
-                );
-            }
-
-            return problem;
         }
     }
 }

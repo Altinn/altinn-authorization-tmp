@@ -751,7 +751,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             if (isTranslation)
             {
-                string foreignKey = $"FK_{_definition.ModelType.Name}_id";
                 script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, language)");
             }
             else

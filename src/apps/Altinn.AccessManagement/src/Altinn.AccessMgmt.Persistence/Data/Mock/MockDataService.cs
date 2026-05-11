@@ -52,7 +52,6 @@ public class MockDataService
         };
 
         var orgType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception("Could not find type 'Organisasjon'");
-        var persType = (await entityTypeRepository.Get(t => t.Name, "Person")).FirstOrDefault() ?? throw new Exception("Could not find type 'Person'");
         var sysType = (await entityTypeRepository.Get(t => t.Name, "Systembruker")).FirstOrDefault() ?? throw new Exception("Could not find type 'Systembruker'");
         var variants = await entityVariantRepository.Get();
         var variantAS = variants.First(t => t.TypeId == orgType.Id && t.Name == "AS");
