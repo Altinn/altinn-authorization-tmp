@@ -1261,7 +1261,7 @@ public partial class ConnectionService(
     {
         if (resourceObj is null)
         {
-            return Problems.MissingConnection;
+            return Problems.InvalidResource;
         }
 
         if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
