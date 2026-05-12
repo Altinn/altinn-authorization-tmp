@@ -206,13 +206,32 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
             "ProcessBatch did not fire within 2s");
 
+        // After an empty batch the SUT should wait EmptyFeedDelayMs (200ms) — not NormalDelayMs
+        // (100ms). Pump advances until the second iteration fires; the test asserts the second
+        // iteration only fires once we've advanced past EmptyFeedDelayMs.
+        var totalAdvanced = 0;
+        var secondFired = false;
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+        while (DateTime.UtcNow < deadline && !secondFired)
+        {
+            // Advance in small (50ms) increments to detect the exact threshold.
+            _timeProvider.Advance(TimeSpan.FromMilliseconds(50));
+            totalAdvanced += 50;
+            if (await batchProcessed.WaitAsync(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken))
+            {
+                secondFired = true;
+            }
+        }
+
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
 
-        // Assert
+        // Assert: second iteration fired AND only after at least EmptyFeedDelayMs was advanced.
+        Assert.True(secondFired, "Second ProcessBatch did not fire within 2s");
+        Assert.True(totalAdvanced >= _settings.EmptyFeedDelayMs, $"SUT used a delay shorter than EmptyFeedDelayMs ({_settings.EmptyFeedDelayMs}ms): second iteration fired after only {totalAdvanced}ms");
         _syncServiceMock.Verify(
             x => x.ProcessBatch(It.IsAny<CancellationToken>()),
-            Times.AtLeastOnce);
+            Times.AtLeast(2));
     }
 
     [Fact]
@@ -244,13 +263,33 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
             "ProcessBatch did not fire within 2s");
 
+        // After a non-empty batch the SUT should wait NormalDelayMs (100ms) — strictly less than
+        // EmptyFeedDelayMs (200ms). Pump advances in small increments; verify the second iteration
+        // fires before we've advanced past EmptyFeedDelayMs (otherwise the SUT picked the wrong
+        // delay branch).
+        var totalAdvanced = 0;
+        var secondFired = false;
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+        while (DateTime.UtcNow < deadline && !secondFired)
+        {
+            _timeProvider.Advance(TimeSpan.FromMilliseconds(50));
+            totalAdvanced += 50;
+            if (await batchProcessed.WaitAsync(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken))
+            {
+                secondFired = true;
+            }
+        }
+
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
 
-        // Assert
+        // Assert: second iteration fired AND fired before EmptyFeedDelayMs would have elapsed
+        // (proving the SUT used NormalDelayMs not EmptyFeedDelayMs).
+        Assert.True(secondFired, "Second ProcessBatch did not fire within 2s");
+        Assert.True(totalAdvanced < _settings.EmptyFeedDelayMs, $"SUT appears to have used EmptyFeedDelayMs ({_settings.EmptyFeedDelayMs}ms) instead of NormalDelayMs ({_settings.NormalDelayMs}ms): second iteration only fired after {totalAdvanced}ms");
         _syncServiceMock.Verify(
             x => x.ProcessBatch(It.IsAny<CancellationToken>()),
-            Times.AtLeastOnce);
+            Times.AtLeast(2));
     }
 
     [Fact]
@@ -364,21 +403,33 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Callback(() => batchProcessed.Release())
             .ReturnsAsync(5);
 
+        using var leaseDisposed = new SemaphoreSlim(0, int.MaxValue);
+        _leaseMock
+            .Setup(x => x.DisposeAsync())
+            .Callback(() => leaseDisposed.Release())
+            .Returns(ValueTask.CompletedTask);
+
         var service = CreateService();
         using var testCts = new CancellationTokenSource();
 
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        // First iteration runs immediately on service start; the lease's DisposeAsync
-        // fires when control returns past the `await using var lease = ...` block
-        // after ProcessBatch returns.
+        // Wait until ProcessBatch has run (proves the lease was acquired and we're in the
+        // post-batch _timeProvider.Delay await). Then cancel — the `await using var lease`
+        // block disposes the lease as cancellation unwinds.
         Assert.True(
             await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
             "ProcessBatch did not fire within 2s");
 
         testCts.Cancel();
-        await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
+
+        // Wait for DisposeAsync to actually fire. The previous version verified immediately
+        // after WhenAny(serviceTask, ...) which returns as soon as StartAsync's task completes
+        // (StartAsync != ExecuteAsync), so the dispose hadn't run yet on slow CI.
+        Assert.True(
+            await leaseDisposed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "DisposeAsync did not fire within 2s of cancellation");
 
         // Assert
         _leaseMock.Verify(x => x.DisposeAsync(), Times.AtLeastOnce);
@@ -646,15 +697,41 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // First iteration runs immediately on service start.
         Assert.True(
             await leaseAttempted.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
-            "Lease attempt did not fire within 2s");
+            "First lease attempt did not fire within 2s");
+
+        // When the lease is unavailable, the SUT delays by EmptyFeedDelayMs + RandomJitter
+        // (1000–1999ms). Pump time in small increments until the second attempt fires; the
+        // assertion below checks the cumulative advance was well above EmptyFeedDelayMs alone —
+        // i.e. the SUT added jitter on top of the base delay. (Pumping in small increments also
+        // tolerates the race where the SUT hasn't yet registered its timer when we start
+        // advancing; a single big Advance can otherwise no-op against an unregistered timer.)
+        var totalAdvanced = 0;
+        var secondFired = false;
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTime.UtcNow < deadline && !secondFired)
+        {
+            _timeProvider.Advance(TimeSpan.FromMilliseconds(50));
+            totalAdvanced += 50;
+            if (await leaseAttempted.WaitAsync(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken))
+            {
+                secondFired = true;
+            }
+        }
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
 
-        // Assert - Verify lease was attempted (jitter doesn't prevent retry)
+        // Assert: second attempt fired, AND only after a delay much larger than EmptyFeedDelayMs
+        // alone — proving the SUT added RandomJitter (1000–1999ms) on top. Without jitter the
+        // second attempt would fire at totalAdvanced ≈ EmptyFeedDelayMs (200ms, plus tiny race
+        // lag); with jitter it fires at 1200–2200ms.
+        Assert.True(secondFired, "Second lease attempt did not fire within 5s");
+        Assert.True(
+            totalAdvanced > _settings.EmptyFeedDelayMs + 500,
+            $"SUT did not apply jitter: second lease attempt fired after {totalAdvanced}ms, which is too close to EmptyFeedDelayMs ({_settings.EmptyFeedDelayMs}ms) alone — expected at least EmptyFeedDelayMs + ~1000ms of jitter");
         _leaseServiceMock.Verify(
             x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()),
-            Times.AtLeastOnce);
+            Times.AtLeast(2));
     }
 
     private ConsentMigrationHostedService CreateService()
