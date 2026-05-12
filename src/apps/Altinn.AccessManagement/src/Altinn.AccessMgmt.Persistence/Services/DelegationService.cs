@@ -188,9 +188,6 @@ public class DelegationService(
     /// <inheritdoc />
     public async Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        // Find user
-        _ = (await entityRepository.Get(options.ChangedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", options.ChangedBy));
-
         // Find Facilitator
         var facilitator = (await entityRepository.Get(request.Facilitator.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator));
 
@@ -287,9 +284,6 @@ public class DelegationService(
     /// <inheritdoc />
     public async Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        // Find user
-        _ = (await entityRepository.Get(options.ChangedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", options.ChangedBy));
-
         // Find Facilitator
         var facilitator = (await entityRepository.Get(request.Facilitator.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator));
 
@@ -396,9 +390,6 @@ public class DelegationService(
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, ChangeRequestOptions options)
     {
-        // Find User
-        _ = (await entityRepository.Get(options.ChangedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", options.ChangedBy));
-
         // Find Facilitator
         var facilitator = (await entityRepository.Get(facilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", facilitatorPartyId));
 

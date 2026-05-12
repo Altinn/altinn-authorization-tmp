@@ -395,7 +395,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         // Sjekk om bruker er Tilgangsstyrer for From-parten
         if (!await HasRole(assignment.FromId, userId, RoleConstants.AccessManager, cancellationToken))
         {
-            throw new Exception(string.Format("User '{0}' does not have permission to add package to assignment", user.Name));
+            throw new UnauthorizedAccessException(string.Format("User '{0}' does not have permission to add package to assignment", user.Name));
         }
 
         if (!await HasPackage(assignment.FromId, userId, package.Id, cancellationToken))
