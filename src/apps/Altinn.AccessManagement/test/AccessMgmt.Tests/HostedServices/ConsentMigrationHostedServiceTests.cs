@@ -107,8 +107,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
             .ReturnsAsync(true);
 
+        using var leaseAttempted = new SemaphoreSlim(0, int.MaxValue);
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .Callback(() => leaseAttempted.Release())
             .ReturnsAsync((ILease)null);
 
         var service = CreateService();
@@ -117,11 +119,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-
-        // Advance by EmptyFeedDelayMs + max jitter (2000ms)
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 2000));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await leaseAttempted.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "Lease attempt did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -147,8 +148,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync(_leaseMock.Object);
 
+        using var batchProcessed = new SemaphoreSlim(0, int.MaxValue);
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Callback(() => batchProcessed.Release())
             .ReturnsAsync(5);
 
         var service = CreateService();
@@ -157,9 +160,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "ProcessBatch did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -185,8 +189,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync(_leaseMock.Object);
 
+        using var batchProcessed = new SemaphoreSlim(0, int.MaxValue);
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Callback(() => batchProcessed.Release())
             .ReturnsAsync(0); // Empty batch
 
         var service = CreateService();
@@ -195,9 +201,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "ProcessBatch did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -220,8 +227,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync(_leaseMock.Object);
 
+        using var batchProcessed = new SemaphoreSlim(0, int.MaxValue);
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Callback(() => batchProcessed.Release())
             .ReturnsAsync(5); // Non-empty batch
 
         var service = CreateService();
@@ -230,9 +239,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "ProcessBatch did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -256,10 +266,12 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync(_leaseMock.Object);
 
+        using var batchProcessed = new SemaphoreSlim(0, int.MaxValue);
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
             .Returns(() =>
             {
+                batchProcessed.Release();
                 callCount++;
                 if (callCount == 1)
                 {
@@ -275,16 +287,30 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMinutes(1)); // Error delay
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First call fires immediately on service start (throws).
+        Assert.True(
+            await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "First ProcessBatch did not fire within 2s");
+
+        // Pump time forward until the second call fires. After the exception, the
+        // SUT's catch block delays by 1 minute (error delay) before the next iteration.
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+        var secondCallFired = false;
+        while (DateTime.UtcNow < deadline)
+        {
+            _timeProvider.Advance(TimeSpan.FromMinutes(1));
+            if (await batchProcessed.WaitAsync(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken))
+            {
+                secondCallFired = true;
+                break;
+            }
+        }
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
 
         // Assert - Service continues after exception
+        Assert.True(secondCallFired, "Second ProcessBatch did not fire within 2s after error delay");
         _syncServiceMock.Verify(
             x => x.ProcessBatch(It.IsAny<CancellationToken>()),
             Times.AtLeast(2));
@@ -332,8 +358,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
             .ReturnsAsync(_leaseMock.Object);
 
+        using var batchProcessed = new SemaphoreSlim(0, int.MaxValue);
         _syncServiceMock
             .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
+            .Callback(() => batchProcessed.Release())
             .ReturnsAsync(5);
 
         var service = CreateService();
@@ -342,9 +370,12 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start; the lease's DisposeAsync
+        // fires when control returns past the `await using var lease = ...` block
+        // after ProcessBatch returns.
+        Assert.True(
+            await batchProcessed.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "ProcessBatch did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -477,8 +508,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
             .ReturnsAsync(true);
 
+        using var leaseAttempted = new SemaphoreSlim(0, int.MaxValue);
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking(expectedLeaseName, It.IsAny<CancellationToken>()))
+            .Callback(() => leaseAttempted.Release())
             .ReturnsAsync(_leaseMock.Object);
 
         _syncServiceMock
@@ -491,9 +524,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.NormalDelayMs));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await leaseAttempted.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "Lease attempt did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
@@ -597,8 +631,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
             .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
             .ReturnsAsync(true);
 
+        using var leaseAttempted = new SemaphoreSlim(0, int.MaxValue);
         _leaseServiceMock
             .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
+            .Callback(() => leaseAttempted.Release())
             .ReturnsAsync((ILease)null);
 
         var service = CreateService();
@@ -607,12 +643,10 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         // Act
         var serviceTask = service.StartAsync(testCts.Token);
 
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-
-        // The jitter adds 1000-2000ms to the EmptyFeedDelayMs
-        // So we need to advance by at least EmptyFeedDelayMs + 1000ms to guarantee triggering
-        _timeProvider.Advance(TimeSpan.FromMilliseconds(_settings.EmptyFeedDelayMs + 1000));
-        await Task.Delay(10, TestContext.Current.CancellationToken);
+        // First iteration runs immediately on service start.
+        Assert.True(
+            await leaseAttempted.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken),
+            "Lease attempt did not fire within 2s");
 
         testCts.Cancel();
         await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
