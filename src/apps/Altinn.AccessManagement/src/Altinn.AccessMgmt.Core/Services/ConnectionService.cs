@@ -2416,6 +2416,7 @@ public partial class ConnectionService
 
     /// <inheritdoc />
     public async Task<Result<bool>> RemoveRoleAssignment(
+        Guid partyId,
         Guid fromId,
         Guid toId,
         string roleCode,
@@ -2456,7 +2457,35 @@ public partial class ConnectionService
 
         if (existingAssignment is null)
         {
-            return false;
+            // Check if connection exists and return problem if connection is not a direct revokable
+            var direction = partyId == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
+            var filter = new ConnectionQueryFilter()
+            {
+                FromIds = [fromId],
+                ToIds = [toId],
+                EnrichEntities = true,
+                IncludeSubConnections = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeDelegation = false,
+                IncludePackages = false,
+                IncludeResources = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                RoleIds = [role.Id]
+            };
+
+            var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
+
+            if (connections.Count == 0)
+            {
+                return false;
+            }
+
+            return Problems.RoleAssignmentNotRevocable;
         }
 
         // Remove and save revoked assignment
