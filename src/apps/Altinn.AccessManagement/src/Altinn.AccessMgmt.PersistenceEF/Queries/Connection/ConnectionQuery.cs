@@ -293,7 +293,7 @@ public class ConnectionQuery(AppDbContext db)
                         IsRoleMap = true,
                     });
 
-        var delegations =
+        var delegationsJoinedFromAgentAss =
             db.Assignments
                 .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
@@ -323,9 +323,53 @@ public class ConnectionQuery(AppDbContext db)
                         IsRoleMap = false,
                     });
 
-        var a2 = filter.IncludeDelegation
-            ? a1.Concat(rolemap).Concat(delegations)
-            : a1.Concat(rolemap);
+        var delegationsJoinedFromClientAss =
+            db.Assignments
+                .WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
+                .Join(
+                    db.Delegations,
+                    fa => fa.Id,
+                    d => d.FromId,
+                    (fa, d) => new { fa, d }
+                )
+                .Join(
+                    db.Assignments
+                        .Where(t => t.ToId == toId)
+                        .Where(t => t.RoleId == RoleConstants.Agent.Id)
+                        .WhereIf(!FeatureFlags.UseInstanceDelegationEF, t => t.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem),
+                    x => x.d.ToId,
+                    dkr => dkr.Id,
+                    (x, dkr) => new ConnectionQueryBaseRecord
+                    {
+                        AssignmentId = null,
+                        DelegationId = x.d.Id,
+                        FromId = x.fa.FromId,
+                        ToId = dkr.ToId,
+                        RoleId = x.fa.RoleId,
+                        ViaId = x.fa.ToId,
+                        ViaRoleId = dkr.RoleId,
+                        Reason = ConnectionReason.Delegation,
+                        IsKeyRoleAccess = false,
+                        IsMainUnitAccess = false,
+                        IsRoleMap = false,
+                    });
+
+        IQueryable<ConnectionQueryBaseRecord> a2;
+        if (filter.IncludeDelegation)
+        {
+            if (fromSet != null)
+            {
+                a2 = a1.Concat(rolemap).Concat(delegationsJoinedFromClientAss);
+            }
+            else
+            {
+                a2 = a1.Concat(rolemap).Concat(delegationsJoinedFromAgentAss);
+            }
+        }
+        else
+        {
+            a2 = a1.Concat(rolemap);
+        }
 
         var fromChildren = !doChildNesting ? a2 :
         a2
