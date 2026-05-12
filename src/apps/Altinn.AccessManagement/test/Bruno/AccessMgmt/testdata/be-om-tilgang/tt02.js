@@ -21,7 +21,6 @@
       "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet",
     eksplisitt: "urn:altinn:accesspackage:eksplisitt",
     konkbotilg: "urn:altinn:accesspackage:konkursbo-tilgangsstyrer",
-    hovedadministrator_pakke : "urn:altinn:accesspackage:hovedadministrator"
   },
   Bot_person: {
     lastname: "INGREDIENS",
