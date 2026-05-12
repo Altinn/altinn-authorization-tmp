@@ -1,4 +1,6 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+﻿using System.Text.Json.Serialization;
+
+namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Represents a group of areas, categorized under a specific entity type.
@@ -59,4 +61,10 @@ public class RoleDto
     /// Provider
     /// </summary>
     public ProviderDto Provider { get; set; }
+
+    /// <summary>
+    /// There exist a role having role provider Altinn2 and a permission that is direct.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IsRevocable { get; set; } = null;
 }

@@ -943,10 +943,17 @@ public partial class ConnectionService(
         return connections.Where(c => c.AssignmentId.HasValue).GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
+            var permissions = connection.Select(c => DtoMapper.ConvertToPermission(c)).ToList();
+            bool revocable = false;
+            if (role.ProviderId == ProviderConstants.Altinn2.Id)
+            {
+                revocable = permissions.Any(p => p.Reason.Items.Any(r => r.Name == "direct"));
+            }
+
             return new RolePermissionDto
             {
-                Role = DtoMapper.Convert(role),
-                Permissions = connection.Select(connection => DtoMapper.ConvertToPermission(connection)),
+                Role = DtoMapper.Convert(role, revocable),
+                Permissions = permissions,
             };
         }).ToList();
     }
