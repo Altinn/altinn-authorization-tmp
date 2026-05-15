@@ -325,10 +325,10 @@ public class ConnectionQuery(AppDbContext db)
                 )
                 .Where(t =>
                     t.dkr.ToId == toId &&
+                    t.dkr.RoleId == RoleConstants.Agent.Id &&
                     (FeatureFlags.UseInstanceDelegationEF ||
                      t.dkr.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
                 )
-                .Where(t => t.dkr.RoleId == RoleConstants.Agent.Id) // Must be this late (rather than the previous where clause) to prevent using an inefficient index
                 .Select(t => new ConnectionQueryBaseRecord
                 {
                     AssignmentId = null,
