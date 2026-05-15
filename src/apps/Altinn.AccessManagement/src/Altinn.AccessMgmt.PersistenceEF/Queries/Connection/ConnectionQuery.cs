@@ -14,6 +14,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 /// </summary>
 public class ConnectionQuery(AppDbContext db)
 {
+    // This is a workaround to prevent Postgres from choosing a bad join order when there is a filter on FromId in delegations.
+    // It looks like the same join order is chosen no matter if we use a low value (1) or a very large value. A very large value is
+    // chosen to ensure that the cutoff doesn't really reduce the result set.
+    private const int PostgresPlanHintTakeLimit = 100_000_000;
     private List<ConnectionQueryExtendedRecord>? _rightholderAssignments = null;
 
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
@@ -315,8 +319,8 @@ public class ConnectionQuery(AppDbContext db)
                     d => d.FromId,
                     (fa, d) => new { fa, d }
                 )
-                //// Generate a postgres limit to force a better execution plan when there's a party filter
-                .TakeIf(fromSetForDelegation.Count > 0, 100_000_000)
+                //// Generate a postgres limit to force a better execution plan when there's a party filter. Ref. comment on constant PostgresPlanHintTakeLimit.
+                .TakeIf(fromSetForDelegation.Count > 0, PostgresPlanHintTakeLimit)
                 .Join(
                     db.Assignments,
                     x => x.d.ToId,
