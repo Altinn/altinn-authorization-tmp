@@ -152,7 +152,7 @@ public class ConnectionQuery(AppDbContext db)
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("Failed to include packages", ex);
+                    throw new InvalidOperationException("Failed to include packages", ex);
                 }
             }
 
@@ -165,7 +165,7 @@ public class ConnectionQuery(AppDbContext db)
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to include resources", ex);
+                throw new InvalidOperationException("Failed to include resources", ex);
             }
 
             try
@@ -177,7 +177,7 @@ public class ConnectionQuery(AppDbContext db)
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to include instances", ex);
+                throw new InvalidOperationException("Failed to include instances", ex);
             }
 
             if (filter.EnrichEntities || filter.ExcludeDeleted)
@@ -196,7 +196,7 @@ public class ConnectionQuery(AppDbContext db)
         }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to get connections with filter: {JsonSerializer.Serialize(filter)}", ex);
+            throw new InvalidOperationException($"Failed to get connections with filter: {JsonSerializer.Serialize(filter)}", ex);
         }
     }
 
