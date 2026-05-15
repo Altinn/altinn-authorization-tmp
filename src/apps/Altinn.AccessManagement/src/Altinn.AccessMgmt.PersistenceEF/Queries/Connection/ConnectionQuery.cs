@@ -211,7 +211,7 @@ public class ConnectionQuery(AppDbContext db)
         var viaSet = filter.ViaIds?.Count > 0 ? new HashSet<Guid>(filter.ViaIds) : null;
         var viaRoleSet = filter.ViaRoleIds?.Count > 0 ? new HashSet<Guid>(filter.ViaRoleIds) : null;
 
-        if (fromSet != null && filter.IncludeDelegation && !FeatureFlags.UseInstanceDelegationEF)
+        if (fromSet != null && filter.IncludeDelegation)
         {
             var parentIds = db.Entities
                 .Where(e => fromSet.Distinct().Contains(e.Id) && e.ParentId != null)
