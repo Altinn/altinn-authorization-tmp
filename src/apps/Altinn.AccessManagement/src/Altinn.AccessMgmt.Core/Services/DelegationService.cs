@@ -319,7 +319,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         foreach (var rp in rolepacks)
         {
             // Find ClientPartyId Role
-            var clientRole = (await roleService.GetByCode(rp.Key)).First() ?? throw new KeyNotFoundException($"Role not found '{rp.Key}'");
+            var clientRole = (await roleService.GetByCode(rp.Key)).FirstOrDefault() ?? throw new KeyNotFoundException($"Role not found '{rp.Key}'");
 
             // Find ClientAssignment
             var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new KeyNotFoundException($"Could not find client assignment '{client.Name}' - {clientRole.Code} - {facilitator.Name}");
@@ -404,7 +404,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         foreach (var rp in rolepacks)
         {
             // Find ClientPartyId Role
-            var clientRole = (await roleService.GetByCode(rp.Key)).First() ?? throw new KeyNotFoundException($"Role not found '{rp.Key}'");
+            var clientRole = (await roleService.GetByCode(rp.Key)).FirstOrDefault() ?? throw new KeyNotFoundException($"Role not found '{rp.Key}'");
 
             // Find ClientAssignment
             var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new KeyNotFoundException($"Could not find client assignment '{client.Name}' - {clientRole.Code} - {facilitator.Name}");
