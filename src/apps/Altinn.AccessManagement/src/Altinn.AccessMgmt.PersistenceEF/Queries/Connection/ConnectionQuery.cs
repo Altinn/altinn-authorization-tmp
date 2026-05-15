@@ -330,7 +330,8 @@ public class ConnectionQuery(AppDbContext db)
                 .Where(t =>
                     t.dkr.ToId == toId &&
                     t.dkr.RoleId == RoleConstants.Agent.Id &&
-                    FeatureFlags.UseInstanceDelegationEF
+                    (FeatureFlags.UseInstanceDelegationEF ||
+                     t.dkr.Audit_ChangedBySystem != SystemEntityConstants.InstanceRightImportSystem)
                 )
                 .Select(t => new ConnectionQueryBaseRecord
                 {
