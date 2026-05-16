@@ -1,11 +1,11 @@
 meta {
-  name: DELETE_AsSysUsrAdmin_Connections_RemovePerson
+  name: POST_AsSysUsrAdmin_Resource_ThroughDelegationAccess_ToPerson
   type: http
-  seq: 9
+  seq: 5
 }
 
-delete {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toPersonUuid}}&cascade=true
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{party}}&from={{party}}&to={{toPersonUuid}}&resource={{resource}}
   body: json
   auth: inherit
 }
@@ -14,17 +14,31 @@ params:query {
   party: {{party}}
   from: {{party}}
   to: {{toPersonUuid}}
-  cascade: true
+  resource: {{resource}}
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "DirectRightKeys": [
+      "01dc6fefd5fb4b227cc3c3a2a54770552d8d70bbfd92904b64830605827c6ce7a7",   // authz_bruno_gar_resource1: read
+      "0106eba799a182fa816d64d80160f6571ead1e44ccf9cfb0377712e791e00d8e00"    // authz_bruno_gar_resource1: write
+    ]
+  }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/EnduserAPI/Connections/SystemUserAsAccessManager/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "DELETE_AsSysUsrAdmin_Connections_RemovePerson");
+  bru.setVar("requestName", "POST_AsSysUsrAdmin_Resource_ThroughDelegationAccess_ToPerson");
   
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   bru.setVar("toPersonUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser_tilgangsstyrer.personRightholderToAdd.partyUuid);
+  bru.setVar("resource", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser_tilgangsstyrer.hasResource);
   
   var getTokenParameters = {
     auth_systemUserId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser_tilgangsstyrer.partyUuid,
@@ -40,15 +54,10 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./test/EnduserAPI/Connections/SystemUserAsAccessManager/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
   test(bru.getVar("requestName"), function() {
     const data = res.getBody();
     
-    expect(res.status).to.equal(204);  
+    expect(res.status).to.equal(201);
   });
-}
-
-docs {
-  Lager connection til person
 }
