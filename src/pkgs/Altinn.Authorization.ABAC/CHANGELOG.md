@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Altinn/altinn-authorization-tmp/compare/Altinn.Authorization.ABAC-v0.1.1...Altinn.Authorization.ABAC-v0.1.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* clear S2259 + S2955 null-deref findings ([#3150](https://github.com/Altinn/altinn-authorization-tmp/issues/3150)) ([c24e8f0](https://github.com/Altinn/altinn-authorization-tmp/commit/c24e8f0b66bf4d9444798b2610160b212961bbfc))
+
 ## [0.1.1](https://github.com/Altinn/altinn-authorization-tmp/compare/Altinn.Authorization.ABAC-v0.1.0...Altinn.Authorization.ABAC-v0.1.1) (2025-11-04)
 
 
