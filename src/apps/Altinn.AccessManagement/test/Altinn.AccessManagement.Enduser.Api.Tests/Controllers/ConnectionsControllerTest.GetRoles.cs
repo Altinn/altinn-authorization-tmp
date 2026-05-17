@@ -156,6 +156,64 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(result);
             Assert.NotEmpty(result.Items);
             Assert.Contains(result.Items, r => r.Role.Id == RoleConstants.Rightholder.Id);
+            Assert.Contains(result.Items, r => r.Role.IsRevocable == false);
+            Assert.Contains(result.Items, r => r.Permissions.All(p => p.Reason != null));
+        }
+
+        /// <summary>
+        /// Malin (MD of Dumbo) queries roles from Dumbo to Malin. ManagingDirector maps to Altinn2 roles (e.g. UTINN) via RoleMap.
+        /// These inherited Altinn2 roles should have IsRevocable set to false since they are not directly assigned.
+        /// </summary>
+        [Fact]
+        public async Task GetRoles_InheritedAltinn2Role_IsRevocableIsFalse()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/roles?party={TestData.DumboAdventures.Id}&from={TestData.DumboAdventures.Id}&to={TestData.MalinEmilie.Id}",
+                TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            var result = JsonSerializer.Deserialize<PaginatedResult<RolePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+
+            // Find Altinn2 roles inherited via RoleMap from ManagingDirector (e.g. UTINN or REGNA)
+            var inheritedAltinn2Roles = result.Items.Where(r =>
+                r.Role.Provider?.Code == "sys-altinn2"
+                && r.Role.IsRevocable == false).ToList();
+
+            Assert.NotEmpty(inheritedAltinn2Roles);
+            foreach (var role in inheritedAltinn2Roles)
+            {
+                Assert.False(role.Role.IsRevocable, $"Inherited Altinn2 role '{role.Role.Code}' should have IsRevocable=false");
+            }
+        }
+
+        /// <summary>
+        /// Malin (MD of Dumbo) queries roles from Dumbo to Thea. Thea has a directly assigned Altinn2 role (REGNA/AccountingEmployee).
+        /// The directly assigned Altinn2 role should have IsRevocable set to true.
+        /// </summary>
+        [Fact]
+        public async Task GetRoles_DirectAltinn2Role_IsRevocableIsTrue()
+        {
+            HttpClient client = CreateClient(TestData.HanSolo.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/roles?party={TestData.HanSoloEnterprise.Id}&from={TestData.HanSoloEnterprise.Id}&to={TestData.LukeSkyWalker.Id}",
+                TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+
+            var result = JsonSerializer.Deserialize<PaginatedResult<RolePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+
+            // Find the directly assigned REGNA (AccountingEmployee) Altinn2 role
+            var regnaRole = result.Items.FirstOrDefault(r => r.Role.Code == "utinn");
+            Assert.NotNull(regnaRole);
+            Assert.True(regnaRole.Role.IsRevocable, "Directly assigned Altinn2 role REGNA should have IsRevocable=true");
         }
 
         /// <summary>
