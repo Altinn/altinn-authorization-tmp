@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -28,6 +29,7 @@ public interface IPackageService
     /// Searches for packages based on a search term.
     /// </summary>
     /// <param name="term">The search term to filter packages.</param>
+    /// <param name="strict">All terms must match in some degree</param>
     /// <param name="resourceProviderCodes">Resource.Provider.Code (brreg, digdir, skatt)</param>
     /// <param name="searchInResources">Indicate if term should filter on resource values</param>
     /// <param name="typeId">Filter for entityType</param>
@@ -35,7 +37,7 @@ public interface IPackageService
     /// <param name="allowPartialTranslation">Allow partial translation</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>A list of search results containing packages that match the term.</returns>
-    Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, bool strict = false, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the hierarchical structure of area groups.

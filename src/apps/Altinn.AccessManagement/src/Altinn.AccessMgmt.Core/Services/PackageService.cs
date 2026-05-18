@@ -44,38 +44,68 @@ public class PackageService : IPackageService
 
     private static SearchObject<PackageDto> ScorePackage(
     PackageDto package,
-    string term,
+    string[] tokens,
     bool searchInResources)
     {
         var totalScore = 0;
         var fields = new List<SearchField>();
 
+        // Phrase bonus when there's more than one token
+        if (tokens.Length > 1)
+        {
+            var phrase = string.Join(' ', tokens);
+            foreach (var rule in PackageRules)
+            {
+                var value = rule.Field(package);
+                if (rule.Match(value, phrase))
+                {
+                    totalScore += rule.Points * 2;
+                    fields.Add(new SearchField
+                    {
+                        Field = rule.FieldName + ".phrase",
+                        Value = value,
+                        Score = rule.Points * 2,
+                    });
+                }
+            }
+        }
+
+        // Per-token scoring
         foreach (var rule in PackageRules)
         {
             var value = rule.Field(package);
-            if (rule.Match(value, term))
+            foreach (var token in tokens)
             {
-                totalScore += rule.Points;
-                fields.Add(new SearchField
+                if (rule.Match(value, token))
                 {
-                    Field = rule.FieldName,
-                    Value = value,
-                    Score = rule.Points,
-                });
+                    totalScore += rule.Points;
+                    fields.Add(new SearchField
+                    {
+                        Field = rule.FieldName,
+                        Value = value,
+                        Score = rule.Points,
+                    });
+                }
             }
         }
 
         if (searchInResources)
         {
-            foreach (var resource in package.Resources.Where(t => t.Name.Contains(term, Ic)))
+            foreach (var resource in package.Resources)
             {
-                totalScore += 2;
-                fields.Add(new SearchField
+                foreach (var token in tokens)
                 {
-                    Field = "resources.name",
-                    Value = resource.Name,
-                    Score = 2,
-                });
+                    if (resource.Name.Contains(token, Ic))
+                    {
+                        totalScore += 2;
+                        fields.Add(new SearchField
+                        {
+                            Field = "resources.name",
+                            Value = resource.Name,
+                            Score = 2,
+                        });
+                    }
+                }
             }
         }
 
@@ -87,24 +117,41 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(
+    string term,
+    bool strict = false,
+    List<string> resourceProviderCodes = null,
+    bool searchInResources = false,
+    Guid? typeId = null,
+    string languageCode = "nob",
+    bool allowPartialTranslation = true,
+    CancellationToken ct = default)
     {
         var data = await GetSearchData(
-        resourceProviderCodes: resourceProviderCodes,
-        typeId: typeId,
-        languageCode: languageCode,
-        allowPartialTranslation: allowPartialTranslation,
-        cancellationToken: cancellationToken
-        );
+            resourceProviderCodes: resourceProviderCodes,
+            typeId: typeId,
+            languageCode: languageCode,
+            allowPartialTranslation: allowPartialTranslation,
+            cancellationToken: ct);
 
-        if (string.IsNullOrEmpty(term))
+        if (string.IsNullOrWhiteSpace(term))
         {
-            return data.Select(t => new SearchObject<PackageDto>() { Object = t, Score = 0, Fields = [] });
+            return data.Select(t => new SearchObject<PackageDto> { Object = t, Score = 0, Fields = [] });
         }
 
-        return data
-            .Select(p => ScorePackage(p, term, searchInResources))
-            .Where(s => s.Score > 0)
+        var tokens = term.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var scored = data
+            .Select(p => ScorePackage(p, tokens, searchInResources))
+            .Where(s => s.Score > 0);
+
+        if (strict && tokens.Length > 1)
+        {
+            scored = scored.Where(s => tokens.All(tok =>
+                s.Fields.Any(f => f.Value.Contains(tok, Ic))));
+        }
+
+        return scored
             .OrderByDescending(s => s.Score)
             .ToList();
     }
