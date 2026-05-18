@@ -97,8 +97,8 @@ public class PackagesControllerTest
 
         var serviceMock = new Mock<IPackageService>();
         serviceMock.Setup(s => s.SimpleSearch(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .Callback<string, List<string>, bool, Guid?, string, bool, CancellationToken>(
-                (_, _, _, _, lang, allowPartial, _) =>
+            .Callback<string, bool, List<string>, bool, Guid?, string, bool, CancellationToken>(
+                (_, _, _, _, _, lang, allowPartial, _) =>
                 {
                     capturedLanguageCode = lang;
                     capturedAllowPartial = allowPartial;
@@ -147,8 +147,8 @@ public class PackagesControllerTest
         Guid? capturedTypeId = null;
         var serviceMock = new Mock<IPackageService>();
         serviceMock.Setup(s => s.SimpleSearch(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .Callback<string, List<string>, bool, Guid?, string, bool, CancellationToken>(
-                (_, _, _, id, _, _, _) => capturedTypeId = id)
+            .Callback<string, bool, List<string>, bool, Guid?, string, bool, CancellationToken>(
+                (_, _, _, _, id, _, _, _) => capturedTypeId = id)
             .ReturnsAsync(new List<SearchObject<PackageDto>>
             {
                 new() { Object = new PackageDto { Id = Guid.NewGuid() }, Score = 1 },
