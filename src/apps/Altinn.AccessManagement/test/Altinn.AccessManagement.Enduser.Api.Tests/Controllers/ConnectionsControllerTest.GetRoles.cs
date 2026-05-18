@@ -155,9 +155,9 @@ public partial class ConnectionsControllerTest
             var result = JsonSerializer.Deserialize<PaginatedResult<RolePermissionDto>>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.NotNull(result);
             Assert.NotEmpty(result.Items);
-            Assert.Contains(result.Items, r => r.Role.Id == RoleConstants.Rightholder.Id);
-            Assert.Contains(result.Items, r => r.Role.IsRevocable == false);
-            Assert.Contains(result.Items, r => r.Permissions.All(p => p.Reason != null));
+            var rightholderRole = Assert.Single(result.Items, r => r.Role.Id == RoleConstants.Rightholder.Id);
+            Assert.False(rightholderRole.Role.IsRevocable);
+            Assert.All(rightholderRole.Permissions, permission => Assert.NotNull(permission.Reason));
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Malin (MD of Dumbo) queries roles from Dumbo to Thea. Thea has a directly assigned Altinn2 role (REGNA/AccountingEmployee).
+        /// Han Solo (MD of Dumbo) queries roles from HanSoloEnterprise to Luke SkyWalker. Luke SkyWalker has a directly assigned Altinn2 role (UTINN/ReporterSender).
         /// The directly assigned Altinn2 role should have IsRevocable set to true.
         /// </summary>
         [Fact]
@@ -211,9 +211,9 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(result);
 
             // Find the directly assigned REGNA (AccountingEmployee) Altinn2 role
-            var regnaRole = result.Items.FirstOrDefault(r => r.Role.Code == "utinn");
-            Assert.NotNull(regnaRole);
-            Assert.True(regnaRole.Role.IsRevocable, "Directly assigned Altinn2 role REGNA should have IsRevocable=true");
+            var utinnRole = result.Items.FirstOrDefault(r => r.Role.Code == "utinn");
+            Assert.NotNull(utinnRole);
+            Assert.True(utinnRole.Role.IsRevocable, "Directly assigned Altinn2 role UTINN should have IsRevocable=true");
         }
 
         /// <summary>

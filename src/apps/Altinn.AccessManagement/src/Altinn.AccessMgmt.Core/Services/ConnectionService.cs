@@ -2464,7 +2464,7 @@ public partial class ConnectionService
 
         if (existingAssignment is null)
         {
-            // Check if connection exists and return problem if connection is not a direct revokable
+            // Check if connection exists and return problem if connection is not a direct revocable
             var direction = partyId == fromId
             ? ConnectionQueryDirection.ToOthers
             : ConnectionQueryDirection.FromOthers;
@@ -2473,7 +2473,7 @@ public partial class ConnectionService
             {
                 FromIds = [fromId],
                 ToIds = [toId],
-                EnrichEntities = true,
+                EnrichEntities = false,
                 IncludeSubConnections = true,
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
