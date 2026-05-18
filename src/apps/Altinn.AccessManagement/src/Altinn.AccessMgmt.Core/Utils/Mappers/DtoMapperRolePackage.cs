@@ -68,21 +68,17 @@ public partial class DtoMapper : IDtoMapper
         };
 
     /// <summary>Convert Role to RoleDto including revocable information.</summary>
-    public static RoleDto? Convert(Role? obj, bool revocable) =>
-        obj is null ? null : new RoleDto
+    public static RoleDto? Convert(Role? obj, bool revocable)
+    {
+        RoleDto? dto = Convert(obj);
+        if (dto is null)
         {
-            Id = obj.Id,
-            Name = obj.Name,
-            Description = obj.Description,
-            Code = obj.Code,
-            IsKeyRole = obj.IsKeyRole,
-            Urn = obj.Urn,
-            Provider = Convert(obj.Provider),
-            LegacyRoleCode = obj.LegacyCode,
-            LegacyUrn = obj.LegacyUrn,
-            IsResourcePolicyAvailable = obj.IsAvailableForServiceOwners,
-            IsRevocable = revocable
-        };
+            return null;
+        }
+
+        dto.IsRevocable = revocable;
+        return dto;
+    }
 
     /// <summary>Convert AreaGroup to AreaGroupDto.</summary>
     public static AreaGroupDto? Convert(AreaGroup? areaGroup) =>
