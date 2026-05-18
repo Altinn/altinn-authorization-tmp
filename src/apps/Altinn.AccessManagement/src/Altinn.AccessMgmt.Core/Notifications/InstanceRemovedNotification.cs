@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Notifications;
 
 /// <summary>
-/// Provides helper methods for managing outbox notifications related to access being revoked.
+/// Provides helper methods for managing outbox notifications related to instance shares being revoked.
 /// </summary>
 /// <remarks>
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
-/// handled by <c>access_removed</c>.
+/// handled by <c>instance_removed</c>.
 /// </remarks>
 public static class InstanceRemovedNotification
 {
@@ -37,14 +37,16 @@ public static class InstanceRemovedNotification
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="fromId">
-    /// The identifier of the entity that removed access.
+    /// The identifier of the entity that revoked the instance share.
     /// </param>
     /// <param name="toId">
-    /// The identifier of the entity whose access was removed.
+    /// The identifier of the entity whose instance share was revoked.
     /// </param>
-    /// <param name="resourceId"></param>
+    /// <param name="resourceId">
+    /// The identifier of the resource associated with the instance.
+    /// </param>
     /// <param name="instanceId">
-    /// Optional identifier of the instance for which access was removed.
+    /// The identifier of the instance whose share was revoked.
     /// </param>
     /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
@@ -81,20 +83,22 @@ public static class InstanceRemovedNotification
     /// </summary>
     /// <remarks>
     /// This method updates an existing outbox message by removing the specified instance
-    /// from its payload. This is typically used when an instance is removed before the notification is sent.
+    /// from its payload. This is typically used when an instance share is re-granted before the removal notification is sent.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="fromId">
-    /// The identifier of the entity that removed access.
+    /// The identifier of the entity that revoked the instance share.
     /// </param>
     /// <param name="toId">
-    /// The identifier of the entity whose access was removed.
+    /// The identifier of the entity whose instance share was revoked.
     /// </param>
-    /// <param name="resourceId"></param>
+    /// <param name="resourceId">
+    /// The identifier of the resource associated with the instance.
+    /// </param>
     /// <param name="instanceId">
-    /// Optional identifier of the instance to remove from the notification.
+    /// The identifier of the instance to remove from the notification.
     /// </param>
     /// <param name="ct">
     /// A token used to observe cancellation while querying the database.
@@ -146,7 +150,7 @@ public static class InstanceRemovedNotification
     }
 
     /// <summary>
-    /// Cancels a pending access removed notification by removing its outbox message.
+    /// Cancels a pending instance removed notification by removing its outbox message.
     /// </summary>
     /// <remarks>
     /// This method attempts to locate a pending outbox message matching the specified
@@ -159,10 +163,10 @@ public static class InstanceRemovedNotification
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="from">
-    /// The identifier of the entity that removed access.
+    /// The identifier of the entity that revoked the instance share.
     /// </param>
     /// <param name="to">
-    /// The identifier of the entity whose access was removed.
+    /// The identifier of the entity whose instance share was revoked.
     /// </param>
     /// <param name="cancellationToken">
     /// A token used to observe cancellation while querying the database.

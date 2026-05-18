@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Notifications;
 
 /// <summary>
-/// Provides helper methods for managing outbox notifications related to access being granted.
+/// Provides helper methods for managing outbox notifications related to instances being shared.
 /// </summary>
 /// <remarks>
 /// Encapsulates the logic for creating, scheduling, and cancelling outbox messages
-/// handled by <c>access_added</c>.
+/// handled by <c>instance_added</c>.
 /// </remarks>
 public static class InstanceAddedNotification
 {
@@ -37,14 +37,16 @@ public static class InstanceAddedNotification
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="fromId">
-    /// The identifier of the entity granting access.
+    /// The identifier of the entity sharing the instance.
     /// </param>
     /// <param name="toId">
-    /// The identifier of the entity receiving access.
+    /// The identifier of the entity receiving the shared instance.
     /// </param>
-    /// <param name="resourceId"></param>
+    /// <param name="resourceId">
+    /// The identifier of the resource associated with the instance.
+    /// </param>
     /// <param name="instanceId">
-    /// Optional identifier of the instance for which access was granted.
+    /// The identifier of the instance being shared.
     /// </param>
     /// <param name="notifyInSeconds">
     /// The delay, in seconds, before the outbox message should be processed.
@@ -77,7 +79,7 @@ public static class InstanceAddedNotification
     }
 
     /// <summary>
-    /// Cancels a pending access added notification by removing its outbox message.
+    /// Cancels a pending instance added notification by removing its outbox message.
     /// </summary>
     /// <remarks>
     /// This method attempts to locate a pending outbox message matching the specified
@@ -90,10 +92,10 @@ public static class InstanceAddedNotification
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="from">
-    /// The identifier of the entity granting access.
+    /// The identifier of the entity sharing the instance.
     /// </param>
     /// <param name="to">
-    /// The identifier of the entity receiving access.
+    /// The identifier of the entity receiving the shared instance.
     /// </param>
     /// <param name="cancellationToken">
     /// A token used to observe cancellation while querying the database.
@@ -111,24 +113,26 @@ public static class InstanceAddedNotification
     }
 
     /// <summary>
-    /// Removes a specific instance from an existing access added notification.
+    /// Removes a specific instance from an existing instance added notification.
     /// </summary>
     /// <remarks>
     /// This method updates an existing outbox message by removing the specified instance
-    /// from its payload. This is typically used when access is revoked before the notification is sent.
+    /// from its payload. This is typically used when an instance share is revoked before the notification is sent.
     /// </remarks>
     /// <param name="db">
     /// The <see cref="AppDbContext"/> used to access the outbox messages.
     /// </param>
     /// <param name="fromId">
-    /// The identifier of the entity that granted access.
+    /// The identifier of the entity that shared the instance.
     /// </param>
     /// <param name="toId">
-    /// The identifier of the entity that received access.
+    /// The identifier of the entity that received the shared instance.
     /// </param>
-    /// <param name="resourceId"></param>
+    /// <param name="resourceId">
+    /// The identifier of the resource associated with the instance.
+    /// </param>
     /// <param name="instanceId">
-    /// Optional identifier of the instance to remove from the notification.
+    /// The identifier of the instance to remove from the notification.
     /// </param>
     /// <param name="ct">
     /// A token used to observe cancellation while querying the database.

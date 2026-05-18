@@ -18,6 +18,10 @@ using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
+/// <summary>
+/// Handles outbox messages for instance added notifications by sending email notifications to recipients
+/// when instances have been shared with them.
+/// </summary>
 public class InstanceAddedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
@@ -33,7 +37,7 @@ public class InstanceAddedNotificationHandler(
             return OutboxStatus.Completed;
         }
 
-        var (recipient, requester, instances, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        var (from, to, instances, idempotencyId) = await UnwrapMessage(message, cancellationToken);
 
         if (!instances.Any())
         {
@@ -46,7 +50,7 @@ public class InstanceAddedNotificationHandler(
         {
             IdempotencyId = idempotencyId,
             SendersReference = idempotencyId,
-            Recipient = CreateRecipient(recipient, requester, instances),
+            Recipient = CreateRecipient(from, to, instances),
         };
 
         var response = await notification.Send(content, cancellationToken);
@@ -89,7 +93,7 @@ public class InstanceAddedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity To, Entity From, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity From, Entity To, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<InstanceAddedNotificationMessage>(message.Data);
         if (content is null)
@@ -113,7 +117,7 @@ public class InstanceAddedNotificationHandler(
             entityFrom,
             entityTo,
             await GetInstances(content, cancellationToken),
-            $"auth_{AccessAddedNotification.Handler}_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
+            $"auth_{InstanceAddedNotification.Handler}_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
         );
 
         async Task<List<Instance>> GetInstances(InstanceAddedNotificationMessage content, CancellationToken cancellationToken)
@@ -272,28 +276,61 @@ public class InstanceAddedNotificationHandler(
         }
     }
 
+    /// <summary>
+    /// Represents an instance with its associated resource information.
+    /// </summary>
     public class Instance
     {
+        /// <summary>
+        /// Gets or sets the list of instance identifiers.
+        /// </summary>
         public List<string> InstanceIds { get; set; } = [];
 
+        /// <summary>
+        /// Gets or sets the resource associated with the instances.
+        /// </summary>
         public Resource Resource { get; set; }
     }
 }
 
+/// <summary>
+/// Represents the notification message payload for instance added notifications.
+/// </summary>
 public class InstanceAddedNotificationMessage
 {
+    /// <summary>
+    /// Gets or sets the identifier of the entity sharing the instances.
+    /// </summary>
     public Guid FromId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the identifier of the entity receiving the shared instances.
+    /// </summary>
     public Guid ToId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the list of instances being shared, grouped by resource.
+    /// </summary>
     public List<Instance> Instances { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the number of times this notification has been updated (used for scheduling).
+    /// </summary>
     public int Updated { get; set; }
 
+    /// <summary>
+    /// Represents a group of instances for a specific resource.
+    /// </summary>
     public class Instance
     {
+        /// <summary>
+        /// Gets or sets the list of instance identifiers for this resource.
+        /// </summary>
         public List<string> InstanceIds { get; set; } = [];
 
+        /// <summary>
+        /// Gets or sets the resource identifier.
+        /// </summary>
         public Guid ResourceId { get; set; }
     }
 }

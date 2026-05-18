@@ -18,6 +18,10 @@ using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Outbox;
 
+/// <summary>
+/// Handles outbox messages for instance removed notifications by sending email notifications to recipients
+/// when instances they had access to have been unshared.
+/// </summary>
 public class InstanceRemovedNotificationHandler(
     AppDbContext db,
     IAltinnNotification notification,
@@ -33,7 +37,7 @@ public class InstanceRemovedNotificationHandler(
             return OutboxStatus.Completed;
         }
 
-        var (recipient, requester, instanceIds, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        var (from, to, instanceIds, idempotencyId) = await UnwrapMessage(message, cancellationToken);
         if (!instanceIds.Any())
         {
             db.OutboxMessageLogs.Add(message, $"No instance IDs available. Access was most likely removed and immediately added.");
@@ -45,7 +49,7 @@ public class InstanceRemovedNotificationHandler(
         {
             IdempotencyId = idempotencyId,
             SendersReference = idempotencyId,
-            Recipient = CreateRecipient(recipient, requester, instanceIds),
+            Recipient = CreateRecipient(from, to, instanceIds),
         };
 
         var response = await notification.Send(content, cancellationToken);
@@ -88,7 +92,7 @@ public class InstanceRemovedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity From, Entity To, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<InstanceRemovedNotificationMessage>(message.Data);
         if (content is null)
@@ -268,28 +272,61 @@ public class InstanceRemovedNotificationHandler(
         }
     }
 
+    /// <summary>
+    /// Represents an instance with its associated resource information.
+    /// </summary>
     public class Instance
     {
+        /// <summary>
+        /// Gets or sets the list of instance identifiers.
+        /// </summary>
         public List<string> InstanceIds { get; set; } = [];
 
+        /// <summary>
+        /// Gets or sets the resource associated with the instances.
+        /// </summary>
         public Resource Resource { get; set; }
     }
 }
 
+/// <summary>
+/// Represents the notification message payload for instance removed notifications.
+/// </summary>
 public class InstanceRemovedNotificationMessage
 {
+    /// <summary>
+    /// Gets or sets the identifier of the entity revoking the instance shares.
+    /// </summary>
     public Guid FromId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the identifier of the entity whose instance shares are being revoked.
+    /// </summary>
     public Guid ToId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the list of instances being unshared, grouped by resource.
+    /// </summary>
     public List<Instance> Instances { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the number of times this notification has been updated (used for scheduling).
+    /// </summary>
     public int Updated { get; set; }
 
+    /// <summary>
+    /// Represents a group of instances for a specific resource.
+    /// </summary>
     public class Instance
     {
+        /// <summary>
+        /// Gets or sets the list of instance identifiers for this resource.
+        /// </summary>
         public List<string> InstanceIds { get; set; } = [];
 
+        /// <summary>
+        /// Gets or sets the resource identifier.
+        /// </summary>
         public Guid ResourceId { get; set; }
     }
 }
