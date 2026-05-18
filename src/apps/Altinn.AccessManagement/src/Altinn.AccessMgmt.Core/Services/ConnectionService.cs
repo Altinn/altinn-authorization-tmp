@@ -814,59 +814,11 @@ public partial class ConnectionService(
 
     #endregion
 
-    private async Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
-    {
-        if (fromId is null && toId is null)
-        {
-            throw new UnreachableException();
-        }
+    private Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken) =>
+        ConnectionWriteValidation.GetFromAndToEntitiesAsync(dbContext, fromId, toId, cancellationToken);
 
-        var entities = await dbContext.Entities
-            .AsNoTracking()
-            .Where(e => e.Id == fromId || e.Id == toId)
-            .Include(e => e.Type)
-            .ToListAsync(cancellationToken);
-
-        var fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
-        var toEntity = entities.FirstOrDefault(e => e.Id == toId);
-
-        return (fromEntity, toEntity);
-    }
-
-    private ValidationProblemInstance? ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options)
-    {
-        var problem = ValidationComposer.Validate(
-            EntityValidation.FromExists(from),
-            EntityValidation.ToExists(to)
-        );
-
-        if (problem is { })
-        {
-            return problem;
-        }
-
-        if (options.AllowedWriteFromEntityTypes.Any() && options.AllowedWriteToEntityTypes.Any())
-        {
-            problem = ValidationComposer.Validate(
-                EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes]),
-                EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
-            );
-        }
-        else if (options.AllowedWriteFromEntityTypes.Any())
-        {
-            problem = ValidationComposer.Validate(
-                EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes])
-            );
-        }
-        else if (options.AllowedWriteToEntityTypes.Any())
-        {
-            problem = ValidationComposer.Validate(
-                EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
-            );
-        }
-
-        return problem;
-    }
+    private static ValidationProblemInstance ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options) =>
+        ConnectionWriteValidation.ValidateWriteOpInput(from, to, options);
 
     private ProblemInstance ValidateReadOpInput(Guid? fromId, Entity? from, Guid? toId, Entity? to, ConnectionOptions options)
     {
@@ -1307,12 +1259,17 @@ public partial class ConnectionService(
     /// <inheritdoc />
     public async Task<Result<bool>> AddResource(Entity from, Entity to, Resource resourceObj, RightKeyListDto rightKeys, Entity by, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
+        if (resourceObj is null)
+        {
+            return Problems.InvalidResource;
+        }
+
         if (rightKeys?.DirectRightKeys is null || !rightKeys.DirectRightKeys.Any())
         {
             return Problems.MissingRightKey;
         }
 
-        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj?.RefId, configureConnection, cancellationToken: cancellationToken);
+        var canDelegate = await ResourceDelegationCheck(by.Id, from.Id, resourceObj.RefId, configureConnection, cancellationToken: cancellationToken);
         if (canDelegate.IsProblem)
         {
             return canDelegate.Problem;
@@ -1340,6 +1297,11 @@ public partial class ConnectionService(
 
         List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, keys, by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
 
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
         await AccessAddedNotification.Upsert(
             dbContext,
             from.Id,
@@ -1349,11 +1311,6 @@ public partial class ConnectionService(
             appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
-
-        if (!result.All(r => r.CreatedSuccessfully))
-        {
-            return Problems.DelegationPolicyRuleWriteFailed;
-        }
 
         return true;
     }
@@ -1725,12 +1682,13 @@ public partial class ConnectionService(
             return problem;
         }
 
-        if (from.VariantId != EntityVariantConstants.SI)
+        // Guaranteed non-null here: TryBuild above returned false, so both from/to passed their null guards.
+        if (from!.VariantId != EntityVariantConstants.SI)
         {
             errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
         }
 
-        if (to.VariantId != EntityVariantConstants.SI_EMAIL)
+        if (to!.VariantId != EntityVariantConstants.SI_EMAIL)
         {
             errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
         }
@@ -2017,12 +1975,6 @@ public partial class ConnectionService
         }
 
         #region Data
-
-        var baseQuery = dbContext.AssignmentResources.AsNoTracking()
-            .WhereIf(fromId.HasValue, t => t.Assignment.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.Assignment.ToId == toId.Value)
-            .WhereIf(roleId.HasValue, t => t.Assignment.RoleId == roleId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value);
 
         // Direct
         var direct = dbContext.AssignmentResources.AsNoTracking()

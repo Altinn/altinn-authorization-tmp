@@ -15,17 +15,6 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc/>
 public class DelegationService(AppDbContext db, IAssignmentService assignmentService, IRoleService roleService, IPackageService packageService, IResourceService resourceService, IEntityService entityService) : IDelegationService
 {
-    private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
-    {
-        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken);
-        if (assignment == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> GetDelegations(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
     {
@@ -91,7 +80,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 
         var delegation = await GetDelegation(delegationId, cancellationToken);
         var fromAssignment = await assignmentService.GetAssignment(delegation.FromId, cancellationToken);
-        var toAssignment = await assignmentService.GetAssignment(delegation.ToId, cancellationToken);
         var assignmentPackages = await assignmentService.GetPackagesForAssignment(fromAssignment.Id, cancellationToken);
         var rolePackages = await roleService.GetRolePackages(fromAssignment.RoleId, variantId: null, includeResources: false, cancellationToken: cancellationToken);
 
@@ -130,7 +118,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 
         var delegation = await GetDelegation(delegationId, cancellationToken);
         var fromAssignment = await assignmentService.GetAssignment(delegation.FromId, cancellationToken);
-        var toAssignment = await assignmentService.GetAssignment(delegation.ToId, cancellationToken);
 
         var assignmentResources = await assignmentService.GetAssignmentResources(fromAssignment.Id, cancellationToken);
 
@@ -601,15 +588,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         {
             return delegation;
         }
-    }
-
-    private async Task<Delegation> GetDelegation(Assignment from, Assignment to, Entity facilitator, CancellationToken cancellationToken = default)
-    {
-        return await db.Delegations
-        .AsNoTracking()
-        .Include(t => t.From)
-        .Where(t => t.FromId == from.Id && t.ToId == to.Id && t.FacilitatorId == facilitator.Id)
-        .FirstOrDefaultAsync(cancellationToken);
     }
 
     private async Task<Assignment> GetOrCreateAssignment(Entity from, Entity to, Role role, AuditValues audit = null, CancellationToken cancellationToken = default)
