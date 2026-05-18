@@ -409,7 +409,7 @@ public interface IConnectionService
     /// <summary>
     /// Removes the specified role assignment between two parties identified by <paramref name="fromId"/> and <paramref name="toId"/>.
     /// </summary>
-    /// <param name="partyId">The unique identifier of the party the opperation is performed on behalf of.</param>
+    /// <param name="partyId">The unique identifier of the party the operation is performed on behalf of.</param>
     /// <param name="fromId">The unique identifier of the from party the assigned role is for.</param>
     /// <param name="toId">The unique identifier of the to party the assigned role is given to.</param>
     /// <param name="roleCode">The unique code of the assigned role to remove.</param>

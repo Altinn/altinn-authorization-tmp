@@ -947,7 +947,7 @@ public partial class ConnectionService(
             bool revocable = false;
             if (role.ProviderId == ProviderConstants.Altinn2.Id)
             {
-                revocable = permissions.Any(p => p.Reason.Items.Any(r => r.Name == "direct"));
+                revocable = permissions.Any(p => p.Reason.Contains(AccessReasonFlag.Direct));
             }
 
             return new RolePermissionDto
