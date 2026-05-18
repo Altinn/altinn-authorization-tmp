@@ -594,15 +594,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
             {
                 try
                 {
-                    var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(consentEventsQuery.ContinuationToken));
-                    var parts = decoded.Split('|');
-                    if (parts.Length != 2)
-                    {
-                        throw new FormatException("Invalid continuation token format.");
-                    }
-
-                    cursorCreated = DateTimeOffset.Parse(parts[0], null, DateTimeStyles.RoundtripKind);
-                    cursorEventId = Guid.Parse(parts[1]);
+                    byte[] bytes = Convert.FromBase64String(consentEventsQuery.ContinuationToken);
+                    cursorEventId = new Guid(bytes);
                 }
                 catch
                 {

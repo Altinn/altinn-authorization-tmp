@@ -148,11 +148,11 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetConsentStatusChanges(
-            [FromQuery] string? continuationToken = null,
-            [FromQuery] DateTime? createdAfter = null,
-            [FromQuery] DateTime? createdBefore = null,
-            [FromQuery] string[]? eventTypes = null,
-            [FromQuery] Guid? consentRequestId = null, 
+            [FromQuery(Name = "continuationToken")] string? continuationToken = null,
+            [FromQuery(Name = "createdAfter")] DateTime? createdAfter = null,
+            [FromQuery(Name = "createdBefore")] DateTime? createdBefore = null,
+            [FromQuery(Name = "eventTypes")] string[]? eventTypes = null,
+            [FromQuery(Name = "consentRequestId")] Guid? consentRequestId = null, 
             CancellationToken cancellationToken = default)
         {
             int pageSize = _consentSettings.CurrentValue.EventsPageSize;
@@ -187,11 +187,17 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             string? nextLink = null;
             if (dtos.Count == pageSize)
             {
-                DateTimeOffset created = changes.Last().ChangedDate;
-                Guid consenteventid = changes.Last().ConsentEventId;
-                var token = $"{created:O}|{consenteventid}";
-                string nextToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
-                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?continuationToken={Uri.EscapeDataString(nextToken)}";
+                Guid consentEventId = changes.Last().ConsentEventId;
+                string nextToken = Convert.ToBase64String(consentEventId.ToByteArray());
+
+                // Rebuild query string with all existing parameters, replacing/adding continuationToken
+                var queryParams = Request.Query
+                    .Where(kv => !kv.Key.Equals("continuationToken", StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(kv => kv.Value.Select(v => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(v ?? string.Empty)}"))
+                    .Append($"continuationToken={Uri.EscapeDataString(nextToken)}")
+                    .ToList();
+
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?{string.Join("&", queryParams)}";
             }
 
             // Return paginated result

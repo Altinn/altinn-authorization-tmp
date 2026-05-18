@@ -53,6 +53,21 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         private LegacyApiFixture _fixture = null!;
         private readonly ITestOutputHelper _output;
 
+        // ── Seeded consent ID buckets ─────────────────────────────────────────
+        // Populated by CreateAndUpdateConsentsForGet so every test can reference
+        // exact IDs without repeating setup logic.
+        private List<Guid> _acceptedConsentIds = [];   // 5 IDs (indexes 0-4)
+        private List<Guid> _rejectedConsentIds = [];   // 5 IDs (indexes 5-9)
+        private List<Guid> _revokedConsentIds = [];   // 3 IDs (subset of accepted, indexes 0-2)
+
+        // ── Seeded event counts (derived from numberOfConsents=10) ────────────
+        // accepted=5, rejected=5, revoked=3  →  total=13 events across 3 pages
+        private const int SeededAccepted = 5;
+        private const int SeededRejected = 5;
+        private const int SeededRevoked = 3;
+        private const int SeededTotal = SeededAccepted + SeededRejected + SeededRevoked; // 13
+        private const int PageSize = 5;
+
         private static readonly Altinn.AccessMgmt.PersistenceEF.Models.ResourceType ConsentResourceType = new()
         {
             Id = Guid.Parse("0196b0c0-0000-7000-8000-000000000001"),
@@ -487,6 +502,353 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Null(page3.Links.Next); // No more data → terminates correctly
         }
 
+        /// <summary>
+        /// eventTypes=accepted → exactly 5 seeded accepted events.
+        /// Fits exactly one full page; the follow-up page is empty (no next link).
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByEventTypeAccepted_ReturnsAllAcceptedAcrossPages()
+        {
+            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=accepted");
+
+            Assert.Equal(SeededAccepted, allItems.Count);
+            Assert.All(allItems, item => Assert.Equal("accepted", item.EventType, StringComparer.OrdinalIgnoreCase));
+            ////Every accepted consent ID must be represented exactly once
+            Assert.Equal(_acceptedConsentIds.ToHashSet(), allItems.Select(i => i.ConsentRequestId).ToHashSet());
+        }
+
+        /// <summary>
+        /// eventTypes=rejected → exactly 5 seeded rejected events.
+        /// Fits exactly one full page; the follow-up page is empty (no next link).
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByEventTypeRejected_ReturnsAllRejectedAcrossPages()
+        {
+            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=rejected");
+
+            Assert.Equal(SeededRejected, allItems.Count);
+            Assert.All(allItems, item => Assert.Equal("rejected", item.EventType, StringComparer.OrdinalIgnoreCase));
+            Assert.Equal(_rejectedConsentIds.ToHashSet(), allItems.Select(i => i.ConsentRequestId).ToHashSet());
+        }
+
+        /// <summary>
+        /// eventTypes=revoked → exactly 3 seeded revoked events.
+        /// Fewer than one page, so no next link on the first (and only) response.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByEventTypeRevoked_ReturnsAllRevokedInOnePage()
+        {
+            HttpClient client = GetAuthorizedReadClient();
+
+            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=revoked";
+            HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(SeededRevoked, result.Items.Count());
+            Assert.Null(result.Links.Next); // 3 < pageSize=5 → no next link
+            Assert.All(result.Items, item => Assert.Equal("revoked", item.EventType, StringComparer.OrdinalIgnoreCase));
+            Assert.Equal(_revokedConsentIds.ToHashSet(), result.Items.Select(i => i.ConsentRequestId).ToHashSet());
+        }
+
+        /// <summary>
+        /// eventTypes=accepted&eventTypes=revoked → 5 accepted + 3 revoked = 8 events.
+        /// Spans two pages (5 + 3). Verifies correct counts and that no rejected events leak in.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByAcceptedAndRevoked_Returns8EventsAcrossTwoPages()
+        {
+            const int expectedTotal = SeededAccepted + SeededRevoked; // 8
+            var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "accepted", "revoked" };
+
+            HttpClient client = GetAuthorizedReadClient();
+
+            // Page 1 – expect a full page since 8 > pageSize=5
+            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=accepted&eventTypes=revoked";
+            var response1 = await client.GetAsync(url, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
+            var page1 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response1.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(PageSize, page1.Items.Count());
+            Assert.NotNull(page1.Links.Next);
+            Assert.All(page1.Items, item => Assert.Contains(item.EventType, allowedTypes));
+
+            // Page 2 – expect remaining 3 items and no next link
+            var response2 = await client.GetAsync(page1.Links.Next, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+            var page2 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response2.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(expectedTotal - PageSize, page2.Items.Count()); // 3
+            Assert.Null(page2.Links.Next);
+            Assert.All(page2.Items, item => Assert.Contains(item.EventType, allowedTypes));
+
+            // Aggregate assertions
+            var allItems = page1.Items.Concat(page2.Items).ToList();
+            Assert.Equal(expectedTotal, allItems.Count);
+            Assert.Equal(SeededAccepted, allItems.Count(i => i.EventType.Equals("accepted", StringComparison.OrdinalIgnoreCase)));
+            Assert.Equal(SeededRevoked, allItems.Count(i => i.EventType.Equals("revoked", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        /// <summary>
+        /// consentRequestId=&lt;revokedId&gt; → that consent was accepted then revoked,
+        /// so exactly 2 events are expected (accepted + revoked), both in one page.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByConsentRequestId_RevokedConsent_ReturnsTwoEvents()
+        {
+            // _revokedConsentIds[0] was accepted first, then revoked → 2 non-created events
+            Guid targetId = _revokedConsentIds[0];
+
+            HttpClient client = GetAuthorizedReadClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}";
+            var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(2, result.Items.Count()); // accepted + revoked
+            Assert.Null(result.Links.Next);        // 2 < pageSize=5
+            Assert.All(result.Items, item => Assert.Equal(targetId, item.ConsentRequestId));
+
+            var eventTypes = result.Items.Select(i => i.EventType).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            Assert.Contains("accepted", eventTypes);
+            Assert.Contains("revoked", eventTypes);
+        }
+
+        /// <summary>
+        /// consentRequestId=&lt;acceptedOnlyId&gt; → consent was accepted but NOT revoked,
+        /// so exactly 1 event expected (accepted).
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByConsentRequestId_AcceptedOnlyConsent_ReturnsOneEvent()
+        {
+            // _acceptedConsentIds[3] was accepted but not revoked (only indexes 0-2 were revoked)
+            Guid targetId = _acceptedConsentIds[3];
+
+            HttpClient client = GetAuthorizedReadClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}";
+            var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(1, result.Items.Count());
+            Assert.Null(result.Links.Next);
+            Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
+            Assert.Equal("accepted", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// consentRequestId=&lt;rejectedId&gt; → exactly 1 event (rejected).
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByConsentRequestId_RejectedConsent_ReturnsOneEvent()
+        {
+            Guid targetId = _rejectedConsentIds[0];
+
+            HttpClient client = GetAuthorizedReadClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}";
+            var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(1, result.Items.Count());
+            Assert.Null(result.Links.Next);
+            Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
+            Assert.Equal("rejected", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// consentRequestId + eventTypes=revoked → for a revoked consent, only the revoked event is returned.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_FilterByConsentRequestIdAndEventType_ReturnsOnlyMatchingEvent()
+        {
+            Guid targetId = _revokedConsentIds[0];
+
+            HttpClient client = GetAuthorizedReadClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}&eventTypes=revoked";
+            var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Equal(1, result.Items.Count());
+            Assert.Null(result.Links.Next);
+            Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
+            Assert.Equal("revoked", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// createdAfter=tomorrow → no events fall after a future timestamp, result is empty.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_CreatedAfterFuture_ReturnsEmpty()
+        {
+            string futureTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
+
+            HttpClient client = GetAuthorizedReadClient();
+            var response = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdAfter={futureTimestamp}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Empty(result.Items);
+            Assert.Null(result.Links.Next);
+        }
+
+        /// <summary>
+        /// createdAfter=yesterday → all 13 seeded events fall after that bound.
+        /// Verifies count across all pages and that ordering is ascending.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_CreatedAfterYesterday_ReturnsAllEventsAcrossPages()
+        {
+            string pastTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
+            var allItems = await FetchAllPages(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdAfter={pastTimestamp}");
+
+            Assert.Equal(SeededTotal, allItems.Count);
+
+            // All events must be after the lower bound
+            DateTimeOffset lowerBound = DateTimeOffset.UtcNow.AddDays(-1);
+            Assert.All(allItems, item => Assert.True(item.ChangedDate >= lowerBound));
+
+            // Ascending order must be preserved across pages
+            for (int i = 1; i < allItems.Count; i++)
+            {
+                Assert.True(allItems[i - 1].ChangedDate <= allItems[i].ChangedDate,
+                    $"Order violation at index {i}");
+            }
+        }
+
+        /// <summary>
+        /// createdBefore=yesterday → no events fall before a past lower bound, result is empty.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_CreatedBeforeYesterday_ReturnsEmpty()
+        {
+            string pastTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
+
+            HttpClient client = GetAuthorizedReadClient();
+            var response = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdBefore={pastTimestamp}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            Assert.Empty(result.Items);
+            Assert.Null(result.Links.Next);
+        }
+
+        /// <summary>
+        /// createdBefore=tomorrow → all 13 seeded events fall before that upper bound.
+        /// Verifies count across all pages.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_CreatedBeforeTomorrow_ReturnsAllEventsAcrossPages()
+        {
+            string futureTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
+            var allItems = await FetchAllPages(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdBefore={futureTimestamp}");
+
+            Assert.Equal(SeededTotal, allItems.Count);
+        }
+
+        /// <summary>
+        /// createdAfter=yesterday + createdBefore=tomorrow → time window contains all 13 events.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_CreatedAfterAndBeforeCombined_ReturnsAllEventsWithinWindow()
+        {
+            string after = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
+            string before = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
+
+            var allItems = await FetchAllPages(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdAfter={after}&createdBefore={before}");
+
+            Assert.Equal(SeededTotal, allItems.Count);
+        }
+
+        /// <summary>
+        /// An invalid/garbage continuationToken is silently ignored and the response
+        /// equals the first page of an unfiltered request.
+        /// </summary>
+        [Fact]
+        public async Task GetConsentStatusChanges_InvalidContinuationToken_StartsFromBeginning()
+        {
+            string badToken = Uri.EscapeDataString("not!!a$$valid##base64");
+
+            HttpClient client = GetAuthorizedReadClient();
+
+            var responseWithBad = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?continuationToken={badToken}",
+                TestContext.Current.CancellationToken);
+            var responseClean = await client.GetAsync(
+                "/accessmanagement/api/v1/enterprise/consentrequests/events",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, responseWithBad.StatusCode);
+
+            var resultWithBad = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await responseWithBad.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+            var resultClean = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                await responseClean.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+            // Invalid token must not skip any data — same first page as the clean request
+            Assert.Equal(PageSize, resultWithBad.Items.Count());
+            Assert.Equal(
+                resultClean.Items.Select(i => i.ConsentRequestId),
+                resultWithBad.Items.Select(i => i.ConsentRequestId));
+        }
+
+        /// <summary>
+        /// Follows all next-page links for a given start URL and returns every item collected.
+        /// Uses the read-scoped Maskinporten token for 810419512.
+        /// </summary>
+        private async Task<List<ConsentStatusChangeDto>> FetchAllPages(string startUrl)
+        {
+            HttpClient client = GetAuthorizedReadClient();
+            var all = new List<ConsentStatusChangeDto>();
+            string? nextUrl = startUrl;
+
+            while (nextUrl != null)
+            {
+                var response = await client.GetAsync(nextUrl, TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                var page = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                    await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+
+                all.AddRange(page.Items);
+                nextUrl = page.Links.Next;
+            }
+
+            return all;
+        }
+
+        private HttpClient GetAuthorizedReadClient()
+        {
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return client;
+        }
+
         private async Task CreateAndUpdateConsentsForGet(int numberOfConsents)
         {
             var createdConsentIds = new List<Guid>();
@@ -561,6 +923,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 acceptClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage acceptResponse = await acceptClient.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{consentId}/accept/", httpContent);
                 acceptResponse.EnsureSuccessStatusCode();
+                _acceptedConsentIds.Add(consentId);
                 if (acceptedConsentIdsToBeRevoked.Count < 3)
                 {
                     acceptedConsentIdsToBeRevoked.Add(consentId);
@@ -576,6 +939,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 rejectClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage rejectResponse = await rejectClient.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{consentId}/reject/", null);
                 rejectResponse.EnsureSuccessStatusCode();
+                _rejectedConsentIds.Add(consentId);
             }
 
             // Optionally revoke some
@@ -587,6 +951,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 revokeClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 HttpResponseMessage revokeResponse = await revokeClient.PostAsync($"accessmanagement/api/v1/bff/consents/{consentId}/revoke/", null);
                 revokeResponse.EnsureSuccessStatusCode();
+                _revokedConsentIds.Add(consentId);
             }
         }
 
