@@ -63,7 +63,10 @@ public class RoleDto
     public ProviderDto Provider { get; set; }
 
     /// <summary>
-    /// There exist a role having role provider Altinn2 and a permission that is direct.
+    /// Indicates whether the role assignment can be revoked through <c>DELETE /connections/roles</c>.
+    /// For example, this is <see langword="true"/> for Altinn2 role assignments that have at least one direct permission.
+    /// A value of <see langword="false"/> means the assignment is known not to be revocable, while <see langword="null"/>
+    /// means that revocability has not been provided or evaluated for the consumer.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? IsRevocable { get; set; } = null;
