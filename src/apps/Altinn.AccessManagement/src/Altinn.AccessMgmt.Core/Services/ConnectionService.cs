@@ -1346,6 +1346,16 @@ public partial class ConnectionService(
             return Problems.DelegationPolicyRuleWriteFailed;
         }
 
+        await InstanceAddedNotification.Upsert(
+            dbContext,
+            from.Id,
+            to.Id,
+            resourceObj.Id,
+            instanceId,
+            appsettings?.Value?.Notifications?.InstanceAddedNotifyInSeconds ?? InstanceAddedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
+
         return true;
     }
 
@@ -1430,6 +1440,16 @@ public partial class ConnectionService(
         existingAssignmentInstance.PolicyVersion = newVersion;
 
         dbContext.Remove(existingAssignmentInstance);
+        await InstanceRemovedNotification.Upsert(
+            dbContext,
+            fromId,
+            toId,
+            resourceObj.Id,
+            instanceId,
+            appsettings?.Value?.Notifications?.InstanceRemovedNotifyInSeconds ?? InstanceRemovedNotification.DefaultNotifyInSeconds,
+            cancellationToken
+        );
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;

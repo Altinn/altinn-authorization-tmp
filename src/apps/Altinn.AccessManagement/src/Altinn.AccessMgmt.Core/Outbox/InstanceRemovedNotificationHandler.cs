@@ -88,7 +88,7 @@ public class InstanceRemovedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<string> InstanceIds, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<InstanceRemovedNotificationMessage>(message.Data);
         if (content is null)
@@ -111,20 +111,38 @@ public class InstanceRemovedNotificationHandler(
         return (
             entityFrom,
             entityTo,
-            content.Instances,
+            await GetInstances(content, cancellationToken),
             $"auth_{InstanceRemovedNotification.Handler}_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
         );
 
+        async Task<List<Instance>> GetInstances(InstanceRemovedNotificationMessage content, CancellationToken cancellationToken)
+        {
+            if (content.Instances is { } && content.Instances.Count > 0)
+            {
+                var resourceIds = content.Instances.Select(i => i.ResourceId).ToList();
+                var resources = await db.Resources
+                    .AsNoTracking()
+                    .Where(r => resourceIds.Contains(r.Id))
+                    .ToListAsync(cancellationToken);
 
+                return resources.Select(r => new Instance
+                {
+                    Resource = r,
+                    InstanceIds = content.Instances.First(i => i.ResourceId == r.Id).InstanceIds
+                }).ToList();
+            }
+
+            return [];
+        }
     }
 
-    private static NotificationRecipientExt CreateRecipient(Entity from, Entity to, IEnumerable<string> instances)
+    private static NotificationRecipientExt CreateRecipient(Entity from, Entity to, IEnumerable<Instance> instances)
     {
         ArgumentNullException.ThrowIfNull(from);
         ArgumentNullException.ThrowIfNull(to);
 
         var pronoun = to.TypeId == EntityTypeConstants.Person ? "Du" : "Dere";
-        var subject = $"{pronoun} har blitt fratatt fullmakt i Altinn";
+        var subject = $"{pronoun} har fått fullmakt i Altinn";
 
         if (to.TypeId == EntityTypeConstants.Person)
         {
@@ -152,7 +170,7 @@ public class InstanceRemovedNotificationHandler(
                 {
                     OrgNumber = to.OrganizationIdentifier,
                     ChannelSchema = NotificationChannelExt.Email,
-                    ResourceId = "urn:altinn:resource:altinn_access_management_hovedadmin",
+                    ResourceId = "urn:altinn:resource:altinn_keyrole_access",
                     EmailSettings = new()
                     {
                         Subject = subject,
@@ -167,7 +185,7 @@ public class InstanceRemovedNotificationHandler(
         throw new InvalidOperationException("to entity type must be of type <Person | Organization>");
     }
 
-    private static string MailContent(Entity from, Entity to, IEnumerable<string> instances)
+    private static string MailContent(Entity from, Entity to, IEnumerable<Instance> instances)
     {
         var access = new StringBuilder();
         if (instances is { } && instances.Count() > 0)
@@ -180,7 +198,14 @@ public class InstanceRemovedNotificationHandler(
             access.Append("<ul>");
             foreach (var instance in instances)
             {
-                access.Append($"<li>{instance}</li>");
+                access.Append($"<li>{instance.Resource.Name}</li>");
+                access.Append($"<ul>");
+                foreach (var instanceId in instance.InstanceIds)
+                {
+                    access.Append($"<li>{instanceId}</li>");
+                }
+
+                access.Append($"</ul>");
             }
 
             access.Append("</ul>");
@@ -241,6 +266,13 @@ public class InstanceRemovedNotificationHandler(
 
             throw new InvalidOperationException("from and to entity type must be of type <Person | Organization>");
         }
+    }
+
+    public class Instance
+    {
+        public List<string> InstanceIds { get; set; } = [];
+
+        public Resource Resource { get; set; }
     }
 }
 

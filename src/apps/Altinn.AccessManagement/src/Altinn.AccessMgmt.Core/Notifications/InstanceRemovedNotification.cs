@@ -42,6 +42,7 @@ public static class InstanceRemovedNotification
     /// <param name="toId">
     /// The identifier of the entity whose access was removed.
     /// </param>
+    /// <param name="resourceId"></param>
     /// <param name="instanceId">
     /// Optional identifier of the instance for which access was removed.
     /// </param>
@@ -59,6 +60,7 @@ public static class InstanceRemovedNotification
         AppDbContext db,
         Guid fromId,
         Guid toId,
+        Guid resourceId,
         string instanceId,
         int notifyInSeconds = DefaultNotifyInSeconds,
         CancellationToken ct = default)
@@ -66,12 +68,12 @@ public static class InstanceRemovedNotification
         await db.OutboxMessages.UpsertOutboxAsync(
             refId: $"{Handler}_{fromId}_{toId}",
             handler: Handler,
-            addValueFactory: msg => AddValue(fromId, toId, instanceId, msg, notifyInSeconds),
-            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, instanceId, msg, data, notifyInSeconds),
+            addValueFactory: msg => AddValue(fromId, toId, resourceId, instanceId, msg, notifyInSeconds),
+            updateValueFactory: (msg, data) => UpdateValue(fromId, toId, resourceId, instanceId, msg, data, notifyInSeconds),
             cancellationToken: ct
         );
 
-        await InstanceAddedNotification.RemoveValue(db, fromId, toId, instanceId, ct);
+        await InstanceAddedNotification.RemoveValue(db, fromId, toId, resourceId, instanceId, ct);
     }
 
     /// <summary>
@@ -90,6 +92,7 @@ public static class InstanceRemovedNotification
     /// <param name="toId">
     /// The identifier of the entity whose access was removed.
     /// </param>
+    /// <param name="resourceId"></param>
     /// <param name="instanceId">
     /// Optional identifier of the instance to remove from the notification.
     /// </param>
@@ -134,9 +137,9 @@ public static class InstanceRemovedNotification
         InstanceRemovedNotificationMessage data
     )
     {
-        if (!string.IsNullOrEmpty(instanceId) && data.Instances is { })
+        if (data.Instances.FirstOrDefault(r => r.ResourceId == resourceId) is { } value)
         {
-            data.Instances.RemoveAll(r => r == instanceId);
+            value.InstanceIds.RemoveAll(i => i == instanceId);
         }
 
         return data;
@@ -191,7 +194,7 @@ public static class InstanceRemovedNotification
         msg.Schedule = schedule;
         msg.Timeout = TimeSpan.FromMinutes(1);
 
-        return new InstanceAddedNotificationMessage()
+        return new()
         {
             FromId = fromId,
             ToId = toId,
@@ -219,7 +222,7 @@ public static class InstanceRemovedNotification
         if (data is null)
         {
             Activity.Current?.AddTag(nameof(InstanceRemovedNotification), $"Current outbox message {nameof(InstanceRemovedNotification)} is null? Creating new object.");
-            return AddValue(fromId, toId, instanceId, msg, notifyInSeconds);
+            return AddValue(fromId, toId, resourceId, instanceId, msg, notifyInSeconds);
         }
 
         data.Updated++;

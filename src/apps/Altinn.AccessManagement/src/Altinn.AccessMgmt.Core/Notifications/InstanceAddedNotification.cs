@@ -194,7 +194,7 @@ public static class InstanceAddedNotification
         msg.Schedule = schedule;
         msg.Timeout = TimeSpan.FromMinutes(1);
 
-        return new InstanceAddedNotificationMessage()
+        return new()
         {
             FromId = fromId,
             ToId = toId,

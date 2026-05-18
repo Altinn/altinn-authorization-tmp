@@ -89,7 +89,7 @@ public class InstanceAddedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity To, Entity From, IEnumerable<string> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity To, Entity From, IEnumerable<Instance> Instances, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<InstanceAddedNotificationMessage>(message.Data);
         if (content is null)
@@ -112,12 +112,32 @@ public class InstanceAddedNotificationHandler(
         return (
             entityFrom,
             entityTo,
-            content.Instances,
+            await GetInstances(content, cancellationToken),
             $"auth_{AccessAddedNotification.Handler}_{entityFrom.Id}_{entityTo.Id}_{message.CreatedAt.Ticks}"
         );
+
+        async Task<List<Instance>> GetInstances(InstanceAddedNotificationMessage content, CancellationToken cancellationToken)
+        {
+            if (content.Instances is { } && content.Instances.Count > 0)
+            {
+                var resourceIds = content.Instances.Select(i => i.ResourceId).ToList();
+                var resources = await db.Resources
+                    .AsNoTracking()
+                    .Where(r => resourceIds.Contains(r.Id))
+                    .ToListAsync(cancellationToken);
+
+                return resources.Select(r => new Instance
+                {
+                    Resource = r,
+                    InstanceIds = content.Instances.First(i => i.ResourceId == r.Id).InstanceIds
+                }).ToList();
+            }
+
+            return [];
+        }
     }
 
-    private static NotificationRecipientExt CreateRecipient(Entity from, Entity to, IEnumerable<string> instances)
+    private static NotificationRecipientExt CreateRecipient(Entity from, Entity to, IEnumerable<Instance> instances)
     {
         ArgumentNullException.ThrowIfNull(from);
         ArgumentNullException.ThrowIfNull(to);
@@ -125,26 +145,48 @@ public class InstanceAddedNotificationHandler(
         var pronoun = to.TypeId == EntityTypeConstants.Person ? "Du" : "Dere";
         var subject = $"{pronoun} har fått fullmakt i Altinn";
 
-        return new NotificationRecipientExt
+        if (to.TypeId == EntityTypeConstants.Person)
         {
-            RecipientPerson = new RecipientPersonExt
+            return new NotificationRecipientExt
             {
-                NationalIdentityNumber = to.PersonIdentifier,
-                ChannelSchema = NotificationChannelExt.Email,
-                EmailSettings = new EmailSendingOptionsExt
+                RecipientPerson = new RecipientPersonExt
                 {
-                    Subject = subject,
-                    Body = MailContent(from, to, instances),
-                    ContentType = EmailContentTypeExt.Html,
-                    SendingTimePolicy = SendingTimePolicyExt.Anytime,
+                    NationalIdentityNumber = to.PersonIdentifier,
+                    ChannelSchema = NotificationChannelExt.Email,
+                    EmailSettings = new EmailSendingOptionsExt
+                    {
+                        Subject = subject,
+                        Body = MailContent(from, to, instances),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime,
+                    }
                 }
-            }
-        };
+            };
+        }
+        else if (to.TypeId == EntityTypeConstants.Organization)
+        {
+            return new NotificationRecipientExt
+            {
+                RecipientOrganization = new RecipientOrganizationExt
+                {
+                    OrgNumber = to.OrganizationIdentifier,
+                    ChannelSchema = NotificationChannelExt.Email,
+                    ResourceId = "urn:altinn:resource:altinn_keyrole_access",
+                    EmailSettings = new()
+                    {
+                        Subject = subject,
+                        Body = MailContent(from, to, instances),
+                        ContentType = EmailContentTypeExt.Html,
+                        SendingTimePolicy = SendingTimePolicyExt.Anytime,
+                    }
+                }
+            };
+        }
 
         throw new InvalidOperationException("to entity type must be of type <Person | Organization>");
     }
 
-    private static string MailContent(Entity from, Entity to, IEnumerable<string> instances)
+    private static string MailContent(Entity from, Entity to, IEnumerable<Instance> instances)
     {
         var access = new StringBuilder();
         if (instances is { } && instances.Count() > 0)
@@ -157,7 +199,14 @@ public class InstanceAddedNotificationHandler(
             access.Append("<ul>");
             foreach (var instance in instances)
             {
-                access.Append($"<li>{instance}</li>");
+                access.Append($"<li>{instance.Resource.Name}</li>");
+                access.Append($"<ul>");
+                foreach (var instanceId in instance.InstanceIds)
+                {
+                    access.Append($"<li>{instanceId}</li>");
+                }
+
+                access.Append($"</ul>");
             }
 
             access.Append("</ul>");
@@ -221,6 +270,13 @@ public class InstanceAddedNotificationHandler(
 
             throw new InvalidOperationException("from and to entity type must be of type <Person | Organization>");
         }
+    }
+
+    public class Instance
+    {
+        public List<string> InstanceIds { get; set; } = [];
+
+        public Resource Resource { get; set; }
     }
 }
 
