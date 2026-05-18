@@ -140,7 +140,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// </summary>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
-        [Route("consentrequests/latestchanges")]
+        [Route("consentrequests/events")]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(PaginatedResult<ConsentStatusChangeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -149,9 +149,14 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetConsentStatusChanges(
             [FromQuery] string? continuationToken = null,
+            [FromQuery] DateTime? createdAfter = null,
+            [FromQuery] DateTime? createdBefore = null,
+            [FromQuery] string[]? eventTypes = null,
+            [FromQuery] Guid? consentRequestId = null, 
             CancellationToken cancellationToken = default)
         {
-            int pageSize = _consentSettings.CurrentValue.LatestChangesPageSize;
+            int pageSize = _consentSettings.CurrentValue.EventsPageSize;
+            int safetyLagSeconds = _consentSettings.CurrentValue.EventsSafetyLagSeconds;
             Core.Models.Consent.ConsentPartyUrn? authenticatedParty = OrgUtil.GetAuthenticatedParty(User);
 
             if (authenticatedParty == null)
@@ -159,7 +164,14 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Unauthorized();
             }
 
-            Result<List<ConsentStatusChange>> result = await _consentService.GetConsentStatusChangesForParty(authenticatedParty, continuationToken, pageSize, cancellationToken);
+            ConsentEventsQuery query = new ConsentEventsQuery(
+                ConsentRequestId: consentRequestId,
+                EventTypes: eventTypes,
+                CreatedAfter: createdAfter.HasValue ? DateTime.SpecifyKind(createdAfter.Value, DateTimeKind.Utc) : null,
+                CreatedBefore: createdBefore.HasValue ? DateTime.SpecifyKind(createdBefore.Value, DateTimeKind.Utc) : null,
+                ContinuationToken: continuationToken);
+
+            Result<List<ConsentStatusChange>> result = await _consentService.GetConsentEventsForParty(authenticatedParty, query, safetyLagSeconds, pageSize, cancellationToken);
 
             if (result.IsProblem)
             {

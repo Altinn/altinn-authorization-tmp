@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Repositories.Interfaces
@@ -59,13 +60,14 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         Task<int> GetConsentRequestCountForParty(Guid fromPartyUuid, ConsentRequestStatusType status, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a list of consents that had status changes for a specific party, ordered by change date (newest first).
+        /// Returns a list of consent events for a specific party, ordered by change date (newest first).
         /// </summary>
-        /// <param name="partyUuid">The party UUID to get status changes for</param>
-        /// <param name="continuationToken">Optional continuation token from previous response</param>
+        /// <param name="partyUuid">The party UUID to get consent events for</param>
+        /// <param name="query">Query parameters to filter consent events</param>
+        /// <param name="safetyLagSeconds">Number of seconds to wait before considering a consent event as final.</param>
         /// <param name="pageSize">Number of items to return</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>List of consent status changes</returns>
-        Task<Result<List<ConsentStatusChange>>> GetConsentStatusChangesForParty(Guid partyUuid, string? continuationToken, int pageSize, CancellationToken cancellationToken);
+        /// <returns>List of consent events</returns>
+        Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery query, int safetyLagSeconds, int pageSize, CancellationToken cancellationToken);
     }
 }

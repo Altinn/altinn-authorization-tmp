@@ -230,7 +230,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         {
             HttpClient client = GetTestClient();
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -248,7 +248,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.wite");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -258,7 +258,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         /// Test: Getting consent status changes returns OK with paginated data ordered newest first.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_ValidRequest_ReturnsOkWithDataOrderedNewestFirst()
+        public async Task GetConsentStatusChanges_ValidRequest_ReturnsOkWithDataOrderedOldestFirst()
         {
             HttpClient client = GetTestClient();
             Guid partyUuid = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181");
@@ -266,7 +266,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -298,7 +298,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             // Fetch first page (pageSize=5)
             string readToken = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", readToken);
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage responsePage1 = await client.GetAsync(url, TestContext.Current.CancellationToken);
             string responseContent1 = await responsePage1.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -321,16 +321,18 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Assert.Equal(numberOfConsents - resultPage1.Items.Count(), resultPage2.Items.Count());
                 var page2ConsentIds = resultPage2.Items.Select(i => i.ConsentRequestId).ToHashSet();
 
-                // No consentrequest should appear on both pages
-                Assert.Empty(page1ConsentIds.Intersect(page2ConsentIds));
+                // Page 3 - empty, terminates pagination
+                var response3 = await client.GetAsync(resultPage2.Links.Next, TestContext.Current.CancellationToken);
+                var page3 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
+                    await response3.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+                Assert.Equal(3, page3.Items.Count());
+                Assert.Null(page3.Links.Next); // No more data → terminates correctly
 
-                // All returned events should be the latest for their consentrequest
-                var allItems = resultPage1.Items.Concat(resultPage2.Items).ToList();
-                Assert.Equal(numberOfConsents, allItems.Count);
+                var allItems = resultPage1.Items.Concat(resultPage2.Items).Concat(page3.Items).ToList();
 
                 Assert.Equal(revoked, allItems.FindAll(i => i.EventType.Equals("revoked", StringComparison.OrdinalIgnoreCase)).Count());
                 Assert.Equal(rejected, allItems.FindAll(i => i.EventType.Equals("rejected", StringComparison.OrdinalIgnoreCase)).Count());
-                Assert.Equal(accepted - revoked, allItems.FindAll(i => i.EventType.Equals("accepted", StringComparison.OrdinalIgnoreCase)).Count());
+                Assert.Equal(accepted, allItems.FindAll(i => i.EventType.Equals("accepted", StringComparison.OrdinalIgnoreCase)).Count());
             }
         }
 
@@ -345,7 +347,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", readToken);
 
             // Fetch first page
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage responsePage1 = await client.GetAsync(url, TestContext.Current.CancellationToken);
             string responseContent1 = await responsePage1.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, responsePage1.StatusCode);
@@ -371,9 +373,9 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 var prev = allItems[i - 1];
                 var curr = allItems[i];
                 int dateCompare = prev.ChangedDate.CompareTo(curr.ChangedDate);
-                if (dateCompare > 0)
+                if (dateCompare < 0)
                 {
-                    // OK, previous is newer
+                    // OK, previous is older
                     continue;
                 }
                 else
@@ -401,8 +403,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             // Pass a different pageSize than what's configured (config = 5)
-            string urlWithParam = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges?pageSize=100";
-            string urlWithoutParam = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string urlWithParam = $"/accessmanagement/api/v1/enterprise/consentrequests/events?pageSize=100";
+            string urlWithoutParam = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
 
             var responseWith = await client.GetAsync(urlWithParam, TestContext.Current.CancellationToken);
             var responseWithout = await client.GetAsync(urlWithoutParam, TestContext.Current.CancellationToken);
@@ -412,7 +414,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             // Both should return config-driven page size (5), not 100
             Assert.Equal(resultWithout.Items.Count(), resultWith.Items.Count());
-            Assert.Equal(5, resultWith.Items.Count()); // Matches LatestChangesPageSize from PostConfigure
+            Assert.Equal(5, resultWith.Items.Count()); // Matches EventsPageSize from PostConfigure
         }
 
         [Fact]
@@ -423,14 +425,14 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
-            // LatestChangesPageSize is set to 5 in PostConfigure — assert exactly that
+            // EventsPageSize is set to 5 in PostConfigure — assert exactly that
             Assert.Equal(5, result.Items.Count());
         }
 
@@ -442,7 +444,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/latestchanges";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
@@ -464,7 +466,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             // Page 1
-            var response1 = await client.GetAsync("/accessmanagement/api/v1/enterprise/consentrequests/latestchanges", TestContext.Current.CancellationToken);
+            var response1 = await client.GetAsync("/accessmanagement/api/v1/enterprise/consentrequests/events", TestContext.Current.CancellationToken);
             var page1 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response1.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
             Assert.Equal(5, page1.Items.Count());
@@ -481,7 +483,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             var response3 = await client.GetAsync(page2.Links.Next, TestContext.Current.CancellationToken);
             var page3 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response3.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
-            Assert.Empty(page3.Items);
+            Assert.Equal(3, page3.Items.Count());
             Assert.Null(page3.Links.Next); // No more data → terminates correctly
         }
 
@@ -596,9 +598,9 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             List<ConsentStatusChangeDto> items = result.Items.ToList();
             Assert.Equal(5, items.Count);
 
-            // Verify ordering (newest first)
-            Assert.True(items[0].ChangedDate > items[1].ChangedDate);
-            Assert.True(items[1].ChangedDate > items[2].ChangedDate);
+            // Verify ordering (oldest first)
+            Assert.True(items[0].ChangedDate < items[1].ChangedDate);
+            Assert.True(items[1].ChangedDate < items[2].ChangedDate);
         }
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
