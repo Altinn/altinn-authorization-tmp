@@ -1539,7 +1539,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<Guid?>("ById")
+                    b.Property<Guid>("ById")
                         .HasColumnType("uuid")
                         .HasColumnName("byid");
 
@@ -3099,7 +3099,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<Guid?>("ById")
+                    b.Property<Guid>("ById")
                         .HasColumnType("uuid")
                         .HasColumnName("byid");
 

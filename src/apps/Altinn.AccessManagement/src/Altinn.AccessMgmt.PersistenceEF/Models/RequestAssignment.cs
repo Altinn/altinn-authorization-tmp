@@ -25,5 +25,5 @@ public class RequestAssignment : BaseRequestAssignment
     /// <summary>
     /// Request Created By (Entity)
     /// </summary>
-    public Entity? By { get; set; }
+    public Entity By { get; set; }
 }
