@@ -147,8 +147,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
-                        throw new InvalidOperationException($"Failed to ingest and/or merge Assignment and EntityLookup batch {batchName} to db", ex);
+                        _logger.LogError(ex, "Failed to ingest and/or merge Assignment batch {0} to db", batchName);
+                        throw new InvalidOperationException($"Failed to ingest and/or merge Assignment batch {batchName} to db", ex);
                     }
                     finally
                     {
