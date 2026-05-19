@@ -704,13 +704,16 @@ public class DtoMapperTest
     {
         var from = MakeEntity("From");
         var to = MakeEntity("To");
-        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, From = from, To = to };
+        var by = MakeEntity("By");
+        var changedBy = Guid.NewGuid();
+        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, ById = by.Id, From = from, To = to, By = by };
         var request = new RequestAssignmentPackage
         {
             AssignmentId = Guid.NewGuid(),
             PackageId = Guid.NewGuid(),
             Status = RequestStatus.Pending,
             Assignment = assignment,
+            Audit_ChangedBy = changedBy,
         };
 
         var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.Convert(request);
@@ -720,7 +723,32 @@ public class DtoMapperTest
         dto.Status.Should().Be(RequestStatus.Pending);
         dto.From!.Id.Should().Be(from.Id);
         dto.To!.Id.Should().Be(to.Id);
+        dto.By!.Id.Should().Be(by.Id);
+        dto.LastUpdatedBy.Should().Be(changedBy);
         dto.Package!.Id.Should().Be(request.PackageId);
+    }
+
+    [Fact]
+    public void Convert_RequestAssignmentPackage_NullBy_UsesFallbackChangedBy()
+    {
+        var from = MakeEntity("From");
+        var to = MakeEntity("To");
+        var changedBy = Guid.NewGuid();
+        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, From = from, To = to, By = null };
+        var request = new RequestAssignmentPackage
+        {
+            AssignmentId = Guid.NewGuid(),
+            PackageId = Guid.NewGuid(),
+            Status = RequestStatus.Pending,
+            Assignment = assignment,
+            Audit_ChangedBy = changedBy,
+        };
+
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.Convert(request);
+
+        dto.By.Should().NotBeNull();
+        dto.By!.Id.Should().Be(changedBy);
+        dto.By.Name.Should().BeNull();
     }
 
     [Fact]
@@ -728,13 +756,16 @@ public class DtoMapperTest
     {
         var from = MakeEntity("From");
         var to = MakeEntity("To");
-        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, From = from, To = to };
+        var by = MakeEntity("By");
+        var changedBy = Guid.NewGuid();
+        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, ById = by.Id, From = from, To = to, By = by };
         var request = new RequestAssignmentResource
         {
             AssignmentId = Guid.NewGuid(),
             ResourceId = Guid.NewGuid(),
             Status = RequestStatus.Approved,
             Assignment = assignment,
+            Audit_ChangedBy = changedBy,
         };
 
         var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.Convert(request);
@@ -742,6 +773,8 @@ public class DtoMapperTest
         dto.Type.Should().Be("resource");
         dto.Status.Should().Be(RequestStatus.Approved);
         dto.Resource!.Id.Should().Be(request.ResourceId);
+        dto.By!.Id.Should().Be(by.Id);
+        dto.LastUpdatedBy.Should().Be(changedBy);
     }
 
     // ── RequestMapper — ConvertToPartyEntityDto ────────────────────────────────
@@ -774,5 +807,40 @@ public class DtoMapperTest
 
         dto.Type.Should().BeNull();
         dto.Variant.Should().BeNull();
+    }
+
+    // ── RequestMapper — ConvertToPartyEntityDtoOrStub ──────────────────────────
+    [Fact]
+    public void ConvertToPartyEntityDtoOrStub_EntityProvided_DelegatesToFullConversion()
+    {
+        var entity = MakeEntity("Real Entity");
+
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity, fallbackId: Guid.NewGuid());
+
+        dto.Should().NotBeNull();
+        dto!.Id.Should().Be(entity.Id);
+        dto.Name.Should().Be("Real Entity");
+        dto.Type.Should().Be("Organisasjon");
+    }
+
+    [Fact]
+    public void ConvertToPartyEntityDtoOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
+    {
+        var fallbackId = Guid.NewGuid();
+
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity: null, fallbackId);
+
+        dto.Should().NotBeNull();
+        dto!.Id.Should().Be(fallbackId);
+        dto.Name.Should().BeNull();
+        dto.Type.Should().BeNull();
+    }
+
+    [Fact]
+    public void ConvertToPartyEntityDtoOrStub_NullEntity_NullFallback_ReturnsNull()
+    {
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity: null, fallbackId: null);
+
+        dto.Should().BeNull();
     }
 }
