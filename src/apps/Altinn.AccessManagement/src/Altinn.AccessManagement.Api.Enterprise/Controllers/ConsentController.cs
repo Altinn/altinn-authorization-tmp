@@ -34,7 +34,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
         private const string CreateRouteName = "enterprisecreateconsentrequest";
         private const string GetRouteName = "enterprisegetconsentrequest";
-        private const string ROUTE_CONSENTEVENTS = "enterprise/consentrequests/events";
+        private const string ROUTE_CONSENTEVENTS = "consentrequests/events";
 
         /// <summary>
         /// Endpoint to create a consent request for
@@ -144,12 +144,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// <param name="continuationToken">Opaque cursor token returned in the <c>nextLink</c> of a previous response. Pass this to retrieve the next page of results.</param>
         /// <param name="createdAfter">Optional. Filters events created at or after this timestamp.</param>
         /// <param name="createdBefore">Optional. Filters events created before this timestamp.</param>
-        /// <param name="eventTypes">Optional. Filters results to one or more specific event types. Can be specified multiple times, e.g. <c>eventTypes=approved&amp;eventTypes=revoked</c>.</param>
+        /// <param name="eventTypes">Optional. Filters results to one or more specific event types. Can be specified multiple times, e.g. <c>eventType=approved&amp;eventType=revoked</c>.</param>
         /// <param name="consentRequestId">Optional. Filters results to events belonging to a specific consent request.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
-        [Route("consentrequests/events")]
+        [Route("consentrequests/events", Name = ROUTE_CONSENTEVENTS)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(PaginatedResult<ConsentStatusChangeDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -160,7 +160,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             [FromQuery(Name = "continuationToken")] string? continuationToken = null,
             [FromQuery(Name = "createdAfter")] DateTimeOffset? createdAfter = null,
             [FromQuery(Name = "createdBefore")] DateTimeOffset? createdBefore = null,
-            [FromQuery(Name = "eventTypes")] string[]? eventTypes = null,
+            [FromQuery(Name = "eventType")] string[]? eventTypes = null,
             [FromQuery(Name = "consentRequestId")] Guid? consentRequestId = null, 
             CancellationToken cancellationToken = default)
         {
@@ -178,7 +178,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
             if (createdAfter.HasValue && createdBefore.HasValue && createdAfter >= createdBefore)
             {
-                errors.Add(ValidationErrors.InvalidDateRange, $"/{nameof(createdAfter)}");
+                errors.Add(ValidationErrors.InvalidDateRange, "$QUERY/createdAfter");
             }
 
             if (eventTypes is { Length: > 0 })
@@ -192,7 +192,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 {
                     if (!validEventTypes.Contains(eventType))
                     {
-                        errors.Add(ValidationErrors.InvalidEventType, $"/{nameof(eventTypes)}");
+                        errors.Add(ValidationErrors.InvalidEventType, "$QUERY/eventType");
                         break;
                     }
                 }
@@ -205,7 +205,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                     byte[] bytes = Convert.FromBase64String(continuationToken);                    
                     if (bytes.Length != 16)
                     {
-                        errors.Add(ValidationErrors.InvalidContinuationToken, $"/{nameof(continuationToken)}");
+                        errors.Add(ValidationErrors.InvalidContinuationToken, "$QUERY/continuationToken");
                     }
                     else
                     {
@@ -214,7 +214,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 }
                 catch (FormatException)
                 {
-                    errors.Add(ValidationErrors.InvalidContinuationToken, $"/{nameof(continuationToken)}");
+                    errors.Add(ValidationErrors.InvalidContinuationToken, "$QUERY/continuationToken");
                 }
             }
 
@@ -249,15 +249,32 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 Guid consentEventId = changes.Last().ConsentEventId;
                 string nextToken = Convert.ToBase64String(consentEventId.ToByteArray());
 
-                // Rebuild query string with all existing parameters, replacing/adding continuationToken
-                var queryParams = Request.Query
-                    .Where(kv => !kv.Key.Equals("continuationToken", StringComparison.OrdinalIgnoreCase))
-                    .SelectMany(kv => kv.Value.Select(v => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(v ?? string.Empty)}"))
-                    .Append($"continuationToken={Uri.EscapeDataString(nextToken)}")
-                    .ToList();
+                var routeValues = new RouteValueDictionary
+                {
+                    { "continuationToken", nextToken }
+                };
 
-                nextLink = Url.ActionLink(action: nameof(GetConsentEvents));
-                nextLink = $"{nextLink}?{string.Join("&", queryParams)}";
+                if (Request.Query.ContainsKey("consentRequestId"))
+                {
+                    routeValues["consentRequestId"] = query.ConsentRequestId?.ToString();
+                }
+
+                if (Request.Query.ContainsKey("createdAfter"))
+                {
+                    routeValues["createdAfter"] = query.CreatedAfter?.ToString("O");
+                }
+
+                if (Request.Query.ContainsKey("createdBefore"))
+                {
+                    routeValues["createdBefore"] = query.CreatedBefore?.ToString("O");
+                }
+
+                if (Request.Query.ContainsKey("eventType"))
+                {
+                    routeValues["eventType"] = query.EventTypes;
+                }
+
+                nextLink = Url.Link(ROUTE_CONSENTEVENTS, routeValues);
             }
 
             // Return paginated result

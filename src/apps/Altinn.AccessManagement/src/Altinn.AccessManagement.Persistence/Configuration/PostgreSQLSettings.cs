@@ -18,6 +18,6 @@
         /// <summary>
         /// The number of seconds to wait before considering a consent event as final. This setting is used to introduce a safety lag when processing consent events, ensuring that any recent changes are fully propagated and reducing the risk of inconsistencies. Adjusting this value can help balance the trade-off between data freshness and consistency.
         /// </summary>
-        public int ConsentEventsSafetyLagSeconds { get; set; } = 300;
+        public int ConsentEventsSafetyLag { get; set; } = 300;
     }
 }

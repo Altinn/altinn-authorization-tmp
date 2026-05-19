@@ -503,13 +503,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
-        /// eventTypes=accepted → exactly 5 seeded accepted events.
+        /// eventType=accepted → exactly 5 seeded accepted events.
         /// Fits exactly one full page; the follow-up page is empty (no next link).
         /// </summary>
         [Fact]
         public async Task GetConsentStatusChanges_FilterByEventTypeAccepted_ReturnsAllAcceptedAcrossPages()
         {
-            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=accepted");
+            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=accepted");
 
             Assert.Equal(SeededAccepted, allItems.Count);
             Assert.All(allItems, item => Assert.Equal("accepted", item.EventType, StringComparer.OrdinalIgnoreCase));
@@ -518,13 +518,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
-        /// eventTypes=rejected → exactly 5 seeded rejected events.
+        /// eventType=rejected → exactly 5 seeded rejected events.
         /// Fits exactly one full page; the follow-up page is empty (no next link).
         /// </summary>
         [Fact]
         public async Task GetConsentStatusChanges_FilterByEventTypeRejected_ReturnsAllRejectedAcrossPages()
         {
-            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=rejected");
+            var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=rejected");
 
             Assert.Equal(SeededRejected, allItems.Count);
             Assert.All(allItems, item => Assert.Equal("rejected", item.EventType, StringComparer.OrdinalIgnoreCase));
@@ -532,7 +532,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
-        /// eventTypes=revoked → exactly 3 seeded revoked events.
+        /// eventType=revoked → exactly 3 seeded revoked events.
         /// Fewer than one page, so no next link on the first (and only) response.
         /// </summary>
         [Fact]
@@ -540,7 +540,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         {
             HttpClient client = GetAuthorizedReadClient();
 
-            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=revoked";
+            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=revoked";
             HttpResponseMessage response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -554,7 +554,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
-        /// eventTypes=accepted&eventTypes=revoked → 5 accepted + 3 revoked = 8 events.
+        /// eventType=accepted&eventType=revoked → 5 accepted + 3 revoked = 8 events.
         /// Spans two pages (5 + 3). Verifies correct counts and that no rejected events leak in.
         /// </summary>
         [Fact]
@@ -566,7 +566,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetAuthorizedReadClient();
 
             // Page 1 – expect a full page since 8 > pageSize=5
-            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=accepted&eventTypes=revoked";
+            string url = "/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=accepted&eventType=revoked";
             var response1 = await client.GetAsync(url, TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
             var page1 = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
@@ -667,7 +667,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
-        /// consentRequestId + eventTypes=revoked → for a revoked consent, only the revoked event is returned.
+        /// consentRequestId + eventType=revoked → for a revoked consent, only the revoked event is returned.
         /// </summary>
         [Fact]
         public async Task GetConsentStatusChanges_FilterByConsentRequestIdAndEventType_ReturnsOnlyMatchingEvent()
@@ -675,7 +675,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Guid targetId = _revokedConsentIds[0];
 
             HttpClient client = GetAuthorizedReadClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}&eventTypes=revoked";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/events?consentRequestId={targetId}&eventType=revoked";
             var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -794,13 +794,14 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.GetAsync(
-                "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=invalidtype",
+                "/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=invalidtype",
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
             Assert.Equal(ValidationErrors.InvalidEventType.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Contains("$QUERY/eventType", problemDetails.Errors.ToList()[0].Paths);
         }
 
         [Fact]
@@ -823,6 +824,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
             Assert.Equal(ValidationErrors.InvalidDateRange.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Contains("$QUERY/createdAfter", problemDetails.Errors.ToList()[0].Paths);
         }
 
         [Fact]
@@ -844,6 +846,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
             Assert.Equal(ValidationErrors.InvalidDateRange.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Contains("$QUERY/createdAfter", problemDetails.Errors.ToList()[0].Paths);
         }
 
         [Fact]
@@ -863,6 +866,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
             Assert.Equal(ValidationErrors.InvalidContinuationToken.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Contains("$QUERY/continuationToken", problemDetails.Errors.ToList()[0].Paths);
         }
 
         [Fact]
@@ -885,6 +889,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
             Assert.Equal(ValidationErrors.InvalidContinuationToken.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Contains("$QUERY/continuationToken", problemDetails.Errors.ToList()[0].Paths);
         }
 
         /// <summary>

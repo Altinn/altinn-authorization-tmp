@@ -24,7 +24,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
     public class ConsentRepository(NpgsqlDataSource db, IOptions<PostgreSQLSettings> config, TimeProvider timeProvider) : IConsentRepository
     {
         private readonly NpgsqlDataSource _db = db;
-        private readonly TimeSpan _consentRequestSafetyLagSeconds = TimeSpan.FromSeconds(config.Value.ConsentEventsSafetyLagSeconds);
+        private readonly TimeSpan _consentRequestSafetyLag = TimeSpan.FromSeconds(config.Value.ConsentEventsSafetyLag);
         private readonly TimeProvider _timeProvider = timeProvider;
 
         private const string PARAM_CONSENT_REQUEST_ID = "consentRequestId";
@@ -591,7 +591,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
         public async Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery consentEventsQuery, int pageSize, CancellationToken cancellationToken)
         {
-            var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow().AddSeconds(-_consentRequestSafetyLagSeconds.TotalSeconds));
+            var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow() - _consentRequestSafetyLag);
             var consentStatusChanges = new List<ConsentStatusChange>();
 
             const string consentChangesQuery = @"SELECT
