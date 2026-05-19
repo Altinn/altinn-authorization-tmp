@@ -1052,7 +1052,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (pageSize <= 0 || pageSize > 1000)
             {
-                validationErrorBuilder.Add(ValidationErrors.InvalidPageSizeForConsentStatusChanges, "pageSize");
+                validationErrorBuilder.Add(ValidationErrors.InvalidPageSizeForConsentEvents, "pageSize");
             }
 
             if (validationErrorBuilder.TryBuild(out var errorResult))

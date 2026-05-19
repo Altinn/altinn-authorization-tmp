@@ -107,11 +107,11 @@ namespace AccessMgmt.Tests.Mocks
 
             // Apply continuation token filtering (items older than the cursor)
             IEnumerable<ConsentStatusChange> filtered = allChanges;
-            if (!string.IsNullOrEmpty(query.ContinuationToken))
+            if (query.ContinueFrom.HasValue)
             {
                 try
                 {
-                    byte[] data = Convert.FromBase64String(query.ContinuationToken);
+                    byte[] data = Convert.FromBase64String(query.ContinueFrom.Value.ToString());
                     long ticks = BitConverter.ToInt64(data, 0);
                     DateTimeOffset cursorTimestamp = new DateTimeOffset(ticks, TimeSpan.Zero);
                     filtered = allChanges.Where(c => c.ChangedDate < cursorTimestamp);

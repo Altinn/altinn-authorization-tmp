@@ -11,12 +11,12 @@
     /// this date are returned. If null, no lower bound is applied.</param>
     /// <param name="CreatedBefore">The latest creation date and time, in UTC, for events to include in the results. Only events created before this
     /// date are returned. If null, no upper bound is applied.</param>
-    /// <param name="ContinuationToken">A pagination cursor indicating the position in the result set from which to continue retrieving events. If null,
+    /// <param name="ContinueFrom">A pagination cursor id indicating the position in the result set from which to continue retrieving events. If null,
     /// retrieval starts from the beginning.</param>
     public record ConsentEventsQuery(
         Guid? ConsentRequestId,
         string[]? EventTypes,
         DateTimeOffset? CreatedAfter,
         DateTimeOffset? CreatedBefore,
-        string? ContinuationToken);
+        Guid? ContinueFrom);
 }

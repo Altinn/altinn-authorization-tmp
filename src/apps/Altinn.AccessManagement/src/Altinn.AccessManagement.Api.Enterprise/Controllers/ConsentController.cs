@@ -1,10 +1,8 @@
-﻿using System.Net.Mime;
-using System.Security.Claims;
-using System.Text;
-using Altinn.AccessManagement.Api.Enterprise.Extensions;
+﻿using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -17,6 +15,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Net.Mime;
+using System.Security.Claims;
+using System.Text;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 {
@@ -33,6 +34,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
         private const string CreateRouteName = "enterprisecreateconsentrequest";
         private const string GetRouteName = "enterprisegetconsentrequest";
+        private const string ROUTE_CONSENTEVENTS = "enterprise/consentrequests/events";
 
         /// <summary>
         /// Endpoint to create a consent request for
@@ -156,14 +158,15 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetConsentEvents(
             [FromQuery(Name = "continuationToken")] string? continuationToken = null,
-            [FromQuery(Name = "createdAfter")] DateTime? createdAfter = null,
-            [FromQuery(Name = "createdBefore")] DateTime? createdBefore = null,
+            [FromQuery(Name = "createdAfter")] DateTimeOffset? createdAfter = null,
+            [FromQuery(Name = "createdBefore")] DateTimeOffset? createdBefore = null,
             [FromQuery(Name = "eventTypes")] string[]? eventTypes = null,
             [FromQuery(Name = "consentRequestId")] Guid? consentRequestId = null, 
             CancellationToken cancellationToken = default)
         {
             int pageSize = _consentSettings.CurrentValue.EventsPageSize;
-            int safetyLagSeconds = _consentSettings.CurrentValue.EventsSafetyLagSeconds;
+            int safetyLagSeconds = 0;//_consentSettings.CurrentValue.EventsSafetyLagSeconds;
+            Guid? continueFrom = null;
             Core.Models.Consent.ConsentPartyUrn? authenticatedParty = OrgUtil.GetAuthenticatedParty(User);
 
             if (authenticatedParty == null)
@@ -171,12 +174,61 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Unauthorized();
             }
 
+            ValidationErrorBuilder errors = default;
+
+            if (createdAfter.HasValue && createdBefore.HasValue && createdAfter >= createdBefore)
+            {
+                errors.Add(ValidationErrors.InvalidDateRange, $"/{nameof(createdAfter)}");
+            }
+
+            if (eventTypes is { Length: > 0 })
+            {
+                var validEventTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "rejected", "accepted", "revoked", "deleted", "used"
+                };
+
+                foreach (string eventType in eventTypes)
+                {
+                    if (!validEventTypes.Contains(eventType))
+                    {
+                        errors.Add(ValidationErrors.InvalidEventType, $"/{nameof(eventTypes)}");
+                        break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(continuationToken))
+            {
+                try
+                {
+                    byte[] bytes = Convert.FromBase64String(continuationToken);                    
+                    if (bytes.Length != 16)
+                    {
+                        errors.Add(ValidationErrors.InvalidContinuationToken, $"/{nameof(continuationToken)}");
+                    }
+                    else
+                    {
+                        continueFrom = new Guid(bytes);
+                    }                    
+                }
+                catch (FormatException)
+                {
+                    errors.Add(ValidationErrors.InvalidContinuationToken, $"/{nameof(continuationToken)}");
+                }
+            }
+
+            if (errors.TryBuild(out var errorResult))
+            {
+                return errorResult.ToActionResult();
+            }
+
             ConsentEventsQuery query = new ConsentEventsQuery(
                 ConsentRequestId: consentRequestId,
                 EventTypes: eventTypes,
-                CreatedAfter: createdAfter.HasValue ? DateTime.SpecifyKind(createdAfter.Value, DateTimeKind.Utc) : null,
-                CreatedBefore: createdBefore.HasValue ? DateTime.SpecifyKind(createdBefore.Value, DateTimeKind.Utc) : null,
-                ContinuationToken: continuationToken);
+                CreatedAfter: createdAfter.HasValue ? createdAfter.Value.UtcDateTime : (DateTime?)null,
+                CreatedBefore: createdBefore.HasValue ? createdBefore.Value.UtcDateTime : (DateTime?)null,
+                ContinueFrom: continueFrom);
 
             Result<List<ConsentStatusChange>> result = await _consentService.GetConsentEventsForParty(authenticatedParty, query, safetyLagSeconds, pageSize, cancellationToken);
 
@@ -204,7 +256,8 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                     .Append($"continuationToken={Uri.EscapeDataString(nextToken)}")
                     .ToList();
 
-                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?{string.Join("&", queryParams)}";
+                nextLink = Url.ActionLink(action: nameof(GetConsentEvents));
+                nextLink = $"{nextLink}?{string.Join("&", queryParams)}";
             }
 
             // Return paginated result

@@ -784,36 +784,107 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(SeededTotal, allItems.Count);
         }
 
-        /// <summary>
-        /// An invalid/garbage continuationToken is silently ignored and the response
-        /// equals the first page of an unfiltered request.
-        /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_InvalidContinuationToken_StartsFromBeginning()
+        public async Task GetConsentEvents_WithInvalidEventType_ReturnsBadRequest()
         {
-            string badToken = Uri.EscapeDataString("not!!a$$valid##base64");
+            SetupMockPartyRepository();
 
-            HttpClient client = GetAuthorizedReadClient();
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var responseWithBad = await client.GetAsync(
-                $"/accessmanagement/api/v1/enterprise/consentrequests/events?continuationToken={badToken}",
+            HttpResponseMessage response = await client.GetAsync(
+                "/accessmanagement/api/v1/enterprise/consentrequests/events?eventTypes=invalidtype",
                 TestContext.Current.CancellationToken);
-            var responseClean = await client.GetAsync(
-                "/accessmanagement/api/v1/enterprise/consentrequests/events",
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
+            Assert.Equal(ValidationErrors.InvalidEventType.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+        }
+
+        [Fact]
+        public async Task GetConsentEvents_WithCreatedAfterAfterCreatedBefore_ReturnsBadRequest()
+        {
+            SetupMockPartyRepository();
+
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            string createdAfter = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
+            string createdBefore = Uri.EscapeDataString(DateTimeOffset.UtcNow.ToString("O"));
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdAfter={createdAfter}&createdBefore={createdBefore}",
                 TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.OK, responseWithBad.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
+            Assert.Equal(ValidationErrors.InvalidDateRange.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+        }
 
-            var resultWithBad = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
-                await responseWithBad.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
-            var resultClean = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
-                await responseClean.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
+        [Fact]
+        public async Task GetConsentEvents_WithCreatedAfterEqualToCreatedBefore_ReturnsBadRequest()
+        {
+            SetupMockPartyRepository();
 
-            // Invalid token must not skip any data — same first page as the clean request
-            Assert.Equal(PageSize, resultWithBad.Items.Count());
-            Assert.Equal(
-                resultClean.Items.Select(i => i.ConsentRequestId),
-                resultWithBad.Items.Select(i => i.ConsentRequestId));
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            string timestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.ToString("O"));
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?createdAfter={timestamp}&createdBefore={timestamp}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
+            Assert.Equal(ValidationErrors.InvalidDateRange.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+        }
+
+        [Fact]
+        public async Task GetConsentEvents_WithInvalidContinuationToken_ReturnsBadRequest()
+        {
+            SetupMockPartyRepository();
+
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await client.GetAsync(
+                "/accessmanagement/api/v1/enterprise/consentrequests/events?continuationToken=notvalidbase64!!!",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
+            Assert.Equal(ValidationErrors.InvalidContinuationToken.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+        }
+
+        [Fact]
+        public async Task GetConsentEvents_WithWrongLengthContinuationToken_ReturnsBadRequest()
+        {
+            SetupMockPartyRepository();
+
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetMaskinportenToken("810419512", "altinn:consentrequests.read");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Valid base64 but not 16 bytes (a GUID)
+            string shortToken = Uri.EscapeDataString(Convert.ToBase64String(new byte[] { 1, 2, 3 }));
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"/accessmanagement/api/v1/enterprise/consentrequests/events?continuationToken={shortToken}",
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(content, _jsonOptions);
+            Assert.Equal(ValidationErrors.InvalidContinuationToken.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
         }
 
         /// <summary>

@@ -432,7 +432,7 @@ public class ConsentServiceTests
             .ReturnsAsync(new List<ConsentStatusChange>());
 
         var service = CreateService();
-        var query = new ConsentEventsQuery(null, null, null, null, "abc");
+        var query = new ConsentEventsQuery(null, null, null, null, new Guid("cd12b899-0795-4a3c-a65f-f8de792ff382"));
 
         // Act
         var result = await service.GetConsentEventsForParty(receiver, query, safetyLagSeconds: 5, pageSize: 25, CancellationToken.None);

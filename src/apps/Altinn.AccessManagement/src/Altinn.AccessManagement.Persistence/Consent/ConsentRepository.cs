@@ -1,15 +1,17 @@
-﻿using System.Data;
-using System.Globalization;
-using System.Text;
-using Altinn.AccessManagement.Core.Extensions;
+﻿using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using Npgsql;
 using NpgsqlTypes;
+using System.Data;
+using System.Globalization;
+using System.Text;
 
 namespace Altinn.AccessManagement.Persistence.Consent
 {
@@ -19,9 +21,11 @@ namespace Altinn.AccessManagement.Persistence.Consent
     /// <remarks>
     /// Initializes a new instance of the <see cref="ConsentRepository"/> class
     /// </remarks>
-    public class ConsentRepository(NpgsqlDataSource db) : IConsentRepository
+    public class ConsentRepository(NpgsqlDataSource db, IOptions<PostgreSQLSettings> config, TimeProvider timeProvider) : IConsentRepository
     {
         private readonly NpgsqlDataSource _db = db;
+        private readonly TimeSpan _consentRequestSafetyLagSeconds = TimeSpan.FromSeconds(config.Value.ConsentEventsSafetyLagSeconds);
+        private readonly TimeProvider _timeProvider = timeProvider;
 
         private const string PARAM_CONSENT_REQUEST_ID = "consentRequestId";
         private const string PARAM_PERFORMED_BY_PARTY = "performedByParty";
@@ -32,7 +36,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         private const string PARAM_REVOKED = "revokedTime";
         private const string PARAM_CONSENT_RIGHT_ID = "consentRightId";
         private const string PARAM_CONSENT_CONTEXT_ID = "contextId";
-        private const string PARAM_LANGAUGE = "language";
+        private const string PARAM_LANGAUGE = "language";        
 
         private const string EventQuery = /*strpsql*/@"
                 INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
@@ -48,7 +52,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <inheritdoc/>
         public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty, ConsentContext context, CancellationToken cancellationToken = default)
         {
-            DateTimeOffset consentedTime = DateTime.UtcNow;
+            DateTimeOffset consentedTime = _timeProvider.GetUtcNow();
 
             const string updateConsentRequestQuery = /*strpsql*/@"
                     UPDATE consent.consentrequest set status = 'accepted', consented = @consentedTime  WHERE consentRequestId= @consentRequestId and status = 'created'";
@@ -587,26 +591,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
         public async Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery consentEventsQuery, int safetyLagSeconds, int pageSize, CancellationToken cancellationToken)
         {
-            // Parse continuation token to get cursor UUID
-            Guid cursorEventId = default;
-            DateTimeOffset cursorCreated = default;
-            if (!string.IsNullOrEmpty(consentEventsQuery.ContinuationToken))
-            {
-                try
-                {
-                    byte[] bytes = Convert.FromBase64String(consentEventsQuery.ContinuationToken);
-                    cursorEventId = new Guid(bytes);
-                }
-                catch
-                {
-                    // Invalid token, ignore and start from beginning
-                }
-            }
-
-            var uuid7SafetyBound = Guid.CreateVersion7(DateTimeOffset.UtcNow.AddSeconds(-safetyLagSeconds));
+            var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow().AddSeconds(-_consentRequestSafetyLagSeconds.TotalSeconds));
             var consentStatusChanges = new List<ConsentStatusChange>();
 
-            string consentChangesQuery = $@"SELECT
+            const string consentChangesQuery = @"SELECT
                                         ce.consentrequestid,
                                         ce.consenteventid,
                                         ce.eventtype,
@@ -622,13 +610,12 @@ namespace Altinn.AccessManagement.Persistence.Consent
                                         AND (@eventTypes      IS NULL OR ce.eventtype = ANY(@eventTypes::consent.event_type[]))
                                         AND (@createdAfter     IS NULL OR ce.created >= @createdAfter)
                                         AND (@createdBefore    IS NULL OR ce.created <  @createdBefore)
-                                        AND (@cursorEventId   IS NULL OR ce.consenteventid > @cursorEventId)
+                                        AND (@continueFrom   IS NULL OR ce.consenteventid > @continueFrom)
                                         ORDER BY ce.consenteventid ASC
-                                        LIMIT @pagesize";
+                                        LIMIT @pageSize";
             await using var pgcom = _db.CreateCommand(consentChangesQuery);
             pgcom.Parameters.AddWithValue("@partyUuid", NpgsqlTypes.NpgsqlDbType.Uuid, partyUuid);
-            pgcom.Parameters.AddWithValue("@cursorEventId", NpgsqlTypes.NpgsqlDbType.Uuid, cursorEventId == Guid.Empty ? DBNull.Value : cursorEventId);
-            pgcom.Parameters.AddWithValue("@consentRequestId", NpgsqlDbType.Uuid, consentEventsQuery.ConsentRequestId.HasValue ? (object)consentEventsQuery.ConsentRequestId.Value : DBNull.Value);
+            pgcom.Parameters.AddWithValue("@continueFrom", NpgsqlTypes.NpgsqlDbType.Uuid, consentEventsQuery.ContinueFrom.HasValue ? (object)consentEventsQuery.ContinueFrom.Value : DBNull.Value);
             pgcom.Parameters.AddWithValue("@eventTypes", NpgsqlDbType.Array | NpgsqlDbType.Text, consentEventsQuery.EventTypes is not null ? (object)consentEventsQuery.EventTypes : DBNull.Value);
             pgcom.Parameters.AddWithValue("@createdAfter", NpgsqlDbType.TimestampTz, consentEventsQuery.CreatedAfter.HasValue ? (object)consentEventsQuery.CreatedAfter.Value : DBNull.Value);
             pgcom.Parameters.AddWithValue("@createdBefore", NpgsqlDbType.TimestampTz,consentEventsQuery.CreatedBefore.HasValue ? (object)consentEventsQuery.CreatedBefore.Value : DBNull.Value);
