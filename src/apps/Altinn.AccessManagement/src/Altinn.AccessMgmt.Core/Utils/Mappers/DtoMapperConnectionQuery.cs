@@ -248,7 +248,7 @@ public partial class DtoMapper : IDtoMapper
     {
         return new ConnectionInstanceDto()
         {
-            ResourceId = instance.ResourceId,
+            ResourceRefId = instance.ResourceRefId,
             InstanceId = instance.InstanceId,
         };
     }
