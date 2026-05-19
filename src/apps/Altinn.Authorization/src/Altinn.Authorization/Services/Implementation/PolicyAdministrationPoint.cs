@@ -21,7 +21,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
     /// </summary>
     public class PolicyAdministrationPoint : IPolicyAdministrationPoint
     {
-        private readonly ILogger<IPolicyAdministrationPoint> _logger;
+        private readonly ILogger<PolicyAdministrationPoint> _logger;
         private readonly IPolicyRetrievalPoint _prp;
         private readonly IPolicyRepository _policyRepository;
         private readonly IDelegationMetadataRepository _delegationRepository;
@@ -33,7 +33,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="policyRepository">The policy repository (blob storage)</param>
         /// <param name="delegationRepository">The delegation change repository (postgresql)</param>
         /// <param name="logger">Logger instance</param>
-        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyRepository policyRepository, IDelegationMetadataRepository delegationRepository, ILogger<IPolicyAdministrationPoint> logger)
+        public PolicyAdministrationPoint(IPolicyRetrievalPoint policyRetrievalPoint, IPolicyRepository policyRepository, IDelegationMetadataRepository delegationRepository, ILogger<PolicyAdministrationPoint> logger)
         {
             _prp = policyRetrievalPoint;
             _policyRepository = policyRepository;

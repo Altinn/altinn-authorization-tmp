@@ -32,7 +32,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         private readonly IPolicyAdministrationPoint _pap;
         private readonly IPolicyRepository _prp;
         private readonly IResourceRegistry _resourceRegistry;
-        private readonly Mock<ILogger<IPolicyAdministrationPoint>> _logger;
+        private readonly Mock<ILogger<PolicyAdministrationPoint>> _logger;
 
         private DelegationMetadataRepositoryMock _delegationMetadataRepositoryMock;
 
@@ -44,7 +44,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
 
             IMemoryCache memoryCache = serviceProvider.GetService<IMemoryCache>();
 
-            _logger = new Mock<ILogger<IPolicyAdministrationPoint>>();
+            _logger = new Mock<ILogger<PolicyAdministrationPoint>>();
             _delegationMetadataRepositoryMock = new DelegationMetadataRepositoryMock();
             _prp = new PolicyRepositoryMock(new Mock<ILogger<PolicyRepositoryMock>>().Object);
             _resourceRegistry = new ResourceRegistryMock();
