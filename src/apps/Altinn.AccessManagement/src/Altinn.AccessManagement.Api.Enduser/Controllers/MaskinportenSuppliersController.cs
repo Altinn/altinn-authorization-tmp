@@ -29,6 +29,7 @@ public class MaskinportenSuppliersController(
     /// Adds a supplier assignment to allow an organization to receive Maskinporten scope delegations
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -96,6 +97,7 @@ public class MaskinportenSuppliersController(
     /// Removes a supplier assignment
     /// </summary>
     [HttpDelete]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -155,6 +157,7 @@ public class MaskinportenSuppliersController(
     /// Delegates a MaskinportenSchema resource to a supplier
     /// </summary>
     [HttpPost("resources")]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
@@ -235,6 +238,7 @@ public class MaskinportenSuppliersController(
     /// Removes a MaskinportenSchema resource delegation from a supplier
     /// </summary>
     [HttpDelete("resources")]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

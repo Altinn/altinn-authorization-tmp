@@ -63,6 +63,7 @@ public class MaskinportenConsumersController(
     /// Removes a consumer connection (supplier relinquishes their access)
     /// </summary>
     [HttpDelete]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -147,6 +148,7 @@ public class MaskinportenConsumersController(
     /// Removes a MaskinportenSchema resource delegation (supplier relinquishes access to a specific resource)
     /// </summary>
     [HttpDelete("resources")]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
