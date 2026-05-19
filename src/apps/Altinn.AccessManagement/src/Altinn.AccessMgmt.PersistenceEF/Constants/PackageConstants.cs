@@ -4245,7 +4245,7 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Provide the immediate supervisor for the sick-listed employee"),
-            KeyValuePair.Create("Description", "This access package grants authorization to fill out who the immediate supervisor is for an employe on sick leave in the company. The access also allows you to receive notifications from Nav when the information about who the nearest supervisor is missing.")
+            KeyValuePair.Create("Description", "This access package grants authorization to fill out who the immediate supervisor is for an employee on sick leave in the company. The access also allows you to receive notifications from Nav when the information about who the nearest supervisor is missing.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Oppgi næraste leiar for sjukmeld tilsett"),
