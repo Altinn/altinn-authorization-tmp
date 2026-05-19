@@ -51,6 +51,16 @@
         public const string POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE = "MaskinportenDelegationEndUserWrite";
 
         /// <summary>
+        /// Policy tag for writing maskinporten supplier assignments and scope delegations as end user (portal or sluttbrukersystem)
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE = "MaskinportenSuppliersEndUserWrite";
+
+        /// <summary>
+        /// Policy tag for writing maskinporten consumer connections and scope delegations as end user (portal or sluttbrukersystem)
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE = "MaskinportenConsumersEndUserWrite";
+
+        /// <summary>
         /// Policy tag for reading access management information
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_READ = "AccessManagementRead";
@@ -204,6 +214,16 @@
         /// Enduser scope giving access to write operations on requests
         /// </summary>
         public const string SCOPE_ENDUSER_REQUESTS_WRITE = "altinn:accessmanagement/enduser:requests.write";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations for managing maskinporten supplier assignments and delegated scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE = "altinn:accessmanagement/enduser:maskinportensuppliers.write";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations for managing maskinporten consumer connections and received scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE = "altinn:accessmanagement/enduser:maskinportenconsumers.write";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
