@@ -337,13 +337,13 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         }
 
         var resource = await DbContext.Resources.AsNoTracking().Include(t => t.Type).SingleAsync(t => t.RefId == CheckAndConvertIfAppResourceId(delegationChange.ResourceId), cancellationToken);
-        bool remoceAssignmentIfLastMaskinportenSchema = false;
+        bool removeAssignmentIfLastMaskinportenSchema = false;
 
         var role = RoleConstants.Rightholder;
         if (resource.Type.Name == "MaskinportenSchema")
         {
             role = RoleConstants.Supplier;
-            remoceAssignmentIfLastMaskinportenSchema = true;
+            removeAssignmentIfLastMaskinportenSchema = true;
         }
 
         var from = delegationChange.FromUuid.HasValue ?
@@ -438,7 +438,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 DbContext.AssignmentResources.Remove(assignmentResource);
                 await DbContext.SaveChangesAsync(cancellationToken);
 
-                if (remoceAssignmentIfLastMaskinportenSchema)
+                if (removeAssignmentIfLastMaskinportenSchema)
                 {
                     bool removeAssignment = await CheckCascadingAssignmentRevoke(assignment.Id, cancellationToken);
                     if (removeAssignment)

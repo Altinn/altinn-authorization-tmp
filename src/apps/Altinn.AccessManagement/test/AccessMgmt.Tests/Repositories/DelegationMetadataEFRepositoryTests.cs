@@ -24,6 +24,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
 {
     private PostgresDatabase? _database;
     private ServiceProvider? _serviceProvider;
+    private DelegationMetadataRepo? _legacyRepo;
+    private NpgsqlDataSource? _dataSourceBuilder;
 
     public async ValueTask InitializeAsync()
     {
@@ -36,12 +38,15 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
                 opts.EnableEFPooling = false;
             })
             .BuildServiceProvider();
+        _dataSourceBuilder = new NpgsqlDataSourceBuilder(_database!.User.ToString()).Build();
+        _legacyRepo = new DelegationMetadataRepo(_dataSourceBuilder);        
     }
 
     public ValueTask DisposeAsync()
     {
         _serviceProvider?.Dispose();
         NpgsqlConnection.ClearAllPools();
+        _dataSourceBuilder?.Dispose();
         return ValueTask.CompletedTask;
     }
 
@@ -82,13 +87,10 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
     private DelegationMetadataEF CreateRepository(AppDbContext db)
     {
         var audit = new AuditValues(SystemEntityConstants.StaticDataIngest);
-        var legacyRepo = new DelegationMetadataRepo(
-            new NpgsqlDataSourceBuilder(_database!.User.ToString()).Build()
-        );
         return new DelegationMetadataEF(
             new AuditAccessor { AuditValues = audit },
             db,
-            legacyRepo
+            _legacyRepo
         );
     }
 
@@ -105,9 +107,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             db.ResourceTypes.Add(resourceType);
             await db.SaveChangesAsync(cancellationToken);
         }
+
         return resourceType;
     }
-
 
     /// <summary>
     /// Test scenario 1: When revoking a MaskinportenSchema and it is NOT the last 
@@ -160,9 +162,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             ProviderId = ProviderConstants.Altinn3,
         };
 
-        db.Entities.AddRange(fromOrg, toOrg);
-        db.Resources.AddRange(maskinportenResource1, maskinportenResource2);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Entities.AddRange(fromOrg, toOrg);
+        db.DbContext.Resources.AddRange(maskinportenResource1, maskinportenResource2);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create a Supplier assignment with two AssignmentResources
         var assignment = new AccessMgmt.PersistenceEF.Models.Assignment
@@ -173,8 +175,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             RoleId = RoleConstants.Supplier,
         };
 
-        db.Assignments.Add(assignment);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Assignments.Add(assignment);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var assignmentResource1 = new AccessMgmt.PersistenceEF.Models.AssignmentResource
         {
@@ -196,8 +198,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             DelegationChangeId = 2,
         };
 
-        db.AssignmentResources.AddRange(assignmentResource1, assignmentResource2);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.AssignmentResources.AddRange(assignmentResource1, assignmentResource2);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create the DelegationMetadataEF repository
         var repository = CreateRepository(db);
@@ -224,17 +226,17 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         Assert.Null(result); // RevokeLast returns null
 
         // Verify the AssignmentResource was deleted
-        var deletedAssignmentResource = await db.AssignmentResources
+        var deletedAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource1.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignmentResource);
 
         // Verify the assignment still exists (because there's still assignmentResource2)
-        var existingAssignment = await db.Assignments
+        var existingAssignment = await db.DbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignment.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingAssignment);
 
         // Verify the second AssignmentResource still exists
-        var remainingAssignmentResource = await db.AssignmentResources
+        var remainingAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource2.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(remainingAssignmentResource);
     }
@@ -280,9 +282,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             ProviderId = ProviderConstants.Altinn3,
         };
 
-        db.Entities.AddRange(fromOrg, toOrg);
-        db.Resources.Add(maskinportenResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Entities.AddRange(fromOrg, toOrg);
+        db.DbContext.Resources.Add(maskinportenResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create a Supplier assignment with only ONE AssignmentResource
         var assignment = new AccessMgmt.PersistenceEF.Models.Assignment
@@ -293,8 +295,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             RoleId = RoleConstants.Supplier,
         };
 
-        db.Assignments.Add(assignment);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Assignments.Add(assignment);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var assignmentResource = new AccessMgmt.PersistenceEF.Models.AssignmentResource
         {
@@ -306,8 +308,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             DelegationChangeId = 1,
         };
 
-        db.AssignmentResources.Add(assignmentResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.AssignmentResources.Add(assignmentResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create the DelegationMetadataEF repository
         var repository = CreateRepository(db);
@@ -334,12 +336,12 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         Assert.Null(result); // RevokeLast returns null
 
         // Verify the AssignmentResource was deleted
-        var deletedAssignmentResource = await db.AssignmentResources
+        var deletedAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignmentResource);
 
         // Verify the assignment was also deleted (cascading delete)
-        var deletedAssignment = await db.Assignments
+        var deletedAssignment = await db.DbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignment.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignment);
     }
@@ -386,9 +388,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             ProviderId = ProviderConstants.Altinn3,
         };
 
-        db.Entities.AddRange(fromOrg, toOrg);
-        db.Resources.Add(altinnAppResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Entities.AddRange(fromOrg, toOrg);
+        db.DbContext.Resources.Add(altinnAppResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create a Rightholder assignment (not Supplier) with one AssignmentResource
         var assignment = new AccessMgmt.PersistenceEF.Models.Assignment
@@ -399,8 +401,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             RoleId = RoleConstants.Rightholder, // Not Supplier!
         };
 
-        db.Assignments.Add(assignment);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Assignments.Add(assignment);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var assignmentResource = new AccessMgmt.PersistenceEF.Models.AssignmentResource
         {
@@ -412,8 +414,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             DelegationChangeId = 1,
         };
 
-        db.AssignmentResources.Add(assignmentResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.AssignmentResources.Add(assignmentResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create the DelegationMetadataEF repository
         var repository = CreateRepository(db);
@@ -440,12 +442,12 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         Assert.Null(result); // RevokeLast returns null
 
         // Verify the AssignmentResource was deleted
-        var deletedAssignmentResource = await db.AssignmentResources
+        var deletedAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignmentResource);
 
         // Verify the assignment still exists (should NOT be deleted for non-MaskinportenSchema)
-        var existingAssignment = await db.Assignments
+        var existingAssignment = await db.DbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignment.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingAssignment);
     }
@@ -491,9 +493,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             ProviderId = ProviderConstants.Altinn3,
         };
 
-        db.Entities.AddRange(fromOrg, toOrg);
-        db.Resources.Add(maskinportenResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Entities.AddRange(fromOrg, toOrg);
+        db.DbContext.Resources.Add(maskinportenResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create a Supplier assignment with one AssignmentResource and one AssignmentPackage
         var assignment = new AccessMgmt.PersistenceEF.Models.Assignment
@@ -504,8 +506,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             RoleId = RoleConstants.Supplier,
         };
 
-        db.Assignments.Add(assignment);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Assignments.Add(assignment);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var assignmentResource = new AccessMgmt.PersistenceEF.Models.AssignmentResource
         {
@@ -518,7 +520,7 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         };
 
         // Add an AssignmentPackage to create a dependency
-        var package = await db.Packages.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+        var package = await db.DbContext.Packages.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         if (package == null)
         {
             throw new InvalidOperationException("No package found in database for test.");
@@ -531,9 +533,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             PackageId = package.Id,
         };
 
-        db.AssignmentResources.Add(assignmentResource);
-        db.AssignmentPackages.Add(assignmentPackage);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.AssignmentResources.Add(assignmentResource);
+        db.DbContext.AssignmentPackages.Add(assignmentPackage);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create the DelegationMetadataEF repository
         var repository = CreateRepository(db);
@@ -560,17 +562,17 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         Assert.Null(result); // RevokeLast returns null
 
         // Verify the AssignmentResource was deleted
-        var deletedAssignmentResource = await db.AssignmentResources
+        var deletedAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignmentResource);
 
         // Verify the assignment still exists (because it has AssignmentPackage dependency)
-        var existingAssignment = await db.Assignments
+        var existingAssignment = await db.DbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignment.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingAssignment);
 
         // Verify the AssignmentPackage still exists
-        var existingPackage = await db.AssignmentPackages
+        var existingPackage = await db.DbContext.AssignmentPackages
             .FirstOrDefaultAsync(ap => ap.Id == assignmentPackage.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingPackage);
     }
@@ -625,9 +627,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             ProviderId = ProviderConstants.Altinn3,
         };
 
-        db.Entities.AddRange(fromOrg, toOrg, thirdOrg);
-        db.Resources.Add(maskinportenResource);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Entities.AddRange(fromOrg, toOrg, thirdOrg);
+        db.DbContext.Resources.Add(maskinportenResource);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create assignments
         var assignment = new AccessMgmt.PersistenceEF.Models.Assignment
@@ -646,8 +648,8 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             RoleId = RoleConstants.Supplier,
         };
 
-        db.Assignments.AddRange(assignment, onwardAssignment);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.Assignments.AddRange(assignment, onwardAssignment);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var assignmentResource = new AccessMgmt.PersistenceEF.Models.AssignmentResource
         {
@@ -668,9 +670,9 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
             FacilitatorId = toOrg.Id,
         };
 
-        db.AssignmentResources.Add(assignmentResource);
-        db.Delegations.Add(delegation);
-        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.DbContext.AssignmentResources.Add(assignmentResource);
+        db.DbContext.Delegations.Add(delegation);
+        await db.DbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Create the DelegationMetadataEF repository
         var repository = CreateRepository(db);
@@ -697,17 +699,17 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         Assert.Null(result); // RevokeLast returns null
 
         // Verify the AssignmentResource was deleted
-        var deletedAssignmentResource = await db.AssignmentResources
+        var deletedAssignmentResource = await db.DbContext.AssignmentResources
             .FirstOrDefaultAsync(ar => ar.Id == assignmentResource.Id, TestContext.Current.CancellationToken);
         Assert.Null(deletedAssignmentResource);
 
         // Verify the assignment still exists (because it has Delegation dependency)
-        var existingAssignment = await db.Assignments
+        var existingAssignment = await db.DbContext.Assignments
             .FirstOrDefaultAsync(a => a.Id == assignment.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingAssignment);
 
         // Verify the Delegation still exists
-        var existingDelegation = await db.Delegations
+        var existingDelegation = await db.DbContext.Delegations
             .FirstOrDefaultAsync(d => d.Id == delegation.Id, TestContext.Current.CancellationToken);
         Assert.NotNull(existingDelegation);
     }
