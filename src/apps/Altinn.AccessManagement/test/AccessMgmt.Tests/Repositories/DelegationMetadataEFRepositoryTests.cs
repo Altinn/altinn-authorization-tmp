@@ -45,10 +45,38 @@ public class DelegationMetadataEFRepositoryTests : IAsyncLifetime
         return ValueTask.CompletedTask;
     }
 
-    private AppDbContext CreateDbContext()
+    private sealed class ScopedAppDbContext : IDisposable, IAsyncDisposable
+    {
+        private readonly IServiceScope _scope;
+
+        public ScopedAppDbContext(IServiceScope scope)
+        {
+            _scope = scope;
+            DbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        }
+
+        public AppDbContext DbContext { get; }
+
+        public static implicit operator AppDbContext(ScopedAppDbContext scopedDbContext) => scopedDbContext.DbContext;
+
+        public void Dispose()
+        {
+            DbContext.Dispose();
+            _scope.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DbContext.DisposeAsync();
+            _scope.Dispose();
+        }
+    }
+
+    private ScopedAppDbContext CreateDbContext()
     {
         var audit = new AuditValues(SystemEntityConstants.StaticDataIngest);
-        return _serviceProvider!.CreateEFScope(audit).ServiceProvider.GetRequiredService<AppDbContext>();
+        var scope = _serviceProvider!.CreateEFScope(audit);
+        return new ScopedAppDbContext(scope);
     }
 
     private DelegationMetadataEF CreateRepository(AppDbContext db)
