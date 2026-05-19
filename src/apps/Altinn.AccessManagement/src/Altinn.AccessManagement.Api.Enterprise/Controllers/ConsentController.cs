@@ -134,10 +134,17 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         }
 
         /// <summary>
-        /// Get a list of consents that had recent status changes for the authenticated enterprise.
-        /// Returns consents ordered by the latest status change occurred for a consent request(newest first).
-        /// Uses cursor-based pagination.
+        /// Get a list of consent events for the authenticated enterprise.
+        /// Results are ordered oldest first (ascending by event ID). When paginating, the oldest events are returned first and the newest last.
+        /// Only events created more than 5 minutes ago are returned, to ensure consistency and avoid returning events that are still being processed.
+        /// Uses cursor-based pagination via the <c>continuationToken</c> parameter. If a <c>nextLink</c> is present in the response, follow it to retrieve the next page.
         /// </summary>
+        /// <param name="continuationToken">Opaque cursor token returned in the <c>nextLink</c> of a previous response. Pass this to retrieve the next page of results.</param>
+        /// <param name="createdAfter">Optional. Filters events created at or after this timestamp.</param>
+        /// <param name="createdBefore">Optional. Filters events created before this timestamp.</param>
+        /// <param name="eventTypes">Optional. Filters results to one or more specific event types. Can be specified multiple times, e.g. <c>eventTypes=approved&amp;eventTypes=revoked</c>.</param>
+        /// <param name="consentRequestId">Optional. Filters results to events belonging to a specific consent request.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
         [Route("consentrequests/events")]
@@ -147,7 +154,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetConsentStatusChanges(
+        public async Task<IActionResult> GetConsentEvents(
             [FromQuery(Name = "continuationToken")] string? continuationToken = null,
             [FromQuery(Name = "createdAfter")] DateTime? createdAfter = null,
             [FromQuery(Name = "createdBefore")] DateTime? createdBefore = null,

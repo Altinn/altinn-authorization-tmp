@@ -70,7 +70,7 @@ namespace AccessMgmt.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery query, int pageSize, int safetyLagSeconds, CancellationToken cancellationToken)
+        public Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery query, int safetyLagSeconds, int pageSize, CancellationToken cancellationToken)
         {
             // Return test data based on partyUuid
             // Empty party UUID returns empty list

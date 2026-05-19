@@ -83,7 +83,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Result<int>> GetConsentRequestCountForParty(Guid offeredByParty, ConsentRequestStatusType status, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a list of consent events for a specific party, ordered by change date (newest first).
+        /// Returns a list of consent events for a specific party, ordered by change date (oldest first).
         /// </summary>
         /// <param name="consentReceiver">The consent receiver that checks for events</param>
         /// <param name="query">The query parameters to filter the consent events</param>

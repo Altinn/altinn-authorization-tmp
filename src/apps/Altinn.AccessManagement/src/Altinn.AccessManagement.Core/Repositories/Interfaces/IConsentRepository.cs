@@ -60,7 +60,7 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         Task<int> GetConsentRequestCountForParty(Guid fromPartyUuid, ConsentRequestStatusType status, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a list of consent events for a specific party, ordered by change date (newest first).
+        /// Returns a list of consent events for a specific party, ordered by change date (oldest first).
         /// </summary>
         /// <param name="partyUuid">The party UUID to get consent events for</param>
         /// <param name="query">Query parameters to filter consent events</param>
