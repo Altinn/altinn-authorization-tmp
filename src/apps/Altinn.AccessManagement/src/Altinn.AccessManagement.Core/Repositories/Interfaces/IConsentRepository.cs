@@ -64,10 +64,9 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// </summary>
         /// <param name="partyUuid">The party UUID to get consent events for</param>
         /// <param name="query">Query parameters to filter consent events</param>
-        /// <param name="safetyLagSeconds">Number of seconds to wait before considering a consent event as final.</param>
         /// <param name="pageSize">Number of items to return</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of consent events</returns>
-        Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery query, int safetyLagSeconds, int pageSize, CancellationToken cancellationToken);
+        Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery query, int pageSize, CancellationToken cancellationToken);
     }
 }

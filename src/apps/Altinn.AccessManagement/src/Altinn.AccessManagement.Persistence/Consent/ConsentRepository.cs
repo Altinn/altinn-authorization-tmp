@@ -589,7 +589,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             return consentContext;
         }
 
-        public async Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery consentEventsQuery, int safetyLagSeconds, int pageSize, CancellationToken cancellationToken)
+        public async Task<Result<List<ConsentStatusChange>>> GetConsentEventsForParty(Guid partyUuid, ConsentEventsQuery consentEventsQuery, int pageSize, CancellationToken cancellationToken)
         {
             var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow().AddSeconds(-_consentRequestSafetyLagSeconds.TotalSeconds));
             var consentStatusChanges = new List<ConsentStatusChange>();

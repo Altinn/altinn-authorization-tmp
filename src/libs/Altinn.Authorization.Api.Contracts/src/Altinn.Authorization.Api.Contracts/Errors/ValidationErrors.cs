@@ -1,12 +1,14 @@
 ﻿#nullable enable
 
 using Altinn.Authorization.ProblemDetails;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Altinn.AccessManagement.Core.Errors;
 
 /// <summary>
 /// Validation errors for the Access Management.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class ValidationErrors
 {
     private static readonly ValidationErrorDescriptorFactory _factory

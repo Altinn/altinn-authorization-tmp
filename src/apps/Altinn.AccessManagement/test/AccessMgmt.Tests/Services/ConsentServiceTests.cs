@@ -387,13 +387,13 @@ public class ConsentServiceTests
         var query = new ConsentEventsQuery(null, null, null, null, null);
 
         _consentRepositoryMock
-            .Setup(r => r.GetConsentEventsForParty(partyUuid, query, 5, 100, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, query, 100, It.IsAny<CancellationToken>()))
             .ReturnsAsync(repoResult);
 
         var service = CreateService();
 
         // Act
-        var result = await service.GetConsentEventsForParty(receiver, query, safetyLagSeconds: 5, pageSize: 100, CancellationToken.None);
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
 
         // Assert
         result.IsProblem.Should().BeFalse();
@@ -402,7 +402,7 @@ public class ConsentServiceTests
         // The repo must be called with the *resolved* internal partyUuid, not
         // the external identity. Verify with the exact partyUuid we expect.
         _consentRepositoryMock.Verify(
-            r => r.GetConsentEventsForParty(partyUuid, query, 5, 100, It.IsAny<CancellationToken>()),
+            r => r.GetConsentEventsForParty(partyUuid, query, 100, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -428,14 +428,14 @@ public class ConsentServiceTests
             });
 
         _consentRepositoryMock
-            .Setup(r => r.GetConsentEventsForParty(resolvedPartyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetConsentEventsForParty(resolvedPartyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ConsentStatusChange>());
 
         var service = CreateService();
         var query = new ConsentEventsQuery(null, null, null, null, new Guid("cd12b899-0795-4a3c-a65f-f8de792ff382"));
 
         // Act
-        var result = await service.GetConsentEventsForParty(receiver, query, safetyLagSeconds: 5, pageSize: 25, CancellationToken.None);
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 25, CancellationToken.None);
 
         // Assert
         result.IsProblem.Should().BeFalse();
@@ -446,7 +446,7 @@ public class ConsentServiceTests
             "the org number must be resolved through the AM party service before the repository is queried");
 
         _consentRepositoryMock.Verify(
-            r => r.GetConsentEventsForParty(resolvedPartyUuid, query, 5, 25, It.IsAny<CancellationToken>()),
+            r => r.GetConsentEventsForParty(resolvedPartyUuid, query, 25, It.IsAny<CancellationToken>()),
             Times.Once,
             "the repository must receive the resolved partyUuid plus the caller's pagination args verbatim");
     }
@@ -463,14 +463,14 @@ public class ConsentServiceTests
         var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
 
         _consentRepositoryMock
-            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Problems.ConsentNotFound);
 
         var service = CreateService();
         var query = new ConsentEventsQuery(null, null, null, null, null);
 
         // Act
-        var result = await service.GetConsentEventsForParty(receiver, query, 5, 100, CancellationToken.None);
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
 
         // Assert — `Result<T>.Problem` exposes a `ProblemInstance` materialised
         // from the descriptor, not the descriptor itself, so `BeSameAs` would

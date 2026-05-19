@@ -165,7 +165,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             CancellationToken cancellationToken = default)
         {
             int pageSize = _consentSettings.CurrentValue.EventsPageSize;
-            int safetyLagSeconds = 0;//_consentSettings.CurrentValue.EventsSafetyLagSeconds;
+
             Guid? continueFrom = null;
             Core.Models.Consent.ConsentPartyUrn? authenticatedParty = OrgUtil.GetAuthenticatedParty(User);
 
@@ -230,7 +230,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 CreatedBefore: createdBefore.HasValue ? createdBefore.Value.UtcDateTime : (DateTime?)null,
                 ContinueFrom: continueFrom);
 
-            Result<List<ConsentStatusChange>> result = await _consentService.GetConsentEventsForParty(authenticatedParty, query, safetyLagSeconds, pageSize, cancellationToken);
+            Result<List<ConsentStatusChange>> result = await _consentService.GetConsentEventsForParty(authenticatedParty, query, pageSize, cancellationToken);
 
             if (result.IsProblem)
             {
