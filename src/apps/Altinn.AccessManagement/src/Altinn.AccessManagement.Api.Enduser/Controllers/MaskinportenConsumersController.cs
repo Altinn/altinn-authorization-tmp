@@ -28,6 +28,7 @@ public class MaskinportenConsumersController(
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ)]
     [ProducesResponseType<IEnumerable<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -100,6 +101,7 @@ public class MaskinportenConsumersController(
     /// </summary>
     [HttpGet("resources")]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ)]
     [ProducesResponseType<IEnumerable<ResourcePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -51,9 +51,19 @@
         public const string POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE = "MaskinportenDelegationEndUserWrite";
 
         /// <summary>
+        /// Policy tag for reading maskinporten supplier assignments and scope delegations as end user (portal or sluttbrukersystem)
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_READ = "MaskinportenSuppliersEndUserRead";
+
+        /// <summary>
         /// Policy tag for writing maskinporten supplier assignments and scope delegations as end user (portal or sluttbrukersystem)
         /// </summary>
         public const string POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE = "MaskinportenSuppliersEndUserWrite";
+
+        /// <summary>
+        /// Policy tag for reading maskinporten consumer connections and scope delegations as end user (portal or sluttbrukersystem)
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ = "MaskinportenConsumersEndUserRead";
 
         /// <summary>
         /// Policy tag for writing maskinporten consumer connections and scope delegations as end user (portal or sluttbrukersystem)
@@ -216,9 +226,19 @@
         public const string SCOPE_ENDUSER_REQUESTS_WRITE = "altinn:accessmanagement/enduser:requests.write";
 
         /// <summary>
+        /// Enduser scope giving access to read operations on maskinporten supplier assignments and delegated scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ = "altinn:accessmanagement/enduser:maskinportensuppliers.read";
+
+        /// <summary>
         /// Enduser scope giving access to write operations for managing maskinporten supplier assignments and delegated scopes
         /// </summary>
         public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE = "altinn:accessmanagement/enduser:maskinportensuppliers.write";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on maskinporten consumer connections and received scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ = "altinn:accessmanagement/enduser:maskinportenconsumers.read";
 
         /// <summary>
         /// Enduser scope giving access to write operations for managing maskinporten consumer connections and received scopes
