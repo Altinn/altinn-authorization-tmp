@@ -144,7 +144,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// <param name="continuationToken">Opaque cursor token returned in the <c>nextLink</c> of a previous response. Pass this to retrieve the next page of results.</param>
         /// <param name="createdAfter">Optional. Filters events created at or after this timestamp.</param>
         /// <param name="createdBefore">Optional. Filters events created before this timestamp.</param>
-        /// <param name="eventTypes">Optional. Filters results to one or more specific event types. Can be specified multiple times, e.g. <c>eventType=approved&amp;eventType=revoked</c>.</param>
+        /// <param name="eventTypes">Optional. Filters results to one or more specific event types. Can be specified multiple times, e.g. <c>eventType=accepted&amp;eventType=revoked</c>.</param>
         /// <param name="consentRequestId">Optional. Filters results to events belonging to a specific consent request.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
