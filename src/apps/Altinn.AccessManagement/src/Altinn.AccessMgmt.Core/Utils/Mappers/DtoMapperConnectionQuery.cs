@@ -34,7 +34,7 @@ public partial class DtoMapper : IDtoMapper
                 Roles = [.. c.Where(c => c.AssignmentId.HasValue).Select(c => ConvertCompactRole(c.Role)).Where(ro => ro is not null).DistinctBy(t => t.Id)],
                 Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).Where(re => re is not null).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).Where(pa => pa is not null).DistinctBy(t => t.Id)],
-                Instances = [.. c.SelectMany(c => c.Instances).Select(i => Convert(i)).Where(i => i is not null).DistinctBy(t => t.InstanceId)],
+                Instances = [.. c.SelectMany(c => c.Instances).Select(i => Convert(i)).Where(i => i is not null).DistinctBy(t => (t.ResourceRefId, t.InstanceId))],
                 Connections = ConvertSubConnectionsToOthers(subconnections),
             };
         });
@@ -68,7 +68,7 @@ public partial class DtoMapper : IDtoMapper
                 Roles = [.. c.Where(c => c.AssignmentId.HasValue).Select(c => ConvertCompactRole(c.Role)).Where(ro => ro is not null).DistinctBy(t => t.Id)],
                 Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).Where(re => re is not null).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).Where(pa => pa is not null).DistinctBy(t => t.Id)],
-                Instances = [.. c.SelectMany(c => c.Instances).Select(i => Convert(i)).Where(i => i is not null).DistinctBy(t => t.InstanceId)],
+                Instances = [.. c.SelectMany(c => c.Instances).Select(i => Convert(i)).Where(i => i is not null).DistinctBy(t => (t.ResourceRefId, t.InstanceId))],
                 Connections = ConvertSubConnectionsFromOthers(subconnections),
             };
         });
@@ -168,7 +168,7 @@ public partial class DtoMapper : IDtoMapper
                     .SelectMany(t => t.Instances)
                     .Select(i => Convert(i))
                     .Where(i => i is not null)
-                    .DistinctBy(t => t.InstanceId)
+                    .DistinctBy(t => (t.ResourceRefId, t.InstanceId))
                     .ToList(),
 
                 Connections = new()
@@ -214,7 +214,7 @@ public partial class DtoMapper : IDtoMapper
                     .SelectMany(t => t.Instances)
                     .Select(i => Convert(i))
                     .Where(i => i is not null)
-                    .DistinctBy(t => t.InstanceId)
+                    .DistinctBy(t => (t.ResourceRefId, t.InstanceId))
                     .ToList(),
 
                 Connections = new()
