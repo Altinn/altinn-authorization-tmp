@@ -27,8 +27,8 @@ public class MaskinportenConsumersController(
     /// Gets all consumers for the authenticated supplier
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ)]
     [ProducesResponseType<IEnumerable<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -64,8 +64,8 @@ public class MaskinportenConsumersController(
     /// Removes a consumer connection (supplier relinquishes their access)
     /// </summary>
     [HttpDelete]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -100,8 +100,8 @@ public class MaskinportenConsumersController(
     /// Gets MaskinportenSchema resources delegated from consumers
     /// </summary>
     [HttpGet("resources")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ)]
     [ProducesResponseType<IEnumerable<ResourcePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -150,8 +150,8 @@ public class MaskinportenConsumersController(
     /// Removes a MaskinportenSchema resource delegation (supplier relinquishes access to a specific resource)
     /// </summary>
     [HttpDelete("resources")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]

@@ -51,26 +51,6 @@
         public const string POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE = "MaskinportenDelegationEndUserWrite";
 
         /// <summary>
-        /// Policy tag for reading maskinporten supplier assignments and scope delegations as end user (portal or sluttbrukersystem)
-        /// </summary>
-        public const string POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_READ = "MaskinportenSuppliersEndUserRead";
-
-        /// <summary>
-        /// Policy tag for writing maskinporten supplier assignments and scope delegations as end user (portal or sluttbrukersystem)
-        /// </summary>
-        public const string POLICY_MASKINPORTEN_SUPPLIERS_ENDUSER_WRITE = "MaskinportenSuppliersEndUserWrite";
-
-        /// <summary>
-        /// Policy tag for reading maskinporten consumer connections and scope delegations as end user (portal or sluttbrukersystem)
-        /// </summary>
-        public const string POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_READ = "MaskinportenConsumersEndUserRead";
-
-        /// <summary>
-        /// Policy tag for writing maskinporten consumer connections and scope delegations as end user (portal or sluttbrukersystem)
-        /// </summary>
-        public const string POLICY_MASKINPORTEN_CONSUMERS_ENDUSER_WRITE = "MaskinportenConsumersEndUserWrite";
-
-        /// <summary>
         /// Policy tag for reading access management information
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_READ = "AccessManagementRead";
