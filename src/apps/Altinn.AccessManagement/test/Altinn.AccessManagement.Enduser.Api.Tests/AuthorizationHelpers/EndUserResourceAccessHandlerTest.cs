@@ -88,6 +88,42 @@ public class EndUserResourceAccessHandlerTest
     }
 
     [Fact]
+    public async Task HandleRequirement_EmptyPartyParam_Fails()
+    {
+        var (handler, pdp, _) = CreateSut("?party=");
+        var context = Ctx(new EndUserResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation", false));
+
+        await handler.HandleAsync(context);
+
+        context.HasFailed.Should().BeTrue();
+        pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleRequirement_EmptyPartyParam_AllowUnauthorizedParty_Succeeds()
+    {
+        var (handler, pdp, httpContext) = CreateSut("?party=");
+        var context = Ctx(new EndUserResourceAccessRequirement("read", "res", allowAllowUnauthorizedParty: true));
+
+        await handler.HandleAsync(context);
+
+        context.HasSucceeded.Should().BeTrue();
+        httpContext.Items["HasRequestedPermission"].Should().Be(false);
+        pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleRequirement_WhitespacePartyParam_Fails()
+    {
+        var (handler, _, _) = CreateSut("?party=%20");
+        var context = Ctx(new EndUserResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation", false));
+
+        await handler.HandleAsync(context);
+
+        context.HasFailed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task HandleRequirement_ValidParty_PdpPermit_Succeeds()
     {
         var (handler, pdp, httpContext) = CreateSut($"?party={Guid.NewGuid()}");
