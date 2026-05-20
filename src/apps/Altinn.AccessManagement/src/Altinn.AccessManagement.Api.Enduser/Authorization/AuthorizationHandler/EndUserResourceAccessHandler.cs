@@ -49,6 +49,23 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
                 return;
             }
 
+            if (DecisionHelper.GetPartyParam(httpContext) is null)
+            {
+                // The 'party' query parameter is missing or not a valid GUID. Treat it as no
+                // access instead of letting CreateDecisionRequest throw and surface as a 500.
+                if (!requirement.AllowAllowUnauthorizedParty)
+                {
+                    context.Fail();
+                    await Task.CompletedTask;
+                    return;
+                }
+
+                httpContext.Items.Add("HasRequestedPermission", false);
+                context.Succeed(requirement);
+                await Task.CompletedTask;
+                return;
+            }
+
             XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequest(context, requirement, httpContext.Request.Query);
 
             XacmlJsonResponse response = await _pdp.GetDecisionForRequest(request);
