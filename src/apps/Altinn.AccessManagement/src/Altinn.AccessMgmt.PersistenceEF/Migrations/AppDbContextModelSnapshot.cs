@@ -4133,6 +4133,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "By")
                         .WithMany()
                         .HasForeignKey("ById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_requestassignment_entity_byid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "From")

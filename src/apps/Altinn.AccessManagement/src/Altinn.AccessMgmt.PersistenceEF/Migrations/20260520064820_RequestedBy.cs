@@ -27,7 +27,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            migrationBuilder.Sql(@"UPDATE dbo.requestassignment SET byid = audit_createdby");
+            migrationBuilder.Sql(@"UPDATE dbo.requestassignment SET byid = audit_changedby WHERE audit_changedby IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "ix_requestassignment_byid",
@@ -42,7 +42,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 column: "byid",
                 principalSchema: "dbo",
                 principalTable: "entity",
-                principalColumn: "id");
+                principalColumn: "id",
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260518074012_RequestedBy")]
+    [Migration("20260520064820_RequestedBy")]
     partial class RequestedBy
     {
         /// <inheritdoc />
@@ -4136,6 +4136,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "By")
                         .WithMany()
                         .HasForeignKey("ById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_requestassignment_entity_byid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "From")
