@@ -55,7 +55,7 @@ public partial class ConnectionService(
     ISingleRightsService singleRightsService,
     IFeatureManager featureManager) : IConnectionService
 {
-    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, bool includeAccessPackages = false, bool includeResources = false, bool includeInstances = false, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
@@ -84,8 +84,9 @@ public partial class ConnectionService(
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
                 IncludeDelegation = includeClientDelegations,
-                IncludePackages = false,
-                IncludeResources = false,
+                IncludePackages = includeAccessPackages,
+                IncludeResources = includeResources,
+                IncludeInstances = includeInstances,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
                 ExcludeRoleIds = includeAgentConnections ? null : [RoleConstants.Agent.Id],
@@ -820,7 +821,7 @@ public partial class ConnectionService(
     private static ValidationProblemInstance ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options) =>
         ConnectionWriteValidation.ValidateWriteOpInput(from, to, options);
 
-    private ProblemInstance ValidateReadOpInput(Guid? fromId, Entity? from, Guid? toId, Entity? to, ConnectionOptions options)
+    private static ProblemInstance ValidateReadOpInput(Guid? fromId, Entity? from, Guid? toId, Entity? to, ConnectionOptions options)
     {
         if (from is { })
         {
@@ -895,10 +896,17 @@ public partial class ConnectionService(
         return connections.Where(c => c.AssignmentId.HasValue).GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
+            var permissions = connection.Select(c => DtoMapper.ConvertToPermission(c)).ToList();
+            bool revocable = false;
+            if (role.ProviderId == ProviderConstants.Altinn2.Id)
+            {
+                revocable = permissions.Any(p => p.Reason.Contains(AccessReasonFlag.Direct));
+            }
+
             return new RolePermissionDto
             {
-                Role = DtoMapper.Convert(role),
-                Permissions = connection.Select(connection => DtoMapper.ConvertToPermission(connection)),
+                Role = DtoMapper.Convert(role, revocable),
+                Permissions = permissions,
             };
         }).ToList();
     }
@@ -1297,6 +1305,11 @@ public partial class ConnectionService(
 
         List<Rule> result = await singleRightsService.TryWriteDelegationPolicyRules(from, to, resourceObj, keys, by, ignoreExistingPolicy: false, cancellationToken: cancellationToken);
 
+        if (!result.All(r => r.CreatedSuccessfully))
+        {
+            return Problems.DelegationPolicyRuleWriteFailed;
+        }
+
         await AccessAddedNotification.Upsert(
             dbContext,
             from.Id,
@@ -1306,11 +1319,6 @@ public partial class ConnectionService(
             appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
             cancellationToken
         );
-
-        if (!result.All(r => r.CreatedSuccessfully))
-        {
-            return Problems.DelegationPolicyRuleWriteFailed;
-        }
 
         return true;
     }
@@ -2388,6 +2396,7 @@ public partial class ConnectionService
 
     /// <inheritdoc />
     public async Task<Result<bool>> RemoveRoleAssignment(
+        Guid partyId,
         Guid fromId,
         Guid toId,
         string roleCode,
@@ -2428,7 +2437,35 @@ public partial class ConnectionService
 
         if (existingAssignment is null)
         {
-            return false;
+            // Check if connection exists and return problem if connection is not a direct revocable
+            var direction = partyId == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
+            var filter = new ConnectionQueryFilter()
+            {
+                FromIds = [fromId],
+                ToIds = [toId],
+                EnrichEntities = false,
+                IncludeSubConnections = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeDelegation = false,
+                IncludePackages = false,
+                IncludeResources = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                RoleIds = [role.Id]
+            };
+
+            var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
+
+            if (connections.Count == 0)
+            {
+                return false;
+            }
+
+            return Problems.RoleAssignmentNotRevocable;
         }
 
         // Remove and save revoked assignment

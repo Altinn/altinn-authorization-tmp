@@ -63,6 +63,9 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         [FromQuery] bool includeClientDelegations = true,
         [FromQuery] bool includeAgentConnections = true,
+        [FromQuery] bool includeAccessPackages = false,
+        [FromQuery] bool includeResources = false,
+        [FromQuery] bool includeInstances = false,
         CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
@@ -77,6 +80,9 @@ public class ConnectionsController(
             to,
             includeClientDelegations,
             includeAgentConnections,
+            includeAccessPackages,
+            includeResources,
+            includeInstances,
             ConfigureConnections,
             cancellationToken
         );
@@ -118,8 +124,8 @@ public class ConnectionsController(
             null,
             includeClientDelegations: true,
             includeAgentConnections: true,
-            ConfigureConnections,
-            cancellationToken
+            configureConnections: ConfigureConnections,
+            cancellationToken: cancellationToken
         );
 
         if (result.IsProblem)
@@ -408,7 +414,7 @@ public class ConnectionsController(
         [Required][FromQuery(Name = "rolecode")] string roleCode,
         CancellationToken cancellationToken = default)
     {
-        var result = await ConnectionService.RemoveRoleAssignment(from, to, roleCode, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.RemoveRoleAssignment(party, from, to, roleCode, ConfigureConnections, cancellationToken);
 
         if (result.IsProblem)
         {
@@ -477,7 +483,7 @@ public class ConnectionsController(
             resourceObj = await resourceService.GetResource(resource, cancellationToken);
             if (resourceObj is null)
             {
-                ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+                ProblemDetails problem = Problems.InvalidResource.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
                 return problem.ToActionResult();
             }
@@ -522,7 +528,7 @@ public class ConnectionsController(
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
-            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+            ProblemDetails problem = Problems.InvalidResource.ToProblemDetails();
             problem.Extensions["resource"] = resource;
             return problem.ToActionResult();
         }
@@ -598,7 +604,7 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto rightKeys,
         CancellationToken cancellationToken = default)
     {
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var byId = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
@@ -607,7 +613,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -639,7 +645,7 @@ public class ConnectionsController(
         [FromBody] RightKeyListDto updateDto,
         CancellationToken cancellationToken = default)
     {
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var byId = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var byEntity = await EntityService.GetEntity(byId, cancellationToken);
@@ -649,7 +655,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -705,13 +711,13 @@ public class ConnectionsController(
         [FromQuery(Name = "resource")] string resource,
         CancellationToken cancellationToken = default)
     {
-        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        Guid authenticatedUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
         var result = await ConnectionService.ResourceDelegationCheck(authenticatedUserUuid, party, resource, ConfigureConnections, languageCode, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -762,7 +768,7 @@ public class ConnectionsController(
             resourceObj = await resourceService.GetResource(resource, cancellationToken);
             if (resourceObj is null)
             {
-                ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+                ProblemDetails problem = Problems.InvalidResource.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
                 problem.Extensions["instance"] = instance;
                 return problem.ToActionResult();
@@ -818,7 +824,7 @@ public class ConnectionsController(
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
-            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+            ProblemDetails problem = Problems.InvalidResource.ToProblemDetails();
             problem.Extensions["resource"] = resource;
             problem.Extensions["instance"] = instance;
             return problem.ToActionResult();
@@ -957,7 +963,7 @@ public class ConnectionsController(
         }
 
         // Proceed with instance delegation
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var byId = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(targetEntityId, cancellationToken);
         var by = await EntityService.GetEntity(byId, cancellationToken);
@@ -970,7 +976,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -1010,7 +1016,7 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        var byId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var byId = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var fromEntity = await EntityService.GetEntity(party, cancellationToken);
         var toEntity = await EntityService.GetEntity(to, cancellationToken);
         var byEntity = await EntityService.GetEntity(byId, cancellationToken);
@@ -1020,7 +1026,7 @@ public class ConnectionsController(
 
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -1090,13 +1096,13 @@ public class ConnectionsController(
             return validationErrors.ToActionResult();
         }
 
-        Guid authenticatedUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        Guid authenticatedUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         string languageCode = this.GetLanguageCode();
 
         var result = await ConnectionService.InstanceDelegationCheck(authenticatedUserUuid, party, resource, instance, ConfigureConnections, languageCode, cancellationToken);
         if (result.IsProblem)
         {
-            if (result.Problem.Equals(Core.Errors.Problems.InvalidResource))
+            if (result.Problem.Equals(Problems.InvalidResource))
             {
                 ProblemDetails problem = result.Problem.ToProblemDetails();
                 problem.Extensions["resource"] = resource;
@@ -1138,7 +1144,7 @@ public class ConnectionsController(
         var resourceObj = await resourceService.GetResource(resource, cancellationToken);
         if (resourceObj is null)
         {
-            ProblemDetails problem = Core.Errors.Problems.InvalidResource.ToProblemDetails();
+            ProblemDetails problem = Problems.InvalidResource.ToProblemDetails();
             problem.Extensions["resource"] = resource;
             problem.Extensions["instance"] = instance;
             return problem.ToActionResult();
