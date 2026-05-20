@@ -56,13 +56,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
                 if (!requirement.AllowAllowUnauthorizedParty)
                 {
                     context.Fail();
-                    await Task.CompletedTask;
                     return;
                 }
 
-                httpContext.Items.Add("HasRequestedPermission", false);
+                httpContext.Items["HasRequestedPermission"] = false;
                 context.Succeed(requirement);
-                await Task.CompletedTask;
                 return;
             }
 
