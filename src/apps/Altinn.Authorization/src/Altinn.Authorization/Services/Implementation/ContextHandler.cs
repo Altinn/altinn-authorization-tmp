@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Altinn.Authorization.ABAC.Constants;
+﻿using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
-using Altinn.Authorization.Models;
+using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Models.Register;
 using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
@@ -93,6 +88,10 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <inheritdoc/>
         public async Task<XacmlContextRequest> Enrich(XacmlContextRequest request, bool isExternalRequest, SortedDictionary<string, AuthInfo> appInstanceInfo, CancellationToken cancellationToken = default)
         {
+            // The cache is per-request scratch space; callers that don't have one
+            // (notably standalone unit tests of EnrichResourceAttributes) are
+            // semantically equivalent to "start from an empty cache".
+            appInstanceInfo ??= new SortedDictionary<string, AuthInfo>(StringComparer.Ordinal);
             await EnrichResourceAttributes(request, isExternalRequest, appInstanceInfo);
             return await Task.FromResult(request);
         }
@@ -114,43 +113,30 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (!resourceAttributeComplete && !string.IsNullOrEmpty(resourceAttributes.InstanceValue))
             {
-                Instance instanceData = null;
-                if (!_generalSettings.UseStorageApiForInstanceAuthInfo)
+                if (!appInstanceInfo.TryGetValue(resourceAttributes.InstanceValue, out AuthInfo authInfo))
                 {
-                    instanceData = await _policyInformationRepository.GetInstance(resourceAttributes.InstanceValue);
-                }
-                else
-                {
-                    instanceData = new();
-                    if (!appInstanceInfo.TryGetValue(resourceAttributes.InstanceValue, out AuthInfo authInfo))
-                    {
-                        authInfo = await _policyInformationRepository.GetAuthInfo(resourceAttributes.InstanceValue);
-                        appInstanceInfo[resourceAttributes.InstanceValue] = authInfo;
-                    }
-
-                    instanceData.Process = authInfo.Process;
-                    instanceData.AppId = authInfo.AppId;
-                    instanceData.Org = instanceData.AppId.Split('/')[0];
+                    authInfo = await _policyInformationRepository.GetAuthInfo(resourceAttributes.InstanceValue);
+                    appInstanceInfo[resourceAttributes.InstanceValue] = authInfo;
                 }
 
-                if (instanceData != null)
-                {
-                    AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.OrgAttribute, resourceAttributes.OrgValue, instanceData.Org);
-                    string app = instanceData.AppId.Split("/")[1];
-                    AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.AppAttribute, resourceAttributes.AppValue, app);
-                    if (instanceData.Process?.CurrentTask != null)
-                    {
-                        AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.TaskAttribute, resourceAttributes.TaskValue, instanceData.Process.CurrentTask.ElementId);
-                    }
-                    else if (instanceData.Process?.EndEvent != null)
-                    {
-                        AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.EndEventAttribute, null, instanceData.Process.EndEvent);
-                    }
+                string[] appIdParts = authInfo.AppId.Split('/');
+                string org = appIdParts[0];
+                string app = appIdParts[1];
 
-                    string partyId = resourceAttributes.InstanceValue.Split('/')[0];
-                    AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.PartyAttribute, resourceAttributes.ResourcePartyValue, partyId);
-                    resourceAttributes.ResourcePartyValue = partyId;
+                AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.OrgAttribute, resourceAttributes.OrgValue, org);
+                AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.AppAttribute, resourceAttributes.AppValue, app);
+                if (authInfo.Process?.CurrentTask != null)
+                {
+                    AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.TaskAttribute, resourceAttributes.TaskValue, authInfo.Process.CurrentTask.ElementId);
                 }
+                else if (authInfo.Process?.EndEvent != null)
+                {
+                    AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.EndEventAttribute, null, authInfo.Process.EndEvent);
+                }
+
+                string partyId = resourceAttributes.InstanceValue.Split('/')[0];
+                AddIfValueDoesNotExist(resourceContextAttributes, XacmlRequestAttribute.PartyAttribute, resourceAttributes.ResourcePartyValue, partyId);
+                resourceAttributes.ResourcePartyValue = partyId;
             }
 
             // Resource must be enriched after getting instance data which resolves org/app through the instance id
@@ -208,7 +194,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         private static XacmlContextAttributes EnrichRequestResourceAttributes(XacmlContextAttributes requestResourceAttributes, XacmlResourceAttributes resourceAttributes)
         {
             XacmlAttribute resourceAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.ResourceRegistryAttribute));
-            XacmlAttribute resourceInstanceAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.ResourceRegistryInstanceAttribute));
             XacmlAttribute orgAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrgAttribute));
             XacmlAttribute appAttribute = requestResourceAttributes.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.AppAttribute));
             if (resourceAttribute != null && orgAttribute == null && appAttribute == null)
@@ -251,6 +236,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 {
                     resourceAttributes.ResourcePartyValue = party.PartyId.ToString();
                     requestResourceAttributes.Attributes.Add(GetPartyIdsAttribute(new List<int> { party.PartyId }));
+
+                    resourceAttributes.PartyUuid = party.PartyUuid.Value;
                 }
             }
             else if (string.IsNullOrEmpty(resourceAttributes.ResourcePartyValue) && !string.IsNullOrEmpty(resourceAttributes.PersonId))
@@ -265,6 +252,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 {
                     resourceAttributes.ResourcePartyValue = party.PartyId.ToString();
                     requestResourceAttributes.Attributes.Add(GetPartyIdsAttribute(new List<int> { party.PartyId }));
+
+                    resourceAttributes.PartyUuid = party.PartyUuid.Value;
                 }
             }
             else if (string.IsNullOrEmpty(resourceAttributes.ResourcePartyValue) && resourceAttributes.PartyUuid != Guid.Empty)
@@ -275,6 +264,17 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     Party party = parties.FirstOrDefault();
                     resourceAttributes.ResourcePartyValue = party.PartyId.ToString();
                     requestResourceAttributes.Attributes.Add(GetPartyIdsAttribute(new List<int> { party.PartyId }));
+
+                    resourceAttributes.PartyUuid = party.PartyUuid.Value;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(resourceAttributes.ResourcePartyValue) && resourceAttributes.PartyUuid == Guid.Empty && int.TryParse(resourceAttributes.ResourcePartyValue, out int partyId))
+            {
+                List<Party> party = await _registerService.GetPartiesAsync(new List<int> { partyId }, cancellationToken: cancellationToken);
+                if (party.Count == 1 && party[0].PartyUuid.HasValue)
+                {
+                    resourceAttributes.PartyUuid = party[0].PartyUuid.Value;
                 }
             }
         }
@@ -549,28 +549,13 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             // Enrich with access package attributes if policy contains rules for access packages and request has a specified resource party id
             if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute) && resourcePartyId != 0)
             {
-                if (resourceAttr.PartyUuid == Guid.Empty)
-                {
-                    List<Party> party = await _registerService.GetPartiesAsync(new List<int> { resourcePartyId }, cancellationToken: cancellationToken);
-
-                    if (party.Count == 1 && party[0].PartyUuid.HasValue)
-                    {
-                        resourceAttr.PartyUuid = party[0].PartyUuid.Value;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-
                 if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization) && subjectSystemUser != Guid.Empty)
                 {
-                    await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
+                    await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid, cancellationToken);
                 }
                 else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization) && subjectPartyUuid != Guid.Empty)
                 {
-                    // ToDo: check that subject and resource party is not privat person on behalf of themselves
-                    await AddAccessPackageAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid);
+                    await AddAccessPackageAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid, cancellationToken);
                 }
             }
 
@@ -640,10 +625,20 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute))
             {
-                List<Role> roleList = await GetRoles(subjectUserId, resourcePartyId);
-                if (roleList.Count != 0)
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.AccessManagementAsPipForRoles))
                 {
-                    subjectContextAttributes.Attributes.Add(GetRoleAttribute(roleList));
+                    if (subjectPartyUuid != Guid.Empty && resourceAttr.PartyUuid != Guid.Empty)
+                    {
+                        await AddRoleAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid, cancellationToken);
+                    }
+                }
+                else
+                {
+                    List<Role> roleList = await GetRoles(subjectUserId, resourcePartyId);
+                    if (roleList.Count != 0)
+                    {
+                        subjectContextAttributes.Attributes.Add(GetRoleAttribute(roleList));
+                    }
                 }
             }
         }
@@ -654,12 +649,39 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="subjectContextAttributes">The subject attribute collection to enrich with access packages (if any) the subject user has for the party</param>
         /// <param name="toSubjectPartyUuid">The subject party uuid to check if has any access packages for the party</param>
         /// <param name="resourceParty">The party to check if subject party has any access packages for.</param>
-        protected async Task AddAccessPackageAttributes(XacmlContextAttributes subjectContextAttributes, Guid toSubjectPartyUuid, Guid resourceParty)
+        /// <param name="cancellationToken">The cancellation token</param>
+        protected async Task AddAccessPackageAttributes(XacmlContextAttributes subjectContextAttributes, Guid toSubjectPartyUuid, Guid resourceParty, CancellationToken cancellationToken = default)
         {
-            IEnumerable<AccessPackageUrn> accessPackages = await _accessManagementWrapper.GetAccessPackages(toSubjectPartyUuid, resourceParty);
+            IEnumerable<AccessPackageUrn> accessPackages;
+            if (await _featureManager.IsEnabledAsync(FeatureFlags.AccessManagementAsPipForRoles))
+            {
+                var result = await _accessManagementWrapper.GetRolesAndAccessPackages(toSubjectPartyUuid, resourceParty, cancellationToken);
+                accessPackages = result.AccessPackages;
+            }
+            else
+            {
+                accessPackages = await _accessManagementWrapper.GetAccessPackages(toSubjectPartyUuid, resourceParty, cancellationToken);
+            }
+
             foreach (AccessPackageUrn accessPackage in accessPackages)
             {
                 subjectContextAttributes.Attributes.Add(GetStringAttribute(accessPackage.PrefixSpan.ToString(), accessPackage.ValueSpan.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// Enriches the context with all roles attributes the given subject has access to on behalf of the party
+        /// </summary>
+        /// <param name="subjectContextAttributes">The subject attribute collection to enrich with roles (if any) the subject user has for the party</param>
+        /// <param name="toSubjectPartyUuid">The subject party uuid to check if has any roles for the party</param>
+        /// <param name="resourceParty">The party to check if subject party has any roles for.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        protected async Task AddRoleAttributes(XacmlContextAttributes subjectContextAttributes, Guid toSubjectPartyUuid, Guid resourceParty, CancellationToken cancellationToken = default)
+        {
+            var result = await _accessManagementWrapper.GetRolesAndAccessPackages(toSubjectPartyUuid, resourceParty, cancellationToken);
+            foreach (RoleUrn role in result.Roles)
+            {
+                subjectContextAttributes.Attributes.Add(GetStringAttribute(role.PrefixSpan.ToString(), role.ValueSpan.ToString()));
             }
         }
 

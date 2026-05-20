@@ -412,7 +412,7 @@ public class AuthorizedPartiesServiceEfOld(
         ).ToList();
     }
 
-    private IEnumerable<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties, AuthorizedPartiesFilters filters)
+    private static IEnumerable<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties, AuthorizedPartiesFilters filters)
     {
         List<AuthorizedParty> result = a3AuthorizedParties.ToList();
 
@@ -485,7 +485,7 @@ public class AuthorizedPartiesServiceEfOld(
         bool resourceFilterSpecified = filter.ProviderCode != null || filter.AnyOfResourceIds?.Count() > 0;
         if (!resourceFilterSpecified || filter.PackageFilter?.Count > 0)
         {
-            connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
+            connections = await repoService.GetConnectionsFromOthersOld(toId, filters: filter, ct: cancellationToken);
         }
 
         // Get App, Resource and Instance delegations
@@ -539,7 +539,7 @@ public class AuthorizedPartiesServiceEfOld(
                 allPartiesDict[party.Id] = subUnit;
 
                 // Either add to existing parent or create parent if not exists
-                if (allPartiesDict.TryGetValue(party.ParentId.Value, out AuthorizedParty parent))
+                if (allPartiesDict.TryGetValue(party.ParentId.Value, out _))
                 {
                     allPartiesDict[party.ParentId.Value].Subunits.Add(subUnit);
                 }
@@ -573,7 +573,7 @@ public class AuthorizedPartiesServiceEfOld(
             if (!allPartiesDict.TryGetValue(subunit.Id, out AuthorizedParty _))
             {
                 var subunitAuthParty = BuildAuthorizedPartyFromEntity(subunit);
-                if (allPartiesDict.TryGetValue(subunit.ParentId.Value, out AuthorizedParty parent))
+                if (allPartiesDict.TryGetValue(subunit.ParentId.Value, out _))
                 {
                     allPartiesDict[subunit.ParentId.Value].Subunits.Add(subunitAuthParty);
                 }
@@ -640,7 +640,7 @@ public class AuthorizedPartiesServiceEfOld(
         }
     }
 
-    private async Task EnrichWithResourceAndInstanceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, AuthorizedPartiesFilters filters)
+    private static async Task EnrichWithResourceAndInstanceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, AuthorizedPartiesFilters filters)
     {
         if (!filters.IncludeResources && !filters.IncludeInstances)
         {
@@ -681,7 +681,7 @@ public class AuthorizedPartiesServiceEfOld(
         }
     }
 
-    private List<AuthorizedParty> GetFilteredA2Parties(IEnumerable<AuthorizedParty> parties, AuthorizedPartiesFilters filters)
+    private static List<AuthorizedParty> GetFilteredA2Parties(IEnumerable<AuthorizedParty> parties, AuthorizedPartiesFilters filters)
     {
         bool filterParties = filters.PartyFilter?.Count > 0;
 
@@ -842,24 +842,6 @@ public class AuthorizedPartiesServiceEfOld(
                 foreach (var roleCode in roleCodes)
                 {
                     filter.RoleFilter[roleCode] = roleCode;
-                }
-
-                // Find all Roles for the PackageResources found above, as we need to include roles giving access via packages as well.
-                List<RolePackage> rolePackages = await repoService.GetRolePackages(packageIds: filter.PackageFilter.Keys, ct: cancellationToken);
-                foreach (var group in rolePackages.GroupBy(rp => rp.PackageId))
-                {
-                    foreach (var role in group.Select(rp => rp.Role))
-                    {
-                        if (!filter.RoleFilter.ContainsKey(role.Code))
-                        {
-                            filter.RoleFilter[role.Code] = role.Code;
-                        }
-
-                        if (role.LegacyCode != null && !filter.RoleFilter.ContainsKey(role.LegacyCode))
-                        {
-                            filter.RoleFilter[role.LegacyCode] = role.LegacyCode;
-                        }
-                    }
                 }
 
                 cachedFilters.ResourceFilter = filter.ResourceFilter;

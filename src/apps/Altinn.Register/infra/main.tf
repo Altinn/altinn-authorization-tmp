@@ -191,6 +191,12 @@ data "azurerm_key_vault_secret" "register_maskinporten_jwk" {
   name         = "maskinporten-register-jwk"
 }
 
+data "azurerm_key_vault_secret" "ccr_client_password_hash" {
+  for_each     = var.config.ccr.clients
+  key_vault_id = module.key_vault.id
+  name         = each.value.password
+}
+
 module "appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
@@ -203,11 +209,14 @@ module "appsettings" {
           "A2PartyImport:BridgeApiEndpoint"                      = { value = var.sbl_endpoint }
 
           // features
+          "Altinn:register:Party:CreatePartyId" = { value = var.features.party.create_party_id || var.features.party_import.npr.enable }
+
           "Altinn:register:PartyImport:A2:Enable"                = { value = var.features.a2_party_import.parties }
           "Altinn:register:PartyImport:A2:PartyUserId:Enable"    = { value = var.features.a2_party_import.user_ids }
           "Altinn:register:PartyImport:A2:Profiles:Enable"       = { value = var.features.a2_party_import.profiles }
           "Altinn:register:PartyImport:SystemUsers:Enable"       = { value = var.features.party_import.system_users }
           "Altinn:register:PartyImport:Npr:Guardianships:Enable" = { value = var.features.party_import.npr.guardianships }
+          "Altinn:register:PartyImport:Npr:Enable"               = { value = var.features.party_import.npr.enable }
 
           "Altinn:register:Ccr:Update:Enabled" = { value = var.features.ccr_proxy.enable }
           "Altinn:register:Ccr:Update:Record"  = { value = var.features.ccr_proxy.record }
@@ -230,7 +239,14 @@ module "appsettings" {
           // maskinporten config
           "Altinn:MaskinPorten:Clients:register-freg:ClientId" = { value = var.config.maskinporten.client_id }
           "Altinn:MaskinPorten:Clients:register-freg:Scope"    = { value = var.config.maskinporten.scope }
-        } : {}
+        } : {},
+        // ccr client config
+        merge([
+          for client_key, client in var.config.ccr.clients : {
+            for network_index, network_value in client.networks :
+            "Altinn:register:Ccr:Clients:${client_key}:AllowedSourceNetworks:${network_index}" => { value = network_value }
+          }
+        ]...)
       )
 
       vault_references = merge(
@@ -240,7 +256,11 @@ module "appsettings" {
         },
         var.features.maskinporten ? {
           "Altinn:MaskinPorten:Clients:register-freg:Key" = { vault_key_reference = data.azurerm_key_vault_secret.register_maskinporten_jwk[0].versionless_id }
-        } : {}
+        } : {},
+        {
+          for client_key, client in var.config.ccr.clients :
+          "Altinn:register:Ccr:Clients:${client_key}:PasswordHash" => { vault_key_reference = data.azurerm_key_vault_secret.ccr_client_password_hash[client_key].versionless_id }
+        }
       )
     }
   }

@@ -53,7 +53,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 if (!page.IsSuccessful)
                 {
                     Log.ResponseError(_logger, page.StatusCode);
-                    throw new Exception("Stream page is not successful");
+                    throw new InvalidOperationException("Stream page is not successful");
                 }
 
                 Guid batchId = Guid.CreateVersion7();
@@ -89,7 +89,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (deleted <= 0)
                             {
                                 _logger.LogWarning(
-                                    "Failed to delete delegation for FromParty: {FromParty}, ToParty: {ToParty}, Facilitator: {Facilitator}, PackageUrn: {packageUrn}",
+                                    "Failed to delete delegation for FromParty: {FromParty}, ToParty: {ToParty}, Facilitator: {Facilitator}, PackageUrn: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     item.PerformedByPartyUuid,
@@ -109,7 +109,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 continue;
                             }
 
-                            IEnumerable<CreateDelegationResponseDto> delegations = await delegationService.ImportClientDelegation(delegationData, audit, cancellationToken);
+                            await delegationService.ImportClientDelegation(delegationData, audit, cancellationToken);
                         }
                     }
                 }
@@ -130,7 +130,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             var request = new ImportClientDelegationRequestDto()
             {
                 ClientId = delegationModel.FromPartyUuid,
-                AgentId = delegationModel.ToUserPartyUuid ?? throw new Exception($"'delegationModel.ToUserPartyUuid' does not have value"),
+                AgentId = delegationModel.ToUserPartyUuid ?? throw new InvalidOperationException("'delegationModel.ToUserPartyUuid' does not have value"),
                 AgentRole = "agent",
                 RolePackages = [],
                 Facilitator = facilitatorPartyId,

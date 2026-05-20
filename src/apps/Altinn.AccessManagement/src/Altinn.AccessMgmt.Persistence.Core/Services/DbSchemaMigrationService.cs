@@ -229,12 +229,6 @@ public class DbSchemaMigrationService
         }
     }
 
-    private void Generate(Type type)
-    {
-        var q = definitionRegistry.GetQueryBuilder(type);
-        Scripts.Add(type, q.GetMigrationScripts());
-    }
-
     private async Task ExecuteMigration(int maxRetry = 10, CancellationToken cancellationToken = default)
     {
         var status = new Dictionary<Type, bool>();
@@ -367,7 +361,7 @@ public class DbSchemaMigrationService
 
     private async Task<bool> ExecuteMigration(Type type, DbMigrationScriptCollection collection, int retryAttempt)
     {
-        var dbDefinition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception($"GetOrAddDefinition for '{type.Name}' not found.");
+        _ = definitionRegistry.TryGetDefinition(type) ?? throw new Exception($"GetOrAddDefinition for '{type.Name}' not found.");
 
         bool allGood = true;
 

@@ -366,7 +366,7 @@ public class AuthorizedPartiesServiceEf(
         );
     }
 
-    private List<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties)
+    private static List<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties)
     {
         List<AuthorizedParty> result = a3AuthorizedParties.ToList();
 
@@ -383,7 +383,7 @@ public class AuthorizedPartiesServiceEf(
 
                 foreach (AuthorizedParty a2SubUnit in a2Party.Subunits)
                 {
-                    if (allParties.TryGetValue(a2SubUnit.PartyUuid, out AuthorizedParty existingSubUnit))
+                    if (allParties.TryGetValue(a2SubUnit.PartyUuid, out _))
                     {
                         // No longer need to enrich with role info, so can just continue
                         continue;
@@ -458,7 +458,7 @@ public class AuthorizedPartiesServiceEf(
                 allPartiesDict[party.Id] = subUnit;
 
                 // Either add to existing parent or create parent if not exists
-                if (allPartiesDict.TryGetValue(party.ParentId.Value, out AuthorizedParty parent))
+                if (allPartiesDict.TryGetValue(party.ParentId.Value, out _))
                 {
                     allPartiesDict[party.ParentId.Value].Subunits.Add(subUnit);
                 }
@@ -492,7 +492,7 @@ public class AuthorizedPartiesServiceEf(
             if (!allPartiesDict.TryGetValue(subunit.Id, out AuthorizedParty _))
             {
                 var subunitAuthParty = BuildAuthorizedPartyFromEntity(subunit);
-                if (allPartiesDict.TryGetValue(subunit.ParentId.Value, out AuthorizedParty parent))
+                if (allPartiesDict.TryGetValue(subunit.ParentId.Value, out _))
                 {
                     allPartiesDict[subunit.ParentId.Value].Subunits.Add(subunitAuthParty);
                 }
@@ -509,7 +509,7 @@ public class AuthorizedPartiesServiceEf(
         return Tuple.Create(allPartiesDict, authorizedParties.AsEnumerable());
     }
 
-    private void EnrichWithPartiesWithAccessInfo(Dictionary<Guid, AuthorizedParty> parties, List<ConnectionQueryExtendedRecord> connections, AuthorizedPartiesFilters filters)
+    private static void EnrichWithPartiesWithAccessInfo(Dictionary<Guid, AuthorizedParty> parties, List<ConnectionQueryExtendedRecord> connections, AuthorizedPartiesFilters filters)
     {
         if (!filters.IncludeRoles && !filters.IncludeAccessPackages && !filters.IncludeResources && !filters.IncludeInstances)
         {
@@ -520,7 +520,7 @@ public class AuthorizedPartiesServiceEf(
         {
             if (parties.TryGetValue(connection.FromId, out AuthorizedParty party))
             {
-                if (filters.IncludeRoles && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
+                if (filters.IncludeRoles && connection.AssignmentId.HasValue && RoleConstants.TryGetById(connection.RoleId, out var role) && (role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id))
                 {
                     if (filters.RoleFilter == null || filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode)))
                     {
@@ -586,7 +586,7 @@ public class AuthorizedPartiesServiceEf(
 
             // Roles: keep the connection if the role matches, but do not trim the role here.
             // Role filtering during enrichment is handled in EnrichWithPartiesWithAccessInfo.
-            if (hasRoleFilter && RoleConstants.TryGetById(connection.RoleId, out var role) &&
+            if (hasRoleFilter && connection.AssignmentId.HasValue && RoleConstants.TryGetById(connection.RoleId, out var role) &&
                 (filters.RoleFilter.ContainsKey(role.Entity.Code) || (role.Entity.LegacyCode != null && filters.RoleFilter.ContainsKey(role.Entity.LegacyCode))))
             {
                 matchesFilter = true;
@@ -655,7 +655,7 @@ public class AuthorizedPartiesServiceEf(
         return filtered;
     }
 
-    private List<AuthorizedParty> GetFilteredA2Parties(IEnumerable<AuthorizedParty> parties, AuthorizedPartiesFilters filters)
+    private static List<AuthorizedParty> GetFilteredA2Parties(IEnumerable<AuthorizedParty> parties, AuthorizedPartiesFilters filters)
     {
         bool filterParties = filters.PartyFilter?.Count > 0;
 

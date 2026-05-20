@@ -426,7 +426,6 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
 
             var pkgs = string.Join(", ", existingDelegation.Select(p => p.DelegationPackage.PackageId));
             var fromId = first.Delegation.FromId;
-            var delegationId = first.Delegation.Id;
 
             if (!cascade)
             {
@@ -637,11 +636,25 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
 
         if (agentAssignment is null)
         {
-            errorBuilder.Add(
-                ValidationErrors.MissingAssignment,
-                $"$QUERY/to",
-                [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]
-            );
+            entities.TryGetValue(toId, out var toEntity);
+            if (toEntity.TypeId != EntityTypeConstants.SystemUser)
+            {
+                errorBuilder.Add(
+                    ValidationErrors.MissingAssignment,
+                    $"$QUERY/to",
+                    [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]
+                );
+            }
+            else
+            {
+                agentAssignment = new Assignment()
+                {
+                    FromId = partyId,
+                    ToId = toId,
+                    RoleId = RoleConstants.Agent.Id,
+                };
+                await db.Assignments.AddAsync(agentAssignment, cancellationToken);
+            }
         }
 
         var to = entities[toId];

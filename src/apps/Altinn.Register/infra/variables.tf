@@ -85,6 +85,10 @@ variable "features" {
   type = object({
     maskinporten = optional(bool, false),
 
+    party = optional(object({
+      create_party_id = optional(bool, false)
+    }), {})
+
     a2_party_import = optional(object({
       parties  = optional(bool, false),
       user_ids = optional(bool, false),
@@ -94,6 +98,10 @@ variable "features" {
     party_import = optional(object({
       system_users = optional(bool, false),
       npr = optional(object({
+        # note: this also gates whether the "CreatePartyId" feature flag is applied, since NPR import requires the ability to create parties.
+        enable = optional(bool, false),
+
+        # legacy - remove after A2 is fully decommissioned
         guardianships = optional(bool, false),
       }), {})
     }), {})
@@ -121,6 +129,13 @@ variable "config" {
       default = optional(string, "a2")
 
       endpoints = optional(map(string), {})
+    }), {})
+
+    ccr = optional(object({
+      clients = optional(map(object({ # map key is username
+        password = string             # key vault secret name
+        networks = list(string)       # whitelist of CIDR ranges allowed to use this client
+      })), {})
     }), {})
   })
   default = {}

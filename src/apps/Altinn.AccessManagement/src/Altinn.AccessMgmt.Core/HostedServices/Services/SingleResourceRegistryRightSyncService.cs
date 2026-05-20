@@ -54,7 +54,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 if (!page.IsSuccessful)
                 {
                     Log.ResponseError(_logger, page.StatusCode);
-                    throw new Exception("Stream page is not successful");
+                    throw new InvalidOperationException("Stream page is not successful");
                 }
 
                 Guid batchId = Guid.CreateVersion7();
@@ -111,7 +111,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 if (revokes == 0)
                                 {
                                     _logger.LogWarning(
-                                        "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                        "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {Resource}",
                                         item.FromUuid,
                                         item.ToUuid,
                                         item.ResourceId);
@@ -132,7 +132,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 if (adds == 0)
                                 {
                                     _logger.LogWarning(
-                                        "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                        "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {Resource}",
                                         item.FromUuid,
                                         item.ToUuid,
                                         item.ResourceId);
@@ -241,7 +241,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         if (revokes == 0)
                         {
                             _logger.LogWarning(
-                                "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {Resource}",
                                 element.FromUuid,
                                 element.ToUuid,
                                 element.ResourceId);
@@ -262,14 +262,14 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         if (adds == 0)
                         {
                             _logger.LogWarning(
-                                "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {resource}",
+                                "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, Resource: {Resource}",
                                 element.FromUuid,
                                 element.ToUuid,
                                 element.ResourceId);
                         }
                     }
 
-                    var result = await errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
+                    await errorQueueService.MarkErrorQueueElementProcessed(item.Id, values, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {

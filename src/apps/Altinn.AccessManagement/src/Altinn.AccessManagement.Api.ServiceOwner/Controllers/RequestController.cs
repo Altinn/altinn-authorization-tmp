@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using System.Net.Http;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
@@ -194,13 +195,14 @@ public class RequestController(
         ==
         NAV (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
+        // Guaranteed non-null here: TryBuild above returned false, so TryGetByAll succeeded and packageObj was set.
         return await CreatePackageRequest(
             toId: toResult.Entity.Id,
             fromId: fromResult.Entity.Id,
             byId: auditAccessor.AuditValues.ChangedBy,
             roleId: RoleConstants.Rightholder.Id,
             status: RequestStatus.Draft,
-            package: new RequestReferenceDto() { Id = packageObj.Id, ReferenceId = packageObj.Entity.Urn },
+            package: new RequestReferenceDto() { Id = packageObj!.Id, ReferenceId = packageObj.Entity.Urn },
             ct: ct
             );
     }
@@ -298,14 +300,17 @@ public class RequestController(
         {
             var serviceResource = await resourceRegistryClient.GetResource(resourceRef.ReferenceId, ct);
 
-            if (!serviceResource.Delegable)
+            if (serviceResource is { Delegable: false })
             {
                 errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not delegable.")]);
             }
         }
-        catch
+        catch (HttpRequestException)
         {
-            // errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotFound, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' was not found.")]);
+            // Registry unreachable: don't gate the user's request on registry availability.
+            // The earlier resource-lookup arm already validated that the resource is known to
+            // us locally. Only fail when the registry positively confirms the resource is
+            // non-delegable (the `Delegable: false` arm above).
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -316,8 +321,9 @@ public class RequestController(
         // Fetch provider claim from token
         var providerClaim = User.FindFirst(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute)?.Value;
 
+        // Guaranteed non-null here: TryBuild above returned false, so the GetResource lookup succeeded.
         var byEntity = await entityService.GetEntity(byId, ct);
-        if (resource.Provider.RefId != byEntity.OrganizationIdentifier
+        if (resource!.Provider.RefId != byEntity.OrganizationIdentifier
             && !string.Equals(resource.Provider.Code, providerClaim, StringComparison.OrdinalIgnoreCase))
         {
             errorBuilder.Add(ValidationErrorDescriptors.RequestedResourceNotByServiceOwner, paramName, [new(paramName, $"Resource with reference ID '{resourceRef.ReferenceId}' is not owned by serviceowner.")]);

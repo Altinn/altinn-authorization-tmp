@@ -381,10 +381,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentPackages));
             errorBuilder.TryBuild(out var errors);
-            if (errors != null)
-            {
-                return errors;
-            }
+            return errors!;
         }
 
         request.Status = status;
@@ -444,10 +441,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
         {
             errorBuilder.Add(ValidationErrors.DbNoRowsFound, nameof(db.RequestAssignmentResources));
             errorBuilder.TryBuild(out var errors);
-            if (errors != null)
-            {
-                return errors;
-            }
+            return errors!;
         }
 
         request.Status = status;

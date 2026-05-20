@@ -301,7 +301,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
 
         if (from == null)
         {
-            throw new Exception($"OfferedBy not found with partyId '{offeredByPartyId}'");
+            throw new KeyNotFoundException($"OfferedBy not found with partyId '{offeredByPartyId}'");
         }
 
         var result = await DbContext.AssignmentResources.AsNoTracking()
@@ -331,7 +331,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             var performedByValid = Guid.TryParse(delegationChange.PerformedByUuid, out var performedById);
             var changedBy = performedByValid ? performedById : AuditAccessor.AuditValues.ChangedBy;
             var validFrom = delegationChange.Created.HasValue ? delegationChange.Created.Value : AuditAccessor.AuditValues.ValidFrom;
-            var operationId = AuditAccessor.AuditValues.OperationId; // delegationChange.DelegationChangeId > 1 ? delegationChange.DelegationChangeId.ToString() : AuditAccessor.AuditValues.OperationId;
+            var operationId = AuditAccessor.AuditValues.OperationId;
 
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
@@ -501,7 +501,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             var performedByValid = Guid.TryParse(instanceDelegationChange.PerformedBy, out var performedById);
             var changedBy = performedByValid ? performedById : AuditAccessor.AuditValues.ChangedBy;
             var validFrom = instanceDelegationChange.Created.HasValue ? instanceDelegationChange.Created.Value : AuditAccessor.AuditValues.ValidFrom;
-            var operationId = AuditAccessor.AuditValues.OperationId; // delegationChange.DelegationChangeId > 1 ? delegationChange.DelegationChangeId.ToString() : AuditAccessor.AuditValues.OperationId;
+            var operationId = AuditAccessor.AuditValues.OperationId;
 
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
@@ -531,20 +531,23 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
 
         if (assignmentInstance == null)
         {
-            if (instanceDelegationChange.DelegationChangeType != DelegationChangeType.RevokeLast)
+            if (instanceDelegationChange.DelegationChangeType == DelegationChangeType.RevokeLast)
             {
-                assignmentInstance = new AssignmentInstance()
-                {
-                    Id = Guid.CreateVersion7(),
-                    AssignmentId = assignment.Id,
-                    ResourceId = resource.Id,
-                    InstanceId = instanceDelegationChange.InstanceId,
-                    PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
-                    PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
-                    DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
-                };
-                DbContext.AssignmentInstances.Add(assignmentInstance);
+                // Nothing to revoke — the assignment instance never existed.
+                return null;
             }
+
+            assignmentInstance = new AssignmentInstance()
+            {
+                Id = Guid.CreateVersion7(),
+                AssignmentId = assignment.Id,
+                ResourceId = resource.Id,
+                InstanceId = instanceDelegationChange.InstanceId,
+                PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+            };
+            DbContext.AssignmentInstances.Add(assignmentInstance);
         }
         else
         {
@@ -668,7 +671,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
 
                     await DbContext.SaveChangesAsync(cancellationToken);
 
-                    throw new Exception("Assignment or resource not found for given policy");
+                    throw new KeyNotFoundException("Assignment or resource not found for given policy");
                 }
 
                 var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == policy.Rules.InstanceId, cancellationToken);

@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -15,7 +16,7 @@ public interface IConnectionService
     /// <summary>
     /// Get Connections
     /// </summary>
-    Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, bool includeClientDelegations = true, bool includeAgentConnections = true, bool includeAccessPackages = false, bool includeResources = false, bool includeInstances = false, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a role assignment between two entities.
@@ -408,6 +409,7 @@ public interface IConnectionService
     /// <summary>
     /// Removes the specified role assignment between two parties identified by <paramref name="fromId"/> and <paramref name="toId"/>.
     /// </summary>
+    /// <param name="partyId">The unique identifier of the party the operation is performed on behalf of.</param>
     /// <param name="fromId">The unique identifier of the from party the assigned role is for.</param>
     /// <param name="toId">The unique identifier of the to party the assigned role is given to.</param>
     /// <param name="roleCode">The unique code of the assigned role to remove.</param>
@@ -415,5 +417,13 @@ public interface IConnectionService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A result indicating whether the role was successfully removed. The result value is true if the role was removed, false if nothing was removed and a 
     /// problem if something is wrong.</returns>
-    Task<Result<bool>> RemoveRoleAssignment(Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+    Task<Result<bool>> RemoveRoleAssignment(Guid partyId, Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates assignment with role <see cref="RoleConstants.SelfRegisteredUser"/> from a self identified user to a email user.
+    /// </summary>
+    /// <param name="fromId">The unique identifier of the self identified user.</param>
+    /// <param name="toId">The unique identifier of the email user the <see cref="RoleConstants.SelfRegisteredUser"/> is given to.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    Task<Result<AssignmentDto>> ConnectSIUserAndEmailUser(Guid fromId, Guid toId, CancellationToken cancellationToken = default);
 }

@@ -21,9 +21,6 @@ public class MockDataService
     IResourceRepository resourceRepository,
     IResourceTypeRepository resourceTypeRepository,
     IProviderRepository providerRepository,
-    IDelegationPackageRepository delegationPackageRepository,
-    IAssignmentPackageRepository assignmentPackageRepository,
-    IConnectionPackageRepository connectionPackageRepository,
     IEntityLookupRepository entityLookupRepository
     )
 {
@@ -39,9 +36,6 @@ public class MockDataService
     private readonly IResourceRepository resourceRepository = resourceRepository;
     private readonly IResourceTypeRepository resourceTypeRepository = resourceTypeRepository;
     private readonly IProviderRepository providerRepository = providerRepository;
-    private readonly IDelegationPackageRepository delegationPackageRepository = delegationPackageRepository;
-    private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
-    private readonly IConnectionPackageRepository connectionPackageRepository = connectionPackageRepository;
 
     public async Task SystemUserClientDelegation()
     {
@@ -52,20 +46,14 @@ public class MockDataService
         };
 
         var orgType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception("Could not find type 'Organisasjon'");
-        var persType = (await entityTypeRepository.Get(t => t.Name, "Person")).FirstOrDefault() ?? throw new Exception("Could not find type 'Person'");
         var sysType = (await entityTypeRepository.Get(t => t.Name, "Systembruker")).FirstOrDefault() ?? throw new Exception("Could not find type 'Systembruker'");
         var variants = await entityVariantRepository.Get();
         var variantAS = variants.First(t => t.TypeId == orgType.Id && t.Name == "AS");
-        var variantPers = variants.First(t => t.TypeId == persType.Id && t.Name == "Person");
         var variantSys = variants.First(t => t.TypeId == sysType.Id);
 
         var roles = await roleRepository.Get();
-        var roleDagligLeder = roles.FirstOrDefault(t => t.Code == "daglig-leder");
-        var roleStyreLeder = roles.FirstOrDefault(t => t.Code == "styreleder");
-        var roleStyreMedlem = roles.FirstOrDefault(t => t.Code == "styremedlem");
-        var roleRevisor = roles.FirstOrDefault(t => t.Code == "revisor");
-        var roleRegnskap = roles.FirstOrDefault(t => t.Code == "regnskapsforer");
-        var roleAgent = roles.FirstOrDefault(t => t.Code == "agent");
+        var roleRegnskap = roles.FirstOrDefault(t => t.Code == "regnskapsforer") ?? throw new Exception("Could not find role 'regnskapsforer'");
+        var roleAgent = roles.FirstOrDefault(t => t.Code == "agent") ?? throw new Exception("Could not find role 'agent'");
 
         var greenIT = new Entity() { Id = Guid.Parse("0195efb8-7c80-783b-a21b-6dc365681ff2"), Name = "Green IT AS", RefId = "9-ORG-001", TypeId = orgType.Id, VariantId = variantAS.Id };
         var blueAccounts = new Entity() { Id = Guid.Parse("0195efb8-7c80-721c-b4a7-bc140a51baca"), Name = "Blue Accounts AS", RefId = "9-ORG-002", TypeId = orgType.Id, VariantId = variantAS.Id };
@@ -204,61 +192,4 @@ public class MockDataService
         await assignmentRepository.Upsert(assignment004, updateProperties: [t => t.FromId, t => t.ToId, t => t.RoleId], compareProperties: [t => t.FromId, t => t.ToId, t => t.RoleId], options: options);
     }
 
-    private async Task GeneratePackageResources(ChangeRequestOptions options)
-    {
-        var packages = await packageRepository.GetExtended();
-        var resourceTypes = await resourceTypeRepository.Get();
-        if (resourceTypes == null || !resourceTypes.Any())
-        {
-            await resourceTypeRepository.Create(new ResourceType() { Name = "Default" }, options);
-            resourceTypes = await resourceTypeRepository.Get();
-        }
-
-        var provider = (await providerRepository.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new Exception("Provider not found");
-
-        foreach (var package in packages)
-        {
-            var resources = await packageResourceRepository.GetB(package.Id);
-            if (resources == null || !resources.Any())
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    string title = GetRandomResourceTitle(i);
-                    var resourceId = Guid.NewGuid();
-                    await resourceRepository.Create(
-                        new Resource()
-                        {
-                            Name = GetRandomResourceTitle(i),
-                            Description = "Somthing generated for the " + package.Name,
-                            RefId = resourceId.ToString().ToLower(),
-                            TypeId = resourceTypes.OrderBy(t => Guid.NewGuid()).First().Id,
-                            ProviderId = provider.Id
-                        },
-                        options: options
-                    );
-
-                    await packageResourceRepository.Create(
-                        new PackageResource()
-                        {
-                            PackageId = package.Id,
-                            ResourceId = resourceId
-                        },
-                        options: options
-                    );
-                }
-            }
-        }
-    }
-
-    private static readonly Random _random = new Random();
-
-    private static string GetRandomResourceTitle(int no)
-    {
-        string[] values1 = { "Skjema", "Rapport", "Søknad" };
-        string[] values2 = { "No.00", "#", "TSQ-", "000001" };
-
-        int index1 = _random.Next(values1.Length);
-        int index2 = _random.Next(values2.Length);
-        return $"{values1[index1]} {values2[index2]}{no}";
-    }
 }

@@ -52,7 +52,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 if (!page.IsSuccessful)
                 {
                     Log.ResponseError(_logger, page.StatusCode);
-                    throw new Exception("Stream page is not successful");
+                    throw new InvalidOperationException("Stream page is not successful");
                 }
 
                 Guid batchId = Guid.CreateVersion7();
@@ -107,7 +107,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (revokes == 0)
                             {
                                 _logger.LogWarning(
-                                    "Failed to delete assignmentpackages for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
+                                    "Failed to delete assignmentpackages for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));
@@ -139,7 +139,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (adds.Count == 0)
                             {
                                 _logger.LogWarning(
-                                    "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
+                                    "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));

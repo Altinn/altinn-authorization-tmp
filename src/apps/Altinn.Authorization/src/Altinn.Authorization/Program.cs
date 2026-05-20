@@ -216,7 +216,6 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
 
     services.Configure<GeneralSettings>(config.GetSection("GeneralSettings"));
     services.Configure<AzureStorageConfiguration>(config.GetSection("AzureStorageConfiguration"));
-    services.Configure<AzureCosmosSettings>(config.GetSection("AzureCosmosSettings"));
     services.Configure<PostgreSQLSettings>(config.GetSection("PostgreSQLSettings"));
     AddAuthorizationDbDataSource(services, config);
     services.Configure<PlatformSettings>(config.GetSection("PlatformSettings"));
@@ -299,7 +298,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
             .WithMetrics(metrics => metrics
                 .AddAzureMonitorMetricExporter(options => options.ConnectionString = applicationInsightsConnectionString));
 
-        logger.LogInformation("Startup // ApplicationInsightsConnectionString = {applicationInsightsConnectionString}", applicationInsightsConnectionString);
+        logger.LogInformation("Startup // ApplicationInsightsConnectionString = {ApplicationInsightsConnectionString}", applicationInsightsConnectionString);
     }
 
     services.AddSingleton<DecisionTelemetry>();

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Models;
@@ -295,7 +296,8 @@ public class RequestController(
 
         var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
-        return request.Type switch
+        // Guaranteed non-null here: TryBuild above returned false, so the null/auth check passed.
+        return request!.Type switch
         {
             "resource" => await ApproveResourceRequest(party, authUserUuid, request, rightKeys, ct),
             "package" => await ApprovePackageRequest(party, request, ct),
@@ -360,18 +362,24 @@ public class RequestController(
             errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
         }
 
-        try
+        if (resourceObj is { })
         {
-            var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
-
-            if (!serviceResource.Delegable)
+            try
             {
-                errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+                var serviceResource = await resourceRegistryClient.GetResource(resourceObj.RefId, ct);
+
+                if (serviceResource is { Delegable: false })
+                {
+                    errorBuilder.Add(ValidationErrors.ResourceIsNotDelegable, "/resource", [new("resource", $"Resource with reference ID '{resourceObj.RefId}' is not delegable.")]);
+                }
             }
-        }
-        catch
-        {
-            // errorBuilder.Add(ValidationErrors.ResourceNotExists, "/resource", [new("resource", $"Unable to get resource '{resource}'")]);
+            catch (HttpRequestException)
+            {
+                // Registry unreachable: don't gate the user's request on registry availability.
+                // The earlier `resourceObj is not null` check already validated that the resource
+                // is known to us locally. Only fail when the registry positively confirms the
+                // resource is non-delegable (the `Delegable: false` arm above).
+            }
         }
 
         if (errorBuilder.TryBuild(out var problem))
@@ -384,12 +392,13 @@ public class RequestController(
         ==
         Per (by) ber om tilgang for Kari (for) til App (resource) hos Org (at).
         */
+        // Guaranteed non-null here: TryBuild above returned false, so the GetResource lookup succeeded.
         var result = await requestService.CreateResourceRequest(
             toId: to,
             fromId: party,
             byId: authUserUuid,
             roleId: RoleConstants.Rightholder.Id,
-            resourceId: resourceObj.Id,
+            resourceId: resourceObj!.Id,
             status: RequestStatus.Pending,
             ct: ct
             );
@@ -495,8 +504,6 @@ public class RequestController(
 
     private async Task<IActionResult> ApproveResourceRequest(Guid partyUuid, Guid authUserId, RequestDto request, IEnumerable<string> rightKeys, CancellationToken ct)
     {
-        var party = await entityService.GetEntity(partyUuid, ct); // valg avgiver
-
         var delegationCheck = await connectionService.ResourceDelegationCheck(
             authenticatedUserUuid: authUserId,
             party: partyUuid,

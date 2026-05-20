@@ -31,7 +31,7 @@ public class IngestService : IIngestService
     {
         if (ingestId.Equals(Guid.Empty))
         {
-            throw new Exception(string.Format("Ingest id '{0}' not valid", ingestId.ToString()));
+            throw new ArgumentException($"Ingest id '{ingestId}' not valid", nameof(ingestId));
         }
 
         var table = GetTableName<T>(DbContext.Model);
@@ -72,8 +72,6 @@ public class IngestService : IIngestService
         {
             ingestColumnsToInsert.RemoveAll(t => ignoreColumnsToInsert.Contains(t.Name));
         }
-
-        string columnUpdateStatement = string.Join(',', ingestColumnsToUpdate.Select(t => t.Name));
 
         var ingestName = ingestId.ToString().Replace("-", string.Empty);
         string ingestTableName = "ingest." + table.TableName + "_" + ingestName;

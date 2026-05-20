@@ -332,12 +332,17 @@ internal static partial class AccessManagementHost
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy(AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION, policy => policy.Requirements.Add(new AccessTokenRequirement()))
             .AddPolicy(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM, policy => policy.Requirements.Add(new AccessTokenRequirement(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)))
+            .AddPolicy(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_BFF, policy => policy.Requirements.Add(new AccessTokenRequirement(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_BFF)))
             .AddPolicy(AuthzConstants.ALTINNII_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "sbl.authorization")))
             .AddPolicy(AuthzConstants.INTERNAL_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "internal.authorization")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_maskinporten_scope_delegation")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation", false)))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_maskinporten_scope_delegation", false)))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATIONS_PROXY, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/delegations", "altinn:maskinporten/delegations.admin"])))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/consent.read"])))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_access_management")))
@@ -415,7 +420,7 @@ internal static partial class AccessManagementHost
         [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Creating Altinn host.")]
         internal static partial void CreateAltinnHost(ILogger logger);
 
-        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Configuration setting '{field}' is null or empty.")]
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Configuration setting '{Field}' is null or empty.")]
         internal static partial void ConfigValueIsNullOrEmpty(ILogger logger, string field);
 
         [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Connection string(s) for pgsql server are missing")]

@@ -7,6 +7,7 @@
       "ttd-test-bruno-enkelttjenestedelegering-virksomhet",
     app_id: "app_ttd_test-bruno-app-for-delegation",
     skattetaten_ressurs: "ske-informasjon-om-trekkpaalegg",
+    maskinporten_ressurs : "ttd-bruno-maskinporten-ressurs"
   },
   package_to_delegate: {
     package_id_privatperson: "urn:altinn:accesspackage:innbygger-samliv",
@@ -15,6 +16,11 @@
     package_id_privatperson_reject:
       "urn:altinn:accesspackage:innbygger-byggesoknad",
     package_id_virksomhet: "urn:altinn:accesspackage:posttjenester",
+    hadm: "urn:altinn:accesspackage:hovedadministrator",
+    regn_not_assignable:
+      "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet",
+    eksplisitt: "urn:altinn:accesspackage:eksplisitt",
+    konkbotilg: "urn:altinn:accesspackage:konkursbo-tilgangsstyrer",
   },
   Bot_person: {
     lastname: "INGREDIENS",
@@ -141,6 +147,19 @@
       partyid: 50633584,
       userid: 20058157,
       partyuuid: "09718393-861f-40c9-96b0-0252cf20c1ff",
+    },
+  },
+  Bot_package_Org_B: {
+    name: "UNGT URETTFERDIG TIGER AS",
+    org_no: "211155892",
+    partyid: 51248079,
+    partyuuid: "0d5879ee-414c-4c63-99ae-7e9629fbeb5d",
+    innehaver: {
+      name: "SNAKKESALIG NATTHEGRE",
+      pid: "02928498746",
+      partyid: 50655446,
+      userid: 20423314,
+      partyuuid: "56c73e24-37f4-4fc5-8fa2-6ed307f66810",
     },
   },
 };

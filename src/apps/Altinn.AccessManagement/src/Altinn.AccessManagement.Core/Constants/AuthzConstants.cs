@@ -26,6 +26,11 @@
         public const string PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM = "platform";
 
         /// <summary>
+        /// Access Management BFF issuer.
+        /// </summary>
+        public const string PLATFORM_ACCESSTOKEN_ISSUER_BFF = "amui";
+
+        /// <summary>
         /// Policy tag for reading an maskinporten delegation
         /// </summary>
         public const string POLICY_MASKINPORTEN_DELEGATION_READ = "MaskinportenDelegationRead";
@@ -199,6 +204,26 @@
         /// Enduser scope giving access to write operations on requests
         /// </summary>
         public const string SCOPE_ENDUSER_REQUESTS_WRITE = "altinn:accessmanagement/enduser:requests.write";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on maskinporten supplier assignments and delegated scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ = "altinn:accessmanagement/enduser:maskinportensuppliers.read";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations for managing maskinporten supplier assignments and delegated scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE = "altinn:accessmanagement/enduser:maskinportensuppliers.write";
+
+        /// <summary>
+        /// Enduser scope giving access to read operations on maskinporten consumer connections and received scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ = "altinn:accessmanagement/enduser:maskinportenconsumers.read";
+
+        /// <summary>
+        /// Enduser scope giving access to write operations for managing maskinporten consumer connections and received scopes
+        /// </summary>
+        public const string SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE = "altinn:accessmanagement/enduser:maskinportenconsumers.write";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.

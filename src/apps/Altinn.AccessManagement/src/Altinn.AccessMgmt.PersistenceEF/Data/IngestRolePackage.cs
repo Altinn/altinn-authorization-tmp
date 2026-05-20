@@ -38,7 +38,6 @@ public static partial class StaticDataIngest
         var packageTS = PackageConstants.AccessManager.Id;
         var packageHA = PackageConstants.MainAdministrator.Id;
         var packageMPA = PackageConstants.MaskinportenAdministrator.Id;
-        var packageKTS = PackageConstants.KonkursboAdministrator.Id;
 
         var data = new List<RolePackage>()
         {
@@ -1304,6 +1303,16 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.SickLeaveSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.SickLeaveSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.SickLeaveSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = rolePriv, PackageId = PackageConstants.InnbyggerTilgangsstyringPrivatperson.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = rolePriv, PackageId = PackageConstants.InnbyggerPermisjonOppsigelse.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },

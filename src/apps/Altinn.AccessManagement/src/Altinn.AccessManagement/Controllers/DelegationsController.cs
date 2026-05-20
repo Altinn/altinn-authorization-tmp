@@ -75,7 +75,7 @@ namespace Altinn.AccessManagement.Controllers
             }
 
             string rulesJson = JsonSerializer.Serialize(rules);
-            _logger.LogInformation("Delegation could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{rulesJson}", rulesJson);
+            _logger.LogInformation("Delegation could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{RulesJson}", rulesJson);
             return BadRequest("Delegation could not be completed");
         }
 
@@ -106,7 +106,7 @@ namespace Altinn.AccessManagement.Controllers
 
             foreach (List<AttributeMatch> resource in ruleQuery.Resources)
             {
-                if (DelegationHelper.TryGetResourceFromAttributeMatch(resource, out ResourceAttributeMatchType resourceMatchType, out string resourceId, out _, out _, out _, out _))
+                if (DelegationHelper.TryGetResourceFromAttributeMatch(resource, out _, out string resourceId, out _, out _, out _, out _))
                 {
                     resourceIds.Add(resourceId);
                 }
@@ -172,11 +172,11 @@ namespace Altinn.AccessManagement.Controllers
             if (deletionResultsCount > 0)
             {
                 string deletionResultsSerialized = JsonSerializer.Serialize(deletionResults);
-                _logger.LogInformation("Partial deletion completed deleted {deletionResultsCount} of {ruleCountToDelete}.\n{rulesToDeleteSerialized}\n{deletionResultsSerialized}", deletionResultsCount, ruleCountToDelete, rulesToDeleteSerialized, deletionResultsSerialized);
+                _logger.LogInformation("Partial deletion completed deleted {DeletionResultsCount} of {RuleCountToDelete}.\n{RulesToDeleteSerialized}\n{DeletionResultsSerialized}", deletionResultsCount, ruleCountToDelete, rulesToDeleteSerialized, deletionResultsSerialized);
                 return StatusCode(206, deletionResults);
             }
 
-            _logger.LogInformation("Deletion could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{rulesToDeleteSerialized}", rulesToDeleteSerialized);
+            _logger.LogInformation("Deletion could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{RulesToDeleteSerialized}", rulesToDeleteSerialized);
             return StatusCode(400, $"Unable to complete deletion");
         }
 
@@ -211,11 +211,11 @@ namespace Altinn.AccessManagement.Controllers
             if (countPolicies > 0)
             {
                 string deletionResultsSerialized = JsonSerializer.Serialize(deletionResults);
-                _logger.LogInformation("Partial deletion completed deleted {countPolicies} of {policiesToDeleteCount}.\n{deletionResultsSerialized}", countPolicies, policiesToDeleteCount, deletionResultsSerialized);
+                _logger.LogInformation("Partial deletion completed deleted {CountPolicies} of {PoliciesToDeleteCount}.\n{DeletionResultsSerialized}", countPolicies, policiesToDeleteCount, deletionResultsSerialized);
                 return StatusCode(206, deletionResults);
             }
 
-            _logger.LogInformation("Deletion could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{policiesToDeleteSerialized}", policiesToDeleteSerialized);
+            _logger.LogInformation("Deletion could not be completed. None of the rules could be processed, indicating invalid or incomplete input:\n{PoliciesToDeleteSerialized}", policiesToDeleteSerialized);
             return StatusCode(400, $"Unable to complete deletion");
         }
     }
