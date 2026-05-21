@@ -747,7 +747,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return false;
             }
 
-            if (profile.UserUuid == null || entity.Id == default)
+            if (profile.UserUuid == null || entity.Id == Guid.Empty)
             {
                 return false;
             }
