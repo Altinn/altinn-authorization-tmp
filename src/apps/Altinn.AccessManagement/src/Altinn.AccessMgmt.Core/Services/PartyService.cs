@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Errors;
+﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -21,13 +21,10 @@ public class PartyService(AppDbContext db) : IPartyService
 
         if (!exists)
         {
-            /*
-             * Info: For now this is restricted to SystemUser as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and F�dselsnummer for Person. 
-             * Also there should be a matching record in the EntityLookup table for required lookup values SystemUSer does not have any lookup values as the only id it has is its PartyUuid.
-             */
-            if (!party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+            // Info: For now this is restricted to SystemUser, SI_EDU and SI_EMAIL as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and Fødselsnummer for Person. 
+            if (!IsValidPartyType(party))
             {
-                return Problems.UnsupportedEntityType.Create([new("entityType", party.EntityType.ToString())]);
+                return Problems.UnsupportedEntityType.Create([new("entityType", party.EntityType)]);
             }
 
             var entityType = await db.EntityTypes
@@ -53,7 +50,7 @@ public class PartyService(AppDbContext db) : IPartyService
                 Name = party.DisplayName,
                 TypeId = entityType.Id,
                 VariantId = entityVariant.Id,
-                RefId = party.PartyUuid.ToString()
+                RefId = party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase) ? party.PartyUuid.ToString() : null
             };
 
             db.Entities.Add(entity);
@@ -66,5 +63,19 @@ public class PartyService(AppDbContext db) : IPartyService
         }
 
         return result;
+    }
+
+    private bool IsValidPartyType(PartyBaseDto party)
+    {
+        if (party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return true;
+        }
+
+        return party.EntityVariantType.ToLowerInvariant() switch
+        {
+            "si_edu" or "si_email" => true,
+            _ => false
+        };
     }
 }
