@@ -121,7 +121,7 @@ public class InstanceRemovedNotificationHandler(
 
         async Task<List<Instance>> GetInstances(InstanceRemovedNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.Instances is { } && content.Instances.Count > 0)
+            if (content.Instances is { } && content.Instances.Any())
             {
                 var resourceIds = content.Instances.Select(i => i.ResourceId).ToList();
                 var resources = await db.Resources

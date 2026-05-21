@@ -122,7 +122,7 @@ public class InstanceAddedNotificationHandler(
 
         async Task<List<Instance>> GetInstances(InstanceAddedNotificationMessage content, CancellationToken cancellationToken)
         {
-            if (content.Instances is { } && content.Instances.Count > 0)
+            if (content.Instances is { } && content.Instances.Any())
             {
                 var resourceIds = content.Instances.Select(i => i.ResourceId).ToList();
                 var resources = await db.Resources
@@ -193,7 +193,7 @@ public class InstanceAddedNotificationHandler(
     private static string MailContent(Entity from, Entity to, IEnumerable<Instance> instances)
     {
         var access = new StringBuilder();
-        if (instances is { } && instances.Count() > 0)
+        if (instances is { } && instances.Any())
         {
             access.Append(@"
                 <p>
