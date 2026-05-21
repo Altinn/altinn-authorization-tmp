@@ -280,7 +280,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            return await GetAllMaskinportenSchemaDelegations(supplierPartyId, supplierEntity.Id, consumerPartyId, consumerParty.Id, scope, cancellationToken);
+            return await GetAllMaskinportenSchemaDelegations(supplierPartyId, supplierEntity?.Id, consumerPartyId, consumerParty?.Id, scope, cancellationToken);
         }
 
         /// <inheritdoc/>
