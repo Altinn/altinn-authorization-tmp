@@ -94,6 +94,7 @@ public class MaskinportenConsumersResourceFilterTest : IClassFixture<ApiFixture>
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
         {
             claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, Supplier.ToString()));
+            claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_MASKINPORTENCONSUMERS_READ));
         });
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         return client;
