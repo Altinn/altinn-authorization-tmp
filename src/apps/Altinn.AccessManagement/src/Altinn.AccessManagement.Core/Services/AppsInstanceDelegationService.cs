@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -13,11 +14,14 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Models.Rights;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn;
 using Altinn.Urn.Json;
 using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services.Implementation;
@@ -28,6 +32,7 @@ namespace Altinn.AccessManagement.Core.Services.Implementation;
 public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 {
     private readonly IPartiesClient _partiesClient;
+    private readonly AppDbContext _db;
     private readonly IAMPartyService _partyService;
     private readonly IPolicyInformationPoint _pip;
     private readonly IPolicyAdministrationPoint _pap;
@@ -40,9 +45,10 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
+    public AppsInstanceDelegationService(IPartiesClient partiesClient, AppDbContext db, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
     {
         _partiesClient = partiesClient;
+        _db = db;
         _partyService = partyService;
         _pip = pip;
         _resourceRegistryClient = resourceRegistryClient;
@@ -53,23 +59,22 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 
     private async Task<(UuidType DelegationType, Guid? Uuid)> TranslatePartyUuidToPersonOrganizationUuid(PartyUrn partyId)
     {
-        Party party = null;
+        Entity entity = null;
 
         if (partyId.IsOrganizationIdentifier(out OrganizationNumber orgNumber))
         {
-            PartyLookup lookup = new PartyLookup
-            {
-                OrgNo = orgNumber.ToString()
-            };
-
-            party = await _partiesClient.LookupPartyBySSNOrOrgNo(lookup);
+            entity = await _db.Entities
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.OrganizationIdentifier == orgNumber.ToString());
         }
         else if (partyId.IsPartyUuid(out Guid partyUuid))
         {
-            party = (await _partiesClient.GetPartiesAsync(partyUuid.SingleToList())).FirstOrDefault();
+            entity = await _db.Entities
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == partyUuid);
         }
 
-        return DelegationHelper.GetUuidTypeAndValueFromParty(party);
+        return DelegationHelper.GetUuidTypeAndValueFromParty(entity);
     }
 
     private static bool CheckIfInstanceIsDelegable(List<Right> delegableRights, RightInternal rightToDelegate)
