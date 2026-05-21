@@ -424,7 +424,7 @@ public class AuthorizedPartiesServiceEf(
         Guid toId,
         CancellationToken cancellationToken = default)
     {
-        List<ConnectionQueryExtendedRecord> connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, ct: cancellationToken);
+        List<ConnectionQueryExtendedRecord> connections = await repoService.GetConnectionsFromOthers(toId, filters: filter, enrichEntities: true, ct: cancellationToken);
 
         // Post-query filtering of connections when resource/provider filters are active
         if (filter.ProviderCode != null || filter.AnyOfResourceIds?.Length > 0)
@@ -432,9 +432,8 @@ public class AuthorizedPartiesServiceEf(
             connections = FilterConnections(connections, filter);
         }
 
-        var fromUuids = connections.Select(c => c.FromId).Distinct();
-        var fromParties = await repoService.GetEntities(fromUuids, cancellationToken);
-        var fromSubUnits = await repoService.GetSubunits(fromUuids, cancellationToken);
+        var fromParties = connections.Select(c => c.From).Distinct().ToList();
+        var fromSubUnits = connections.Select(c => c.From).Distinct().Where(e => e.ParentId.HasValue).ToList();
 
         (Dictionary<Guid, AuthorizedParty> parties, IEnumerable<AuthorizedParty> authorizedParties) = BuildDictionaryFromEntities(fromParties, fromSubUnits);
 
