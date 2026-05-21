@@ -432,8 +432,9 @@ public class AuthorizedPartiesServiceEf(
             connections = FilterConnections(connections, filter);
         }
 
-        var fromParties = connections.Select(c => c.From).Distinct().ToList();
-        var fromSubUnits = connections.Select(c => c.From).Distinct().Where(e => e.ParentId.HasValue).ToList();
+        var fromEntities = connections.Select(c => c.From).DistinctBy(e => e.Id).ToList();
+        var fromParties = fromEntities;
+        var fromSubUnits = fromEntities.Where(e => e.ParentId.HasValue).ToList();
 
         (Dictionary<Guid, AuthorizedParty> parties, IEnumerable<AuthorizedParty> authorizedParties) = BuildDictionaryFromEntities(fromParties, fromSubUnits);
 
