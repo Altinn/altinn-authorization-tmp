@@ -61,8 +61,7 @@ public class PackagesController : ControllerBase
                 resourceProviderCodes: resourceProviderCode,
                 searchInResources: searchInResources,
                 typeId: typeId,
-                languageCode: this.GetLanguageCode(),
-                allowPartialTranslation: this.AllowPartialTranslation()
+                translation: new TranslationOptions(this.GetLanguageCode(), this.AllowPartialTranslation())
                 )
             : await packageService.FuzzySearch(
                 term: term,

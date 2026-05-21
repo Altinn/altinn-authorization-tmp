@@ -33,11 +33,10 @@ public interface IPackageService
     /// <param name="resourceProviderCodes">Resource.Provider.Code (brreg, digdir, skatt)</param>
     /// <param name="searchInResources">Indicate if term should filter on resource values</param>
     /// <param name="typeId">Filter for entityType</param>
-    /// <param name="languageCode">Languagecode</param>
-    /// <param name="allowPartialTranslation">Allow partial translation</param>
+    /// <param name="translation">Language and partial-translation fallback options. Defaults to "nob" with partial fallback enabled when null.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>A list of search results containing packages that match the term.</returns>
-    Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, bool strict = false, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, string languageCode = "nob", bool allowPartialTranslation = true, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(string term, bool strict = false, List<string> resourceProviderCodes = null, bool searchInResources = false, Guid? typeId = null, TranslationOptions translation = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the hierarchical structure of area groups.

@@ -43,96 +43,84 @@ public class PackageService : IPackageService
     ];
 
     private static SearchObject<PackageDto> ScorePackage(
-    PackageDto package,
-    string[] tokens,
-    bool searchInResources)
+        PackageDto package,
+        string[] tokens,
+        bool searchInResources)
     {
-        var totalScore = 0;
         var fields = new List<SearchField>();
 
-        // Phrase bonus when there's more than one token
         if (tokens.Length > 1)
         {
-            var phrase = string.Join(' ', tokens);
-            foreach (var rule in PackageRules)
-            {
-                var value = rule.Field(package);
-                if (rule.Match(value, phrase))
-                {
-                    totalScore += rule.Points * 2;
-                    fields.Add(new SearchField
-                    {
-                        Field = rule.FieldName + ".phrase",
-                        Value = value,
-                        Score = rule.Points * 2,
-                    });
-                }
-            }
+            fields.AddRange(ScorePhrase(package, string.Join(' ', tokens)));
         }
 
-        // Per-token scoring
-        foreach (var rule in PackageRules)
-        {
-            var value = rule.Field(package);
-            foreach (var token in tokens)
-            {
-                if (rule.Match(value, token))
-                {
-                    totalScore += rule.Points;
-                    fields.Add(new SearchField
-                    {
-                        Field = rule.FieldName,
-                        Value = value,
-                        Score = rule.Points,
-                    });
-                }
-            }
-        }
+        fields.AddRange(ScoreTokens(package, tokens));
 
         if (searchInResources)
         {
-            foreach (var resource in package.Resources)
-            {
-                foreach (var token in tokens)
-                {
-                    if (resource.Name.Contains(token, Ic))
-                    {
-                        totalScore += 2;
-                        fields.Add(new SearchField
-                        {
-                            Field = "resources.name",
-                            Value = resource.Name,
-                            Score = 2,
-                        });
-                    }
-                }
-            }
+            fields.AddRange(ScoreResources(package.Resources, tokens));
         }
 
         return new SearchObject<PackageDto>
         {
             Object = package,
-            Score = totalScore,
+            Score = fields.Sum(f => f.Score),
             Fields = fields,
         };
     }
 
+    private static IEnumerable<SearchField> ScorePhrase(PackageDto package, string phrase) =>
+        PackageRules
+            .Select(rule => (rule, value: rule.Field(package)))
+            .Where(t => t.rule.Match(t.value, phrase))
+            .Select(t => new SearchField
+            {
+                Field = t.rule.FieldName + ".phrase",
+                Value = t.value,
+                Score = t.rule.Points * 2,
+            });
+
+    private static IEnumerable<SearchField> ScoreTokens(PackageDto package, string[] tokens) =>
+        PackageRules.SelectMany(rule =>
+        {
+            var value = rule.Field(package);
+            return tokens
+                .Where(token => rule.Match(value, token))
+                .Select(_ => new SearchField
+                {
+                    Field = rule.FieldName,
+                    Value = value,
+                    Score = rule.Points,
+                });
+        });
+
+    private static IEnumerable<SearchField> ScoreResources(IEnumerable<ResourceDto> resources, string[] tokens) =>
+        resources.SelectMany(resource => tokens
+            .Where(token => resource.Name.Contains(token, Ic))
+            .Select(_ => new SearchField
+            {
+                Field = "resources.name",
+                Value = resource.Name,
+                Score = 2,
+            }));
+
     public async Task<IEnumerable<SearchObject<PackageDto>>> SimpleSearch(
-    string term,
-    bool strict = false,
-    List<string> resourceProviderCodes = null,
-    bool searchInResources = false,
-    Guid? typeId = null,
-    string languageCode = "nob",
-    bool allowPartialTranslation = true,
-    CancellationToken ct = default)
+        string term,
+        bool strict = false,
+        List<string> resourceProviderCodes = null,
+        bool searchInResources = false,
+        Guid? typeId = null,
+        TranslationOptions translation = null,
+        CancellationToken cancellationToken = default)
     {
+        translation ??= new TranslationOptions();
+
         var data = await GetSearchData(
             resourceProviderCodes: resourceProviderCodes,
             typeId: typeId,
-            languageCode: languageCode,
-            allowPartialTranslation: allowPartialTranslation,
-            cancellationToken: ct);
+            languageCode: translation.LanguageCode,
+            allowPartialTranslation: translation.AllowPartial,
+            cancellationToken: cancellationToken);
 
         if (string.IsNullOrWhiteSpace(term))
         {
