@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -17,7 +16,6 @@ using Altinn.AccessManagement.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Platform.Register.Models;
 using Altinn.Urn;
 using Altinn.Urn.Json;
 using Azure.Core;
@@ -31,7 +29,6 @@ namespace Altinn.AccessManagement.Core.Services.Implementation;
 /// </summary>
 public class AppsInstanceDelegationService : IAppsInstanceDelegationService
 {
-    private readonly IPartiesClient _partiesClient;
     private readonly AppDbContext _db;
     private readonly IAMPartyService _partyService;
     private readonly IPolicyInformationPoint _pip;
@@ -45,9 +42,8 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationService"/> class.
     /// </summary>
-    public AppsInstanceDelegationService(IPartiesClient partiesClient, AppDbContext db, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
+    public AppsInstanceDelegationService(AppDbContext db, IAMPartyService partyService, IOptions<AppsInstanceDelegationSettings> appsInstanceDelegationSettings, IResourceRegistryClient resourceRegistryClient, IPolicyInformationPoint pip, IPolicyAdministrationPoint pap, Microsoft.FeatureManagement.IFeatureManager featureManager)
     {
-        _partiesClient = partiesClient;
         _db = db;
         _partyService = partyService;
         _pip = pip;
