@@ -512,7 +512,7 @@ module "appsettings" {
     },
     {
       name        = "AccessManagement.Altinn2CacheInvalidation.Disable"
-      description = "Specifies if the SblBridge is called for invalidating cache in Altinn 2."
+      description = "Setting this flag to true disables SblBridge calls for invalidating cache in Altinn 2."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
