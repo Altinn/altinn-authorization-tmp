@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Altinn.AccessMgmt.Core.Validation;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 
@@ -99,12 +100,13 @@ public class RequestController(
                 return res.Problem.ToActionResult();
             }
 
-            return BadRequest(new AltinnProblemDetails
+            ValidationErrorBuilder errorBuilder = default;
+            errorBuilder.Add(ValidationErrors.RequestUnsupportedStatusUpdate, "/status", [new("status", $"Unable to withdraw request with status '{request.Status}'")]);
+            errorBuilder.TryBuild(out var problem);
+            if (problem != null)
             {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Invalid request status",
-                Detail = $"Unable to withdraw request with status '{request.Status}'",
-            });
+                return problem.ToActionResult();
+            }
         }
 
         return Forbid();
