@@ -725,12 +725,12 @@ namespace Altinn.AccessManagement.Core.Services
                 .Where(e => uuids.Contains(e.Id))
                 .ToDictionaryAsync(e => e.Id, cancellationToken);
 
-            if (entities.TryGetValue(fromParty, out Entity fromEntity))
+            if (!entities.TryGetValue(fromParty, out Entity fromEntity))
             {
                 return false;
             }
 
-            if (entities.TryGetValue(userUuid, out Entity userEntity))
+            if (!entities.TryGetValue(userUuid, out Entity userEntity))
             {
                 return false;
             }
