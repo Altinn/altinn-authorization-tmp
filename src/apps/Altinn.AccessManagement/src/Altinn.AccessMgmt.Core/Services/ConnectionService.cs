@@ -1671,7 +1671,7 @@ public partial class ConnectionService(
         return policy;
     }
 
-    private ValidationErrorBuilder CheckFromAndToIsNotNull(Entity from, Entity to)
+    private static ValidationErrorBuilder CheckFromAndToIsNotNull(Entity from, Entity to)
     {
         ValidationErrorBuilder errorBuilder = default;
         if (from is null)
@@ -1687,7 +1687,7 @@ public partial class ConnectionService(
         return errorBuilder;
     }
 
-    private ValidationErrorBuilder CheckFromAndToIsValidConnectingOldSiToEmailSI(Entity from, Entity to)
+    private static ValidationErrorBuilder CheckFromAndToIsValidConnectingOldSIToEmailSI(Entity from, Entity to)
     {
         ValidationErrorBuilder errorBuilder = default;
         
@@ -1705,7 +1705,7 @@ public partial class ConnectionService(
         return errorBuilder;
     }
 
-    private ValidationErrorBuilder CheckFromAndToIsValidRegisterSelfIdentifiedRoleToUser(Entity from, Entity to)
+    private static ValidationErrorBuilder CheckFromAndToIsValidRegisterSelfIdentifiedRoleToUser(Entity from, Entity to)
     {
         ValidationErrorBuilder errorBuilder = default;
         
@@ -1736,7 +1736,7 @@ public partial class ConnectionService(
         // Any other scenario is not valid for self-registration, so we check accordingly.
         if (from.Id != to.Id)
         {
-            errorBuilder = CheckFromAndToIsValidConnectingOldSiToEmailSI(from, to);
+            errorBuilder = CheckFromAndToIsValidConnectingOldSIToEmailSI(from, to);
         }
         else
         {
