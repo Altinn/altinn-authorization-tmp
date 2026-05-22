@@ -142,6 +142,16 @@ public static class AccessMgmtFeatureFlags
     /// </summary>
     public const string OutboxClientRemovedNotify = $"AccessMgmt.Core.Outbox.ClientRemovedNotify";
 
+    /// <summary>
+    /// Specifies if notifications should be sent if instance is added.
+    /// </summary>
+    public const string OutboxInstanceAddedNotify = $"AccessMgmt.Core.Outbox.InstanceAddedNotify";
+
+    /// <summary>
+    /// Specifies if notifications should be sent if instance is removed.
+    /// </summary>
+    public const string OutboxInstanceRemovedNotify = $"AccessMgmt.Core.Outbox.InstanceRemovedNotify";
+
     #endregion
 
     /// <summary>
@@ -173,4 +183,13 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if AuthorizedParty should use the new implementation based on lookup of all connection info (roles, packages, resources and instances) through the ConnectionQuery.
     /// </summary>
     public const string AuthorizedPartiesUsingConnectionQueryOnly = "AccessManagement.AuthorizedParties.UsingConnectionQueryOnly";
+
+    /// <summary>
+    /// Represents the configuration key used to disable cache invalidation for Altinn 2 cache.
+    /// </summary>
+    /// <remarks>Set this key in the application's configuration to prevent automatic invalidation of the
+    /// Altinn 2 cache. To prevent errors when the endpoint no longer responds after Altinn 2 is decommissioned, 
+    /// this flag should be enabled before the decommissioning date and remain enabled until the endpoint is removed from the codebase.
+    /// </remarks>
+    public const string DisableAltinn2CacheInvalidation = "AccessManagement.Altinn2CacheInvalidation.Disable";    
 }
