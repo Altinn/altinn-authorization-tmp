@@ -51,16 +51,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
 
             if (DecisionHelper.GetPartyParam(httpContext) is null)
             {
-                // The 'party' query parameter is missing or not a valid GUID. Treat it as no
-                // access instead of letting CreateDecisionRequest throw and surface as a 500.
-                if (!requirement.AllowAllowUnauthorizedParty)
-                {
-                    context.Fail();
-                    return;
-                }
-
-                httpContext.Items["HasRequestedPermission"] = false;
-                context.Succeed(requirement);
+                // The 'party' query parameter is missing or not a valid GUID. A valid party is
+                // always required: AllowAllowUnauthorizedParty only governs whether the user must
+                // be authorized for an otherwise valid party, it does not excuse a missing or
+                // malformed party. Fail here instead of letting CreateDecisionRequest throw and
+                // surface as a 500.
+                context.Fail();
                 return;
             }
 

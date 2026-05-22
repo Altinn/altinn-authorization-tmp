@@ -62,28 +62,17 @@ public class EndUserResourceAccessHandlerTest
     }
 
     [Fact]
-    public async Task HandleRequirement_InvalidPartyParam_AllowUnauthorizedParty_Succeeds()
+    public async Task HandleRequirement_InvalidPartyParam_WithAllowUnauthorizedParty_StillFails()
     {
-        var (handler, pdp, httpContext) = CreateSut("?party=not-a-guid");
+        // AllowAllowUnauthorizedParty only governs whether the user must be authorized for an
+        // otherwise valid party. It does not excuse a missing or malformed party.
+        var (handler, pdp, _) = CreateSut("?party=not-a-guid");
         var context = Ctx(new EndUserResourceAccessRequirement("read", "res", allowAllowUnauthorizedParty: true));
 
         await handler.HandleAsync(context);
 
-        context.HasSucceeded.Should().BeTrue();
-        httpContext.Items["HasRequestedPermission"].Should().Be(false);
-        pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task HandleRequirement_MissingPartyParam_AllowUnauthorizedParty_Succeeds()
-    {
-        var (handler, pdp, httpContext) = CreateSut(string.Empty);
-        var context = Ctx(new EndUserResourceAccessRequirement("read", "res", allowAllowUnauthorizedParty: true));
-
-        await handler.HandleAsync(context);
-
-        context.HasSucceeded.Should().BeTrue();
-        httpContext.Items["HasRequestedPermission"].Should().Be(false);
+        context.HasFailed.Should().BeTrue();
+        context.HasSucceeded.Should().BeFalse();
         pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
     }
 
@@ -96,19 +85,6 @@ public class EndUserResourceAccessHandlerTest
         await handler.HandleAsync(context);
 
         context.HasFailed.Should().BeTrue();
-        pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task HandleRequirement_EmptyPartyParam_AllowUnauthorizedParty_Succeeds()
-    {
-        var (handler, pdp, httpContext) = CreateSut("?party=");
-        var context = Ctx(new EndUserResourceAccessRequirement("read", "res", allowAllowUnauthorizedParty: true));
-
-        await handler.HandleAsync(context);
-
-        context.HasSucceeded.Should().BeTrue();
-        httpContext.Items["HasRequestedPermission"].Should().Be(false);
         pdp.Verify(p => p.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>()), Times.Never);
     }
 
