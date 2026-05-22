@@ -36,6 +36,7 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -1670,7 +1671,7 @@ public partial class ConnectionService(
         return policy;
     }
 
-    public async Task<Result<AssignmentDto>> ConnectSIUserAndEmailUser(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentDto>> AddSelfRegisteredUserRole(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
     {
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         ValidationErrorBuilder errorBuilder = default;
@@ -1690,15 +1691,27 @@ public partial class ConnectionService(
             return problem;
         }
 
-        // Guaranteed non-null here: TryBuild above returned false, so both from/to passed their null guards.
-        if (from!.VariantId != EntityVariantConstants.SI)
+        if (from.Id != to.Id)
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
-        }
+            // Guaranteed non-null here: TryBuild above returned false, so both from/to passed their null guards. Check that the variants are correct for a self-registration connection: from should be SI and to should be SI_EMAIL
+            if (from!.VariantId != EntityVariantConstants.SI)
+            {
+                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
+            }
 
-        if (to!.VariantId != EntityVariantConstants.SI_EMAIL)
+            if (to!.VariantId != EntityVariantConstants.SI_EMAIL)
+            {
+                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+            }
+        }
+        else
         {
-            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+            // If from and to are the same this is only for the sub variants EMAIL and EDU
+            if (from!.VariantId != EntityVariantConstants.SI_EDU && from.VariantId != EntityVariantConstants.SI_EMAIL)
+            {
+                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+            }
         }
 
         if (errorBuilder.TryBuild(out problem))
@@ -1720,7 +1733,22 @@ public partial class ConnectionService(
         };
 
         dbContext.Assignments.Add(newAssignment);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            // This means another request created the same assignment after we checked for existing assignment but before we tried to create, so we can safely return the existing assignment
+            var existingAssignmentAfterConflict = await dbContext.Assignments.FirstOrDefaultAsync(a => a.FromId == fromId && a.ToId == toId && a.RoleId == RoleConstants.SelfRegisteredUser, cancellationToken);
+            if (existingAssignmentAfterConflict is { })
+            {
+                return DtoMapper.Convert(existingAssignmentAfterConflict);
+            }
+
+            // If we can't find the assignment that caused the unique violation, we rethrow the exception as something unexpected happened
+            throw;
+        }
 
         return DtoMapper.Convert(newAssignment);
     }
