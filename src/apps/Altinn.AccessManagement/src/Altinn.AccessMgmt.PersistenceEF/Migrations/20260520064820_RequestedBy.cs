@@ -29,7 +29,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             migrationBuilder.Sql(@"""
             SET LOCAL app.changed_by = '0195efb8-7c80-7262-b616-7d9eb843bcaa';
-            SET LOCAL app.changed_by_system = 'f1be3999-68f6-4757-92b4-d3f3d33345e1';
+            SET LOCAL app.changed_by_system = '0195efb8-7c80-7262-b616-7d9eb843bcaa';
             SET LOCAL app.change_operation_id = 'Add RequestedBy';
             UPDATE dbo.requestassignment SET byid = audit_changedby WHERE audit_changedby IS NOT NULL
             """);
