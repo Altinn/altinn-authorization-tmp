@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
@@ -9,7 +8,6 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -17,7 +15,6 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Platform.Register.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -38,7 +35,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IResourceRegistryClient _resourceRegistryClient;
         private readonly IAMPartyService _ampartyService;
         private readonly IMemoryCache _memoryCache;
-        private readonly IProfileClient _profileClient;
         private readonly TimeProvider _timeProvider;
         private readonly GeneralSettings _generalSettings;
         private readonly IAltinn2ConsentClient _altinn2ConsentClient;
@@ -77,7 +73,6 @@ namespace Altinn.AccessManagement.Core.Services
             _resourceRegistryClient = resourceRegistryClient;
             _ampartyService = ampartyService;
             _memoryCache = memoryCache;
-            _profileClient = profileClient;
             _timeProvider = timeProvider;
             _generalSettings = generalSettings.Value;
             _consentDelegationCheckService = consentDelegationCheckService;
@@ -746,7 +741,7 @@ namespace Altinn.AccessManagement.Core.Services
             return true;
         }
 
-        private async Task<bool> AuthorizeForConsentRight(Entity party, Entity profile, ConsentRight consentRight)
+        private async Task<bool> AuthorizeForConsentRight(Entity party, Entity authenticatedUser, ConsentRight consentRight)
         {
             if (consentRight.Resource == null || consentRight.Resource.Count != 1)
             {
@@ -762,7 +757,7 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentResourceAttribute resource = consentRight.Resource[0];
 
             ConsentDelegationCheckResult checkResult = await _consentDelegationCheckService.CheckDelegatableRights(
-                authenticatedUserUuid: profile.Id,
+                authenticatedUserUuid: authenticatedUser.Id,
                 partyUuid: party.Id,
                 resourceIdentifier: resource.Value);
 
