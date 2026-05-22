@@ -2,7 +2,7 @@ terraform {
   required_providers {
     pkcs12 = {
       source  = "chilicat/pkcs12"
-      version = "0.2.5"
+      version = "0.4.0"
     }
     tls = {
       source  = "hashicorp/tls"
@@ -10,7 +10,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.70.0"
+      version = "4.73.0"
     }
     static = {
       source  = "tiwood/static"
