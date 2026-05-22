@@ -15,7 +15,6 @@ using Altinn.AccessMgmt.Core.Authorization;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Outbox;
-using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -140,7 +139,6 @@ internal static partial class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
-        builder.ConfigureAccessManagementPersistence();
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
 
@@ -165,16 +163,6 @@ internal static partial class AccessManagementHost
         }
     }
 
-    private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
-    {
-        builder.AddAccessMgmtDb(opts =>
-        {
-            builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
-        });
-
-        return builder;
-    }
-
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
         builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
@@ -194,14 +182,6 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
-        builder.AddAzureAppConfigurationDefaults(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            opts.Endpoint = appsettings.AppConfiguration.Endpoint;
-            opts.Enabled = appsettings.AppConfiguration.Enabled;
-            opts.AddDefaultLabels(appsettings.Environment, builder.GetAltinnServiceDescriptor().Name);
-        });
-
         builder.AddAltinnLease(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
