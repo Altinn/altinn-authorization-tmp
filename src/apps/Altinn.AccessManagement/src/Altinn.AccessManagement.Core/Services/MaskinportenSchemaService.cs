@@ -238,9 +238,9 @@ namespace Altinn.AccessManagement.Core.Services
             Entity consumerParty = null;
             if (!string.IsNullOrEmpty(consumerOrg))
             {
-                consumerParty = _db.Entities
+                consumerParty = await _db.Entities
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.OrganizationIdentifier == consumerOrg, cancellationToken).Result;
+                    .FirstOrDefaultAsync(p => p.OrganizationIdentifier == consumerOrg, cancellationToken);
 
                 if (consumerParty is null)
                 {
