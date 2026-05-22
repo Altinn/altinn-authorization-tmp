@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Errors;
+﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -78,8 +78,6 @@ public class PartyService(AppDbContext db) : IPartyService
             return false;
         }
                
-        string partyVariantType = party.EntityVariantType?.ToLowerInvariant() ?? string.Empty;
-
         if (party.EntityVariantType.Equals(EntityVariantConstants.SI_EDU.Entity.Name, StringComparison.InvariantCultureIgnoreCase))
         {
             return true;
