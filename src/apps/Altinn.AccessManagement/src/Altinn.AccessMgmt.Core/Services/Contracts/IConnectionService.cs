@@ -420,7 +420,7 @@ public interface IConnectionService
     Task<Result<bool>> RemoveRoleAssignment(Guid partyId, Guid fromId, Guid toId, string roleCode, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates assignment with role <see cref="RoleConstants.SelfRegisteredUser"/> from a self identified user to a email user.
+    /// Creates assignment with role <see cref="RoleConstants.SelfRegisteredUser"/> from a self identified user to a email user or adds it to itself if the sub variant is SI_EDU or SI_EMAIL.
     /// </summary>
     /// <param name="fromId">The unique identifier of the self identified user.</param>
     /// <param name="toId">The unique identifier of the email user the <see cref="RoleConstants.SelfRegisteredUser"/> is given to.</param>

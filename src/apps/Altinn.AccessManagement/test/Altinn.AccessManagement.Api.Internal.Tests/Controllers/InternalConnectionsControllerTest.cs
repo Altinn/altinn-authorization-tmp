@@ -129,7 +129,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_ReturnsForbidden()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_ReturnsUnauthorized()
         {
             var client = CreateClientWithPlatformToken("not-register");
 

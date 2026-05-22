@@ -31,7 +31,7 @@
         public const string PLATFORM_ACCESSTOKEN_ISSUER_BFF = "amui";
 
         /// <summary>
-        /// Access Management BFF issuer.
+        /// Policy used to authorize that platform access token is issued by either Access Management BFF or Altinn Platform
         /// </summary>
         public const string PLATFORM_ACCESSTOKEN_ISSUER_BFF_OR_PLATFORM = "amuiOrplatform";
 

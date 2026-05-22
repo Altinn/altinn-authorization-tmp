@@ -236,15 +236,10 @@ public class InternalConnectionsController(IConnectionService connectionService)
                 return true;
             }
 
-            if (!jwtSecurityToken.Issuer.Equals(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
             var appidentifier = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
-            string appidentifierstring = appidentifier?.Value?.ToLowerInvariant() ?? string.Empty;
+            string appClaimValue = appidentifier?.Value?.ToLowerInvariant() ?? string.Empty;
 
-            return appidentifierstring switch
+            return appClaimValue switch
             {
                 "register" => true,
                 _ => false,

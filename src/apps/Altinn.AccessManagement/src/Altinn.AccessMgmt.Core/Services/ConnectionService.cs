@@ -1710,7 +1710,7 @@ public partial class ConnectionService(
             if (from!.VariantId != EntityVariantConstants.SI_EDU && from.VariantId != EntityVariantConstants.SI_EMAIL)
             {
                 errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
-                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{to}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
             }
         }
 
