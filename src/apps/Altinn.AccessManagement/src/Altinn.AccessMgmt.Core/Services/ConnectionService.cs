@@ -1671,11 +1671,9 @@ public partial class ConnectionService(
         return policy;
     }
 
-    public async Task<Result<AssignmentDto>> AddSelfRegisteredUserRole(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    private ValidationErrorBuilder CheckFromAndToIsNotNull(Entity from, Entity to)
     {
-        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         ValidationErrorBuilder errorBuilder = default;
-
         if (from is null)
         {
             errorBuilder.Add(ValidationErrors.EntityNotExists, "$QUERY/from");
@@ -1686,32 +1684,63 @@ public partial class ConnectionService(
             errorBuilder.Add(ValidationErrors.EntityNotExists, "$QUERY/to");
         }
 
+        return errorBuilder;
+    }
+
+    private ValidationErrorBuilder CheckFromAndToIsValidConnectingOldSiToEmailSI(Entity from, Entity to)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+        
+        // Guaranteed non-null here: TryBuild above returned false, so both from/to passed their null guards. Check that the variants are correct for a self-registration connection: from should be SI and to should be SI_EMAIL
+        if (from!.VariantId != EntityVariantConstants.SI)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{from.Id}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
+        }
+
+        if (to!.VariantId != EntityVariantConstants.SI_EMAIL)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{to.Id}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+        }
+
+        return errorBuilder;
+    }
+
+    private ValidationErrorBuilder CheckFromAndToIsValidRegisterSelfIdentifiedRoleToUser(Entity from, Entity to)
+    {
+        ValidationErrorBuilder errorBuilder = default;
+        
+        // If from and to are the same this is only for the sub variants EMAIL and EDU
+        if (from!.VariantId != EntityVariantConstants.SI_EDU && from.VariantId != EntityVariantConstants.SI_EMAIL)
+        {
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{from.Id}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+            errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{to.Id}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
+        }
+
+        return errorBuilder;
+    }
+
+    public async Task<Result<AssignmentDto>> AddSelfRegisteredUserRole(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        ValidationErrorBuilder errorBuilder = default;
+
+        errorBuilder = CheckFromAndToIsNotNull(from, to);
+
         if (errorBuilder.TryBuild(out var problem))
         {
             return problem;
         }
 
+        // If from and to are different entities, this is a connection between an old SI and a new SI_EMAIL for self-registration, which is allowed.
+        // If from and to are the same entity, this is a self-registration of a role to the user itself, which is also allowed for the new sub variants EDU and EMAIL.
+        // Any other scenario is not valid for self-registration, so we check accordingly.
         if (from.Id != to.Id)
         {
-            // Guaranteed non-null here: TryBuild above returned false, so both from/to passed their null guards. Check that the variants are correct for a self-registration connection: from should be SI and to should be SI_EMAIL
-            if (from!.VariantId != EntityVariantConstants.SI)
-            {
-                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI.Entity.Name}'.")]);
-            }
-
-            if (to!.VariantId != EntityVariantConstants.SI_EMAIL)
-            {
-                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{toId}", $"Entity must be variant '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
-            }
+            errorBuilder = CheckFromAndToIsValidConnectingOldSiToEmailSI(from, to);
         }
         else
         {
-            // If from and to are the same this is only for the sub variants EMAIL and EDU
-            if (from!.VariantId != EntityVariantConstants.SI_EDU && from.VariantId != EntityVariantConstants.SI_EMAIL)
-            {
-                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/from", [new($"{fromId}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
-                errorBuilder.Add(ValidationErrors.DisallowedEntityType, "$QUERY/to", [new($"{to}", $"Entity must be variant '{EntityVariantConstants.SI_EDU.Entity.Name}' or '{EntityVariantConstants.SI_EMAIL.Entity.Name}'.")]);
-            }
+            errorBuilder = CheckFromAndToIsValidRegisterSelfIdentifiedRoleToUser(from, to);
         }
 
         if (errorBuilder.TryBuild(out problem))
@@ -1737,7 +1766,7 @@ public partial class ConnectionService(
         {
             await dbContext.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgsqlEx && pgsqlEx.SqlState == PostgresErrorCodes.UniqueViolation)
         {
             // This means another request created the same assignment after we checked for existing assignment but before we tried to create, so we can safely return the existing assignment
             var existingAssignmentAfterConflict = await dbContext.Assignments.FirstOrDefaultAsync(a => a.FromId == fromId && a.ToId == toId && a.RoleId == RoleConstants.SelfRegisteredUser, cancellationToken);
