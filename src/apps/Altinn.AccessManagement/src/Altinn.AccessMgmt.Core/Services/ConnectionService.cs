@@ -1310,15 +1310,20 @@ public partial class ConnectionService(
             return Problems.DelegationPolicyRuleWriteFailed;
         }
 
-        await AccessAddedNotification.Upsert(
-            dbContext,
-            from.Id,
-            to.Id,
-            resourceObj.Id,
-            null,
-            appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
-            cancellationToken
-        );
+        if (resourceObj is { })
+        {
+            await AccessAddedNotification.Upsert(
+                dbContext,
+                from.Id,
+                to.Id,
+                resourceObj.Id,
+                null,
+                appsettings?.Value?.Notifications?.AccessAddedNotifyInSeconds ?? AccessAddedNotification.DefaultNotifyInSeconds,
+                cancellationToken
+            );
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return true;
     }
@@ -1354,15 +1359,20 @@ public partial class ConnectionService(
             return Problems.DelegationPolicyRuleWriteFailed;
         }
 
-        await InstanceAddedNotification.Upsert(
-            dbContext,
-            from.Id,
-            to.Id,
-            resourceObj.Id,
-            instanceId,
-            appsettings?.Value?.Notifications?.InstanceAddedNotifyInSeconds ?? InstanceAddedNotification.DefaultNotifyInSeconds,
-            cancellationToken
-        );
+        if (resourceObj is { })
+        {
+            await InstanceAddedNotification.Upsert(
+                dbContext,
+                from.Id,
+                to.Id,
+                resourceObj.Id,
+                instanceId,
+                appsettings?.Value?.Notifications?.InstanceAddedNotifyInSeconds ?? InstanceAddedNotification.DefaultNotifyInSeconds,
+                cancellationToken
+            );
+            
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return true;
     }
