@@ -261,9 +261,9 @@ namespace Altinn.AccessManagement.Core.Services
             Entity supplierEntity = null;
             if (!string.IsNullOrEmpty(supplierOrg))
             {
-                supplierEntity = _db.Entities
+                supplierEntity = await _db.Entities
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.OrganizationIdentifier == supplierOrg, cancellationToken).Result;
+                    .FirstOrDefaultAsync(p => p.OrganizationIdentifier == supplierOrg, cancellationToken);
 
                 if (supplierEntity is null)
                 {
