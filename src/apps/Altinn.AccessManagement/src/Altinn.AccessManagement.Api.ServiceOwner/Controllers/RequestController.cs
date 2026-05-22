@@ -99,7 +99,12 @@ public class RequestController(
                 return res.Problem.ToActionResult();
             }
 
-            return BadRequest($"Unable to withdraw request with status '{request.Status}'");
+            return BadRequest(new AltinnProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid request status",
+                Detail = $"Unable to withdraw request with status '{request.Status}'",
+            });
         }
 
         return Forbid();
