@@ -719,19 +719,25 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            var entity = await _db.Entities
+            var uuids = new List<Guid> { fromParty, userUuid };
+            var entities = await _db.Entities
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == fromParty, cancellationToken: cancellationToken);
-            
-            NewUserProfile profile = await _profileClient.GetUser(new UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
-            if (profile is null)
+                .Where(e => uuids.Contains(e.Id))
+                .ToDictionaryAsync(e => e.Id, cancellationToken);
+
+            if (entities.TryGetValue(fromParty, out Entity fromEntity))
+            {
+                return false;
+            }
+
+            if (entities.TryGetValue(userUuid, out Entity userEntity))
             {
                 return false;
             }
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {
-                if (!await AuthorizeForConsentRight(entity, profile, consentRight))
+                if (!await AuthorizeForConsentRight(fromEntity, userEntity, consentRight))
                 {
                     return false;
                 }
@@ -740,14 +746,14 @@ namespace Altinn.AccessManagement.Core.Services
             return true;
         }
 
-        private async Task<bool> AuthorizeForConsentRight(Entity entity, NewUserProfile profile, ConsentRight consentRight)
+        private async Task<bool> AuthorizeForConsentRight(Entity party, Entity profile, ConsentRight consentRight)
         {
             if (consentRight.Resource == null || consentRight.Resource.Count != 1)
             {
                 return false;
             }
 
-            if (profile.UserUuid == null || entity.Id == Guid.Empty)
+            if (party.Id == Guid.Empty)
             {
                 return false;
             }
@@ -756,8 +762,8 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentResourceAttribute resource = consentRight.Resource[0];
 
             ConsentDelegationCheckResult checkResult = await _consentDelegationCheckService.CheckDelegatableRights(
-                authenticatedUserUuid: profile.UserUuid.Value,
-                partyUuid: entity.Id,
+                authenticatedUserUuid: profile.Id,
+                partyUuid: party.Id,
                 resourceIdentifier: resource.Value);
 
             if (!checkResult.IsSuccess)
