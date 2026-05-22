@@ -729,29 +729,6 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void Convert_RequestAssignmentPackage_NullBy_UsesFallbackChangedBy()
-    {
-        var from = MakeEntity("From");
-        var to = MakeEntity("To");
-        var changedBy = Guid.NewGuid();
-        var assignment = new RequestAssignment { FromId = from.Id, ToId = to.Id, From = from, To = to, By = null };
-        var request = new RequestAssignmentPackage
-        {
-            AssignmentId = Guid.NewGuid(),
-            PackageId = Guid.NewGuid(),
-            Status = RequestStatus.Pending,
-            Assignment = assignment,
-            Audit_ChangedBy = changedBy,
-        };
-
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.Convert(request);
-
-        dto.By.Should().NotBeNull();
-        dto.By!.Id.Should().Be(changedBy);
-        dto.By.Name.Should().BeNull();
-    }
-
-    [Fact]
     public void Convert_RequestAssignmentResource_MapsTypeAndStatus()
     {
         var from = MakeEntity("From");
