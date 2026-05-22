@@ -1,5 +1,4 @@
 ﻿using System.Net.Mime;
-using System.Net.Http;
 using Altinn.AccessManagement.Api.ServiceOwner.Validation;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
@@ -18,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
-using Altinn.AccessMgmt.Core.Validation;
 
 namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 

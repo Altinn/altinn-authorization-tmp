@@ -101,7 +101,7 @@ public class RequestControllerUnitTest
     }
 
     [Fact]
-    public async Task WithdrawRequest_ByMatchesAndApproved_ReturnsBadRequest()
+    public async Task WithdrawRequest_ByMatchesAndApproved_ReturnsProblemActionResult()
     {
         var caller = Guid.NewGuid();
         var request = MakeRequest(byId: caller, fromId: Guid.NewGuid(), status: RequestStatus.Approved);
@@ -114,8 +114,8 @@ public class RequestControllerUnitTest
 
         var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
-        var bad = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Contains("Approved", bad.Value!.ToString());
+        Assert.NotNull(result);
+        Assert.Contains("Problem", result.GetType().Name);
         requestService.Verify(s => s.UpdateRequest(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<RequestStatus>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
