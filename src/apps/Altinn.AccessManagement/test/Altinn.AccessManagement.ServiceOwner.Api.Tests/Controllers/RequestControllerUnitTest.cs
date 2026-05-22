@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Api.ServiceOwner.Controllers;
+﻿using Altinn.AccessManagement.Api.ServiceOwner.Controllers;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -72,7 +72,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(caller).Object);
 
-        var result = await controller.WithdrawRequest(request.Id);
+        var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Equal(RequestStatus.Withdrawn, ok.Value);
@@ -94,7 +94,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(caller).Object);
 
-        var result = await controller.WithdrawRequest(request.Id);
+        var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
         var ok = Assert.IsType<OkObjectResult>(result);
         Assert.Equal(RequestStatus.Withdrawn, ok.Value);
@@ -112,7 +112,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(caller).Object);
 
-        var result = await controller.WithdrawRequest(request.Id);
+        var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
         var bad = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Contains("Approved", bad.Value!.ToString());
@@ -132,7 +132,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(caller).Object);
 
-        var result = await controller.WithdrawRequest(request.Id);
+        var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
         Assert.IsType<ForbidResult>(result);
         requestService.Verify(s => s.UpdateRequest(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<RequestStatus>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -150,7 +150,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(Guid.NewGuid()).Object);
 
-        var result = await controller.WithdrawRequest(requestId);
+        var result = await controller.WithdrawRequest(requestId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
         Assert.Contains("Problem", result.GetType().Name);
@@ -172,7 +172,7 @@ public class RequestControllerUnitTest
 
         var controller = CreateController(requestService.Object, AuditAccessorFor(caller).Object);
 
-        var result = await controller.WithdrawRequest(request.Id);
+        var result = await controller.WithdrawRequest(request.Id, TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
         Assert.Contains("Problem", result.GetType().Name);
