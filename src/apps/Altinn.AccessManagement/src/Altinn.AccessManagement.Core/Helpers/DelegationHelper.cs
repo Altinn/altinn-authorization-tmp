@@ -1064,6 +1064,11 @@ namespace Altinn.AccessManagement.Core.Helpers
         /// <returns>UuidType and Uuid</returns>
         public static (UuidType DelegationType, Guid Uuid) GetUuidTypeAndValueFromParty(Entity entity)
         {
+            if (entity == null)
+            {
+                return (UuidType.NotSpecified, Guid.Empty);
+            }
+
             if (entity.TypeId == EntityTypeConstants.Organization)
             {
                 return (UuidType.Organization, entity.Id);
