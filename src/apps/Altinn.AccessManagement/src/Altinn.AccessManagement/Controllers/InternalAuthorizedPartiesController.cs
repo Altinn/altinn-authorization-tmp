@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Appsettings;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
@@ -25,8 +26,8 @@ namespace Altinn.AccessManagement.Controllers;
 [Route("accessmanagement/api/v1/")]
 public class InternalAuthorizedPartiesController(
     ILogger<InternalAuthorizedPartiesController> logger,
-    AppDbContext db,
     IMapper mapper,
+    IAuthorizedPartyRepoServiceEf authorizedPartyRepoService,
     [FromKeyedServices("newConnectionQueryOnlyImplementation")] IAuthorizedPartiesService newConnectionQueryOnlyImplementation,
     [FromKeyedServices("oldDelegationMetadataEfImplementation")] IAuthorizedPartiesService oldDelegationMetadataEfImplementation
     ) : ControllerBase
@@ -284,12 +285,8 @@ public class InternalAuthorizedPartiesController(
             };
 
             int authenticatedUserPartyId = AuthenticationHelper.GetPartyId(HttpContext);
-
-            var entity = await db.Entities
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.PartyId == party, cancellationToken);
-
-            if (entity is null || entity.TypeId == EntityTypeConstants.Person)
+            var entity = await authorizedPartyRepoService.GetEntityByPartyId(party, cancellationToken);
+            if (entity == null || (entity.TypeId == EntityTypeConstants.Person && entity.PartyId != authenticatedUserPartyId))
             {
                 return Forbid();
             }
