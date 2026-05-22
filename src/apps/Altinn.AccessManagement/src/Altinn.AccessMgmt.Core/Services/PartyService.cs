@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.Party;
@@ -50,7 +51,7 @@ public class PartyService(AppDbContext db) : IPartyService
                 Name = party.DisplayName,
                 TypeId = entityType.Id,
                 VariantId = entityVariant.Id,
-                RefId = party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase) ? party.PartyUuid.ToString() : null
+                RefId = party.EntityType.Equals(EntityTypeConstants.SystemUser.Entity.Name , StringComparison.InvariantCultureIgnoreCase) ? party.PartyUuid.ToString() : null
             };
 
             db.Entities.Add(entity);
@@ -65,17 +66,30 @@ public class PartyService(AppDbContext db) : IPartyService
         return result;
     }
 
-    private bool IsValidPartyType(PartyBaseDto party)
+    private static bool IsValidPartyType(PartyBaseDto party)
     {
-        if (party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+        if (party.EntityType.Equals(EntityTypeConstants.SystemUser.Entity.Name, StringComparison.InvariantCultureIgnoreCase))
         {
             return true;
         }
 
-        return party.EntityVariantType.ToLowerInvariant() switch
+        if (!party.EntityType.Equals(EntityTypeConstants.SelfIdentified.Entity.Name, StringComparison.InvariantCultureIgnoreCase))
         {
-            "si_edu" or "si_email" => true,
-            _ => false
-        };
+            return false;
+        }
+               
+        string partyVariantType = party.EntityVariantType?.ToLowerInvariant() ?? string.Empty;
+
+        if (party.EntityVariantType.Equals(EntityVariantConstants.SI_EDU.Entity.Name, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return true;
+        }
+
+        if (party.EntityVariantType.Equals(EntityVariantConstants.SI_EMAIL.Entity.Name, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
