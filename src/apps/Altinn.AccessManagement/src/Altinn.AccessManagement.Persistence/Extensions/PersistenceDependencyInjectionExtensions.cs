@@ -46,8 +46,6 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<Marker>();
 
-        builder.Services.AddSingleton<IDelegationChangeEventQueue, DelegationChangeEventQueue>();
-
         builder.Services.AddScoped<DelegationMetadataRepo>();
         builder.Services.AddScoped<IDelegationMetadataRepository, DelegationMetadataEF>();
 
@@ -168,10 +166,10 @@ public static class PersistenceDependencyInjectionExtensions
                 ConsentPortalViewMode.Show => "show",
                 _ => null,
             }))
-            .AddYuniqlMigrations(cfg =>
+            .AddYuniqlMigrations(serviceKey: null, opts =>
             {
-                cfg.Workspace = "/";
-                cfg.WorkspaceFileProvider = fs;
+                opts.Workspace = "/";
+                opts.WorkspaceFileProvider = fs;
             });
 
         return builder;
