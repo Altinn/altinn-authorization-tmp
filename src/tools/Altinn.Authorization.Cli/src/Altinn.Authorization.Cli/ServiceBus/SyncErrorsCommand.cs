@@ -1,8 +1,9 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Altinn.Authorization.Cli.ErrorDb;
 using Altinn.Authorization.Cli.ServiceBus.Utils;
@@ -20,12 +21,17 @@ using Spectre.Console.Cli;
 namespace Altinn.Authorization.Cli.ServiceBus;
 
 /// <summary>
-/// Command for exporting errors from the error queues.
+/// Command for syncing errors from the error queue to a database for analysis, and taking results from the analysis and acting on them (e.g. deleting messages from the DLQ).
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
-    : BaseCommand<ExportErrorsCommand.Settings>(cancellationToken)
+public partial class SyncErrorsCommand(CancellationToken cancellationToken)
+    : BaseCommand<SyncErrorsCommand.Settings>(cancellationToken)
 {
+    private static readonly JsonSerializerContext _jsonContext = new SourceGenerationContext(new(JsonSerializerOptions.Web)
+    {
+        AllowOutOfOrderMetadataProperties = true,
+    });
+
     /// <inheritdoc/>
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
@@ -56,6 +62,7 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
             info.Add(kind, serverQueue);
         }
 
+        var syncId = new BsonBinaryData(Guid.CreateVersion7(), GuidRepresentation.Standard);
         await AnsiConsole.Progress()
             .Columns([
                 new TaskDescriptionColumn(),
@@ -70,17 +77,15 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
                 {
                     var session = await mongo.StartSessionAsync(new() { }, cancellationToken);
 
-                    Task clearCollectionTask = db.DropCollectionAsync(session, queue.Name, cancellationToken);
-                    tasks.Add(clearCollectionTask);
-
                     Task? extractNormalDql = null;
                     Task? dlqErrorActive = null;
                     Task? extractErrorDlq = null;
+                    Task? deleteMissing = null;
 
                     {
                         if (queue.Normal is { DeadLetterMessageCount: > 0 } normalQueue)
                         {
-                            extractNormalDql = CreateExtractDlqTask(ctx, session, sb, db, dependsOn: clearCollectionTask, name: queue.Name, queue: normalQueue.Name, cancellationToken);
+                            extractNormalDql = CreateSyncDlqTask(ctx, session, sb, db, syncId: syncId, dependsOn: null, name: queue.Name, queue: normalQueue.Name, cancellationToken);
                             tasks.Add(extractNormalDql);
                         }
                     }
@@ -88,10 +93,10 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
                     {
                         if (queue.Error is { ActiveMessageCount: > 0 } errorQueue)
                         {
-                            dlqErrorActive = CreateMoveToDlqTask(ctx, session, sb, db, dependsOn: clearCollectionTask, name: queue.Name, queue: errorQueue.Name, cancellationToken);
+                            dlqErrorActive = CreateMoveToDlqTask(ctx, sb, dependsOn: null, name: queue.Name, queue: errorQueue.Name, cancellationToken);
                             tasks.Add(dlqErrorActive);
 
-                            extractErrorDlq = CreateExtractDlqTask(ctx, session, sb, db, dependsOn: dlqErrorActive, name: queue.Name, queue: errorQueue.Name, cancellationToken);
+                            extractErrorDlq = CreateSyncDlqTask(ctx, session, sb, db, syncId: syncId, dependsOn: dlqErrorActive, name: queue.Name, queue: errorQueue.Name, cancellationToken);
                             tasks.Add(extractErrorDlq);
                         }
                     }
@@ -99,12 +104,17 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
                     {
                         if (dlqErrorActive is null && queue.Error is { DeadLetterMessageCount: > 0 } errorQueue)
                         {
-                            extractErrorDlq = CreateExtractDlqTask(ctx, session, sb, db, dependsOn: clearCollectionTask, name: queue.Name, queue: errorQueue.Name, cancellationToken);
+                            extractErrorDlq = CreateSyncDlqTask(ctx, session, sb, db, syncId: syncId, dependsOn: null, name: queue.Name, queue: errorQueue.Name, cancellationToken);
                             tasks.Add(extractErrorDlq);
                         }
                     }
 
-                    tasks.Add(DisposeAfter(session, [clearCollectionTask, extractNormalDql, dlqErrorActive, extractErrorDlq], cancellationToken));
+                    {
+                        deleteMissing = CreateDeleteMissingTask(ctx, session, db, syncId, dependsOn: [extractNormalDql, dlqErrorActive, extractErrorDlq], name: queue.Name, cancellationToken);
+                        tasks.Add(deleteMissing);
+                    }
+
+                    tasks.Add(DisposeAfter(session, [null, extractNormalDql, dlqErrorActive, extractErrorDlq, deleteMissing], cancellationToken));
                 }
 
                 await Task.WhenAll(tasks);
@@ -113,17 +123,18 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
         return 0;
     }
 
-    private static async Task CreateExtractDlqTask(
+    private static async Task CreateSyncDlqTask(
         ProgressContext ctx,
         IClientSessionHandle session,
         ServiceBusHandle sb,
         IMongoDatabase db,
+        BsonBinaryData syncId,
         Task? dependsOn,
         string name,
         string queue,
         CancellationToken cancellationToken)
     {
-        var task = ctx.AddTask($"Extract '{name}' DLQ", autoStart: false);
+        var task = ctx.AddTask($"Sync '{name}' DLQ", autoStart: false);
 
         if (dependsOn is not null)
         {
@@ -153,7 +164,6 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
                 SubQueue = SubQueue.DeadLetter,
             });
 
-        await db.CreateCollectionAsync(session, name, cancellationToken: cancellationToken);
         var collection = db.GetCollection<BsonDocument>(name);
 
         var channel = Channel.CreateBounded<ServiceBusReceivedMessage>(100);
@@ -179,19 +189,41 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
             },
             cancellationToken);
 
-        var writeToDatabaseTask = Task.Run(
+        var syncWithDbTask = Task.Run(
             async () =>
             {
                 await foreach (var msg in reader.ReadAllAsync(cancellationToken))
                 {
+                    task.Value += 1;
+
+                    var id = msg.SequenceNumber;
+                    var filter = Builders<BsonDocument>.Filter.Eq("_id", $"{queue}/{id}");
+
+                    var existing = await collection.Find(session, filter)
+                        .Project(Builders<BsonDocument>.Projection.Include("decision"))
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    ErrorDecision? decision = null;
+                    if (existing is not null && existing.TryGetValue("decision", out var value) && value.IsBsonDocument)
+                    {
+                        decision = JsonSerializer.Deserialize<ErrorDecision>(value.ToJson(), _jsonContext.Options);
+                    }
+
+                    if (decision is DeleteDecision)
+                    {
+                        await receiver.CompleteMessageAsync(msg, cancellationToken);
+                        await collection.DeleteOneAsync(session, filter, cancellationToken: cancellationToken);
+                        continue;
+                    }
+
                     using var textReader = new StreamReader(msg.Body.ToStream(), Encoding.UTF8);
                     using var jsonReader = new JsonReader(textReader);
                     BsonDeserializationContext context = BsonDeserializationContext.CreateRoot(jsonReader);
                     BsonDocument body = BsonDocumentSerializer.Instance.Deserialize(context);
 
-                    var id = msg.SequenceNumber;
-                    var filter = Builders<BsonDocument>.Filter.Eq("_id", $"{queue}/{id}");
-                    var update = Builders<BsonDocument>.Update.Set("body", body);
+                    var update = Builders<BsonDocument>.Update
+                        .Set("_lastSyncId", syncId)
+                        .Set("body", body);
 
                     var headerDoc = new BsonDocument();
                     foreach (var kv in msg.ApplicationProperties)
@@ -201,21 +233,58 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
 
                     update = update.Set("headers", headerDoc);
 
-                    await collection.UpdateOneAsync(filter, update, new() { IsUpsert = true }, cancellationToken: cancellationToken);
+                    await collection.UpdateOneAsync(session, filter, update, new() { IsUpsert = true }, cancellationToken: cancellationToken);
                 }
             },
             cancellationToken);
 
-        await Task.WhenAll(readFromQueueTask, writeToDatabaseTask);
+        await Task.WhenAll(readFromQueueTask, syncWithDbTask);
+        task.Value = task.MaxValue;
+        task.StopTask();
+    }
+
+    private static async Task CreateDeleteMissingTask(
+        ProgressContext ctx,
+        IClientSessionHandle session,
+        IMongoDatabase db,
+        BsonBinaryData syncId,
+        IEnumerable<Task?> dependsOn,
+        string name,
+        CancellationToken cancellationToken)
+    {
+        var collection = db.GetCollection<BsonDocument>(name);
+        var dependencies = dependsOn.Where(t => t is not null).Select(t => t!.WaitAsync(cancellationToken)).ToList();
+        if (dependencies.Count == 0)
+        {
+            var hasAnyDocuments = await collection.Find(session, FilterDefinition<BsonDocument>.Empty)
+                .Limit(1)
+                .AnyAsync(cancellationToken);
+
+            if (!hasAnyDocuments)
+            {
+                return;
+            }
+        }
+
+        var task = ctx.AddTask($"Delete stale from '{name}'", autoStart: false);
+
+        await Task.WhenAll(dependencies);
+
+        task.MaxValue = 1;
+        task.Value = 0;
+        task.StartTask();
+        await collection.DeleteManyAsync(
+            session,
+            Builders<BsonDocument>.Filter.Ne("_lastSyncId", syncId),
+            cancellationToken: cancellationToken);
+
         task.Value = task.MaxValue;
         task.StopTask();
     }
 
     private static async Task CreateMoveToDlqTask(
         ProgressContext ctx,
-        IClientSessionHandle session,
         ServiceBusHandle sb,
-        IMongoDatabase db,
         Task? dependsOn,
         string name,
         string queue,
@@ -262,6 +331,23 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
 
         task.MaxValue = task.Value;
         task.StopTask();
+    }
+
+    private static async Task DisposeAfter(
+        IDisposable disposable,
+        IEnumerable<Task?> after,
+        CancellationToken cancellationToken)
+    {
+        var tasks = after.Where(t => t is not null).Select(t => t!.WaitAsync(cancellationToken));
+        await Task.WhenAll(tasks);
+
+        if (disposable is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync();
+            return;
+        }
+
+        disposable.Dispose();
     }
 
     private static async Task ProcessMessages(ServiceBusReceiver receiver, Func<ServiceBusReceivedMessage, CancellationToken, ValueTask> process, CancellationToken cancellationToken)
@@ -341,22 +427,6 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
         }
     }
 
-    private static async Task DisposeAfter(
-        IDisposable disposable,
-        IEnumerable<Task?> after,
-        CancellationToken cancellationToken)
-    {
-        var tasks = after.Where(t => t is not null).Select(t => t!.WaitAsync(cancellationToken));
-        await Task.WhenAll(tasks);
-
-        if (disposable is IAsyncDisposable asyncDisposable)
-        {
-            await asyncDisposable.DisposeAsync();
-        }
-
-        disposable.Dispose();
-    }
-
     private sealed class QueueInfo
     {
         private readonly Dictionary<QueueKind, QueueRuntimeProperties> _kinds = new();
@@ -386,6 +456,23 @@ public sealed class ExportErrorsCommand(CancellationToken cancellationToken)
     {
         Normal,
         Error,
+    }
+
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(DeleteDecision), "delete")]
+    private record ErrorDecision
+    {
+    }
+
+    private sealed record DeleteDecision
+        : ErrorDecision
+    {
+    }
+
+    [JsonSerializable(typeof(ErrorDecision))]
+    private partial class SourceGenerationContext
+        : JsonSerializerContext
+    {
     }
 
     [ExcludeFromCodeCoverage]
