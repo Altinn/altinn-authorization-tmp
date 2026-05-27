@@ -349,46 +349,6 @@ public class ResourceSyncServiceTest : IClassFixture<ApiFixture>
         await ResolveService().SyncResources(new FakeLease(), TestContext.Current.CancellationToken);
     }
 
-    [Fact]
-    public async Task SyncResourceOwnersOLD_WhenRegistryFails_ReturnsFalse()
-    {
-        Registry.ServiceOwnersResponse = Problem<ServiceOwners>();
-
-        var svc = (Altinn.AccessMgmt.Core.HostedServices.Services.ResourceSyncService)ResolveService();
-        var result = await svc.SyncResourceOwnersOLD(TestContext.Current.CancellationToken);
-
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task SyncResourceOwnersOLD_IngestsServiceOwnersViaIngestService()
-    {
-        var ownerId = Guid.NewGuid();
-        Registry.ServiceOwnersResponse = Success(new ServiceOwners
-        {
-            Orgs = new Dictionary<string, ServiceOwner>
-            {
-                ["rsst-old"] = new()
-                {
-                    Id = ownerId,
-                    Name = new ServiceOwnerName { Nb = "RSST OLD owner " + ownerId },
-                    Logo = "http://old-flow",
-                    Orgnr = "100099999",
-                },
-            },
-        });
-
-        var svc = (Altinn.AccessMgmt.Core.HostedServices.Services.ResourceSyncService)ResolveService();
-        var result = await svc.SyncResourceOwnersOLD(TestContext.Current.CancellationToken);
-
-        Assert.True(result);
-        await Fixture.QueryDb(async db =>
-        {
-            var stored = await db.Providers.AsNoTracking().FirstOrDefaultAsync(p => p.Id == ownerId, TestContext.Current.CancellationToken);
-            Assert.NotNull(stored);
-        });
-    }
-
     private IResourceSyncService ResolveService()
     {
         using var scope = Fixture.Services.CreateScope();

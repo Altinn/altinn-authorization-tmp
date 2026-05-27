@@ -134,7 +134,7 @@ public class IngestService : IIngestService
         }
         catch (Exception ex)
         {
-            throw new Exception("Failed to execute merge statement. " + ex.Message, ex); 
+            throw new InvalidOperationException("Failed to execute merge statement. " + ex.Message, ex);
         }
         finally
         {

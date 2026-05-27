@@ -37,42 +37,6 @@ public partial class ResourceSyncService : IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task<bool> SyncResourceOwnersOLD(CancellationToken cancellationToken)
-    {
-        var serviceOwners = await _resourceRegistry.GetServiceOwners(cancellationToken);
-        if (!serviceOwners.IsSuccessful)
-        {
-            Log.FailedToReadResourceOwners(_logger);
-            return false;
-        }
-
-        var options = new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem);
-
-        using var scope = _serviceProvider.CreateScope();
-        var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
-
-        var resourceOwners = new List<Provider>();
-        foreach (var serviceOwner in serviceOwners.Content.Orgs)
-        {
-            // Check if exists without Id => RefId/Code
-            resourceOwners.Add(new Provider()
-            {
-                Id = serviceOwner.Value.Id,
-                LogoUrl = serviceOwner.Value.Logo,
-                Name = serviceOwner.Value.Name.Nb,
-                RefId = serviceOwner.Value.Orgnr,
-                Code = serviceOwner.Key,
-                TypeId = ProviderTypeConstants.ServiceOwner,
-            });
-        }
-
-        // IngestService will map in Id property and update properties not matchaed
-        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], ignoreColumnsToUpdate: ["audit_validfrom"], ignoreColumnsToInsert: ["audit_validfrom"], cancellationToken: cancellationToken);
-
-        return true;
-    }
-
-    /// <inheritdoc />
     public async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
     {
         var serviceOwners = await _resourceRegistry.GetServiceOwners(cancellationToken);
@@ -84,7 +48,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
-        var dbProviders = await dbContext.Providers.ToListAsync();
+        var dbProviders = await dbContext.Providers.ToListAsync(cancellationToken);
 
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {

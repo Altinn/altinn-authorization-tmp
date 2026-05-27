@@ -120,7 +120,7 @@ public class IngestServiceTest : IClassFixture<ApiFixture>
         using var scope = Fixture.Services.CreateEFScope(SystemEntityConstants.StaticDataIngest);
         var ingest = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        var ex = await Assert.ThrowsAsync<Exception>(() => ingest.MergeTempData<Provider>(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ingest.MergeTempData<Provider>(
             Guid.CreateVersion7(),
             new AuditValues(SystemEntityConstants.StaticDataIngest),
             cancellationToken: TestContext.Current.CancellationToken));
