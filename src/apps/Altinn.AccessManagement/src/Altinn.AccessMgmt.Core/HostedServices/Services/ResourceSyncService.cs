@@ -37,7 +37,7 @@ public partial class ResourceSyncService : IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
+    public async Task<bool> SyncResourceOwnersOLD(CancellationToken cancellationToken)
     {
         var serviceOwners = await _resourceRegistry.GetServiceOwners(cancellationToken);
         if (!serviceOwners.IsSuccessful)
@@ -67,8 +67,57 @@ public partial class ResourceSyncService : IResourceSyncService
         }
 
         // IngestService will map in Id property and update properties not matchaed
-        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], ignoreColumnsToUpdate: ["audit_validfrom"], cancellationToken: cancellationToken);
+        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], ignoreColumnsToUpdate: ["audit_validfrom"], ignoreColumnsToInsert: ["audit_validfrom"], cancellationToken: cancellationToken);
 
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
+    {
+        var serviceOwners = await _resourceRegistry.GetServiceOwners(cancellationToken);
+        if (!serviceOwners.IsSuccessful)
+        {
+            Log.FailedToReadResourceOwners(_logger);
+            return false;
+        }
+
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
+        var dbProviders = await dbContext.Providers.ToListAsync();
+
+        foreach (var serviceOwner in serviceOwners.Content.Orgs)
+        {
+            var provider = dbProviders.FirstOrDefault(provider => provider.Id == serviceOwner.Value.Id);
+            if (provider is { })
+            {
+                if (provider.Name != serviceOwner.Value.Name.Nb ||
+                   provider.LogoUrl != serviceOwner.Value.Logo ||
+                   provider.RefId != serviceOwner.Value.Orgnr ||
+                   provider.Code != serviceOwner.Key)
+                {
+                    provider.Name = serviceOwner.Value.Name.Nb;
+                    provider.LogoUrl = serviceOwner.Value.Logo;
+                    provider.RefId = serviceOwner.Value.Orgnr;
+                    provider.Code = serviceOwner.Key;
+                    dbContext.Providers.Update(provider);
+                }
+            }
+            else
+            {
+                dbContext.Providers.Add(new Provider()
+                {
+                    Id = serviceOwner.Value.Id,
+                    LogoUrl = serviceOwner.Value.Logo,
+                    Name = serviceOwner.Value.Name.Nb,
+                    RefId = serviceOwner.Value.Orgnr,
+                    Code = serviceOwner.Key,
+                    TypeId = ProviderTypeConstants.ServiceOwner,
+                });
+            }
+        }
+        
+        await dbContext.SaveChangesAsync(new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem), cancellationToken);
         return true;
     }
 
@@ -92,7 +141,6 @@ public partial class ResourceSyncService : IResourceSyncService
 
             foreach (var updatedResource in page.Content.Data)
             {
-                leaseData.Since = updatedResource.UpdatedAt;
                 try
                 {
                     var resource = await UpsertResource(dbContext, updatedResource, cancellationToken);
@@ -109,10 +157,13 @@ public partial class ResourceSyncService : IResourceSyncService
                     {
                         await UpsertUpdatedSubject(dbContext, updatedResource, resource, cancellationToken);
                     }
+
+                    leaseData.Since = updatedResource.UpdatedAt;
                 }
                 catch (Exception ex)
                 {
                     Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
+                    return;
                 }
             }
 
