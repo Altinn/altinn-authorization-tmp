@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.ComponentModel.DataAnnotations;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
@@ -22,7 +23,6 @@ using Altinn.Urn.Json;
 using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 
 namespace Altinn.AccessManagement.Core.Services
 {
