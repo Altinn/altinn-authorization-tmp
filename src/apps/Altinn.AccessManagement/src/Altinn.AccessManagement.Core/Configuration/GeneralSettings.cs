@@ -13,6 +13,6 @@
         /// <summary>
         /// Gets or sets the CPU load loop count.
         /// </summary>
-        public long CpuLoadLoopCount { get; set; } = 100_000_000;
+        public long CpuLoadLoopCount { get; set; } = 10_000_000;
     }
 }
