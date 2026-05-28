@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enterprise.Utils;
+﻿using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -15,7 +13,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
+using System.Diagnostics;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Controllers;
 
@@ -32,7 +33,8 @@ public class ResourceOwnerAuthorizedPartiesController(
     IProviderService providerService,
     AuthorizedPartiesTelemetry authorizedPartiesTelemetry,
     IMemoryCache memoryCache,
-    IConfiguration configuration) : ControllerBase
+    IOptions<GeneralSettings> generalSettings
+    ) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
@@ -82,13 +84,11 @@ public class ResourceOwnerAuthorizedPartiesController(
         try
         {
             // Loop for AKS scaling test. Will be enabled by adding CpuLoadLoopCount to values.yaml in the azure portal
-            string loopCountString = configuration["GeneralSettings:CpuLoadLoopCount"];
-            logger.LogInformation("CpuLoadLoopCount value from configuration: {CpuLoadLoopCount}", loopCountString);
-            logger.LogError("CpuLoadLoopCount value from configuration: {CpuLoadLoopCount}", loopCountString);
-            if (loopCountString != null)
+            var loopCount = generalSettings.Value.CpuLoadLoopCount;
+            logger.LogError("CpuLoadLoopCount value from configuration: {LoopCount}", loopCount);
+            if (loopCount > 0)
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                int loopCount = int.TryParse(loopCountString, out int parsedLoopCount) ? parsedLoopCount : 100_000_000;
                 double result = 0;
                 for (int i = 0; i < loopCount; i++)
                 {

@@ -1,4 +1,4 @@
-namespace Altinn.AccessManagement.Core.Configuration
+﻿namespace Altinn.AccessManagement.Core.Configuration
 {
     /// <summary>
     /// General configuration settings
@@ -9,5 +9,10 @@ namespace Altinn.AccessManagement.Core.Configuration
         /// Gets or sets the host name.
         /// </summary>
         public string Hostname { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CPU load loop count.
+        /// </summary>
+        public long CpuLoadLoopCount { get; set; } = 0;
     }
 }
