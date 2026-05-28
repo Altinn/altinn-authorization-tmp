@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
@@ -23,6 +22,7 @@ using Altinn.Urn.Json;
 using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -411,22 +411,22 @@ namespace Altinn.AccessManagement.Core.Services
             Guid? fromParty = null;
             List<Guid> toParties = null;
 
-            var party = await _dbContext.Entities
+            var from = await _dbContext.Entities
                     .AsNoTracking()
                     .Where(e => e.PartyId == reporteePartyId)
                     .FirstOrDefaultAsync(cancellationToken);
             if (includeInstanceDelegations)
             {
-                fromParty = party?.Id;
+                fromParty = from?.Id;
                 toParties = new List<Guid>();
             }
 
             // Check if mainunit exists
-            if (party?.ParentId.HasValue == true)
+            if (from?.ParentId.HasValue == true)
             {
                 var parent = await _dbContext.Entities
                     .AsNoTracking()
-                    .Where(e => e.Id == party.ParentId.Value)
+                    .Where(e => e.Id == from.ParentId.Value)
                     .FirstOrDefaultAsync(cancellationToken);
                 if (parent?.PartyId.HasValue == true)
                 {
