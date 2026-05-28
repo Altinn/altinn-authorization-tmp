@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using System.Diagnostics;
+using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
@@ -82,14 +83,20 @@ public class ResourceOwnerAuthorizedPartiesController(
         {
             // Loop for AKS scaling test. Will be enabled by adding CpuLoadLoopCount to values.yaml in the azure portal
             string loopCountString = configuration["GeneralSettings:CpuLoadLoopCount"];
+            logger.LogInformation("CpuLoadLoopCount value from configuration: {CpuLoadLoopCount}", loopCountString);
+            logger.LogError("CpuLoadLoopCount value from configuration: {CpuLoadLoopCount}", loopCountString);
             if (loopCountString != null)
             {
+                Stopwatch sw = Stopwatch.StartNew();
                 int loopCount = int.TryParse(loopCountString, out int parsedLoopCount) ? parsedLoopCount : 100_000_000;
                 double result = 0;
                 for (int i = 0; i < loopCount; i++)
                 {
                     result += Math.Sqrt(i) * Math.Sin(i);
                 }
+
+                sw.Stop();
+                logger.LogError("CpuLoadLoopCount debug: elapsed for {LoopCount}: {ElapsedMilliseconds:N0} ms", loopCount, sw.ElapsedMilliseconds);
             }
 
             var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
