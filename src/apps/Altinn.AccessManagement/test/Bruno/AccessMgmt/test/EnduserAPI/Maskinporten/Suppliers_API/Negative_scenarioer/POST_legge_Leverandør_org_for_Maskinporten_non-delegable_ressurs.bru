@@ -1,7 +1,7 @@
 meta {
-  name: Negative_POST_add_Supplier_Org_With_Tilgangstyrrer
+  name: POST_legge_Leverandør_org_for_Maskinporten_non-delegable_ressurs
   type: http
-  seq: 1
+  seq: 3
 }
 
 post {
@@ -23,10 +23,10 @@ script:pre-request {
     bru.setVar("orgno", testdata.supplier_Org.orgno);
     
     var getTokenParameters = {
-      auth_userId: testdata.consumer_Org.tilgangstyrrer_consumer_org.userid,
-      auth_partyId: testdata.consumer_Org.tilgangstyrrer_consumer_org.partyid,
-      auth_partyUuid: testdata.consumer_Org.tilgangstyrrer_consumer_org.partyuuid,
-      auth_ssn: testdata.consumer_Org.tilgangstyrrer_consumer_org.pid,
+      auth_userId: testdata.consumer_Org.dagligleder.userid,
+      auth_partyId: testdata.consumer_Org.dagligleder.partyid,
+      auth_partyUuid: testdata.consumer_Org.dagligleder.partyuuid,
+      auth_ssn: testdata.consumer_Org.dagligleder.pid,
       auth_tokenType: sharedtestdata.authTokenType.personal,
       auth_scopes: sharedtestdata.auth_scopes.portalEnduser
     }
@@ -38,9 +38,12 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/maksinporten-delegation/${bru.getEnvVar("tokenEnv")}.js`); 
-  test("Add maskinporten supplier organization with Tilgangstyyring role", function() {
+  test("Add maskinporten supplier organization", function() {
      const data = res.getBody();
-    expect(res.status).to.equal(403);
+    expect(res.status).to.equal(200);
+     assert.equal(data.fromId, bru.getVar("party").toLowerCase());
+    assert.equal(data.toId, testdata.supplier_Org.partyuuid);
+    assert.equal(data.roleId, "961f6ebb-ecf7-4fc6-ab5a-ca0841db4931");
      });
      
    
