@@ -30,7 +30,8 @@ public class ResourceOwnerAuthorizedPartiesController(
     [FromKeyedServices("oldDelegationMetadataEfImplementation")] IAuthorizedPartiesService oldDelegationMetadataEfImplementation,
     IProviderService providerService,
     AuthorizedPartiesTelemetry authorizedPartiesTelemetry,
-    IMemoryCache memoryCache) : ControllerBase
+    IMemoryCache memoryCache,
+    IConfiguration configuration) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
@@ -79,6 +80,18 @@ public class ResourceOwnerAuthorizedPartiesController(
     {
         try
         {
+            // Loop for AKS scaling test. Will be enabled by adding CpuLoadLoopCount to values.yaml in the azure portal
+            string loopCountString = configuration["GeneralSettings:CpuLoadLoopCount"];
+            if (loopCountString != null)
+            {
+                int loopCount = int.TryParse(loopCountString, out int parsedLoopCount) ? parsedLoopCount : 100_000_000;
+                double result = 0;
+                for (int i = 0; i < loopCount; i++)
+                {
+                    result += Math.Sqrt(i) * Math.Sin(i);
+                }
+            }
+
             var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
             BaseAttribute subjectAttribute = new BaseAttribute(subject.Type, subject.Value);
 
