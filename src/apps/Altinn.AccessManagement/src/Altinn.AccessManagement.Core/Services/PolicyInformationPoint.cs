@@ -466,13 +466,16 @@ namespace Altinn.AccessManagement.Core.Services
                     .AsNoTracking()
                     .Where(e => e.UserId == subjectUserId)
                     .FirstOrDefaultAsync(cancellationToken);
-                var keyRoleAssignments = await _dbContext.Assignments.AsNoTracking()
-                    .Where(t => t.ToId == subject.Id)
-                    .Include(t => t.Role)
-                    .Include(t => t.From)
-                    .Where(t => t.Role.IsKeyRole)
-                    .ToListAsync(cancellationToken);
-                coveredByPartyIds = keyRoleAssignments.Where(t => t.From.PartyId.HasValue).Select(t => t.From.PartyId.Value).Distinct().ToList();
+                if (subject != null)
+                {
+                    var keyRoleAssignments = await _dbContext.Assignments.AsNoTracking()
+                        .Where(t => t.ToId == subject.Id)
+                        .Include(t => t.Role)
+                        .Include(t => t.From)
+                        .Where(t => t.Role.IsKeyRole)
+                        .ToListAsync(cancellationToken);
+                    coveredByPartyIds = keyRoleAssignments.Where(t => t.From.PartyId.HasValue).Select(t => t.From.PartyId.Value).Distinct().ToList();
+                }
             }
 
             if (coveredByPartyIds.Count > 0)
