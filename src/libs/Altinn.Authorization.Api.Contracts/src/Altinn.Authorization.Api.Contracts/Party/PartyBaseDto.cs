@@ -38,11 +38,13 @@ namespace Altinn.Authorization.Api.Contracts.Party
         /// <summary>
         /// Gets or sets the legacy identifier for the party.
         /// </summary>
+        [Range(1, int.MaxValue)]
         public int? PartyId { get; set; }
 
         /// <summary>
         /// Gets or sets the legacy identifier for the user.
         /// </summary>
+        [Range(1, int.MaxValue)]
         public int? UserId { get; set; }
     }
 }
