@@ -13,6 +13,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Binder;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 using System.Diagnostics;
@@ -33,7 +35,8 @@ public class ResourceOwnerAuthorizedPartiesController(
     IProviderService providerService,
     AuthorizedPartiesTelemetry authorizedPartiesTelemetry,
     IMemoryCache memoryCache,
-    IOptions<GeneralSettings> generalSettings
+    IOptions<GeneralSettings> generalSettings,
+    IConfiguration configuration
     ) : ControllerBase
 {
     /// <summary>
@@ -96,7 +99,7 @@ public class ResourceOwnerAuthorizedPartiesController(
                 }
 
                 sw.Stop();
-                logger.LogError("CpuLoadLoopCount debug: elapsed for {LoopCount}: {ElapsedMilliseconds:N0} ms", loopCount, sw.ElapsedMilliseconds);
+                logger.LogError("CpuLoadLoopCount debug: elapsed for {LoopCount}: {ElapsedMilliseconds:N0} ms, {RawConfig}", loopCount, sw.ElapsedMilliseconds, configuration["GeneralSettings:CpuLoadLoopCount"]);
             }
 
             var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
