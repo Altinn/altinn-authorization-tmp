@@ -17,7 +17,7 @@ configuration = {
   consent = {
     batch_size                = 5000
     max_degree_of_parallelism = 10
-    only_expired_consents     = false    
+    only_expired_consents     = false
   }
   core = {
     request_notify_request_approved_in_seconds = 600

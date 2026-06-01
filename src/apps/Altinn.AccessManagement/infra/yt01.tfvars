@@ -18,8 +18,7 @@ configuration = {
     batch_size                = 5000
     max_degree_of_parallelism = 20
     events_page_size          = 1000
-    events_page_size          = 5
-    only_expired_consents     = false    
+    only_expired_consents     = false
   }
   core = {
     request_notify_request_approved_in_seconds = 600
