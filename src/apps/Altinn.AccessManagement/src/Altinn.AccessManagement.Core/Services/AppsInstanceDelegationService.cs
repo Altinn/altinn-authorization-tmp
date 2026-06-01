@@ -244,6 +244,26 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         }
     }
 
+    /// <summary>
+    /// Builds the instance identifier to persist for an instance delegation.
+    /// Altinn Apps supply a bare instance guid which must be qualified with the apps instance-id urn and the
+    /// instance owner party id (urn:altinn:instance-id:{partyId}/{guid}) so the PDP can match it on authorize.
+    /// Dialogporten and Correspondence already supply a fully qualified instance urn
+    /// (urn:altinn:dialog-id:..., urn:altinn:correspondence-id:...) which must be stored verbatim; qualifying it
+    /// would produce a value the PDP can never match, yielding NotApplicable instead of Permit.
+    /// </summary>
+    internal static string BuildInstanceStorageId(int partyId, string instanceId)
+    {
+        if (instanceId.StartsWith(AuthzConstants.InstanceUrnPrefixes.Apps, StringComparison.OrdinalIgnoreCase)
+            || instanceId.StartsWith(AuthzConstants.InstanceUrnPrefixes.Correspondence, StringComparison.OrdinalIgnoreCase)
+            || instanceId.StartsWith(AuthzConstants.InstanceUrnPrefixes.Dialog, StringComparison.OrdinalIgnoreCase))
+        {
+            return instanceId;
+        }
+
+        return $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{partyId}/{instanceId}";
+    }
+
     /// <inheritdoc/>
     public async Task<Result<AppsInstanceDelegationResponse>> Delegate(AppsInstanceDelegationRequest request, CancellationToken cancellationToken = default)
     {
@@ -263,8 +283,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
                 return invalidParty!;
             }
 
-            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-            request.InstanceId = instanceUrn;
+            request.InstanceId = BuildInstanceStorageId(party.PartyId, instanceId);
         }
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
@@ -510,8 +529,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
                 return invalidParty!;
             }
 
-            string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-            request.InstanceId = instanceUrn;
+            request.InstanceId = BuildInstanceStorageId(party.PartyId, instanceId);
         }
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
