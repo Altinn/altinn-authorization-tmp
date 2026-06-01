@@ -87,9 +87,8 @@ public class ResourceOwnerAuthorizedPartiesController(
         try
         {
             // Loop for AKS scaling test. Will be enabled by adding CpuLoadLoopCount to values.yaml in the azure portal
-            var loopCount = generalSettings.Value.CpuLoadLoopCount;
-            logger.LogError("CpuLoadLoopCount value from configuration: {LoopCount}", loopCount);
-            if (loopCount > 0)
+            var loopCountString = configuration["GeneralSettings:CpuLoadLoopCount"];
+            if (long.TryParse(loopCountString, out var loopCount))
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 double result = 0;
@@ -99,7 +98,7 @@ public class ResourceOwnerAuthorizedPartiesController(
                 }
 
                 sw.Stop();
-                logger.LogError("CpuLoadLoopCount debug: elapsed for {LoopCount}: {ElapsedMilliseconds:N0} ms, {RawConfig}", loopCount, sw.ElapsedMilliseconds, configuration["GeneralSettings:CpuLoadLoopCount"]);
+                logger.LogError("CpuLoadLoopCount debug: elapsed for {LoopCount}: {ElapsedMilliseconds:N0} ms", loopCount, sw.ElapsedMilliseconds);
             }
 
             var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
