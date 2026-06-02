@@ -16,7 +16,7 @@ db_compute_sku   = "D2"
 sbl_endpoint     = "https://at22.altinn.cloud/sblbridge/"
 use_pgbouncer    = true
 key_vault_rbac = [{
-  id       = "09e1005e-0934-4a4a-a1f5-0c8583e27088" # Rune
+  id       = "93bed750-6ca4-47ae-ac43-b45fff4930f6", # Group: Altinn Product Authorization: Admins Dev
   rolename = "Key Vault Secrets Officer"
 }]
 
@@ -30,9 +30,14 @@ features = {
 
   party_import = {
     system_users = true
+
     npr = {
       enable        = true
       guardianships = true
+    }
+
+    sire = {
+      enable = true
     }
   }
 
@@ -45,7 +50,7 @@ features = {
 config = {
   maskinporten = {
     client_id = "6b3069e2-bc65-42ce-9aab-413e405dd5fe"
-    scope     = "folkeregister:deling/offentligmedhjemmel"
+    scope     = "folkeregister:deling/offentligmedhjemmel skatteetaten:skatteetatenregistrertselskap"
   }
 
   api_source = {
