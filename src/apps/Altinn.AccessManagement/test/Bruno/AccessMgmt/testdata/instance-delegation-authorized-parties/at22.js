@@ -1,4 +1,4 @@
-module.exports = 
+﻿module.exports = 
 {
     "env": "at22",
     "resources": {
@@ -10,7 +10,7 @@ module.exports =
     },
     "instances": {
         "p2p": {
-            "instanceId": "93994414-07dc-4df3-b2c6-047722169b6c",
+            "instanceId": "b765deb2-889a-4806-aee4-4b479e36b7db",
             "from": "5daf2382-adee-4cd6-9995-3c5f3fc058af",
             "to": "bd90e954-efe5-4b65-be8a-f9fccbb36342"
         },
