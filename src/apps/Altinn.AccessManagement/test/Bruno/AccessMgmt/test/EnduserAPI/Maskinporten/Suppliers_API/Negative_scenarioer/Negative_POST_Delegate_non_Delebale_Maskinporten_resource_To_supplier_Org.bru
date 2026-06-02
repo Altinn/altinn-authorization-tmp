@@ -22,7 +22,7 @@ script:pre-request {
     
     bru.setVar("party", testdata.consumer_Org.partyuuid);
     bru.setVar("orgno", testdata.supplier_Org.orgno);
-    bru.setVar("resource", testdata.resource_to_delegatemaskinporten_non_delegable_ressurs);
+    bru.setVar("resource", testdata.resource_to_delegate.maskinporten_non_delegable_ressurs);
     
     var getTokenParameters = {
       auth_userId: testdata.consumer_Org.hovedadmin_consumer_org.userid,
