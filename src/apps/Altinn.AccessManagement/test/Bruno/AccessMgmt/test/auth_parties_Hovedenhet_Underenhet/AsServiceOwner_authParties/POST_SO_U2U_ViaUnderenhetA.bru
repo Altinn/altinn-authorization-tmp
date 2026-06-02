@@ -66,14 +66,14 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  // ── Step 2: HovedenhetA (NATURSTRIDIG TILLITSFULL TIGER AS) exists in response ──
+  // ── Step 2: HovedenhetD exists in response ──
   test(requestName + '|HovedenhetD has no access, UnderenhetD has expected access', function() {
   
     const hovedenhet = (body || []).find(
       p => p.partyUuid === testdata.authParties_hovedenhetD.partyuuid
     );
   
-    assert.exists(hovedenhet,'Expected HovedenhetA to exist as top-level part');
+    assert.exists(hovedenhet,'Expected HovedenhetD to exist as top-level part');
   
     const underenhet = (hovedenhet.subunits || []).find(
       s => s.partyUuid === testdata.authParties_hovedenhetD.authParties_underenhetD.partyuuid
