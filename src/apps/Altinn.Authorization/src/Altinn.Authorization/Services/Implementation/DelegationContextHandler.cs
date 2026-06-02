@@ -73,12 +73,12 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 if (keyRolePartyIds.Count > 0)
                 {
                     requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.PartyAttribute, keyRolePartyIds.Select(s => s.ToString())));
+                }
 
-                    if (isInstanceAccessRequest)
-                    {
-                        // Instance delegation policies use uuid as subject, meaning the request needs to be enriched with the uuids of all keyrole parties
-                        requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.OrganizationUuidAttribute, keyRolePartyUuids.Select(p => p.ToString())));
-                    }
+                if (isInstanceAccessRequest && keyRolePartyUuids.Count > 0)
+                {
+                    // Instance delegation policies use uuid as subject, meaning the request needs to be enriched with the uuids of all keyrole parties
+                    requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.OrganizationUuidAttribute, keyRolePartyUuids.Select(p => p.ToString())));
                 }
             }
 
