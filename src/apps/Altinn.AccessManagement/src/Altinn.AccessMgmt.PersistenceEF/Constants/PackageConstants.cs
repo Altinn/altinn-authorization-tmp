@@ -1,7 +1,6 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.Xml;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 
