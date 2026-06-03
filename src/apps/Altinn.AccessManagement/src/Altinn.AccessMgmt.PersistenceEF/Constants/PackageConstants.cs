@@ -860,7 +860,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Beneficial owners - non-compliance reporting and EU notices"),
+            KeyValuePair.Create("Name", "Beneficial owners - non-compliance reporting and EU lookups"),
             KeyValuePair.Create("Description", "This access package provides access to submit a notice of discrepancy in the Register of Beneficial Owners and search in registers of beneficial owners in EU/EEA countries via the BORIS portal for certain public authorities and reporting entities. Those who can submit a notice of discrepancy are those mentioned in the regulations to the Register of Beneficial Owners Act, section 3-10, first paragraph. In addition to those mentioned in the previous sentence, all reporting entities under the Money Laundering Act, section 4, can search in the BORIS portal.")
         ),
         NN = TranslationEntryList.Create(
