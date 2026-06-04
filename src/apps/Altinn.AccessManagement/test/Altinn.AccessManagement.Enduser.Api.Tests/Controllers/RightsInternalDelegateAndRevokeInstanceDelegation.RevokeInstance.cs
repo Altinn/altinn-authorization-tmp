@@ -152,6 +152,10 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
             Assert.NotEmpty(rulesWithInstanceId);
             Assert.Equal(2, rulesWithInstanceId.Count);
         }
+        else
+        {
+            Assert.Fail("No policy was written for the instance delegation.");
+        }
 
         // Now create the revoke request
         var revokeRequest = new InstanceRevokeRequest
