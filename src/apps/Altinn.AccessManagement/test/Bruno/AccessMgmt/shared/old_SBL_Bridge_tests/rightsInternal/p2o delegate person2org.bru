@@ -1,7 +1,7 @@
 meta {
-  name: o2p delegate org2person A2
+  name: p2o delegate person2org
   type: http
-  seq: 8
+  seq: 21
 }
 
 post {
@@ -19,24 +19,20 @@ body:json {
   {
       "to": [
           {
-              "id": "urn:altinn:person:identifier-no",
-              "value": "{{toSsn}}"
-          },
-          {
-              "id": "urn:altinn:person:lastname",
-              "value": "{{toLastName}}"
+              "id": "urn:altinn:organizationnumber",
+              "value": "{{to_orgno}}"
           }
       ],
       "rights": [
           {
               "resource": [
                   {
-                      "id": "urn:altinn:servicecode",
-                      "value": "{{servicecode}}"
+                      "id": "urn:altinn:org",
+                      "value": "{{org}}"
                   },
                   {
-                      "id": "urn:altinn:serviceeditioncode",
-                      "value": "{{serviceeditioncode}}"
+                      "id": "urn:altinn:app",
+                      "value": "{{app}}"
                   }
               ],
               "action": "read"
@@ -48,8 +44,8 @@ body:json {
 vars:pre-request {
   toSsn: 
   toLastName: 
-  org: ttd
-  app: apps-test-prod
+  org: 
+  app: 
   auth_tokenType: Personal
   auth_userId: 
   auth_partyId: 
@@ -60,11 +56,10 @@ vars:pre-request {
 script:pre-request {
   const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
-  bru.setVar("party", testdata.org1.partyid);
-  bru.setVar("toSsn", testdata.org2.dagl.pid);
-  bru.setVar("toLastName", testdata.org2.dagl.lastname);
-  bru.setVar("servicecode", testdata.servicecode);
-  bru.setVar("serviceeditioncode", testdata.serviceeditioncode);
+  bru.setVar("party", testdata.org1.dagl.partyid);
+  bru.setVar("to_orgno", testdata.org2.orgno);
+  bru.setVar("org", testdata.org);
+  bru.setVar("app", testdata.app);
   
   var getTokenParameters = {
     auth_userId: testdata.org1.dagl.userid,
@@ -75,15 +70,15 @@ script:pre-request {
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
   }
-    
+  
+  
   const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  
   bru.setVar("bearerToken",  token);
 }
 
 tests {
-  test("organization to person Altinn2 delegation", function() {
+  test("person to organization delegation", function() {
     const data = res.getBody();  
     expect(res.status).to.equal(200);
     expect(data.rightDelegationResults[0]).to.have.property('status', 'Delegated');

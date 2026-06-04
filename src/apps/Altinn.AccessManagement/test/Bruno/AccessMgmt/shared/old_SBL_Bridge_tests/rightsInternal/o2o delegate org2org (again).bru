@@ -1,7 +1,7 @@
 meta {
-  name: p2o delegate person2org A2
+  name: o2o delegate org2org (again)
   type: http
-  seq: 22
+  seq: 19
 }
 
 post {
@@ -27,12 +27,12 @@ body:json {
           {
               "resource": [
                   {
-                      "id": "urn:altinn:servicecode",
-                      "value": "{{servicecode}}"
+                      "id": "urn:altinn:org",
+                      "value": "{{org}}"
                   },
                   {
-                      "id": "urn:altinn:serviceeditioncode",
-                      "value": "{{serviceeditioncode}}"
+                      "id": "urn:altinn:app",
+                      "value": "{{app}}"
                   }
               ],
               "action": "read"
@@ -44,8 +44,8 @@ body:json {
 vars:pre-request {
   toSsn: 
   toLastName: 
-  org: ttd
-  app: apps-test-prod
+  org: 
+  app: 
   auth_tokenType: Personal
   auth_userId: 
   auth_partyId: 
@@ -56,10 +56,10 @@ vars:pre-request {
 script:pre-request {
   const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
-  bru.setVar("party", testdata.org1.dagl.partyid);
+  bru.setVar("party", testdata.org1.partyid);
   bru.setVar("to_orgno", testdata.org2.orgno);
-  bru.setVar("servicecode", testdata.servicecode);
-  bru.setVar("serviceeditioncode", testdata.serviceeditioncode);
+  bru.setVar("org", testdata.org);
+  bru.setVar("app", testdata.app);
   
   var getTokenParameters = {
     auth_userId: testdata.org1.dagl.userid,
@@ -78,7 +78,7 @@ script:pre-request {
 }
 
 tests {
-  test("person to organization Altinn2 delegation", function() {
+  test("organization to organization delegation (again)", function() {
     const data = res.getBody();  
     expect(res.status).to.equal(200);
     expect(data.rightDelegationResults[0]).to.have.property('status', 'Delegated');

@@ -1,7 +1,7 @@
 meta {
   name: delegationcheck-is-notdelegable-for-dagl
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -56,8 +56,8 @@ script:pre-request {
     auth_scopes: sharedtestdata.auth_scopes.read
   }
     
-const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
-const token = await testTokenGenerator.getToken(getTokenParameters);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   
   bru.setVar("bearerToken",  token);
 }

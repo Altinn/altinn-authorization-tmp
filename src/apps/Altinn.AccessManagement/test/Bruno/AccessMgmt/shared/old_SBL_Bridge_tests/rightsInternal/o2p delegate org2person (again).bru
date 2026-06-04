@@ -1,5 +1,5 @@
 meta {
-  name: o2o delegate org2org A2
+  name: o2p delegate org2person (again)
   type: http
   seq: 15
 }
@@ -19,20 +19,24 @@ body:json {
   {
       "to": [
           {
-              "id": "urn:altinn:organizationnumber",
-              "value": "{{to_orgno}}"
+              "id": "urn:altinn:person:identifier-no",
+              "value": "{{toSsn}}"
+          },
+          {
+              "id": "urn:altinn:person:lastname",
+              "value": "{{toLastName}}"
           }
       ],
       "rights": [
           {
               "resource": [
                   {
-                      "id": "urn:altinn:servicecode",
-                      "value": "{{servicecode}}"
+                      "id": "urn:altinn:org",
+                      "value": "{{org}}"
                   },
                   {
-                      "id": "urn:altinn:serviceeditioncode",
-                      "value": "{{serviceeditioncode}}"
+                      "id": "urn:altinn:app",
+                      "value": "{{app}}"
                   }
               ],
               "action": "read"
@@ -44,8 +48,8 @@ body:json {
 vars:pre-request {
   toSsn: 
   toLastName: 
-  org: ttd
-  app: apps-test-prod
+  org: 
+  app: 
   auth_tokenType: Personal
   auth_userId: 
   auth_partyId: 
@@ -57,9 +61,10 @@ script:pre-request {
   const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   bru.setVar("party", testdata.org1.partyid);
-  bru.setVar("to_orgno", testdata.org2.orgno);
-  bru.setVar("servicecode", testdata.servicecode);
-  bru.setVar("serviceeditioncode", testdata.serviceeditioncode);
+  bru.setVar("toSsn", testdata.org2.dagl.pid);
+  bru.setVar("toLastName", testdata.org2.dagl.lastname);
+  bru.setVar("org", testdata.org);
+  bru.setVar("app", testdata.app);
   
   var getTokenParameters = {
     auth_userId: testdata.org1.dagl.userid,
@@ -78,7 +83,7 @@ script:pre-request {
 }
 
 tests {
-  test("organization to organization Altinn2 delegation", function() {
+  test("organization to person delegation (again)", function() {
     const data = res.getBody();  
     expect(res.status).to.equal(200);
     expect(data.rightDelegationResults[0]).to.have.property('status', 'Delegated');

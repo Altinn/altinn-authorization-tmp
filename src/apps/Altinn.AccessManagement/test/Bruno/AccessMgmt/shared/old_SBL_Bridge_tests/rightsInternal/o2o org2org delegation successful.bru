@@ -1,7 +1,7 @@
 meta {
-  name: p2p delegation successful
+  name: o2o org2org delegation successful
   type: http
-  seq: 9
+  seq: 17
 }
 
 get {
@@ -40,15 +40,15 @@ script:pre-request {
 }
 
 tests {
-  test("person successfully delegated to a person", function() {
+  test("organization successfully delegated to an organization", function() {
     const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
     const data = res.getBody();   
     
     expect(res.status).to.equal(200);
     
     const expectedEntry = {
-      from: [{ id: 'urn:altinn:partyid', value: testdata.org1.dagl.partyid.toString() }],
-      to: [{ id: 'urn:altinn:userid', value: testdata.org2.dagl.userid.toString() }],
+      from: [{ id: 'urn:altinn:partyid', value: testdata.org1.partyid.toString() }],
+      to: [{ id: 'urn:altinn:partyid', value: testdata.org2.partyid.toString() }],
       resource: [
         { id: 'urn:altinn:org', value: bru.getVar('org') },
         { id: 'urn:altinn:app', value: bru.getVar('app') }

@@ -1,7 +1,7 @@
 meta {
-  name: p2o delegate person2org
+  name: p2o delegate person2org (again)
   type: http
-  seq: 29
+  seq: 23
 }
 
 post {
@@ -70,15 +70,15 @@ script:pre-request {
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
   }
-  
-  
+    
   const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
   const token = await testTokenGenerator.getToken(getTokenParameters);
+  
   bru.setVar("bearerToken",  token);
 }
 
 tests {
-  test("person to organization delegation", function() {
+  test("person to organization delegation (again)", function() {
     const data = res.getBody();  
     expect(res.status).to.equal(200);
     expect(data.rightDelegationResults[0]).to.have.property('status', 'Delegated');

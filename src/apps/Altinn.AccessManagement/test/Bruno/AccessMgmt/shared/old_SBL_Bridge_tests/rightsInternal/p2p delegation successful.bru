@@ -1,7 +1,7 @@
 meta {
-  name: p2o person2org delegation successful
+  name: p2p delegation successful
   type: http
-  seq: 30
+  seq: 8
 }
 
 get {
@@ -21,7 +21,7 @@ vars:pre-request {
 script:pre-request {
   const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
-  bru.setVar("party", testdata.org2.partyid);
+  bru.setVar("party", testdata.org2.dagl.partyid);
   
   var getTokenParameters = {
     auth_userId: testdata.org2.dagl.userid,
@@ -32,15 +32,15 @@ script:pre-request {
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
   }
-  
-  
+    
   const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
   const token = await testTokenGenerator.getToken(getTokenParameters);
+  
   bru.setVar("bearerToken",  token);
 }
 
 tests {
-  test("person successfully delegated to an organization", function() {
+  test("person successfully delegated to a person", function() {
     const testdata = require(`./testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.js`);
     const data = res.getBody();   
     
@@ -48,7 +48,7 @@ tests {
     
     const expectedEntry = {
       from: [{ id: 'urn:altinn:partyid', value: testdata.org1.dagl.partyid.toString() }],
-      to: [{ id: 'urn:altinn:partyid', value: testdata.org2.partyid.toString() }],
+      to: [{ id: 'urn:altinn:userid', value: testdata.org2.dagl.userid.toString() }],
       resource: [
         { id: 'urn:altinn:org', value: bru.getVar('org') },
         { id: 'urn:altinn:app', value: bru.getVar('app') }

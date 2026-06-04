@@ -1,7 +1,7 @@
 meta {
   name: delegationcheck-invalid-resource
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -55,8 +55,8 @@ script:pre-request {
     auth_scopes: sharedtestdata.auth_scopes.read
   }
     
-const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
-const token = await testTokenGenerator.getToken(getTokenParameters);
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   
   bru.setVar("bearerToken",  token);
 }
