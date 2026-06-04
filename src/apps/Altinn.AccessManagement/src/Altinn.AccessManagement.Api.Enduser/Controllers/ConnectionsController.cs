@@ -381,8 +381,8 @@ public class ConnectionsController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetRoles(
         [Required][FromQuery(Name = "party")] Guid party,
-        [Required][FromQuery(Name = "from")] Guid from,
-        [Required][FromQuery(Name = "to")] Guid to,
+        [FromQuery(Name = "from")] Guid? from,
+        [FromQuery(Name = "to")] Guid? to,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
