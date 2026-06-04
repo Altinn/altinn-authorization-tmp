@@ -1,5 +1,5 @@
 meta {
-  name: GET_U2P_UnderenhetD_SeesPersonA
+  name: GET_P2U_PersonA_SeesUnderenhetD
   type: http
   seq: 1
 }
@@ -25,9 +25,9 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_P2U_PersonA_SeesUnderenhetB");
+  bru.setVar("requestName", "GET_P2U_PersonA_SeesUnderenhetD");
   
-  // PersonA has access to UnderenhetB (sub-unit), PersonA authenticates
+  // PersonA has access to UnderenhetD (sub-unit), PersonA authenticates
   var getTokenParameters = {
     auth_userId: testdata.authParties_personA.userid,
     auth_partyId: testdata.authParties_personA.partyid,
