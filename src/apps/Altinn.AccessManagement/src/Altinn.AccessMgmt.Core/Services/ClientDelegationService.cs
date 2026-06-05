@@ -186,26 +186,22 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             {
                 roleFilter.Add(role.Id);
             }
-            else
-            {
-                roleFilter.Add(Guid.Empty);
-            }
         }
 
         foreach (var p in packages)
         {
-            if (!PackageConstants.TryGetByUrn(p, out var package))
+            if (PackageConstants.TryGetByUrn(p, out var package))
             {
-                packageFilter.Add(Guid.Empty);
+                packageFilter.Add(package.Id);
             }
         }
 
-        if (roleFilter.Count > 0 && roleFilter.All(p => p == Guid.Empty))
+        if (roleFilter.Count == 0 && roles.Count > 0)
         {
             return new List<ClientDto>();
         }
 
-        if (packages.Count > 0 && packageFilter.All(p => p == Guid.Empty))
+        if (packageFilter.Count == 0 && packages.Count > 0)
         {
             return new List<ClientDto>();
         }
@@ -245,7 +241,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             )
             .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
             .WhereIf(roleFilter.Count > 0, x => roleFilter.Contains(x.Role.Id))
-            .WhereIf(packageFilter.Count > 0, x => packageFilter.Contains(x.RolePackage.Id ?? Guid.Empty) || packageFilter.Contains(x.AssignmentPackage.Id))
+            .WhereIf(packageFilter.Count > 0, x => packageFilter.Contains(x.RolePackage.Id) || packageFilter.Contains(x.AssignmentPackage.Id))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
