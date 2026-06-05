@@ -352,7 +352,7 @@ public class ClientDelegationControllerTest
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles={RoleConstants.Rightholder}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=rettighetshaver", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
