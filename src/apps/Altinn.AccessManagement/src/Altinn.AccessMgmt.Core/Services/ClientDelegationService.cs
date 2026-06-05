@@ -173,10 +173,13 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ClientDto>>> GetClients(Guid partyUuid, List<string>? roles, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ClientDto>>> GetClients(Guid partyUuid, List<string>? roles, List<string>? packages, CancellationToken cancellationToken = default)
     {
         roles ??= [];
+        packages ??= [];
         var roleFilter = new List<Guid>();
+        var packageFilter = new List<Guid>();
+        
         foreach (var r in roles)
         {
             if (RoleConstants.TryGetByAll(r, out var role))
@@ -189,7 +192,20 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             }
         }
 
+        foreach (var p in packages)
+        {
+            if (!PackageConstants.TryGetByUrn(p, out var package))
+            {
+                packageFilter.Add(Guid.Empty);
+            }
+        }
+
         if (roleFilter.Count > 0 && roleFilter.All(p => p == Guid.Empty))
+        {
+            return new List<ClientDto>();
+        }
+
+        if (packages.Count > 0 && packageFilter.All(p => p == Guid.Empty))
         {
             return new List<ClientDto>();
         }
@@ -228,6 +244,8 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 }
             )
             .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
+            .WhereIf(roleFilter.Count > 0, x => roleFilter.Contains(x.Role.Id))
+            .WhereIf(packageFilter.Count > 0, x => packageFilter.Contains(x.RolePackage.Id ?? Guid.Empty) || packageFilter.Contains(x.AssignmentPackage.Id))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
@@ -1083,6 +1101,7 @@ public interface IClientDelegationService
     Task<Result<List<ClientDto>>> GetClients(
         Guid partyUuid,
         List<string>? roles,
+        List<string> packages,
         CancellationToken cancellationToken = default);
 
     /// <summary>
