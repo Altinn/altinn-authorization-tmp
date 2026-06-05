@@ -1,28 +1,17 @@
 meta {
-  name: delegationcheck-forbidden
+  name: getMaskinportenSchemaReceived-empty-response-body
   type: http
-  seq: 3
+  seq: 1
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/{{party}}/maskinportenschema/delegationcheck
-  body: json
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/{{party}}/maskinportenschema/received
+  body: none
   auth: inherit
 }
 
 headers {
   Accept: application/json
-}
-
-body:json {
-  {
-      "resource": [
-          {
-              "id": "urn:altinn:resource",
-              "value": "devtest_gar_bruno-gar"
-          }
-      ]
-  }
 }
 
 vars:pre-request {
@@ -32,24 +21,24 @@ vars:pre-request {
   auth_scopes: altinn:instances.read
   auth_partyId: 
   auth_ssn: 
-  party: 50067258
-  to_orgno: 
+  party: 
 }
 
 assert {
-  ~res.status: eq 201
+  ~res.status: eq 200
+  ~res.body: contains created
 }
 
 script:pre-request {
   const testdata = require(`./testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
-  bru.setVar("party", testdata.org1.partyid);
+  bru.setVar("party", testdata.org3.partyid)
   
   var getTokenParameters = {
-    auth_userId: testdata.org2.dagl.userid,
-    auth_partyId: testdata.org2.dagl.partyid,
-    auth_ssn: testdata.org2.dagl.pid,
-    party: testdata.org2.partyid,
+    auth_userId: testdata.org3.dagl.userid,
+    auth_partyId: testdata.org3.dagl.partyid,
+    auth_partyUuid: testdata.org3.dagl.partyuuid,
+    auth_ssn: testdata.org3.dagl.pid,
     scope: sharedtestdata.scopes.read,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
@@ -62,12 +51,15 @@ script:pre-request {
 }
 
 tests {
-  test("post MaskinportenSchema - forbidden", function() {
-    const data = res.getBody();
-    expect(res.status).to.equal(403);
+  
+  test("get MaskinPortenSchema Received - empty response body", function() {
+    const testdata = require(`./testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.js`);
+    const data = res.getBody();  
+    expect(res.status).to.equal(200);
+    expect(data).to.be.empty;
   });
 }
 
 docs {
-  does a delegationcheck on as someone who does not have access
+  Check that list of offered maschinportenschemas is correct
 }

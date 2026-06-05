@@ -1,11 +1,11 @@
 meta {
-  name: getMaskinPortenSchemaReceivedTest
+  name: getMaskinportenSchemaOffered-empty-response-body
   type: http
-  seq: 2
+  seq: 1
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/{{party}}/maskinportenschema/received
+  url: {{baseUrl}}/accessmanagement/api/v1/{{party}}/maskinportenschema/offered
   body: none
   auth: inherit
 }
@@ -21,7 +21,7 @@ vars:pre-request {
   auth_scopes: altinn:instances.read
   auth_partyId: 
   auth_ssn: 
-  party: 50067258
+  party: 
 }
 
 assert {
@@ -32,16 +32,13 @@ assert {
 script:pre-request {
   const testdata = require(`./testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.js`);
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
-  bru.setVar("auth_userId", testdata.org2.dagl.userid);
-  bru.setVar("party", testdata.org2.partyid);
+  bru.setVar("party", testdata.org2.partyid)
   
   var getTokenParameters = {
     auth_userId: testdata.org2.dagl.userid,
     auth_partyId: testdata.org2.dagl.partyid,
     auth_partyUuid: testdata.org2.dagl.partyuuid,
     auth_ssn: testdata.org2.dagl.pid,
-    party: testdata.org2.partyid,
-    to_partyid: testdata.org1.partyid,
     scope: sharedtestdata.scopes.read,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
@@ -55,21 +52,14 @@ script:pre-request {
 
 tests {
   
-  test("get MaskinPortenSchema Received", function() {
+  test("get MaskinPortenSchema Offered - empty response body", function() {
     const testdata = require(`./testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.js`);
-    const data = res.getBody();  5
+    const data = res.getBody();  
     expect(res.status).to.equal(200);
-    expect(data[0]).to.have.property('offeredByPartyId', testdata.org1.partyid);
-    expect(data[0]).to.have.property('offeredByName', 'ALDRA OG FORTUN');
-    expect(data[0]).to.have.property('coveredByPartyId', testdata.org2.partyid);
-    expect(data[0]).to.have.property('coveredByName', 'LARKOLLEN OG FAUSKE');
-    expect(data[0]).to.have.property('coveredByOrganizationNumber', testdata.org2.orgno);
-    expect(data[0]).to.have.property('performedByUserId', testdata.org1.dagl.userid);
-    expect(data.map(e=>(e.resourceId))).to.include('ttd-am-k6-nuf');
-  
+    expect(data).to.be.empty;
   });
 }
 
 docs {
-  Check that list of received maschinportenschemas is correct
+  Check that list of offered maschinportenschemas is correct
 }
