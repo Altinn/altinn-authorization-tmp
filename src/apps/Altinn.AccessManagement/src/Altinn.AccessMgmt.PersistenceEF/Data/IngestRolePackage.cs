@@ -40,9 +40,6 @@ public static partial class StaticDataIngest
         var packageHA = PackageConstants.MainAdministrator.Id;
         var packageMPA = PackageConstants.MaskinportenAdministrator.Id;
 
-        var packageNUFManagement = PackageConstants.BusinessAndAccessManagementNUF.Id;
-        var packageNUFServices = PackageConstants.ServicesNUF.Id;
-
         var data = new List<RolePackage>()
         {
             new RolePackage() { RoleId = roleDagl, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
