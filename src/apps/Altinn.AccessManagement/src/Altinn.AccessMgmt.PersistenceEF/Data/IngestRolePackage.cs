@@ -33,11 +33,15 @@ public static partial class StaticDataIngest
         var roleRevi = RoleConstants.Auditor.Id;
         var roleFfor = RoleConstants.BusinessManager.Id;
         var roleContNuf = RoleConstants.ContactPersonNUF.Id;
+        var roleNufRepr = RoleConstants.NorwegianRepresentativeForeignEntity.Id;
 
         var packageKA = PackageConstants.ClientAdministrator.Id;
         var packageTS = PackageConstants.AccessManager.Id;
         var packageHA = PackageConstants.MainAdministrator.Id;
         var packageMPA = PackageConstants.MaskinportenAdministrator.Id;
+
+        var packageNUFManagement = PackageConstants.BusinessAndAccessManagementNUF.Id;
+        var packageNUFServices = PackageConstants.ServicesNUF.Id;
 
         var data = new List<RolePackage>()
         {
@@ -61,6 +65,7 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBobe, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleKnuf, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = packageTS, EntityVariant = null, CanDelegate = true, HasAccess = true },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.InstanceDelegation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.InstanceDelegation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1428,6 +1433,11 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = RoleConstants.OthersConclusionOfLeaseAgreements, PackageId = PackageConstants.VergemalOthersConclusionOfLeaseAgreements.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.OthersTerminationOfLeaseAgreements, PackageId = PackageConstants.VergemalOthersTerminationOfLeaseAgreements.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.OthersSaleOfPersonalPropertyOfGreaterValue, PackageId = PackageConstants.VergemalOthersSaleOfPersonalPropertyOfGreaterValue.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
+
+            new RolePackage() { RoleId = RoleConstants.ContactPersonNUF, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.NorwegianRepresentativeForeignEntity, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.BusinessAndAccessManagementNUF, EntityVariantId = EntityVariantConstants.NUF, CanDelegate = true, CanAssign = true, HasAccess = true },
         };
 
         foreach (var d in data)
