@@ -386,6 +386,12 @@ public class ConnectionsController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
+        var validationErrors = ValidationComposer.Validate(ConnectionValidation.ValidateReadConnection(party.ToString(), from?.ToString(), to?.ToString()));
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
         var result = await ConnectionService.GetRoles(party, from, to, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
