@@ -98,16 +98,16 @@ internal static partial class AccessManagementHost
                                 new KeyValuePair<string, object>("service.instance.id", Environment.MachineName)
                             ]);
                     })
+                    .UseAzureMonitor(m =>
+                    {
+                        m.ConnectionString = string.Format("InstrumentationKey={0}", key);
+                    })
                     .WithTracing(tracing =>
                     {
                         tracing
                             .AddAspNetCoreInstrumentation()
                             .AddHttpClientInstrumentation()
-                            .AddProcessor(new NpgsqlProcessor(TimeSpan.FromMilliseconds(npgsqlMinDurationMs)))
-                            .AddAzureMonitorTraceExporter(o =>
-                            {
-                                o.ConnectionString = $"InstrumentationKey={key}";
-                            });
+                            .AddProcessor(new NpgsqlProcessor(TimeSpan.FromMilliseconds(npgsqlMinDurationMs)));
                     });
             }
         }
@@ -470,6 +470,9 @@ public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Acti
                 activity.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
             }
 
+            // Clear baggage to avoid propagating out of process
+            activity.SetBaggage("firsthash", null);
+
             if (activity.Duration < minimumTotalDuration)
             {
                 // Remove logged parameters
@@ -496,8 +499,10 @@ public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Acti
             StringBuilder sb = new();
             long totalDbDuration = 0;
             int dbActivityCount = 0;
+            List<string> baggageKeys = [];
             activity.Baggage.Where(b => b.Key.StartsWith("hash", StringComparison.OrdinalIgnoreCase)).OrderBy(b => b.Key).ToList().ForEach(b => 
             {
+                baggageKeys.Add(b.Key);
                 sb.Append($";{b.Value}");
                 ++dbActivityCount;
                 var parts = b.Value.Split(':');
@@ -507,7 +512,16 @@ public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Acti
                 }
             });
 
-            activity.SetTag("db.stats", $"Count: {dbActivityCount}, tot dur: {totalDbDuration:N0}ms, avg dur: {totalDbDuration / dbActivityCount:N0}ms, hashes:duration: {sb.Remove(0,1)}");
+            // Clear baggage to avoid propagating out of process
+            foreach (var key in baggageKeys)
+            {
+                activity.SetBaggage(key, null);
+            }
+
+            if (dbActivityCount > 0)
+            {
+                activity.SetTag("db.stats", $"Count: {dbActivityCount}, tot dur: {totalDbDuration:N0}ms, avg dur: {totalDbDuration / dbActivityCount:N0}ms, hashes:duration: {sb.Remove(0,1)}");
+            }
         }
     }
 
