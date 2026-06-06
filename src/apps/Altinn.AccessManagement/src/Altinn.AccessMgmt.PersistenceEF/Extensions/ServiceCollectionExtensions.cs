@@ -19,7 +19,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    private static IMemoryCache _sqlHashCache = null!;
+    private static readonly IMemoryCache _sqlHashCache = new MemoryCache(new MemoryCacheOptions());
     private static bool _configureTracing = false;
     private static readonly MemoryCacheEntryOptions _cacheOptions = new()
     {
@@ -34,12 +34,7 @@ public static class ServiceCollectionExtensions
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
-        services.AddMemoryCache(); // Add memory cache for translation service and SQL hash tracking
-
-        // Initialize the static cache reference for SQL hash tracking
-        var serviceProvider = services.BuildServiceProvider();
-        _sqlHashCache = serviceProvider.GetRequiredService<IMemoryCache>();
-
+        services.AddMemoryCache(); // Add memory cache for translation service
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
         services.AddScoped<AppDbContextFactory>();
