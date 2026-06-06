@@ -1,4 +1,6 @@
-﻿using Altinn.AccessManagement.Api.Enduser;
+﻿using System.Diagnostics;
+using System.Text;
+using Altinn.AccessManagement.Api.Enduser;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Api.Internal;
@@ -34,12 +36,16 @@ using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -77,10 +83,31 @@ internal static partial class AccessManagementHost
         {
             if (builder.Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey") is var key && !string.IsNullOrEmpty(key))
             {
+                var npgsqlMinDurationMs = builder.Configuration.GetValue("Telemetry:NpgsqlMinimumDurationMs", 100);
+
                 builder.Services.AddOpenTelemetry()
-                    .UseAzureMonitor(m =>
+                    .ConfigureResource(resource =>
                     {
-                        m.ConnectionString = string.Format("InstrumentationKey={0}", key);
+                        resource
+                            .AddService(
+                                serviceName: builder.Environment.ApplicationName,
+                                serviceInstanceId: Environment.MachineName)
+                            .AddAttributes(
+                            [
+                                new KeyValuePair<string, object>("service.name", builder.Environment.ApplicationName),
+                                new KeyValuePair<string, object>("service.instance.id", Environment.MachineName)
+                            ]);
+                    })
+                    .WithTracing(tracing =>
+                    {
+                        tracing
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddProcessor(new NpgsqlProcessor(TimeSpan.FromMilliseconds(npgsqlMinDurationMs)))
+                            .AddAzureMonitorTraceExporter(o =>
+                            {
+                                o.ConnectionString = $"InstrumentationKey={key}";
+                            });
                     });
             }
         }
@@ -429,3 +456,63 @@ public class HttpContextAuditContextProvider(IHttpContextAccessor accessor) : IA
     }
 }
 */
+
+public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Activity>
+{
+    public override void OnEnd(Activity activity)
+    {
+        // Suppress Npgsql activities with short duration if it's not the first time we see this trace
+        if (IsNpgsqlActivity(activity))
+        {
+            if (activity.Duration < minimumTotalDuration && activity.GetBaggageItem("firsthash") == null)
+            {
+                // Suppress export
+                activity.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
+            }
+
+            if (activity.Duration < minimumTotalDuration)
+            {
+                // Remove logged parameters
+                activity.SetTag("db.command.parameters", null);
+            }
+
+            Activity? parent = activity.Parent;
+            while (parent != null && !(parent.Kind == ActivityKind.Server && parent.Parent == null))
+            {
+                parent = parent.Parent;
+            }
+
+            // Transfer state to the root request activity
+            if (parent != null)
+            {
+                Guid id = Guid.CreateVersion7();
+                parent.SetBaggage($"hash{id}", $"{activity.GetTagItem("db.hash")}:{activity.Duration.TotalMilliseconds:F0}");
+            }
+        }
+
+        // Process root request activity: aggregate DB time and add as tag, along with individual DB command hashes and durations
+        if (activity.Kind == ActivityKind.Server && activity.Parent == null)
+        {
+            StringBuilder sb = new();
+            long totalDbDuration = 0;
+            int dbActivityCount = 0;
+            activity.Baggage.Where(b => b.Key.StartsWith("hash", StringComparison.OrdinalIgnoreCase)).OrderBy(b => b.Key).ToList().ForEach(b => 
+            {
+                sb.Append($";{b.Value}");
+                ++dbActivityCount;
+                var parts = b.Value.Split(':');
+                if (parts.Length == 2 && long.TryParse(parts[1], out var duration))
+                {
+                    totalDbDuration += duration;
+                }
+            });
+
+            activity.SetTag("db.stats", $"Count: {dbActivityCount}, tot dur: {totalDbDuration:N0}ms, avg dur: {totalDbDuration / dbActivityCount:N0}ms, hashes:duration: {sb.Remove(0,1)}");
+        }
+    }
+
+    private static bool IsNpgsqlActivity(Activity a)
+    {
+        return a.OperationName.Contains("postgresql", StringComparison.OrdinalIgnoreCase);
+    }
+}
