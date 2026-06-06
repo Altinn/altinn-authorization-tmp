@@ -34,23 +34,11 @@ public static class ServiceCollectionExtensions
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
-    private static readonly IMemoryCache _sqlHashCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 4000 });
-    private static bool _configureTracing = false;
-    private static readonly MemoryCacheEntryOptions _cacheOptions = new()
-    {
-        SlidingExpiration = TimeSpan.FromHours(6),
-        Size = 1
-    };
+        services.AddMemoryCache(); // Add memory cache for translation service and SQL hash tracking
 
-    public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
-    {
-        var options = new AccessManagementDatabaseOptions(configureOptions);
-        services.Configure(configureOptions);
-        _configureTracing = options.AppConnectionString.Contains("database=authorizationdb", StringComparison.OrdinalIgnoreCase);
-        ConstantGuard.ConstantIdsAreUnique();
-        services.AddScoped<ReadOnlyInterceptor>();
-        services.AddScoped<IAuditAccessor, AuditAccessor>();
-        services.AddMemoryCache(); // Add memory cache for translation service
+        // Initialize the static cache reference for SQL hash tracking
+        var serviceProvider = services.BuildServiceProvider();
+        _sqlHashCache = serviceProvider.GetRequiredService<IMemoryCache>();
 
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
