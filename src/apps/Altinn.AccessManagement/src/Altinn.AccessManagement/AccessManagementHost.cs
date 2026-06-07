@@ -544,7 +544,7 @@ public class NpgsqlProcessor(TimeSpan minimumTotalDuration, IHttpContextAccessor
                 case AltinnCoreClaimTypes.RepresentingPartyId:
                 case AltinnCoreClaimTypes.Org:
                 case AltinnCoreClaimTypes.OrgNumber:
-                    activity.SetTag($"claim.{claim.Type}", claim.Value);
+                    activity.SetTag(claim.Type, claim.Value);
                     break;
                 case "authorization_details":
                     SystemUserClaim claimValue = JsonSerializer.Deserialize<SystemUserClaim>(claim.Value);
