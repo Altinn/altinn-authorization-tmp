@@ -355,4 +355,56 @@ public class PolicyInformationPointRolesAndAccessPackagesTest : IClassFixture<Ap
         Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
         Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
     }
+
+    [Fact]
+    public async Task Siri_ContactPersonNUF_ShouldGetServicesNufAndAccessManager_FromNufOrg()
+    {
+        // Siri is ContactPersonNUF of NUF International Corp.
+        // ContactPersonNUF should get ServicesNUF (no entity variant filter) and AccessManager (tilgangsstyrer).
+        var from = TestData.GetEntity("NUF International Corp").Id;
+        var to = TestData.GetEntity("Siri").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/roles-and-accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        // ContactPersonNUF role URNs should be present
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:external-role:ccr:kontaktperson-nuf"));
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:knuf"));
+
+        // RolePackage: ContactPersonNUF should get ServicesNUF (no entity variant filter)
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+
+        // RolePackage: ContactPersonNUF should get AccessManager (tilgangsstyrer)
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tilgangsstyrer"));
+    }
+
+    [Fact]
+    public async Task Lars_NorwegianRepresentativeForeignEntity_ShouldGetServicesNufAndAccessManager_FromNufOrg()
+    {
+        // Lars is NorwegianRepresentativeForeignEntity of NUF International Corp.
+        // NorwegianRepresentativeForeignEntity should get ServicesNUF (no entity variant filter) and AccessManager (tilgangsstyrer).
+        var from = TestData.GetEntity("NUF International Corp").Id;
+        var to = TestData.GetEntity("Lars").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/roles-and-accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        // NorwegianRepresentativeForeignEntity role URNs should be present
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:external-role:ccr:norsk-representant"));
+        Assert.Contains(result.Roles, r => r == RoleUrn.Parse("urn:altinn:rolecode:repr"));
+
+        // RolePackage: NorwegianRepresentativeForeignEntity should get ServicesNUF (no entity variant filter)
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+
+        // RolePackage: NorwegianRepresentativeForeignEntity should get AccessManager (tilgangsstyrer)
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tilgangsstyrer"));
+    }
 }
