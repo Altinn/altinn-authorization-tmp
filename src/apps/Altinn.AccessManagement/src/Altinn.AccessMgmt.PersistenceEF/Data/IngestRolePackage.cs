@@ -1433,7 +1433,7 @@ public static partial class StaticDataIngest
 
             new RolePackage() { RoleId = RoleConstants.ContactPersonNUF, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.NorwegianRepresentativeForeignEntity, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
-            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.ServicesNUF, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.ServicesNUF, EntityVariantId = EntityVariantConstants.NUF, CanDelegate = true, CanAssign = true, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.BusinessAndAccessManagementNUF, EntityVariantId = EntityVariantConstants.NUF, CanDelegate = true, CanAssign = true, HasAccess = true },
         };
 
