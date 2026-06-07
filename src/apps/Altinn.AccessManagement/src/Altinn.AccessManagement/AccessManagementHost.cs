@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
@@ -7,6 +8,7 @@ using Altinn.AccessManagement.Api.Internal;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Health;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
@@ -37,6 +39,7 @@ using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
@@ -107,7 +110,9 @@ internal static partial class AccessManagementHost
                         tracing
                             .AddAspNetCoreInstrumentation()
                             .AddHttpClientInstrumentation()
-                            .AddProcessor(new NpgsqlProcessor(TimeSpan.FromMilliseconds(npgsqlMinDurationMs)));
+                            .AddProcessor(sp => new NpgsqlProcessor(
+                                TimeSpan.FromMilliseconds(npgsqlMinDurationMs),
+                                sp.GetRequiredService<IHttpContextAccessor>()));
                     });
             }
         }
@@ -457,7 +462,7 @@ public class HttpContextAuditContextProvider(IHttpContextAccessor accessor) : IA
 }
 */
 
-public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Activity>
+public class NpgsqlProcessor(TimeSpan minimumTotalDuration, IHttpContextAccessor httpContextAccessor) : BaseProcessor<Activity>
 {
     public override void OnEnd(Activity activity)
     {
@@ -521,6 +526,31 @@ public class NpgsqlProcessor(TimeSpan minimumTotalDuration) : BaseProcessor<Acti
             if (dbActivityCount > 0)
             {
                 activity.SetTag("db.stats", $"Count: {dbActivityCount}, tot dur: {totalDbDuration:N0}ms, avg dur: {totalDbDuration / dbActivityCount:N0}ms, hashes:duration: {sb.Remove(0,1)}");
+            }
+
+            LogClaims(httpContextAccessor, activity);
+        }
+    }
+
+    private static void LogClaims(IHttpContextAccessor httpContextAccessor, Activity activity)
+    {
+        foreach (var claim in httpContextAccessor.HttpContext.User.Claims)
+        {
+            switch (claim.Type)
+            {
+                case AltinnCoreClaimTypes.UserId:
+                case AltinnCoreClaimTypes.PartyID:
+                case AltinnCoreClaimTypes.PartyUuid:
+                case AltinnCoreClaimTypes.RepresentingPartyId:
+                case AltinnCoreClaimTypes.Org:
+                case AltinnCoreClaimTypes.OrgNumber:
+                    activity.SetTag($"claim.{claim.Type}", claim.Value);
+                    break;
+                case "authorization_details":
+                    SystemUserClaim claimValue = JsonSerializer.Deserialize<SystemUserClaim>(claim.Value);
+                    activity.SetTag("user.system.id", claimValue?.Systemuser_id[0] ?? null);
+                    activity.SetTag("user.system.owner.number", claimValue?.Systemuser_org.ID ?? null);
+                    break;
             }
         }
     }
