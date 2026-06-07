@@ -275,4 +275,84 @@ public class PolicyInformationPointRolesAndAccessPackagesTest : IClassFixture<Ap
         Assert.Empty(result.Roles);
         Assert.Empty(result.AccessPackages);
     }
+
+    [Fact]
+    public async Task Petter_DaglOfBusinessManager_ShouldGetNufPackages_FromNufClient()
+    {
+        // Petter is ManagingDirector of Regnskaperne, and NUF International Corp has Regnskaperne as BusinessManager (FFOR).
+        // Through keyrole: NUF International Corp→Regnskaperne (FFOR) + Regnskaperne→Petter (DAGL)
+        // Since the client is NUF type, entity-variant-specific packages should be included.
+        var from = TestData.GetEntity("NUF International Corp").Id;
+        var to = TestData.GetEntity("Petter").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/roles-and-accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        // Should contain the NUF-specific packages inherited via keyrole
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+        Assert.Contains(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
+    }
+
+    [Fact]
+    public async Task Petter_DaglOfBusinessManager_ShouldNotGetNufPackages_FromNonNufClient()
+    {
+        // Petter is ManagingDirector of Regnskaperne, and Non-NUF Client AS has Regnskaperne as BusinessManager (FFOR).
+        // Through keyrole: Non-NUF Client AS→Regnskaperne (FFOR) + Regnskaperne→Petter (DAGL)
+        // Since the client is NOT NUF type (AS), entity-variant-specific NUF packages should NOT be included.
+        var from = TestData.GetEntity("Non-NUF Client AS").Id;
+        var to = TestData.GetEntity("Petter").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/roles-and-accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PipResponseDto>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        // Should NOT contain the NUF-specific packages
+        Assert.DoesNotContain(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+        Assert.DoesNotContain(result.AccessPackages, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
+    }
+
+    [Fact]
+    public async Task GetAccessPackages_BusinessManagerOrg_ShouldGetNufPackages_FromNufClient()
+    {
+        // Regnskaperne is BusinessManager (FFOR) for NUF International Corp.
+        // The accesspackages endpoint should return NUF-specific packages.
+        var from = TestData.GetEntity("NUF International Corp").Id;
+        var to = TestData.GetEntity("Regnskaperne").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<List<AccessPackageUrn>>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
+    }
+
+    [Fact]
+    public async Task GetAccessPackages_BusinessManagerOrg_ShouldNotGetNufPackages_FromNonNufClient()
+    {
+        // Regnskaperne is BusinessManager (FFOR) for Non-NUF Client AS.
+        // The accesspackages endpoint should NOT return NUF-specific packages.
+        var from = TestData.GetEntity("Non-NUF Client AS").Id;
+        var to = TestData.GetEntity("Regnskaperne").Id;
+
+        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<List<AccessPackageUrn>>(_options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+
+        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
+        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
+    }
 }
