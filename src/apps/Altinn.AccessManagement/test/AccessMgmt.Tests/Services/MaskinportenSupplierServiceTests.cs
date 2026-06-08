@@ -34,6 +34,15 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
     private static readonly Guid RemoveSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000006");
     private static readonly Guid NoAssignmentConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000007");
     private static readonly Guid NoAssignmentSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000008");
+
+    // Cascade pairs: each has a supplier assignment with one delegated resource seeded below.
+    private static readonly Guid CascadeOkConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000011");
+    private static readonly Guid CascadeOkSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000012");
+    private static readonly Guid CascadeFailConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000013");
+    private static readonly Guid CascadeFailSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000014");
+    private static readonly Guid CascadeNoFlagConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000015");
+    private static readonly Guid CascadeNoFlagSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000016");
+
     private static readonly Guid Person = Guid.Parse("2c839000-0000-0000-0000-0000000000f1");
 
     public MaskinportenSupplierServiceTests(ApiFixture fixture)
@@ -50,6 +59,12 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                 Org(RemoveSupplier, "910000006"),
                 Org(NoAssignmentConsumer, "910000007"),
                 Org(NoAssignmentSupplier, "910000008"),
+                Org(CascadeOkConsumer, "910000011"),
+                Org(CascadeOkSupplier, "910000012"),
+                Org(CascadeFailConsumer, "910000013"),
+                Org(CascadeFailSupplier, "910000014"),
+                Org(CascadeNoFlagConsumer, "910000015"),
+                Org(CascadeNoFlagSupplier, "910000016"),
                 new Entity
                 {
                     Id = Person,
@@ -60,6 +75,25 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                     VariantId = EntityVariantConstants.Person,
                 });
 
+            // A resource to attach to supplier assignments for the cascade tests. The cascade
+            // path does not inspect the resource type, so a generic type/resource is sufficient.
+            var resourceType = new ResourceType
+            {
+                Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a1"),
+                Name = "MaskinportenSupplierTestResourceType",
+            };
+            var resource = new Resource
+            {
+                Id = Guid.CreateVersion7(),
+                Name = "Maskinporten Supplier Test Resource",
+                Description = "Maskinporten Supplier Test Resource",
+                RefId = "maskinporten-supplier-test-resource",
+                ProviderId = ProviderConstants.ResourceRegistry.Id,
+                TypeId = resourceType.Id,
+            };
+            db.ResourceTypes.Add(resourceType);
+            db.Resources.Add(resource);
+
             // Pre-existing supplier assignment with no delegated resources, for the remove test.
             db.Assignments.Add(new Assignment
             {
@@ -67,6 +101,16 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                 ToId = RemoveSupplier,
                 RoleId = RoleConstants.Supplier.Id,
             });
+
+            // Supplier assignments that each have one delegated resource, for the cascade tests.
+            var cascadeOk = SupplierAssignment(CascadeOkConsumer, CascadeOkSupplier);
+            var cascadeFail = SupplierAssignment(CascadeFailConsumer, CascadeFailSupplier);
+            var cascadeNoFlag = SupplierAssignment(CascadeNoFlagConsumer, CascadeNoFlagSupplier);
+            db.Assignments.AddRange(cascadeOk, cascadeFail, cascadeNoFlag);
+            db.AssignmentResources.AddRange(
+                ResourceOn(cascadeOk, resource, "policies/cascade-ok.xml"),
+                ResourceOn(cascadeFail, resource, "policies/cascade-fail.xml"),
+                ResourceOn(cascadeNoFlag, resource, "policies/cascade-noflag.xml"));
 
             db.SaveChanges();
         });
@@ -168,6 +212,54 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
         problem.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task RemoveSupplier_WhenResourcesExistAndCascadeFalse_ReturnsProblemAndKeepsAssignment()
+    {
+        var problem = await RunService(s => s.RemoveSupplier(CascadeNoFlagConsumer, CascadeNoFlagSupplier, cascade: false, TestContext.Current.CancellationToken));
+
+        problem.Should().NotBeNull("removing a supplier with delegated resources requires cascade=true");
+
+        (await SupplierAssignments(CascadeNoFlagConsumer, CascadeNoFlagSupplier)).Should().ContainSingle();
+        (await DelegatedResourceCount(CascadeNoFlagConsumer, CascadeNoFlagSupplier)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RemoveSupplier_WhenCascadeTrueAndPolicyClearSucceeds_RemovesAssignmentAndResources()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.ClearPolicyRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("v2");
+
+        var problem = await RunService(
+            s => s.RemoveSupplier(CascadeOkConsumer, CascadeOkSupplier, cascade: true, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object);
+
+        problem.Should().BeNull();
+
+        (await SupplierAssignments(CascadeOkConsumer, CascadeOkSupplier)).Should().BeEmpty();
+        (await DelegatedResourceCount(CascadeOkConsumer, CascadeOkSupplier)).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RemoveSupplier_WhenCascadeTrueAndPolicyClearFails_ReturnsProblemAndKeepsRecords()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.ClearPolicyRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string)null);
+
+        var problem = await RunService(
+            s => s.RemoveSupplier(CascadeFailConsumer, CascadeFailSupplier, cascade: true, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object);
+
+        problem.Should().NotBeNull("a failed policy clear must abort the cascade");
+
+        // Failure must not delete the database records.
+        (await SupplierAssignments(CascadeFailConsumer, CascadeFailSupplier)).Should().ContainSingle();
+        (await DelegatedResourceCount(CascadeFailConsumer, CascadeFailSupplier)).Should().Be(1);
+    }
+
     private static Entity Org(Guid id, string orgNo) => new()
     {
         Id = id,
@@ -178,16 +270,36 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
         VariantId = EntityVariantConstants.AS,
     };
 
-    private async Task<TResult> RunService<TResult>(Func<MaskinportenSupplierService, Task<TResult>> act)
+    private static Assignment SupplierAssignment(Guid consumerId, Guid supplierId) => new()
+    {
+        FromId = consumerId,
+        ToId = supplierId,
+        RoleId = RoleConstants.Supplier.Id,
+    };
+
+    private static AssignmentResource ResourceOn(Assignment assignment, Resource resource, string policyPath) => new()
+    {
+        AssignmentId = assignment.Id,
+        ResourceId = resource.Id,
+        PolicyPath = policyPath,
+        PolicyVersion = "v1",
+    };
+
+    private async Task<TResult> RunService<TResult>(
+        Func<MaskinportenSupplierService, Task<TResult>> act,
+        ISingleRightsService singleRights = null,
+        IConnectionService connection = null,
+        IEntityService entity = null,
+        IAuditAccessor audit = null)
     {
         using var scope = Fixture.Services.CreateEFScope(SystemEntityConstants.StaticDataIngest);
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var service = new MaskinportenSupplierService(
             db,
-            Mock.Of<IAuditAccessor>(),
-            Mock.Of<IConnectionService>(),
-            Mock.Of<ISingleRightsService>(),
-            Mock.Of<IEntityService>());
+            audit ?? Mock.Of<IAuditAccessor>(),
+            connection ?? Mock.Of<IConnectionService>(),
+            singleRights ?? Mock.Of<ISingleRightsService>(),
+            entity ?? Mock.Of<IEntityService>());
 
         return await act(service);
     }
@@ -204,5 +316,21 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
         });
 
         return rows;
+    }
+
+    private async Task<int> DelegatedResourceCount(Guid consumerId, Guid supplierId)
+    {
+        var count = 0;
+        await Fixture.QueryDb(async db =>
+        {
+            count = await db.AssignmentResources
+                .AsNoTracking()
+                .CountAsync(ar =>
+                    ar.Assignment.FromId == consumerId &&
+                    ar.Assignment.ToId == supplierId &&
+                    ar.Assignment.RoleId == RoleConstants.Supplier.Id);
+        });
+
+        return count;
     }
 }
