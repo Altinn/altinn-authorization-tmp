@@ -1,7 +1,7 @@
 meta {
-  name: Instance_O2O_AC7_DaglOfTo_Permit
+  name: Instance_P2Main_AC8_DaglOfTo_Permit
   type: http
-  seq: 8
+  seq: 10
 }
 
 post {
@@ -63,11 +63,11 @@ script:pre-request {
   const testdata = require(`./testdata/InstanceDelegation/${bru.getEnvVar("tokenEnv")}.js`);
   
   // Should be the same as the .bru request file. Used as Test-name Tests tab and shows in test result.
-  bru.setVar("requestName", "Instance_O2O_AC7_DaglOfTo_Permit");
+  bru.setVar("requestName", "Instance_P2Main_AC8_DaglOfTo_Permit");
   
-  bru.setVar("instanceId",  testdata.instances.o2o.instanceId);
-  bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.dagl.personId);
-  bru.setVar("partyId", testdata.organizations.mobilBeskjedenTiger.partyId);
+  bru.setVar("instanceId",  testdata.instances.p2main.instanceId);
+  bru.setVar("subject",  testdata.organizations.mobilBeskjedenTiger.dagl.personId);
+  bru.setVar("partyId",  testdata.persons.ovelseEmpirisk.partyId);
   
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
