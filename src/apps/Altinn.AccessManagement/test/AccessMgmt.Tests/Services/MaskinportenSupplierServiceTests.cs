@@ -43,6 +43,19 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
     private static readonly Guid CascadeNoFlagConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000015");
     private static readonly Guid CascadeNoFlagSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000016");
 
+    // RemoveResource pairs.
+    private static readonly Guid RemoveResOkConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000021");
+    private static readonly Guid RemoveResOkSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000022");
+    private static readonly Guid RemoveResFailConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000023");
+    private static readonly Guid RemoveResFailSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000024");
+    private static readonly Guid RemoveResNoAssignmentConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000025");
+    private static readonly Guid RemoveResNoAssignmentSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000026");
+    private static readonly Guid RemoveResNoResourceConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000027");
+    private static readonly Guid RemoveResNoResourceSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000028");
+
+    private const string MaskinportenResourceRefId = "maskinporten-supplier-test-resource";
+    private const string NonMaskinportenResourceRefId = "non-maskinporten-supplier-test-resource";
+
     private static readonly Guid Person = Guid.Parse("2c839000-0000-0000-0000-0000000000f1");
 
     public MaskinportenSupplierServiceTests(ApiFixture fixture)
@@ -65,6 +78,14 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                 Org(CascadeFailSupplier, "910000014"),
                 Org(CascadeNoFlagConsumer, "910000015"),
                 Org(CascadeNoFlagSupplier, "910000016"),
+                Org(RemoveResOkConsumer, "910000021"),
+                Org(RemoveResOkSupplier, "910000022"),
+                Org(RemoveResFailConsumer, "910000023"),
+                Org(RemoveResFailSupplier, "910000024"),
+                Org(RemoveResNoAssignmentConsumer, "910000025"),
+                Org(RemoveResNoAssignmentSupplier, "910000026"),
+                Org(RemoveResNoResourceConsumer, "910000027"),
+                Org(RemoveResNoResourceSupplier, "910000028"),
                 new Entity
                 {
                     Id = Person,
@@ -75,24 +96,40 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                     VariantId = EntityVariantConstants.Person,
                 });
 
-            // A resource to attach to supplier assignments for the cascade tests. The cascade
-            // path does not inspect the resource type, so a generic type/resource is sufficient.
-            var resourceType = new ResourceType
+            // The MaskinportenSchema resource the supplier delegations point at. RemoveResource
+            // requires the resource to be of type "MaskinportenSchema"; the cascade path ignores
+            // the type, so the same resource serves both. ResourceTypes are not part of the
+            // static-data template, so seeding our own does not collide.
+            var maskinportenSchemaType = new ResourceType
             {
                 Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a1"),
-                Name = "MaskinportenSupplierTestResourceType",
+                Name = "MaskinportenSchema",
+            };
+            var otherType = new ResourceType
+            {
+                Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a2"),
+                Name = "MaskinportenSupplierTestOtherType",
             };
             var resource = new Resource
             {
                 Id = Guid.CreateVersion7(),
                 Name = "Maskinporten Supplier Test Resource",
                 Description = "Maskinporten Supplier Test Resource",
-                RefId = "maskinporten-supplier-test-resource",
+                RefId = MaskinportenResourceRefId,
                 ProviderId = ProviderConstants.ResourceRegistry.Id,
-                TypeId = resourceType.Id,
+                TypeId = maskinportenSchemaType.Id,
             };
-            db.ResourceTypes.Add(resourceType);
-            db.Resources.Add(resource);
+            var nonMaskinportenResource = new Resource
+            {
+                Id = Guid.CreateVersion7(),
+                Name = "Non Maskinporten Supplier Test Resource",
+                Description = "Non Maskinporten Supplier Test Resource",
+                RefId = NonMaskinportenResourceRefId,
+                ProviderId = ProviderConstants.ResourceRegistry.Id,
+                TypeId = otherType.Id,
+            };
+            db.ResourceTypes.AddRange(maskinportenSchemaType, otherType);
+            db.Resources.AddRange(resource, nonMaskinportenResource);
 
             // Pre-existing supplier assignment with no delegated resources, for the remove test.
             db.Assignments.Add(new Assignment
@@ -106,11 +143,20 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
             var cascadeOk = SupplierAssignment(CascadeOkConsumer, CascadeOkSupplier);
             var cascadeFail = SupplierAssignment(CascadeFailConsumer, CascadeFailSupplier);
             var cascadeNoFlag = SupplierAssignment(CascadeNoFlagConsumer, CascadeNoFlagSupplier);
-            db.Assignments.AddRange(cascadeOk, cascadeFail, cascadeNoFlag);
+
+            // RemoveResource: two pairs that have the resource delegated (success / clear-failure),
+            // and one pair whose assignment exists but has no delegated resource.
+            var removeResOk = SupplierAssignment(RemoveResOkConsumer, RemoveResOkSupplier);
+            var removeResFail = SupplierAssignment(RemoveResFailConsumer, RemoveResFailSupplier);
+            var removeResNoResource = SupplierAssignment(RemoveResNoResourceConsumer, RemoveResNoResourceSupplier);
+
+            db.Assignments.AddRange(cascadeOk, cascadeFail, cascadeNoFlag, removeResOk, removeResFail, removeResNoResource);
             db.AssignmentResources.AddRange(
                 ResourceOn(cascadeOk, resource, "policies/cascade-ok.xml"),
                 ResourceOn(cascadeFail, resource, "policies/cascade-fail.xml"),
-                ResourceOn(cascadeNoFlag, resource, "policies/cascade-noflag.xml"));
+                ResourceOn(cascadeNoFlag, resource, "policies/cascade-noflag.xml"),
+                ResourceOn(removeResOk, resource, "policies/remove-res-ok.xml"),
+                ResourceOn(removeResFail, resource, "policies/remove-res-fail.xml"));
 
             db.SaveChanges();
         });
@@ -258,6 +304,83 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
         // Failure must not delete the database records.
         (await SupplierAssignments(CascadeFailConsumer, CascadeFailSupplier)).Should().ContainSingle();
         (await DelegatedResourceCount(CascadeFailConsumer, CascadeFailSupplier)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenResourceIsDelegated_ClearsPolicyAndRemovesLink()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.ClearPolicyRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("v2");
+
+        var problem = await RunService(
+            s => s.RemoveResource(RemoveResOkConsumer, RemoveResOkSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object);
+
+        problem.Should().BeNull();
+
+        // The resource link is removed, but the supplier assignment itself remains.
+        (await DelegatedResourceCount(RemoveResOkConsumer, RemoveResOkSupplier)).Should().Be(0);
+        (await SupplierAssignments(RemoveResOkConsumer, RemoveResOkSupplier)).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenPolicyClearFails_ReturnsProblemAndKeepsRecord()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.ClearPolicyRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string)null);
+
+        var problem = await RunService(
+            s => s.RemoveResource(RemoveResFailConsumer, RemoveResFailSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object);
+
+        problem.Should().NotBeNull();
+
+        // A failed policy clear must not delete the resource link.
+        (await DelegatedResourceCount(RemoveResFailConsumer, RemoveResFailSupplier)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenSupplierAssignmentDoesNotExist_ReturnsNull()
+    {
+        var problem = await RunService(s => s.RemoveResource(
+            RemoveResNoAssignmentConsumer, RemoveResNoAssignmentSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken));
+
+        problem.Should().BeNull("removing a resource when there is no supplier assignment is idempotent (204)");
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenResourceNotDelegated_ReturnsNull()
+    {
+        var problem = await RunService(s => s.RemoveResource(
+            RemoveResNoResourceConsumer, RemoveResNoResourceSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken));
+
+        problem.Should().BeNull("removing a resource that was never delegated is idempotent (204)");
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenResourceIsNotMaskinportenSchema_ReturnsProblem()
+    {
+        var problem = await RunService(s => s.RemoveResource(
+            RemoveResNoAssignmentConsumer, RemoveResNoAssignmentSupplier, NonMaskinportenResourceRefId, TestContext.Current.CancellationToken));
+
+        problem.Should().NotBeNull("only MaskinportenSchema resources are valid for supplier delegation");
+    }
+
+    [Fact]
+    public async Task RemoveResource_WhenResourceDoesNotExist_ReturnsNull()
+    {
+        var problem = await RunService(s => s.RemoveResource(
+            RemoveResNoAssignmentConsumer, RemoveResNoAssignmentSupplier, "this-resource-does-not-exist", TestContext.Current.CancellationToken));
+
+        // Current behavior: for a non-existent resource GetResourceByRefId returns Problems.InvalidResource,
+        // which is a ProblemInstance (not a ValidationProblemInstance), so RemoveResource's
+        // `as ValidationProblemInstance` cast yields null and the call is treated as an idempotent no-op (204).
+        // This differs from the wrong-resource-type case, which does surface a validation problem.
+        problem.Should().BeNull();
     }
 
     private static Entity Org(Guid id, string orgNo) => new()
