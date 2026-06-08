@@ -7772,7 +7772,7 @@ public static class PackageConstants
             IsAvailableForServiceOwners = true,
             EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.Altinn3,
-            AreaId = AreaConstants.ManageAccess,
+            AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Services NUF"),
