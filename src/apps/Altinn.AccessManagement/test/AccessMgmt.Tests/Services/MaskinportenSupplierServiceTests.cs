@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core.Services;
@@ -5,7 +6,9 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -53,6 +56,17 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
     private static readonly Guid RemoveResNoResourceConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000027");
     private static readonly Guid RemoveResNoResourceSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000028");
 
+    // AddResource pairs + the authenticated performer.
+    private static readonly Guid Performer = Guid.Parse("2c839000-0000-0000-0000-000000000031");
+    private static readonly Guid AddResNoRightsConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000032");
+    private static readonly Guid AddResNoRightsSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000033");
+    private static readonly Guid AddResNoConnConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000034");
+    private static readonly Guid AddResNoConnSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000035");
+    private static readonly Guid AddResWriteFailConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000036");
+    private static readonly Guid AddResWriteFailSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000037");
+    private static readonly Guid AddResOkConsumer = Guid.Parse("2c839000-0000-0000-0000-000000000038");
+    private static readonly Guid AddResOkSupplier = Guid.Parse("2c839000-0000-0000-0000-000000000039");
+
     private const string MaskinportenResourceRefId = "maskinporten-supplier-test-resource";
     private const string NonMaskinportenResourceRefId = "non-maskinporten-supplier-test-resource";
 
@@ -86,6 +100,15 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                 Org(RemoveResNoAssignmentSupplier, "910000026"),
                 Org(RemoveResNoResourceConsumer, "910000027"),
                 Org(RemoveResNoResourceSupplier, "910000028"),
+                Org(Performer, "910000031"),
+                Org(AddResNoRightsConsumer, "910000032"),
+                Org(AddResNoRightsSupplier, "910000033"),
+                Org(AddResNoConnConsumer, "910000034"),
+                Org(AddResNoConnSupplier, "910000035"),
+                Org(AddResWriteFailConsumer, "910000036"),
+                Org(AddResWriteFailSupplier, "910000037"),
+                Org(AddResOkConsumer, "910000038"),
+                Org(AddResOkSupplier, "910000039"),
                 new Entity
                 {
                     Id = Person,
@@ -150,7 +173,15 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
             var removeResFail = SupplierAssignment(RemoveResFailConsumer, RemoveResFailSupplier);
             var removeResNoResource = SupplierAssignment(RemoveResNoResourceConsumer, RemoveResNoResourceSupplier);
 
-            db.Assignments.AddRange(cascadeOk, cascadeFail, cascadeNoFlag, removeResOk, removeResFail, removeResNoResource);
+            // AddResource: the write-fail and success pairs need an existing supplier connection
+            // (the no-rights and no-connection pairs deliberately have none).
+            var addResWriteFail = SupplierAssignment(AddResWriteFailConsumer, AddResWriteFailSupplier);
+            var addResOk = SupplierAssignment(AddResOkConsumer, AddResOkSupplier);
+
+            db.Assignments.AddRange(
+                cascadeOk, cascadeFail, cascadeNoFlag,
+                removeResOk, removeResFail, removeResNoResource,
+                addResWriteFail, addResOk);
             db.AssignmentResources.AddRange(
                 ResourceOn(cascadeOk, resource, "policies/cascade-ok.xml"),
                 ResourceOn(cascadeFail, resource, "policies/cascade-fail.xml"),
@@ -381,6 +412,97 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
         // `as ValidationProblemInstance` cast yields null and the call is treated as an idempotent no-op (204).
         // This differs from the wrong-resource-type case, which does surface a validation problem.
         problem.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AddResource_WhenDelegationCheckReturnsNoDelegableRights_ReturnsProblem()
+    {
+        // Delegation check succeeds but no right is delegable -> not authorized, before any connection check.
+        var result = await RunService(
+            s => s.AddResource(AddResNoRightsConsumer, AddResNoRightsSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            connection: ConnectionReturning(("scope.read", false)),
+            audit: AuditAs(Performer));
+
+        result.IsProblem.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AddResource_WhenNoSupplierConnectionExists_ReturnsProblem()
+    {
+        // There are delegable rights, but no supplier assignment between the parties.
+        var result = await RunService(
+            s => s.AddResource(AddResNoConnConsumer, AddResNoConnSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            connection: ConnectionReturning(("scope.read", true)),
+            audit: AuditAs(Performer));
+
+        result.IsProblem.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AddResource_WhenPolicyRuleWriteFails_ReturnsProblem()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.TryWriteDelegationPolicyRules(
+                It.IsAny<Entity>(), It.IsAny<Entity>(), It.IsAny<Resource>(),
+                It.IsAny<List<string>>(), It.IsAny<Entity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Rule> { new() { CreatedSuccessfully = false } });
+
+        var result = await RunService(
+            s => s.AddResource(AddResWriteFailConsumer, AddResWriteFailSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object,
+            connection: ConnectionReturning(("scope.read", true)),
+            audit: AuditAs(Performer));
+
+        result.IsProblem.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AddResource_WhenAuthorizedAndConnectionExistsAndPolicyWriteSucceeds_ReturnsTrue()
+    {
+        var singleRights = new Mock<ISingleRightsService>();
+        singleRights
+            .Setup(r => r.TryWriteDelegationPolicyRules(
+                It.IsAny<Entity>(), It.IsAny<Entity>(), It.IsAny<Resource>(),
+                It.IsAny<List<string>>(), It.IsAny<Entity>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Rule> { new() { CreatedSuccessfully = true } });
+
+        var result = await RunService(
+            s => s.AddResource(AddResOkConsumer, AddResOkSupplier, MaskinportenResourceRefId, TestContext.Current.CancellationToken),
+            singleRights: singleRights.Object,
+            connection: ConnectionReturning(("scope.read", true)),
+            audit: AuditAs(Performer));
+
+        result.IsProblem.Should().BeFalse();
+        result.Value.Should().BeTrue();
+    }
+
+    private static IConnectionService ConnectionReturning(params (string Key, bool Result)[] rights)
+    {
+        var dto = new ResourceCheckDto
+        {
+            Resource = new ResourceDto(),
+            Rights = rights
+                .Select(r => new RightCheckDto { Right = new RightDto { Key = r.Key }, Result = r.Result })
+                .ToList(),
+        };
+
+        var mock = new Mock<IConnectionService>();
+        mock
+            .Setup(c => c.ResourceDelegationCheck(
+                It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(),
+                It.IsAny<Action<ConnectionOptions>>(), It.IsAny<string>(),
+                It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(dto);
+
+        return mock.Object;
+    }
+
+    private static IAuditAccessor AuditAs(Guid performer)
+    {
+        var mock = new Mock<IAuditAccessor>();
+        mock.SetupGet(a => a.AuditValues).Returns(new AuditValues(performer));
+        return mock.Object;
     }
 
     private static Entity Org(Guid id, string orgNo) => new()
