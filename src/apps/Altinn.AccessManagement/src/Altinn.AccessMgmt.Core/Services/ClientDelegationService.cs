@@ -1097,7 +1097,7 @@ public interface IClientDelegationService
     Task<Result<List<ClientDto>>> GetClients(
         Guid partyUuid,
         List<string>? roles,
-        List<string> packages,
+        List<string>? packages,
         CancellationToken cancellationToken = default);
 
     /// <summary>
