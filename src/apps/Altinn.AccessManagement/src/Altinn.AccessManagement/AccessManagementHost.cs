@@ -108,8 +108,6 @@ internal static partial class AccessManagementHost
                     .WithTracing(tracing =>
                     {
                         tracing
-                            .AddAspNetCoreInstrumentation()
-                            .AddHttpClientInstrumentation()
                             .AddProcessor(sp => new NpgsqlProcessor(
                                 TimeSpan.FromMilliseconds(npgsqlMinDurationMs),
                                 sp.GetRequiredService<IHttpContextAccessor>()));
