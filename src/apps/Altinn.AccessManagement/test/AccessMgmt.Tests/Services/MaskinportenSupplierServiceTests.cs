@@ -121,18 +121,28 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
 
             // The MaskinportenSchema resource the supplier delegations point at. RemoveResource
             // requires the resource to be of type "MaskinportenSchema"; the cascade path ignores
-            // the type, so the same resource serves both. ResourceTypes are not part of the
-            // static-data template, so seeding our own does not collide.
-            var maskinportenSchemaType = new ResourceType
+            // the type, so the same resource serves both. "MaskinportenSchema" is a real resource
+            // type name and ResourceType.Name is unique, so reuse the row if it is ever present in
+            // the seeded data instead of inserting a duplicate.
+            var maskinportenSchemaType = db.ResourceTypes.FirstOrDefault(rt => rt.Name == "MaskinportenSchema");
+            if (maskinportenSchemaType is null)
             {
-                Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a1"),
-                Name = "MaskinportenSchema",
-            };
+                maskinportenSchemaType = new ResourceType
+                {
+                    Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a1"),
+                    Name = "MaskinportenSchema",
+                };
+                db.ResourceTypes.Add(maskinportenSchemaType);
+            }
+
+            // A non-MaskinportenSchema type for the negative case (test-specific name, no domain clash).
             var otherType = new ResourceType
             {
                 Id = Guid.Parse("2c839000-0000-0000-0000-0000000000a2"),
                 Name = "MaskinportenSupplierTestOtherType",
             };
+            db.ResourceTypes.Add(otherType);
+
             var resource = new Resource
             {
                 Id = Guid.CreateVersion7(),
@@ -151,7 +161,6 @@ public class MaskinportenSupplierServiceTests : IClassFixture<ApiFixture>
                 ProviderId = ProviderConstants.ResourceRegistry.Id,
                 TypeId = otherType.Id,
             };
-            db.ResourceTypes.AddRange(maskinportenSchemaType, otherType);
             db.Resources.AddRange(resource, nonMaskinportenResource);
 
             // Pre-existing supplier assignment with no delegated resources, for the remove test.
