@@ -28,9 +28,11 @@ public static class TestCategories
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class UnitTestAttribute : Attribute, ITraitAttribute
 {
-    /// <inheritdoc />
-    public IReadOnlyCollection<KeyValuePair<string, string>> GetTraits() =>
+    private static readonly IReadOnlyCollection<KeyValuePair<string, string>> Traits =
         new[] { new KeyValuePair<string, string>(TestCategories.Category, TestCategories.Unit) };
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<KeyValuePair<string, string>> GetTraits() => Traits;
 }
 
 /// <summary>
@@ -41,7 +43,9 @@ public sealed class UnitTestAttribute : Attribute, ITraitAttribute
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class IntegrationTestAttribute : Attribute, ITraitAttribute
 {
-    /// <inheritdoc />
-    public IReadOnlyCollection<KeyValuePair<string, string>> GetTraits() =>
+    private static readonly IReadOnlyCollection<KeyValuePair<string, string>> Traits =
         new[] { new KeyValuePair<string, string>(TestCategories.Category, TestCategories.Integration) };
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<KeyValuePair<string, string>> GetTraits() => Traits;
 }
