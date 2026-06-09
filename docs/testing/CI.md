@@ -14,7 +14,7 @@ For each vertical the pipeline runs:
 3. **Test + coverage (two lanes off one build)** — tests run in two
    sequential lanes selected by the `Category` trait: a fast **unit** lane
    (`--filter-trait "Category=Unit"`) then a slower **integration** lane
-   (`Category=Integration`). Both reuse the single build (`--no-build`) and
+   (`--filter-trait "Category=Integration"`). Both reuse the single build (`--no-build`) and
    each is wrapped by `dotnet-coverage collect` into its own `.coverage`
    binary (`coverage.unit.coverage` / `coverage.integration.coverage`) and
    writes TRX into a per-lane `TestResults/<lane>/` subdir. The integration
