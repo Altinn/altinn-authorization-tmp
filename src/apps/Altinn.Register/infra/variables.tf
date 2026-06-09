@@ -117,8 +117,9 @@ variable "features" {
     }), {})
 
     ccr_proxy = optional(object({
-      enable = optional(bool, false)
-      record = optional(bool, false)
+      enable  = optional(bool, false)
+      record  = optional(bool, false)
+      process = optional(bool, false)
     }), {})
   })
   default = {}
@@ -146,6 +147,21 @@ variable "config" {
         password = string             # key vault secret name
         networks = list(string)       # whitelist of CIDR ranges allowed to use this client
       })), {})
+
+      flatfiles = optional(object({
+        enable = optional(bool, false)
+        local = optional(object({
+          user      = string
+          container = string
+        }))
+        remote = optional(object({
+          host = string # key-vault reference
+          user = string # key-vault reference
+          pass = string # key-vault reference
+          path = string # key-vault reference
+          port = optional(number, 22)
+        }))
+      }), {})
 
       federate = optional(object({
         enable  = optional(bool, false),

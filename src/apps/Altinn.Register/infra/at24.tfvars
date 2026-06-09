@@ -22,11 +22,6 @@ key_vault_rbac = [{
 
 features = {
   maskinporten = true
-  a2_party_import = {
-    parties  = true
-    user_ids = true
-    profiles = true
-  }
 
   party_import = {
     system_users = true
@@ -41,8 +36,9 @@ features = {
   }
 
   ccr_proxy = {
-    enable = true
-    record = true
+    enable  = true
+    record  = true
+    process = true
   }
 }
 

@@ -22,11 +22,6 @@ key_vault_rbac = [{
 
 features = {
   maskinporten = true
-  a2_party_import = {
-    parties  = true
-    user_ids = true
-    profiles = true
-  }
 
   party_import = {
     system_users = true
@@ -38,12 +33,14 @@ features = {
 
     sire = {
       enable = true
+      listen = true
     }
   }
 
   ccr_proxy = {
-    enable = true
-    record = true
+    enable  = true
+    record  = true
+    process = true
   }
 }
 
@@ -63,6 +60,14 @@ config = {
       source = {
         queue  = "ccr-updates-at22"
         poison = "ccr-updates-at22-poison"
+      }
+    }
+
+    flatfiles = {
+      enable = true
+      local = {
+        user      = "ccrflatfilesat22"
+        container = "ccr-flatfiles-at22"
       }
     }
 

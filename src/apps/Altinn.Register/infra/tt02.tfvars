@@ -22,22 +22,25 @@ key_vault_rbac = [{
 
 features = {
   maskinporten = true
-  a2_party_import = {
-    parties  = true
-    user_ids = true
-    profiles = true
-  }
 
   party_import = {
     system_users = true
+
     npr = {
+      enable        = true
       guardianships = true
+    }
+
+    sire = {
+      enable = true
+      listen = true
     }
   }
 
   ccr_proxy = {
-    enable = true
-    record = true
+    enable  = true
+    record  = true
+    process = true
   }
 }
 
@@ -59,6 +62,23 @@ config = {
     federate = {
       enable  = true
       targets = ["ccr-updates-at22", "ccr-updates-at23"]
+    }
+
+    clients = {
+      BRG = {
+        password = "ccr-brg-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
+
+      abs-tt02 = {
+        password = "ccr-abs-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
+
+      e2e-test-tt02 = {
+        password = "ccr-e2e-test-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
     }
   }
 }
