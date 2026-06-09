@@ -38,7 +38,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_Admin_AuthorizedParties_IdpEmailUser");
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_IdpEmailUser_WithPartyFilter");
   bru.setVar("emailId", testdata.idportenEmailUser.emailId);
   
   var getTokenParameters = {
