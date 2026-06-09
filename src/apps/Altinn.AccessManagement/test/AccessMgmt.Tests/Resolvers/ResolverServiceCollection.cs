@@ -1,5 +1,5 @@
 ﻿using System;
-using AccessMgmt.Tests.Mocks;
+using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
