@@ -50,6 +50,8 @@ public static class AccessMgmtFeatureFlags
     /// </summary>
     public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
 
+    public const string HostedServicesResourceSync = $"AccessMgmt.Core.HostedServices.ResourceSync";
+
     /// <summary>
     /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
     /// </summary>

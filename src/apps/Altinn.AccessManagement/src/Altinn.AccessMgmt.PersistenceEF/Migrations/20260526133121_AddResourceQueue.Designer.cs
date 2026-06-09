@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260526133121_AddResourceQueue")]
+    partial class AddResourceQueue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1538,10 +1541,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid?>("Audit_DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
-
-                    b.Property<Guid>("ById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("byid");
 
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
@@ -3099,10 +3098,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<Guid>("ById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("byid");
-
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
                         .HasColumnName("fromid");
@@ -3117,9 +3112,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_requestassignment");
-
-                    b.HasIndex("ById")
-                        .HasDatabaseName("ix_requestassignment_byid");
 
                     b.HasIndex("FromId")
                         .HasDatabaseName("ix_requestassignment_fromid");
@@ -4149,13 +4141,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignment", b =>
                 {
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "By")
-                        .WithMany()
-                        .HasForeignKey("ById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_requestassignment_entity_byid");
-
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "From")
                         .WithMany()
                         .HasForeignKey("FromId")
@@ -4176,8 +4161,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_requestassignment_entity_toid");
-
-                    b.Navigation("By");
 
                     b.Navigation("From");
 

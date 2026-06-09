@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Yuniql.Extensibility;
 
 namespace Altinn.Authorization.Integration.Platform.ResourceRegistry;
@@ -55,6 +55,15 @@ public interface IAltinnResourceRegistry
     /// containing the requested <see cref="ResourceModel"/>.
     /// </returns>
     Task<PlatformResponse<List<ResourceModel>>> GetResources(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the resource rules for the specified resource.
+    /// </summary>
+    /// <param name="id">The resource identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a platform response with a list of
+    /// resource rules.</returns>
+    Task<PlatformResponse<List<ResourceRuleModel>>> GetResourceRules(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a list of all service owners 
