@@ -340,12 +340,21 @@ jobs:
         # found by the scanner are still useful when tests are red. Gated on
         # `sonar-begin succeeded` so the matching `end` is only invoked when
         # there's something to close out.
+        #
+        # The scanner emits ~2000 lines of INFO during the upload; collapse it
+        # behind a log group so the job log stays readable. The gate result and
+        # dashboard link live on the SonarCloud PR check, not here, so nothing
+        # useful is hidden. A non-zero `end` still fails the step (bash `set -e`
+        # exits before `::endgroup::`; GitHub auto-closes the open group).
         if: always() && steps.sonar-begin.outcome == 'success'
         working-directory: ${{ inputs.path }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: bash
-        run: dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+        run: |
+          echo "::group::dotnet-sonarscanner end (full scanner log — expand if needed)"
+          dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+          echo "::endgroup::"
 
       - name: Coverage threshold check
         # Parse-only: reads TestResults/coverage.cobertura.xml produced by
