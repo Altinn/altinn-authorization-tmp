@@ -78,9 +78,28 @@ jobs:
             9.0.x
             10.0.x
 
+      - name: Cache NuGet packages
+        # No packages.lock.json in the repo (central package management), so key
+        # the cache on the central versions file plus the csprojs. A miss just
+        # re-downloads; restore-keys lets a changed graph reuse the last cache.
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('src/Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dotnet workloads
-        run: dotnet workload restore
+        # Only verticals that contain an Aspire AppHost (currently AccessManagement)
+        # need a workload restore; skip the ~20s on every other vertical.
         working-directory: ${{ inputs.path }}
+        shell: bash
+        run: |
+          if grep -rql "Aspire.AppHost.Sdk" --include=*.csproj .; then
+            dotnet workload restore
+          else
+            echo "No Aspire AppHost in this vertical; skipping workload restore."
+          fi
 
       - name: Detect SonarCloud config
         # Single source of truth for "should Sonar run?". Exposed as a step
