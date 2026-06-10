@@ -74,7 +74,7 @@ See [COVERAGE.md](COVERAGE.md) for the full flow.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `"Docker/Podman not available"` skips | Container runtime not running | Start Docker Desktop / `podman machine start` |
-| `No test is available in <dll>` | MTP routing regressed for that project | Ensure the `.csproj` has `<TargetFramework>net10.0</TargetFramework>` (singular). |
+| `No test is available in <dll>` | MTP routing regressed for that project | Ensure the `.csproj` clears the inherited singular `<TargetFramework>` and sets `<TargetFrameworks>net10.0</TargetFrameworks>` (plural) — that is what routes it to MTP. |
 | Tests hang on Postgres container start | Stale containers from a previous run | `docker ps -a` → remove any `testcontainers`-prefixed containers |
 | `JsonReaderException: Unexpected character '<'` | Client's default `Accept` header is `application/xml`; server returned XML, test tried to parse it as JSON | Remove the default `Accept` header or override per-request. |
 

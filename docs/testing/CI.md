@@ -35,10 +35,12 @@ For each vertical the pipeline runs:
 
 xUnit v3 is self-hosted on MTP. A few things the pipeline relies on:
 
-- Each test `.csproj` must set `<TargetFramework>net10.0</TargetFramework>`
-  (**singular**). If it inherits a plural `<TargetFrameworks>` from a parent
-  `Directory.Build.props`, `dotnet test` silently falls back to VSTest and
-  reports *"No test is available in \<dll\>"*.
+- Each test `.csproj` **clears** the singular `<TargetFramework>` it inherits
+  from `src/Directory.Build.props` and sets
+  `<TargetFrameworks>net10.0</TargetFrameworks>` (**plural**, single-valued) —
+  that routing is what `dotnet test` needs to reach the MTP runner for xUnit v3.
+  If the inherited singular `<TargetFramework>` is left non-empty, `dotnet test`
+  silently falls back to VSTest and reports *"No test is available in \<dll\>"*.
 - MTP exit codes:
   - `0` — all tests passed
   - `8` — no tests ran: either all were `[Skip]`ped, or a `--filter-trait`
