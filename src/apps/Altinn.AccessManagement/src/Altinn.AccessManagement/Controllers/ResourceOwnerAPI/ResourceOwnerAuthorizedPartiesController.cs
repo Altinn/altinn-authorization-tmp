@@ -87,7 +87,7 @@ public class ResourceOwnerAuthorizedPartiesController(
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 double result = 0;
-                for (int i = 0; i < loopCount; i++)
+                for (long i = 0; i < loopCount; i++)
                 {
                     result += Math.Sqrt(i) * Math.Sin(i);
                 }
