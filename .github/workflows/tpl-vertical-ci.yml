@@ -78,21 +78,6 @@ jobs:
             9.0.x
             10.0.x
 
-      - name: Cache NuGet packages
-        # Per-vertical key. The vertical jobs run in parallel and GitHub caches
-        # are immutable on a hit, so a single shared key would only ever cache
-        # the first vertical's package set — every other vertical would
-        # re-download its delta and never save it. Scope the key (and the csproj
-        # hash) to this vertical, keeping Directory.Packages.props for central
-        # version bumps. No packages.lock.json (central package management), so a
-        # key miss just re-restores.
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ inputs.slug }}-${{ hashFiles('src/Directory.Packages.props', format('{0}/**/*.csproj', inputs.path)) }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-${{ inputs.slug }}-
-
       - name: Restore dotnet workloads
         # Only verticals that contain an Aspire AppHost (currently AccessManagement)
         # need a workload restore; skip the ~20s on every other vertical.
