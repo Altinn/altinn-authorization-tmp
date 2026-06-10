@@ -4,13 +4,16 @@ Tests run per-vertical in parallel jobs. Each vertical (app/lib/pkg) has its
 own CI job driven by a shared template: `tpl-vertical-ci.yml`. Build, test,
 threshold enforcement, and SonarCloud analysis all happen in one job per
 vertical (`build-test-analyze`) so the test suite executes exactly once.
+Only the verticals affected by a change run (dependency-aware change
+detection), and a `concurrency` group cancels a superseded run when a PR is
+pushed again — `main`-push runs always run to completion.
 
 ## Job structure
 
 For each vertical the pipeline runs:
 
 1. **SonarCloud begin** *(verticals that opt in via `conf.json`)* — `dotnet-sonarscanner begin` wraps the build/test that follow so the scanner can hook MSBuild's analyzers.
-2. **Restore + build** — `dotnet build -c Release --no-incremental`. The build inside Sonar's begin/end window is what gives the scanner its data.
+2. **Restore + build** — `dotnet build -c Release --no-incremental`. The build inside Sonar's begin/end window is what gives the scanner its data. `~/.nuget/packages` is cached per vertical (`actions/cache`, keyed on `Directory.Packages.props` + that vertical's csprojs) so restores don't re-download every run. `dotnet workload restore` runs **only** in verticals that contain an Aspire AppHost (detected from the csprojs); the rest skip it.
 3. **Test + coverage (two lanes off one build)** — tests run in two
    sequential lanes selected by the `Category` trait: a fast **unit** lane
    (`--filter-trait "Category=Unit"`) then a slower **integration** lane
