@@ -190,8 +190,18 @@ jobs:
         # `--no-incremental` keeps the output deterministic between this run
         # and any local rebuild — important when the SonarCloud scanner is
         # wrapping the build, which is sensitive to stale analyzer outputs.
+        #
+        # Collapse the ~900 lines of restore + per-project + analyzer-warning
+        # output behind a log group. The full build is captured in build.binlog
+        # (uploaded as an artifact), warnings are tracked by SonarCloud, and a
+        # build error still fails the step (bash `set -e` exits before
+        # `::endgroup::`; GitHub auto-closes the open group).
         id: build
-        run: dotnet build -c Release --no-incremental -bl:binlog/build.binlog
+        shell: bash
+        run: |
+          echo "::group::dotnet build (full output is in the binlog artifact)"
+          dotnet build -c Release --no-incremental -bl:binlog/build.binlog
+          echo "::endgroup::"
         working-directory: ${{ inputs.path }}
 
       # Tests run in two lanes off the single build above (#3363): a fast unit
