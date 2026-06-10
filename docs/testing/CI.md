@@ -58,8 +58,8 @@ from failing because another vertical changed coverage numbers.
 ## Container runtime
 
 CI runners have Docker available, so Testcontainers-backed integration tests
-(AccessManagement) run as normal. Verticals that don't need a container
-(ABAC, PEP, Authorization.Tests) are unaffected.
+(AccessManagement, and the Authorization delegation-metadata repository tests)
+run as normal. Verticals that don't need a container (ABAC, PEP) are unaffected.
 
 If a container runtime is unavailable the fixtures `Assert.Skip(...)` —
 individual tests show as skipped rather than failing the job.

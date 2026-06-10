@@ -14,25 +14,25 @@ Grouped by the production vertical they cover.
 
 | Test project | Covers | Fixture | Needs container |
 |---|---|---|---|
-| `AccessMgmt.Tests` | Legacy controller/integration tests being migrated off Yuniql. Uses `LegacyApiFixture` for the small tail of tests that still need the Yuniql schema. | `LegacyApiFixture`, `PostgresFixture` | ✅ |
-| `Altinn.AccessManagement.Api.Tests` | The modernised cross-cutting API tests. | `ApiFixture` | ✅ |
-| `Altinn.AccessManagement.Enduser.Api.Tests` | Enduser API controllers (`Connections`, `Consent`, `MaskinportenConsumers/Suppliers`, …). | `ApiFixture` + direct Moq unit tests | Partial |
-| `Altinn.AccessManagement.ServiceOwner.Api.Tests` | ServiceOwner API controllers (`Request`, …). | `ApiFixture` + direct Moq unit tests | Partial |
-| `Altinn.AccessMgmt.Core.Tests` | Business-logic unit tests for `AccessMgmt.Core`. | — | ❌ |
-| `Altinn.AccessMgmt.PersistenceEF.Tests` | Repository / EF Core tests. | `EFPostgresFactory` | ✅ |
+| `AccessMgmt.Tests` | Legacy controller/integration tests being migrated off Yuniql; `LegacyApiFixture` for the small tail still needing the Yuniql schema, `ApiFixture` for the rest. | `ApiFixture`, `LegacyApiFixture`, `PostgresFixture` | ✅ |
+| `Altinn.AccessManagement.Api.Tests` | Cross-cutting API **unit** tests (controllers via Moq, extensions, helpers) plus an end-to-end request-scenario scaffold. | — (Moq) | ❌ |
+| `Altinn.AccessManagement.Api.Internal.Tests` | Internal API controller (`InternalConnections`) integration test. | `ApiFixture` | ✅ |
+| `Altinn.AccessManagement.Enduser.Api.Tests` | Enduser API controllers (`Connections`, `MaskinportenConsumers/Suppliers`, `Request`, …). | `ApiFixture` + direct Moq unit tests | Partial |
+| `Altinn.AccessManagement.ServiceOwner.Api.Tests` | ServiceOwner API controllers (`Request`, `Connections`). | `ApiFixture` + direct Moq unit tests | Partial |
+| `Altinn.AccessMgmt.Core.Tests` | Mostly business-logic unit tests for `AccessMgmt.Core`; a few hosted-service / ingest integration tests use `ApiFixture`. | `ApiFixture` (integration subset) | Partial |
+| `Altinn.AccessMgmt.PersistenceEF.Tests` | Constants and migration-SQL **unit** tests (no database). | — | ❌ |
 
 ### `app: Authorization`
 
 | Test project | Covers | Fixture | Needs container |
 |---|---|---|---|
-| `Altinn.Authorization.Tests` | Authorization controllers (`PolicyInformationPoint`, `DecisionController`, …). | `AuthorizationApiFixture` | ❌ |
-| `Altinn.Authorization.Integration.Tests` | Cross-service integration scenarios. | `PlatformFixture` | ❌ |
+| `Altinn.Authorization.Tests` | Authorization controllers (`Decision`/`Authorize`, `PolicyController`, `Parties`, …) and helpers. | `AuthorizationApiFixture` (mock-backed); `AuthorizationDbFixture` (Testcontainers Postgres) for the delegation-metadata repository tests | Partial |
 
 ### `lib: Integration`
 
 | Test project | Covers |
 |---|---|
-| `Altinn.Authorization.Integration.Platform.Tests` | `RequestComposer`, `ResponseComposer`, other in-process integration primitives |
+| `Altinn.Authorization.Integration.Tests` | `RequestComposer` / `ResponseComposer` / paginator unit tests, plus Register and ResourceRegistry stream/endpoint tests against the live platform (`PlatformFixture`, skipped without credentials) |
 
 ### `lib: Host`
 
