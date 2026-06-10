@@ -89,6 +89,11 @@ public class ResourceOwnerAuthorizedPartiesController(
                 double result = 0;
                 for (long i = 0; i < loopCount; i++)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
                     result += Math.Sqrt(i) * Math.Sin(i);
                 }
 
