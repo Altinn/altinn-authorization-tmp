@@ -317,6 +317,22 @@ public class AuthorizedPartiesServiceEfOld(
                     }
 
                     break;
+                case AltinnXacmlConstants.MatchAttributeIdentifiers.IdPortenEmail:
+                    var emailUser = await repoService.GetEntityByIdPortenEmailId(partyAttribute.Value, cancellationToken);
+                    if (emailUser != null)
+                    {
+                        partyUuids.Add(emailUser.Id);
+                    }
+
+                    break;
+                case AltinnXacmlConstants.MatchAttributeIdentifiers.LegacySelfIdentified:
+                    var legacySiUser = await repoService.GetEntityByIdPortenEmailId(partyAttribute.Value, cancellationToken);
+                    if (legacySiUser != null)
+                    {
+                        partyUuids.Add(legacySiUser.Id);
+                    }
+
+                    break;
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserName:
                     var enterpriseUserEntity = await repoService.GetEntityByUsername(partyAttribute.Value, cancellationToken);
                     if (enterpriseUserEntity != null)
