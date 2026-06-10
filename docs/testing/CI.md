@@ -73,6 +73,10 @@ On failure, each job uploads:
 
 - `TestResults/*.log` — MTP stdout per test project
 - `TestResults/*.trx` — machine-readable test results
+- `binlog/*.binlog` — MSBuild binary log of the build/test/pack steps (retained 1 day)
+
+All three are **failure-only**: a green run uploads nothing, since these are
+debugging aids nobody fetches when the job passes.
 
 Coverage artifacts (`*.cobertura.xml`) are **not** uploaded — the pipeline
 uses them in-process for threshold checks and the raw data isn't valuable

@@ -178,13 +178,13 @@ jobs:
         #
         # Collapse the ~900 lines of restore + per-project + analyzer-warning
         # output behind a log group. The full build is captured in build.binlog
-        # (uploaded as an artifact), warnings are tracked by SonarCloud, and a
-        # build error still fails the step (bash `set -e` exits before
-        # `::endgroup::`; GitHub auto-closes the open group).
+        # (uploaded as an artifact on failure), warnings are tracked by
+        # SonarCloud, and a build error still fails the step (bash `set -e` exits
+        # before `::endgroup::`; GitHub auto-closes the open group).
         id: build
         shell: bash
         run: |
-          echo "::group::dotnet build (full output is in the binlog artifact)"
+          echo "::group::dotnet build (full output is in build.binlog, uploaded as an artifact on failure)"
           dotnet build -c Release --no-incremental -bl:binlog/build.binlog
           echo "::endgroup::"
         working-directory: ${{ inputs.path }}
@@ -397,9 +397,16 @@ jobs:
           retention-days: 3
 
       - name: Create binlog artifact
+        # Failure-only, mirroring the test-results upload above: the binlog is a
+        # debugging aid for a red build/test/pack, so uploading it on every green
+        # run just spends upload time and storage for an artifact nobody fetches.
+        # `if-no-files-found: ignore` because a failure can occur before any
+        # binlog is written (e.g. checkout / setup-dotnet), in which case there's
+        # nothing to upload and that's fine.
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ inputs.slug }}-binlog
           path: ${{ inputs.path }}/binlog/*.binlog
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 1
