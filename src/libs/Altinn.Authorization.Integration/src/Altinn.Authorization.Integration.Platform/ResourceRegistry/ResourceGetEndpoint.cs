@@ -45,7 +45,7 @@ public partial class AltinnResourceRegistryClient
     {
         List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-            RequestComposer.WithSetUri(ResourceRegistryOptions.Value.Endpoint, $"/resourceregistry/api/v1/resource/{id}/policy/rules"),
+            RequestComposer.WithSetUri(ResourceRegistryOptions.Value.Endpoint, "/resourceregistry/api/v1/resource", Uri.EscapeDataString(id), "policy", "rules"),
         ];
 
         var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
