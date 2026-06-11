@@ -18,7 +18,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    resourceidentifier = table.Column<string>(type: "text", nullable: true)
+                    resourceidentifier = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
