@@ -29,6 +29,12 @@ module.exports =
         "main2sub": {
             "instanceId": "87e3d468-0b02-4135-bd9d-efdcde977062",
         },
+        "main2mainAgent": {
+            "instanceId": "08e6439e-4524-4ba4-a41e-5caa4dc22431"
+        },
+        "main2subAgent": {
+            "instanceId": "8d323e04-853f-4e8c-9937-17d9b4f16789"
+        },
         "sub2p": {
             "instanceId": "3a875fb6-4610-4436-b179-df45bdbc9fa5",
             "from": "65018cec-9bd4-45ad-998d-357ac181eaf3",
@@ -37,8 +43,14 @@ module.exports =
         "sub2main": {
             "instanceId": "a427957b-bb32-4321-89a5-d4d9f8f23bef",
         },
+        "sub2mainAgent": {
+            "instanceId": "67900a4f-61cc-4b6e-ad20-4124f795136e",
+        },
         "sub2sub": {
             "instanceId": "28b94645-5e5c-4cb0-868c-8bbaad9d250c",
+        },
+        "sub2subAgent": {
+            "instanceId": "67900a4f-61cc-4b6e-ad20-4124f795136e",
         },
         "o2o": {
             "instanceId": "632fe488-1ed3-4bff-ba9c-56f1df0839fc",
@@ -67,6 +79,13 @@ module.exports =
                 "userId": 1424053,
                 "partyUuid": "07336d43-1f0e-40a8-a02b-2c6019013cc7",
                 "partyId": 51015472
+            },
+            "agent": {
+                "name": "KONKRET OTER",
+                "personId": "21929899382",
+                "userId": 1990261,
+                "partyUuid": "78cb60c0-5224-4d02-9d4b-29df6972dff9",
+                "partyId": 51103813
             }
         },
         "legitimJusterbarTiger": {
@@ -80,8 +99,15 @@ module.exports =
                     "name": "LEGITIM JUSTERBAR TIGER AS",
                     "organizationNumber": "315684617",
                     "partyId": 52019430,
-                    "dagl": null
-                }
+                    "dagl": null,
+                    "agent": {
+                        "name": "ALLEHÅNDE GØYAL",
+                        "personId": "63886300141",
+                        "userId": 1978193,
+                        "partyUuid": "76178480-949c-4ce6-9870-64a4229f2192",
+                        "partyId": 51340156
+                    }
+                },
             },
             "dagl": {
                 "name": "ØVELSE EMPIRISK",
@@ -89,6 +115,13 @@ module.exports =
                 "userId": 1424054,
                 "partyUuid": "f9b2750f-f2aa-442c-91b7-418e2f627a8b",
                 "partyId": 51443447
+            },
+            "agent": {
+                "name": "AKTIV BJØRN",
+                "personId": "14828497872",
+                "userId": 1560376,
+                "partyUuid": "177be44f-83ff-4ea5-9a16-46b24e458eab",
+                "partyId": 50673021
             }
         },
         "ivrigGildTigerAS": {
@@ -103,6 +136,13 @@ module.exports =
                     "organizationNumber": "314903331",
                     "partyId": 51948403,
                     "dagl": null
+                },
+                "agent": {
+                    "name": "DIAMETER MOTLØS",
+                    "personId": "21831799207",
+                    "userId": 1903472,
+                    "partyUuid": "6542bcb2-7a4c-4b79-b6fa-953213489533",
+                    "partyId": 50850919
                 }
             },
             "dagl": {
@@ -150,6 +190,13 @@ module.exports =
             "userId": 1424053,
             "partyUuid": "07336d43-1f0e-40a8-a02b-2c6019013cc7",
             "partyId": 51015472
+        },
+        "juleferieStoyfri": {
+            "name": "JULEFERIE STØYFRI",
+            "personId": "23879198038",
+            "userId": 2108706,
+            "partyUuid": "9386b52b-0f02-4fe3-b102-dd2626503121",
+            "partyId": 50996304
         }
     }
 };

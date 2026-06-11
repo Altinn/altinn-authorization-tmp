@@ -1,7 +1,7 @@
 meta {
-  name: Instance_Sub2Main_AC11_DaglOfTo_Permit
+  name: Instance_Sub2Main_AC11_AgentOfTo_Permit
   type: http
-  seq: 14
+  seq: 18
 }
 
 post {
@@ -65,8 +65,8 @@ script:pre-request {
   // Should be the same as the .bru request file. Used as Test-name Tests tab and shows in test result.
   bru.setVar("requestName", "Instance_Main2Sub_AC10_DaglOfTo_Permit");
   
-  bru.setVar("instanceId",  testdata.instances.sub2main.instanceId);
-  bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.dagl.personId);
+  bru.setVar("instanceId",  testdata.instances.sub2mainAgent.instanceId);
+  bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.agent.personId);
   bru.setVar("partyId",  testdata.organizations.slakkAktivBilleIKS.subunits.slakkAktivBilleIKS.partyId);
   
   var getTokenParameters = {
