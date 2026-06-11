@@ -23,29 +23,48 @@ public static partial class StaticDataIngest
 
     public static async Task IngestAll(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        // Each AutoIngest below is read-existing-ids-then-insert-missing. That is
-        // idempotent when run sequentially, but races under concurrency: two
-        // callers can both observe a row as absent and both INSERT it, violating
-        // its primary key (e.g. pk_entity). IngestAll is reachable from several
-        // paths against the same database — the EF UseAsyncSeeding hook on every
-        // MigrateAsync, the explicit startup call in Program.Init, and the
-        // integration-test fixtures — so those paths can overlap.
+        // AutoIngest is read-existing-ids-then-insert-missing: idempotent when run
+        // sequentially, but it races under concurrency — two callers can both
+        // observe a row as absent and both INSERT it, violating its primary key
+        // (e.g. pk_entity). IngestAll is reachable from several paths against the
+        // same database (the EF UseAsyncSeeding hook on every MigrateAsync, the
+        // explicit Program.Init call, and the integration-test fixtures), so those
+        // paths can overlap.
         //
         // Take a transaction-scoped Postgres advisory lock so concurrent ingests
         // serialize: the second waits for the first to commit, then sees the rows
-        // as present and updates instead of inserting. The lock auto-releases when
-        // the transaction commits or rolls back. If a transaction is already
-        // active (e.g. a caller wrapped the ingest), reuse it rather than nesting;
-        // disposing the owned transaction without committing rolls it back.
-        var ownsTransaction = dbContext.Database.CurrentTransaction is null;
-        await using var transaction = ownsTransaction
-            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
-            : null;
+        // as present and updates instead of inserting. The lock auto-releases on
+        // commit/rollback. Transaction handling mirrors AppDbContext.SaveChangesAsync:
+        // only own (and commit/rollback) the transaction when one isn't already active.
+        var currentTransaction = dbContext.Database.CurrentTransaction is not null;
+        using var transaction = currentTransaction ? null : await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-        await dbContext.Database.ExecuteSqlAsync(
-            $"SELECT pg_advisory_xact_lock({IngestAdvisoryLockKey})",
-            cancellationToken);
+        try
+        {
+            await dbContext.Database.ExecuteSqlAsync(
+                $"SELECT pg_advisory_xact_lock({IngestAdvisoryLockKey})",
+                cancellationToken);
 
+            await IngestStaticData(dbContext, cancellationToken);
+
+            if (transaction is { })
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
+        }
+        catch
+        {
+            if (transaction is { })
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
+
+            throw;
+        }
+    }
+
+    private static async Task IngestStaticData(AppDbContext dbContext, CancellationToken cancellationToken)
+    {
         /* ProviderType */
         await AutoIngest(
             dbContext,
@@ -181,11 +200,6 @@ public static partial class StaticDataIngest
         await IngestRoleMap(dbContext, cancellationToken);
         await IngestRolePackage(dbContext, cancellationToken);
         await IngestEntityVariantRole(dbContext, cancellationToken);
-
-        if (ownsTransaction)
-        {
-            await transaction!.CommitAsync(cancellationToken);
-        }
     }
 
     internal static async Task AutoIngest<T>(
