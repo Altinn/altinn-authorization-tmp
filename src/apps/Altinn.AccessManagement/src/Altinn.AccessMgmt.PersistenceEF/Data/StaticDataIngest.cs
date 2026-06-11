@@ -15,8 +15,37 @@ public static partial class StaticDataIngest
 {
     private static AuditValues AuditValues { get; set; } = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest, Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
 
+    /// <summary>
+    /// Fixed key for the transaction-scoped advisory lock that serializes
+    /// <see cref="IngestAll"/> against a single database (ASCII "ACMINGST").
+    /// </summary>
+    private const long IngestAdvisoryLockKey = 0x4143_4D49_4E47_5354;
+
     public static async Task IngestAll(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
+        // Each AutoIngest below is read-existing-ids-then-insert-missing. That is
+        // idempotent when run sequentially, but races under concurrency: two
+        // callers can both observe a row as absent and both INSERT it, violating
+        // its primary key (e.g. pk_entity). IngestAll is reachable from several
+        // paths against the same database — the EF UseAsyncSeeding hook on every
+        // MigrateAsync, the explicit startup call in Program.Init, and the
+        // integration-test fixtures — so those paths can overlap.
+        //
+        // Take a transaction-scoped Postgres advisory lock so concurrent ingests
+        // serialize: the second waits for the first to commit, then sees the rows
+        // as present and updates instead of inserting. The lock auto-releases when
+        // the transaction commits or rolls back. If a transaction is already
+        // active (e.g. a caller wrapped the ingest), reuse it rather than nesting;
+        // disposing the owned transaction without committing rolls it back.
+        var ownsTransaction = dbContext.Database.CurrentTransaction is null;
+        await using var transaction = ownsTransaction
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
+        await dbContext.Database.ExecuteSqlAsync(
+            $"SELECT pg_advisory_xact_lock({IngestAdvisoryLockKey})",
+            cancellationToken);
+
         /* ProviderType */
         await AutoIngest(
             dbContext,
@@ -152,6 +181,11 @@ public static partial class StaticDataIngest
         await IngestRoleMap(dbContext, cancellationToken);
         await IngestRolePackage(dbContext, cancellationToken);
         await IngestEntityVariantRole(dbContext, cancellationToken);
+
+        if (ownsTransaction)
+        {
+            await transaction!.CommitAsync(cancellationToken);
+        }
     }
 
     internal static async Task AutoIngest<T>(
