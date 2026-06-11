@@ -27,7 +27,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public async Task SyncResources(ILease lease, CancellationToken cancellationToken)
         {
-            int elementsFetched = 0;
+            int countElementsFetched = 0;
             
             do
             {
@@ -36,22 +36,35 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var resourceQueueService = scope.ServiceProvider.GetRequiredService<IResourceQueueService>();
 
-                var leaseData = await lease.Get<ResourceQueueLease>(cancellationToken);
-                List<ResourceQueue> resourcesToFetch = await resourceQueueService.RetrieveItemsForProcessing(leaseData.NextElementToFetch, cancellationToken);
-                long lastFetchedId = resourcesToFetch.LastOrDefault()?.Id ?? 0;
-                elementsFetched = resourcesToFetch.Count;
+                var leaseData = await lease.Get<ResourceQueueLease>(cancellationToken) ?? new ResourceQueueLease();                
+                var startFrom = leaseData.NextElementToFetch > 0 ? leaseData.NextElementToFetch : 1;
+                List<ResourceQueue> resourcesToFetch = await resourceQueueService.RetrieveItemsForProcessing(startFrom, cancellationToken);
+
+                countElementsFetched = resourcesToFetch.Count;
+
+                if (countElementsFetched == 0)
+                {
+                    break;
+                }
+
+                long lastFetchedId = resourcesToFetch.LastOrDefault().Id;
 
                 foreach (var resource in resourcesToFetch)
                 {
                     // Fetch resource from resource registry
                     var resourceResult = await UpsertResource(dbContext, resource.ResourceIdentifier, cancellationToken);
+                    if (resourceResult is null)
+                    {
+                        Log.FailedToProcessResource(_logger, resource.ResourceIdentifier);
+                        continue;
+                    }
 
                     await UpsertResourceRules(dbContext, resource.ResourceIdentifier, resourceResult.Id, cancellationToken);
                 }
 
                 await lease.Update<ResourceQueueLease>(l => l.NextElementToFetch = lastFetchedId + 1, cancellationToken);
             } 
-            while (elementsFetched == 100);
+            while (countElementsFetched == 100);
         }
 
         private async Task UpsertResourceRules(AppDbContext dbContext, string resourceIdentifier, Guid resourceId, CancellationToken cancellationToken)
@@ -265,14 +278,11 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unable to retrieve resource '{Resource}' from the resource registry.")]
             internal static partial void FailedToGetResource(ILogger logger, string resource);
 
-            [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to read stream of updated resources from the resource registry.")]
-            internal static partial void FailedToReadFromStream(ILogger logger);
+            [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Unable to process resource '{Resource}'.")]
+            internal static partial void FailedToProcessResource(ILogger logger, string resource);
 
             [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to retrieve list of packages and roles giving access to this resource.")]
             internal static partial void FailedToReadResourceRules(ILogger logger);
-
-            [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "failed to write update subject {SubjectUrn} for resource {ResourceId} .")]
-            internal static partial void FailedToWriteUpdateSubjectForResource(ILogger logger, Exception ex, string subjectUrn, string resourceId);
         }
     }
 }
