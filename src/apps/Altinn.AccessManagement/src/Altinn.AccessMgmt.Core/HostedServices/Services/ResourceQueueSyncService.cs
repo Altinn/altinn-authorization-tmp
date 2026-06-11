@@ -183,7 +183,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         public IEnumerable<ResourceType> ResourceTypes { get; set; }
 
-        private async Task<Resource> ConvertToResource(AppDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
+        private async Task<Resource?> ConvertToResource(AppDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
         {
             var provider = await dbContext.Providers
             .AsNoTracking()
