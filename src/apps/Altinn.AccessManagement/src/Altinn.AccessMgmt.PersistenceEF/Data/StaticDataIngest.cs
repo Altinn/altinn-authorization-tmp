@@ -16,10 +16,12 @@ public static partial class StaticDataIngest
     private static AuditValues AuditValues { get; set; } = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest, Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
 
     /// <summary>
-    /// Fixed key for the transaction-scoped advisory lock that serializes
-    /// <see cref="IngestAll"/> against a single database (ASCII "ACMINGST").
+    /// Namespace component of the transaction-scoped advisory lock that serializes
+    /// <see cref="IngestAll"/> (ASCII "ACMI"). Paired with the current database's
+    /// oid so the lock is scoped per database — Postgres advisory locks are
+    /// otherwise global to the whole server instance.
     /// </summary>
-    private const long IngestAdvisoryLockKey = 0x4143_4D49_4E47_5354;
+    private const int IngestAdvisoryLockKey = 0x4143_4D49;
 
     public static async Task IngestAll(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
@@ -34,15 +36,18 @@ public static partial class StaticDataIngest
         // Take a transaction-scoped Postgres advisory lock so concurrent ingests
         // serialize: the second waits for the first to finish, then sees the rows
         // as present and updates instead of inserting. The lock is released when the
-        // transaction ends. The transaction is owned here only when one is not
-        // already active, matching how AppDbContext handles its own writes.
+        // transaction ends. Advisory locks are global to the Postgres instance, so
+        // the key is paired with the current database's oid to scope it per database,
+        // letting different test databases on one server still ingest concurrently.
+        // The transaction is owned here only when one is not already active, matching
+        // how AppDbContext handles its own writes.
         var currentTransaction = dbContext.Database.CurrentTransaction is not null;
         using var transaction = currentTransaction ? null : await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
             await dbContext.Database.ExecuteSqlAsync(
-                $"SELECT pg_advisory_xact_lock({IngestAdvisoryLockKey})",
+                $"SELECT pg_advisory_xact_lock({IngestAdvisoryLockKey}, (SELECT oid FROM pg_database WHERE datname = current_database())::int)",
                 cancellationToken);
 
             await IngestStaticData(dbContext, cancellationToken);
