@@ -19,12 +19,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
     /// <inheritdoc />
     public partial class ResourceQueueSyncService(
         IAltinnResourceRegistry resourceRegistry,
-        IServiceProvider serviceProvider) : IResourceQueueSyncService
+        IServiceProvider serviceProvider,
+        ILogger<ResourceQueueSyncService> logger) : IResourceQueueSyncService
     {
-        private readonly ILogger<ResourceQueueSyncService> _logger;
+        private readonly ILogger<ResourceQueueSyncService> _logger = logger;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly IAltinnResourceRegistry _resourceRegistry = resourceRegistry;
-        
         public async Task SyncResources(ILease lease, CancellationToken cancellationToken)
         {
             int elementsFetched = 0;
