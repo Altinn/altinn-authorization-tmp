@@ -33,7 +33,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             {
                 var options = new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem);
                 using var scope = _serviceProvider.CreateEFScope(options);
-                var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var resourceQueueService = scope.ServiceProvider.GetRequiredService<IResourceQueueService>();
 
                 var leaseData = await lease.Get<ResourceQueueLease>(cancellationToken);
