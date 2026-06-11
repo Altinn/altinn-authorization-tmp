@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Constants;
+﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -25,6 +24,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         private readonly ILogger<ResourceQueueSyncService> _logger = logger;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly IAltinnResourceRegistry _resourceRegistry = resourceRegistry;
+
         public async Task SyncResources(ILease lease, CancellationToken cancellationToken)
         {
             int elementsFetched = 0;
@@ -38,7 +38,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                 var leaseData = await lease.Get<ResourceQueueLease>(cancellationToken);
                 List<ResourceQueue> resourcesToFetch = await resourceQueueService.RetrieveItemsForProcessing(leaseData.NextElementToFetch, cancellationToken);
-                long lastFetchedId = resourcesToFetch.LastOrDefault()?.Id ?? 1;
+                long lastFetchedId = resourcesToFetch.LastOrDefault()?.Id ?? 0;
                 elementsFetched = resourcesToFetch.Count;
 
                 foreach (var resource in resourcesToFetch)
@@ -80,6 +80,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     if (isRole)
                     {
                         string roleName = resourceRule.Subject.First(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute, StringComparison.InvariantCultureIgnoreCase)).Value;
+
+                        if (roleNames.Contains(roleName, StringComparer.InvariantCultureIgnoreCase))
                         {
                             continue;
                         }
@@ -98,7 +100,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                     }
 
-                    bool isPackage = resourceRule.Subject.All(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute, StringComparison.InvariantCultureIgnoreCase));
+                    bool isPackage = resourceRule.Subject is { Count: > 0 }
+                        && resourceRule.Subject.All(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute, StringComparison.InvariantCultureIgnoreCase));
                     if (isPackage)
                     {
                         string packageName = resourceRule.Subject.First(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute, StringComparison.InvariantCultureIgnoreCase)).Value;
@@ -147,13 +150,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
             var resource = await dbContext.Resources.FirstOrDefaultAsync(t => t.RefId == convertedResource.RefId, cancellationToken);
 
-            var rights = await FetchRolesAndPackages(resourceIdentifier, cancellationToken);
-
             if (resource is null)
             {
                 dbContext.Resources.Add(convertedResource);
-
-                //// TODO: add rights to resource here
 
                 await dbContext.SaveChangesAsync(cancellationToken);
                 return convertedResource;
@@ -164,21 +163,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             resource.TypeId = convertedResource.TypeId;
             resource.ProviderId = convertedResource.ProviderId;
 
-            //// TODO: update rights to resource here
-
             await dbContext.SaveChangesAsync(cancellationToken);
 
             return resource;
-        }
-
-        private async Task<(List<string> Roles, List<string> Packages)> FetchRolesAndPackages(string resourceIdentifier, CancellationToken cancellationToken)
-        {
-            List<string> roles = new List<string>();
-            List<string> packages = new List<string>();
-
-            //// TODO: implement fetching of roles and packages from resource registry when endpoint is available. For now, return empty lists.
-
-            return (roles, packages);
         }
 
         public IEnumerable<ResourceType> ResourceTypes { get; set; }
