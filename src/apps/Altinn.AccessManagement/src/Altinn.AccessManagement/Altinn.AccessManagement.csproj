@@ -56,5 +56,9 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Telemetry\" />
+    </ItemGroup>
+
 
 </Project>
