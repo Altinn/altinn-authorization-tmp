@@ -32,10 +32,10 @@ public static partial class StaticDataIngest
         // paths can overlap.
         //
         // Take a transaction-scoped Postgres advisory lock so concurrent ingests
-        // serialize: the second waits for the first to commit, then sees the rows
-        // as present and updates instead of inserting. The lock auto-releases on
-        // commit/rollback. Transaction handling mirrors AppDbContext.SaveChangesAsync:
-        // only own (and commit/rollback) the transaction when one isn't already active.
+        // serialize: the second waits for the first to finish, then sees the rows
+        // as present and updates instead of inserting. The lock is released when the
+        // transaction ends. The transaction is owned here only when one is not
+        // already active, matching how AppDbContext handles its own writes.
         var currentTransaction = dbContext.Database.CurrentTransaction is not null;
         using var transaction = currentTransaction ? null : await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
