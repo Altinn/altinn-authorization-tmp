@@ -3321,6 +3321,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("ResourceIdentifier")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("resourceidentifier");
 
