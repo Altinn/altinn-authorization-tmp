@@ -75,11 +75,11 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             {
                 foreach (var resourceRule in resourceRules.Content)
                 {
-                    bool isRole = resourceRule.Subject.All(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute, StringComparison.InvariantCultureIgnoreCase));                    
+                    bool isRole = resourceRule.Subject is { Count: > 0 }
+                        && resourceRule.Subject.All(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute, StringComparison.InvariantCultureIgnoreCase));
                     if (isRole)
                     {
                         string roleName = resourceRule.Subject.First(r => r.Type.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute, StringComparison.InvariantCultureIgnoreCase)).Value;
-                        if (roleNames.Contains(roleName, StringComparer.InvariantCultureIgnoreCase))
                         {
                             continue;
                         }
