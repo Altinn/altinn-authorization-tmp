@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Appsettings;
@@ -18,6 +19,7 @@ WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 await PersistenceFeatures();
 
 if (appsettings.RunInitOnly)
@@ -66,14 +68,30 @@ async Task Init()
         }
     };
 
+    Stopwatch sw = Stopwatch.StartNew();
     var leaseService = scope.ServiceProvider.GetRequiredService<ILeaseService>();
     await using var lease = await leaseService.AcquireBlocking("access_management_init", cts.Token);
+    sw.Stop();
+    var leaseWaitTime = sw.ElapsedMilliseconds;
+    sw.Restart();
+
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await dbContext.Database.MigrateAsync(cts.Token);
+    sw.Stop();
+    var migrateWaitTime = sw.ElapsedMilliseconds;
+    sw.Restart();
+
     await Altinn.AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(dbContext);
+    sw.Stop();
+    var staticWaitTime = sw.ElapsedMilliseconds;
+    sw.Restart();
 
     var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
     await registerImport.EnsureDbIsIngestWithRegisterData(cts.Token);
+    sw.Stop();
+    var registerWaitTime = sw.ElapsedMilliseconds;
+
+    logger.LogError("Init timing: Lease: {LeaseWaitTime}, Migrate: {MigrateWaitTime}, Static: {StaticWaitTime}, Register: {RegisterWaitTime}", leaseWaitTime, migrateWaitTime, staticWaitTime, registerWaitTime);
 }
 
 async Task PersistenceFeatures()
