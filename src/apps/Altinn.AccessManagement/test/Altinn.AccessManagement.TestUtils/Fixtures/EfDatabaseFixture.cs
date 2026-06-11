@@ -13,7 +13,9 @@ namespace Altinn.AccessManagement.TestUtils.Fixtures;
 /// template clone is fast and reuses the single shared container — so no second
 /// PostgreSQL container is needed. Use it as an
 /// <see cref="Xunit.IClassFixture{TFixture}"/> and build an
-/// <c>AppDbContext</c> from <see cref="Db"/>'s connection string.
+/// <c>AppDbContext</c> from <see cref="Db"/> (e.g.
+/// <c>Db.Admin.ToString()</c> — <see cref="PostgresDatabase"/> exposes separate
+/// <c>Admin</c> and <c>User</c> connection-string builders).
 /// </remarks>
 public class EfDatabaseFixture : IAsyncLifetime
 {

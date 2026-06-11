@@ -130,8 +130,9 @@ Under the hood, `ApiFixture` delegates database provisioning to
 
 For tests that exercise EF services or repositories directly (no web host),
 `EfDatabaseFixture` exposes the same template-cloned database as a plain
-`IClassFixture<EfDatabaseFixture>` — build an `AppDbContext` from its `Db`
-connection string. It reuses the single shared container, so no second
+`IClassFixture<EfDatabaseFixture>` — build an `AppDbContext` from `Db`
+(`Db.Admin.ToString()`; `PostgresDatabase` exposes separate `Admin`/`User`
+connection-string builders). It reuses the single shared container, so no second
 PostgreSQL container is needed.
 
 ### Graceful skip when no container runtime is available
