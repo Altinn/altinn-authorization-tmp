@@ -92,6 +92,7 @@ async Task Init()
     var registerWaitTime = sw.ElapsedMilliseconds;
 
     logger.LogError("Init timing: Lease: {LeaseWaitTime}, Migrate: {MigrateWaitTime}, Static: {StaticWaitTime}, Register: {RegisterWaitTime}", leaseWaitTime, migrateWaitTime, staticWaitTime, registerWaitTime);
+    Console.WriteLine($"Init timing: Lease: {leaseWaitTime}, Migrate: {migrateWaitTime}, Static: {staticWaitTime}, Register: {registerWaitTime}");
 }
 
 async Task PersistenceFeatures()
