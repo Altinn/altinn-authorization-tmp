@@ -12,5 +12,6 @@ public class ResourceQueueConfiguration : IEntityTypeConfiguration<ResourceQueue
         builder.ToDefaultTable();
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).ValueGeneratedOnAdd();
+        builder.Property(p => p.ResourceIdentifier).IsRequired();
     }
 }
