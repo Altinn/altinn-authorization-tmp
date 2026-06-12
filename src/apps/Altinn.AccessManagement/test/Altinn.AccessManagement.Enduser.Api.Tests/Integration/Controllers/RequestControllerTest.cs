@@ -195,7 +195,8 @@ public class RequestControllerTest
     #region GET /sent — Sender sees sent requests
 
     [IntegrationTest]
-    public class GetSentRequests : IClassFixture<ApiFixture>
+    [Collection(RequestReadOnlyCollection.Name)]
+    public class GetSentRequests
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b002-0000-7000-8000-000000000001");
 
@@ -262,7 +263,8 @@ public class RequestControllerTest
     #region GET /received — Receiver sees resource requests
 
     [IntegrationTest]
-    public class GetReceivedResourceRequests : IClassFixture<ApiFixture>
+    [Collection(RequestReadOnlyCollection.Name)]
+    public class GetReceivedResourceRequests
     {
         private static readonly ResourceType TestResourceType = new()
         {
@@ -539,7 +541,8 @@ public class RequestControllerTest
     #region GET /?party=&id= — GetRequest
 
     [IntegrationTest]
-    public class GetRequestById : IClassFixture<ApiFixture>
+    [Collection(RequestReadOnlyCollection.Name)]
+    public class GetRequestById
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00a-0000-7000-8000-000000000001");
 
@@ -628,7 +631,8 @@ public class RequestControllerTest
     #region GET /sent/count — GetSentRequestsCount
 
     [IntegrationTest]
-    public class GetSentRequestsCountTest : IClassFixture<ApiFixture>
+    [Collection(RequestReadOnlyCollection.Name)]
+    public class GetSentRequestsCountTest
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00b-0000-7000-8000-000000000001");
 

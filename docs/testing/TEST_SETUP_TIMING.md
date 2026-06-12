@@ -54,12 +54,30 @@ saving exceeds the 6 eliminated builds because removing them also cut CPU
 contention on the remaining 19 (avg build 5.2 s → 2.8 s). Clone/template work is
 untouched; it is already cheap.
 
-**Shareability rule (for rolling this out):** a class can join the shared
-collection only if it (a) seeds additively via `EnsureSeedOnce<TSelf>`, (b) never
-calls `ConfigureServices` / `WithAppsettings` / `With*FeatureFlag`, and (c) issues
-no writes against rows other members read. Anything else keeps its own
-`IClassFixture`. The next #3379 sub-task rolls this rule out across the broader
-cohort.
+**Shareability rule.** A class can join a shared collection only if it:
+
+1. seeds additively via `EnsureSeedOnce<TSelf>`,
+2. never calls `ConfigureServices` / `WithAppsettings` / `With*FeatureFlag`,
+3. issues no writes against rows other members read, **and**
+4. asserts *scoped / subset* results — not exact-equals or counts that another
+   member's additive seed would change.
+
+Conditions 1–3 are statically checkable; **4 is not** — it only surfaces at
+runtime, so every converted cohort is run before it is kept. Anything failing the
+rule keeps its own `IClassFixture`.
+
+## Rollout status
+
+| Cohort | Classes shared | Result |
+|---|---:|---|
+| `ConnectionsController` (Enduser) | 7 | ✅ shared |
+| `RequestController` (Enduser) | 4 | ✅ shared |
+| `ClientDelegationController` (Enduser) | 0 | ⛔ reverted — `GetClients`/`GetAgents` assert exact results and failed under sharing (condition 4) |
+
+`AuthorizedParties` and the Maskinporten controllers are excluded statically
+(`ConfigureServices` / per-class feature flags). Full Enduser integration suite
+after sharing the two safe cohorts: **221 passed / 9 skipped, 0 failed.** Rollout
+continues into the other AccessManagement test projects under the same rule.
 
 ## Reproduce
 
