@@ -122,13 +122,15 @@ public sealed class PostgresTestEngine
     private async Task BootstrapRolesAsync(CancellationToken cancellationToken)
     {
         // Idempotent: a shared container builds roles once, but keep IF NOT EXISTS
-        // so the script is safe to re-run.
+        // so the script is safe to re-run. The application role is superuser only
+        // when opted in; the admin role is always superuser.
+        var applicationSuperuser = _options.ApplicationUserIsSuperuser ? "SUPERUSER " : string.Empty;
         await ExecAsync(
             $@"
             DO $$
             BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{_options.ApplicationUser}') THEN
-                    CREATE ROLE {_options.ApplicationUser} LOGIN PASSWORD '{_options.Password}' SUPERUSER INHERIT;
+                    CREATE ROLE {_options.ApplicationUser} LOGIN PASSWORD '{_options.Password}' {applicationSuperuser}INHERIT;
                 END IF;
                 IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{_options.AdminUser}') THEN
                     CREATE ROLE {_options.AdminUser} LOGIN PASSWORD '{_options.Password}' SUPERUSER INHERIT;
@@ -170,6 +172,14 @@ public sealed class PostgresTestEngineOptions
 
     /// <summary>Password for both roles.</summary>
     public string Password { get; init; } = "Password";
+
+    /// <summary>
+    /// Whether the application role is created as a superuser. Defaults to
+    /// <c>false</c> — a normal login role, mirroring production, so missing GRANTs
+    /// surface in integration tests instead of being masked. The admin role is
+    /// always a superuser.
+    /// </summary>
+    public bool ApplicationUserIsSuperuser { get; init; }
 
     /// <summary>Name of the template database that clones are created from.</summary>
     public string TemplateDatabaseName { get; init; } = "test_primary";

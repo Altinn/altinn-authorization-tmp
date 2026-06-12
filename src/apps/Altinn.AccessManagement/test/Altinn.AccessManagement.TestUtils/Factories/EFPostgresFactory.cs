@@ -41,6 +41,8 @@ public static class EFPostgresFactory
         ApplicationUser = DbUserName,
         AdminUser = DbAdminName,
         Password = DbPassword,
+        // AccessManagement's test app role has always been a superuser; keep it.
+        ApplicationUserIsSuperuser = true,
         BuildTemplateAsync = BuildTemplateAsync,
     });
 

@@ -34,6 +34,9 @@ public sealed class AuthorizationDbFixture : IAsyncLifetime
 {
     private static readonly PostgresTestEngine Engine = new(new PostgresTestEngineOptions
     {
+        // The application role stays a normal (non-superuser) login role — the
+        // engine default — matching production and this fixture's prior behaviour,
+        // so missing GRANTs surface instead of being masked.
         BuildTemplateAsync = ApplyMigrationsAsync,
     });
 
