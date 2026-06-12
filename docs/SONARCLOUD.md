@@ -62,13 +62,17 @@ project key. Two shapes:
 { "sonarcloud": false }
 ```
 
-Current state:
+Current state — the verticals that are scanned:
 
 | Vertical | Project key |
 |---|---|
 | `apps/Altinn.AccessManagement` | `Authorization_AccessManagement` |
 | `apps/Altinn.Authorization` | `Authorization_Authorization` |
-| `apps/Altinn.Register` | *disabled* (`sonarcloud: false`) |
+
+Every other vertical sets `"sonarcloud": false` and is not scanned. Notably
+`apps/Altinn.Register` is a copy of a codebase that lives in its own
+repository (`Altinn/altinn-register`), which owns its SonarCloud analysis —
+running it (or surfacing its scores) here would be duplicate and misleading.
 
 To onboard a new vertical: create the SonarCloud project under the `altinn`
 organization (Sonar UI → New project → GitHub → pick the repo → set monorepo
