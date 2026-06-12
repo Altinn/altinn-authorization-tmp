@@ -1,8 +1,11 @@
 # Test Architecture — Target Structure
 
-Status: **proposal** (design doc; precursor to a Feature + migration Tasks).
+Status: **in progress** — Feature #3452 with sized migration Tasks; Phase 2a (the
+project-local mock-catalog fixture) is implemented in PR #3456.
 Scope: the AccessManagement integration/web-app test suite. Authorization is
-referenced as the pattern to copy.
+referenced as the pattern to copy — specifically its **project-local** fixture
+(`AuthorizationApiFixture`), which bakes its own mock graph in rather than
+centralising mocks in `TestUtils`.
 
 ## 1. Why
 
@@ -61,10 +64,12 @@ multiplied out by per-class mock-patching and per-operation splitting.**
 
 ## 5. Target architecture
 
-**A. Host profiles (finite, named).** Base fixture registers the **full 15-mock
-catalog + standard removals** once (the `AuthorizationApiFixture` pattern). Most
-classes then need zero `ConfigureServices` and join one shared host. Genuine
-variation becomes a small enumerated set of collection-fixture profiles:
+**A. Host profiles (finite, named).** A **project-local** base fixture
+(`AccessMgmtApiFixture : ApiFixture`, mirroring `AuthorizationApiFixture`) registers
+the external-platform client catalog once — the mocks stay in the test project
+beside their data, not centralised in `TestUtils`. Most classes then need zero
+`ConfigureServices` and join one shared host. Genuine variation becomes a small
+enumerated set of collection-fixture profiles:
 
 | Profile | Driver | Approx. classes |
 |---|---|---|
@@ -132,7 +137,7 @@ Sizing is files/classes touched in AccessManagement.
 | # | Phase | Scope (sized) | Win | Risk | Task granularity |
 |---|---|---|---|---|---|
 | 1 | Enumerate profiles | done (this doc): ~10–12 | unblocks the rest | — | folded into the Feature |
-| 2 | **Provision the `Default` host** — bake the 15-mock catalog + removals into the base fixture; delete now-redundant `ConfigureServices` | 39 files | collapses ~40+ classes → 1 host (largest single win) | low — additive registration, validate per project | 1 Task (1 PR) |
+| 2 | **Provision the `Default` host** — bake the external-client catalog into a project-local base fixture (`AccessMgmtApiFixture`; mocks stay in the test project, not `TestUtils`); delete now-redundant `ConfigureServices` | 39 files | collapses ~40+ classes → 1 host (largest single win) | low — additive registration, validate per project | 1 Task (1 PR) |
 | 3 | **Owned-data + scoped assertions** — replace `EnsureSeedOnce<TSelf>` global seeds/asserts with per-test owned entities | 33 seeding files | removes condition-4 fragility; enables write-sharing | med — most careful; per-controller | 3–4 Tasks (per project/controller cluster) |
 | 4 | **DB-less web-app tier** — no-DB fixture for mock-the-data-layer tests | 4 clear, up to 19 candidates | drops clones + DB hosts | low | 1 Task |
 | 5 | **Define profiles as collection fixtures; convert classes to `[Collection]`** — *supersedes #3449's per-controller cohorts* | all ~71 | realizes the 71 → ~12 collapse | low after 2–3 | 2 Tasks (per project) |
@@ -140,6 +145,12 @@ Sizing is files/classes touched in AccessManagement.
 
 Suggested Feature → ~8–9 Tasks. Order matters: **2 → 3 → 4/5 → 6** (provision the
 host first; then make data shareable; then collapse onto profiles).
+
+Status: Phase 1 and Phase 2a are done — Phase 2a is the project-local
+`AccessMgmtApiFixture` catalog (#3454), shipped in PR #3456 (972 integration tests
+green). Phase 2b (#3453) is in progress. Remaining: #3459 (owned data), #3458
+(DB-less tier), #3460 (profiles), #3461 (retire `LegacyApiFixture`); plus #3457 (CI
+host-build guard) and #3462 (robust test-data paths).
 
 ## 9. Risks & open items
 
@@ -149,9 +160,14 @@ host first; then make data shareable; then collapse onto profiles).
 - **Open numbers to confirm during Phase 1/2:** exact profile count (≤~12); the
   DB-less set (4 confirmed, 19 candidates); any mock needing *per-test behavior*
   (vs one impl) — those stay isolated.
-- **Relationship to PR #3447:** that PR's measurement, `FixtureTiming`, and the two
-  validated cohorts stay. This doc reframes the cohort approach: Phase 5 supersedes
-  the per-controller rollout (#3449) with profile-based collections.
+- **Relationship to PR #3456:** that PR's measurement, `FixtureTiming`, the two
+  validated cohorts, and Phase 2a (the `AccessMgmtApiFixture` catalog) ship there.
+  Phase 5 supersedes the per-controller rollout (#3449) with profile-based collections.
+- **Project-local mocks, not `TestUtils`:** the base catalog lives in a project-local
+  fixture (`AccessMgmtApiFixture`, the `AuthorizationApiFixture` pattern). Moving the
+  AccessMgmt mocks up into `TestUtils` was rejected — shared test data (`Data/Parties`
+  is also read by `TestDataUtil`), ~14 registration sites, and fragile cross-assembly
+  `..` path navigation (see #3462) make centralisation costly for no benefit.
 
 ## Related
 
