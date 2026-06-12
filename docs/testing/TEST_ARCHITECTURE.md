@@ -89,8 +89,12 @@ mutates only its own rows can share too).
 that mutate *global* state or need a divergent host get a dedicated fixture.
 
 **D. Two tiers.**
-- **Web-app tier (no DB):** mock-the-data-layer tests — no Postgres clone, no
-  DB-connected host.
+- **Web-app tier (no DB):** tests that mock the *entire* data layer — no Postgres
+  clone, no DB connection (`ApiFixture.ProvisionsDatabase = false` via `NoDbApiFixture`).
+  Measured caveat: "mocks the data layer" is necessary but **not sufficient** — most
+  controller endpoints still reach Postgres via party / context resolution even with the
+  named repositories mocked, so each candidate must be verified by running it. The
+  genuinely DB-less set is small (so far only `Altinn2RightsControllerTest`).
 - **DB-integration tier:** real `AppDbContext` + migrations.
 
 **E. One convention.** Retire `LegacyApiFixture`; fold scenario/E2E in.
@@ -127,7 +131,8 @@ public class GetInstanceRights(DefaultHost host) {
 - **Flakiness:** the seed-interference failure class disappears; #3376 pressure drops.
 - **Parallelism:** with far fewer host builds, the single-Postgres-container plateau
   stops being the ceiling.
-- **DB-less tier** removes unnecessary clones + DB-connected host builds.
+- **DB-less tier** removes the clone/provision for the few genuinely DB-less classes
+  (measured ~1 — most endpoints still hit the DB).
 
 ## 8. Migration plan (sized → Tasks)
 
@@ -139,7 +144,7 @@ Sizing is files/classes touched in AccessManagement.
 | 1 | Enumerate profiles | done (this doc): ~10–12 | unblocks the rest | — | folded into the Feature |
 | 2 | **Provision the `Default` host** — bake the external-client catalog into a project-local base fixture (`AccessMgmtApiFixture`; mocks stay in the test project, not `TestUtils`); delete now-redundant `ConfigureServices` | 39 files | collapses ~40+ classes → 1 host (largest single win) | low — additive registration, validate per project | 1 Task (1 PR) |
 | 3 | **Owned-data + scoped assertions** — replace `EnsureSeedOnce<TSelf>` global seeds/asserts with per-test owned entities | 33 seeding files | removes condition-4 fragility; enables write-sharing | med — most careful; per-controller | 3–4 Tasks (per project/controller cluster) |
-| 4 | **DB-less web-app tier** — no-DB fixture for mock-the-data-layer tests | 4 clear, up to 19 candidates | drops clones + DB hosts | low | 1 Task |
+| 4 | **DB-less web-app tier** — no-DB fixture for mock-the-data-layer tests | ~1 verified (most candidates secretly hit the DB) | drops clone/provision for the few truly DB-less | low | done (#3458) |
 | 5 | **Define profiles as collection fixtures; convert classes to `[Collection]`** — *supersedes #3449's per-controller cohorts* | all ~71 | realizes the 71 → ~12 collapse | low after 2–3 | 2 Tasks (per project) |
 | 6 | **Retire `LegacyApiFixture`; unify scenario/E2E** | 8 + scenario | one convention | low | 1 Task |
 
@@ -171,10 +176,11 @@ that remain are either **data-layer mocks** or **profile-axis overrides**:
   - `IPublicSigningKeyProvider`: base `PublicSigningKeyProviderMock` / `SigningKeyResolverMock` (12 classes, issuer-cert tokens).
   - `IHttpContextAccessor`: default / `MutableHttpContextAccessor` (2 classes).
 
-**Sequencing insight:** the mock-data-layer (DB-less) classes hold no shared DB state, so
-they can collapse onto shared profile hosts **without** the owned-data work (#3459). That
-makes the DB-less collapse (#3458 + the DB-less slice of #3460) the first, lowest-risk
-collapse; the DB-integration classes need owned data (#3459) before they can share.
+**Sequencing insight (updated after #3458):** in principle DB-less classes could collapse
+without owned data, but the genuinely DB-less set turned out to be ~1 class — almost every
+controller endpoint reaches Postgres via party / context resolution. So the host-build
+collapse (#3460) depends on the owned-data work (#3459) for nearly all classes; #3459 is
+the real prerequisite.
 
 ## 9. Risks & open items
 
@@ -182,7 +188,7 @@ collapse; the DB-integration classes need owned data (#3459) before they can sha
 - **Discipline:** owned-data + no-per-class-DI must be conventions (review/lint) or
   it rots back.
 - **Open numbers to confirm during Phase 1/2:** exact profile count (≤~12); the
-  DB-less set (4 confirmed, 19 candidates); any mock needing *per-test behavior*
+  DB-less set (measured small — ~1; mock-data-layer is necessary-not-sufficient); any mock needing *per-test behavior*
   (vs one impl) — those stay isolated.
 - **Relationship to PR #3456:** that PR's measurement, `FixtureTiming`, the two
   validated cohorts, and Phase 2a (the `AccessMgmtApiFixture` catalog) ship there.
