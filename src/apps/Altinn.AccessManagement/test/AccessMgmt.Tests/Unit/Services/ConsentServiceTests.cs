@@ -745,6 +745,9 @@ public class ConsentServiceTests
             return Array.Empty<double>();
         }
 
+        private bool HasMeasurements(string instrumentName) =>
+            _measurements.TryGetValue(instrumentName, out var bag) && !bag.IsEmpty;
+
         /// <summary>
         /// Polls until every named instrument has at least one measurement, or the
         /// timeout elapses (then throws). Replaces a fixed <c>Task.Delay</c> "let the
@@ -754,11 +757,11 @@ public class ConsentServiceTests
         public async Task WaitForMeasurementsAsync(CancellationToken cancellationToken, params string[] instrumentNames)
         {
             var deadline = Environment.TickCount64 + 5000;
-            while (instrumentNames.Any(name => GetMeasurements(name).Count == 0))
+            while (instrumentNames.Any(name => !HasMeasurements(name)))
             {
                 if (Environment.TickCount64 >= deadline)
                 {
-                    var missing = string.Join(", ", instrumentNames.Where(name => GetMeasurements(name).Count == 0));
+                    var missing = string.Join(", ", instrumentNames.Where(name => !HasMeasurements(name)));
                     throw new TimeoutException($"No measurements for instrument(s) [{missing}] within 5000 ms.");
                 }
 

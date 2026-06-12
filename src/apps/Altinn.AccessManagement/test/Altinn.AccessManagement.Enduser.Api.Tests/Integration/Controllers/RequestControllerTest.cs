@@ -200,10 +200,9 @@ public class RequestControllerTest
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b002-0000-7000-8000-000000000001");
 
-        public GetSentRequests(ApiFixture fixture)
+        public GetSentRequests(RequestReadOnlyApiFixture fixture)
         {
             Fixture = fixture;
-            EnableFeatureFlags(fixture);
             fixture.EnsureSeedOnce<GetSentRequests>(db =>
             {
                 var reqAssignment = new RequestAssignment
@@ -275,10 +274,9 @@ public class RequestControllerTest
         private static readonly Guid TestResourceId = Guid.Parse("0196b004-0000-7000-8000-000000000002");
         private static readonly Guid PendingResourceRequestId = Guid.Parse("0196b004-0000-7000-8000-000000000003");
 
-        public GetReceivedResourceRequests(ApiFixture fixture)
+        public GetReceivedResourceRequests(RequestReadOnlyApiFixture fixture)
         {
             Fixture = fixture;
-            EnableFeatureFlags(fixture);
             fixture.EnsureSeedOnce<GetReceivedResourceRequests>(db =>
             {
                 db.ResourceTypes.Add(TestResourceType);
@@ -546,10 +544,9 @@ public class RequestControllerTest
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00a-0000-7000-8000-000000000001");
 
-        public GetRequestById(ApiFixture fixture)
+        public GetRequestById(RequestReadOnlyApiFixture fixture)
         {
             Fixture = fixture;
-            EnableFeatureFlags(fixture);
             fixture.EnsureSeedOnce<GetRequestById>(db =>
             {
                 var reqAssignment = new RequestAssignment
@@ -636,10 +633,9 @@ public class RequestControllerTest
     {
         private static readonly Guid PendingPackageRequestId = Guid.Parse("0196b00b-0000-7000-8000-000000000001");
 
-        public GetSentRequestsCountTest(ApiFixture fixture)
+        public GetSentRequestsCountTest(RequestReadOnlyApiFixture fixture)
         {
             Fixture = fixture;
-            EnableFeatureFlags(fixture);
             fixture.EnsureSeedOnce<GetSentRequestsCountTest>(db =>
             {
                 var reqAssignment = new RequestAssignment
