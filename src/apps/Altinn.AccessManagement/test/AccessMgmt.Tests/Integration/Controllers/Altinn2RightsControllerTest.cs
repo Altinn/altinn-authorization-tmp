@@ -32,9 +32,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// Controller test for <see cref="RightsInternalController"/>
 /// </summary>
 [IntegrationTest]
-public class Altinn2RightsControllerTest : IClassFixture<AccessMgmtApiFixture>
+public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
 {
-    private readonly AccessMgmtApiFixture _fixture;
+    private readonly NoDbApiFixture _fixture;
 
     private readonly string sblInternalToken = PrincipalUtil.GetAccessToken("sbl.authorization");
 
@@ -48,7 +48,7 @@ public class Altinn2RightsControllerTest : IClassFixture<AccessMgmtApiFixture>
     /// required by this controller's tests.
     /// </summary>
     /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-    public Altinn2RightsControllerTest(AccessMgmtApiFixture fixture)
+    public Altinn2RightsControllerTest(NoDbApiFixture fixture)
     {
         _fixture = fixture;
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
