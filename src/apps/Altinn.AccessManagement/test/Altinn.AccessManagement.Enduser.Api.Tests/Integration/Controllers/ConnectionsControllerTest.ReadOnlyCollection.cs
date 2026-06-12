@@ -5,8 +5,8 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
 /// <summary>
 /// Shares a single <see cref="ApiFixture"/> — one test host plus one seeded
 /// database — across the read-only <c>ConnectionsController</c> test classes,
-/// instead of each building its own (see #3379: host build is the dominant
-/// integration-test setup cost).
+/// instead of each building its own host (the dominant integration-test setup
+/// cost).
 /// </summary>
 /// <remarks>
 /// Members must be safe to share: additive seeding only (each keys its

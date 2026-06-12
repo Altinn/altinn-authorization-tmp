@@ -138,11 +138,10 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
             services.AddSingleton<IPDP, PermitPdpMock>();
 
-            // Default external-platform client mocks (#3453, Phase 2): these are
-            // always mocked in tests, so registering them here removes the
-            // identical per-class ConfigureServices boilerplate. Per-class
-            // ConfigureServices runs after this and still wins for any class
-            // that needs a different behaviour.
+            // Default external-platform client mocks: these are always mocked in
+            // tests, so registering them here removes the identical per-class
+            // ConfigureServices boilerplate. Per-class ConfigureServices runs after
+            // this and still wins for any class that needs a different behaviour.
             services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
             services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
 
@@ -157,7 +156,7 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     /// <summary>
     /// Builds the test host. Overridden only to time the build — the dominant
-    /// per-fixture cost we are sizing in #3379 — via <see cref="FixtureTiming"/>.
+    /// per-fixture setup cost — via <see cref="FixtureTiming"/>.
     /// </summary>
     protected override IHost CreateHost(IHostBuilder builder) =>
         FixtureTiming.Time(FixtureTiming.Phase.HostBuild, () => base.CreateHost(builder));

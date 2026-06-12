@@ -97,7 +97,7 @@ public class AuthorizationApiFixture : WebApplicationFactory<Program>
 
     /// <summary>
     /// Builds the test host. Overridden only to time the build — the dominant
-    /// per-fixture setup cost being sized in #3379 — via <see cref="FixtureTiming"/>.
+    /// per-fixture setup cost — via <see cref="FixtureTiming"/>.
     /// </summary>
     protected override IHost CreateHost(IHostBuilder builder) =>
         FixtureTiming.Time(FixtureTiming.Phase.HostBuild, () => base.CreateHost(builder));

@@ -4,10 +4,9 @@ using System.IO;
 namespace Altinn.Authorization.Testing;
 
 /// <summary>
-/// Lightweight, opt-out timing for the integration-test setup path. Added to
-/// size where test wall-clock actually goes — per-fixture app-host build vs
-/// per-test database provisioning vs the one-time template build — before the
-/// fixture-sharing refactor in <c>#3379</c>. Linked into the same assemblies as
+/// Lightweight, opt-out timing for the integration-test setup path: where test
+/// wall-clock goes — per-fixture app-host build vs per-test database provisioning
+/// vs the one-time template build. Linked into the same assemblies as
 /// <see cref="PostgresTestEngine"/>.
 /// </summary>
 /// <remarks>

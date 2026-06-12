@@ -4,7 +4,7 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
 
 /// <summary>
 /// Shares a single <see cref="ApiFixture"/> across the read-only
-/// <c>RequestController</c> test classes (see #3379). Members must be
+/// <c>RequestController</c> test classes. Members must be
 /// additive-seed-only, must not call <c>ConfigureServices</c> / configuration
 /// helpers, and must not write rows other members read. Mutating classes
 /// (<c>Create*</c>, <c>Reject*</c>, <c>Withdraw*</c>, <c>Approve*</c>, …) stay
