@@ -216,8 +216,11 @@ public class ConsentServiceTests
         // Act
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        // Allow listener to process
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_get_a2_duration_seconds",
+            "consent_migration_insert_a3_duration_seconds",
+            "consent_migration_update_a2_duration_seconds");
 
         // Assert
         Assert.False(result.IsProblem);
@@ -261,7 +264,9 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_get_a2_duration_seconds");
 
         Assert.False(result.IsProblem);
         Assert.NotNull(result.Value);
@@ -297,7 +302,9 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_update_a2_duration_seconds");
 
         Assert.True(result.IsProblem || result.Value == null);
         Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
@@ -338,8 +345,9 @@ public class ConsentServiceTests
         // Act
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        // Allow listener to process
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_overall_duration_seconds");
 
         // Assert
         Assert.False(result.IsProblem);
@@ -735,6 +743,27 @@ public class ConsentServiceTests
             }
 
             return Array.Empty<double>();
+        }
+
+        /// <summary>
+        /// Polls until every named instrument has at least one measurement, or the
+        /// timeout elapses (then throws). Replaces a fixed <c>Task.Delay</c> "let the
+        /// listener catch up" wait: returns as soon as the metrics are observed and
+        /// fails loudly — instead of silently — if they never arrive.
+        /// </summary>
+        public async Task WaitForMeasurementsAsync(CancellationToken cancellationToken, params string[] instrumentNames)
+        {
+            var deadline = Environment.TickCount64 + 5000;
+            while (instrumentNames.Any(name => GetMeasurements(name).Count == 0))
+            {
+                if (Environment.TickCount64 >= deadline)
+                {
+                    var missing = string.Join(", ", instrumentNames.Where(name => GetMeasurements(name).Count == 0));
+                    throw new TimeoutException($"No measurements for instrument(s) [{missing}] within 5000 ms.");
+                }
+
+                await Task.Delay(10, cancellationToken);
+            }
         }
 
         public void Dispose() => _listener.Dispose();

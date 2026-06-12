@@ -118,6 +118,22 @@ is fewer host builds (fixture sharing, above), not more threads. Going faster
 would require removing the single-container bottleneck (e.g. a container per
 worker) — out of scope and unlikely to pay off.
 
+## Test waits (`Task.Delay` audit)
+
+Test code has **0 `Thread.Sleep`** and **32 `Task.Delay`**. Audited:
+
+| Use | Count | Action |
+|---|---:|---|
+| `Task.WhenAny(serviceTask, Task.Delay(1000))` shutdown timeout guards | 12 | keep (bounded wait) |
+| `Task.Delay(N) // simulate processing` inside mock callbacks | 6 | keep (intended test-double latency) |
+| 100M-ms cancellation sentinel / 90 s lease-TTL / SUT retry backoff | 3 | keep (not test waits) |
+| `Task.Delay(20)` then assert metrics (`ConsentServiceTests`) | 4 | **fixed** → `MeasurementCollector.WaitForMeasurementsAsync` (polls; returns on first measurement, throws on timeout) |
+| `Task.Delay(10)` "let the hosted-service loop reach its timer" (`ConsentMigrationHostedServiceTests`) | 7 | keep — driven by a fake `TimeProvider`; nothing signals "now awaiting the timer", so a poll has no observable state to watch |
+
+Net: the one genuinely flaky *delay-then-assert* pattern (the metrics listener)
+is replaced with polling. The rest are either correct by design (bounded guards,
+deliberate latency) or lack an observable signal to poll on.
+
 ## Reproduce
 
 `FixtureTiming` is opt-out (disable with `FIXTURE_TIMING=off`) and writes one
