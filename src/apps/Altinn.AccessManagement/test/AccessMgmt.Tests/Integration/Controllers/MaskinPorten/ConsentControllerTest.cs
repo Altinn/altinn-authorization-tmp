@@ -66,7 +66,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-                services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
                 services.AddSingleton<IProfileClient, ProfileClientMock>();
 
                 // Register the SAME mock instance

@@ -15,7 +15,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Integration.Clients;
 
-namespace Altinn.AccessManagement.Tests.Mocks
+namespace Altinn.AccessManagement.TestUtils.Mocks
 {
     /// <summary>
     /// Mock class for <see cref="IAltinn2ConsentClient"></see> interface

@@ -203,7 +203,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
                 services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
             });
 
             await _fixture.InitializeAsync();
