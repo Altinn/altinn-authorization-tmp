@@ -20,7 +20,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// Tests resource delegations using the database container.
 /// </summary>
 [IntegrationTest]
-public class PolicyInformationPointResourcesAndInstancesTest : IClassFixture<AccessMgmtApiFixture>
+[Collection(PolicyInformationPointDbCollection.Name)]
+public class PolicyInformationPointResourcesAndInstancesTest
 {
     private readonly HttpClient _client;
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
@@ -49,9 +50,6 @@ public class PolicyInformationPointResourcesAndInstancesTest : IClassFixture<Acc
     public PolicyInformationPointResourcesAndInstancesTest(AccessMgmtApiFixture fixture)
     {
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
-        fixture.ConfigureServices(services =>
-        {
-        });
 
         fixture.EnsureSeedOnce<PolicyInformationPointResourcesAndInstancesTest>(db =>
         {

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -13,12 +14,13 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// Reuses test data from <see cref="TestData"/>.
 /// </summary>
 [IntegrationTest]
-public class PolicyInformationPointRolesAndAccessPackagesTest : IClassFixture<ApiFixture>
+[Collection(PolicyInformationPointDbCollection.Name)]
+public class PolicyInformationPointRolesAndAccessPackagesTest
 {
     private readonly HttpClient _client;
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
 
-    public PolicyInformationPointRolesAndAccessPackagesTest(ApiFixture fixture)
+    public PolicyInformationPointRolesAndAccessPackagesTest(AccessMgmtApiFixture fixture)
     {
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
 
