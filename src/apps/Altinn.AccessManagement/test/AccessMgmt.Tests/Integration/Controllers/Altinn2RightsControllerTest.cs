@@ -23,11 +23,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Migrated from CustomWebApplicationFactory<RightsInternalController> to ApiFixture
-// as part of Phase 2.2 (Sub-step 16.2a — AccessMgmt.Tests WAF consolidation, Group A
-// single-configuration migrations). All tests share a single mock set (WithServiceMoq),
-// so the DI can be registered once in the constructor; per-test HttpClients are built
-// via fixture.CreateClient(). See docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/AccessMgmt_WAF_Consolidation_Plan_and_POC.md.
+// All tests share a single mock set, so DI is registered once in the constructor;
+// per-test HttpClients are built via fixture.CreateClient().
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 /// <summary>

@@ -26,8 +26,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
 
-// Migrated from WebApplicationFixture to LegacyApiFixture as part of
-// sub-step 16.4a (Phase 2.2). The consent flow goes through the Dapper-backed
+// Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
 // ConsentRepository which binds to the Yuniql-provisioned consent.status_type
 // enum; LegacyApiFixture overlays Yuniql on top of ApiFixture's EF schemas.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise

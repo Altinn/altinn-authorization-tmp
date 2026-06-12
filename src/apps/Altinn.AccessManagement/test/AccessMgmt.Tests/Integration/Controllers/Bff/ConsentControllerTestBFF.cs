@@ -33,14 +33,11 @@ using Microsoft.Extensions.Options;
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
 {
     /// <summary>
-    /// Migrated from <c>WebApplicationFixture</c> to <see cref="LegacyApiFixture"/>
-    /// in sub-step 16.4b-continued. Because these tests reuse hard-coded
-    /// <c>requestId</c> GUIDs and share entity inserts, the class implements
-    /// <see cref="IAsyncLifetime"/> and stands up a fresh
-    /// <see cref="LegacyApiFixture"/> (hence a fresh per-test EF database,
-    /// cloned from the shared EFPostgresFactory template) for every
-    /// <c>[Fact]</c> — matching the per-test isolation the legacy
-    /// <c>WebApplicationFixture</c> provided.
+    /// Because these tests reuse hard-coded <c>requestId</c> GUIDs and share
+    /// entity inserts, the class implements <see cref="IAsyncLifetime"/> and
+    /// stands up a fresh <see cref="LegacyApiFixture"/> (hence a fresh per-test
+    /// EF database, cloned from the shared EFPostgresFactory template) for every
+    /// <c>[Fact]</c> to keep per-test isolation.
     /// </summary>
     [IntegrationTest]
     public class ConsentControllerTestBFF : IAsyncLifetime

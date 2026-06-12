@@ -23,12 +23,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Migrated from CustomWebApplicationFactory<RightsInternalController> to ApiFixture
-// as part of Phase 2.2 (Sub-step 16.2b — AccessMgmt.Tests WAF consolidation, Group A
-// nested-class splits). The two Theory tests that required PepWithPDPAuthorizationMock
-// on top of the default PdpPermitMock are relocated to the sibling class
-// RightsInternalControllerWithPdpMockTest (recipe rule 6: one mutually-exclusive DI
-// configuration per class). See docs/testing/TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/AccessMgmt_WAF_Consolidation_Plan_and_POC.md.
+// The two Theory tests that required PepWithPDPAuthorizationMock on top of the default
+// PdpPermitMock are relocated to the sibling class RightsInternalControllerWithPdpMockTest
+// (one mutually-exclusive DI configuration per class).
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     /// <summary>

@@ -34,13 +34,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-// Migrated from CustomWebApplicationFactory<MaskinportenSchemaController> to ApiFixture
-// as part of Phase 2.2 (Sub-step 16.2b — AccessMgmt.Tests WAF consolidation, Group A
-// nested-class splits). The five tests that registered PdpPermitMock instead of
-// PepWithPDPAuthorizationMock live in the sibling class MaskinportenSchemaPdpPermitControllerTest.
-// Per-test HttpContextAccessor route-value customization is supported without
-// rebuilding DI by using a shared MutableHttpContextAccessor (AsyncLocal-based override).
-// See: overhaul part-1 step 16
+// The five tests that registered PdpPermitMock instead of PepWithPDPAuthorizationMock
+// live in the sibling class MaskinportenSchemaPdpPermitControllerTest. Per-test
+// HttpContextAccessor route-value customization is supported without rebuilding DI
+// by using a shared MutableHttpContextAccessor (AsyncLocal-based override).
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     /// <summary>

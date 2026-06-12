@@ -18,8 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Migrated from CustomWebApplicationFactory<ResourceController> to ApiFixture
-// as part of Phase 2.2 (Step 16 — AccessMgmt.Tests WAF consolidation POC).
 // - appsettings.test.json is loaded via ApiFixture.WithAppsettings.
 // - SigningKeyResolverMock replaces ApiFixture's default PublicSigningKeyProviderMock
 //   because PrincipalUtil.GetAccessToken signs tokens with {issuer}-org.pem certs

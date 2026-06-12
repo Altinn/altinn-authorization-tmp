@@ -18,10 +18,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Migrated from WebApplicationFixture to ApiFixture as part of Phase 2.2
-// Sub-step 16.3 (Step 16 — AccessMgmt.Tests WAF consolidation). The
-// static shared-factory pattern is no longer needed — ApiFixture already
-// provides one host per IClassFixture<ApiFixture> instance.
+// ApiFixture already provides one host per IClassFixture<ApiFixture> instance,
+// so the previous static shared-factory pattern is no longer needed.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     [IntegrationTest]

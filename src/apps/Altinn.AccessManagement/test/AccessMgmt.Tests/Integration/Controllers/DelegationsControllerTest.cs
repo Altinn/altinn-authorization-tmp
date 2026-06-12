@@ -25,11 +25,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Migrated from CustomWebApplicationFactory<DelegationsController> to ApiFixture
-// as part of Phase 2.2 (Step 16.1 — AccessMgmt.Tests WAF consolidation, Group A easy wins).
-// The tests mock the delegation repositories, the PDP and the policy retrieval/factory, so
-// the Postgres DB that ApiFixture provisions is unused by this class.
-// See: overhaul part-1 step 16
+// The tests mock the delegation repositories, the PDP and the policy retrieval/factory,
+// so the Postgres DB that ApiFixture provisions is unused by this class.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     /// <summary>
