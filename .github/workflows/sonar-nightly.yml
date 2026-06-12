@@ -28,7 +28,14 @@ concurrency:
 
 jobs:
   # Full vertical list (changed: none → every vertical).
+  #
+  # Guard: only ever analyze `main`. A scheduled run already targets the
+  # default branch, but workflow_dispatch runs on whatever ref the UI selects
+  # — without this, a manual dispatch on a feature branch would scan that
+  # branch (burning Sonar minutes and creating junk branch analyses). A
+  # skipped first job cascades to the downstream `needs:` jobs.
   find-verticals:
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/tpl-find-verticals.yml
     with:
       type: all

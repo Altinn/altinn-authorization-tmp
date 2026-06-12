@@ -76,10 +76,12 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          # Sonar needs full git history for accurate blame, SCM authors, and
-          # "new code" period detection — but only the analyze (nightly) run
-          # does Sonar, so PR/main CI checks out shallow to save clone time.
-          fetch-depth: ${{ inputs.analyze && 0 || 1 }}
+          # Full history (fetch-depth 0) only on the analyze (nightly) run,
+          # which Sonar needs for blame / SCM authors / "new code" detection;
+          # PR/main CI checks out shallow to save clone time. The depths are
+          # quoted strings on purpose: an unquoted 0 is falsy in GitHub Actions
+          # expressions, so `analyze && 0 || 1` would always evaluate to 1.
+          fetch-depth: ${{ inputs.analyze && '0' || '1' }}
 
       - name: Install .NET
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
