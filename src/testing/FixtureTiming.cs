@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 
 namespace Altinn.Authorization.Testing;
 
@@ -137,7 +138,7 @@ internal static class FixtureTiming
     {
         static long Ms(long ticks) => (long)TimeSpan.FromTicks(ticks).TotalMilliseconds;
 
-        Console.WriteLine(
+        var line =
             $"===FIXTURE_TIMING=== " +
             $"host_build_ms={Ms(Interlocked.Read(ref _hostBuildTicks))} " +
             $"host_build_n={Interlocked.Read(ref _hostBuildCount)} " +
@@ -145,6 +146,24 @@ internal static class FixtureTiming
             $"db_provision_n={Interlocked.Read(ref _dbProvisionCount)} " +
             $"clone_ms={Ms(Interlocked.Read(ref _cloneTicks))} " +
             $"clone_n={Interlocked.Read(ref _cloneCount)} " +
-            $"template_build_ms={Ms(Interlocked.Read(ref _templateBuildTicks))}");
+            $"template_build_ms={Ms(Interlocked.Read(ref _templateBuildTicks))}";
+
+        Console.WriteLine(line);
+
+        // MTP / dotnet-coverage can swallow the test host's process-exit stdout
+        // (the summary never reached the CI log), so also append to a file when
+        // FIXTURE_TIMING_FILE is set — read locally, uploaded as a CI artifact.
+        var file = Environment.GetEnvironmentVariable("FIXTURE_TIMING_FILE");
+        if (!string.IsNullOrEmpty(file))
+        {
+            try
+            {
+                File.AppendAllText(file, line + Environment.NewLine);
+            }
+            catch
+            {
+                // Best-effort diagnostic; never fail a test run over timing output.
+            }
+        }
     }
 }
