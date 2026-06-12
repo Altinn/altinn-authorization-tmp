@@ -182,6 +182,17 @@ controller endpoint reaches Postgres via party / context resolution. So the host
 collapse (#3460) depends on the owned-data work (#3459) for nearly all classes; #3459 is
 the real prerequisite.
 
+**Progress — first collapse (#3459 / #3460).** The PolicyInformationPoint DB cohort
+(`…ResourcesAndInstancesTest` + `…RolesAndAccessPackagesTest`) now shares one host via
+`PolicyInformationPointDbCollection` — 2 host builds → 1, suite green. Finding: both were
+*already* owned-data-ready (scoped `Assert.Contains` / `Empty`, disjoint seed IDs), so no
+data rewrite was needed — the only work was confirming host-config compatibility (moving
+one class to `AccessMgmtApiFixture`; its endpoint does not use the now-mocked Parties /
+Profile). So for well-written tests #3459 is often already satisfied, and the real
+per-cohort blocker is shared host config (the profile axes), not data ownership. Classes
+with global / exact-count assertions or colliding fixed IDs still need the owned-data
+conversion.
+
 ## 9. Risks & open items
 
 - **Scope:** touches most test classes — phase per project, stay green.
