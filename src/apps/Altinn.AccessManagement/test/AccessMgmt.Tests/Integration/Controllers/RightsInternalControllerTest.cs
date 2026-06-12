@@ -67,7 +67,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
                 services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
@@ -1675,7 +1674,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
                 services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();

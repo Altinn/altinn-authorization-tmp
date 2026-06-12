@@ -61,7 +61,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
 
                 services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
 

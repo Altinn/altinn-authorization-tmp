@@ -43,7 +43,6 @@ public class PolicyInformationPointControllerTest : IClassFixture<ApiFixture>
             services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
             services.AddSingleton<IPartiesClient, PartiesClientMock>();
             services.AddSingleton<IProfileClient, ProfileClientMock>();
-            services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
         });
 
         _client = fixture.CreateClient(new() { AllowAutoRedirect = false });

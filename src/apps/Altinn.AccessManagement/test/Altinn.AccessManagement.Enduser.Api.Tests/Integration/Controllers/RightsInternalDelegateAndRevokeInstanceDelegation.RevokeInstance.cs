@@ -45,7 +45,6 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
         Fixture.ConfigureServices(services =>
         {
             services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-            services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
             services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
             services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointWithWrittenPoliciesMock>();
         });
