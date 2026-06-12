@@ -191,15 +191,12 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
             _fixture = new LegacyApiFixture();
             _fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IProfileClient, ProfileClientMock>();
             });
 
             await _fixture.InitializeAsync();

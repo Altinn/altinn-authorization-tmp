@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.Tests.Utils;
@@ -32,9 +33,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// Test class for <see cref="RightsInternalController"></see>
     /// </summary>
     [IntegrationTest]
-    public class RightsInternalControllerTest : IClassFixture<ApiFixture>
+    public class RightsInternalControllerTest : IClassFixture<AccessMgmtApiFixture>
     {
-        private readonly ApiFixture _fixture;
+        private readonly AccessMgmtApiFixture _fixture;
 
         private readonly string sblInternalToken = PrincipalUtil.GetAccessToken("sbl.authorization");
 
@@ -50,7 +51,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// defaults <see cref="ApiFixture"/> registers).
         /// </summary>
         /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-        public RightsInternalControllerTest(ApiFixture fixture)
+        public RightsInternalControllerTest(AccessMgmtApiFixture fixture)
         {
             _fixture = fixture;
             fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
@@ -62,12 +63,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
                 services.AddSingleton<IAuthenticationClient>(new AuthenticationMock());
                 services.AddSingleton<IAccessListsAuthorizationClient>(new AccessListsAuthorizationClientMock());
             });
@@ -1647,9 +1644,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// configuration per class).
     /// </summary>
     [IntegrationTest]
-    public class RightsInternalControllerWithPdpMockTest : IClassFixture<ApiFixture>
+    public class RightsInternalControllerWithPdpMockTest : IClassFixture<AccessMgmtApiFixture>
     {
-        private readonly ApiFixture _fixture;
+        private readonly AccessMgmtApiFixture _fixture;
 
         /// <summary>
         /// Constructor setting up the shared <see cref="ApiFixture"/> with the mocks
@@ -1657,7 +1654,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// <see cref="PepWithPDPAuthorizationMock"/> singleton.
         /// </summary>
         /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-        public RightsInternalControllerWithPdpMockTest(ApiFixture fixture)
+        public RightsInternalControllerWithPdpMockTest(AccessMgmtApiFixture fixture)
         {
             _fixture = fixture;
             fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
@@ -1669,12 +1666,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
                 services.AddSingleton<IAuthenticationClient>(new AuthenticationMock());
                 services.AddSingleton<IAccessListsAuthorizationClient>(new AccessListsAuthorizationClientMock());
 

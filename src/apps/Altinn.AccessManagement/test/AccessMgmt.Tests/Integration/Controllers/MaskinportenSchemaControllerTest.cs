@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
@@ -112,9 +113,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// Test class for <see cref="MaskinportenSchemaController"></see>
     /// </summary>
     [IntegrationTest]
-    public class MaskinportenSchemaControllerTest : IClassFixture<ApiFixture>
+    public class MaskinportenSchemaControllerTest : IClassFixture<AccessMgmtApiFixture>
     {
-        private readonly ApiFixture _fixture;
+        private readonly AccessMgmtApiFixture _fixture;
         private static readonly MutableHttpContextAccessor _httpContextAccessor = new();
         private HttpClient _client;
 
@@ -126,7 +127,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// <see cref="PepWithPDPAuthorizationMock"/> (the majority variant).
         /// </summary>
         /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-        public MaskinportenSchemaControllerTest(ApiFixture fixture)
+        public MaskinportenSchemaControllerTest(AccessMgmtApiFixture fixture)
         {
             _fixture = fixture;
             _httpContextAccessor.ClearOverride();
@@ -137,8 +138,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
                 services.RemoveAll<IHttpContextAccessor>();
@@ -1874,13 +1873,13 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// mutually-exclusive DI configuration per class).
     /// </summary>
     [IntegrationTest]
-    public class MaskinportenSchemaPdpPermitControllerTest : IClassFixture<ApiFixture>
+    public class MaskinportenSchemaPdpPermitControllerTest : IClassFixture<AccessMgmtApiFixture>
     {
-        private readonly ApiFixture _fixture;
+        private readonly AccessMgmtApiFixture _fixture;
         private static readonly MutableHttpContextAccessor _httpContextAccessor = new();
         private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-        public MaskinportenSchemaPdpPermitControllerTest(ApiFixture fixture)
+        public MaskinportenSchemaPdpPermitControllerTest(AccessMgmtApiFixture fixture)
         {
             _fixture = fixture;
             _httpContextAccessor.ClearOverride();
@@ -1891,8 +1890,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
                 services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
                 services.RemoveAll<IHttpContextAccessor>();

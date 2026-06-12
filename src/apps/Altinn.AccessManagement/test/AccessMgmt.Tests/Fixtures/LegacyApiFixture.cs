@@ -42,7 +42,7 @@ namespace Altinn.AccessManagement.Tests.Fixtures;
 /// be adopted without changing this fixture's public surface.
 /// </para>
 /// </remarks>
-public class LegacyApiFixture : ApiFixture
+public class LegacyApiFixture : AccessMgmtApiFixture
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LegacyApiFixture"/> class.

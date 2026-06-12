@@ -58,10 +58,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
                 services.RemoveAll<IPDP>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
 
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
 
                 // Register the SAME mock instance
                 services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);

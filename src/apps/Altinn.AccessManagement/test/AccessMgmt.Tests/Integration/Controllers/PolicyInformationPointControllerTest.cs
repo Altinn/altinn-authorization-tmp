@@ -5,6 +5,7 @@ using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Models;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Utils;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -21,7 +22,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// Test class for <see cref="PolicyInformationPointController"></see>
 /// </summary>
 [IntegrationTest]
-public class PolicyInformationPointControllerTest : IClassFixture<ApiFixture>
+public class PolicyInformationPointControllerTest : IClassFixture<AccessMgmtApiFixture>
 {
     private readonly HttpClient _client;
     private readonly JsonSerializerOptions options = new JsonSerializerOptions
@@ -33,14 +34,12 @@ public class PolicyInformationPointControllerTest : IClassFixture<ApiFixture>
     /// Initializes a new instance of the <see cref="PolicyInformationPointControllerTest"/> class.
     /// </summary>
     /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-    public PolicyInformationPointControllerTest(ApiFixture fixture)
+    public PolicyInformationPointControllerTest(AccessMgmtApiFixture fixture)
     {
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
         fixture.ConfigureServices(services =>
         {
             services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-            services.AddSingleton<IPartiesClient, PartiesClientMock>();
-            services.AddSingleton<IProfileClient, ProfileClientMock>();
         });
 
         _client = fixture.CreateClient(new() { AllowAutoRedirect = false });
