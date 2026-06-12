@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.Authorization.Testing;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Altinn.AccessManagement.TestUtils.Fixtures;
 
@@ -143,6 +145,13 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
         builder.UseConfiguration(appsettings.Build());
     }
+
+    /// <summary>
+    /// Builds the test host. Overridden only to time the build — the dominant
+    /// per-fixture cost we are sizing in #3379 — via <see cref="FixtureTiming"/>.
+    /// </summary>
+    protected override IHost CreateHost(IHostBuilder builder) =>
+        FixtureTiming.Time(FixtureTiming.Phase.HostBuild, () => base.CreateHost(builder));
 
     /// <summary>
     /// Registers a callback that modifies the <see cref="IServiceCollection"/>
@@ -339,6 +348,6 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
     /// </summary>
     public async ValueTask InitializeAsync()
     {
-        _database = await EFPostgresFactory.Create();
+        _database = await FixtureTiming.TimeAsync(FixtureTiming.Phase.DbProvision, () => EFPostgresFactory.Create());
     }
 }
