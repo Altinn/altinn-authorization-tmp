@@ -76,8 +76,23 @@ rule keeps its own `IClassFixture`.
 
 `AuthorizedParties` and the Maskinporten controllers are excluded statically
 (`ConfigureServices` / per-class feature flags). Full Enduser integration suite
-after sharing the two safe cohorts: **221 passed / 9 skipped, 0 failed.** Rollout
-continues into the other AccessManagement test projects under the same rule.
+after sharing the two safe cohorts: **221 passed / 9 skipped, 0 failed.**
+
+**Survey of the remaining test projects (complete).** The lever needs *multiple*
+read-only classes in one controller. The rest of the AccessManagement suite does
+not offer this:
+
+- `AccessMgmt.Tests` is almost entirely one class per controller — nothing to
+  share.
+- Every other multi-class file (`ServiceOwner.Api.Tests` `RequestController` /
+  `ServiceOwnerConnections`, `AccessMgmt.Tests` `MaskinportenSchema` /
+  `RightsInternal`) contains a writer or a `ConfigureServices` / feature-flag
+  member, leaving at most one read-only class — no cohort.
+
+So `ConnectionsController` + `RequestController` (Enduser) are the only
+safely-shareable read-only cohorts in the suite. **Note:** detection of writes
+must match `PostAsJsonAsync` / `SendAsync`, not just `PostAsync` — a class that
+creates data (even a `Get…Then…` setup) is not shareable.
 
 ## Reproduce
 
