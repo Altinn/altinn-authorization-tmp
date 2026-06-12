@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.TestUtils.Factories;
 using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -136,6 +137,13 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
             services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
             services.AddSingleton<IPDP, PermitPdpMock>();
+
+            // Default external-platform client mocks (#3453, Phase 2): these are
+            // always mocked in tests, so registering them here removes the
+            // identical per-class ConfigureServices boilerplate. Per-class
+            // ConfigureServices runs after this and still wins for any class
+            // that needs a different behaviour.
+            services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
 
             foreach (var configure in ConfigureServicesActions)
             {
