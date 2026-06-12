@@ -193,6 +193,22 @@ per-cohort blocker is shared host config (the profile axes), not data ownership.
 with global / exact-count assertions or colliding fixed IDs still need the owned-data
 conversion.
 
+**Remaining cohorts (config-cluster map, measured).** After the catalog default, each class's
+residual `ConfigureServices` is data-layer mocks + a PDP / signing / http-context variant. The
+clusters, and why each is a dedicated effort (not a quick win):
+- *Consent* (4 classes, identical config on `LegacyApiFixture`): only 2 use `IClassFixture`
+  (shareable in principle); the other 2 build a fresh fixture per test for isolation. Blocker:
+  each registers a per-class `Mock<IAmPartyRepository>` (same `MockParyRepositoryPopulator`, so
+  bakeable) and inserts consent requests with hard-coded GUIDs at test time — owned-data
+  conversion needed to avoid cross-class collision; watch for `.Verify` on a moved Moq.
+- *Rights / Delegation* (`AppsInstanceDelegation`, `RightsInternal`; `Altinn2Rights` is now
+  no-DB): near-identical config but DB-seeding intertwined with data-layer mocks (hybrid);
+  needs a per-class owned-data audit.
+- *Maskinporten* (`MaskinportenSchema` ×2 siblings): split by PDP (PepWith vs PdpPermit) +
+  `MutableHttpContextAccessor` — two distinct profiles, not mergeable.
+- *Singletons* (`PartyControllerTests`, `ResourceController`, `V2Resource`): each a unique
+  minimal config — no peer to share with.
+
 ## 9. Risks & open items
 
 - **Scope:** touches most test classes — phase per project, stay green.
