@@ -1,6 +1,7 @@
 {
   "deps": [
       "pkg:Altinn.Authorization.ABAC"
-    ]
+    ],
+  "sonarcloud": false
 }  
 
