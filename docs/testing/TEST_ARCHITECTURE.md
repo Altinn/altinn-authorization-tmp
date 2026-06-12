@@ -152,6 +152,30 @@ green). Phase 2b (#3453) is in progress. Remaining: #3459 (owned data), #3458
 (DB-less tier), #3460 (profiles), #3461 (retire `LegacyApiFixture`); plus #3457 (CI
 host-build guard) and #3462 (robust test-data paths).
 
+## Profile axes (measured in AccessMgmt.Tests — input for #3460)
+
+With the external-client catalog defaulted (#3454), the per-class `ConfigureServices`
+that remain are either **data-layer mocks** or **profile-axis overrides**:
+
+- **Data-layer mocks** (`PolicyRetrievalPointMock`, `DelegationMetadataRepositoryMock`,
+  `PolicyFactoryMock`) **cannot be defaulted** — 4 DB-integration classes
+  (`PartyControllerTests`, `PolicyInformationPointResourcesAndInstancesTest`,
+  `PolicyInformationPointRolesAndAccessPackagesTest`, `MaskinportenSupplierServiceTests`)
+  use the *real* repositories against the seeded Postgres. Registering a repo mock is the
+  marker of a **mock-data-layer** test, which is also the DB-less-tier signal (#3458).
+  Caveat: the Legacy/Dapper consent tests use the DB without `EnsureSeedOnce`, so the
+  DB-less set needs per-class verification, not just the seed signal.
+- **Profile axes** — the genuinely varying registrations, which become the small set of
+  named profiles in #3460:
+  - `IPDP`: `PermitPdpMock` (base default) / `PdpPermitMock` (9 classes) / `PepWithPDPAuthorizationMock` (2).
+  - `IPublicSigningKeyProvider`: base `PublicSigningKeyProviderMock` / `SigningKeyResolverMock` (12 classes, issuer-cert tokens).
+  - `IHttpContextAccessor`: default / `MutableHttpContextAccessor` (2 classes).
+
+**Sequencing insight:** the mock-data-layer (DB-less) classes hold no shared DB state, so
+they can collapse onto shared profile hosts **without** the owned-data work (#3459). That
+makes the DB-less collapse (#3458 + the DB-less slice of #3460) the first, lowest-risk
+collapse; the DB-integration classes need owned data (#3459) before they can share.
+
 ## 9. Risks & open items
 
 - **Scope:** touches most test classes — phase per project, stay green.
