@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Tests.Fixtures;
@@ -93,6 +94,13 @@ public class AuthorizationApiFixture : WebApplicationFactory<Program>
             }
         });
     }
+
+    /// <summary>
+    /// Builds the test host. Overridden only to time the build — the dominant
+    /// per-fixture setup cost being sized in #3379 — via <see cref="FixtureTiming"/>.
+    /// </summary>
+    protected override IHost CreateHost(IHostBuilder builder) =>
+        FixtureTiming.Time(FixtureTiming.Phase.HostBuild, () => base.CreateHost(builder));
 
     /// <summary>
     /// Registers a callback that modifies the <see cref="IServiceCollection"/>
