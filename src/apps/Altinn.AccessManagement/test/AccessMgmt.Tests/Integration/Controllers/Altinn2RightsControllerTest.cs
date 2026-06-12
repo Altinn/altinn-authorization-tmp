@@ -10,6 +10,7 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -31,9 +32,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// Controller test for <see cref="RightsInternalController"/>
 /// </summary>
 [IntegrationTest]
-public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
+public class Altinn2RightsControllerTest : IClassFixture<AccessMgmtApiFixture>
 {
-    private readonly ApiFixture _fixture;
+    private readonly AccessMgmtApiFixture _fixture;
 
     private readonly string sblInternalToken = PrincipalUtil.GetAccessToken("sbl.authorization");
 
@@ -47,7 +48,7 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
     /// required by this controller's tests.
     /// </summary>
     /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-    public Altinn2RightsControllerTest(ApiFixture fixture)
+    public Altinn2RightsControllerTest(AccessMgmtApiFixture fixture)
     {
         _fixture = fixture;
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
@@ -274,11 +275,10 @@ public class Altinn2RightsControllerTest : IClassFixture<ApiFixture>
         services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
         services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
         services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-        services.AddSingleton<IPartiesClient, PartiesClientMock>();
-        services.AddSingleton<IProfileClient, ProfileClientMock>();
-        services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
         services.AddSingleton<IPDP, PdpPermitMock>();
-        services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
+
+        // IPartiesClient, IProfileClient, IAltinnRolesClient and IAltinn2RightsClient
+        // come from AccessMgmtApiFixture.
 
         // ApiFixture registers PublicSigningKeyProviderMock by default, but these
         // tests sign tokens via PrincipalUtil.GetAccessToken which requires the
