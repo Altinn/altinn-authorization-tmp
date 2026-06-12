@@ -42,7 +42,8 @@ public partial class ConnectionsControllerTest
     /// </para>
     /// </remarks>
     [IntegrationTest]
-    public class GetInstances : IClassFixture<ApiFixture>
+    [Collection(ConnectionsReadOnlyCollection.Name)]
+    public class GetInstances
     {
         public GetInstances(ApiFixture fixture)
         {

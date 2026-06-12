@@ -50,7 +50,8 @@ public partial class ConnectionsControllerTest
     /// </para>
     /// </remarks>
     [IntegrationTest]
-    public class GetAvailableUsers : IClassFixture<ApiFixture>
+    [Collection(ConnectionsReadOnlyCollection.Name)]
+    public class GetAvailableUsers
     {
         public GetAvailableUsers(ApiFixture fixture)
         {

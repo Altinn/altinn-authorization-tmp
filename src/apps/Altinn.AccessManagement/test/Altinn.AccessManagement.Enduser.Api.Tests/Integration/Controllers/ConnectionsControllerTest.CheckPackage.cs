@@ -25,7 +25,8 @@ public partial class ConnectionsControllerTest
     /// Tests for <see cref="ConnectionsController.CheckPackage(Guid, IEnumerable{Guid}, IEnumerable{string}, CancellationToken)"/>.
     /// </summary>
     [IntegrationTest]
-    public class CheckPackage : IClassFixture<ApiFixture>
+    [Collection(ConnectionsReadOnlyCollection.Name)]
+    public class CheckPackage
     {
         public CheckPackage(ApiFixture fixture)
         {

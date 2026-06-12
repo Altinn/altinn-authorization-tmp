@@ -38,7 +38,8 @@ public partial class ConnectionsControllerTest
     /// </para>
     /// </remarks>
     [IntegrationTest]
-    public class GetRoles : IClassFixture<ApiFixture>
+    [Collection(ConnectionsReadOnlyCollection.Name)]
+    public class GetRoles
     {
         public GetRoles(ApiFixture fixture)
         {

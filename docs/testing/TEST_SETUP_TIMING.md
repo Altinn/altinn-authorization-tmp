@@ -31,13 +31,35 @@ against Podman (`maxParallelThreads = 4`):
   repo-wide figure cited in #3379 is 111 `IClassFixture` / 85 `ApiFixture`,
   every one a separate cold host build.
 
-## Implication for the next step
+## Prototype: fixture sharing (validated)
 
-Sharing one host across the read-only, additive-seed cohort via
-`ICollectionFixture` collapses N cold host builds into one. If ~⅔ of the 68
-fixtures here are shareable, that removes ~40–45 host builds (~60 s of
-serial-equivalent build work) — the lever the next #3379 sub-task prototypes
-and measures. Clone/template work is left alone; it is already cheap.
+Sharing one host across a read-only, additive-seed cohort via
+`ICollectionFixture` collapses N cold host builds into one. Prototyped on the
+`ConnectionsController` cluster (`Enduser.Api.Tests`): the **7** nested classes
+that are read-only, do not call `ConfigureServices`, and apply no per-class
+configuration (`CheckPackage`, `DelegationCheckRoles`, `GetAvailableUsers`,
+`GetConnections`, `GetInstances`, `GetPackages`, `GetRoles`) now join a single
+`ConnectionsReadOnlyCollection`. The other classes — `Add*`/`Remove*` (mutating)
+and any calling `ConfigureServices` — stay on `IClassFixture`.
+
+| Metric | Before | After |
+|---|---:|---:|
+| Test result | 143 passed / 5 skipped | **143 passed / 5 skipped** |
+| Wall clock | 1m 02s | **35.8 s** (−42%) |
+| Host builds (`host_build_n`) | 25 | **19** (−6) |
+| Host-build work | 129 s | 52 s |
+
+Identical pass/skip counts — no seed collisions, no isolation regression. The
+saving exceeds the 6 eliminated builds because removing them also cut CPU
+contention on the remaining 19 (avg build 5.2 s → 2.8 s). Clone/template work is
+untouched; it is already cheap.
+
+**Shareability rule (for rolling this out):** a class can join the shared
+collection only if it (a) seeds additively via `EnsureSeedOnce<TSelf>`, (b) never
+calls `ConfigureServices` / `WithAppsettings` / `With*FeatureFlag`, and (c) issues
+no writes against rows other members read. Anything else keeps its own
+`IClassFixture`. The next #3379 sub-task rolls this rule out across the broader
+cohort.
 
 ## Reproduce
 
