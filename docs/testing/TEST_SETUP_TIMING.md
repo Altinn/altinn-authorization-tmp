@@ -94,6 +94,30 @@ safely-shareable read-only cohorts in the suite. **Note:** detection of writes
 must match `PostAsJsonAsync` / `SendAsync`, not just `PostAsync` — a class that
 creates data (even a `Get…Then…` setup) is not shareable.
 
+## Parallelism (measured — no change warranted)
+
+`maxParallelThreads` sweep on `AccessMgmt.Tests` integration (972 tests, local
+Podman, 20-core host), all green:
+
+| `maxParallelThreads` | Duration | vs current |
+|---:|---:|---:|
+| 1 | 2m 55s | +49% |
+| **4 (current)** | **1m 57s** | — |
+| 8 | 2m 05s | +7% |
+| 16 | 1m 58s | +1% |
+
+The setting *is* honoured (1 → 4 is ~33% faster), but **4 is already at the
+plateau** — 4 → 8 → 16 is flat despite 20 idle cores. The limiter is not CPU; it
+is the single shared Postgres container (clone creation + connection throughput,
+`MaxPoolSize = 50`) plus the CPU-bound host builds. So raising
+`maxParallelThreads` only adds shared-state / connection pressure (cf. the #3376
+seed race) for no measured gain.
+
+**Decision: keep `maxParallelThreads: 4`.** The effective lever for these suites
+is fewer host builds (fixture sharing, above), not more threads. Going faster
+would require removing the single-container bottleneck (e.g. a container per
+worker) — out of scope and unlikely to pay off.
+
 ## Reproduce
 
 `FixtureTiming` is opt-out (disable with `FIXTURE_TIMING=off`) and writes one
