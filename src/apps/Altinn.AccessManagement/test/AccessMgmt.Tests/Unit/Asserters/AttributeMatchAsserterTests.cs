@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Altinn.AccessManagement.Core.Asserters;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Resolvers;
 using Microsoft.AspNetCore.Mvc;
@@ -77,7 +78,7 @@ public class AttributeMatchAsserterTests
     {
         var asserter = AsserterTests.Asserter<AttributeMatch>();
 
-        var result = asserter.Evaluate(values, asserter.DefaultTo);
+        var result = asserter.Evaluate(values, asserter.DefaultFrom);
 
         assert(result);
     }
@@ -119,6 +120,13 @@ public class AttributeMatchAsserterTests
             {
                 [new(BaseUrn.Altinn.Person.IdentifierNo, string.Empty)],
                 Assert.NotNull
+            },
+            {
+                // urn:altinn:userid is accepted as a "to" identifier but is NOT a valid
+                // "from" identifier, so DefaultFrom must reject it (DefaultTo accepts it).
+                // This is the one case that actually distinguishes DefaultFrom from DefaultTo.
+                [new(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "123")],
+                Assert.NotNull
             }
         };
 
@@ -159,4 +167,21 @@ public class AttributeMatchAsserterTests
                 Assert.NotNull
             }
         };
+
+    /// <summary>
+    /// A non-boolean value for a boolean-typed attribute must be reported under the
+    /// <c>AttributesAreBoolean</c> key (regression: it was reported under
+    /// <c>AttributesAreIntegers</c> due to a copy-paste error).
+    /// </summary>
+    [Fact]
+    public void AttributesAreBoolean_NonBooleanValue_ReportsUnderBooleanKey()
+    {
+        var asserter = AsserterTests.Asserter<AttributeMatch>();
+        var values = new AttributeMatch[] { new("urn:test:flag", "notabool") };
+
+        var result = asserter.Evaluate(values, asserter.AttributesAreBoolean("urn:test:flag"));
+
+        Assert.NotNull(result);
+        Assert.Contains("AttributesAreBoolean", result.Errors.Keys);
+    }
 }
