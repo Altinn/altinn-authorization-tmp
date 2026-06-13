@@ -268,7 +268,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetConsentRequest()
+        public async Task GetConsentRequest_PortalModeHide_ReturnsOk()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
@@ -296,7 +296,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetConsentRequestAccessPackage()
+        public async Task GetConsentRequest_WithAccessPackage_ReturnsOk()
         {
             Guid requestId = Guid.Parse("2fe8bd3e-d482-4170-8c09-f44cf31797ce");
 
@@ -319,7 +319,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task GetConsentRequest_Show()
+        public async Task GetConsentRequest_PortalModeShow_ReturnsOk()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
 
@@ -347,7 +347,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetConsentRequest_WithExpiredEvent()
+        public async Task GetConsentRequest_Expired_ReturnsCreatedAndExpiredEvents()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
@@ -364,7 +364,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task GetConsentRequestWithoutMessagehandledby()
+        public async Task GetConsentRequest_WithoutRequestMessage_ReturnsNullMessage()
         {
             Guid requestId = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
 
