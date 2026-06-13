@@ -254,7 +254,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithReadScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithReadScope_Returns403Forbidden()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -272,7 +272,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithToOthersReadScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithToOthersReadScope_Returns403Forbidden()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
@@ -290,7 +290,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithFromOthersWriteScope_Returns403Forbidden()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -378,7 +378,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithNoToken_ReturnsUnauthorized()
+        public async Task UpdateInstanceRights_WithNoToken_Returns401Unauthorized()
         {
             var client = Fixture.Server.CreateClient();
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };

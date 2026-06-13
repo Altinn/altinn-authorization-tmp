@@ -113,7 +113,7 @@ public partial class ConnectionsControllerTest
         /// Expects 204 NoContent.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_AsJosephineByPackageUrn_FromOthersDirection_ReturnsNoContent()
+        public async Task RemovePackages_AsJosephineByPackageUrn_FromOthersDirection_Returns204NoContent()
         {
             Guid packageId = PackageConstants.Customs.Id;
             await AddPackage(packageId);
@@ -137,7 +137,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_WithFromOthersReadScope_ReturnsForbidden()
+        public async Task RemovePackages_WithFromOthersReadScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(
@@ -152,7 +152,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_WithToOthersReadScope_ReturnsForbidden()
+        public async Task RemovePackages_WithToOthersReadScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(

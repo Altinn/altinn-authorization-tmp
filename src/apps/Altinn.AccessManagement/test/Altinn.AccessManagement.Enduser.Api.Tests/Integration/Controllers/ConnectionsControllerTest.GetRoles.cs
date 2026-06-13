@@ -222,7 +222,7 @@ public partial class ConnectionsControllerTest
         /// Test of GetRoles endpoint without specifying 'to' parameter. This should return all roles from the 'from' party to any 'to' party.
         /// </summary>
         [Fact]
-        public async Task GetRoles_WithNoToDefined()
+        public async Task GetRoles_WithNoToDefined_Returns200OkWithAllToParties()
         {
             HttpClient client = CreateClient(TestData.HanSolo.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -258,7 +258,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsTheaFromDumbo_WithToOthersScope_ReturnsForbidden()
+        public async Task GetRoles_AsTheaFromDumbo_WithToOthersScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -274,7 +274,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsMalinForDumboToMalin_WithFromOthersScope_ReturnsForbidden()
+        public async Task GetRoles_AsMalinForDumboToMalin_WithFromOthersScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -290,7 +290,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_WithWriteScope_ReturnsForbidden()
+        public async Task GetRoles_WithWriteScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

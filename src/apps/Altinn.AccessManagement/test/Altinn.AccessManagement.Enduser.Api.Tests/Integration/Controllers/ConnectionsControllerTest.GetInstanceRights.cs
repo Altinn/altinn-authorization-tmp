@@ -162,7 +162,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJosephineFromKaos_WithToOthersScope_ReturnsForbidden()
+        public async Task GetInstanceRights_AsJosephineFromKaos_WithToOthersScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.JosephineYvonnesdottir.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -178,7 +178,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJinxForKaosToJosephine_WithFromOthersScope_ReturnsForbidden()
+        public async Task GetInstanceRights_AsJinxForKaosToJosephine_WithFromOthersScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -194,7 +194,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithWriteScope_ReturnsForbidden()
+        public async Task GetInstanceRights_WithWriteScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -210,7 +210,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest with a validation error.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithInvalidInstanceUrn_ReturnsBadRequest()
+        public async Task GetInstanceRights_WithInvalidInstanceUrn_Returns400BadRequest()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -226,7 +226,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithNoToken_ReturnsUnauthorized()
+        public async Task GetInstanceRights_WithNoToken_Returns401Unauthorized()
         {
             var client = Fixture.Server.CreateClient();
 

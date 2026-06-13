@@ -118,7 +118,7 @@ public class MaskinportenSuppliersControllerIntegrationTest : IClassFixture<ApiF
     }
 
     [Fact]
-    public async Task AddSupplier_WithReadScope_ReturnsForbidden()
+    public async Task AddSupplier_WithReadScope_Returns403Forbidden()
     {
         var client = CreateClient(AddConsumer, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ);
 
@@ -129,7 +129,7 @@ public class MaskinportenSuppliersControllerIntegrationTest : IClassFixture<ApiF
     }
 
     [Fact]
-    public async Task AddSupplier_SelfDelegation_ReturnsBadRequest()
+    public async Task AddSupplier_SelfDelegation_Returns400BadRequest()
     {
         var client = CreateClient(AddConsumer, AuthzConstants.SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_WRITE);
 

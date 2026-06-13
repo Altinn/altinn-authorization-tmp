@@ -143,7 +143,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckInstance_WithReadScope_ReturnsForbidden()
+        public async Task CheckInstance_WithReadScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -159,7 +159,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckInstance_WithToOthersReadScope_ReturnsForbidden()
+        public async Task CheckInstance_WithToOthersReadScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -175,7 +175,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden (requires to-others write).
         /// </summary>
         [Fact]
-        public async Task CheckInstance_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task CheckInstance_WithFromOthersWriteScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 

@@ -130,7 +130,7 @@ public class RequestControllerTest
         }
 
         [Fact]
-        public async Task CreateRequest_WithMaskinportenSchemaResource_Returns400()
+        public async Task CreateRequest_WithMaskinportenSchemaResource_Returns400BadRequest()
         {
             // KnutVik er styremedlem i BakerJohnsen (seeded via TestData.Assignments)
             var client = CreateSystemClient(Fixture, TestData.KnutVik.Id);
@@ -573,7 +573,7 @@ public class RequestControllerTest
         public ApiFixture Fixture { get; }
 
         [Fact]
-        public async Task PartyMatchesFrom_ReturnsOk()
+        public async Task PartyMatchesFrom_Returns200Ok()
         {
             var client = CreateSystemClient(Fixture, TestData.TrondLarsen.Id);
 
@@ -587,7 +587,7 @@ public class RequestControllerTest
         }
 
         [Fact]
-        public async Task PartyMatchesTo_ReturnsOk()
+        public async Task PartyMatchesTo_Returns200Ok()
         {
             var client = CreateSystemClient(Fixture, TestData.BakerJohnsen.Id);
 
@@ -599,7 +599,7 @@ public class RequestControllerTest
         }
 
         [Fact]
-        public async Task PartyMatchesNeitherFromNorTo_ReturnsForbidden()
+        public async Task PartyMatchesNeitherFromNorTo_Returns403Forbidden()
         {
             var client = CreateSystemClient(Fixture, TestData.AstridJohansen.Id);
 
@@ -611,7 +611,7 @@ public class RequestControllerTest
         }
 
         [Fact]
-        public async Task UnknownRequestId_ReturnsForbidden()
+        public async Task UnknownRequestId_Returns403Forbidden()
         {
             var client = CreateSystemClient(Fixture, TestData.TrondLarsen.Id);
 

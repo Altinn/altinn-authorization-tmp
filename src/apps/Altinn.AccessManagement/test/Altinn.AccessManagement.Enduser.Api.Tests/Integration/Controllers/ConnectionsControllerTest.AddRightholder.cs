@@ -101,7 +101,7 @@ public partial class ConnectionsControllerTest
         /// Organizations do not require an existing connection; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_ReturnsOk()
+        public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_Returns200Ok()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -123,7 +123,7 @@ public partial class ConnectionsControllerTest
         /// The mock UserProfileLookupService resolves Bodil by SSN; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_ReturnsOk()
+        public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_Returns200Ok()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -147,7 +147,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_WithReadScope_ReturnsForbidden()
+        public async Task AddRightholder_WithReadScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -161,7 +161,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task AddRightholder_WithFromOthersWriteScope_Returns403Forbidden()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 

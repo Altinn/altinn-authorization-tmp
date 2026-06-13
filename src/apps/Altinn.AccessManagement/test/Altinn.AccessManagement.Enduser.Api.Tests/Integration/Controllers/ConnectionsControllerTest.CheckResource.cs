@@ -92,7 +92,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 3 rights (read, access, subscribe) all granted with RoleAccess and PackageAccess.
         /// </summary>
         [Fact]
-        public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_ReturnsOK()
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_Returns200Ok()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
@@ -133,7 +133,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 3 rights all granted with PackageAccess but not RoleAccess.
         /// </summary>
         [Fact]
-        public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_ReturnsOK()
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_Returns200Ok()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
@@ -175,7 +175,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 17 rights (mix of granted and denied).
         /// </summary>
         [Fact]
-        public async Task CheckResource_DiheOmsetningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
+        public async Task CheckResource_DiheOmsetningsoppgave_PartialAccess_RolesAndPackages_Returns200Ok()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=app_dihe_omsetningsoppgave-for-alkohol", TestContext.Current.CancellationToken);
@@ -217,7 +217,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckResource_WithReadScope_ReturnsForbidden()
+        public async Task CheckResource_WithReadScope_Returns403Forbidden()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
@@ -229,7 +229,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckResource_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task CheckResource_WithFromOthersWriteScope_Returns403Forbidden()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
             var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
