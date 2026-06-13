@@ -12,7 +12,7 @@ MethodUnderTest_Scenario_ExpectedResult
 
 ```csharp
 // ✅ Good — clearly communicates intent
-GetUser_WithInvalidId_ReturnsNotFound()
+GetUser_WithInvalidId_Returns404NotFound()
 TryDeleteDelegationPolicyRules_PolicyAlreadyDeleted_ReturnsNoChange()
 CreateXacmlJsonRequest_MissingSubject_ThrowsArgumentException()
 
@@ -32,8 +32,25 @@ WritePolicy_TC03()
 | **Keep it concise** | Aim for readable at a glance; abbreviate common terms if unambiguous. |
 | **Async suffix** | Not required on test method names (suppressed via `VSTHRD200`). |
 
+### Result vocabulary
+
+For HTTP-endpoint tests, the result segment uses the **numeric + named status** form so the expected outcome is unambiguous:
+
+| Status | Result segment |
+|---|---|
+| 200 | `Returns200Ok` |
+| 201 | `Returns201Created` |
+| 202 | `Returns202Accepted` |
+| 204 | `Returns204NoContent` |
+| 206 | `Returns206PartialContent` |
+| 400 | `Returns400BadRequest` |
+| 401 | `Returns401Unauthorized` |
+| 403 | `Returns403Forbidden` |
+| 404 | `Returns404NotFound` |
+| 500 | `Returns500InternalServerError` |
+
+Do **not** use bare or synonym forms for the result segment (`Success`, `OK`, `Valid`, `ReturnOk`, `BadRequest`) — those are ambiguous about the status or actually describe the *scenario*. Non-HTTP (service / unit) tests use a `Returns<Outcome>` segment describing the domain outcome (e.g. `ReturnsNull`, `ReturnsEmpty`, `ReturnsFalse`).
+
 ### Scope
 
-This convention applies to **all new tests**. Existing tests will be renamed
-opportunistically (e.g., when modifying a test class for other reasons) to
-avoid large noisy diffs.
+Applies to all tests. `AccessMgmt.Tests` was standardized to this convention in #3463; new tests must follow it (enforced by review).

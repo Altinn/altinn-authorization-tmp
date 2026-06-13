@@ -52,7 +52,7 @@ public class IdentifierUtilTest
 
     // ── MaskSSN ──────────────────────────────────────────────────────────────
     [Fact]
-    public void MaskSSN_ReturnsFirstSixDigitsPlusFiveAsterisks()
+    public void MaskSSN_ElevenDigitSsn_ReturnsFirstSixDigitsPlusFiveAsterisks()
     {
         IdentifierUtil.MaskSSN("02056260016").Should().Be("020562*****");
     }

@@ -19,7 +19,7 @@ public class AttributeMatchAsserterTests
     /// </summary>
     [Theory]
     [MemberData(nameof(DefaultToCases), MemberType = typeof(AttributeMatchAsserterTests))]
-    public void DefaultTo(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
+    public void DefaultTo_VariousAttributeMatches_ReturnsExpectedValidationResult(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
     {
         var asserter = AsserterTests.Asserter<AttributeMatch>();
 
@@ -73,7 +73,7 @@ public class AttributeMatchAsserterTests
     /// </summary>
     [Theory]
     [MemberData(nameof(DefaultFromCases), MemberType = typeof(AttributeMatchAsserterTests))]
-    public void DefaultFrom(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
+    public void DefaultFrom_VariousAttributeMatches_ReturnsExpectedValidationResult(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
     {
         var asserter = AsserterTests.Asserter<AttributeMatch>();
 
@@ -127,7 +127,7 @@ public class AttributeMatchAsserterTests
     /// </summary>
     [Theory]
     [MemberData(nameof(DefaultResourceCases), MemberType = typeof(AttributeMatchAsserterTests))]
-    public void DefaultResource(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
+    public void DefaultResource_VariousAttributeMatches_ReturnsExpectedValidationResult(IEnumerable<AttributeMatch> values, Action<ValidationProblemDetails> assert)
     {
         var asserter = AsserterTests.Asserter<AttributeMatch>();
 

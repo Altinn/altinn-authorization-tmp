@@ -50,7 +50,7 @@ public class V2ResourceControllerTest : IClassFixture<LegacyApiFixture>
     /// <see cref="ResourceController.Post(List{AccessManagementResource})"/>
     /// </summary>
     [Fact(DisplayName = "POST_UpsertResource")]
-    public async Task POST_UpsertResource()
+    public async Task Post_UpsertResource_Returns200Ok()
     {
         // GIVEN a resource is upserted in resource registry
         // WHEN resource registry forwards the resource

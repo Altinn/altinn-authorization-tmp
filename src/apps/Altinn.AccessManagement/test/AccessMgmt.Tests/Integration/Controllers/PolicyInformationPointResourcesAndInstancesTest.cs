@@ -164,7 +164,7 @@ public class PolicyInformationPointResourcesAndInstancesTest
     /// the delegation should be returned.
     /// </summary>
     [Fact]
-    public async Task GetDelegationChanges_ResourceDelegation_FromPersonToPerson()
+    public async Task GetDelegationChanges_ResourceDelegationFromPersonToPerson_Returns200Ok()
     {
         var request = new
         {
@@ -200,7 +200,7 @@ public class PolicyInformationPointResourcesAndInstancesTest
     /// the delegation to Acme Corp should be returned (inherited via keyrole).
     /// </summary>
     [Fact]
-    public async Task GetDelegationChanges_ResourceDelegation_FromPersonToOrganization_InheritedViaKeyRole()
+    public async Task GetDelegationChanges_ResourceDelegationFromPersonToOrganizationInheritedViaKeyRole_Returns200Ok()
     {
         var request = new
         {

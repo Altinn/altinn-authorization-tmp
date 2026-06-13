@@ -210,7 +210,7 @@ public class PackagesControllerTest
     }
 
     [Fact]
-    public async Task Search_WithInvalidTypeName_ReturnsProblem()
+    public async Task Search_WithInvalidTypeName_Returns500InternalServerError()
     {
         var serviceMock = new Mock<IPackageService>();
         var controller = CreateController(serviceMock.Object, PassThroughTranslation().Object);
@@ -310,7 +310,7 @@ public class PackagesControllerTest
     }
 
     [Fact]
-    public async Task GetGroup_WhenNotFound_Returns404()
+    public async Task GetGroup_WhenNotFound_Returns404NotFound()
     {
         var serviceMock = new Mock<IPackageService>();
         serviceMock.Setup(s => s.GetAreaGroup(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

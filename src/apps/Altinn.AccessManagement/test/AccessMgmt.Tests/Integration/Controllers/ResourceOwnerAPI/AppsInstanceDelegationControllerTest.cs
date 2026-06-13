@@ -118,7 +118,7 @@ public class AppsInstanceDelegationControllerTest
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegationCheck_Ok), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task DelegationCheck_ValidToken_OK(string platformToken, string resourceId, string instanceId, Paginated<ResourceRightDelegationCheckResultDto> expected)
+    public async Task DelegationCheck_ValidToken_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<ResourceRightDelegationCheckResultDto> expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -145,7 +145,7 @@ public class AppsInstanceDelegationControllerTest
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalReadForAppNoExistingPolicy), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalSignForAppExistingPolicy), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalReadForAppNoExistingPolicyOrganizatonNumber), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_OK(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegate_Returns200Ok(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -169,7 +169,7 @@ public class AppsInstanceDelegationControllerTest
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppOnlyExistingPolicyRevokeLast), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppMultipleExistingPolicyRevoke), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppNoExistingPolicyRevokeLast), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Revoke_OK(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceRevokeResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevoke_Returns200Ok(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceRevokeResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -185,7 +185,7 @@ public class AppsInstanceDelegationControllerTest
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAll), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_RevokeAll_OK(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceRevokeResponseDto> expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevokeAll_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceRevokeResponseDto> expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -201,7 +201,7 @@ public class AppsInstanceDelegationControllerTest
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAllToManyPolicyFiles), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_RevokeAll_ToManyPolicyFilesToUpdate(string platformToken, string resourceId, string instanceId, AltinnProblemDetails expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevokeAllTooManyPolicyFiles_Returns400BadRequest(string platformToken, string resourceId, string instanceId, AltinnProblemDetails expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -217,7 +217,7 @@ public class AppsInstanceDelegationControllerTest
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAllUnathorized), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_NoToken_RevokeAll_Unauthorized(string resourceId, string instanceId)
+    public async Task AppsInstanceDelegationController_NoTokenRevokeAll_Returns401Unauthorized(string resourceId, string instanceId)
     {
         var client = GetTestClient(null);
 
@@ -236,7 +236,7 @@ public class AppsInstanceDelegationControllerTest
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateReadForAppNoExistingPolicyNoResponceDBWrite), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_DBWriteFails(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegateDBWriteFails_Returns206PartialContent(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -258,7 +258,7 @@ public class AppsInstanceDelegationControllerTest
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateToPartyNotExisting), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_InvalidParty(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AltinnProblemDetails expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegateInvalidParty_Returns400BadRequest(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AltinnProblemDetails expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -274,7 +274,7 @@ public class AppsInstanceDelegationControllerTest
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.GetAllAppDelegatedInstances), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Get_OK(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceDelegationResponseDto> expected)
+    public async Task AppsInstanceDelegationController_ValidTokenGet_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceDelegationResponseDto> expected)
     {
         var client = GetTestClient(platformToken);
 

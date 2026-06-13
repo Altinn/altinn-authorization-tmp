@@ -237,7 +237,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Test: Getting consent status changes without authorization returns Unauthorized.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_NoToken_ReturnsUnauthorized()
+        public async Task GetConsentStatusChanges_NoToken_Returns401Unauthorized()
         {
             HttpClient client = GetTestClient();
 
@@ -251,7 +251,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Test: Getting consent status changes with wrong scope returns Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_WrongScope_ReturnsForbidden()
+        public async Task GetConsentStatusChanges_WrongScope_Returns403Forbidden()
         {
             HttpClient client = GetTestClient();
 
@@ -269,7 +269,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Test: Getting consent status changes returns OK with paginated data ordered newest first.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_ValidRequest_ReturnsOkWithDataOrderedOldestFirst()
+        public async Task GetConsentStatusChanges_ValidRequest_Returns200OkWithDataOrderedOldestFirst()
         {
             HttpClient client = GetTestClient();
             Guid partyUuid = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181");
@@ -295,7 +295,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_Paging_DoesNotReturnOlderEventsForSameConsentRequest()
+        public async Task GetConsentStatusChanges_Paging_Returns200OkWithoutOlderEventsForSameConsentRequest()
         {
             HttpClient client = GetTestClient();
 
@@ -348,7 +348,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_IdenticalTimestamps_TieBreakerByEventId_OverPages()
+        public async Task GetConsentStatusChanges_IdenticalTimestampsTieBreakerByEventIdOverPages_Returns200Ok()
         {
             HttpClient client = GetTestClient();
 
@@ -406,7 +406,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_PageSizeQueryParam_IsIgnored_UsesConfigValue()
+        public async Task GetConsentStatusChanges_PageSizeQueryParamIsIgnored_Returns200OkWithConfigPageSize()
         {
             HttpClient client = GetTestClient();
 
@@ -429,7 +429,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_PageSizeFromConfig_ReturnsCorrectNumberOfItems()
+        public async Task GetConsentStatusChanges_PageSizeFromConfig_Returns200OkWithCorrectNumberOfItems()
         {
             HttpClient client = GetTestClient();
 
@@ -448,7 +448,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_NextLink_DoesNotContainPageSizeParam()
+        public async Task GetConsentStatusChanges_NextLink_Returns200OkWithoutPageSizeParam()
         {
             HttpClient client = GetTestClient();
 
@@ -468,7 +468,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_ExactMultipleOfPageSize_LastPageIsEmpty()
+        public async Task GetConsentStatusChanges_ExactMultipleOfPageSize_Returns200OkWithEmptyLastPage()
         {
             // 10 consents seeded, pageSize = 5 → 2 full pages, then an empty 3rd page with no nextLink
             HttpClient client = GetTestClient();
@@ -503,7 +503,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Fits exactly one full page; the follow-up page is empty (no next link).
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByEventTypeAccepted_ReturnsAllAcceptedAcrossPages()
+        public async Task GetConsentStatusChanges_FilterByEventTypeAccepted_Returns200OkWithAllAcceptedAcrossPages()
         {
             var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=accepted");
 
@@ -518,7 +518,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Fits exactly one full page; the follow-up page is empty (no next link).
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByEventTypeRejected_ReturnsAllRejectedAcrossPages()
+        public async Task GetConsentStatusChanges_FilterByEventTypeRejected_Returns200OkWithAllRejectedAcrossPages()
         {
             var allItems = await FetchAllPages("/accessmanagement/api/v1/enterprise/consentrequests/events?eventType=rejected");
 
@@ -532,7 +532,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Fewer than one page, so no next link on the first (and only) response.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByEventTypeRevoked_ReturnsAllRevokedInOnePage()
+        public async Task GetConsentStatusChanges_FilterByEventTypeRevoked_Returns200OkWithAllRevokedInOnePage()
         {
             HttpClient client = GetAuthorizedReadClient();
 
@@ -554,7 +554,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Spans two pages (5 + 3). Verifies correct counts and that no rejected events leak in.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByAcceptedAndRevoked_Returns8EventsAcrossTwoPages()
+        public async Task GetConsentStatusChanges_FilterByAcceptedAndRevoked_Returns200OkWith8EventsAcrossTwoPages()
         {
             const int expectedTotal = SeededAccepted + SeededRevoked; // 8
             var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "accepted", "revoked" };
@@ -594,7 +594,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// so exactly 2 events are expected (accepted + revoked), both in one page.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByConsentRequestId_RevokedConsent_ReturnsTwoEvents()
+        public async Task GetConsentStatusChanges_FilterByConsentRequestIdRevokedConsent_Returns200OkWithTwoEvents()
         {
             // _revokedConsentIds[0] was accepted first, then revoked → 2 non-created events
             Guid targetId = _revokedConsentIds[0];
@@ -621,7 +621,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// so exactly 1 event expected (accepted).
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByConsentRequestId_AcceptedOnlyConsent_ReturnsOneEvent()
+        public async Task GetConsentStatusChanges_FilterByConsentRequestIdAcceptedOnlyConsent_Returns200OkWithOneEvent()
         {
             // _acceptedConsentIds[3] was accepted but not revoked (only indexes 0-2 were revoked)
             Guid targetId = _acceptedConsentIds[3];
@@ -644,7 +644,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// consentRequestId=&lt;rejectedId&gt; → exactly 1 event (rejected).
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByConsentRequestId_RejectedConsent_ReturnsOneEvent()
+        public async Task GetConsentStatusChanges_FilterByConsentRequestIdRejectedConsent_Returns200OkWithOneEvent()
         {
             Guid targetId = _rejectedConsentIds[0];
 
@@ -666,7 +666,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// consentRequestId + eventType=revoked → for a revoked consent, only the revoked event is returned.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_FilterByConsentRequestIdAndEventType_ReturnsOnlyMatchingEvent()
+        public async Task GetConsentStatusChanges_FilterByConsentRequestIdAndEventType_Returns200OkWithOnlyMatchingEvent()
         {
             Guid targetId = _revokedConsentIds[0];
 
@@ -688,7 +688,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// createdAfter=tomorrow → no events fall after a future timestamp, result is empty.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_CreatedAfterFuture_ReturnsEmpty()
+        public async Task GetConsentStatusChanges_CreatedAfterFuture_Returns200OkWithEmpty()
         {
             string futureTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
 
@@ -710,7 +710,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Verifies count across all pages and that ordering is ascending.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_CreatedAfterYesterday_ReturnsAllEventsAcrossPages()
+        public async Task GetConsentStatusChanges_CreatedAfterYesterday_Returns200OkWithAllEventsAcrossPages()
         {
             string pastTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
             var allItems = await FetchAllPages(
@@ -734,7 +734,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// createdBefore=yesterday → no events fall before a past lower bound, result is empty.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_CreatedBeforeYesterday_ReturnsEmpty()
+        public async Task GetConsentStatusChanges_CreatedBeforeYesterday_Returns200OkWithEmpty()
         {
             string pastTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
 
@@ -756,7 +756,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Verifies count across all pages.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_CreatedBeforeTomorrow_ReturnsAllEventsAcrossPages()
+        public async Task GetConsentStatusChanges_CreatedBeforeTomorrow_Returns200OkWithAllEventsAcrossPages()
         {
             string futureTimestamp = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
             var allItems = await FetchAllPages(
@@ -769,7 +769,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// createdAfter=yesterday + createdBefore=tomorrow → time window contains all 13 events.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_CreatedAfterAndBeforeCombined_ReturnsAllEventsWithinWindow()
+        public async Task GetConsentStatusChanges_CreatedAfterAndBeforeCombined_Returns200OkWithAllEventsWithinWindow()
         {
             string after = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(-1).ToString("O"));
             string before = Uri.EscapeDataString(DateTimeOffset.UtcNow.AddDays(1).ToString("O"));
@@ -781,7 +781,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithInvalidEventType_ReturnsBadRequest()
+        public async Task GetConsentEvents_WithInvalidEventType_Returns400BadRequest()
         {
             SetupMockPartyRepository();
 
@@ -801,7 +801,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithCreatedAfterAfterCreatedBefore_ReturnsBadRequest()
+        public async Task GetConsentEvents_WithCreatedAfterAfterCreatedBefore_Returns400BadRequest()
         {
             SetupMockPartyRepository();
 
@@ -824,7 +824,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithCreatedAfterEqualToCreatedBefore_ReturnsBadRequest()
+        public async Task GetConsentEvents_WithCreatedAfterEqualToCreatedBefore_Returns400BadRequest()
         {
             SetupMockPartyRepository();
 
@@ -846,7 +846,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithInvalidContinuationToken_ReturnsBadRequest()
+        public async Task GetConsentEvents_WithInvalidContinuationToken_Returns400BadRequest()
         {
             SetupMockPartyRepository();
 
@@ -866,7 +866,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithWrongLengthContinuationToken_ReturnsBadRequest()
+        public async Task GetConsentEvents_WithWrongLengthContinuationToken_Returns400BadRequest()
         {
             SetupMockPartyRepository();
 

@@ -76,7 +76,7 @@ public class PolicyInformationPointControllerTest : IClassFixture<AccessMgmtApiF
     /// </summary>
     [Theory]
     [MemberData(nameof(Scenarios))]
-    public async Task GetDelegationChanges_ValidResponse(string scenario)
+    public async Task GetDelegationChanges_ValidRequest_Returns200Ok(string scenario)
     {
         // Act
         HttpResponseMessage actualResponse = await _client.PostAsync($"accessmanagement/api/v1/policyinformation/getdelegationchanges", GetRequest(scenario), TestContext.Current.CancellationToken);

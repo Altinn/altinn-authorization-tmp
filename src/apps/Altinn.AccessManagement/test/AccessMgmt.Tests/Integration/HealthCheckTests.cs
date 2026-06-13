@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Health
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task VerifyHealthCheck_OK()
+        public async Task HealthEndpoint_WhenAppIsHealthy_Returns200Ok()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "/health");
 
@@ -40,7 +40,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Health
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task VerifyAliveCheck_OK()
+        public async Task AliveEndpoint_WhenAppIsRunning_Returns200Ok()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "/alive");
 

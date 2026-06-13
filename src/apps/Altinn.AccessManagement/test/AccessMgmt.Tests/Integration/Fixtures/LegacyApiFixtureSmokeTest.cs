@@ -25,7 +25,7 @@ public class LegacyApiFixtureSmokeTest(LegacyApiFixture fixture) : IClassFixture
     private LegacyApiFixture Fixture { get; } = fixture;
 
     [Fact]
-    public async Task InsertAccessManagementResource_Succeeds_WhenYuniqlSchemaIsProvisioned()
+    public async Task InsertAccessManagementResource_WhenYuniqlSchemaIsProvisioned_PersistsResource()
     {
         // Ensure the host has been built so DI + Yuniql migrations ran.
         _ = Fixture.BuildConfiguration();

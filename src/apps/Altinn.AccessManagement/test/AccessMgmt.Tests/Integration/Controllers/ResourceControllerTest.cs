@@ -66,7 +66,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_ResourceStored()
+        public async Task InsertAccessManagementResource_Valid_Returns201Created()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
@@ -99,7 +99,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_MissingBearerToken()
+        public async Task InsertAccessManagementResource_MissingBearerToken_Returns401Unauthorized()
         {
             // Arrange
             _client.DefaultRequestHeaders.Remove("Authorization");
@@ -119,7 +119,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_InvalidBearerToken()
+        public async Task InsertAccessManagementResource_InvalidBearerToken_Returns401Unauthorized()
         {
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
             StreamContent content = new StreamContent(dataStream);
@@ -143,7 +143,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_NoInput()
+        public async Task InsertAccessManagementResource_NoInput_Returns400BadRequest()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input2.json");
@@ -172,7 +172,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_InvalidModel()
+        public async Task InsertAccessManagementResource_InvalidModel_Returns400BadRequest()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input3.json");
@@ -203,7 +203,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_ResourcePartialStored()
+        public async Task InsertAccessManagementResource_ResourcePartialStored_Returns206PartialContent()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input4.json");
@@ -235,7 +235,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task InsertAccessManagementResource_AllFailed()
+        public async Task InsertAccessManagementResource_AllFailed_Returns400BadRequest()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input5.json");

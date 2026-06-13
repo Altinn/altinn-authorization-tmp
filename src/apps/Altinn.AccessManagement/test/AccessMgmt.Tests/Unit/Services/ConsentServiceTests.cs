@@ -176,7 +176,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_All_Histograms_OnSuccess()
+    public async Task GetAndStoreAltinn2Consent_Success_RecordsAllHistograms()
     {
         // Arrange: real Meter + listener to capture histogram recordings
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
@@ -232,7 +232,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_GetHistogram_OnDuplicate()
+    public async Task GetAndStoreAltinn2Consent_Duplicate_RecordsGetHistogram()
     {
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
         _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
@@ -274,7 +274,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_UpdateHistogram_OnValidationFailure()
+    public async Task GetAndStoreAltinn2Consent_ValidationFailure_RecordsUpdateHistogram()
     {
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
         _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
@@ -311,7 +311,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_OverallHistogram_OnSuccess()
+    public async Task GetAndStoreAltinn2Consent_Success_RecordsOverallHistogram()
     {
         // Arrange: real Meter + listener to capture overall histogram recording
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");

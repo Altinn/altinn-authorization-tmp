@@ -60,7 +60,7 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(GetGivenDelegations_ReturnOk_Input))]
-    public async Task GetGivenDelegations_ReturnOk(string header, string value, Action<HttpResponseMessage> assert)
+    public async Task GetGivenDelegations_ValidRequest_Returns200Ok(string header, string value, Action<HttpResponseMessage> assert)
     {
         var client = NewDefaultClient(WithHeader(header, value));
 
@@ -97,7 +97,7 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(GetReceivedDelegations_ReturnOk_Input))]
-    public async Task GetReceivedDelegations_ReturnOk(string header, string value, Action<HttpResponseMessage> assert)
+    public async Task GetReceivedDelegations_ValidRequest_Returns200Ok(string header, string value, Action<HttpResponseMessage> assert)
     {
         var client = NewDefaultClient(WithHeader(header, value));
 
@@ -128,7 +128,7 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(ClearAccessCache_ReturnOk_input))]
-    public async Task ClearAccessCache_ReturnOk(string authnUserToken, int party, BaseAttributeExternal toAttribute, Action<HttpResponseMessage> assert)
+    public async Task ClearAccessCache_AuthorizedAdmin_Returns200Ok(string authnUserToken, int party, BaseAttributeExternal toAttribute, Action<HttpResponseMessage> assert)
     {
         var client = NewClient(WithClientRoute("accessmanagement/api/v1/"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authnUserToken);
@@ -171,7 +171,7 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(ClearAccessCache_ReturnBadRequest_input))]
-    public async Task ClearAccessCache_ReturnBadRequest(string authnUserToken, int party, BaseAttributeExternal toAttribute, Action<HttpResponseMessage> assert)
+    public async Task ClearAccessCache_MalformedUuid_Returns400BadRequest(string authnUserToken, int party, BaseAttributeExternal toAttribute, Action<HttpResponseMessage> assert)
     {
         var client = NewClient(WithClientRoute("accessmanagement/api/v1/"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authnUserToken);

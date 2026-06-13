@@ -93,7 +93,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_WithConsents_ProcessesAll()
+    public async Task ProcessBatch_WithConsents_ProcessesAllAndReturnsCount()
     {
         // Arrange
         var consentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
@@ -138,7 +138,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_PartialSuccess_ContinuesProcessing()
+    public async Task ProcessBatch_PartialSuccess_ProcessesAllAndReturnsCount()
     {
         // Arrange
         var consentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
@@ -169,7 +169,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_ConsentThrowsException_ContinuesWithOthers()
+    public async Task ProcessBatch_ConsentThrowsException_ProcessesRemainingAndReturnsCount()
     {
         // Arrange
         var consentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
@@ -197,7 +197,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_MixedExceptionsAndResults_HandlesAll()
+    public async Task ProcessBatch_MixedExceptionsAndResults_ProcessesAllAndReturnsCount()
     {
         // Arrange
         var consentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
@@ -231,7 +231,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_RespectsConfiguredBatchSize()
+    public async Task ProcessBatch_LargeConsentFeed_RequestsConfiguredBatchSize()
     {
         // Arrange
         var largeConsentList = Enumerable.Range(0, 100).Select(_ => Guid.NewGuid()).ToList();
@@ -315,7 +315,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_RespectsMaxDegreeOfParallelism()
+    public async Task ProcessBatch_ConfiguredParallelism_LimitsConcurrency()
     {
         // Arrange
         _settings.MaxDegreeOfParallelism = 5;
@@ -590,7 +590,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_MaxDegreeOfParallelism_DefaultValue()
+    public async Task ProcessBatch_DefaultParallelism_ProcessesAllConsents()
     {
         // Arrange - Test with default MaxDegreeOfParallelism
         var defaultSettings = new ConsentMigrationSettings
@@ -665,7 +665,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_HighParallelism_HandlesLoad()
+    public async Task ProcessBatch_HighParallelism_ProcessesAllConsents()
     {
         // Arrange - Test with high parallelism
         _settings.MaxDegreeOfParallelism = 50;
@@ -692,7 +692,7 @@ public class ConsentMigrationSyncServiceTests
     }
 
     [Fact]
-    public async Task ProcessBatch_CreatesScopePerItem()
+    public async Task ProcessBatch_WithConsents_CreatesScopePerItem()
     {
         // Arrange
         var consentIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
