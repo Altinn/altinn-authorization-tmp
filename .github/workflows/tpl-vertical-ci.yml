@@ -258,6 +258,18 @@ jobs:
             "${{ github.workspace }}/fixture-timing.txt" \
             "${{ github.workspace }}/docs/testing/host-build-baseline.txt"
 
+      - name: Guard - test naming convention
+        # Fail when an AccessManagement test method name uses a bare HTTP status,
+        # a numeric status without a name, or an opaque id, instead of the
+        # numeric+named result convention (docs/testing/TEST_NAMING_CONVENTION.md).
+        # Scoped to the AccessManagement vertical; rules are narrow to avoid false
+        # positives (domain-outcome results like ReturnsTrue/Success are allowed).
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && contains(inputs.path, 'Altinn.AccessManagement') }}
+        shell: bash
+        run: |
+          bash "${{ github.workspace }}/.github/scripts/check-test-naming.sh" \
+            "${{ github.workspace }}"
+
       - name: Report failed tests
         # When the Test step fails, surface the specific failing test names
         # (plus their assertion / stack context) directly in the workflow log.

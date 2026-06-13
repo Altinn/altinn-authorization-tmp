@@ -53,4 +53,6 @@ Do **not** use bare or synonym forms for the result segment (`Success`, `OK`, `V
 
 ### Scope
 
-Applies to all tests. The AccessManagement test projects (`AccessMgmt.Tests`, `Enduser.Api.Tests`, `Api.Tests`, `ServiceOwner.Api.Tests`, `Api.Internal.Tests`, `Core.Tests`, `PersistenceEF.Tests`) were standardized to this convention in #3463; new tests must follow it (enforced by review).
+Applies to all tests. The AccessManagement test projects (`AccessMgmt.Tests`, `Enduser.Api.Tests`, `Api.Tests`, `ServiceOwner.Api.Tests`, `Api.Internal.Tests`, `Core.Tests`, `PersistenceEF.Tests`) were standardized to this convention in #3463; new tests must follow it.
+
+A narrow CI guard (`.github/scripts/check-test-naming.sh`, wired into `tpl-vertical-ci.yml`) backs this up for the AccessManagement vertical: it fails the build on a bare HTTP-status result segment (`...BadRequest`, `...ReturnsOk`), a numeric status without a name (`Returns400`), or an opaque id (`TCxx`, trailing digits). It deliberately does **not** police domain-outcome results (`ReturnsTrue`, `Success`, `Valid`, …) — those stay a review concern.
