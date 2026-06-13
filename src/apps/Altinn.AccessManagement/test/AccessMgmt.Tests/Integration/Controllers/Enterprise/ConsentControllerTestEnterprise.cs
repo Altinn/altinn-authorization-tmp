@@ -35,35 +35,14 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
     /// Tests for maskinporten controller for consent
     /// </summary>
     [IntegrationTest]
-    public class ConsentControllerTestEnterprise : IClassFixture<LegacyApiFixture>
+    [Collection(ConsentDbCollection.Name)]
+    public class ConsentControllerTestEnterprise
     {
-        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;
-        private readonly ApiFixture _fixture;
+        private readonly ConsentApiFixture _fixture;
 
-        public ConsentControllerTestEnterprise(LegacyApiFixture fixture)
+        public ConsentControllerTestEnterprise(ConsentApiFixture fixture)
         {
-            _mockAmPartyRepository = new Mock<IAmPartyRepository>();
             _fixture = fixture;
-
-            fixture.ConfigureServices(services =>
-            {
-                // PlatformAccessToken / maskinporten tokens are signed by
-                // {issuer}-org.pem; default PublicSigningKeyProviderMock only
-                // accepts the static test key.
-                services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-
-                // Replace ApiFixture's default PermitPdpMock with the legacy
-                // PdpPermitMock flavour used by these tests.
-                services.RemoveAll<IPDP>();
-                services.AddSingleton<IPDP, PdpPermitMock>();
-
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-
-                // Register the SAME mock instance
-                services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
-            });
         }
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -73,7 +52,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
 
         private void SetupMockPartyRepository()
         {
-            MockParyRepositoryPopulator.SetupMockPartyRepository(_mockAmPartyRepository);
+            MockParyRepositoryPopulator.SetupMockPartyRepository(_fixture.AmPartyRepository);
         }
 
         /// <summary>
