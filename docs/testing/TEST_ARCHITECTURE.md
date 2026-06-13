@@ -97,7 +97,12 @@ that mutate *global* state or need a divergent host get a dedicated fixture.
   genuinely DB-less set is small (so far only `Altinn2RightsControllerTest`).
 - **DB-integration tier:** real `AppDbContext` + migrations.
 
-**E. One convention.** Retire `LegacyApiFixture`; fold scenario/E2E in.
+**E. One convention.** Every web-app fixture descends from `ApiFixture` (the profile
+fixtures `AccessMgmt` / `Legacy` / `Consent` / `Rights` / `NoDb` are subclasses), and the
+scenario / E2E tests use it too — so this is already achieved. `LegacyApiFixture` is
+*retained* as the full-schema (EF + Yuniql) profile, not a separate convention: it is
+`ConsentApiFixture`'s base and is used by the Dapper-backed consent / resource tests, so
+deleting it would unwind structure for no gain.
 
 ## 6. Before / after (author-facing)
 
@@ -146,7 +151,7 @@ Sizing is files/classes touched in AccessManagement.
 | 3 | **Owned-data + scoped assertions** — replace `EnsureSeedOnce<TSelf>` global seeds/asserts with per-test owned entities | 33 seeding files | removes condition-4 fragility; enables write-sharing | med — most careful; per-controller | 3–4 Tasks (per project/controller cluster) |
 | 4 | **DB-less web-app tier** — no-DB fixture for mock-the-data-layer tests | ~1 verified (most candidates secretly hit the DB) | drops clone/provision for the few truly DB-less | low | done (#3458) |
 | 5 | **Define profiles as collection fixtures; convert classes to `[Collection]`** — *supersedes #3449's per-controller cohorts* | all ~71 | realizes the 71 → ~12 collapse | low after 2–3 | 2 Tasks (per project) |
-| 6 | **Retire `LegacyApiFixture`; unify scenario/E2E** | 8 + scenario | one convention | low | 1 Task |
+| 6 | **One convention (#3461)** — every fixture descends from `ApiFixture` and scenario/E2E use it; `LegacyApiFixture` retained as the full-schema profile (`ConsentApiFixture`'s base) rather than deleted | — | one convention | — | ✅ done |
 
 Suggested Feature → ~8–9 Tasks. Order matters: **2 → 3 → 4/5 → 6** (provision the
 host first; then make data shareable; then collapse onto profiles).
