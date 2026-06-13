@@ -61,7 +61,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess()
+        public async Task GetRolesWithAccess_FromPolicy_ReturnsExpectedRoles()
         {
             // Arrange
             XacmlPolicy policy = await _policyRetrievalPointMock.GetPolicyAsync("resource1", TestContext.Current.CancellationToken);
