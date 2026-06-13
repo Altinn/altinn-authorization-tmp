@@ -69,7 +69,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks
 
         private Altinn2ConsentRequest GetAltinn2Request(Guid id)
         {
-            Stream dataStream = File.OpenRead($"Data/Consent/a2consent_request_{id.ToString()}.json");
+            Stream dataStream = File.OpenRead(TestDataDirectory.Combine("Consent", $"a2consent_request_{id.ToString()}.json"));
             JsonSerializerOptions options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
