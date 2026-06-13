@@ -221,7 +221,9 @@ combinations) or require per-test isolation, so they stay on their own fixtures.
 incidental variations of a few profiles. The realised wins are the catalog default (#3454), the
 no-DB tier (#3458, ~1 class), and these three cohort collapses; further reduction would require
 aggressive superset-baking that risks changing per-class behaviour (low yield, rising risk), so
-#3459 / #3460 stop here.
+#3459 / #3460 stop here. A CI guard (#3457, `.github/scripts/check-host-build-count.sh`) now
+fails the build if `AccessMgmt.Tests` builds more than the current 65 hosts, so the reduction
+cannot silently regress; the baseline lives in `docs/testing/host-build-baseline.txt`.
 
 ## 9. Risks & open items
 
