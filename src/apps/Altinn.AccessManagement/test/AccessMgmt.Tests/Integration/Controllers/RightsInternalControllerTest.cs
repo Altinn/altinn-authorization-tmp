@@ -1631,36 +1631,23 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// mutually-exclusive DI configuration.
     /// </summary>
     [IntegrationTest]
-    public class RightsInternalControllerWithPdpMockTest : IClassFixture<AccessMgmtApiFixture>
+    public class RightsInternalControllerWithPdpMockTest : IClassFixture<RightsApiFixture>
     {
-        private readonly AccessMgmtApiFixture _fixture;
+        private readonly RightsApiFixture _fixture;
 
         /// <summary>
-        /// Constructor setting up the shared <see cref="ApiFixture"/> with the mocks
-        /// required by this controller's tests plus the concrete
-        /// <see cref="PepWithPDPAuthorizationMock"/> singleton.
+        /// Constructor. The mocks these tests need are provided by
+        /// <see cref="RightsApiFixture"/>; this only adds the concrete
+        /// <see cref="PepWithPDPAuthorizationMock"/> singleton they also resolve
+        /// (the legacy <c>WithPDPMock</c> behaviour).
         /// </summary>
-        /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-        public RightsInternalControllerWithPdpMockTest(AccessMgmtApiFixture fixture)
+        /// <param name="fixture">Per-class <see cref="RightsApiFixture"/>.</param>
+        public RightsInternalControllerWithPdpMockTest(RightsApiFixture fixture)
         {
             _fixture = fixture;
             fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
             fixture.ConfigureServices(services =>
-            {
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-                services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.RemoveAll<IPDP>();
-                services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IAuthenticationClient>(new AuthenticationMock());
-                services.AddSingleton<IAccessListsAuthorizationClient>(new AccessListsAuthorizationClientMock());
-
-                // Legacy WithPDPMock: additional concrete PepWithPDPAuthorizationMock singleton.
-                services.AddSingleton(new PepWithPDPAuthorizationMock());
-            });
+                services.AddSingleton(new PepWithPDPAuthorizationMock()));
         }
 
         /// <summary>

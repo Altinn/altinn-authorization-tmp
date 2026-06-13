@@ -25,7 +25,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Moq;
 
 // Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
 // ConsentRepository which binds to the Yuniql-provisioned consent.status_type

@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Tests.Moqdata;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Util;
@@ -24,7 +23,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Moq;
 
 // Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
 // ConsentRepository which binds to the Yuniql-provisioned consent.status_type
