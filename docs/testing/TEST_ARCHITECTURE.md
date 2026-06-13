@@ -203,13 +203,25 @@ clusters, and why each is a dedicated effort (not a quick win):
   (Enterprise random `Guid.CreateVersion7()` vs Maskinporten fixed) — no owned-data rewrite.
   The other 2 classes (BFF, FetchStatusChanges) build a fresh fixture per test for isolation
   and stay separate.
-- *Rights / Delegation* (`AppsInstanceDelegation`, `RightsInternal`; `Altinn2Rights` is now
-  no-DB): near-identical config but DB-seeding intertwined with data-layer mocks (hybrid);
-  needs a per-class owned-data audit.
+- *Rights / Delegation* — ✅ **done.** `AppsInstanceDelegationControllerTest` + the main
+  `RightsInternalControllerTest` share `RightsApiFixture` via `RightsDbCollection` (2 hosts → 1).
+  All baked services are stateless mocks; no owned-data rewrite (AppsInstance seeds additively
+  under its own IDs, RightsInternal reads baseline). The `WithPdpMock` sibling (needs an extra
+  `PepWithPDPAuthorizationMock`) keeps its own fixture.
 - *Maskinporten* (`MaskinportenSchema` ×2 siblings): split by PDP (PepWith vs PdpPermit) +
   `MutableHttpContextAccessor` — two distinct profiles, not mergeable.
 - *Singletons* (`PartyControllerTests`, `ResourceController`, `V2Resource`): each a unique
   minimal config — no peer to share with.
+
+**Collapse outcome (measured).** Three cleanly-shareable cohorts collapsed — PolicyInfoPoint,
+Consent, Rights/Delegation (6 classes → 3 hosts). The rest do not form shareable groups: the
+remaining classes have idiosyncratic configs (unique PDP / data-layer / http-context
+combinations) or require per-test isolation, so they stay on their own fixtures. **The optimistic
+"71 → ~12" target does not materialise** — the per-class configs are genuinely diverse, not
+incidental variations of a few profiles. The realised wins are the catalog default (#3454), the
+no-DB tier (#3458, ~1 class), and these three cohort collapses; further reduction would require
+aggressive superset-baking that risks changing per-class behaviour (low yield, rising risk), so
+#3459 / #3460 stop here.
 
 ## 9. Risks & open items
 
