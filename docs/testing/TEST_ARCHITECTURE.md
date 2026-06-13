@@ -196,11 +196,13 @@ conversion.
 **Remaining cohorts (config-cluster map, measured).** After the catalog default, each class's
 residual `ConfigureServices` is data-layer mocks + a PDP / signing / http-context variant. The
 clusters, and why each is a dedicated effort (not a quick win):
-- *Consent* (4 classes, identical config on `LegacyApiFixture`): only 2 use `IClassFixture`
-  (shareable in principle); the other 2 build a fresh fixture per test for isolation. Blocker:
-  each registers a per-class `Mock<IAmPartyRepository>` (same `MockParyRepositoryPopulator`, so
-  bakeable) and inserts consent requests with hard-coded GUIDs at test time — owned-data
-  conversion needed to avoid cross-class collision; watch for `.Verify` on a moved Moq.
+- *Consent* — ✅ **done.** The 2 `IClassFixture` classes (`ConsentControllerTestEnterprise`,
+  Maskinporten `ConsentControllerTest`) now share `ConsentApiFixture` via `ConsentDbCollection`
+  (2 hosts → 1). The shared `MockParyRepositoryPopulator` Moq is baked into the fixture
+  (Setup-only, so a single instance is safe) and inserted request IDs were already disjoint
+  (Enterprise random `Guid.CreateVersion7()` vs Maskinporten fixed) — no owned-data rewrite.
+  The other 2 classes (BFF, FetchStatusChanges) build a fresh fixture per test for isolation
+  and stay separate.
 - *Rights / Delegation* (`AppsInstanceDelegation`, `RightsInternal`; `Altinn2Rights` is now
   no-DB): near-identical config but DB-seeding intertwined with data-layer mocks (hybrid);
   needs a per-class owned-data audit.
