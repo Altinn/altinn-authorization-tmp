@@ -33,9 +33,10 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// Test class for <see cref="RightsInternalController"></see>
     /// </summary>
     [IntegrationTest]
-    public class RightsInternalControllerTest : IClassFixture<AccessMgmtApiFixture>
+    [Collection(RightsDbCollection.Name)]
+    public class RightsInternalControllerTest
     {
-        private readonly AccessMgmtApiFixture _fixture;
+        private readonly RightsApiFixture _fixture;
 
         private readonly string sblInternalToken = PrincipalUtil.GetAccessToken("sbl.authorization");
 
@@ -51,23 +52,10 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// defaults <see cref="ApiFixture"/> registers).
         /// </summary>
         /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-        public RightsInternalControllerTest(AccessMgmtApiFixture fixture)
+        public RightsInternalControllerTest(RightsApiFixture fixture)
         {
             _fixture = fixture;
             fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
-            fixture.ConfigureServices(services =>
-            {
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-                services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.RemoveAll<IPDP>();
-                services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton<IAuthenticationClient>(new AuthenticationMock());
-                services.AddSingleton<IAccessListsAuthorizationClient>(new AccessListsAuthorizationClientMock());
-            });
         }
 
         /// <summary>

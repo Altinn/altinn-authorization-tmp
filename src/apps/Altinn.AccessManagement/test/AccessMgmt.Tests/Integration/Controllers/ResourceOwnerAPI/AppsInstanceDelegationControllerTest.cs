@@ -31,9 +31,10 @@ using Microsoft.Extensions.Options;
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 [IntegrationTest]
-public class AppsInstanceDelegationControllerTest : IClassFixture<AccessMgmtApiFixture>
+[Collection(RightsDbCollection.Name)]
+public class AppsInstanceDelegationControllerTest
 {
-    private readonly AccessMgmtApiFixture _fixture;
+    private readonly RightsApiFixture _fixture;
     private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     /// <summary>
@@ -41,24 +42,10 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<AccessMgmtApiF
     /// required by this controller's tests.
     /// </summary>
     /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-    public AppsInstanceDelegationControllerTest(AccessMgmtApiFixture fixture)
+    public AppsInstanceDelegationControllerTest(RightsApiFixture fixture)
     {
         _fixture = fixture;
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
-        fixture.ConfigureServices(services =>
-        {
-            services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-            services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-            services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-            services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-            services.AddSingleton<IPDP, PdpPermitMock>();
-
-            // ApiFixture registers PublicSigningKeyProviderMock by default, but these
-            // tests sign tokens via PrincipalUtil.GetAccessToken which requires the
-            // issuer-cert-backed SigningKeyResolverMock.
-            services.RemoveAll<IPublicSigningKeyProvider>();
-            services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-        });
 
         fixture.EnsureSeedOnce<AppsInstanceDelegationControllerTest>(db =>
         {
