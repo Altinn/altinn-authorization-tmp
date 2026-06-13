@@ -3,19 +3,16 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
 
@@ -54,10 +51,6 @@ public partial class ConnectionsControllerTest
         public RemoveAssignment(ApiFixture fixture)
         {
             Fixture = fixture;
-            Fixture.ConfigureServices(services =>
-            {
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-            });
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.Altinn2RoleRevoke);
             Fixture.EnsureSeedOnce<RemoveAssignment>(db =>
             {

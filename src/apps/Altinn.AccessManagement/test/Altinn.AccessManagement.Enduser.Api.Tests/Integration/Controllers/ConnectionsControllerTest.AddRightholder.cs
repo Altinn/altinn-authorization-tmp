@@ -52,7 +52,6 @@ public partial class ConnectionsControllerTest
             Fixture.ConfigureServices(services =>
             {
                 services.AddSingleton<IUserProfileLookupService, UserProfileLookupServiceMock>();
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
             });
             Fixture.EnsureSeedOnce<AddRightholder>(db =>
             {

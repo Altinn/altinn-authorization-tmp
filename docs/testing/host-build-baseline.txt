@@ -8,3 +8,4 @@
 #
 # Format: "<TestAssemblyName> <max-host-builds>"
 AccessMgmt.Tests 65
+Altinn.AccessManagement.Enduser.Api.Tests 42
