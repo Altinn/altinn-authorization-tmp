@@ -26,8 +26,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// The tests mock the delegation repositories, the PDP and the policy retrieval/factory,
-// so the Postgres DB that ApiFixture provisions is unused by this class.
+// The tests mock the delegation repositories, the PDP and the policy retrieval/factory;
+// the entities they rely on are seeded into the provisioned database via EnsureSeedOnce.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     /// <summary>

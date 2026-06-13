@@ -14,8 +14,9 @@ using Altinn.Authorization.Api.Contracts.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-// The tests mock IDelegationMetadataRepository and friends, so the Postgres DB that
-// ApiFixture provisions is unused by this class.
+// The tests mock IDelegationMetadataRepository, but the endpoint still resolves
+// parties / context against the provisioned Postgres database, so a real DB is
+// required (this is not a DB-less test).
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 /// <summary>

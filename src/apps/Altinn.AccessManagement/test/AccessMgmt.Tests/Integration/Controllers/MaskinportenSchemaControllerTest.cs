@@ -1869,8 +1869,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// Sibling to <see cref="MaskinportenSchemaControllerTest"/> hosting the
     /// <c>PostMaskinportenSchemaDelegation_ValidationProblemDetails_*</c> tests
     /// that require <see cref="PdpPermitMock"/> instead of the default
-    /// <see cref="PepWithPDPAuthorizationMock"/>. Split per recipe rule 6 (one
-    /// mutually-exclusive DI configuration per class).
+    /// <see cref="PepWithPDPAuthorizationMock"/>. Split into its own class because it
+    /// needs a different, mutually-exclusive DI configuration.
     /// </summary>
     [IntegrationTest]
     public class MaskinportenSchemaPdpPermitControllerTest : IClassFixture<AccessMgmtApiFixture>

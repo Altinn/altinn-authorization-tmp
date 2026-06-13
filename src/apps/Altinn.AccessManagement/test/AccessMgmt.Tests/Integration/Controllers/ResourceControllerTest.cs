@@ -22,9 +22,9 @@ using Microsoft.Extensions.Options;
 // - SigningKeyResolverMock replaces ApiFixture's default PublicSigningKeyProviderMock
 //   because PrincipalUtil.GetAccessToken signs tokens with {issuer}-org.pem certs
 //   that SigningKeyResolverMock loads from disk.
-// - IResourceMetadataRepository is mocked, so the real Postgres DB created by
-//   ApiFixture is unused by these tests. The container overhead is acceptable
-//   and already paid by other AccessMgmt.Tests consumers.
+// - IResourceMetadataRepository is mocked; these tests do not query the database
+//   directly. ApiFixture still provisions one — an overhead already paid by other
+//   AccessMgmt.Tests consumers.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers
 {
     /// <summary>

@@ -46,10 +46,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         };
 
         /// <summary>
-        /// Constructor setting up the shared <see cref="ApiFixture"/> with the mocks
-        /// required by this controller's tests. IPDP is overridden with
-        /// <see cref="PdpPermitMock"/> (recipe rule 3: remove-then-add for the
-        /// defaults <see cref="ApiFixture"/> registers).
+        /// Constructor. The mocks this controller's tests need (the PdpPermit PDP,
+        /// issuer-cert signing and the mocked policy / delegation data layer) are
+        /// provided by <see cref="RightsApiFixture"/>; this only loads appsettings.
         /// </summary>
         /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
         public RightsInternalControllerTest(RightsApiFixture fixture)
@@ -1628,8 +1627,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
     /// tests that exercised the legacy <c>WithPDPMock</c> action on top of the
     /// default DI set — i.e. tests that need <see cref="PepWithPDPAuthorizationMock"/>
     /// registered as a concrete singleton alongside <see cref="PdpPermitMock"/> for
-    /// <see cref="IPDP"/>. Split out per recipe rule 6 (one mutually-exclusive DI
-    /// configuration per class).
+    /// <see cref="IPDP"/>. Split into its own class because it needs a different,
+    /// mutually-exclusive DI configuration.
     /// </summary>
     [IntegrationTest]
     public class RightsInternalControllerWithPdpMockTest : IClassFixture<AccessMgmtApiFixture>

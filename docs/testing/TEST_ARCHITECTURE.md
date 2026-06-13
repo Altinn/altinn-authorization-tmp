@@ -1,7 +1,8 @@
 # Test Architecture — Target Structure
 
-Status: **in progress** — Feature #3452 with sized migration Tasks; Phase 2a (the
-project-local mock-catalog fixture) is implemented in PR #3456.
+Status: **largely complete** — Feature #3452's sub-tasks are implemented in PR #3456:
+the project-local mock-catalog fixture, the no-DB tier, three cohort host collapses,
+the CI host-build guard, robust test-data paths, and a unified fixture convention.
 Scope: the AccessManagement integration/web-app test suite. Authorization is
 referenced as the pattern to copy — specifically its **project-local** fixture
 (`AuthorizationApiFixture`), which bakes its own mock graph in rather than
@@ -19,7 +20,7 @@ fights it. This document is the structure those measurements point to.
 
 | Fact | Value |
 |---|---|
-| `IClassFixture<ApiFixture>` classes (≈ host builds) | ~71 across 45 files |
+| `IClassFixture<ApiFixture>` classes (≈ host builds) | ~71 at baseline (now 65 after the cohort collapses) |
 | Per-fixture host build (dominant cost) | ~1.36 s avg (12.9 s cold) |
 | DB clone / template build | 230 ms / 9 s one-time |
 | Classes calling `ConfigureServices` | 39 files |
@@ -51,8 +52,9 @@ symptom:
 5. **No single convention.** `ApiFixture`, `LegacyApiFixture` (8), scenario/E2E
    tests, and the mock-based Authorization fixture coexist.
 
-**Headline: ~71 host builds are not ~71 configs — they are ~10–12 real profiles,
-multiplied out by per-class mock-patching and per-operation splitting.**
+**Headline (hypothesis): ~71 host builds looked like ~10–12 real profiles multiplied
+out by per-class mock-patching and per-operation splitting. Measurement later showed
+the per-class configs are more idiosyncratic than this — see the collapse outcome in §8.**
 
 ## 4. Principles
 
@@ -78,7 +80,7 @@ enumerated set of collection-fixture profiles:
 | `EnableRequestAssignmentResource` / `…Package` / `EnableEnduserMaskinportenAdminApi` | feature flags | ~3 each |
 | PDP / resource-registry / http-context overrides | `RemoveAll<…>` behavior | ~12 spread over a few |
 
-→ **~71 host builds collapse to ~10–12.**
+→ **target: ~71 host builds collapse to ~10–12** (the realised outcome was smaller — see the collapse outcome in §8).
 
 **B. Data ownership.** Rich shared baseline template + each test creating entities
 under **unique IDs** and asserting only against them. Additive seeds never collide;
