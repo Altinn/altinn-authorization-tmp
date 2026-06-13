@@ -262,13 +262,13 @@ public class ConsentMigrationSyncServiceTests
             Times.Once);
     }
 
-    // ADD THESE 12 NEW TESTS to the existing ConsentMigrationSyncServiceTests class
     [Fact]
     public async Task ProcessBatch_ParallelProcessing_ProcessesConsentsInParallel()
     {
         // Arrange
         var consentIds = Enumerable.Range(0, 20).Select(_ => Guid.NewGuid()).ToList();
-        var processingTimes = new List<DateTime>();
+        var concurrentCount = 0;
+        var maxConcurrentCount = 0;
         var lockObj = new object();
 
         _clientMock.Setup(x => x.GetAltinn2ConsentListForMigration(
@@ -283,35 +283,35 @@ public class ConsentMigrationSyncServiceTests
           {
               lock (lockObj)
               {
-                  processingTimes.Add(DateTime.UtcNow);
+                  concurrentCount++;
+                  if (concurrentCount > maxConcurrentCount)
+                  {
+                      maxConcurrentCount = concurrentCount;
+                  }
               }
 
               await Task.Delay(50); // Simulate processing time
+
+              lock (lockObj)
+              {
+                  concurrentCount--;
+              }
+
               return ConsentMigrationResult.Succeeded;
           });
 
         var service = CreateService();
 
         // Act
-        var startTime = DateTime.UtcNow;
         var result = await service.ProcessBatch(CancellationToken.None);
-        var endTime = DateTime.UtcNow;
 
         // Assert
         Assert.Equal(20, result);
         _migrationServiceMock.Verify(x => x.MigrateConsent(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Exactly(20));
 
-        // With MaxDegreeOfParallelism=10, processing 20 items with 50ms each should take ~100ms (not 1000ms sequential)
-        var totalTime = (endTime - startTime).TotalMilliseconds;
-        Assert.True(totalTime < 500, $"Expected parallel processing to complete in <500ms, but took {totalTime}ms");
-
-        // Verify that multiple consents were processed at the same time (within 10ms window)
-        var concurrentGroups = processingTimes
-          .GroupBy(t => t.Ticks / TimeSpan.FromMilliseconds(10).Ticks)
-          .Where(g => g.Count() > 1)
-          .Count();
-
-        Assert.True(concurrentGroups > 0, "Expected some consents to be processed concurrently");
+        // Observed peak concurrency proves parallel processing, without asserting on
+        // wall-clock timing (a fixed ms budget flakes under CI load / GC pauses).
+        Assert.True(maxConcurrentCount > 1, "Expected parallel processing to occur");
     }
 
     [Fact]
