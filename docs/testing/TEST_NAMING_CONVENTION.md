@@ -53,4 +53,4 @@ Do **not** use bare or synonym forms for the result segment (`Success`, `OK`, `V
 
 ### Scope
 
-Applies to all tests. `AccessMgmt.Tests` was standardized to this convention in #3463; new tests must follow it (enforced by review).
+Applies to all tests. The AccessManagement test projects (`AccessMgmt.Tests`, `Enduser.Api.Tests`, `Api.Tests`, `ServiceOwner.Api.Tests`, `Api.Internal.Tests`, `Core.Tests`, `PersistenceEF.Tests`) were standardized to this convention in #3463; new tests must follow it (enforced by review).
