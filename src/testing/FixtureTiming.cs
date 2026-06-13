@@ -28,6 +28,8 @@ internal static class FixtureTiming
     private static readonly bool Enabled =
         !string.Equals(Environment.GetEnvironmentVariable("FIXTURE_TIMING"), "off", StringComparison.OrdinalIgnoreCase);
 
+    private static readonly string Assembly = ResolveAssemblyLabel();
+
     private static long _hostBuildTicks;
     private static long _hostBuildCount;
     private static long _dbProvisionTicks;
@@ -103,6 +105,30 @@ internal static class FixtureTiming
         }
     }
 
+    /// <summary>
+    /// Best-effort name of the test project, derived from the output directory
+    /// (<c>.../&lt;Project&gt;/bin/&lt;Config&gt;/&lt;Tfm&gt;/</c>). Tags the summary line so a
+    /// CI host-build guard can target a single project's count.
+    /// </summary>
+    private static string ResolveAssemblyLabel()
+    {
+        try
+        {
+            var dir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            for (var i = 0; i < 3; i++)
+            {
+                dir = Path.GetDirectoryName(dir) ?? dir;
+            }
+
+            var name = Path.GetFileName(dir);
+            return string.IsNullOrEmpty(name) ? "unknown" : name;
+        }
+        catch
+        {
+            return "unknown";
+        }
+    }
+
     private static void Record(Phase phase, TimeSpan elapsed)
     {
         switch (phase)
@@ -139,6 +165,7 @@ internal static class FixtureTiming
 
         var line =
             $"===FIXTURE_TIMING=== " +
+            $"assembly={Assembly} " +
             $"host_build_ms={Ms(Interlocked.Read(ref _hostBuildTicks))} " +
             $"host_build_n={Interlocked.Read(ref _hostBuildCount)} " +
             $"db_provision_ms={Ms(Interlocked.Read(ref _dbProvisionTicks))} " +

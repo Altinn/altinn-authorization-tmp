@@ -1,0 +1,10 @@
+# Maximum integration-test WebApplicationFactory host builds per test assembly,
+# enforced in CI by .github/scripts/check-host-build-count.sh using FixtureTiming.
+#
+# Host build is the dominant integration-test setup cost (docs/testing/TEST_ARCHITECTURE.md),
+# so adding a per-class host should instead reuse a shared profile / collection
+# fixture. Lower is better. Only raise a number here when a new host is genuinely
+# justified, and prefer lowering it as more classes collapse onto shared fixtures.
+#
+# Format: "<TestAssemblyName> <max-host-builds>"
+AccessMgmt.Tests 65
