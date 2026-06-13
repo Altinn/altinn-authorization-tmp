@@ -96,8 +96,8 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// Tests <see cref="RightsInternalController.GetReceivedRights(int, System.Threading.CancellationToken)"/>
     /// </summary>
     [Theory]
-    [MemberData(nameof(GetReceviedDelegations_ReturnOk_Input))]
-    public async Task GetReceviedDelegations_ReturnOk(string header, string value, Action<HttpResponseMessage> assert)
+    [MemberData(nameof(GetReceivedDelegations_ReturnOk_Input))]
+    public async Task GetReceivedDelegations_ReturnOk(string header, string value, Action<HttpResponseMessage> assert)
     {
         var client = NewDefaultClient(WithHeader(header, value));
 
@@ -113,7 +113,7 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
     /// Case 4. List all delegations to a person "" with keyroles using ssn
     /// Case 5. List all delegations to a person with no keyroles using partyid
     /// </summary>
-    public static TheoryData<string, string, Action<HttpResponseMessage>> GetReceviedDelegations_ReturnOk_Input() => new()
+    public static TheoryData<string, string, Action<HttpResponseMessage>> GetReceivedDelegations_ReturnOk_Input() => new()
     {
         {
             string.Empty, "50005545", Assertions(

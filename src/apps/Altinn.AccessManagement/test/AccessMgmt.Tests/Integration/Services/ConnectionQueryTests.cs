@@ -45,7 +45,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Petter()
+    public async Task GetConnectionsFromOthers_Petter_ReturnsBakerJohnsenWithSubUnits()
     {
         var orgId = TestDataSet.GetEntity("Regnskaperne").Id;
         var personId = TestDataSet.GetEntity("Petter").Id;
@@ -77,7 +77,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Gunnar()
+    public async Task GetConnectionsFromOthers_Gunnar_ReturnsBakerJohnsenWithSubUnits()
     {
         var orgId = TestDataSet.GetEntity("Regnskaperne").Id;
         var personId = TestDataSet.GetEntity("Gunnar").Id;
@@ -109,7 +109,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Nina()
+    public async Task GetConnectionsFromOthers_Nina_ReturnsSkrikFrisorOnly()
     {
         var orgId = TestDataSet.GetEntity("Skrik Frisør").Id;
         var personId = TestDataSet.GetEntity("Nina").Id;
@@ -134,7 +134,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task William()
+    public async Task GetConnectionsFromOthers_William_ReturnsRegnskaperneWithOsloSubUnit()
     {
         var orgId = TestDataSet.GetEntity("Revi").Id;
         var personId = TestDataSet.GetEntity("William").Id;
@@ -164,7 +164,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Terje()
+    public async Task GetConnectionsFromOthers_Terje_ReturnsRegnskaperneWithOsloSubUnit()
     {
         var orgId = TestDataSet.GetEntity("Revi").Id;
         var personId = TestDataSet.GetEntity("Terje").Id;
