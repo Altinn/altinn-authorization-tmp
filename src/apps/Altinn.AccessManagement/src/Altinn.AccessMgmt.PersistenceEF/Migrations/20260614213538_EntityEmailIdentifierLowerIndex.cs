@@ -23,7 +23,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
-                @"DROP INDEX IF EXISTS dbo.ix_entity_emailidentifier_lower;",
+                @"DROP INDEX CONCURRENTLY IF EXISTS dbo.ix_entity_emailidentifier_lower;",
                 suppressTransaction: true);
         }
     }
