@@ -40,7 +40,10 @@ namespace Altinn.Authorization.ABAC.Xacml
                     isMatch = MatchInteger(policyAttribute, decisionRequestAttribute);
                     break;
                 case XacmlConstants.AttributeMatchFunction.StringIsIn:
-                    isMatch = decisionRequestAttribute.Contains(policyAttribute);
+                    // Invoked once per request-bag element, so membership is a per-element
+                    // equality check - not a substring test, which would let policy value
+                    // "admin" match request value "superadmin" (privilege escalation).
+                    isMatch = MatchStrings(policyAttribute, decisionRequestAttribute);
                     break;
                 case XacmlConstants.AttributeMatchFunction.TimeEqual:
                     isMatch = MatchTime(policyAttribute, decisionRequestAttribute);

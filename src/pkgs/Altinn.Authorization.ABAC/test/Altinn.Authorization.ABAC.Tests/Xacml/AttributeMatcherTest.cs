@@ -68,14 +68,15 @@ public class AttributeMatcherTest
     public void MatchAttributes_IntegerOneAndOnly_BehavesLikeIntegerEqual(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, IntegerOneAndOnly).Should().Be(expected);
 
-    // The substring-vs-membership regression (e.g. "admin" must NOT match "superadmin") is
-    // pinned in #3482 against the AttributeMatcher fix, which is not yet on main. This is the
-    // permanent home for those cases: fold them in here and drop the Altinn.Authorization.Tests
-    // copy once #3482 merges.
+    // string-is-in is bag membership (per-element equality), NOT a substring test: policy value
+    // "admin" must not match request value "superadmin". Regression guard for #3481 — the OASIS
+    // conformance suite only uses exact-match/non-match cases, so it never caught the substring bug.
     [Theory]
     [InlineData("admin", "admin", true)]
     [InlineData("reader", "reader", true)]
-    public void MatchAttributes_StringIsIn_ExactMember_ReturnsTrue(string policy, string request, bool expected)
+    [InlineData("admin", "superadmin", false)]
+    [InlineData("read", "readwrite", false)]
+    public void MatchAttributes_StringIsIn(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, StringIsIn).Should().Be(expected);
 
     [Theory]
