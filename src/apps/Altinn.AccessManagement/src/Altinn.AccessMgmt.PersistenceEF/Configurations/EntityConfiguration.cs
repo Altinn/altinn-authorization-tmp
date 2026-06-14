@@ -2,8 +2,10 @@
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
@@ -41,6 +43,9 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
         builder.HasIndex(e => e.Username).HasFilter("Username IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
         builder.HasIndex(e => e.OrganizationIdentifier).HasFilter("OrganizationIdentifier IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
         builder.HasIndex(e => e.PersonIdentifier).HasFilter("PersonIdentifier IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
+        //// The index below is generated manually in migration 20260614213538_EntityEmailIdentifierLowerIndex
+        //// CREATE UNIQUE INDEX CONCURRENTLY ix_entity_emailidentifier_lower
+        //// ON dbo.entity(lower(emailidentifier)) INCLUDE(id) WHERE emailidentifier IS NOT NULL;
     }
 }
 
