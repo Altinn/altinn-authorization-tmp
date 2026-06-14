@@ -10,20 +10,21 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"
+            migrationBuilder.Sql(
+                @"
                 CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS ix_entity_emailidentifier_lower 
                 ON dbo.entity (lower(emailidentifier)) 
                 INCLUDE (id)
-                WHERE emailidentifier IS NOT NULL;
-            ");
+                WHERE emailidentifier IS NOT NULL;",
+                suppressTransaction: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"
-                DROP INDEX IF EXISTS dbo.ix_entity_emailidentifier_lower;
-            ");
+            migrationBuilder.Sql(
+                @"DROP INDEX IF EXISTS dbo.ix_entity_emailidentifier_lower;",
+                suppressTransaction: true);
         }
     }
 }
