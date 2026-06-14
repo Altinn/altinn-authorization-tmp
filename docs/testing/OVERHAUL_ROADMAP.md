@@ -37,6 +37,10 @@ upfront — this doc is the exhaustive backlog; the board stays just-in-time.
 - Consent `Expired` status added to the enterprise API contract enum + sync test. — #3473 (PR #3474)
 - Input-guard pure-logic tests (SystemUserId, IdentifierUtil, URN parsers, etc.). — #3475 (PR #3476)
 - ABAC `string-is-in` corrected to bag membership, conformance-validated 36/36. — #3481 (PR #3482)
+- Flaky wall-clock assertions removed; shared-mock reset hazards fixed. — #3464
+- Stateless mocks defaulted in the base fixture; redundant per-class registrations removed; host-build count reduced + baselined. — #3465
+- Dead `AssertionUtil` helpers removed (the rest are live method-group delegates, so full retirement = rewriting `AssertCollections` call sites — deferred). — #3466
+- Test-naming CI guard added (`.github/scripts/check-test-naming.sh`), gated to the AccessManagement vertical. — #3467
 - Two-lane (unit/integration) CI, per-assembly coverage ratchet, SonarCloud nightly-on-main, docs/testing de-stale.
 
 ## Phase 1 — Harden & cover (release-safe)
@@ -69,10 +73,13 @@ Touches shared test plumbing; must not land immediately before a release cut.
    concurrency / connection-pool sizing under full CI fan-out. — #3379
 4. **Retire `LegacyApiFixture`** — migrate the remaining Yuniql-dependent tests
    to EF seed data. — follow-up to #3410
-5. **Automate the test-naming guard** in CI (convention is documented but not
-   enforced).
+5. **Extend the test-naming guard** beyond the AccessManagement vertical — the
+   guard (`.github/scripts/check-test-naming.sh`, #3467) is in place but gated to
+   one vertical; widen its coverage to the rest.
 6. **Retire the legacy `AssertionUtil` helpers** (~1,500 lines across two
-   classes) in favour of FluentAssertions, organically.
+   classes) in favour of FluentAssertions — the dead helpers are gone (#3466);
+   the remaining ones are live method-group delegates, so this means rewriting
+   the `AssertCollections` call sites to `BeEquivalentTo`.
 7. **Reorganize PR #3456** into reviewable, theme-aligned PRs.
 
 ## Open decisions
