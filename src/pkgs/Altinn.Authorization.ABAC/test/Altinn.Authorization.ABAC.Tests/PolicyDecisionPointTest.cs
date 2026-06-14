@@ -26,9 +26,7 @@ public class PolicyDecisionPointTest
         result.Decision.Should().Be(XacmlContextDecision.Permit);
     }
 
-    [Fact(Skip = "Blocked by #3490: PolicyDecisionPoint drops a matching Deny under deny-overrides " +
-                 "(the post-loop result is rebuilt from overallDecision, overwriting the Deny set on the break). " +
-                 "Unskip when #3490 is fixed — this test reproduces the defect (currently returns NotApplicable).")]
+    [Fact]
     public void Authorize_MatchingDenyRule_DenyOverrides_ReturnsDeny()
     {
         XacmlContextResult result = Decide(Policy("Deny", DenyOverrides), Request());
