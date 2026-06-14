@@ -22,6 +22,7 @@ self-contained; none of them is a wall of text.
 | 8 | [COVERAGE.md](COVERAGE.md) | Running coverage locally, per-assembly thresholds, ratcheting |
 | 9 | [CI.md](CI.md) | How tests run in the pipeline, Microsoft Testing Platform (MTP), artifacts |
 | 10 | [../SONARCLOUD.md](../SONARCLOUD.md) | Static analysis: exclusions, per-vertical setup, quality gate, debugging |
+| 11 | [OVERHAUL_ROADMAP.md](OVERHAUL_ROADMAP.md) | The living plan for the testing-layer overhaul (#3486): coverage map, phased workstreams, open decisions |
 
 ## TL;DR for newcomers
 
