@@ -74,7 +74,9 @@ namespace Altinn.Authorization.ABAC.Xacml
             DateTime policyValue = DateTime.Parse(policyAttribute);
             DateTime requestValue = DateTime.Parse(decisionRequestAttribute);
 
-            return policyValue.Equals(requestValue);
+            // time-equal operates on xs:time (time-of-day only); the date component must be
+            // ignored - mirrors MatchDate, which compares only the .Date component.
+            return policyValue.TimeOfDay.Equals(requestValue.TimeOfDay);
         }
 
         private static bool MatchDate(string policyAttribute, string decisionRequestAttribute)

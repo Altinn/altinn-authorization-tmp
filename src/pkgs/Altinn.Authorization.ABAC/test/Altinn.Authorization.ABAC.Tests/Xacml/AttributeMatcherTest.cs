@@ -82,6 +82,7 @@ public class AttributeMatcherTest
     [Theory]
     [InlineData("09:30:00", "09:30:00", true)]
     [InlineData("09:30:00", "10:30:00", false)]
+    [InlineData("2024-01-01T09:30:00", "2024-06-15T09:30:00", true)]  // time-equal is time-of-day only; the date component must be ignored
     public void MatchAttributes_TimeEqual(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, TimeEqual).Should().Be(expected);
 
