@@ -21,6 +21,7 @@ public class InternalConnectionsControllerTest
     /// <summary>
     /// <see cref="InternalConnectionsController.PostSelfIdentifiedUsers(Guid, Guid, CancellationToken)"/>
     /// </summary>
+    [IntegrationTest]
     public class PostSelfIdentifiedUsers : IClassFixture<ApiFixture>
     {
         public PostSelfIdentifiedUsers(ApiFixture fixture)
@@ -97,6 +98,23 @@ public class InternalConnectionsControllerTest
         public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithRegisterAppClaim_ReturnsOk()
         {
             var client = CreateClientWithPlatformToken("register");
+
+            var entityId = TestEntities.EduUserHermioneGranger.Id;
+            var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={entityId}&to={entityId}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<AssignmentDto>(data);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(entityId, result.FromId);
+            Assert.Equal(entityId, result.ToId);
+            Assert.Equal(RoleConstants.SelfRegisteredUser, result.RoleId);
+        }
+
+        [Fact]
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithAuthenticationAppClaim_ReturnsOk()
+        {
+            var client = CreateClientWithPlatformToken("authentication");
 
             var entityId = TestEntities.EduUserHermioneGranger.Id;
             var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={entityId}&to={entityId}", null, TestContext.Current.CancellationToken);

@@ -22,11 +22,6 @@ key_vault_rbac = [{
 
 features = {
   maskinporten = true
-  a2_party_import = {
-    parties  = true
-    user_ids = true
-    profiles = true
-  }
 
   party_import = {
     system_users = true
@@ -67,6 +62,16 @@ config = {
     federate = {
       enable  = true
       targets = ["ccr-updates-at22", "ccr-updates-at23"]
+    }
+
+    flatfiles = {
+      enable = true
+      remote = {
+        host = "ccr-flatfile-remote-host"
+        user = "ccr-flatfile-remote-user"
+        pass = "ccr-flatfile-remote-pass"
+        path = "ccr-flatfile-remote-path"
+      }
     }
 
     clients = {

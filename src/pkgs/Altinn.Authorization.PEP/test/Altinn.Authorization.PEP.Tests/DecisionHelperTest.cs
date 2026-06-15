@@ -10,8 +10,9 @@ using Altinn.Common.PEP.Models;
 
 using Xunit;
 
-namespace UnitTests
+namespace Altinn.Authorization.PEP.Tests
 {
+    [UnitTest]
     public class DecisionHelperTest
     {
         private const string Org = "Altinn";

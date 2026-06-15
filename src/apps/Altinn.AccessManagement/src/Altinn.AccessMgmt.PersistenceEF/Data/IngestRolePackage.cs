@@ -33,6 +33,7 @@ public static partial class StaticDataIngest
         var roleRevi = RoleConstants.Auditor.Id;
         var roleFfor = RoleConstants.BusinessManager.Id;
         var roleContNuf = RoleConstants.ContactPersonNUF.Id;
+        var roleNufRepr = RoleConstants.NorwegianRepresentativeForeignEntity.Id;
 
         var packageKA = PackageConstants.ClientAdministrator.Id;
         var packageTS = PackageConstants.AccessManager.Id;
@@ -61,6 +62,7 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBobe, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleKnuf, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = packageTS, EntityVariant = null, CanDelegate = true, HasAccess = true },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.InstanceDelegation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.InstanceDelegation.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -184,7 +186,6 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.Vehicles.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.Vehicles.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.RegistrationTransferOfVehicles.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.RegistrationTransferOfVehicles.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.RegistrationTransferOfVehicles.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -223,6 +224,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.BusinessTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -233,6 +237,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.TaxBase.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -243,6 +250,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.ValueAddedTax.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.VATCompensationAuditorCertifies.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -272,6 +282,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.SpecialTaxes.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -282,6 +295,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.ClaimsPaymentsAndEnforcement.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.CreditAndSettlementArrangements.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -391,6 +407,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.AOrderSystem.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.KindergartenOwner.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1330,6 +1349,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.SalarySpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.SickLeaveSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1349,6 +1371,9 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleFfor, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleNufRepr, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.OppgiNaermesteLeder.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = rolePriv, PackageId = PackageConstants.InnbyggerTilgangsstyringPrivatperson.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1428,6 +1453,11 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = RoleConstants.OthersConclusionOfLeaseAgreements, PackageId = PackageConstants.VergemalOthersConclusionOfLeaseAgreements.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.OthersTerminationOfLeaseAgreements, PackageId = PackageConstants.VergemalOthersTerminationOfLeaseAgreements.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.OthersSaleOfPersonalPropertyOfGreaterValue, PackageId = PackageConstants.VergemalOthersSaleOfPersonalPropertyOfGreaterValue.Id, EntityVariantId = null, CanDelegate = false, HasAccess = true },
+
+            new RolePackage() { RoleId = RoleConstants.ContactPersonNUF, PackageId = PackageConstants.ServicesNUF.Id, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.NorwegianRepresentativeForeignEntity, PackageId = PackageConstants.ServicesNUF.Id, EntityVariantId = null, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.ServicesNUF.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, CanAssign = true, HasAccess = true },
+            new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.BusinessAndAccessManagementNUF.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, CanAssign = true, HasAccess = true },
         };
 
         foreach (var d in data)

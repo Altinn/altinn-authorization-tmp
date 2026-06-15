@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
+using Altinn.Common.PEP.Authorization;
 using Altinn.Common.PEP.Configuration;
 using Altinn.Common.PEP.Interfaces;
 
@@ -16,8 +17,9 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Altinn.Common.PEP.Authorization
+namespace Altinn.Authorization.PEP.Tests
 {
+    [UnitTest]
     public class ResourceAccessHandlerTest
     {
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
