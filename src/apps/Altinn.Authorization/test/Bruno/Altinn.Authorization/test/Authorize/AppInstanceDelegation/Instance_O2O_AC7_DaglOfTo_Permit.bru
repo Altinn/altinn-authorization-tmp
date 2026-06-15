@@ -69,6 +69,7 @@ script:pre-request {
   bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.dagl.personId);
   bru.setVar("partyId", testdata.organizations.mobilBeskjedenTiger.partyId);
   
+  // App: ttd/signering-brukerstyrt (hovedenhet B er lagd til som stifter i appen)
   // Hovedenhet A har instansiert en app knyttet til hovedenhet B, så daglig leder for B skal få Permit på den instansen.
   
   var getTokenParameters = {

@@ -69,7 +69,9 @@ script:pre-request {
   bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.subunits.legitimJusterbarTiger.agent.personId);
   bru.setVar("partyId",  testdata.organizations.ivrigGildTigerAS.partyId);
   
-  // Hovedenhet A har instansiert en app og er klient hos underenhet B, så agent bruker med riktig klientdelegering/tilgangspakke hos B skal få Permit på den instansen.
+  // App: ttd/ttd-bruno-tilgangspakke-app
+  // Tilgangspakke: urn:altinn:accesspackage:revisorattesterer og urn:altinn:accesspackage:motorvognavgift
+  // Hovedenhet A har instansiert en app og er klient hos underenhet B, så agent bruker med riktig klientdelegering/tilgangspakker (revisorattesterer og motorvognavgift) hos B skal få Permit på den instansen.
   
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,

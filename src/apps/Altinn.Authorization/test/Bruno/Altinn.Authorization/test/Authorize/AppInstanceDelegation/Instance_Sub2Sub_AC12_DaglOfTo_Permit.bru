@@ -69,6 +69,7 @@ script:pre-request {
   bru.setVar("subject",  testdata.organizations.ivrigGildTigerAS.dagl.personId);
   bru.setVar("partyId",  testdata.organizations.slakkAktivBilleIKS.subunits.slakkAktivBilleIKS.partyId);
   
+  // App: ttd/signering-brukerstyrt (underenhet B er lagd til som stifter i appen)
   // Underenhet A har instansiert en app knyttet til underenhet B, så daglig leder for B skal få Permit på den instansen.
   
   var getTokenParameters = {

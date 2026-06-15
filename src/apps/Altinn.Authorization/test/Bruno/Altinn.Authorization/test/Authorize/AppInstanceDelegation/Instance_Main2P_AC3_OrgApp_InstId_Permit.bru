@@ -71,6 +71,7 @@ script:pre-request {
   bru.setVar("subject",  testdata.persons.hakkeDyr.personId);
   bru.setVar("partyId",  testdata.organizations.legitimJusterbarTiger.partyId);
   
+  // App: ttd/ttd-bruno-tilgangspakke-app
   // Hovedenhet A har delegert app-instans til Person B, så B skal få Permit på den instansen.
   
   var getTokenParameters = {
