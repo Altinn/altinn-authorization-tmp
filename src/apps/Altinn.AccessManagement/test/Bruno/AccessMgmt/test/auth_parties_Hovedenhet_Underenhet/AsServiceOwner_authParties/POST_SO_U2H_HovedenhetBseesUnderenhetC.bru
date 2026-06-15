@@ -1,7 +1,7 @@
 meta {
-  name: POST_SO_H2H_DagliglederA
+  name: POST_SO_U2H_HovedenhetBseesUnderenhetC
   type: http
-  seq: 4
+  seq: 5
 }
 
 post {
@@ -38,7 +38,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_SO_H2H_DagliglederB");
+  bru.setVar("requestName", "POST_SO_U2H_HovedenhetBseesUnderenhetC");
   bru.setVar("personId", testdata.authParties_hovedenhetB.dagligleder.pid);
   
   var getTokenParameters = {
@@ -67,10 +67,10 @@ tests {
   });
   
   // ── Step 2: HovedenhetA (NATURSTRIDIG TILLITSFULL TIGER AS) exists in response ──
-  test(requestName + '|Step2: HovedenhetA and Underenhet A exists in response', function() {
+  test(requestName + '|HovedenhetC has no access, UnderenhetC has expected access', function() {
   
     const hovedenhet = (body || []).find(
-      p => p.partyUuid === testdata.authParties_hovedenhetA.partyuuid
+      p => p.partyUuid === testdata.authParties_hovedenhetC.partyuuid
     );
   
     assert.exists(
@@ -79,61 +79,50 @@ tests {
     );
   
     const underenhet = (hovedenhet.subunits || []).find(
-      s => s.partyUuid === testdata.authParties_hovedenhetA.authParties_underenhetA.partyuuid
+      s => s.partyUuid === testdata.authParties_hovedenhetC.authParties_underenhetC.partyuuid
     );
   
-    assert.exists(underenhet,'Expected UnderenhetA to exist under HovedenhetA');
-   
-    const expectedPackages = [
-      "beredskap",
-      "damp-varmtvann",
-      "motta-nabo-og-planvarsel",
-      "patent-varemerke-design"
-    ];
-    
-    const expectedResources = [
-      "acn-migratedcorrespondence-4540-1",
-      "acn-migratedcorrespondence-4541-1",
-    ];
-    
+    assert.exists(
+      underenhet,
+      'Expected UnderenhetA to exist under HovedenhetA'
+    );
   
+    // Hovedenhet should have no access
     expect(hovedenhet.authorizedAccessPackages || [])
-      .to.have.members(expectedPackages);
-  
-    expect(underenhet.authorizedAccessPackages || [])
-      .to.have.members(expectedPackages);
+      .to.have.length(0);
   
     expect(hovedenhet.authorizedResources || [])
-      .to.have.members(expectedResources);
+      .to.have.length(0);
   
+    expect(hovedenhet.authorizedRoles || [])
+      .to.have.length(0);
+  
+    expect(hovedenhet.authorizedInstances || [])
+      .to.have.length(0);
+  
+    // Underenhet should have expected access packages
+    expect(underenhet.authorizedAccessPackages || [])
+      .to.have.members([
+        "elektronisk-kommunikasjon",
+        "finansiering-og-forsikring",
+        "informasjon-og-kommunikasjon",
+        "kommuneoverlege",
+        "pleie-omsorgstjenester-i-institusjon"
+      ]);
+  
+    // Underenhet should have expected resources
     expect(underenhet.authorizedResources || [])
-      .to.have.members(expectedResources);
+      .to.have.members([
+        "app_ttd_security-level3-app"
+      ]);
   
-   
-  });
-  
-  test(requestName + '|Step3: HovedenhetA has delegated instance access only', function() {
-  
-    const hovedenhet = (body || []).find(
-      p => p.partyUuid === testdata.authParties_hovedenhetA.partyuuid
-    );
-  
-    const instance = (hovedenhet.authorizedInstances || []).find(
-      i => i.instanceRef === testdata.instancer.hovedenhetA_instansid
-    );
-  
-    assert.exists(instance, 'Expected delegated instance on HovedenhetA');
-  
-    expect(instance.resourceId)
-      .to.equal("app_ttd_signering-brukerstyrt");
-  
-    const underenhet = (hovedenhet.subunits || []).find(
-      s => s.partyUuid === testdata.authParties_hovedenhetA.authParties_underenhetA.partyuuid
-    );
+    expect(underenhet.authorizedRoles || [])
+      .to.have.length(0);
   
     expect(underenhet.authorizedInstances || [])
       .to.have.length(0);
   });
+  
   
   // ── Step 4: No duplicate parties ──
   test(requestName + '|Step4: No duplicate parties in response', function() {
@@ -142,4 +131,5 @@ tests {
     const dupes = allUuids.filter(uuid => { seen[uuid] = (seen[uuid] || 0) + 1; return seen[uuid] === 2; });
     expect(dupes.length, `Duplicate partyUuids: ${dupes.join(', ')}`).to.equal(0);
   });
+  
 }

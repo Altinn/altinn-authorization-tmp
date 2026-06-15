@@ -1,7 +1,7 @@
 meta {
-  name: POST_SO_P2P_PersonA
+  name: POST_SO_P2H_HovedenhetAseesPersonA
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
@@ -38,8 +38,8 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_SO_P2P_PersonB");
-  bru.setVar("personId", testdata.authParties_personB.pid);
+  bru.setVar("requestName", "POST_SO_P2H_HovedenhetAsessPersonA");
+  bru.setVar("personId", testdata.authParties_hovedenhetA.dagligleder.pid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
@@ -61,42 +61,29 @@ tests {
   // ── Helper: flatten all parties including subunits ──
   const flattenParties = (parties) => (parties || []).flatMap(p => [p, ...(p.subunits || [])]);
   
-  // ── Step 1: Response status ──
-  test(requestName + '|Step1: Response status is 200 OK', function() {
     expect(res.status).to.equal(200);
-  });
   
   // ── Step 2: PersonA (MILLION) exists in response (delegator appears in recipient's aktørliste) ──
-    test(requestName + '|Step3: PersonA (MILLION) has access data (P2P delegation)', function() {
+  test(requestName + '|PersonA exists with access data', function() {
     const allParties = flattenParties(body);
   
     const target = allParties.find(
       p => p.partyUuid === testdata.authParties_personA.partyuuid
     );
   
-    if (!target) return;
+    assert.exists(target,'Expected PersonA to exist in response');
   
     const packages = target.authorizedAccessPackages || [];
     const resources = target.authorizedResources || [];
-    const instances = target.authorizedInstances || [];
   
-    expect(packages).to.include("innbygger-barn-foreldre");
-    expect(packages).to.include("innbygger-helsetjenester");
-    expect(packages).to.include("innbygger-pleie-omsorg");
-    expect(packages).to.include("innbygger-samliv");
+    expect(packages).to.include("innbygger-bank-finans");
+    expect(packages).to.include("innbygger-forsikring");
+    expect(packages).to.include("innbygger-frivillighet");
+    expect(packages).to.include("innbygger-stotte-tilskudd");
+    expect(packages).to.include("innbygger-vapen");
   
-    expect(resources).to.include("acn-migratedcorrespondence-4541-1");
-    expect(resources).to.include("app_ttd_instance-gui-test");
-  
-    const instance = instances.find(
-    i => i.resourceId === "app_ttd_ttd-bruno-tilgangspakke-app"
-  );
-  
-  assert.exists(instance, 'Expected instance access to exist');
-  
-  expect(instance.instanceRef)
-    .to.equal(testdata.instancer.personA_instansid);
-    
+    expect(resources).to.include("devtest_gar_bruno_accesslist");
+    expect(resources).to.include("devtest_gar_bruno_accesslist_actionfilter");
   });
   
   
@@ -107,5 +94,4 @@ tests {
     const dupes = allUuids.filter(uuid => { seen[uuid] = (seen[uuid] || 0) + 1; return seen[uuid] === 2; });
     expect(dupes.length, `Duplicate partyUuids: ${dupes.join(', ')}`).to.equal(0);
   });
-  
 }

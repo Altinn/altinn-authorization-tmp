@@ -1,7 +1,7 @@
 meta {
-  name: POST_SO_U2U_ViaUnderenhetA
+  name: POST_SO_P2U_PersonASeesUnderenhetD
   type: http
-  seq: 6
+  seq: 8
 }
 
 post {
@@ -38,8 +38,8 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_SO_U2U_DagliglederC");
-  bru.setVar("personId", testdata.authParties_hovedenhetC.dagligleder.pid);
+  bru.setVar("requestName", "POST_SO_P2U_PersonASeesUnderenhetD");
+  bru.setVar("personId", testdata.authParties_personA.pid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
@@ -58,13 +58,6 @@ tests {
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
-  const skipScenario = true;
-  
-  if (skipScenario) {
-    console.log("Skipped due to known bug");
-    return;
-  }
-  
   // ── Helper: flatten all parties including subunits ──
   const flattenParties = (parties) => (parties || []).flatMap(p => [p, ...(p.subunits || [])]);
   
@@ -73,65 +66,47 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  // ── Step 2: HovedenhetD exists in response ──
-  test(requestName + '|HovedenhetD has no access, UnderenhetD has expected access', function() {
-  
+  // ── Step 2: HovedenhetB exists with UnderenhetB in response ──
+  test(requestName + '|Step2: HovedenhetD has no access', function() {
     const hovedenhet = (body || []).find(
       p => p.partyUuid === testdata.authParties_hovedenhetD.partyuuid
     );
   
-    assert.exists(hovedenhet,'Expected HovedenhetD to exist as top-level part');
-  
-    const underenhet = (hovedenhet.subunits || []).find(
-      s => s.partyUuid === testdata.authParties_hovedenhetD.authParties_underenhetD.partyuuid
+    assert.exists(
+      hovedenhet,
+      'Expected HovedenhetD (partyUuid: ' + testdata.authParties_hovedenhetD.partyuuid + ') to exist as top-level party'
     );
   
-    assert.exists(underenhet,'Expected UnderenhetD to exist under HovedenhetD'
-    );
-  
-    // Hovedenhet should have no access
     expect(hovedenhet.authorizedAccessPackages || []).to.have.length(0);
     expect(hovedenhet.authorizedResources || []).to.have.length(0);
     expect(hovedenhet.authorizedRoles || []).to.have.length(0);
     expect(hovedenhet.authorizedInstances || []).to.have.length(0);
-  
-    // Underenhet should have expected packages
-    expect(underenhet.authorizedAccessPackages || []).to.have.members([
-      "damp-varmtvann",
-      "finansiering-og-forsikring",
-      "informasjon-og-kommunikasjon",
-      "utvinning-raaolje-naturgass-kull"
-    ]);
-  
-    // Underenhet should have expected resources
-    expect(underenhet.authorizedResources || []).to.have.members([
-      "app_ttd_instance-gui-test",
-      "app_ttd_security-level3-app",
-      "app_ttd_ttd-bruno-tilgangspakke-app"
-    ]);
-    
-     expect(underenhet.authorizedRoles || []).to.have.length(0);
   });
   
-  // ── Step 3: UnderenhetD has delegated instance access ──
-  test(requestName + '|UnderenhetD has delegated instance access', function() {
   
+  // ── Step 3: UnderenhetD exists under HovedenhetD with expected access data ──
+  test(requestName + '|Step3: UnderenhetD exists under HovedenhetD with expected access data', function() {
     const hovedenhet = (body || []).find(
       p => p.partyUuid === testdata.authParties_hovedenhetD.partyuuid
     );
   
+    assert.exists(hovedenhet, 'Expected HovedenhetD to exist as top-level party');
+  
     const underenhet = (hovedenhet.subunits || []).find(
       s => s.partyUuid === testdata.authParties_hovedenhetD.authParties_underenhetD.partyuuid
     );
-  expect(underenhet.authorizedInstances || []).to.have.length(1);
   
-    const instance = underenhet.authorizedInstances[0];
+    assert.exists(underenhet, 'Expected UnderenhetD to exist under HovedenhetD');
   
-    expect(instance.resourceId)
-      .to.equal("app_ttd_signering-brukerstyrt");
+    expect(underenhet.authorizedAccessPackages || []).to.have.members([
+      "beredskap",
+      "byggesoknad",
+      "motta-nabo-og-planvarsel",
+      "patent-varemerke-design"
+    ]);
   
-    expect(instance.instanceRef)
-      .to.equal(testdata.instancer.underenhetD_instansid);
+    expect(underenhet.authorizedResources || []).to.have.length(0);
+    expect(underenhet.authorizedRoles || []).to.have.length(0);
   });
   
   
@@ -139,8 +114,37 @@ tests {
   test(requestName + '|Step4: No duplicate parties in response', function() {
     const allUuids = flattenParties(body).map(p => p.partyUuid);
     const seen = {};
-    const dupes = allUuids.filter(uuid => { seen[uuid] = (seen[uuid] || 0) + 1; return seen[uuid] === 2; });
+    const dupes = allUuids.filter(uuid => {
+      seen[uuid] = (seen[uuid] || 0) + 1;
+      return seen[uuid] === 2;
+    });
+  
     expect(dupes.length, `Duplicate partyUuids: ${dupes.join(', ')}`).to.equal(0);
   });
   
+  
+  test(requestName + '|Step5: Instance access exists only on UnderenhetD', function() {
+    const hovedenhet = (body || []).find(
+      p => p.partyUuid === testdata.authParties_hovedenhetD.partyuuid
+    );
+  
+    assert.exists(hovedenhet, 'Expected HovedenhetD to exist as top-level party');
+  
+    const underenhet = (hovedenhet.subunits || []).find(
+      s => s.partyUuid === testdata.authParties_hovedenhetD.authParties_underenhetD.partyuuid
+    );
+  
+    assert.exists(underenhet, 'Expected UnderenhetD to exist under HovedenhetD');
+  
+    expect(hovedenhet.authorizedInstances || []).to.have.length(0);
+  
+    const instance = (underenhet.authorizedInstances || []).find(
+      i => i.instanceRef === testdata.instancer.underenhetD_instansid
+    );
+  
+    assert.exists(instance, 'Expected delegated instanceRef to exist on UnderenhetD');
+  
+    expect(instance.resourceId)
+      .to.equal("app_ttd_ttd-bruno-tilgangspakke-app");
+  });
 }

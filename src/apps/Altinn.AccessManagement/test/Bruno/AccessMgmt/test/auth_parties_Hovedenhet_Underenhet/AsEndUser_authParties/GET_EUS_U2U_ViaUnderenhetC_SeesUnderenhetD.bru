@@ -1,5 +1,5 @@
 meta {
-  name: GET_EUS_U2U_ViaUnderenhetA_SeesUnderenhetB
+  name: GET_EUS_U2U_ViaUnderenhetC_SeesUnderenhetD
   type: http
   seq: 7
 }
@@ -26,7 +26,7 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "GET_EUS_U2U_DagliglederC_SeesHovedenhetD");
+  bru.setVar("requestName", "GET_EUS_U2U_DagliglederC_SeesUnderenhetD");
   
   // UnderenhetD delegated to UnderenhetC, so DagliglederC authenticates
   var getTokenParameters = {

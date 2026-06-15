@@ -1,11 +1,11 @@
 meta {
-  name: POST_SO_U2P_PersonA
+  name: GET_U2P_PersonA_SeesUnderenhetD
   type: http
-  seq: 8
+  seq: 1
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true&includePartiesViaKeyRoles=true&includeSubParties=true&includeInactiveParties=true
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true
   body: json
   auth: inherit
 }
@@ -13,13 +13,7 @@ post {
 params:query {
   includeAltinn2: true
   includeAltinn3: true
-  includeRoles: true
   includeAccessPackages: true
-  includeResources: true
-  includeInstances: true
-  includePartiesViaKeyRoles: true
-  includeSubParties: true
-  includeInactiveParties: true
 }
 
 headers {
@@ -27,25 +21,21 @@ headers {
   Accept: application/json
 }
 
-body:json {
-  {
-    "type": "urn:altinn:person:identifier-no",
-    "value": "{{personId}}"
-  }
-}
-
 script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_SO_P2U_PersonA");
-  bru.setVar("personId", testdata.authParties_personA.pid);
+  bru.setVar("requestName", "GET_U2P_PersonA_SeesUnderenhetD");
+  
+  // UnderenhetD has delegated to PersonA, then Person A sees underenhet D as aktør
   
   var getTokenParameters = {
-    auth_org: sharedtestdata.serviceOwners.digdir.org,
-    auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
-    auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
+    auth_userId: testdata.authParties_personA.userid,
+    auth_partyId: testdata.authParties_personA.partyid,
+    auth_partyUuid: testdata.authParties_personA.partyuuid,
+    auth_ssn: testdata.authParties_personA.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
   
   const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
@@ -66,7 +56,6 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  // ── Step 2: HovedenhetB exists with UnderenhetB in response ──
   test(requestName + '|Step2: HovedenhetD has no access', function() {
     const hovedenhet = (body || []).find(
       p => p.partyUuid === testdata.authParties_hovedenhetD.partyuuid
@@ -147,4 +136,6 @@ tests {
     expect(instance.resourceId)
       .to.equal("app_ttd_ttd-bruno-tilgangspakke-app");
   });
+  
+  
 }

@@ -1,5 +1,5 @@
 meta {
-  name: POST_SO_H2P_DagliglederA
+  name: POST_SO_H2P_PersonCseesHovedenhetA
   type: http
   seq: 3
 }
@@ -38,7 +38,9 @@ script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
   const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
   
-  bru.setVar("requestName", "POST_SO_H2P_PersonB");
+  // HovedenhetA delegated to PersonC, so personId is PersonC (recipient)
+  
+  bru.setVar("requestName", "POST_SO_H2P_PersonCseesHovedenhetA");
   bru.setVar("personId", testdata.authParties_hovedenhetA.authParties_personC.pid);
   
   var getTokenParameters = {
