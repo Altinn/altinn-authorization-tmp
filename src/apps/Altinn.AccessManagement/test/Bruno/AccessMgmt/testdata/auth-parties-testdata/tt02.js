@@ -1,6 +1,6 @@
 ﻿module.exports = {
   env: "tt02",
-  instancer : {
+  instancer: {
     personC_instansid : "urn:altinn:instance-id:51817923/2a8c9ece-c4b8-49f1-ad42-343f0a9f2452",
     personA_instansid : "urn:altinn:instance-id:52054516/bbd5044d-6844-4fd0-bf5e-9dec12b6e29c",
     hovedenhetA_instansid : "urn:altinn:instance-id:51817923/1c5efeba-a22b-4755-bf19-50103d48616a",
