@@ -392,6 +392,7 @@ public class AuthorizedPartiesServiceEfOld(
             });
         }
 
+        var a2Result = await a2Task;
         if (filter.IncludeAltinn3)
         {
             a3Task = Task.Run(async () =>
@@ -401,9 +402,6 @@ public class AuthorizedPartiesServiceEfOld(
             });
         }
 
-        await Task.WhenAll(a2Task, a3Task);
-
-        var a2Result = await a2Task;
         var a3Result = await a3Task;
 
         // Since EF does not support parallel use of DbContexts, we need to fetch the Altinn 2 parties separately here
