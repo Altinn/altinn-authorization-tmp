@@ -83,6 +83,8 @@ script:pre-request {
   bru.setVar("subject",  testdata.persons.juleferieStoyfri.personId);
   bru.setVar("resourceParty",  testdata.organizations.legitimJusterbarTiger.subunits.legitimJusterbarTiger.organizationNumber);
   
+  // Underenhet A har delegert app-instans til Person B, så B skal få Permit
+  
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
     auth_scopes: sharedtestdata.auth_scopes.authorize,

@@ -69,6 +69,8 @@ script:pre-request {
   bru.setVar("subject",  testdata.organizations.mobilBeskjedenTiger.dagl.personId);
   bru.setVar("partyId",  testdata.persons.ovelseEmpirisk.partyId);
   
+  // Person A har instansiert en app knyttet til underenhet B, så daglig leder for B skal få Permit på den instansen.
+  
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
     auth_scopes: sharedtestdata.auth_scopes.authorize,

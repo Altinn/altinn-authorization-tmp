@@ -69,6 +69,8 @@ script:pre-request {
   bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.agent.personId);
   bru.setVar("partyId",  testdata.organizations.slakkAktivBilleIKS.subunits.slakkAktivBilleIKS.partyId);
   
+  // Underenhet A har instansiert en app og er klient hos hovedenhet B, så agent bruker med riktig klientdelegering/tilgangspakke hos B skal få Permit på den instansen.
+  
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
     auth_scopes: sharedtestdata.auth_scopes.authorize,
