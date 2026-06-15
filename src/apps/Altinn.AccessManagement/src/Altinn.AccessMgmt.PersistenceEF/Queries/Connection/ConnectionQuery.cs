@@ -455,7 +455,8 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find all direct KeyRole assignments
         var keyRoleAssignments =
-            from keyRoleAssignment in db.Assignments            join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
+            from keyRoleAssignment in db.Assignments
+            join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
             select new ConnectionQueryBaseRecord()
             {
@@ -524,7 +525,8 @@ public class ConnectionQuery(AppDbContext db)
 
         #region Find direct assignments to ToParty
         var directAssignments =
-            from assignments in db.Assignments            select new ConnectionQueryBaseRecord()
+            from assignments in db.Assignments
+            select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = assignments.Id,
                 DelegationId = null,
@@ -692,7 +694,8 @@ public class ConnectionQuery(AppDbContext db)
         */
 
         var direct =
-            from childAss in db.Assignments            where childAss.FromId == fromId
+            from childAss in db.Assignments
+            where childAss.FromId == fromId
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = childAss.Id,

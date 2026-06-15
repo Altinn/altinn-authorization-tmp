@@ -505,13 +505,12 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         request.InstanceId = instanceUrn;
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
+        request.InstanceId = instanceId;
 
         if (input.Errors.TryBuild(out var errorResult))
         {
             return errorResult;
         }
-
-        request.InstanceId = instanceId;
 
         AppsInstanceRevokeResponse result = new()
         {
