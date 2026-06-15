@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -38,6 +38,20 @@ public class InstanceAddedNotificationHandler(
         }
 
         var (from, to, instances, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+
+        if (from.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"From '{from.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (to.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"To '{to.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         if (!instances.Any())
         {

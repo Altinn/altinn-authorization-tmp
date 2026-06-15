@@ -33,6 +33,19 @@ public class RequestPendingNotificationHandler(
         }
 
         var (recipient, requester, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        if (recipient.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"Recipient '{recipient.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (requester.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"Requester '{requester.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         if (!packages.Any() && !resources.Any())
         {

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.Notifications;
@@ -31,6 +31,20 @@ public class RightholderRemovedNotificationHandler(AppDbContext db,
         }
 
         var (from, to, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        if (from.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"From '{from.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (to.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"To '{to.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
         if (to.TypeId != EntityTypeConstants.Person)
         {
             db.OutboxMessageLogs.Add(message, "to entity type is not of type <Person>");

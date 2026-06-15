@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -33,7 +33,20 @@ public class AccessAddedNotificationHandler(
             return OutboxStatus.Completed;
         }
 
-        var (recipient, requester, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        var (from, to, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        if (from.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"From '{from.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (to.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"To '{to.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         if (!packages.Any() && !resources.Any())
         {
@@ -46,7 +59,7 @@ public class AccessAddedNotificationHandler(
         {
             IdempotencyId = idempotencyId,
             SendersReference = idempotencyId,
-            Recipient = CreateRecipient(recipient, requester, resources, packages),
+            Recipient = CreateRecipient(from, to, resources, packages),
         };
 
         var response = await notification.Send(content, cancellationToken);
@@ -89,7 +102,7 @@ public class AccessAddedNotificationHandler(
         return OutboxStatus.Completed;
     }
 
-    private async Task<(Entity Recipient, Entity Requester, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
+    private async Task<(Entity From, Entity To, IEnumerable<Resource> Resources, IEnumerable<Package> Packages, string IdempotencyId)> UnwrapMessage(OutboxMessage message, CancellationToken cancellationToken)
     {
         var content = JsonSerializer.Deserialize<AccessAddedNotificationMessage>(message.Data);
         if (content is null)

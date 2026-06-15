@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -38,6 +38,21 @@ public class InstanceRemovedNotificationHandler(
         }
 
         var (from, to, instanceIds, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        
+        if (from.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"From '{from.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (to.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"To '{to.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
         if (!instanceIds.Any())
         {
             db.OutboxMessageLogs.Add(message, $"No instance IDs available. Access was most likely removed and immediately added.");

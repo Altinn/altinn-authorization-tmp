@@ -33,6 +33,19 @@ public class RequestReviewedNotificationHandler(
         }
 
         var (recipient, reviewer, resources, packages, idempotencyId) = await UnwrapMessage(message, cancellationToken);
+        if (recipient.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"Recipient '{recipient.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (reviewer.DateOfDeath.HasValue)
+        {
+            db.OutboxMessageLogs.Add(message, $"Reviewer '{reviewer.Id}' is flagged as deceased.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
 
         NotificationOrderChainRequestExt content = new()
         {
