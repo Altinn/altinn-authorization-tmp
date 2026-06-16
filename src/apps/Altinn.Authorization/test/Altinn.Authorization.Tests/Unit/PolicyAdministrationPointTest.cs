@@ -61,7 +61,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// Expected: WritePolicyAsync returns true.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC01()
+        public async Task WritePolicyAsync_ValidPolicyStream_ReturnsTrue()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Policies/policy.xml");
@@ -79,7 +79,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// Expected: WritePolicyAsync throws ArgumentException.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC02()
+        public async Task WritePolicyAsync_EmptyOrg_ThrowsArgumentException()
         {
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => _pap.WritePolicyAsync(string.Empty, "app", new MemoryStream()));
@@ -90,7 +90,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// Expected: WritePolicyAsync throws ArgumentException.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC03()
+        public async Task WritePolicyAsync_EmptyApp_ThrowsArgumentException()
         {
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => _pap.WritePolicyAsync("org", string.Empty, new MemoryStream()));
@@ -101,7 +101,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// Expected: WritePolicyAsync throws ArgumentException.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC04()
+        public async Task WritePolicyAsync_NullStream_ThrowsArgumentException()
         {
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => _pap.WritePolicyAsync("org", "app", null));

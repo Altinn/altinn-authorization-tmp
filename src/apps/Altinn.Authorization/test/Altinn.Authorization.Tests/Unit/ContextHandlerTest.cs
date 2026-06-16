@@ -60,7 +60,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC01()
+        public async Task Enrich_InstanceUserAction_ReturnsRequestWithResourceRolesAndSubjectAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0021";
@@ -89,7 +89,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC02()
+        public async Task Enrich_InstanceOrgAction_ReturnsRequestWithResourceAndSubjectAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0022";
@@ -118,7 +118,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC03()
+        public async Task Enrich_CompleteResourceAttributes_ReturnsRequestWithRoleAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0023";
@@ -147,7 +147,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC04()
+        public async Task Enrich_OrgAppUserPartyAction_ReturnsRequestWithRoleAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0024";
@@ -176,7 +176,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC05()
+        public async Task Enrich_OrgAppPartyAction_ReturnsRequestWithRoleAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0025";
@@ -205,7 +205,7 @@ namespace Altinn.Authorization.Tests.Unit
         /// A xacml request populated with the required attributes is returned
         /// </summary>
         [Fact]
-        public async Task ContextHandler_TC06()
+        public async Task Enrich_InstanceUserParty_ReturnsRequestWithMissingAttributes()
         {
             // Arrange
             string testCase = "AltinnApps0026";
