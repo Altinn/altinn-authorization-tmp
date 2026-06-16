@@ -184,4 +184,23 @@ public class AttributeMatchAsserterTests
         Assert.NotNull(result);
         Assert.Contains("AttributesAreBoolean", result.Errors.Keys);
     }
+
+    /// <summary>
+    /// An attribute with an empty value must produce ONE error that names the attribute,
+    /// not one bogus error per character of the stringified id list (regression: the error
+    /// projection ran <c>.Select</c> over a single string, iterating its characters).
+    /// </summary>
+    [Fact]
+    public void AllAttributesHasValues_EmptyValue_ReportsOneErrorNamingTheAttribute()
+    {
+        var asserter = AsserterTests.Asserter<AttributeMatch>();
+        var values = new AttributeMatch[] { new("urn:test:attr", string.Empty) };
+
+        var result = asserter.Evaluate(values, asserter.AllAttributesHasValues);
+
+        Assert.NotNull(result);
+        Assert.Contains("AllAttributesHasValues", result.Errors.Keys);
+        Assert.Single(result.Errors["AllAttributesHasValues"]);
+        Assert.Contains("urn:test:attr", result.Errors["AllAttributesHasValues"][0]);
+    }
 }

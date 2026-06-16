@@ -145,6 +145,31 @@ namespace Altinn.AccessManagement.Tests.Unit.Models.Urn
         }
 
         /// <summary>
+        /// Parse a 4-character lowercase value: the lower boundary of the
+        /// ^[a-z0-9_-]{4,}$ identifier rule (existing tests only use long values).
+        /// </summary>
+        [Fact]
+        public void TryParse_ExactlyFourLowercaseChars_Succeeds()
+        {
+            ResourceIdentifier.TryParse("abcd", null, out var id).Should().BeTrue();
+            id!.ToString().Should().Be("abcd");
+        }
+
+        /// <summary>
+        /// Values containing characters outside [a-z0-9_-] (uppercase, whitespace,
+        /// punctuation) are rejected — pins case-sensitivity and the allowed charset.
+        /// </summary>
+        [Theory]
+        [InlineData("ABCD")]
+        [InlineData("ABCDEFG")]
+        [InlineData("exam ple")]
+        [InlineData("exa.mple")]
+        public void TryParse_DisallowedCharacters_ReturnsFalse(string value)
+        {
+            ResourceIdentifier.TryParse(value, null, out _).Should().BeFalse();
+        }
+
+        /// <summary>
         /// Scenario:
         /// Tests the ResourceIdentifier
         /// Input:

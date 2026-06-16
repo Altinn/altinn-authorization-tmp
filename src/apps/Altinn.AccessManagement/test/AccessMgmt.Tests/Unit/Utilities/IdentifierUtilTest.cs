@@ -50,6 +50,12 @@ public class IdentifierUtilTest
         IdentifierUtil.IsValidOrganizationNumber(string.Empty).Should().BeFalse();
     }
 
+    [Fact]
+    public void IsValidOrganizationNumber_Null_ReturnsFalse()
+    {
+        IdentifierUtil.IsValidOrganizationNumber(null).Should().BeFalse();
+    }
+
     // ── MaskSSN ──────────────────────────────────────────────────────────────
     [Fact]
     public void MaskSSN_ElevenDigitSsn_ReturnsFirstSixDigitsPlusFiveAsterisks()

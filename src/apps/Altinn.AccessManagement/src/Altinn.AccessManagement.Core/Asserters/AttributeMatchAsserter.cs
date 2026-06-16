@@ -88,7 +88,7 @@ public static class AttributeMatchAsserter
         var attributesWithEmptyValues = values.Where(attribute => string.IsNullOrEmpty(attribute?.Value));
         if (attributesWithEmptyValues.Any())
         {
-            errors.Add(nameof(AllAttributesHasValues), StringifyAttributeIds(attributesWithEmptyValues).Select(type => $"attribute {type} contains empty value").ToArray());
+            errors.Add(nameof(AllAttributesHasValues), attributesWithEmptyValues.Select(attribute => $"attribute {attribute.Id} contains empty value").ToArray());
         }
     }
 

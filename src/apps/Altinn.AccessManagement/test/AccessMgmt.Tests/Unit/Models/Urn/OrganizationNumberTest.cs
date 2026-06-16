@@ -147,6 +147,20 @@ namespace Altinn.AccessManagement.Tests.Unit.Models.Urn
 
         /// <summary>
         /// Scenario:
+        /// Parse a 9-digit, all-numeric value whose mod-11 control digit is wrong.
+        /// Expected Result:
+        /// Rejected by the checksum branch (937884117 is valid; the flipped control digit must fail).
+        /// </summary>
+        [Fact]
+        public void Parse_NineDigitBadChecksum_Throws()
+        {
+            Action act = () => OrganizationNumber.Parse("937884118");
+
+            act.Should().Throw<Exception>();
+        }
+
+        /// <summary>
+        /// Scenario:
         /// Tests the OrganizationNumber GetExample
         /// Input:
         /// Get expected Example
