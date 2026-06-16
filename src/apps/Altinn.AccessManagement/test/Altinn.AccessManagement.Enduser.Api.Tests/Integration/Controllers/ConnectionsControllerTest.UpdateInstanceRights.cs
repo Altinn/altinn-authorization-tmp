@@ -253,7 +253,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithReadScope_Returns403Forbidden()
+        public async Task UpdateInstanceRights_WithReadScope_Returns403ForReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -271,7 +271,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithToOthersReadScope_Returns403Forbidden()
+        public async Task UpdateInstanceRights_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
@@ -289,7 +289,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithFromOthersWriteScope_Returns403Forbidden()
+        public async Task UpdateInstanceRights_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -377,7 +377,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithNoToken_Returns401Unauthorized()
+        public async Task UpdateInstanceRights_WithNoToken_Returns401ForMissingToken()
         {
             var client = Fixture.Server.CreateClient();
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };

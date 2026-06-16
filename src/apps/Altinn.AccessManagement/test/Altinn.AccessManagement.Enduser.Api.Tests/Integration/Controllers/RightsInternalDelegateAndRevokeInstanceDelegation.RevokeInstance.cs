@@ -377,7 +377,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
-    public async Task RevokeInstance_InvalidResourceId_Returns400BadRequest()
+    public async Task RevokeInstance_InvalidResourceId_Returns400EmptyResourceId()
     {
         // Arrange
         var fromUuid = TestData.HanSoloEnterprise.Id;
@@ -415,7 +415,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
-    public async Task DelegateInstance_EmptyFromUuid_Returns400BadRequest()
+    public async Task DelegateInstance_EmptyFromUuid_Returns400EmptyFromUuid()
     {
         // Arrange
         var toUuid = TestData.LeiaOrgana.Id;
@@ -453,7 +453,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 401 Unauthorized.
     /// </summary>
     [Fact]
-    public async Task RevokeInstance_WithNoToken_Returns401Unauthorized()
+    public async Task RevokeInstance_WithNoToken_Returns401MissingToken()
     {
         // Arrange
         var fromUuid = TestData.HanSoloEnterprise;
@@ -491,7 +491,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 401 Unauthorized.
     /// </summary>
     [Fact]
-    public async Task DelegateInstance_WithNoToken_Returns401Unauthorized()
+    public async Task DelegateInstance_WithNoToken_Returns401MissingToken()
     {
         // Arrange
         var fromUuid = TestData.HanSoloEnterprise;
@@ -530,7 +530,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
-    public async Task DelegateInstance_EmptyActionList_Returns400BadRequest()
+    public async Task DelegateInstance_EmptyActionList_Returns400EmptyActionList()
     {
         // Arrange
         var fromUuid = TestData.HanSoloEnterprise.Id;
@@ -569,7 +569,7 @@ public class RightsInternalDelegateAndRevokeInstanceDelegation : IClassFixture<A
     /// Expected: Returns 400 BadRequest with problem details.
     /// </summary>
     [Fact]
-    public async Task DelegateInstance_EmptyIstanceId_Returns400BadRequest()
+    public async Task DelegateInstance_EmptyIstanceId_Returns400MissingInstanceId()
     {
         // Arrange
         var fromUuid = TestData.HanSoloEnterprise.Id;

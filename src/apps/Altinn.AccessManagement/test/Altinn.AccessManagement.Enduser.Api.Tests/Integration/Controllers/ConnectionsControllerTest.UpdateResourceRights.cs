@@ -139,7 +139,7 @@ public partial class ConnectionsControllerTest
         /// Uses valid right keys obtained from delegation check. Expects 200 OK.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_AsMalinForDumboToMille_WithValidRightKeys_Returns200Ok()
+        public async Task UpdateResourceRights_AsMalinForDumboToMille_WithValidRightKeys_Returns200WithUpdatedResourceRights()
         {
             List<string> rightKeys = await GetDelegatableRightKeys("app_mat_mattilsynet-baker-konditorvare");
             Assert.NotEmpty(rightKeys);
@@ -241,7 +241,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest with an invalid resource error.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithInvalidResource_Returns400BadRequest()
+        public async Task UpdateResourceRights_WithInvalidResource_Returns400ForInvalidResource()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-fake-right-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
@@ -280,7 +280,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithReadScope_Returns403Forbidden()
+        public async Task UpdateResourceRights_WithReadScope_Returns403ForReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -298,7 +298,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithFromOthersWriteScope_Returns403Forbidden()
+        public async Task UpdateResourceRights_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -316,7 +316,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithToOthersReadScope_Returns403Forbidden()
+        public async Task UpdateResourceRights_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);

@@ -96,7 +96,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with a valid response containing the resource.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_AsMalinForDumboToMille_WithToOthersScope_Returns200Ok()
+        public async Task GetResourceRights_AsMalinForDumboToMille_WithToOthersScope_Returns200WithDirectRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -135,7 +135,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with a valid response containing the resource.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_AsTheaForMilleFromDumbo_WithFromOthersScope_Returns200Ok()
+        public async Task GetResourceRights_AsTheaForMilleFromDumbo_WithFromOthersScope_Returns200WithDirectRights()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -176,7 +176,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 9 IndirectRights (KeyRole reason), no DirectRights.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_AsMalinForDumboToThea_WithToOthersScope_Returns200Ok()
+        public async Task GetResourceRights_AsMalinForDumboToThea_WithToOthersScope_Returns200WithKeyRoleIndirectRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -216,7 +216,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 9 IndirectRights (KeyRole reason), no DirectRights.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_AsMalinForDumboToMilena_WithToOthersScope_Returns200Ok()
+        public async Task GetResourceRights_AsMalinForDumboToMilena_WithToOthersScope_Returns200WithKeyRoleIndirectRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -257,7 +257,7 @@ public partial class ConnectionsControllerTest
         /// Note: method name says "ToOthers" but the query is actually from-others (party=Thea, from=Dumbo, to=Thea).
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_AsTheaForDumboToThea_WithToOthersScope_Returns200Ok()
+        public async Task GetResourceRights_AsTheaForDumboToThea_WithToOthersScope_Returns200WithKeyRoleIndirectRights()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -295,7 +295,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_ToOthersDirection_WithFromOthersScope_Returns403Forbidden()
+        public async Task GetResourceRights_ToOthersDirection_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -311,7 +311,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_FromOthersDirection_WithToOthersScope_Returns403Forbidden()
+        public async Task GetResourceRights_FromOthersDirection_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -327,7 +327,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetResourceRights_WithWriteScope_Returns403Forbidden()
+        public async Task GetResourceRights_WithWriteScope_Returns403ForWriteScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

@@ -165,7 +165,7 @@ public partial class ConnectionsControllerTest
         /// Uses a dedicated relationship (not the default seed) to avoid interference from other test fixtures.
         /// </summary>
         [Fact]
-        public async Task RemoveAssignment_WithPackagesNoCascade_Returns400BadRequest()
+        public async Task RemoveAssignment_WithPackagesNoCascade_Returns400ForPackagesWithoutCascade()
         {
             HttpClient client = CreateClient(TestData.SiljeHaugen.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -217,7 +217,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemoveAssignment_WithFromOthersReadScope_Returns403Forbidden()
+        public async Task RemoveAssignment_WithFromOthersReadScope_Returns403ForFromOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -233,7 +233,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemoveAssignment_WithToOthersReadScope_Returns403Forbidden()
+        public async Task RemoveAssignment_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 

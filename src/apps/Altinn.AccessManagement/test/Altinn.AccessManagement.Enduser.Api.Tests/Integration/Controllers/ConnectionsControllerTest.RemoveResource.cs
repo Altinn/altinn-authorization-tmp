@@ -181,7 +181,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest.
         /// </summary>
         [Fact]
-        public async Task RemoveResource_WithInvalidResource_Returns400BadRequest()
+        public async Task RemoveResource_WithInvalidResource_Returns400ForInvalidResource()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.DeleteAsync(
@@ -196,7 +196,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemoveResource_WithFromOthersReadScope_Returns403Forbidden()
+        public async Task RemoveResource_WithFromOthersReadScope_Returns403ForFromOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(
@@ -211,7 +211,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemoveResource_WithToOthersReadScope_Returns403Forbidden()
+        public async Task RemoveResource_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(

@@ -258,7 +258,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsTheaFromDumbo_WithToOthersScope_Returns403Forbidden()
+        public async Task GetRoles_AsTheaFromDumbo_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -274,7 +274,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsMalinForDumboToMalin_WithFromOthersScope_Returns403Forbidden()
+        public async Task GetRoles_AsMalinForDumboToMalin_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -290,7 +290,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_WithWriteScope_Returns403Forbidden()
+        public async Task GetRoles_WithWriteScope_Returns403ForWriteScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

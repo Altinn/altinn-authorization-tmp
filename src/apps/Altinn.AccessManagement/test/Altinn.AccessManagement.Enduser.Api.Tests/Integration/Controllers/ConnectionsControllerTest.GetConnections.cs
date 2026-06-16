@@ -127,7 +127,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task ListConnections_WithDirectionFromOthersUsingToOthersScope_Returns403Forbidden()
+        public async Task ListConnections_WithDirectionFromOthersUsingToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -158,7 +158,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task ListConnections_WithDirectionToOthersUsingFromOthersScope_Returns403Forbidden()
+        public async Task ListConnections_WithDirectionToOthersUsingFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -172,7 +172,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task ListConnections_WithDirectionToOthersUsingToOtherScopeWithPartyNotEqualFromOrTo_Returns403Forbidden()
+        public async Task ListConnections_WithDirectionToOthersUsingToOtherScopeWithPartyNotEqualFromOrTo_Returns403ForPartyNotMatchingFromOrTo()
         {
             var client = CreateClient(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 

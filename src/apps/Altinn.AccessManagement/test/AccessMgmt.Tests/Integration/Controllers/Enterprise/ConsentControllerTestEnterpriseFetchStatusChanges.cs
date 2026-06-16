@@ -237,7 +237,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Test: Getting consent status changes without authorization returns Unauthorized.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_NoToken_Returns401Unauthorized()
+        public async Task GetConsentStatusChanges_NoToken_Returns401MissingToken()
         {
             HttpClient client = GetTestClient();
 
@@ -251,7 +251,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         /// Test: Getting consent status changes with wrong scope returns Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetConsentStatusChanges_WrongScope_Returns403Forbidden()
+        public async Task GetConsentStatusChanges_WrongScope_Returns403InsufficientScope()
         {
             HttpClient client = GetTestClient();
 
@@ -348,7 +348,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentStatusChanges_IdenticalTimestampsTieBreakerByEventIdOverPages_Returns200Ok()
+        public async Task GetConsentStatusChanges_IdenticalTimestampsTieBreakerByEventIdOverPages_Returns200WithAllEventsOrderedByChangedDate()
         {
             HttpClient client = GetTestClient();
 
@@ -781,7 +781,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithInvalidEventType_Returns400BadRequest()
+        public async Task GetConsentEvents_WithInvalidEventType_Returns400InvalidEventType()
         {
             SetupMockPartyRepository();
 
@@ -801,7 +801,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithCreatedAfterAfterCreatedBefore_Returns400BadRequest()
+        public async Task GetConsentEvents_WithCreatedAfterAfterCreatedBefore_Returns400InvalidDateRange()
         {
             SetupMockPartyRepository();
 
@@ -824,7 +824,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithCreatedAfterEqualToCreatedBefore_Returns400BadRequest()
+        public async Task GetConsentEvents_WithCreatedAfterEqualToCreatedBefore_Returns400InvalidDateRange()
         {
             SetupMockPartyRepository();
 
@@ -846,7 +846,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithInvalidContinuationToken_Returns400BadRequest()
+        public async Task GetConsentEvents_WithInvalidContinuationToken_Returns400InvalidContinuationToken()
         {
             SetupMockPartyRepository();
 
@@ -866,7 +866,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         [Fact]
-        public async Task GetConsentEvents_WithWrongLengthContinuationToken_Returns400BadRequest()
+        public async Task GetConsentEvents_WithWrongLengthContinuationToken_Returns400InvalidContinuationToken()
         {
             SetupMockPartyRepository();
 

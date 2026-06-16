@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Health
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task HealthEndpoint_WhenAppIsHealthy_Returns200Ok()
+        public async Task HealthEndpoint_WhenAppIsHealthy_Returns200WithHealthyStatus()
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "/health");
 

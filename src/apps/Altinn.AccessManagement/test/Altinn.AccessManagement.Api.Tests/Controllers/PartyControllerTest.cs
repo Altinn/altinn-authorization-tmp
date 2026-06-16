@@ -49,7 +49,7 @@ public class PartyControllerTest
     };
 
     [Fact]
-    public async Task AddParty_NullToken_Returns401Unauthorized()
+    public async Task AddParty_NullToken_Returns401MissingToken()
     {
         var result = await CreateSut(new Mock<IPartyService>().Object).AddParty(SampleParty, null, TestContext.Current.CancellationToken);
 
@@ -57,7 +57,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_TokenWithoutAppClaim_Returns401Unauthorized()
+    public async Task AddParty_TokenWithoutAppClaim_Returns401MissingAppClaim()
     {
         var token = MakeToken(appClaimValue: null);
 
@@ -67,7 +67,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_TokenWithWrongApp_Returns401Unauthorized()
+    public async Task AddParty_TokenWithWrongApp_Returns401UnauthorizedApp()
     {
         var token = MakeToken("not-authentication");
 

@@ -136,7 +136,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_WithFromOthersReadScope_Returns403Forbidden()
+        public async Task RemovePackages_WithFromOthersReadScope_Returns403ForFromOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(
@@ -151,7 +151,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_WithToOthersReadScope_Returns403Forbidden()
+        public async Task RemovePackages_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
             HttpResponseMessage response = await client.DeleteAsync(

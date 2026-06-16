@@ -102,7 +102,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetAvailableUsers_WithReadScope_Returns403Forbidden()
+        public async Task GetAvailableUsers_WithReadScope_Returns403ForReadScope()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 

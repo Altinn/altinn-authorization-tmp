@@ -238,7 +238,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 403 Forbidden.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_WithWrongScope_Returns403Forbidden()
+    public async Task GetAuthorizedParties_WithWrongScope_Returns403WrongScope()
     {
         var client = CreateClientWithScopes(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -252,7 +252,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 401 Unauthorized.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_WithNoToken_Returns401Unauthorized()
+    public async Task GetAuthorizedParties_WithNoToken_Returns401MissingToken()
     {
         var client = Fixture.Server.CreateClient();
 

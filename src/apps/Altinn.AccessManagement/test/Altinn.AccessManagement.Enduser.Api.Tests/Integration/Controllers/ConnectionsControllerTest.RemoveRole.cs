@@ -95,7 +95,7 @@ public partial class ConnectionsControllerTest
         /// Verifies deletion by checking that the role no longer appears in GetRoles endpoint.
         /// </summary>
         [Fact]
-        public async Task RemoveRole_WithNonA2RoleCode_PartyAsFrom_Returns400BadRequest()
+        public async Task RemoveRole_WithNonA2RoleCode_PartyAsFrom_Returns400ForNonAltinn2Role()
         {
             // Verify role exists before removal
             HttpClient readClient = CreateClient(TestData.HanSolo.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
@@ -172,7 +172,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task RemoveRole_WithReadScope_Returns403Forbidden()
+        public async Task RemoveRole_WithReadScope_Returns403ForReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -189,7 +189,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest with RoleAssignmentNotRevocable problem, not 204 NoContent.
         /// </summary>
         [Fact]
-        public async Task RemoveRole_WithInheritedRoleButNoDirectAssignment_Returns400BadRequest()
+        public async Task RemoveRole_WithInheritedRoleButNoDirectAssignment_Returns400ForNonRevocableInheritedRole()
         {
             // Setup: Create a Main Unit relationship where HanSoloEnterprise is the main unit
             // and create an inherited role connection for Thea through the main unit

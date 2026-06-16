@@ -58,7 +58,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         };
 
         [Fact]
-        public async Task GetConsentFromA2_Valid_Returns200Ok()
+        public async Task GetConsentFromA2_Valid_Returns200WithConsentInfo()
         {
             SetupMockPartyRepository();
 
@@ -123,7 +123,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         }
 
         [Fact]
-        public async Task GetConsentFromA2_InvalidMetadata_Returns200Ok()
+        public async Task GetConsentFromA2_InvalidMetadata_Returns200WithConsentInfo()
         {
             SetupMockPartyRepository();
 
@@ -156,7 +156,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         }
 
         [Fact]
-        public async Task GetConsent_CreatedExpired_Returns500InternalServerError()
+        public async Task GetConsent_CreatedExpired_Returns500MultipleProblemsExpiredAndNotAccepted()
         {
             SetupMockPartyRepository();
 
@@ -189,7 +189,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         }
 
         [Fact]
-        public async Task GetConsent_ValidFromOrg_Returns200Ok()
+        public async Task GetConsent_ValidFromOrg_Returns200WithConsentInfo()
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed77");
@@ -230,7 +230,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task GetConsent_ValidHandledByOrg_Returns200Ok()
+        public async Task GetConsent_ValidHandledByOrg_Returns200WithConsentInfo()
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("d1bedb7d-a682-4668-9f84-7a56b3d733ab");
@@ -266,7 +266,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         }
 
         [Fact]
-        public async Task GetConsent_Created_Returns400BadRequest()
+        public async Task GetConsent_Created_Returns400ConsentNotAccepted()
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
