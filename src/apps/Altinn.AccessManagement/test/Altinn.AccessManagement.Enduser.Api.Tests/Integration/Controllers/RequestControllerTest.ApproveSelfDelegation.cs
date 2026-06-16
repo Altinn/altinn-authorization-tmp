@@ -1,5 +1,7 @@
-﻿using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Services.Interfaces;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
@@ -10,13 +12,8 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.PEP.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Net;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text.Json;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
 
