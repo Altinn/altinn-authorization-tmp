@@ -246,19 +246,14 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     {
         string instanceId = request.InstanceId;
 
-        // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+        // Resolve the From party to rewrite the instance urn for internal processing (it is reset
+        // before the response). If From does not resolve, skip the rewrite and let
+        // SetUpDelegationOrRevokeRequest report the full set of validation errors (From and To).
         MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
-
-        if (party == null)
+        if (party != null)
         {
-            ValidationErrorBuilder errors = default;
-            errors.Add(ValidationErrors.InvalidPartyUrn, "From");
-            errors.TryBuild(out var invalidParty);
-            return invalidParty!;
+            request.InstanceId = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
         }
-
-        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-        request.InstanceId = instanceUrn;
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
         request.InstanceId = instanceId;
@@ -490,19 +485,14 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
     {
         string instanceId = request.InstanceId;
 
-        // Create instance urn and use it for the internal processing but reset it for response as we should not change the contract
+        // Resolve the From party to rewrite the instance urn for internal processing (it is reset
+        // before the response). If From does not resolve, skip the rewrite and let
+        // SetUpDelegationOrRevokeRequest report the full set of validation errors (From and To).
         MinimalParty party = await GetMinimalParty(request.From, cancellationToken);
-
-        if (party == null)
+        if (party != null)
         {
-            ValidationErrorBuilder errors = default;
-            errors.Add(ValidationErrors.InvalidPartyUrn, "From");
-            errors.TryBuild(out var invalidParty);
-            return invalidParty!;
+            request.InstanceId = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
         }
-
-        string instanceUrn = $"{AltinnXacmlConstants.MatchAttributeIdentifiers.InstanceAttribute}:{party.PartyId}/{instanceId}";
-        request.InstanceId = instanceUrn;
 
         (ValidationErrorBuilder Errors, InstanceRight RulesToHandle, List<RightInternal> RightsAppCantHandle) input = await SetUpDelegationOrRevokeRequest(request, cancellationToken);
         request.InstanceId = instanceId;
