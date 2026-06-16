@@ -217,7 +217,17 @@ public partial class ResourceSyncService : IResourceSyncService
         var role = await dbContext.Roles
             .AsNoTracking()
             .Where(r => EF.Functions.ILike(r.LegacyUrn, updatedResource.SubjectUrn) || EF.Functions.ILike(r.Urn, updatedResource.SubjectUrn))
-            .SingleOrDefaultAsync(cancellationToken) ?? throw new KeyNotFoundException($"Role not found '{subjectUrnPart}'");
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (role is null)
+        {
+            /*
+            Ignore if role not found, as the resource registry might send updates for roles that are not imported into access management. 
+            This will be fixed later.
+            throw new KeyNotFoundException($"Role not found '{subjectUrnPart}'");
+            */
+            return;
+        }
 
         var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
         if (roleResource == null)
