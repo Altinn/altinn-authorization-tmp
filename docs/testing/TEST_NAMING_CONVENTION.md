@@ -88,11 +88,4 @@ Do **not** use a bare status word (`BadRequest`), a synonym (`Success`, `OK`, `V
 
 Applies to all test projects: the AccessManagement projects (`AccessMgmt.Tests`, `Enduser.Api.Tests`, `Api.Tests`, `ServiceOwner.Api.Tests`, `Api.Internal.Tests`, `Core.Tests`, `PersistenceEF.Tests`), the ABAC test project (`Altinn.Authorization.ABAC.Tests`), and the Authorization test projects. New tests must follow it; existing tests were aligned in #3500.
 
-A narrow CI guard (`.github/scripts/check-test-naming.sh`, wired into `tpl-vertical-ci.yml`) backs this up for the AccessManagement vertical. It is **non-blocking**: it annotates warnings, it never fails the build. It flags only objective anti-patterns:
-
-- opaque IDs: a `_TCxx` segment, a trailing pure-numeric segment, or a trailing `word+4-digits` id;
-- a numeric status with no name (`Returns400`);
-- a bare HTTP status word (`...BadRequest`, `...Ok`);
-- a status-only HTTP result (`Returns200Ok`, `Returns400BadRequest`) that should name the body or effect: this one is a soft nudge, skip it when the response genuinely has no body.
-
-It deliberately does **not** police service-outcome results (`ReturnsTrue`, `ReturnsEmptyList`, `ReturnsNull`, …): those are legitimate and left to review. Because the guard cannot inspect a response body, "is the description rich enough?" stays a review concern; the guard only catches the cases it can judge objectively.
+This is a review-time convention, not CI-enforced. Reviewers should flag bare status words (`BadRequest`), numeric codes with no name (`Returns400`), opaque ids (`_TCxx`), and status-only HTTP results where the response has a meaningful body.
