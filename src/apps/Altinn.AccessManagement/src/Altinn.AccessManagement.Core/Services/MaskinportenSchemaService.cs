@@ -13,7 +13,6 @@ using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.FeatureManagement;
 using static Altinn.AccessManagement.Core.Constants.AltinnXacmlConstants;
 using Delegation = Altinn.AccessManagement.Core.Models.Delegation;
 using ResourceType = Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType;

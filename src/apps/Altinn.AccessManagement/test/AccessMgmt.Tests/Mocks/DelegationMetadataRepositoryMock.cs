@@ -699,6 +699,23 @@ public class DelegationMetadataRepositoryMock : IDelegationMetadataRepository
         }
 
         string content = File.ReadAllText(partiesPath);
-        return JsonSerializer.Deserialize<List<Party>>(content) ?? new List<Party>();
+        List<Party> roots = JsonSerializer.Deserialize<List<Party>>(content) ?? new List<Party>();
+        return Flatten(roots).ToList();
     });
+
+    // parties.json nests sub-units under ChildParties; flatten so lookups resolve nested parties too.
+    private static IEnumerable<Party> Flatten(IEnumerable<Party> parties)
+    {
+        foreach (Party party in parties)
+        {
+            yield return party;
+            if (party.ChildParties != null)
+            {
+                foreach (Party child in Flatten(party.ChildParties))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
 }
