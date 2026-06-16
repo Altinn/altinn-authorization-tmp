@@ -171,7 +171,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
         else
         {
-            Activity.Current.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
+            Activity.Current?.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
         }
     }
 
@@ -237,11 +237,12 @@ public partial class ResourceSyncService : IResourceSyncService
                 dbContext.RoleResources.Add(roleResource);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
+            
             return;
         }
         else
         {
-            Activity.Current.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
+            Activity.Current?.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
         }
     }
 
