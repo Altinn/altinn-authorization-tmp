@@ -1,4 +1,5 @@
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ public class AccessMgmtApiFixture : ApiFixture
         ConfigureServices(services =>
         {
             services.AddSingleton<IPartiesClient, PartiesClientMock>();
+            services.AddSingleton<IAMPartyService, AMPartyServiceMock>();
             services.AddSingleton<IProfileClient, TestUtilsMocks.ProfileClientMock>();
             services.AddSingleton<IAltinnRolesClient, TestUtilsMocks.AltinnRolesClientMock>();
             services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
