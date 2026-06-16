@@ -25,9 +25,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// All tests share a single mock set (the previous `WithPDPMock` extension point was
-// dead code), so DI is registered once in the constructor; per-test HttpClients are
-// built via fixture.CreateClient().
+// The shared RightsApiFixture provides the mock graph (PDP, policy/delegation data
+// layer, issuer-cert signing); this class only adds appsettings and seed data.
+// Per-test HttpClients are built via fixture.CreateClient().
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 [IntegrationTest]
@@ -38,10 +38,10 @@ public class AppsInstanceDelegationControllerTest
     private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     /// <summary>
-    /// Constructor setting up the shared <see cref="ApiFixture"/> with the mocks
-    /// required by this controller's tests.
+    /// Constructor setting up the shared <see cref="RightsApiFixture"/> with the
+    /// appsettings and seed data required by this controller's tests.
     /// </summary>
-    /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
+    /// <param name="fixture">Shared <see cref="RightsApiFixture"/>.</param>
     public AppsInstanceDelegationControllerTest(RightsApiFixture fixture)
     {
         _fixture = fixture;
