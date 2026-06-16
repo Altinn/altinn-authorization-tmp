@@ -107,8 +107,8 @@ internal static class FixtureTiming
 
     /// <summary>
     /// Best-effort name of the test project, derived from the output directory
-    /// (<c>.../&lt;Project&gt;/bin/&lt;Config&gt;/&lt;Tfm&gt;/</c>). Tags the summary line so a
-    /// CI host-build guard can target a single project's count.
+    /// (<c>.../&lt;Project&gt;/bin/&lt;Config&gt;/&lt;Tfm&gt;/</c>). Tags the summary line so
+    /// per-project host-build counts can be read from the output.
     /// </summary>
     private static string ResolveAssemblyLabel()
     {

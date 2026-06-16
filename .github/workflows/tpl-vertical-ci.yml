@@ -235,28 +235,12 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
         working-directory: ${{ inputs.path }}
-        env:
-          # FixtureTiming appends one summary line per test process; the guard
-          # step below enforces the per-assembly host-build baseline from it.
-          FIXTURE_TIMING_FILE: ${{ github.workspace }}/fixture-timing.txt
         run: |
           dotnet-coverage collect --nologo \
             --output TestResults/coverage.integration.coverage --output-format coverage \
             -- dotnet test -c Release --no-build -bl:binlog/test-integration.binlog \
               -- --results-directory TestResults/integration --report-xunit-trx \
                  --filter-trait "Category=Integration" --ignore-exit-code 8
-
-      - name: Guard - integration host-build count
-        # Fail when an integration-test assembly builds more WebApplicationFactory
-        # hosts than its committed baseline (a new per-class host instead of a
-        # shared profile/collection fixture — the dominant setup cost). No-op for
-        # verticals/assemblies with no baseline entry or no FixtureTiming output.
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        shell: bash
-        run: |
-          bash "${{ github.workspace }}/.github/scripts/check-host-build-count.sh" \
-            "${{ github.workspace }}/fixture-timing.txt" \
-            "${{ github.workspace }}/docs/testing/host-build-baseline.txt"
 
       - name: Report failed tests
         # When the Test step fails, surface the specific failing test names

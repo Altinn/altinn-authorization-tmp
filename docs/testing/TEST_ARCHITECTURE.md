@@ -2,7 +2,7 @@
 
 Status: **largely complete** — Feature #3452's sub-tasks are implemented in PR #3456:
 the project-local mock-catalog fixture, the no-DB tier, three cohort host collapses,
-the CI host-build guard, robust test-data paths, and a unified fixture convention.
+robust test-data paths, and a unified fixture convention.
 Scope: the AccessManagement integration/web-app test suite. Authorization is
 referenced as the pattern to copy — specifically its **project-local** fixture
 (`AuthorizationApiFixture`), which bakes its own mock graph in rather than
@@ -161,8 +161,8 @@ host first; then make data shareable; then collapse onto profiles).
 Status: Phase 1 and Phase 2a are done — Phase 2a is the project-local
 `AccessMgmtApiFixture` catalog (#3454), shipped in PR #3456 (972 integration tests
 green). Phase 2b (#3453) is in progress. Remaining: #3459 (owned data), #3458
-(DB-less tier), #3460 (profiles), #3461 (retire `LegacyApiFixture`); plus #3457 (CI
-host-build guard) and #3462 (robust test-data paths).
+(DB-less tier), #3460 (profiles), #3461 (retire `LegacyApiFixture`); plus #3462
+(robust test-data paths).
 
 ## Profile axes (measured in AccessMgmt.Tests — input for #3460)
 
@@ -228,9 +228,10 @@ combinations) or require per-test isolation, so they stay on their own fixtures.
 incidental variations of a few profiles. The realised wins are the catalog default (#3454), the
 no-DB tier (#3458, ~1 class), and these three cohort collapses; further reduction would require
 aggressive superset-baking that risks changing per-class behaviour (low yield, rising risk), so
-#3459 / #3460 stop here. A CI guard (#3457, `.github/scripts/check-host-build-count.sh`) now
-fails the build if `AccessMgmt.Tests` builds more than the current 65 hosts, so the reduction
-cannot silently regress; the baseline lives in `docs/testing/host-build-baseline.txt`.
+#3459 / #3460 stop here. The realised count is 65 hosts for `AccessMgmt.Tests`. There is no CI
+guard on the host-build count: a per-assembly check existed briefly and was removed, since we do
+not want CI to fail just because a test is inefficient. `FixtureTiming` still measures the counts
+for anyone optimising locally.
 
 ## 9. Risks & open items
 
