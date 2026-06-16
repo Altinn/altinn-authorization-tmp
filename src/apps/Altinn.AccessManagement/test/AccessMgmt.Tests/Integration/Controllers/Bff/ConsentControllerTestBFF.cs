@@ -268,7 +268,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetConsentRequest_PortalModeHide_Returns200Ok()
+        public async Task GetConsentRequest_PortalModeHide_Returns200WithConsentRequestDetailsAndHidePortalViewMode()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
@@ -296,7 +296,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// User is authorized for all rights in the consent request
         /// </summary>
         [Fact]
-        public async Task GetConsentRequest_WithAccessPackage_Returns200Ok()
+        public async Task GetConsentRequest_WithAccessPackage_Returns200WithConsentRequestDetails()
         {
             Guid requestId = Guid.Parse("2fe8bd3e-d482-4170-8c09-f44cf31797ce");
 
@@ -319,7 +319,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task GetConsentRequest_PortalModeShow_Returns200Ok()
+        public async Task GetConsentRequest_PortalModeShow_Returns200WithConsentRequestDetailsAndShowPortalViewMode()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
 
@@ -390,7 +390,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task AcceptRequest_Valid_Returns200Ok()
+        public async Task AcceptRequest_Valid_Returns200WithAcceptedConsentRequestEvent()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -421,7 +421,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task AcceptRequest_ValidAccessPackage_Returns200Ok()
+        public async Task AcceptRequest_ValidAccessPackage_Returns200WithAcceptedConsentRequestEvent()
         {
             Guid requestId = Guid.Parse("2fe8bd3e-d482-4170-8c09-f44cf31797ce");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -452,7 +452,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task AcceptRequest_ValidToExpired_Returns400BadRequest()
+        public async Task AcceptRequest_ValidToExpired_Returns400WithTimeNotInFutureValidationError()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -483,7 +483,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task AcceptRequestWithRequiredDelegator_Valid_Returns200Ok()
+        public async Task AcceptRequestWithRequiredDelegator_Valid_Returns200WithAcceptedConsentRequestEvent()
         {
             Guid requestId = Guid.Parse("a4253d59-b40f-409a-a3f7-c6395f065192");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -521,7 +521,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task AcceptRequest_AlreadyRejected_Returns400BadRequest()
+        public async Task AcceptRequest_AlreadyRejected_Returns400WithConsentCantBeAcceptedError()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -565,7 +565,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task ListRequests_OneValid_Returns200Ok()
+        public async Task ListRequests_OneValid_Returns200WithSingleConsentRequest()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -581,7 +581,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task ListRequests_OneValidHiddenOneValidShow_Returns200Ok()
+        public async Task ListRequests_OneValidHiddenOneValidShow_Returns200WithBothConsentRequests()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             Guid requestIdShow = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
@@ -603,7 +603,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task ListRequests_OneAcceptedAndExpired_Returns200Ok()
+        public async Task ListRequests_OneAcceptedAndExpired_Returns200WithAcceptedAndExpiredEvents()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -627,7 +627,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task ListRequests_OneRejectedOneValid_Returns200Ok()
+        public async Task ListRequests_OneRejectedOneValid_Returns200WithBothConsentRequests()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId2 = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
@@ -653,7 +653,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task RejectRequest_AlreadyAccepted_Returns400BadRequest()
+        public async Task RejectRequest_AlreadyAccepted_Returns400WithConsentCantBeRejectedError()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -683,7 +683,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task GetConsent_Valid_Returns200Ok()
+        public async Task GetConsent_Valid_Returns200WithConsent()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -728,7 +728,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task RevokeRequest_Valid_Returns200Ok()
+        public async Task RevokeRequest_Valid_Returns200WithRevokedConsentRequestEvent()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
 
@@ -756,7 +756,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         }
 
         [Fact]
-        public async Task RevokeRequest_NotAccepted_Returns400BadRequest()
+        public async Task RevokeRequest_NotAccepted_Returns400WithConsentCantBeRevokedError()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
 

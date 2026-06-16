@@ -65,7 +65,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_UserDelegation_KeyRoleUnitDelegation_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_UserDelegation_KeyRoleUnitDelegation_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50005545", "u20000095", false);
@@ -90,7 +90,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_UserDelegation_KeyRoleUnitDelegation_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_UserDelegation_KeyRoleUnitDelegation_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50005545", "u20000095", true);
@@ -113,7 +113,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_DAGL_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_DAGL_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50005545", "u20000490", false);
@@ -140,7 +140,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_DAGL_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_DAGL_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50005545", "u20000490", true);
@@ -164,7 +164,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("digdirs_company_car", "p50005545", "u20001337", false);
@@ -189,7 +189,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("digdirs_company_car", "p50005545", "u20001337", true);
@@ -216,7 +216,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50004221", "u20000490", false);
@@ -243,7 +243,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("jks_audi_etron_gt", "p50004221", "u20000490", true);
@@ -267,7 +267,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("org1_app1", "p50001337", "u20001337", false);
@@ -292,7 +292,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("org1_app1", "p50001337", "u20001337", true);
@@ -315,7 +315,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_AppRight_DAGL_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task RightsQuery_AppRight_DAGL_ReturnAllPolicyRights_False_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("ttd_rf-0002", "p50005545", "u20000490", false);
@@ -339,7 +339,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task RightsQuery_AppRight_DAGL_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task RightsQuery_AppRight_DAGL_ReturnAllPolicyRights_True_Returns200WithRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedRights("ttd_rf-0002", "p50005545", "u20000490", true);
@@ -362,7 +362,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetDelegableRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_AppRight_DAGL_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task DelegableRightsQuery_AppRight_DAGL_ReturnAllPolicyRights_False_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("ttd_rf-0002", "p50005545", "u20000490", false);
@@ -386,7 +386,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetDelegableRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_AppRight_DAGL_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task DelegableRightsQuery_AppRight_DAGL_ReturnAllPolicyRights_True_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("ttd_rf-0002", "p50005545", "u20000490", true);
@@ -412,7 +412,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task DelegableRightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_False_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("jks_audi_etron_gt", "p50004221", "u20000490", false);
@@ -439,7 +439,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task DelegableRightsQuery_ResourceRight_UserDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleDelegation_ReturnAllPolicyRights_True_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("jks_audi_etron_gt", "p50004221", "u20000490", true);
@@ -462,7 +462,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task DelegableRightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_False_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("digdirs_company_car", "p50005545", "u20001337", false);
@@ -487,7 +487,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task DelegableRightsQuery_ResourceRight_HADM_ReturnAllPolicyRights_True_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("digdirs_company_car", "p50005545", "u20001337", true);
@@ -512,7 +512,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_False_Returns200Ok()
+        public async Task DelegableRightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_False_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("org1_app1", "p50001337", "u20001337", false);
@@ -537,7 +537,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRights returns a list of right matching expected
         /// </summary>
         [Fact]
-        public async Task DelegableRightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_True_Returns200Ok()
+        public async Task DelegableRightsQuery_AppRight_UserDelegation_ReturnAllPolicyRights_True_Returns200WithDelegableRights()
         {
             // Arrange
             List<RightExternal> expectedRights = GetExpectedDelegableRights("org1_app1", "p50001337", "u20001337", true);
@@ -567,7 +567,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_DAGL_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_DAGL_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -592,7 +592,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
 
         // Delegable, AccessLists fail
         [Fact]
-        public async Task DelegationCheck_GenericAccessListsResource_DAGL_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessListsResource_DAGL_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -617,7 +617,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
 
         // Tilgangsstyrer som ikke er dagl
         [Fact]
-        public async Task DelegationCheck_GenericAccessListsResource_ADMAI_HasNotDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessListsResource_ADMAI_HasNotDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -642,7 +642,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
 
         // On behalf of a privatperson ikke org så fail på helperfunction
         [Fact]
-        public async Task DelegationCheck_GenericAccessListsResource_PRIV_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessListsResource_PRIV_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -688,7 +688,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected: 8 Delegable with roles returned Delegable as role is correct, 2 Not connected to any roles filtered away. All Rule details for Service Owner is Filtered away
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_DAGL_HasTheDelegableRightsExistingForEndUsers_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_DAGL_HasTheDelegableRightsExistingForEndUsers_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -734,7 +734,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected: 8 Delegable with roles returned but not delegable as role is missing, 2 Not connected to any roles filtered away. All Rule details for Service Owner is Filtered away
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_NoRoleOrRights_AllRightsNotDelegableServiceOwnerRightsFilteredAway_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_NoRoleOrRights_AllRightsNotDelegableServiceOwnerRightsFilteredAway_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -770,7 +770,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_PRIV_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_PRIV_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -807,7 +807,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_HADM_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_HADM_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20001337;
@@ -842,7 +842,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_GenericAccessResource_SubUnitToUserDelegation_SubUnitToKeyRoleUnitDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleUnitDelegation_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_GenericAccessResource_SubUnitToUserDelegation_SubUnitToKeyRoleUnitDelegation_MainUnitToUserDelegation_MainUnitToKeyRoleUnitDelegation_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20000490;
@@ -873,7 +873,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationCheckResult matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_AppRight_UserDelegation_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_AppRight_UserDelegation_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20001337;
@@ -904,7 +904,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationStatus matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_ServiceRight_UserDelegation_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_ServiceRight_UserDelegation_HasDelegableRights_Returns200WithDelegationCheckResults()
         {
             // Arrange
             int userId = 20001337;
@@ -934,7 +934,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_InvalidResource_Returns400BadRequest()
+        public async Task DelegationCheck_InvalidResource_Returns400WithInvalidResourceError()
         {
             // Arrange
             int userId = 20001337;
@@ -964,7 +964,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_MaskinportenSchema_Returns400BadRequest()
+        public async Task DelegationCheck_MaskinportenSchema_Returns400WithMaskinportenSchemaNotAllowedError()
         {
             // Arrange
             int userId = 20001337;
@@ -999,7 +999,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByDagl_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByDagl_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1036,7 +1036,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToSystemUser_ByDagl_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToSystemUser_ByDagl_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1073,7 +1073,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource2_FromOrg_ToSystemUser_ByDagl_ResourceNotAllowed_Returns400BadRequest()
+        public async Task Delegation_GenericAccessResource2_FromOrg_ToSystemUser_ByDagl_ResourceNotAllowed_Returns400WithResourceNotAllowedError()
         {
             // Arrange
             string resourceId = "generic-access-resource2";
@@ -1107,7 +1107,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_App_FromOrg_ToSystemUser_ByDagl_Returns200Ok()
+        public async Task Delegation_App_FromOrg_ToSystemUser_ByDagl_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "app_ttd_apps-test";
@@ -1142,7 +1142,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToUserUuid_ByDagl_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToUserUuid_ByDagl_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1172,7 +1172,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns validation problem details
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByDagl_MissingToLastName_Returns400BadRequest()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByDagl_MissingToLastName_Returns400WithMissingToLastNameError()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1207,7 +1207,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromPerson_ToPerson_ByPriv_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromPerson_ToPerson_ByPriv_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1243,7 +1243,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromPerson_ToOrganizationUuid_ByPriv_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromPerson_ToOrganizationUuid_ByPriv_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1282,7 +1282,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByHadm_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToPerson_ByHadm_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1319,7 +1319,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromSubunit_ToOrg_ByDelegation_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromSubunit_ToOrg_ByDelegation_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1353,7 +1353,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToEcUser_ByAdmai_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToEcUser_ByAdmai_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1388,7 +1388,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_GenericAccessResource_FromOrg_ToEcUserUuid_ByAdmai_Returns200Ok()
+        public async Task Delegation_GenericAccessResource_FromOrg_ToEcUserUuid_ByAdmai_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "generic-access-resource";
@@ -1425,7 +1425,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_AppRight_PartialSuccess_Returns200Ok()
+        public async Task Delegation_AppRight_PartialSuccess_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "app_org1_app1";
@@ -1462,7 +1462,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Delegation returns a RightsDelegationResponse matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_Altinn2Service_Returns200Ok()
+        public async Task Delegation_Altinn2Service_Returns200WithDelegationResponse()
         {
             // Arrange
             string resourceId = "se_2802_2203";
@@ -1494,7 +1494,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_InvalidResource_Returns400BadRequest()
+        public async Task Delegation_InvalidResource_Returns400WithInvalidResourceError()
         {
             // Arrange
             string resourceId = "non_existing_id";
@@ -1526,7 +1526,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task Delegation_MaskinportenSchema_Returns400BadRequest()
+        public async Task Delegation_MaskinportenSchema_Returns400WithMaskinportenSchemaNotAllowedError()
         {
             // Arrange
             string resourceId = "jks_audi_etron_gt";

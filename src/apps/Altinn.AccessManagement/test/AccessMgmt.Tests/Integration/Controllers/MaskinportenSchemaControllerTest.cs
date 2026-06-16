@@ -202,7 +202,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns a list of delegations offeredby has given coveredby
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_Valid_OfferedByParty_Returns200Ok()
+        public async Task GetOfferedMaskinportenSchemaDelegations_Valid_OfferedByParty_Returns200WithOfferedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetOfferedMaskinportenSchemaDelegations(50004223);
@@ -225,7 +225,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns a list of delegations offeredby has given coveredby
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_Valid_OfferedByOrg_Returns200Ok()
+        public async Task GetOfferedMaskinportenSchemaDelegations_Valid_OfferedByOrg_Returns200WithOfferedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetOfferedMaskinportenSchemaDelegations(50004223);
@@ -251,7 +251,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns notfound
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_MissingOfferedBy_Returns404NotFound()
+        public async Task GetOfferedMaskinportenSchemaDelegations_MissingOfferedBy_Returns404ForMissingPartyRouteParam()
         {
             // Act
             HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1//maskinportenschema/offered", TestContext.Current.CancellationToken);
@@ -265,7 +265,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns Forbidden
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_InvalidOfferedBy_Returns403Forbidden()
+        public async Task GetOfferedMaskinportenSchemaDelegations_InvalidOfferedBy_Returns403ForUnauthorizedParty()
         {
             // Arrange
             _client = GetTestClient(new PepWithPDPAuthorizationMock());
@@ -284,7 +284,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns 200 with response message empty array when there are no delegations for the reportee
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_NoDelegations_Returns200Ok()
+        public async Task GetOfferedMaskinportenSchemaDelegations_NoDelegations_Returns200WithEmptyList()
         {
             // Arrange
             var token = PrincipalUtil.GetToken(1234, 12345678, 2);
@@ -305,7 +305,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns list of resources that were delegated. The resource metadata is set to not available if the resource in a delegation for some reason is  not found in resource registry
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_ResourceMetadataNotFound_Returns200Ok()
+        public async Task GetOfferedMaskinportenSchemaDelegations_ResourceMetadataNotFound_Returns200WithOfferedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetOfferedMaskinportenSchemaDelegations(50004226);
@@ -328,7 +328,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns unauthorized when the bearer token is not set
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_MissingBearerToken_Returns401Unauthorized()
+        public async Task GetOfferedMaskinportenSchemaDelegations_MissingBearerToken_Returns401ForMissingToken()
         {
             _client.DefaultRequestHeaders.Remove("Authorization");
 
@@ -344,7 +344,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetOfferedMaskinportenSchemaDelegations returns unauthorized when the bearer token is not valid
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_InvalidBearerToken_Returns401Unauthorized()
+        public async Task GetOfferedMaskinportenSchemaDelegations_InvalidBearerToken_Returns401ForInvalidToken()
         {
             // Arrange
             _client.DefaultRequestHeaders.Remove("Authorization");
@@ -362,7 +362,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns a list of delegations received by coveredby
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_Valid_CoveredBy_Returns200Ok()
+        public async Task GetReceivedMaskinportenSchemaDelegations_Valid_CoveredBy_Returns200WithReceivedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetReceivedMaskinportenSchemaDelegations(50004219);
@@ -386,7 +386,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns a list of delegations received by coveredby
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_Valid_CoveredByOrg_Returns200Ok()
+        public async Task GetReceivedMaskinportenSchemaDelegations_Valid_CoveredByOrg_Returns200WithReceivedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetReceivedMaskinportenSchemaDelegations(50004219);
@@ -413,7 +413,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns notfound when the query parameter is missing
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_Missing_CoveredBy_Returns404NotFound()
+        public async Task GetReceivedMaskinportenSchemaDelegations_Missing_CoveredBy_Returns404ForMissingPartyRouteParam()
         {
             // Act
             HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1//maskinportenschema/received", TestContext.Current.CancellationToken);
@@ -427,7 +427,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns Forbidden
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_Invalid_CoveredBy_Returns403Forbidden()
+        public async Task GetReceivedMaskinportenSchemaDelegations_Invalid_CoveredBy_Returns403ForUnauthorizedParty()
         {
             // Arrange
             _client = GetTestClient(new PepWithPDPAuthorizationMock());
@@ -446,7 +446,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns 200 with rempty array when there are no delegations received for the reportee
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_NoDelegations_Returns200Ok()
+        public async Task GetReceivedMaskinportenSchemaDelegations_NoDelegations_Returns200WithEmptyList()
         {
             // Arrange
             var token = PrincipalUtil.GetToken(1234, 12345678, 2);
@@ -467,7 +467,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns list of resources that were delegated. The resource metadata is set to not available if the resource in a delegation for some reason is  not found in resource registry
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_ResourceMetadataNotFound_Returns200Ok()
+        public async Task GetReceivedMaskinportenSchemaDelegations_ResourceMetadataNotFound_Returns200WithReceivedDelegations()
         {
             // Arrange
             List<MaskinportenSchemaDelegationExternal> expectedDelegations = TestDataUtil.GetReceivedMaskinportenSchemaDelegations(50004216);
@@ -491,7 +491,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns unauthorized when the bearer token is not set
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_MissingBearerToken_Returns401Unauthorized()
+        public async Task GetReceivedMaskinportenSchemaDelegations_MissingBearerToken_Returns401ForMissingToken()
         {
             _client.DefaultRequestHeaders.Remove("Authorization");
 
@@ -507,7 +507,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetReceivedMaskinportenSchemaDelegations returns unauthorized when the bearer token is not valid
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_InvalidBearerToken_Returns401Unauthorized()
+        public async Task GetReceivedMaskinportenSchemaDelegations_InvalidBearerToken_Returns401ForInvalidToken()
         {
             _client.DefaultRequestHeaders.Remove("Authorization");
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "This is an invalid token");
@@ -525,7 +525,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns a list of delegations offered by supplier to consumer for a given scope
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_Valid_Returns200Ok()
+        public async Task GetMaskinportenDelegations_Admin_Valid_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -557,7 +557,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns a list of delegations offered by supplier to consumer for a given scope
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_Valid_Returns200Ok()
+        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_Valid_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -589,7 +589,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns a list of delegations for a given scope
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_NoSupplerConsumer_Returns200Ok()
+        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_NoSupplerConsumer_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -618,7 +618,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns forbidden
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_UnauthorizedScope_Returns403Forbidden()
+        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_UnauthorizedScope_Returns403ForUnauthorizedScopeLookup()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("SKD", "974761076", "altinn:maskinporten/delegations", null, consumerPrefix: new[] { "skd" });
@@ -644,7 +644,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns forbidden
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_WithoutScope_Returns403Forbidden()
+        public async Task GetMaskinportenDelegations_ServiceOwnerLookup_WithoutScope_Returns403ForMissingScopeParam()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("SKD", "974761076", "altinn:maskinporten/delegations", null, new[] { "skd" });
@@ -670,7 +670,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns ok, no delegations found
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_DelegationsEmpty_Returns200Ok()
+        public async Task GetMaskinportenDelegations_Admin_DelegationsEmpty_Returns200WithEmptyList()
         {
             // Arrange
             string token = string.Empty;
@@ -698,7 +698,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns OK
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_WithoutScope_Returns200Ok()
+        public async Task GetMaskinportenDelegations_Admin_WithoutScope_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -729,7 +729,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns badrequest
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_WithoutScopeOrOrgs_Returns400BadRequest()
+        public async Task GetMaskinportenDelegations_Admin_WithoutScopeOrOrgs_Returns400ForMissingScopeAndOrgParams()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -752,7 +752,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns badrequest
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_InvalidSupplier_Returns400BadRequest()
+        public async Task GetMaskinportenDelegations_Admin_InvalidSupplier_Returns400WithInvalidSupplierOrgError()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -778,7 +778,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns badrequest
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_InvalidConsumer_Returns400BadRequest()
+        public async Task GetMaskinportenDelegations_Admin_InvalidConsumer_Returns400WithInvalidConsumerOrgError()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -804,7 +804,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns ok, no delegations found
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_Admin_ScopesNotRegisteredOnResource_Returns200Ok()
+        public async Task GetMaskinportenDelegations_Admin_ScopesNotRegisteredOnResource_Returns200WithEmptyList()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -829,7 +829,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns OK
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_Admin_UrnScopeFormat_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_Admin_UrnScopeFormat_Returns200WithEmptyList()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -875,7 +875,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Testing if user without necessary rights is denied access to 
         /// </summary>
         [Fact]
-        public async Task GetOfferedMaskinportenSchemaDelegations_UserNotComplyingToPolicy_Returns403Forbidden()
+        public async Task GetOfferedMaskinportenSchemaDelegations_UserNotComplyingToPolicy_Returns403ForMissingDelegationAccess()
         {
             // Arrange 
             const HttpStatusCode expectedStatusCode = HttpStatusCode.Forbidden;
@@ -920,7 +920,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Testing if user without necessary rights is denied access to 
         /// </summary>
         [Fact]
-        public async Task GetReceivedMaskinportenSchemaDelegations_UserNotComplyingToPolicy_Returns403Forbidden()
+        public async Task GetReceivedMaskinportenSchemaDelegations_UserNotComplyingToPolicy_Returns403ForMissingDelegationAccess()
         {
             // Arrange 
             const HttpStatusCode expectedStatusCode = HttpStatusCode.Forbidden;
@@ -944,7 +944,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 201 Created with response body containing the expected delegated rights
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_DAGL_Returns201Created()
+        public async Task PostMaskinportenSchemaDelegation_DAGL_Returns201WithDelegatedRights()
         {
             // Arrange
             string fromParty = "50005545";
@@ -971,7 +971,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 201 Created with response body containing the expected delegated rights
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_DAGL_ExternalIdentifier_OrgNoReportee_Returns201Created()
+        public async Task PostMaskinportenSchemaDelegation_DAGL_ExternalIdentifier_OrgNoReportee_Returns201WithDelegatedRights()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1001,7 +1001,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 201 Created with response body containing the expected delegated rights
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_DAGL_ExternalIdentifier_OrgNoRecipient_Returns201Created()
+        public async Task PostMaskinportenSchemaDelegation_DAGL_ExternalIdentifier_OrgNoRecipient_Returns201WithDelegatedRights()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1026,7 +1026,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: 401 Unauthorized
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_MissingToken_Returns401Unauthorized()
+        public async Task PostMaskinportenSchemaDelegation_MissingToken_Returns401ForMissingToken()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1048,7 +1048,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 Bad Request with a problem details respons body describing the error
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidTo_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidTo_Returns400WithInvalidToValidationError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1077,7 +1077,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 Bad Request with a problem details respons body describing the error
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidTo_UserId_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidTo_UserId_Returns400WithUserIdNotDelegatableError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1106,7 +1106,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 Bad Request with a problem details respons body describing the error
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidTo_Ssn_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidTo_Ssn_Returns400WithSsnNotDelegatableError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1135,7 +1135,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 Bad Request with a problem details respons body describing the error
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_NonDelegableResource_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_NonDelegableResource_Returns400WithNoDelegableRightsError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1164,7 +1164,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 Bad Request with a problem details respons body describing the error
         /// </summary>
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_TooLowAuthenticationLevelForResource_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_TooLowAuthenticationLevelForResource_Returns400WithInsufficientAuthLevelError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1271,7 +1271,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: RevokeOfferedMaskinportenScopeDelegation returns 403 Forbidden
         /// </summary>
         [Fact]
-        public async Task RevokeOfferedMaskinportenScopeDelegation_ADMAI_Returns403Forbidden()
+        public async Task RevokeOfferedMaskinportenScopeDelegation_ADMAI_Returns403ForMissingRevokeAccess()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1295,7 +1295,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: RevokeOfferedMaskinportenScopeDelegation returns 400 Bad Request with ValidationProblemDetails body
         /// </summary>
         [Fact]
-        public async Task RevokeOfferedMaskinportenScopeDelegation_InvalidTo_Returns400BadRequest()
+        public async Task RevokeOfferedMaskinportenScopeDelegation_InvalidTo_Returns400WithInvalidToValidationError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1429,7 +1429,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: RevokeReceivedMaskinportenScopeDelegation returns 403 Forbidden
         /// </summary>
         [Fact]
-        public async Task RevokeReceivedMaskinportenScopeDelegation_ADMAI_Returns403Forbidden()
+        public async Task RevokeReceivedMaskinportenScopeDelegation_ADMAI_Returns403ForMissingRevokeAccess()
         {
             // Arrange
             string toParty = "50004221";
@@ -1453,7 +1453,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: RevokeReceivedMaskinportenScopeDelegation returns 400 Bad Request with ValidationProblemDetails body
         /// </summary>
         [Fact]
-        public async Task RevokeReceivedMaskinportenScopeDelegation_InvalidFrom_Returns400BadRequest()
+        public async Task RevokeReceivedMaskinportenScopeDelegation_InvalidFrom_Returns400WithInvalidFromValidationError()
         {
             // Arrange
             string toParty = "50004221";
@@ -1480,7 +1480,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 BadRequest with response body containing ValidationProblemDetails with error message that CoveredBy can not be the same as OfferedBy
         /// </summary>
         [Fact]
-        public async Task MaskinportenDelegation_DAGL_FromAndToIdenticalPartyId_Returns400BadRequest()
+        public async Task MaskinportenDelegation_DAGL_FromAndToIdenticalPartyId_Returns400WithCoveredBySameAsOfferedByError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1507,7 +1507,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: MaskinportenDelegation returns 400 BadRequest with response body containing ValidationProblemDetails with error message that CoveredBy can not be the same as OfferedBy
         /// </summary>
         [Fact]
-        public async Task MaskinportenDelegation_DAGL_FromAndToIdenticalOrgNr_Returns400BadRequest()
+        public async Task MaskinportenDelegation_DAGL_FromAndToIdenticalOrgNr_Returns400WithCoveredBySameAsOfferedByError()
         {
             // Arrange
             string fromParty = "50005545";
@@ -1538,7 +1538,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationStatus matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_DAGL_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_DAGL_HasDelegableRights_Returns200WithDelegableRightsStatus()
         {
             // Arrange
             int userId = 20000490;
@@ -1571,7 +1571,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a list of RightDelegationStatus matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_HADM_HasDelegableRights_Returns200Ok()
+        public async Task DelegationCheck_HADM_HasDelegableRights_Returns200WithDelegableRightsStatus()
         {
             // Arrange
             int userId = 20001337;
@@ -1603,7 +1603,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a 403 Forbidden
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_PRIV_Returns403Forbidden()
+        public async Task DelegationCheck_PRIV_Returns403ForPrivatePersonNotAllowed()
         {
             // Arrange
             int userId = 20000490;
@@ -1630,7 +1630,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_AppRight_Returns400BadRequest()
+        public async Task DelegationCheck_AppRight_Returns400WithUnsupportedAppResourceError()
         {
             // Arrange
             int userId = 20001337;
@@ -1661,7 +1661,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_InvalidResource_Returns400BadRequest()
+        public async Task DelegationCheck_InvalidResource_Returns400WithInvalidResourceError()
         {
             // Arrange
             int userId = 20001337;
@@ -1692,7 +1692,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: Responce error model is matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_RRResource_Returns400BadRequest()
+        public async Task DelegationCheck_RRResource_Returns400WithUnsupportedResourceRegistryResourceError()
         {
             // Arrange
             int userId = 20001337;
@@ -1724,7 +1724,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: DelegationCheck returns a responce error matching expected
         /// </summary>
         [Fact]
-        public async Task DelegationCheck_InsufficientAccessLevel_Returns200Ok()
+        public async Task DelegationCheck_InsufficientAccessLevel_Returns200WithNonDelegableRightsStatus()
         {
             // Arrange
             int userId = 20000490;
@@ -1907,7 +1907,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_SingleRightOnly_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_SingleRightOnly_Returns400WithSingleRightOnlyValidationError()
         {
             _httpContextAccessor.SetOverride("party", "1");
             var client = NewClient();
@@ -1925,7 +1925,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_OrgAppResource_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_OrgAppResource_Returns400WithUnsupportedAppResourceError()
         {
             _httpContextAccessor.SetOverride("party", "1");
             var client = NewClient();
@@ -1943,7 +1943,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidResourceRegistryId_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidResourceRegistryId_Returns400WithInvalidResourceRegistryIdError()
         {
             _httpContextAccessor.SetOverride("party", "1");
             var client = NewClient();
@@ -1961,7 +1961,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidResourceType_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidResourceType_Returns400WithInvalidResourceTypeError()
         {
             _httpContextAccessor.SetOverride("party", "1");
             var client = NewClient();
@@ -1979,7 +1979,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
-        public async Task PostMaskinportenSchemaDelegation_InvalidFrom_Ssn_Returns400BadRequest()
+        public async Task PostMaskinportenSchemaDelegation_InvalidFrom_Ssn_Returns400WithInvalidFromSsnError()
         {
             string fromParty = "50002598";
             _httpContextAccessor.SetOverride("party", "50002598");

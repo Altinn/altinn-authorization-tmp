@@ -119,7 +119,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 201 and list of rules deleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_Valid_Returns200Ok()
+        public async Task Post_DeleteRules_Valid_Returns200WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3_50001337_20001337.json");
@@ -158,7 +158,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 201 and list of rules deleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeleteResourceRegistryRules_Valid_Returns200Ok()
+        public async Task Post_DeleteResourceRegistryRules_Valid_Returns200WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadResource2_50001337_20001337.json");
@@ -200,7 +200,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 206 and list of rules deleted to match expected (one rule)
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_NotExistingRuleId_Returns206PartialContent()
+        public async Task Post_DeleteRules_NotExistingRuleId_Returns206WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3_50001337_20001337RuleIdDoesNotExist.json");
@@ -239,7 +239,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 401
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_WithoutAuthorization_Returns401Unauthorized()
+        public async Task Post_DeleteRules_WithoutAuthorization_Returns401ForInvalidBearerToken()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3_50001337_20001337.json");
@@ -268,7 +268,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 206 and list of rules dleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_OnePolicyMissing_Returns206PartialContent()
+        public async Task Post_DeleteRules_OnePolicyMissing_Returns206WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3App4App8_50001337_20001337.json");
@@ -309,7 +309,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 500 and no deletion is performed
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_InvalidInput_Returns400BadRequest()
+        public async Task Post_DeleteRules_InvalidInput_Returns400ForMissingRuleId()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3App4_50001337_20001337_NoRule.json");
@@ -350,7 +350,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 500 and no deletion is performed
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_InvalidUserPerformingDeleteRule_Returns400BadRequest()
+        public async Task Post_DeleteRules_InvalidUserPerformingDeleteRule_Returns400ForMissingDeletedByUser()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3App4_50001337_20001337_NoDeletedBy.json");
@@ -384,7 +384,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 500 and no deletion is performed
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_InvalidUserPerformingDeleteRule_Returns400BadRequest()
+        public async Task Post_DeletePolicies_InvalidUserPerformingDeleteRule_Returns400ForMissingDeletedByUser()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App3App4_50001337_20001337_NoDeletedBy.json");
@@ -418,7 +418,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 500 and no deletion is performed
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_ValidInputAllFails_Returns400BadRequest()
+        public async Task Post_DeleteRules_ValidInputAllFails_Returns400ForFailedDeletion()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App8-Errorpostgrewritechangefail_50001337_20001337_NoUpdates.json");
@@ -459,7 +459,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 500 and no deletion is performed
         /// </summary>
         [Fact]
-        public async Task Post_DeleteRules_DuplicatePolicy_Returns400BadRequest()
+        public async Task Post_DeleteRules_DuplicatePolicy_Returns400ForDuplicatePolicies()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeleteRules/ReadOrg1App3_50001337_20001337_DuplicatePolicy.json");
@@ -493,7 +493,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 201 and list of rules deleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_Valid_Returns200Ok()
+        public async Task Post_DeletePolicies_Valid_Returns200WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App3App4_50001337_20001337.json");
@@ -535,7 +535,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 201 and list of rules deleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeletePoliciesWithResourceRegistryId_Valid_Returns200Ok()
+        public async Task Post_DeletePoliciesWithResourceRegistryId_Valid_Returns200WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadResource1Resource2_50001337_20001337.json");
@@ -577,7 +577,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 400
         /// </summary>
         [Fact]
-        public async Task Post_DeletePoliciesWithNotExistingResourceRegistryId_Returns400BadRequest()
+        public async Task Post_DeletePoliciesWithNotExistingResourceRegistryId_Returns400ForFailedDeletion()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadNotExistingResourceRegistryId.json");
@@ -610,7 +610,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeleteRules returns status code 401
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_InvalidBearerToken_Returns401Unauthorized()
+        public async Task Post_DeletePolicies_InvalidBearerToken_Returns401ForInvalidBearerToken()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App3App4_50001337_20001337.json");
@@ -639,7 +639,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// DeletePolicy returns status code 206 and list of rules deleted to match expected
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_OneMissingPolicyFile_Returns206PartialContent()
+        public async Task Post_DeletePolicies_OneMissingPolicyFile_Returns206WithDeletedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App3App4App8_50001337_20001337.json");
@@ -681,7 +681,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// postgrewritechangefail returns status code 500
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_AllPoliciesFail_Returns400BadRequest()
+        public async Task Post_DeletePolicies_AllPoliciesFail_Returns400ForFailedDeletion()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App8-Errorpostgrewritechangefail_50001337_20001337_NoUpdates.json");
@@ -712,7 +712,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// returns status code 500
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_DuplicatePoliciesDefinedInput_Returns400BadRequest()
+        public async Task Post_DeletePolicies_DuplicatePoliciesDefinedInput_Returns400ForDuplicatePolicies()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/ReadOrg1App3-DuplicatePolicyInRequest_50001337_20001337_NoUpdates.json");
@@ -746,7 +746,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// returns status code 500
         /// </summary>
         [Fact]
-        public async Task Post_DeletePolicies_EmptyInput_Returns400BadRequest()
+        public async Task Post_DeletePolicies_EmptyInput_Returns400ForEmptyRequestBody()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/DeletePolicies/EmptyInput.json");
@@ -775,7 +775,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 401 Unauthorized
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_NoAccessToken_Returns401Unauthorized()
+        public async Task Post_AddRules_NoAccessToken_Returns401ForMissingAccessToken()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ReadWriteOrg1App1_50001337_20001336.json");
@@ -799,7 +799,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 400 Badrequest
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_NoRules_Returns400BadRequest()
+        public async Task Post_AddRules_NoRules_Returns400ForMissingRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/EmptyRuleModel.json");
@@ -822,7 +822,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 400 Badrequest
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_InvalidModel_Returns400BadRequest()
+        public async Task Post_AddRules_InvalidModel_Returns400ForInvalidRuleModel()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/InvalidRuleModel.json");
@@ -847,7 +847,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_Valid_Returns201Created()
+        public async Task Post_AddRules_Valid_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ReadWriteOrg1App1_50001337_20001336.json");
@@ -888,7 +888,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_DelegatedByParty_Returns201Created()
+        public async Task Post_AddRules_DelegatedByParty_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ScopeaccessResourceRegistryId_50001337_20001337.json");
@@ -928,7 +928,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_With_ResourceRegistryId_Returns201Created()
+        public async Task Post_AddRules_With_ResourceRegistryId_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ReadWriteResourceregistryId_50001337_20001336.json");
@@ -969,7 +969,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_Duplicate_Returns201Created()
+        public async Task Post_AddRules_Duplicate_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ReadWriteOrg1App3_50001337_20001337.json");
@@ -1009,7 +1009,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_With_RegistryResource_Duplicate_Returns201Created()
+        public async Task Post_AddRules_With_RegistryResource_Duplicate_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/ReadWriteResourceregistryId_50001337_20001337.json");
@@ -1049,7 +1049,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 201 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_MultipleAppsOfferedBysAndCoveredBys_Returns201Created()
+        public async Task Post_AddRules_MultipleAppsOfferedBysAndCoveredBys_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/MultipleAppsOfferedBysAndCoveredBys.json");
@@ -1089,7 +1089,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 206 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_OneInvalidApp_Returns206PartialContent()
+        public async Task Post_AddRules_OneInvalidApp_Returns206WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/OneOutOfFourInvalidApp.json");
@@ -1131,7 +1131,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code 206 and list of rules created match expected
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_OneIncompleteInput_MissingOrgApp_Returns206PartialContent()
+        public async Task Post_AddRules_OneIncompleteInput_MissingOrgApp_Returns206WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/OneOutOfFourIncompleteApp.json");
@@ -1174,7 +1174,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// AddRules returns status code Created, but a Critical Error has been logged
         /// </summary>
         [Fact]
-        public async Task Post_AddRules_DelegationEventQueuePushException_Returns201Created()
+        public async Task Post_AddRules_DelegationEventQueuePushException_Returns201WithCreatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/AddRules/DelegationEventError.json");
@@ -1207,7 +1207,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a list of rules offeredby has given coveredby
         /// </summary>
         [Fact]
-        public async Task GetRules_RuleTypeIsDirectlyDelegated_Returns200Ok()
+        public async Task GetRules_RuleTypeIsDirectlyDelegated_Returns200WithDelegatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_SuccessRequest.json");
@@ -1230,7 +1230,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a list of rules offeredby's main unit has given to the recipient via keyrole
         /// </summary>
         [Fact]
-        public async Task GetRules_RuleTypeIsInheritedViaKeyRole_Returns200Ok()
+        public async Task GetRules_RuleTypeIsInheritedViaKeyRole_Returns200WithInheritedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_RuleTypeInheritedViaKeyRoleRequest.json");
@@ -1254,7 +1254,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a list of rules offeredby's main unit has given to the subunit recipient via keyrole
         /// </summary>
         [Fact]
-        public async Task GetRules_RuleTypeIsInheritedAsSubunitViaKeyrole_Returns200Ok()
+        public async Task GetRules_RuleTypeIsInheritedAsSubunitViaKeyrole_Returns200WithInheritedRules()
         {
             // Arrange
             Assert.True(File.Exists("Data/Json/GetRules/GetRules_RuleTypeInheritedAsSubunitViaKeyroleRequest.json"));
@@ -1279,7 +1279,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a list of rules the subunit has received from the main unit
         /// </summary>
         [Fact]
-        public async Task GetRules_RuleTypeIsInheritedAsSubunit_Returns200Ok()
+        public async Task GetRules_RuleTypeIsInheritedAsSubunit_Returns200WithInheritedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_RuleTypeInheritedAsSubunitRequest.json");
@@ -1303,7 +1303,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a BadRequest response
         /// </summary>
         [Fact]
-        public async Task GetRules_MissingValuesInRequest_Returns400BadRequest()
+        public async Task GetRules_MissingValuesInRequest_Returns400ForMissingValues()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_MissingValuesInRequestRequest.json");
@@ -1323,7 +1323,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a BadRequest response
         /// </summary>
         [Fact]
-        public async Task GetRules_MissingOfferedByInRequest_Returns400BadRequest()
+        public async Task GetRules_MissingOfferedByInRequest_Returns400ForMissingOfferedBy()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_MissingOfferedByInRequestRequest.json");
@@ -1343,7 +1343,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns an empty list
         /// </summary>
         [Fact]
-        public async Task GetRules_NoRulesRequest_Returns200Ok()
+        public async Task GetRules_NoRulesRequest_Returns200WithEmptyList()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_NoRulesRequest.json");
@@ -1366,7 +1366,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetRules returns a list of rules offeredby has given coveredby
         /// </summary>
         [Fact]
-        public async Task GetRules_WithKeyRolePartyIds_Returns200Ok()
+        public async Task GetRules_WithKeyRolePartyIds_Returns200WithDelegatedRules()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetRules/GetRules_UsingkeyRolePartyIdsRequest.json");
@@ -1391,7 +1391,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns a list of delegations offered by supplier to consumer for a given scope
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminValid_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_AdminValid_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1423,7 +1423,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns a list of delegations offered by supplier to consumer for a given scope
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_ServiceOwnerLookupValid_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_ServiceOwnerLookupValid_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1454,7 +1454,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns forbidden
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_ServiceOwnerLookupUnauthorizedScope_Returns403Forbidden()
+        public async Task GetMaskinportenSchemaDelegations_ServiceOwnerLookupUnauthorizedScope_Returns403ForUnauthorizedScope()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("SKD", "974761076", "altinn:maskinporten/delegations", consumerPrefix: new[] { "skd" });
@@ -1480,7 +1480,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns ok, no delegations found
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminValidDelegationsEmpty_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_AdminValidDelegationsEmpty_Returns200WithEmptyList()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1505,7 +1505,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenDelegations returns OK
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenDelegations_AdminWithoutScope_Returns200Ok()
+        public async Task GetMaskinportenDelegations_AdminWithoutScope_Returns200WithDelegations()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1536,7 +1536,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns badrequest
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminInvalidSupplier_Returns400BadRequest()
+        public async Task GetMaskinportenSchemaDelegations_AdminInvalidSupplier_Returns400ForInvalidSupplierOrg()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1562,7 +1562,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns badrequest
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminInvalidConsumer_Returns400BadRequest()
+        public async Task GetMaskinportenSchemaDelegations_AdminInvalidConsumer_Returns400ForInvalidConsumerOrg()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1588,7 +1588,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns ok, no delegations found
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminScopesNotRegisteredOnResource_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_AdminScopesNotRegisteredOnResource_Returns200WithEmptyList()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
@@ -1613,7 +1613,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         /// Expected: GetMaskinportenSchemaDelegations returns OK
         /// </summary>
         [Fact]
-        public async Task GetMaskinportenSchemaDelegations_AdminUrnScopeFormat_Returns200Ok()
+        public async Task GetMaskinportenSchemaDelegations_AdminUrnScopeFormat_Returns200WithEmptyList()
         {
             // Arrange
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
