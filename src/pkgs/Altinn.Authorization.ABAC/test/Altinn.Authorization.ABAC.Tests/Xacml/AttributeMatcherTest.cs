@@ -28,20 +28,20 @@ public class AttributeMatcherTest
     [InlineData("alice", "alice", true)]
     [InlineData("alice", "bob", false)]
     [InlineData("Alice", "alice", false)] // string-equal is case-sensitive
-    public void MatchAttributes_StringEqual(string policy, string request, bool expected)
+    public void MatchAttributes_StringEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, StringEqual).Should().Be(expected);
 
     [Theory]
     [InlineData("Alice", "alice", true)]
     [InlineData("ALICE", "alice", true)]
     [InlineData("Alice", "alicia", false)]
-    public void MatchAttributes_StringEqualIgnoreCase(string policy, string request, bool expected)
+    public void MatchAttributes_StringEqualIgnoreCase_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, StringEqualIgnoreCase).Should().Be(expected);
 
     [Theory]
     [InlineData("urn:a:b", "urn:a:b", true)]
     [InlineData("http://example.com/a", "http://example.com/b", false)]
-    public void MatchAttributes_AnyUriEqual(string policy, string request, bool expected)
+    public void MatchAttributes_AnyUriEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, AnyUriEqual).Should().Be(expected);
 
     [Fact]
@@ -59,7 +59,7 @@ public class AttributeMatcherTest
     [InlineData("007", "7", true)]  // numeric equality, not string equality
     [InlineData("x", "5", false)]   // non-numeric policy value -> false, not an exception
     [InlineData("5", "y", false)]   // non-numeric request value -> false
-    public void MatchAttributes_IntegerEqual(string policy, string request, bool expected)
+    public void MatchAttributes_IntegerEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, IntegerEqual).Should().Be(expected);
 
     [Theory]
@@ -76,33 +76,33 @@ public class AttributeMatcherTest
     [InlineData("reader", "reader", true)]
     [InlineData("admin", "superadmin", false)]
     [InlineData("read", "readwrite", false)]
-    public void MatchAttributes_StringIsIn(string policy, string request, bool expected)
+    public void MatchAttributes_StringIsIn_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, StringIsIn).Should().Be(expected);
 
     [Theory]
     [InlineData("09:30:00", "09:30:00", true)]
     [InlineData("09:30:00", "10:30:00", false)]
     [InlineData("2024-01-01T09:30:00", "2024-06-15T09:30:00", true)]  // time-equal is time-of-day only; the date component must be ignored
-    public void MatchAttributes_TimeEqual(string policy, string request, bool expected)
+    public void MatchAttributes_TimeEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, TimeEqual).Should().Be(expected);
 
     [Theory]
     [InlineData("2002-09-24", "2002-09-24", true)]
     [InlineData("2002-09-24", "2002-09-25", false)]
-    public void MatchAttributes_DateEqual(string policy, string request, bool expected)
+    public void MatchAttributes_DateEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, DateEqual).Should().Be(expected);
 
     [Theory]
     [InlineData("2002-09-24T09:30:00", "2002-09-24T09:30:00", true)]
     [InlineData("2002-09-24T09:30:00", "2002-09-24T10:30:00", false)]
-    public void MatchAttributes_DateTimeEqual(string policy, string request, bool expected)
+    public void MatchAttributes_DateTimeEqual_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, DateTimeEqual).Should().Be(expected);
 
     [Theory]
     [InlineData("a.c", "abc", true)]
     [InlineData("^[0-9]+$", "12345", true)]
     [InlineData("^[0-9]+$", "12a45", false)]
-    public void MatchAttributes_RegexpMatch(string policy, string request, bool expected)
+    public void MatchAttributes_RegexpMatch_ReturnsExpectedMatch(string policy, string request, bool expected)
         => AttributeMatcher.MatchAttributes(policy, request, RegexpMatch).Should().Be(expected);
 
     [Fact]
