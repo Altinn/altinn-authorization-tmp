@@ -46,7 +46,7 @@ public static class TestDataDirectory
             }
         }
 
-        // Fallback: the previous working-directory-relative behaviour.
+        // Fallback: the test assembly's output directory (AppContext.BaseDirectory).
         return Path.Combine(AppContext.BaseDirectory, "Data");
     }
 }

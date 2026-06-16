@@ -15,7 +15,6 @@ reasons.
 | `Mocks/` | Canonical mock implementations of external clients and platform services |
 | `Models/` | Shared DTO constants, seed data |
 | `Data/` | Static seed data (XACML policies, roles, packages, …) used by the template DB and by unit tests |
-| `TestCertificates/` | Consolidated `.pfx` / `.pem` files used across the repo |
 
 ## Canonical mocks
 
