@@ -330,4 +330,44 @@ public class ValidationRuleClassesTest
         var packages = new[] { new Package { Name = "pkg-a" } };
         Passes(PackageValidation.PackageUrnLookup(packages, new[] { "pkg-a" })).Should().BeTrue();
     }
+
+    // ── AssignmentInstanceValidation.HasAssignedInstances (internal) ──────────
+    [Fact]
+    public void HasAssignedInstances_EmptyCollection_ReturnsNull()
+    {
+        Passes(AssignmentInstanceValidation.HasAssignedInstances([])).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasAssignedInstances_NullCollection_ReturnsNull()
+    {
+        Passes(AssignmentInstanceValidation.HasAssignedInstances(null)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasAssignedInstances_NonEmptyCollection_ReturnsError()
+    {
+        var instances = new[] { new AssignmentInstance { Id = Guid.CreateVersion7() } };
+        Fails(AssignmentInstanceValidation.HasAssignedInstances(instances)).Should().BeTrue();
+    }
+
+    // ── AssignmentResourceValidation.HasAssignedResources (internal) ──────────
+    [Fact]
+    public void HasAssignedResources_EmptyCollection_ReturnsNull()
+    {
+        Passes(AssignmentResourceValidation.HasAssignedResources([])).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasAssignedResources_NullCollection_ReturnsNull()
+    {
+        Passes(AssignmentResourceValidation.HasAssignedResources(null)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasAssignedResources_NonEmptyCollection_ReturnsError()
+    {
+        var resources = new[] { new AssignmentResource { Id = Guid.CreateVersion7() } };
+        Fails(AssignmentResourceValidation.HasAssignedResources(resources)).Should().BeTrue();
+    }
 }
