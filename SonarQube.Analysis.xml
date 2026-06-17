@@ -53,11 +53,16 @@
   <Property Name="sonar.coverage.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*,**/Migration/**/*,**/Migrations/**/*,**/*.g.cs,**/*.Designer.cs,**/Properties/AssemblyInfo.cs,**/*.AppHost/**/*,**/Altinn.Authorization.Cli/**/*,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*</Property>
 
   <!--
-    Copy/paste detector exclusions: model / DTO classes are intentionally
-    repetitive (property bags) and trip duplication checks for no real
-    signal. Real source files keep duplication enforcement.
+    Copy/paste detector exclusions. Two groups:
+    1. Model / DTO classes are intentionally repetitive (property bags) and trip
+       duplication checks for no real signal.
+    2. Everything excluded from coverage above (tests, generated code, migrations,
+       AppHost, Cli, FFB / WebComponents). Duplication there is not a meaningful
+       signal either, so this list is a superset of sonar.coverage.exclusions;
+       keep them in sync when either changes.
+    Real source files keep duplication enforcement.
   -->
-  <Property Name="sonar.cpd.exclusions">**/Models/**/*,**/Dto/**/*,**/Dtos/**/*,**/Entities/**/*,**/Contracts/**/*,**/*Dto.cs,**/*Request.cs,**/*Response.cs</Property>
+  <Property Name="sonar.cpd.exclusions">**/Models/**/*,**/Dto/**/*,**/Dtos/**/*,**/Entities/**/*,**/Contracts/**/*,**/*Dto.cs,**/*Request.cs,**/*Response.cs,**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*,**/Migration/**/*,**/Migrations/**/*,**/*.g.cs,**/*.Designer.cs,**/Properties/AssemblyInfo.cs,**/*.AppHost/**/*,**/Altinn.Authorization.Cli/**/*,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*</Property>
 
   <!-- .NET reports — produced by `dotnet-coverage` + xUnit v3 TRX in CI -->
   <Property Name="sonar.cs.vscoveragexml.reportsPaths">TestResults/coverage.xml</Property>
