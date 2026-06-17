@@ -1,5 +1,4 @@
 using Altinn.AccessManagement.Core.Asserters;
-using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Altinn.AccessManagement.Tests.Unit.Asserters;
