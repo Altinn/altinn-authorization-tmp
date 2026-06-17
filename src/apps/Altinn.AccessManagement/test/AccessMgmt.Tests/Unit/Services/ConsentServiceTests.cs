@@ -494,9 +494,9 @@ public class ConsentServiceTests
     public async Task GetConsentEventsForParty_OrganizationIdReceiverNotFound_ReturnsInvalidOrganizationIdentifierProblem()
     {
         // Arrange — external OrganizationId that the register can't resolve.
-        // GetByOrgNo returns null, so MapFromExternalIdenity returns null. The
-        // service must surface InvalidOrganizationIdentifier instead of
-        // dereferencing the null urn (the latter was a 500/NRE regression).
+        // GetByOrgNo returns null, so MapFromExternalIdenity returns null, and
+        // the service surfaces InvalidOrganizationIdentifier rather than
+        // dereferencing the null urn.
         var orgNumber = ContractsOrganizationNumber.Parse("810419512");
         var receiver = ConsentPartyUrn.OrganizationId.Create(orgNumber);
 
@@ -525,7 +525,7 @@ public class ConsentServiceTests
     public async Task GetConsentEventsForParty_PersonIdReceiverNotFound_ReturnsInvalidPersonIdentifierProblem()
     {
         // Arrange — external PersonId that the register can't resolve.
-        // GetByPersonNo returns null → InvalidPersonIdentifier, not an NRE.
+        // GetByPersonNo returns null → InvalidPersonIdentifier.
         var personIdentifier = PersonIdentifier.Parse("01025161013");
         var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
 
@@ -578,13 +578,6 @@ public class ConsentServiceTests
     //    received the same token via `It.Is<CancellationToken>(t => t == ct)`.
     //    Catches "default-token" regressions where someone drops the
     //    parameter on the way through.
-    //
-    // 8. (Edge) Unresolvable receiver — DONE. The service used to deref the
-    //    null urn from MapFromExternalIdenity (a 500/NRE). It now routes
-    //    through ValidatePartyFromExternalIdentity and returns
-    //    InvalidOrganizationIdentifier / InvalidPersonIdentifier. Pinned by
-    //    GetConsentEventsForParty_OrganizationIdReceiverNotFound_* and
-    //    GetConsentEventsForParty_PersonIdReceiverNotFound_* above.
     //
     // -----------------------------------------------------------------------
     // Where the *other* tests for this feature live:
