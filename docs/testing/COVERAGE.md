@@ -16,48 +16,17 @@ the build if any **enforced** assembly drops below its floor.
 
 ## Thresholds
 
-See [`coverage-thresholds.json`](../../eng/testing/coverage-thresholds.json).
-Two sections:
+[`coverage-thresholds.json`](../../eng/testing/coverage-thresholds.json) is the source of
+truth for the current per-assembly numbers (don't duplicate them here). It has two sections:
 
-### `assemblies` — **enforced** (CI-breaking)
-
-```json
-{
-  "Altinn.Authorization": 68,
-  "Altinn.Authorization.ABAC": 60,
-  "Altinn.Authorization.PEP": 75,
-  "Altinn.AccessMgmt.PersistenceEF": 94,
-  "Altinn.AccessManagement.Api.Maskinporten": 75,
-  "Altinn.AccessManagement.Api.Enterprise": 67,
-  "Altinn.AccessManagement.Api.Metadata": 75,
-  "Altinn.AccessManagement.Api.Enduser": 73,
-  "Altinn.AccessManagement.Api.Internal": 70,
-  "Altinn.AccessManagement.Api.ServiceOwner": 65,
-  "Altinn.AccessManagement.Integration": 68,
-  "Altinn.AccessManagement.Core": 64
-}
-```
-
-Dropping below the floor for any of these fails the pipeline.
-
-### `warnings` — ratcheting (non-fatal)
-
-```json
-{
-  "Altinn.AccessManagement": 60,
-  "Altinn.AccessMgmt.Core": 50,
-  "Altinn.Authorization.Integration.Platform": 50
-}
-```
-
-Below-threshold assemblies here emit a warning in the CI log. Use this section
-as a one-way ratchet for assemblies approaching promotion to `assemblies`.
-`Altinn.AccessMgmt.Core` and `Altinn.Authorization.Integration.Platform` are
-ratcheting toward enforcement as their pure-logic coverage gaps close (#2976).
+- **`assemblies`**: enforced. Dropping below one of these floors fails the pipeline.
+- **`warnings`**: ratcheting and non-fatal. Below-threshold assemblies here only emit a
+  CI-log warning. Use it as a one-way ratchet for assemblies approaching promotion to
+  `assemblies`.
 
 ### `globalThreshold`
 
-Currently `0` — only the explicitly listed assemblies are gated. We
+Currently `0`, so only the explicitly listed assemblies are gated. We
 deliberately do **not** enforce coverage on every assembly in the repo;
 many are thin adapters, generated code, or host wiring where line coverage
 isn't a meaningful target.
@@ -65,22 +34,22 @@ isn't a meaningful target.
 ## Philosophy
 
 Coverage percentage is a guardrail against regression, not a quality goal in
-itself. New tests should be driven by a concrete risk — a named bug class
+itself. New tests should be driven by a concrete risk: a named bug class
 (mapping, translation, validation, an authorization boundary), a regression we
-want pinned, or a branch whose failure would matter — not by a number to hit.
+want pinned, or a branch whose failure would matter. Not by a number to hit.
 
 Consequences:
 
 - A mock-based test is worth writing when it exercises real branching,
   validation, or decision logic in the code under test. It is **not** worth
   writing when its only assertion is that a pass-through maps its input to its
-  output (response-shape mapping over a thin adapter) — that adds a percentage
+  output (response-shape mapping over a thin adapter), which adds a percentage
   point and a maintenance burden without guarding behaviour.
 - Prefer covering pure logic (validators, mappers with real rules, decision
   paths) over plumbing/I-O orchestration that can only be reached by mocking
   out everything it does.
 - The floors exist to stop covered code from rotting, so raise a floor (or
-  promote a `warnings` entry to `assemblies`) when real coverage lands — but do
+  promote a `warnings` entry to `assemblies`) when real coverage lands, but do
   not lower a floor to make a thin test "count".
 
 ## Running locally
@@ -107,31 +76,17 @@ pwsh eng/testing/run-coverage.ps1 -Projects @(
 
 Outputs land in `TestResults/`:
 
-- `*.cobertura.xml` — one per test project
-- `*.coverage.log` — captured test stdout (last N lines are echoed on failure)
+- `*.cobertura.xml`: one per test project
+- `*.coverage.log`: captured test stdout (last N lines are echoed on failure)
 
 ## How CI runs it (single pass)
 
-CI does **not** run `run-coverage.ps1`. Instead, it runs the test suite once
-under `dotnet-coverage collect` and then invokes the parse-only check:
-
-```yaml
-# Step A — run the tests once, producing TRX + coverage in one pass.
-# --settings excludes generated code / migrations / tooling (see below).
-dotnet-coverage collect --settings eng/testing/coverage.settings \
-    --output TestResults/coverage.cobertura.xml \
-    --output-format cobertura -- \
-    dotnet test -- --report-xunit-trx --ignore-exit-code 8
-
-# Step B — parse-only threshold enforcement (seconds)
-pwsh eng/testing/check-coverage-thresholds.ps1 \
-    -CoverageFile TestResults/coverage.cobertura.xml \
-    -ThresholdsFile eng/testing/coverage-thresholds.json
-```
-
-Running the tests twice (once for Test, once for Coverage) would double
-pipeline time, so the suite runs once and the coverage report is parsed from
-that single pass.
+CI does **not** run `run-coverage.ps1`. It runs the suite once under
+`dotnet-coverage collect --settings eng/testing/coverage.settings`, then invokes
+`check-coverage-thresholds.ps1` on the resulting Cobertura file. Running the tests a
+second time just to collect coverage would double pipeline time, so coverage is parsed
+from the same pass that runs the tests. The exact steps live in
+[`.github/workflows/tpl-vertical-ci.yml`](../../.github/workflows/tpl-vertical-ci.yml).
 
 ## What is excluded from the denominator
 
@@ -152,11 +107,11 @@ modules. (`check-coverage-thresholds.ps1` independently scores only "Owned"
 
 Deliberately **not** excluded:
 
-- `Program.cs` / `Startup.cs` — in the controller APIs the minimal-hosting
+- `Program.cs` / `Startup.cs`: in the controller APIs the minimal-hosting
   bootstrap is large and genuinely exercised by integration tests, and the
-  floors are calibrated with it counted; excluding it would drop the API hosts
-  below their floors. So it stays in the denominator in both systems.
-- EF entity-type configurations (`PersistenceEF/Configurations`) — well-covered
+  floors are calibrated with it counted. Excluding it would drop the API hosts
+  below their floors, so it stays in the denominator in both systems.
+- EF entity-type configurations (`PersistenceEF/Configurations`): well-covered
   declarative schema, so dropping them would only lower the measured percentage
   and risk its floor.
 
