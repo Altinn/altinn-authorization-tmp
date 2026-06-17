@@ -4,23 +4,29 @@ using System.IO;
 namespace Altinn.Authorization.Testing;
 
 /// <summary>
-/// Lightweight, opt-out timing for the integration-test setup path: where test
-/// wall-clock goes — per-fixture app-host build vs per-test database provisioning
-/// vs the one-time template build. Linked into the same assemblies as
-/// <see cref="PostgresTestEngine"/>.
+/// Measures where time goes while integration tests set themselves up, so it is clear
+/// what is worth optimising. It adds up the setup time in four buckets: building each
+/// test class's web host, provisioning each test's database, the per-test database
+/// clone, and the one-time build of the shared template database. Compiled into the
+/// same test assemblies as <see cref="PostgresTestEngine"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Recording is a few atomic adds around a <see cref="Stopwatch"/> timestamp, so
-/// it is safe to leave on. At process exit one summary line is written to stdout
-/// — captured in the CI test-lane log — of the form:
+/// It is on by default and cheap to leave on: each measurement is just a few counter
+/// updates around a <see cref="Stopwatch"/> reading. When the test process exits, it
+/// writes one summary line to stdout (which shows up in the CI test-lane log):
 /// </para>
 /// <code>
 /// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900
 /// </code>
 /// <para>
-/// Disable entirely by setting the <c>FIXTURE_TIMING=off</c> environment
-/// variable (then every <see cref="Time{T}(Phase, Func{T})"/> call is a pass-through).
+/// For each bucket, <c>_ms</c> is the total milliseconds spent and <c>_n</c> is how
+/// many times it ran (so <c>host_build_ms=12345 host_build_n=85</c> means 85 host
+/// builds took 12.3 s in total). The example shows the host build dominating.
+/// </para>
+/// <para>
+/// To turn it off, set the environment variable <c>FIXTURE_TIMING=off</c>; every
+/// <see cref="Time{T}(Phase, Func{T})"/> call then just runs the work without timing it.
 /// </para>
 /// </remarks>
 internal static class FixtureTiming
