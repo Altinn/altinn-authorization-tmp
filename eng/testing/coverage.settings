@@ -11,9 +11,9 @@
   the Aspire AppHost and CLI tooling (ModulePaths), and test/mock assemblies.
 
   NOT excluded, on purpose: Program.cs / Startup.cs. In the controller APIs the minimal-
-  hosting bootstrap is large AND genuinely exercised by integration tests (e.g. excluding
-  it dropped Api.ServiceOwner from 68% to 54%, below its floor). The floors are calibrated
-  with it counted, so it stays in the denominator in BOTH this file and SonarQube.Analysis.xml.
+  hosting bootstrap is large and genuinely exercised by integration tests, and the floors
+  are calibrated with it counted; excluding it would drop the API hosts below their floors.
+  It stays in the denominator in BOTH this file and SonarQube.Analysis.xml.
 
   Format note: the settings flag expects the VSTest .runsettings shape with a
   DataCollector named "Code Coverage" (a bare CodeCoverage or configuration root element is
@@ -45,9 +45,9 @@
             <!-- Mirrors what SonarCloud treats as generated: [GeneratedCode] and
                  [ExcludeFromCodeCoverage]. Do NOT add CompilerGeneratedAttribute here:
                  it marks async state machines, lambdas and iterators (the compiled form
-                 of ordinary user code), and excluding it silently strips that coverage
-                 (it dropped Api.ServiceOwner from 71% to 52%). Sonar counts that code, so
-                 we must too. -->
+                 of ordinary user code), so excluding it silently strips real coverage and
+                 drops async-heavy assemblies below their floors. Sonar counts that code,
+                 so we must too. -->
             <Attributes>
               <Exclude>
                 <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>

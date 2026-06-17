@@ -153,12 +153,12 @@ modules. (`check-coverage-thresholds.ps1` independently scores only "Owned"
 Deliberately **not** excluded:
 
 - `Program.cs` / `Startup.cs` — in the controller APIs the minimal-hosting
-  bootstrap is large and genuinely exercised by integration tests (excluding it
-  dropped `Api.ServiceOwner` from 68% to 54%, below its floor). The floors are
-  calibrated with it counted, so it stays in the denominator in both systems.
+  bootstrap is large and genuinely exercised by integration tests, and the
+  floors are calibrated with it counted; excluding it would drop the API hosts
+  below their floors. So it stays in the denominator in both systems.
 - EF entity-type configurations (`PersistenceEF/Configurations`) — well-covered
   declarative schema, so dropping them would only lower the measured percentage
-  and risk the 90% floor.
+  and risk its floor.
 
 Keep the two lists in sync: when you add an exclusion to one, mirror it in the
 other. `coverage.settings` uses the VSTest `.runsettings` shape with a
