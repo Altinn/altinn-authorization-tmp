@@ -383,6 +383,25 @@ namespace Altinn.Authorization.Tests.Integration
         }
 
         /// <summary>
+        /// Tests the scenario where the subject holds no access package granting the access-package resource,
+        /// so the decision is NotApplicable. The negative counterpart of the WithAccessPackage Permit case and
+        /// the access-package equivalent of the no-delegation boundary (#3498 area 3).
+        /// </summary>
+        [Fact]
+        public async Task PDP_Decision_ResourceRegistry_SubjectWithoutAccessPackage_ReturnsNotApplicable()
+        {
+            string testCase = "ResourceRegistry_SubjectWithoutAccessPackage_NotApplicable";
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
         /// Tests the scenario where subject is a system user with access package giving access the resource. Request is a multi request testing all possible resource party identifiers.
         /// </summary>
         [Fact]
