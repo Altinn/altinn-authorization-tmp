@@ -42,13 +42,16 @@
   <Property Name="sonar.test.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*</Property>
 
   <!--
-    Coverage exclusions: tests, generated code, migrations, host composition
-    roots (Program.cs / Startup.cs / *.AppHost) and dev tooling (Cli) don't
-    carry a meaningful line-coverage signal. MUST stay in sync with the CI
-    floor denominator in eng/testing/coverage.settings (dotnet-coverage). When
-    you change one, change the other.
+    Coverage exclusions: tests, generated code, migrations, the Aspire AppHost
+    composition root and dev tooling (Cli) don't carry a meaningful line-coverage
+    signal. Program.cs / Startup.cs are intentionally NOT excluded: in the
+    controller APIs the minimal-hosting bootstrap is large and genuinely covered
+    by integration tests (excluding it dropped Api.ServiceOwner 68%->54%, below
+    its floor), and the CI floors are calibrated with it counted. MUST stay in
+    sync with the CI floor denominator in eng/testing/coverage.settings
+    (dotnet-coverage). When you change one, change the other.
   -->
-  <Property Name="sonar.coverage.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*,**/Migration/**/*,**/Migrations/**/*,**/Program.cs,**/Startup.cs,**/*.g.cs,**/*.Designer.cs,**/Properties/AssemblyInfo.cs,**/*.AppHost/**/*,**/Altinn.Authorization.Cli/**/*,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*</Property>
+  <Property Name="sonar.coverage.exclusions">**/test/**/*,**/*.Tests/**/*,**/*.TestUtils/**/*,**/*.Mocks/**/*,**/Migration/**/*,**/Migrations/**/*,**/*.g.cs,**/*.Designer.cs,**/Properties/AssemblyInfo.cs,**/*.AppHost/**/*,**/Altinn.Authorization.Cli/**/*,**/Altinn.AccessMgmt.FFB/**/*,**/Altinn.AccessMgmt.WebComponents/**/*</Property>
 
   <!--
     Copy/paste detector exclusions: model / DTO classes are intentionally
