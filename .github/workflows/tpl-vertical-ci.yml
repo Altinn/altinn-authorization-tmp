@@ -222,6 +222,7 @@ jobs:
         working-directory: ${{ inputs.path }}
         run: |
           dotnet-coverage collect --nologo \
+            --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" \
             --output TestResults/coverage.unit.coverage --output-format coverage \
             -- dotnet test -c Release --no-build -bl:binlog/test-unit.binlog \
               -- --results-directory TestResults/unit --report-xunit-trx \
@@ -242,6 +243,7 @@ jobs:
           FIXTURE_TIMING_FILE: ${{ github.workspace }}/fixture-timing.txt
         run: |
           dotnet-coverage collect --nologo \
+            --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" \
             --output TestResults/coverage.integration.coverage --output-format coverage \
             -- dotnet test -c Release --no-build -bl:binlog/test-integration.binlog \
               -- --results-directory TestResults/integration --report-xunit-trx \

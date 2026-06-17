@@ -12,6 +12,7 @@ the build if any **enforced** assembly drops below its floor.
 | [`eng/testing/check-coverage-thresholds.ps1`](../../eng/testing/check-coverage-thresholds.ps1) | Parse-only script (reads a Cobertura file, pretty-prints a table, enforces thresholds, exits non-zero on failure) |
 | [`eng/testing/run-coverage.ps1`](../../eng/testing/run-coverage.ps1) | **Local-dev** helper: builds every `*.Tests` project, runs each under `dotnet-coverage collect` in parallel, then invokes the check script |
 | [`eng/testing/run-accessmanagement-coverage.ps1`](../../eng/testing/run-accessmanagement-coverage.ps1) | Local-dev helper scoped to the AccessManagement vertical (faster feedback) |
+| [`eng/testing/coverage.settings`](../../eng/testing/coverage.settings) | `dotnet-coverage` collection settings (passed via `--settings`) that exclude host wiring / generated code / migrations from the line totals, so the floors measure the same denominator as SonarCloud |
 
 ## Thresholds
 
@@ -115,8 +116,10 @@ CI does **not** run `run-coverage.ps1`. Instead, it runs the test suite once
 under `dotnet-coverage collect` and then invokes the parse-only check:
 
 ```yaml
-# Step A — run the tests once, producing TRX + coverage in one pass
-dotnet-coverage collect --output TestResults/coverage.cobertura.xml \
+# Step A — run the tests once, producing TRX + coverage in one pass.
+# --settings excludes host wiring / generated code / migrations (see below).
+dotnet-coverage collect --settings eng/testing/coverage.settings \
+    --output TestResults/coverage.cobertura.xml \
     --output-format cobertura -- \
     dotnet test -- --report-xunit-trx --ignore-exit-code 8
 
@@ -129,6 +132,28 @@ pwsh eng/testing/check-coverage-thresholds.ps1 \
 Running the tests twice (once for Test, once for Coverage) would double
 pipeline time, so the suite runs once and the coverage report is parsed from
 that single pass.
+
+## What is excluded from the denominator
+
+Both coverage systems exclude the same boilerplate so a floor reflects coverage
+of real logic, not host wiring:
+
+- **SonarCloud** via `sonar.coverage.exclusions` in
+  [`SonarQube.Analysis.xml`](../../SonarQube.Analysis.xml).
+- **CI floors** via [`eng/testing/coverage.settings`](../../eng/testing/coverage.settings),
+  passed to `dotnet-coverage collect --settings`.
+
+Excluded in both: `Program.cs`, `Startup.cs`, generated code (`*.g.cs`,
+`*.Designer.cs`, `Properties/AssemblyInfo.cs`), EF migrations, and the
+`Altinn.AccessMgmt.FFB` / `Altinn.AccessMgmt.WebComponents` front-end modules.
+Test/Mock assemblies are excluded too (also enforced by
+`check-coverage-thresholds.ps1`, which only scores "Owned" `Altinn.*` code).
+
+Keep the two lists in sync: when you add an exclusion to one, mirror it in the
+other. `coverage.settings` uses the VSTest `.runsettings` shape with a
+`DataCollector` named `Code Coverage`, and its `ModulePaths` / `Attributes` /
+`Sources` elements must appear in that order or `dotnet-coverage` rejects the
+whole file.
 
 ## Adjusting a threshold
 

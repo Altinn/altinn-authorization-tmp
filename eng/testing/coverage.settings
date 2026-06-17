@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  dotnet-coverage collection settings, passed via the `dotnet-coverage collect` settings flag.
+
+  Purpose: make the CI per-assembly coverage floors (eng/testing/coverage-thresholds.json,
+  enforced by check-coverage-thresholds.ps1) measure the SAME denominator that SonarCloud
+  measures. SonarCloud's coverage.exclusions live in SonarQube.Analysis.xml; this file is
+  the dotnet-coverage equivalent. Keep the two in sync.
+
+  Without it, `dotnet-coverage collect` counts host wiring (Program.cs / Startup.cs),
+  generated code (*.g.cs / *.Designer.cs / AssemblyInfo.cs) and EF migrations in the line
+  totals, so the floors are computed on a boilerplate-inflated denominator SonarCloud does
+  not see.
+
+  Format note: the settings flag expects the VSTest .runsettings shape with a
+  DataCollector named "Code Coverage" (a bare CodeCoverage or configuration root element is
+  rejected as "not a valid Coverage settings file"). Element order is significant too:
+  ModulePaths, then Attributes, then Sources. Source-path regexes match full file
+  paths on both Windows and Linux, so both separators are allowed. Test/Mock module
+  exclusion is also enforced in check-coverage-thresholds.ps1 (it only scores "Owned"
+  Altinn.* assemblies and skips Tests/TestUtils/Mocks); the ModulePaths block keeps the
+  raw report lean too.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <ModulePaths>
+              <Exclude>
+                <ModulePath>.*[Tt]ests\.dll$</ModulePath>
+                <ModulePath>.*TestUtils\.dll$</ModulePath>
+                <ModulePath>.*Mocks\.dll$</ModulePath>
+                <ModulePath>.*Altinn\.AccessMgmt\.FFB\.dll$</ModulePath>
+                <ModulePath>.*Altinn\.AccessMgmt\.WebComponents\.dll$</ModulePath>
+              </Exclude>
+            </ModulePaths>
+
+            <Attributes>
+              <Exclude>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+                <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+                <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
+                <Attribute>^System\.ObsoleteAttribute$</Attribute>
+              </Exclude>
+            </Attributes>
+
+            <Sources>
+              <Exclude>
+                <Source>.*[\\/][Mm]igrations?[\\/].*</Source>
+                <Source>.*[\\/]Program\.cs$</Source>
+                <Source>.*[\\/]Startup\.cs$</Source>
+                <Source>.*\.g\.cs$</Source>
+                <Source>.*\.Designer\.cs$</Source>
+                <Source>.*[\\/]Properties[\\/]AssemblyInfo\.cs$</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

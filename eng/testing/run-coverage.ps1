@@ -54,6 +54,9 @@ $coverageFiles = @()
 # of all project times. Each project writes to a distinct output + log.
 $configurationLocal = $Configuration
 $resultsDirLocal = $resultsDir
+# Shared with CI (tpl-vertical-ci.yml): aligns the coverage denominator with
+# SonarCloud by excluding host wiring / generated code / migrations.
+$coverageSettings = Join-Path $repoRoot 'eng/testing/coverage.settings'
 $throttle = [Math]::Min($Projects.Count, [Math]::Max(2, [Environment]::ProcessorCount))
 
 $collectResults = $Projects | ForEach-Object -Parallel {
@@ -84,7 +87,7 @@ $collectResults = $Projects | ForEach-Object -Parallel {
         # runner (not MTP). It exits 0 when every test is [Skip]ped, so no
         # --ignore-exit-code handling is required. Test stdout is captured to
         # a per-project log to keep the coverage summary readable.
-        dotnet-coverage collect --nologo --output $outFile --output-format cobertura -- dotnet $dllPath *>&1 | Out-File -FilePath $logFile -Encoding utf8
+        dotnet-coverage collect --nologo --settings $using:coverageSettings --output $outFile --output-format cobertura -- dotnet $dllPath *>&1 | Out-File -FilePath $logFile -Encoding utf8
         $mode = 'xUnit v3 / MTP'
     }
     else {
