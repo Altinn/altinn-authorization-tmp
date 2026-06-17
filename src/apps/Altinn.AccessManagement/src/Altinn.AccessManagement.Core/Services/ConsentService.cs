@@ -1066,8 +1066,13 @@ namespace Altinn.AccessManagement.Core.Services
                 return errorResult;
             }
 
-            ConsentPartyUrn consentedToParty = await MapFromExternalIdenity(consentReceiver, cancellationToken);
-            consentedToParty.IsPartyUuid(out Guid partyUuid);
+            Result<ConsentPartyUrn> consentedToParty = await ValidatePartyFromExternalIdentity(consentReceiver, cancellationToken);
+            if (consentedToParty.IsProblem)
+            {
+                return consentedToParty.Problem;
+            }
+
+            consentedToParty.Value.IsPartyUuid(out Guid partyUuid);
             Result<List<ConsentStatusChange>> result = await _consentRepository.GetConsentEventsForParty(partyUuid, query, pageSize, cancellationToken);
 
             if (result.IsProblem)
