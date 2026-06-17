@@ -55,7 +55,7 @@ $coverageFiles = @()
 $configurationLocal = $Configuration
 $resultsDirLocal = $resultsDir
 # Shared with CI (tpl-vertical-ci.yml): aligns the coverage denominator with
-# SonarCloud by excluding host wiring / generated code / migrations.
+# SonarCloud by excluding generated code, migrations, and tooling.
 $coverageSettings = Join-Path $repoRoot 'eng/testing/coverage.settings'
 $throttle = [Math]::Min($Projects.Count, [Math]::Max(2, [Environment]::ProcessorCount))
 
