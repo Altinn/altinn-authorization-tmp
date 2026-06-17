@@ -202,11 +202,8 @@ data "azurerm_key_vault_secret" "ccr_client_password_hash" {
 }
 
 data "azurerm_storage_account" "ccr_federate_storage_account" {
-  for_each = (
-    var.config.ccr.federate.enable
-    ? toset([local.reg_federate_storage_account_name])
-    : toset([])
-  )
+  # this should always exist - keeping for_each for backwards compatibility
+  for_each = toset([local.reg_federate_storage_account_name])
 
   name                = each.value
   resource_group_name = local.hub_resource_group_name
@@ -232,12 +229,12 @@ data "azurerm_storage_queue" "ccr_federate_source" {
 resource "azurerm_role_assignment" "ccr_federate_queue_reader" {
   for_each = (
     var.config.ccr.federate.enable && var.config.ccr.federate.source != null
-    ? toset([var.config.ccr.federate.source.queue])
+    ? toset(var.platform_workflow_principal_ids)
     : toset([])
   )
 
-  scope                = data.azurerm_storage_queue.ccr_federate_source[each.key].id
-  principal_id         = azurerm_user_assigned_identity.register.principal_id
+  scope                = data.azurerm_storage_queue.ccr_federate_source[var.config.ccr.federate.source.queue].id
+  principal_id         = each.value
   role_definition_name = "Storage Queue Data Message Processor"
 
   provider = azurerm.hub
@@ -261,12 +258,12 @@ data "azurerm_storage_queue" "ccr_federate_source_poison" {
 resource "azurerm_role_assignment" "ccr_federate_poison_writer" {
   for_each = (
     var.config.ccr.federate.enable && var.config.ccr.federate.source != null
-    ? toset([var.config.ccr.federate.source.poison])
+    ? toset(var.platform_workflow_principal_ids)
     : toset([])
   )
 
-  scope                = data.azurerm_storage_queue.ccr_federate_source_poison[each.key].id
-  principal_id         = azurerm_user_assigned_identity.register.principal_id
+  scope                = data.azurerm_storage_queue.ccr_federate_source_poison[var.config.ccr.federate.source.poison].id
+  principal_id         = each.value
   role_definition_name = "Storage Queue Data Message Sender"
 
   provider = azurerm.hub
@@ -290,12 +287,18 @@ data "azurerm_storage_queue" "ccr_federate_target" {
 resource "azurerm_role_assignment" "ccr_federate_queue_writer" {
   for_each = (
     var.config.ccr.federate.enable
-    ? toset(var.config.ccr.federate.targets)
-    : toset([])
+    ? {
+      for assignment in setproduct(toset(var.config.ccr.federate.targets), toset(var.platform_workflow_principal_ids)) :
+      "${assignment[0]}:${assignment[1]}" => {
+        queue        = assignment[0]
+        principal_id = assignment[1]
+      }
+    }
+    : {}
   )
 
-  scope                = data.azurerm_storage_queue.ccr_federate_target[each.key].id
-  principal_id         = azurerm_user_assigned_identity.register.principal_id
+  scope                = data.azurerm_storage_queue.ccr_federate_target[each.value.queue].id
+  principal_id         = each.value.principal_id
   role_definition_name = "Storage Queue Data Message Sender"
 
   provider = azurerm.hub
@@ -323,9 +326,11 @@ module "appsettings" {
           "Altinn:register:PartyImport:Npr:Enable"               = { value = var.features.party_import.npr.enable }
           "Altinn:register:PartyImport:Sire:Enrich"              = { value = var.features.party_import.sire.enable && var.features.party_import.sire.enrich }
           "Altinn:register:PartyImport:Sire:Listen"              = { value = var.features.party_import.sire.enable && var.features.party_import.sire.listen }
+          "Altinn:register:PartyImport:Ccr:Enable"               = { value = var.config.ccr.flatfiles.enable }
 
           "Altinn:register:Ccr:Update:Enabled" = { value = var.features.ccr_proxy.enable }
           "Altinn:register:Ccr:Update:Record"  = { value = var.features.ccr_proxy.record }
+          "Altinn:register:Ccr:Update:Process" = { value = var.features.ccr_proxy.process }
 
           // config
           "Altinn:register:PartyImport:A2:MaxDbSizeInGib" = { value = var.config.a2_party_import.max_db_size_in_gib }
@@ -367,7 +372,7 @@ module "appsettings" {
             "Altinn:register:Ccr:Federate:Source:QueueName"       = { value = var.config.ccr.federate.source.queue }
             "Altinn:register:Ccr:Federate:Source:PoisonQueueName" = { value = var.config.ccr.federate.source.poison }
           } : {}
-        ) : {}
+        ) : {},
       )
 
       vault_references = merge(
@@ -381,7 +386,21 @@ module "appsettings" {
         {
           for client_key, client in var.config.ccr.clients :
           "Altinn:register:Ccr:Clients:${client_key}:PasswordHash" => { vault_key_reference = data.azurerm_key_vault_secret.ccr_client_password_hash[client_key].versionless_id }
-        }
+        },
+        // ccr flatfiles local config
+        var.config.ccr.flatfiles.local != null ? {
+          "Altinn:register:PartyImport:Ccr:Sftp:Host"       = { vault_key_reference = resource.azurerm_key_vault_secret.ccr_flatfile_local_host["local"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:User"       = { vault_key_reference = resource.azurerm_key_vault_secret.ccr_flatfile_local_user["local"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:Password"   = { vault_key_reference = resource.azurerm_key_vault_secret.ccr_flatfile_local_pass["local"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:RemotePath" = { vault_key_reference = resource.azurerm_key_vault_secret.ccr_flatfile_local_path["local"].versionless_id }
+        } : {},
+        // ccr flatfiles remote config
+        var.config.ccr.flatfiles.remote != null ? {
+          "Altinn:register:PartyImport:Ccr:Sftp:Host"       = { vault_key_reference = data.azurerm_key_vault_secret.ccr_flatfile_remote_host["remote"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:User"       = { vault_key_reference = data.azurerm_key_vault_secret.ccr_flatfile_remote_user["remote"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:Password"   = { vault_key_reference = data.azurerm_key_vault_secret.ccr_flatfile_remote_pass["remote"].versionless_id }
+          "Altinn:register:PartyImport:Ccr:Sftp:RemotePath" = { vault_key_reference = data.azurerm_key_vault_secret.ccr_flatfile_remote_path["remote"].versionless_id }
+        } : {},
       )
     }
   }

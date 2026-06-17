@@ -15,7 +15,8 @@ db_max_pool_size = 4
 db_compute_sku   = "D2"
 configuration = {
   consent = {
-    events_page_size = 5
+    events_page_size      = 5
+    only_expired_consents = false
   }
   core = {
     request_notify_request_approved_in_seconds = 30
@@ -29,6 +30,17 @@ configuration = {
       rightholder_removed_notify_in_seconds = 30
       instance_added_notify_in_seconds      = 30
       instance_removed_notify_in_seconds    = 30
+    }
+  }
+  serviceowner_delegation = {
+    package_whitelist = {
+      "974761076" = [ # SKATTEETATEN
+        "innbygger-skatteforhold-privatpersoner"
+      ]
+      "991825827" = [ # DIGDIR
+        "innbygger-stotte-tilskudd",
+        "teknisk-samhandling-digdir"
+      ]
     }
   }
 }

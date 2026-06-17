@@ -32,7 +32,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="policyInformationRepository">the policy information repository handler</param>
         /// <param name="rolesWrapper">the roles handler</param>
         /// <param name="oedRolesWrapper">the oed roles handler</param>
-        /// <param name="partiesWrapper">the party information handler</param>
         /// <param name="profileWrapper">the user profile information handler</param>
         /// <param name="memoryCache">The cache handler </param>
         /// <param name="settings">The app settings</param>
@@ -41,8 +40,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="accMgmt">Access Management PIP API wrapper</param>
         /// <param name="featureManager">Feature manager for reading feature flags.</param>
         /// <param name="resourceRegistry">Resource registry client</param>
-        public DelegationContextHandler(IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accMgmt, IFeatureManager featureManager, IResourceRegistry resourceRegistry)
-            : base(policyInformationRepository, rolesWrapper, oedRolesWrapper, partiesWrapper, profileWrapper, memoryCache, settings, registerService, prp, accMgmt, featureManager, resourceRegistry)
+        public DelegationContextHandler(IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accMgmt, IFeatureManager featureManager, IResourceRegistry resourceRegistry)
+            : base(policyInformationRepository, rolesWrapper, oedRolesWrapper, profileWrapper, memoryCache, settings, registerService, prp, accMgmt, featureManager, resourceRegistry)
         {
         }
 
@@ -50,9 +49,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// Updates needed subject information for the Context Request for a specific delegation
         /// </summary>
         /// <param name="requestSubjectAttributes">The current collection of subject attributes on the request to be enriched</param>
+        /// <param name="keyRolePartyIds">The list of key role party IDs</param>
+        /// <param name="keyRolePartyUuids">The list of key role party uuids</param>
         /// <param name="isInstanceAccessRequest">Whether the request is for a specific instance, which needs additional uuid information</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-        public async Task EnrichRequestSubjectAttributes(XacmlContextAttributes requestSubjectAttributes, bool isInstanceAccessRequest, CancellationToken cancellationToken)
+        public async Task EnrichRequestSubjectAttributes(XacmlContextAttributes requestSubjectAttributes, List<int> keyRolePartyIds, List<Guid> keyRolePartyUuids, bool isInstanceAccessRequest, CancellationToken cancellationToken)
         {
             int subjectUserId = GetSubjectUserId(requestSubjectAttributes);
             if (subjectUserId > 0)
@@ -65,20 +66,19 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                         userProfile.Party.PartyTypeName == PartyType.Person && userProfile.Party.PartyUuid.HasValue)
                     {
                         requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.PersonUuidAttribute, userProfile.Party.PartyUuid.Value.ToString()));
+                        requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.PartyUuidAttribute, userProfile.Party.PartyUuid.Value.ToString()));
                     }
                 }
 
-                List<int> keyRolePartyIds = await GetKeyRolePartyIds(subjectUserId, cancellationToken);
                 if (keyRolePartyIds.Count > 0)
                 {
                     requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.PartyAttribute, keyRolePartyIds.Select(s => s.ToString())));
+                }
 
-                    if (isInstanceAccessRequest)
-                    {
-                        // Instance delegation policies use uuid as subject, meaning the request needs to be enriched with the uuids of all keyrole parties
-                        IEnumerable<Party> parties = await _registerService.GetPartiesAsync(keyRolePartyIds, cancellationToken: cancellationToken);
-                        requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.OrganizationUuidAttribute, parties.Select(p => p.PartyUuid.ToString())));
-                    }
+                if (isInstanceAccessRequest && keyRolePartyUuids.Count > 0)
+                {
+                    // Instance delegation policies use uuid as subject, meaning the request needs to be enriched with the uuids of all keyrole parties
+                    requestSubjectAttributes.Attributes.Add(GetStringAttribute(XacmlRequestAttribute.OrganizationUuidAttribute, keyRolePartyUuids.Select(p => p.ToString())));
                 }
             }
 
@@ -159,28 +159,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         {
             XacmlContextAttributes actionAttributes = request.Attributes.FirstOrDefault(a => a.Category.OriginalString.Equals(XacmlConstants.MatchAttributeCategory.Action));
             return actionAttributes?.Attributes.FirstOrDefault(a => a.AttributeId.OriginalString.Equals(XacmlConstants.MatchAttributeIdentifiers.ActionId))?.AttributeValues.FirstOrDefault()?.Value;
-        }
-
-        /// <summary>
-        /// Gets the list of mainunits for a subunit
-        /// </summary>
-        /// <param name="subUnitPartyId">The subunit partyIds to check and retrieve mainunits for</param>
-        /// <param name="cancellationToken">The cancellationToken</param>
-        /// <returns>List of mainunits</returns>
-        public async new Task<List<MainUnit>> GetMainUnits(int subUnitPartyId, CancellationToken cancellationToken = default)
-        {
-            return await base.GetMainUnits(subUnitPartyId, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the list of keyrole unit partyIds for a user
-        /// </summary>
-        /// <param name="subjectUserId">The userid to retrieve keyrole unit for</param>
-        /// <param name="cancellationToken">The cancellationToken</param>
-        /// <returns>List of partyIds for units where user has keyrole</returns>
-        public async new Task<List<int>> GetKeyRolePartyIds(int subjectUserId, CancellationToken cancellationToken = default)
-        {
-            return await base.GetKeyRolePartyIds(subjectUserId, cancellationToken);
         }
     }
 }

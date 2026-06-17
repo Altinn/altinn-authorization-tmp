@@ -15,6 +15,11 @@ service_bus_firewall = [
   "20.100.48.100/31" # platform-at22-02-prefix
 ]
 
+maintainers_principal_ids = [
+  "6d54df21-3547-41a2-8d0d-529fad054807", # Group: Altinn Product Authorization: Developers Dev
+  "93bed750-6ca4-47ae-ac43-b45fff4930f6", # Group: Altinn Product Authorization: Admins Dev
+]
+
 appconfiguration = {
   platform_notifications_endpoint     = "http://altinn-notifications.default.svc.cluster.local"
   platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
@@ -51,6 +56,14 @@ services = {
 
   folkeregisteret = {
     host = "folkeregisteret-api-konsument.sits.no"
+  }
+
+  sire = {
+    host = "skatteetatenregistrertselskap.api.skatteetaten-test.no"
+  }
+
+  sire-events = {
+    host = "skatteetatenregistrertselskaphendelser.api.skatteetaten-test.no"
   }
 }
 

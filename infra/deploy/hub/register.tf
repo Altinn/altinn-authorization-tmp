@@ -8,12 +8,19 @@ module "register_shared_storage_account" {
   resource_group_name = azurerm_resource_group.hub.name
   location            = azurerm_resource_group.hub.location
 
+  sftp_enabled = true
+
   queues = {
     "ccr-updates-at22"        = {}
     "ccr-updates-at22-poison" = {}
 
     "ccr-updates-at23"        = {}
     "ccr-updates-at23-poison" = {}
+  }
+
+  containers = {
+    "ccr-flatfiles-at22" = {}
+    "ccr-flatfiles-at23" = {}
   }
 
   tags = merge({}, local.default_tags)
@@ -30,6 +37,15 @@ resource "azurerm_role_assignment" "register_storage_account_cd" {
   scope                = module.register_shared_storage_account.id
   principal_id         = each.value
   role_definition_name = "User Access Administrator"
+}
+
+# Required to make the local-users
+resource "azurerm_role_assignment" "register_storage_account_cd_contributor" {
+  for_each = toset(var.cd_principal_ids)
+
+  scope                = module.register_shared_storage_account.id
+  principal_id         = each.value
+  role_definition_name = "Storage Account Contributor"
 }
 
 # Maintainers have permissions to manage the queues

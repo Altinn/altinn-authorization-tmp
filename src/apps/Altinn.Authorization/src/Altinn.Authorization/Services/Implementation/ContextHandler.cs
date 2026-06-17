@@ -41,7 +41,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         protected readonly IInstanceMetadataRepository _policyInformationRepository;
         protected readonly IRoles _rolesWrapper;
         protected readonly IOedRoleAssignmentWrapper _oedRolesWrapper;
-        protected readonly IParties _partiesWrapper;
         protected readonly IProfile _profileWrapper;
         protected readonly IMemoryCache _memoryCache;
         protected readonly GeneralSettings _generalSettings;
@@ -59,7 +58,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="policyInformationRepository">the policy information repository handler</param>
         /// <param name="rolesWrapper">the roles handler</param>
         /// <param name="oedRolesWrapper">service handling oed role retireval</param>
-        /// <param name="partiesWrapper">the party information handler</param>
         /// <param name="profileWrapper">the user profile information handler</param>
         /// <param name="memoryCache">The cache handler </param>
         /// <param name="settings">The app settings</param>
@@ -69,12 +67,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="featureManager">Feature manager</param>
         /// <param name="resourceRegistry">Resource registry client</param>
         public ContextHandler(
-            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager, IResourceRegistry resourceRegistry)
+            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager, IResourceRegistry resourceRegistry)
         {
             _policyInformationRepository = policyInformationRepository;
             _rolesWrapper = rolesWrapper;
             _oedRolesWrapper = oedRolesWrapper;
-            _partiesWrapper = partiesWrapper;
             _profileWrapper = profileWrapper;
             _memoryCache = memoryCache;
             _generalSettings = settings.Value;
@@ -611,7 +608,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     subjectSsn = await GetPersonIdForUser(subjectUserId, cancellationToken);
                 }
 
-                string resourceSsn = await GetSSnForParty(resourcePartyId);
+                string resourceSsn = await GetSSnForParty(resourcePartyId, cancellationToken);
 
                 if (!string.IsNullOrWhiteSpace(subjectSsn) && !string.IsNullOrWhiteSpace(resourceSsn))
                 {
@@ -852,56 +849,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         }
 
         /// <summary>
-        /// Gets the list of mainunits for a subunit
-        /// </summary>
-        /// <param name="subUnitPartyId">The subunit partyId to check and retrieve mainunits for</param>
-        /// <param name="cancellationToken">The cancellationToken</param>
-        /// <returns>List of mainunits</returns>
-        protected async Task<List<MainUnit>> GetMainUnits(int subUnitPartyId, CancellationToken cancellationToken = default)
-        {
-            string cacheKey = $"GetMainUnitsFor:{subUnitPartyId}";
-
-            if (!_memoryCache.TryGetValue(cacheKey, out List<MainUnit> mainUnits))
-            {
-                // Key not in cache, so get data.
-                mainUnits = await _partiesWrapper.GetMainUnits(new MainUnitQuery { PartyIds = new List<int> { subUnitPartyId } }, cancellationToken);
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-               .SetPriority(CacheItemPriority.High)
-               .SetAbsoluteExpiration(new TimeSpan(0, _generalSettings.MainUnitCacheTimeout, 0));
-
-                _memoryCache.Set(cacheKey, mainUnits, cacheEntryOptions);
-            }
-
-            return mainUnits;
-        }
-
-        /// <summary>
-        /// Gets the list of keyrole unit partyIds for a user
-        /// </summary>
-        /// <param name="subjectUserId">The userid to retrieve keyrole unit for</param>
-        /// <param name="cancellationToken">The cancellationToken</param>
-        /// <returns>List of partyIds for units where user has keyrole</returns>
-        protected async Task<List<int>> GetKeyRolePartyIds(int subjectUserId, CancellationToken cancellationToken = default)
-        {
-            string cacheKey = $"GetKeyRolePartyIdsFor:{subjectUserId}";
-
-            if (!_memoryCache.TryGetValue(cacheKey, out List<int> keyrolePartyIds))
-            {
-                // Key not in cache, so get data.
-                keyrolePartyIds = await _partiesWrapper.GetKeyRoleParties(subjectUserId, cancellationToken);
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-               .SetPriority(CacheItemPriority.High)
-               .SetAbsoluteExpiration(new TimeSpan(0, _generalSettings.MainUnitCacheTimeout, 0));
-
-                _memoryCache.Set(cacheKey, keyrolePartyIds, cacheEntryOptions);
-            }
-
-            return keyrolePartyIds;
-        }
-
-        /// <summary>
         /// Gets a list of role assignments between to persons (if exists) from the OED Authz PIP API
         /// </summary>
         /// <param name="from">the party which the role assignment provides access on behalf of</param>
@@ -999,13 +946,13 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             return userProfile?.Party?.SSN;
         }
 
-        private async Task<string> GetSSnForParty(int partyId)
+        private async Task<string> GetSSnForParty(int partyId, CancellationToken cancellationToken = default)
         {
             string cacheKey = $"p:{partyId}";
 
             if (!_memoryCache.TryGetValue(cacheKey, out Party party))
             {
-                party = await _partiesWrapper.GetParty(partyId);
+                party = await _registerService.GetParty(partyId, cancellationToken);
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                .SetPriority(CacheItemPriority.High)

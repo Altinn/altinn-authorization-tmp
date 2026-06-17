@@ -3,7 +3,7 @@ using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Enums;
 using Altinn.Platform.Authenticaiton.Extensions;
 using Altinn.Platform.Authorization.Constants;
-using Altinn.Platform.Authorization.IntegrationTests.Data;
+using Altinn.Authorization.Tests.Data;
 using Altinn.Platform.Authorization.Models;
 using Altinn.Platform.Authorization.Models.AccessManagement;
 using Altinn.Platform.Authorization.Services.Interface;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualBasic;
 
-namespace Altinn.Platform.Authorization.IntegrationTests.MockServices;
+namespace Altinn.Authorization.Tests.MockServices;
 
 public class AccessManagementWrapperMock : IAccessManagementWrapper
 {
@@ -64,7 +64,7 @@ public class AccessManagementWrapperMock : IAccessManagementWrapper
                 DelegationChangesTestData.Default(DelegationChangesTestData.WithResourceID("org1/app1"), DelegationChangesTestData.WithResourceInstanceId("f8d3526c-596b-4322-a041-38a8925c2a82"), DelegationChangesTestData.WithFromUuid(UuidType.Organization, Guid.Parse("00000000-0000-0000-0005-000000005545")), DelegationChangesTestData.WithToUuid(UuidType.Person, Guid.Parse("00000000-0000-0000-0005-000000002625"))),
                 WithDefaultCondition("org1/app1", new AttributeMatch { Id = XacmlRequestAttribute.PartyAttribute, Value = "50005545" }, new AttributeMatch { Id = XacmlRequestAttribute.UserAttribute, Value = "20000517" })),
             ConditionalAdd(
-                DelegationChangesTestData.Default(DelegationChangesTestData.WithResourceID("app_org1_app1"), DelegationChangesTestData.WithResourceInstanceId("f8d3526c-596b-4322-a041-38a8925c2a82"), DelegationChangesTestData.WithFromUuid(UuidType.Organization, Guid.Parse("00000000-0000-0000-0005-000000005545")), DelegationChangesTestData.WithToUuid(UuidType.Organization, Guid.Parse("00000000-0000-0000-0005-000000004222"))),
+                DelegationChangesTestData.Default(DelegationChangesTestData.WithResourceID("app_org1_app1"), DelegationChangesTestData.WithResourceInstanceId("f8d3526c-596b-4322-a041-38a8925c2a82"), DelegationChangesTestData.WithFromUuid(UuidType.Organization, Guid.Parse("00000000-0000-0000-0005-000000005545")), DelegationChangesTestData.WithCoveredByPartyID(50004222), DelegationChangesTestData.WithToUuid(UuidType.Organization, Guid.Parse("00000000-0000-0000-0005-000000004222"))),
                 WithDefaultCondition("org1/app1", new AttributeMatch { Id = XacmlRequestAttribute.PartyAttribute, Value = "50005545" }, new AttributeMatch { Id = XacmlRequestAttribute.PartyAttribute, Value = "50004222" }),
                 WithDefaultCondition("org1/app1", new AttributeMatch { Id = XacmlRequestAttribute.PartyAttribute, Value = "50005545" }, new AttributeMatch { Id = XacmlRequestAttribute.UserAttribute, Value = "20000095" })),
             ConditionalAdd(

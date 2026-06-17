@@ -112,14 +112,16 @@ haven't been rewritten against EF seed data yet.
 This fixture exists as an explicit bridge. New tests should **not** use it —
 prefer `ApiFixture`. The expected outcome is that the last `LegacyApiFixture`
 consumers get rewritten on EF seed data over time and the fixture is retired.
-See [`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/22_AccessMgmt_WAF_Group_B_16_4_Prep_LegacyApiFixture.md).
 
 ---
 
 ## `EFPostgresFactory` — how the DB is provisioned
 
 Under the hood, `ApiFixture` delegates database provisioning to
-`EFPostgresFactory`. The strategy:
+`EFPostgresFactory`, a thin wrapper over the shared
+[`PostgresTestEngine`](../../src/testing/PostgresTestEngine.cs) (linked into test
+assemblies that set `IncludePostgresTestEngine`, the same mechanism as the
+`[UnitTest]`/`[IntegrationTest]` markers). The strategy:
 
 1. A **single** PostgreSQL container is shared across every fixture in the
    test run (reference counted).
@@ -129,15 +131,35 @@ Under the hood, `ApiFixture` delegates database provisioning to
    TEMPLATE <template>`. Cloning is ~100–500 ms, vs ~10+ seconds for
    re-running migrations.
 
-`PostgresFixture` (a thin Testcontainers wrapper) is what `LegacyApiFixture`
-uses; it is not intended for direct consumption by new tests.
+For tests that exercise EF services or repositories directly (no web host),
+`EfDatabaseFixture` exposes the same template-cloned database as a plain
+`IClassFixture<EfDatabaseFixture>` — build an `AppDbContext` from `Db`
+(`Db.Admin.ToString()`; `PostgresDatabase` exposes separate `Admin`/`User`
+connection-string builders). It reuses the single shared container, so no second
+PostgreSQL container is needed.
 
 ### Graceful skip when no container runtime is available
 
-Both `EFPostgresFactory` and `PostgresFixture` detect the absence of a Docker /
-Podman socket and call `Assert.Skip(...)` so the suite doesn't fail on
-developer machines without a runtime. See
-[`TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md`](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/40_CI_First_Green_Run_Hardening.md).
+When no Docker / Podman socket is reachable, `PostgresTestEngine` records a
+`SkipReason` instead of throwing — a skip raised from a fixture's
+`InitializeAsync` surfaces as a fixture-init *failure*, not a skip, in xUnit v3.
+Fixtures convert that reason to a per-test skip: `AuthorizationDbFixture` exposes
+`SkipReason` and its tests call `Assert.SkipWhen(...)`. `ApiFixture` /
+`EFPostgresFactory` still surface a missing runtime as a failure (converting its
+many test classes to the per-test-skip pattern is tracked separately); in CI a
+runtime is always present.
+
+## Other fixtures
+
+- **`AuthorizationDbFixture`** (`Altinn.Authorization.Tests`) — provides a
+  PostgreSQL database with the Authorization Yuniql schema for the
+  delegation-metadata repository tests. Backed by the shared `PostgresTestEngine`
+  (the Yuniql scripts are replayed once into a template; each test class gets a
+  clone). (`AuthorizationApiFixture` itself is mock-backed and needs no container.)
+- **`PlatformFixture`** (`Altinn.Authorization.Integration.Tests`) — wires up the
+  platform-integration clients against the **live** platform; its tests
+  `Assert.Skip(...)` when credentials/config are missing, so they don't run in a
+  plain local or CI build.
 
 ---
 

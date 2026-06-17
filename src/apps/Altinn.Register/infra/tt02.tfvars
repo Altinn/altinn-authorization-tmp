@@ -22,22 +22,25 @@ key_vault_rbac = [{
 
 features = {
   maskinporten = true
-  a2_party_import = {
-    parties  = true
-    user_ids = true
-    profiles = true
-  }
 
   party_import = {
     system_users = true
+
     npr = {
+      enable        = true
       guardianships = true
+    }
+
+    sire = {
+      enable = true
+      listen = true
     }
   }
 
   ccr_proxy = {
-    enable = true
-    record = true
+    enable  = true
+    record  = true
+    process = true
   }
 }
 
@@ -48,7 +51,7 @@ config = {
 
   maskinporten = {
     client_id = "6b3069e2-bc65-42ce-9aab-413e405dd5fe"
-    scope     = "folkeregister:deling/offentligmedhjemmel"
+    scope     = "folkeregister:deling/offentligmedhjemmel skatteetaten:skatteetatenregistrertselskap"
   }
 
   api_source = {
@@ -59,6 +62,33 @@ config = {
     federate = {
       enable  = true
       targets = ["ccr-updates-at22", "ccr-updates-at23"]
+    }
+
+    flatfiles = {
+      enable = true
+      remote = {
+        host = "ccr-flatfile-remote-host"
+        user = "ccr-flatfile-remote-user"
+        pass = "ccr-flatfile-remote-pass"
+        path = "ccr-flatfile-remote-path"
+      }
+    }
+
+    clients = {
+      BRG = {
+        password = "ccr-brg-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
+
+      abs-tt02 = {
+        password = "ccr-abs-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
+
+      e2e-test-tt02 = {
+        password = "ccr-e2e-test-hash"
+        networks = ["0.0.0.0/0", "::/0"]
+      }
     }
   }
 }
