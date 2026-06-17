@@ -203,4 +203,22 @@ public class AttributeMatchAsserterTests
         Assert.Single(result.Errors["AllAttributesHasValues"]);
         Assert.Contains("urn:test:attr", result.Errors["AllAttributesHasValues"][0]);
     }
+
+    /// <summary>
+    /// A null element in the list must be reported as an empty-value error, not throw a
+    /// NullReferenceException (the null-safe filter must be matched by a null-safe read of
+    /// the attribute id when building the message).
+    /// </summary>
+    [Fact]
+    public void AllAttributesHasValues_NullElement_ReportsErrorWithoutThrowing()
+    {
+        var asserter = AsserterTests.Asserter<AttributeMatch>();
+        var values = new AttributeMatch[] { null! };
+
+        var result = asserter.Evaluate(values, asserter.AllAttributesHasValues);
+
+        Assert.NotNull(result);
+        Assert.Contains("AllAttributesHasValues", result.Errors.Keys);
+        Assert.Single(result.Errors["AllAttributesHasValues"]);
+    }
 }
