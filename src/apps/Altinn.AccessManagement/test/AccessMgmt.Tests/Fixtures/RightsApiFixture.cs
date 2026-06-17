@@ -40,6 +40,12 @@ public class RightsApiFixture : AccessMgmtApiFixture
             services.RemoveAll<IPDP>();
             services.AddSingleton<IPDP, PdpPermitMock>();
 
+            // AppsInstanceDelegationController resolves IAMPartyService to rewrite the
+            // From-party of the instance; mock the whole service here. This is NOT
+            // defaulted in the base fixture because the consent tests rely on the real
+            // AmPartyService backed by their own IAmPartyRepository mock.
+            services.AddSingleton<IAMPartyService, AMPartyServiceMock>();
+
             services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
             services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
             services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
