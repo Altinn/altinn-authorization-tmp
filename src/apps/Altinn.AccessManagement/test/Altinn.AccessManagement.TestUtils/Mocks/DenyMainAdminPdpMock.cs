@@ -6,7 +6,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks;
 
 /// <summary>
 /// Test double for <see cref="IPDP"/> that returns "Deny" only when the
-/// request is checking the <c>altinn_access_management_hoofdadmin</c> resource,
+/// request is checking the <c>altinn_access_management_hovedadmin</c> resource,
 /// and returns "Permit" for all other requests.
 /// </summary>
 /// <remarks>
@@ -22,7 +22,7 @@ namespace Altinn.AccessManagement.TestUtils.Mocks;
 ///   </item>
 ///   <item>
 ///     <description>
-///       <c>AuthorizeResourceAccess("altinn_access_management_hoofdadmin", …)</c>
+///       <c>AuthorizeResourceAccess("altinn_access_management_hovedadmin", …)</c>
 ///       — this mock returns Deny, so <c>isMainAdmin</c> is false and the
 ///       self-delegation gate adds <c>RequestFromSelfNotAllowed</c> (AM.VLD-00045).
 ///     </description>
