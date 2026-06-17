@@ -402,6 +402,25 @@ namespace Altinn.Authorization.Tests.Integration
         }
 
         /// <summary>
+        /// Tests the scenario where the subject holds the access package but requests an action the policy
+        /// does not grant for it (the package grants read/write, the request asks for sign), so the decision
+        /// is NotApplicable. Guards the action-scoping boundary of an access package (#3498 area 3).
+        /// </summary>
+        [Fact]
+        public async Task PDP_Decision_ResourceRegistry_AccessPackageUngrantedAction_ReturnsNotApplicable()
+        {
+            string testCase = "ResourceRegistry_AccessPackageUngrantedAction_NotApplicable";
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
         /// Tests the scenario where subject is a system user with access package giving access the resource. Request is a multi request testing all possible resource party identifiers.
         /// </summary>
         [Fact]
