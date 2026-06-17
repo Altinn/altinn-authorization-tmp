@@ -364,6 +364,25 @@ namespace Altinn.Authorization.Tests.Integration
         }
 
         /// <summary>
+        /// Tests the scenario where the subject is a system user that has no client-delegation for the
+        /// resource, so the decision is NotApplicable. Mirrors the Bruno
+        /// SysUser_ClientDelg_AccPkg_NoDelg_NotApplicable negative boundary (#3498 area 4).
+        /// </summary>
+        [Fact]
+        public async Task PDP_Decision_ResourceRegistry_SystemUserWithoutDelegation_ReturnsNotApplicable()
+        {
+            string testCase = "ResourceRegistry_SystemUserWithoutDelegation_NotApplicable";
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
         /// Tests the scenario where subject is a system user with access package giving access the resource. Request is a multi request testing all possible resource party identifiers.
         /// </summary>
         [Fact]
