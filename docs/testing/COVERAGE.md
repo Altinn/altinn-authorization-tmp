@@ -61,6 +61,27 @@ deliberately do **not** enforce coverage on every assembly in the repo;
 many are thin adapters, generated code, or host wiring where line coverage
 isn't a meaningful target.
 
+## Philosophy
+
+Coverage percentage is a guardrail against regression, not a quality goal in
+itself. New tests should be driven by a concrete risk — a named bug class
+(mapping, translation, validation, an authorization boundary), a regression we
+want pinned, or a branch whose failure would matter — not by a number to hit.
+
+Consequences:
+
+- A mock-based test is worth writing when it exercises real branching,
+  validation, or decision logic in the code under test. It is **not** worth
+  writing when its only assertion is that a pass-through maps its input to its
+  output (response-shape mapping over a thin adapter) — that adds a percentage
+  point and a maintenance burden without guarding behaviour.
+- Prefer covering pure logic (validators, mappers with real rules, decision
+  paths) over plumbing/I-O orchestration that can only be reached by mocking
+  out everything it does.
+- The floors exist to stop covered code from rotting, so raise a floor (or
+  promote a `warnings` entry to `assemblies`) when real coverage lands — but do
+  not lower a floor to make a thin test "count".
+
 ## Running locally
 
 Full repo:
