@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Telemetry;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -22,6 +23,8 @@ public partial class ResourceSyncService : IResourceSyncService
     private readonly ILogger<ResourceSyncService> _logger;
     private readonly IAltinnResourceRegistry _resourceRegistry;
     private readonly IServiceProvider _serviceProvider;
+
+    private KeyValuePair<string, object> OtelTags { get; } = new KeyValuePair<string, object?>("service", nameof(ResourceSyncService));
 
     /// <summary>
     /// Constructor
@@ -49,6 +52,8 @@ public partial class ResourceSyncService : IResourceSyncService
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
         var dbProviders = await dbContext.Providers.ToListAsync(cancellationToken);
+
+        using var activity = CoreTelemetry.ActivitySource.CreateActivity(nameof(ResourceSyncService), ActivityKind.Internal);
 
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {
@@ -80,7 +85,7 @@ public partial class ResourceSyncService : IResourceSyncService
                 });
             }
         }
-        
+
         await dbContext.SaveChangesAsync(new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem), cancellationToken);
         return true;
     }
@@ -95,45 +100,60 @@ public partial class ResourceSyncService : IResourceSyncService
         ResourceTypes = await dbContext.ResourceTypes.ToListAsync(cancellationToken);
         var leaseData = await lease.Get<ResourceRegistryLease>(cancellationToken);
 
+        using var activity = CoreTelemetry.ActivitySource.StartActivity(nameof(ResourceSyncService), ActivityKind.Internal);
         await foreach (var page in await _resourceRegistry.StreamResources(leaseData.Since, leaseData.ResourceNextPageLink, cancellationToken))
         {
-            if (page.IsProblem)
+            try
             {
-                Log.FailedToReadFromStream(_logger);
-                return;
-            }
-
-            foreach (var updatedResource in page.Content.Data)
-            {
-                try
+                if (page.IsProblem)
                 {
-                    var resource = await UpsertResource(dbContext, updatedResource, cancellationToken);
-                    if (resource is null)
-                    {
-                        continue;
-                    }
-
-                    if (updatedResource.Deleted)
-                    {
-                        await DeleteUpdatedSubject(dbContext, updatedResource, resource, cancellationToken);
-                    }
-                    else
-                    {
-                        await UpsertUpdatedSubject(dbContext, updatedResource, resource, cancellationToken);
-                    }
-
-                    leaseData.Since = updatedResource.UpdatedAt;
-                }
-                catch (Exception ex)
-                {
-                    Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
+                    Log.FailedToReadFromStream(_logger);
                     return;
                 }
-            }
 
-            leaseData.ResourceNextPageLink = page.Content.Links.Next;
-            await lease.Update(leaseData, cancellationToken);
+                foreach (var updatedResource in page.Content.Data)
+                {
+                    try
+                    {
+                        var resource = await UpsertResource(dbContext, updatedResource, cancellationToken);
+                        if (resource is null)
+                        {
+                            continue;
+                        }
+
+                        if (updatedResource.Deleted)
+                        {
+                            await DeleteUpdatedSubject(dbContext, updatedResource, resource, cancellationToken);
+                        }
+                        else
+                        {
+                            await UpsertUpdatedSubject(dbContext, updatedResource, resource, cancellationToken);
+                        }
+
+                        leaseData.Since = updatedResource.UpdatedAt;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
+                        throw;
+                    }
+                }
+
+                leaseData.ResourceNextPageLink = page.Content.Links.Next;
+                await lease.Update(leaseData, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                activity?.AddException(ex);
+                activity?.SetStatus(ActivityStatusCode.Error);
+                CoreTelemetry.HostedServicesFailures.Add(1, OtelTags);
+                CoreTelemetry.HostedServicesOk.Record(0, OtelTags);
+                return;
+            }
         }
+
+        CoreTelemetry.HostedServicesSuccess.Add(1, OtelTags);
+        CoreTelemetry.HostedServicesOk.Record(1, OtelTags);
     }
 
     private Task UpsertUpdatedSubject(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
@@ -168,6 +188,10 @@ public partial class ResourceSyncService : IResourceSyncService
                 dbContext.RoleResources.Remove(roleResource);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
+        }
+        else
+        {
+            Activity.Current?.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
         }
     }
 
@@ -217,19 +241,28 @@ public partial class ResourceSyncService : IResourceSyncService
         var role = await dbContext.Roles
             .AsNoTracking()
             .Where(r => EF.Functions.ILike(r.LegacyUrn, updatedResource.SubjectUrn) || EF.Functions.ILike(r.Urn, updatedResource.SubjectUrn))
-            .SingleOrDefaultAsync(cancellationToken) ?? throw new KeyNotFoundException($"Role not found '{subjectUrnPart}'");
-
-        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
-        if (roleResource == null)
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (role is { })
         {
-            roleResource = new RoleResource
+            var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
+            if (roleResource == null)
             {
-                RoleId = role.Id,
-                ResourceId = resource.Id,
-            };
+                roleResource = new RoleResource
+                {
+                    RoleId = role.Id,
+                    ResourceId = resource.Id,
+                };
 
-            dbContext.RoleResources.Add(roleResource);
-            await dbContext.SaveChangesAsync(cancellationToken);
+                dbContext.RoleResources.Add(roleResource);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            
+            return;
+        }
+        else
+        {
+            Activity.Current?.AddTag("role", $"{updatedResource.SubjectUrn} does not exist.");
         }
     }
 
