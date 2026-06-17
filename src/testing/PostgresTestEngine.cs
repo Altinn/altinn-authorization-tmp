@@ -108,8 +108,7 @@ public sealed class PostgresTestEngine
             // Both `.Build()` and `StartAsync` reach for the Docker daemon, so they
             // must be inside the try — a field initializer would surface as an
             // unrecoverable fixture-construction failure instead of a skip.
-            _server = new PostgreSqlBuilder()
-                .WithImage(_options.Image)
+            _server = new PostgreSqlBuilder(_options.Image)
                 .WithCleanUp(true)
                 .Build();
             await _server.StartAsync(cancellationToken);

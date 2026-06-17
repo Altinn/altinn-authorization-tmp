@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Enums;
+using Altinn.Authorization.Tests.Data;
 using Altinn.Platform.Authenticaiton.Extensions;
 using Altinn.Platform.Authorization.Constants;
-using Altinn.Authorization.Tests.Data;
 using Altinn.Platform.Authorization.Models;
 using Altinn.Platform.Authorization.Models.AccessManagement;
 using Altinn.Platform.Authorization.Services.Interface;
