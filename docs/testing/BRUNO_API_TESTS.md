@@ -18,15 +18,15 @@ and known-good seed-data IDs.
 
 ## Layout (AccessMgmt collection)
 
-- `bruno.json` / `collection.bru` — collection config and collection-level scripts.
-- `environments/` — one `.bru` per Altinn environment (`AT22`, `AT23`, `AT24`, `TT02`,
+- `bruno.json` / `collection.bru`: collection config and collection-level scripts.
+- `environments/`: one `.bru` per Altinn environment (`AT22`, `AT23`, `AT24`, `TT02`,
   `YT01`, `DEV`, `PROD`); selects `baseUrl`, `tokenEnv`, and other per-env variables.
-- `shared/` and `test/` — requests grouped by API area: `Consent`, `Delegations`,
+- `shared/` and `test/`: requests grouped by API area: `Consent`, `Delegations`,
   `Enduser`, `InternalAPI`, `Lookup`, `Maskinporten`, `MaskinportenSchema`,
   `PolicyInformationPoint`, `Resource`, `RightsInternal`, `SystemUserClientDelegation`,
-  `AuthorizedParties`, `AppsInstanceDelegation`, … (`old_SBL_Bridge_tests/` is legacy —
+  `AuthorizedParties`, `AppsInstanceDelegation`, … (`old_SBL_Bridge_tests/` is legacy,
   ignore it).
-- `TestToolsTokenGenerator.js` + per-area `testdata/*.js` — generate platform / Maskinporten
+- `TestToolsTokenGenerator.js` + per-area `testdata/*.js`: generate platform / Maskinporten
   tokens and supply seed-data IDs (org / app / party / instance) at request time.
 
 ## Anatomy of a `.bru` request
@@ -44,12 +44,12 @@ codes). That is the contract worth mirroring in a C# integration test.
 
 ## Using them as a spec for C# tests
 
-- **Endpoint inventory** — which endpoints exist, with their routes and verbs.
-- **Assertion style** — the exact status codes and response fields an endpoint must
+- **Endpoint inventory**: which endpoints exist, with their routes and verbs.
+- **Assertion style**: the exact status codes and response fields an endpoint must
   return, including error / negative cases.
-- **Seed data** — the environment `.bru` files and `testdata/*.js` hold known-good
+- **Seed data**: the environment `.bru` files and `testdata/*.js` hold known-good
   org / app / party / resource IDs. Those IDs target the live AT / TT02 environments and
-  are **not** reusable in the in-process EF test host — use `TestData.*` / the `*Constants`
+  are **not** reusable in the in-process EF test host; use `TestData.*` / the `*Constants`
   in the C# fixtures instead, and treat the Bruno IDs only as a guide to which entities a
   scenario needs.
 
