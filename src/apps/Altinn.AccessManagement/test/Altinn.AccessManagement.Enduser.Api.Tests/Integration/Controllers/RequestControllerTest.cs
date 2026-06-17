@@ -731,6 +731,7 @@ public class RequestControllerTest
             Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
 
             var result = JsonSerializer.Deserialize<RequestDto>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
             Assert.Equal(RequestStatus.Approved, result.Status);
         }
 

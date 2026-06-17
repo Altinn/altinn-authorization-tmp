@@ -441,9 +441,9 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
 
         HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&includeAccessPackages=true&includeInstances=true", TestContext.Current.CancellationToken);
         string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
         Assert.NotNull(result);
 
         // The main unit is a top-level party; the subunit is nested, never a separate top-level entry.
@@ -479,9 +479,9 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
 
         HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&partyFilter={TestEntities.SubunitKarlstad.Id}", TestContext.Current.CancellationToken);
         string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
         Assert.NotNull(result);
 
         AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);

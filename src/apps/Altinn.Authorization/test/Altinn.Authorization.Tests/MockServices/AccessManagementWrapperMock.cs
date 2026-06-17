@@ -163,7 +163,7 @@ public class AccessManagementWrapperMock : IAccessManagementWrapper
 
             // Person (party uuid) holding the 'ansettelsesforhold' access package on behalf of the reportee,
             // used by the person-via-access-package decision test (#3498 area 3).
-            if (from.ToString() == "066148fe-7077-4484-b7ea-44b5ede0014e" && to.ToString() == "00000000-0000-0000-0000-0000000000aa")
+            if (from == Guid.Parse("066148fe-7077-4484-b7ea-44b5ede0014e") && to == Guid.Parse("00000000-0000-0000-0000-0000000000aa"))
             {
                 accessPackages.Add(AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("ansettelsesforhold")));
             }

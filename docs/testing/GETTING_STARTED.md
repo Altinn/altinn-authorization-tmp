@@ -50,8 +50,10 @@ wildcards:
 
 ```
 dotnet build src/apps/Altinn.AccessManagement/test/Altinn.AccessManagement.Api.Tests
-dotnet src/apps/Altinn.AccessManagement/test/Altinn.AccessManagement.Api.Tests/bin/Debug/net10.0/Altinn.AccessManagement.Api.Tests.dll -filter "/*/*/*/MyTestMethod"
+dotnet src/apps/Altinn.AccessManagement/test/Altinn.AccessManagement.Api.Tests/bin/Debug/<tfm>/Altinn.AccessManagement.Api.Tests.dll -filter "/*/*/*/MyTestMethod"
 ```
+
+Replace `<tfm>` with the project's target framework (currently `net10.0`).
 
 Pass `-filter` more than once to select several tests (the filters OR together).
 Nested test classes appear as `Outer+Inner` in the class segment, so filtering
