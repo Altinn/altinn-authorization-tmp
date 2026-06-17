@@ -2,10 +2,12 @@
 
 [Bruno](https://www.usebruno.com/) collections live alongside the code and exercise the
 **running** APIs against the shared Altinn test environments (AT / TT02 / YT01). They are
-**not** part of the automated CI suite — they are run manually (the Bruno app or the `bru`
-CLI) for exploratory/manual verification — but they double as the **behavioral spec** for
-the C# integration tests: endpoint inventory, request/response shapes, field-level
-assertions, and known-good seed-data IDs.
+**not** part of GitHub CI (not wired into `dotnet test` or GitHub Actions). Instead they
+run automatically in **Azure DevOps, as a post-deployment backend smoke test** against the
+deployed environment, and can also be run manually (the Bruno app or the `bru` CLI) for
+exploratory verification. They also double as the **behavioral spec** for the C#
+integration tests: endpoint inventory, request/response shapes, field-level assertions,
+and known-good seed-data IDs.
 
 ## Where they live
 
@@ -53,6 +55,7 @@ codes). That is the contract worth mirroring in a C# integration test.
 
 ## Running
 
-Manual only. Open the collection in the Bruno app (or `bru run` via the CLI), pick an
-environment, and supply secrets via `.env` (see `.env.sample`). These collections are not
-wired into `dotnet test` or CI.
+- **Automatically:** in Azure DevOps, as a post-deployment backend smoke test against the
+  deployed environment. They are not part of GitHub CI (`dotnet test` / GitHub Actions).
+- **Manually:** open the collection in the Bruno app, or `bru run` via the CLI; pick an
+  environment and supply secrets via `.env` (see `.env.sample`).
