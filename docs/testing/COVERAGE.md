@@ -22,18 +22,18 @@ Two sections:
 
 ```json
 {
-  "Altinn.Authorization": 60,
+  "Altinn.Authorization": 68,
   "Altinn.Authorization.ABAC": 60,
   "Altinn.Authorization.PEP": 75,
-  "Altinn.AccessMgmt.PersistenceEF": 90,
+  "Altinn.AccessMgmt.PersistenceEF": 94,
   "Altinn.AccessManagement.Api.Maskinporten": 75,
-  "Altinn.AccessManagement.Api.Enterprise": 60,
+  "Altinn.AccessManagement.Api.Enterprise": 67,
   "Altinn.AccessManagement.Api.Metadata": 75,
-  "Altinn.AccessManagement.Api.Enduser": 70,
+  "Altinn.AccessManagement.Api.Enduser": 73,
   "Altinn.AccessManagement.Api.Internal": 70,
   "Altinn.AccessManagement.Api.ServiceOwner": 65,
   "Altinn.AccessManagement.Integration": 68,
-  "Altinn.AccessManagement.Core": 60
+  "Altinn.AccessManagement.Core": 64
 }
 ```
 
@@ -44,7 +44,7 @@ Dropping below the floor for any of these fails the pipeline.
 ```json
 {
   "Altinn.AccessManagement": 60,
-  "Altinn.AccessMgmt.Core": 45,
+  "Altinn.AccessMgmt.Core": 50,
   "Altinn.Authorization.Integration.Platform": 50
 }
 ```
