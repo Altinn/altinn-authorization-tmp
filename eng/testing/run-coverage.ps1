@@ -61,9 +61,14 @@ $collectResults = $Projects | ForEach-Object -Parallel {
     $projName = [System.IO.Path]::GetFileNameWithoutExtension($proj)
     $projDir = [System.IO.Path]::GetDirectoryName($proj)
 
-    $binDir = Join-Path $projDir "bin" $using:configurationLocal "net9.0"
-    $dllPath = Join-Path $binDir "$projName.dll"
-    $runtimeConfig = Join-Path $binDir "$projName.runtimeconfig.json"
+    # Locate the built assembly under whatever target framework the project targets.
+    # Don't hardcode the TFM — it drifts when the repo bumps the net version (this
+    # was pinned to net9.0 and silently fell back to the slow vstest path on net10.0).
+    $configDir = Join-Path $projDir "bin" $using:configurationLocal
+    $dllPath = Get-ChildItem -Path $configDir -Filter "$projName.dll" -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.Directory.Name -match '^net\d' } |
+        Select-Object -First 1 -ExpandProperty FullName
+    $runtimeConfig = if ($dllPath) { [System.IO.Path]::ChangeExtension($dllPath, '.runtimeconfig.json') } else { '' }
     $outFile = Join-Path $using:resultsDirLocal "$projName.cobertura.xml"
     $logFile = Join-Path $using:resultsDirLocal "$projName.coverage.log"
 
@@ -71,7 +76,7 @@ $collectResults = $Projects | ForEach-Object -Parallel {
     # Microsoft Testing Platform. A runtimeconfig.json is always emitted for
     # Exe output; running the managed dll via `dotnet <dll>` works
     # cross-platform (Windows, Linux, macOS) under dotnet-coverage.
-    $isV3Exe = (Test-Path $dllPath) -and (Test-Path $runtimeConfig)
+    $isV3Exe = $dllPath -and (Test-Path $dllPath) -and (Test-Path $runtimeConfig)
 
     $start = Get-Date
     if ($isV3Exe) {
