@@ -429,6 +429,68 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     }
 
     /// <summary>
+    /// Paula is ManagingDirector of both the Karlstad main unit and its subunit. The authorized-parties
+    /// response returns the main unit at the top level with the subunit nested under Subunits, never as a
+    /// separate top-level party (no duplicate party UUIDs). The subunit exposes at least the main unit's
+    /// roles and access packages. Guards the hovedenhet/underenhet response contract (#3498 area 5).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsPaulaForKarlstad_ReturnsSubunitNestedUnderMainUnitWithoutDuplicates()
+    {
+        HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&includeAccessPackages=true&includeInstances=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        // The main unit is a top-level party; the subunit is nested, never a separate top-level entry.
+        AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);
+        Assert.NotNull(mainUnit);
+        Assert.DoesNotContain(result.Items, p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+
+        AuthorizedPartyDto subUnit = mainUnit.Subunits.FirstOrDefault(p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+        Assert.NotNull(subUnit);
+
+        // The subunit carries at least the main unit's roles and access packages (hovedenhet/underenhet contract).
+        Assert.NotEmpty(mainUnit.AuthorizedRoles);
+        Assert.NotEmpty(mainUnit.AuthorizedAccessPackages);
+        Assert.All(mainUnit.AuthorizedRoles, role => Assert.Contains(role, subUnit.AuthorizedRoles));
+        Assert.All(mainUnit.AuthorizedAccessPackages, pkg => Assert.Contains(pkg, subUnit.AuthorizedAccessPackages));
+
+        // No party UUID appears more than once across the main units and their nested subunits.
+        List<Guid> allPartyUuids = result.Items
+            .SelectMany(p => p.Subunits.Select(s => s.PartyUuid).Append(p.PartyUuid))
+            .ToList();
+        Assert.Equal(allPartyUuids.Count, allPartyUuids.Distinct().Count());
+    }
+
+    /// <summary>
+    /// A partyFilter on the subunit returns the main unit at the top level with the subunit nested under
+    /// it (the subunit is reachable only through the main unit's hierarchy, not as a top-level party).
+    /// Guards the subunit partyFilter contract (#3498 area 5).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_WithSubunitPartyFilter_ReturnsMainUnitWithSubunitNested()
+    {
+        HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&partyFilter={TestEntities.SubunitKarlstad.Id}", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);
+        Assert.NotNull(mainUnit);
+        Assert.Contains(mainUnit.Subunits, s => s.PartyUuid == TestEntities.SubunitKarlstad.Id);
+        Assert.DoesNotContain(result.Items, p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+    }
+
+    /// <summary>
     /// Asserts that the authorized party has the expected DAGL (ManagingDirector) role and its subroles.
     /// Codes come from RoleConstants via the ConnectionQuery role map expansion.
     /// </summary>
