@@ -294,7 +294,7 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
 
         // Guaranteed non-null here: TryBuild above returned false, so the null/auth check passed.
         return request!.Type switch
@@ -349,7 +349,7 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
@@ -432,7 +432,7 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
