@@ -28,6 +28,11 @@ Two sections:
   "Altinn.AccessMgmt.PersistenceEF": 90,
   "Altinn.AccessManagement.Api.Maskinporten": 75,
   "Altinn.AccessManagement.Api.Enterprise": 60,
+  "Altinn.AccessManagement.Api.Metadata": 75,
+  "Altinn.AccessManagement.Api.Enduser": 70,
+  "Altinn.AccessManagement.Api.Internal": 70,
+  "Altinn.AccessManagement.Api.ServiceOwner": 65,
+  "Altinn.AccessManagement.Integration": 68,
   "Altinn.AccessManagement.Core": 60
 }
 ```
@@ -38,12 +43,16 @@ Dropping below the floor for any of these fails the pipeline.
 
 ```json
 {
-  "Altinn.AccessManagement": 60
+  "Altinn.AccessManagement": 60,
+  "Altinn.AccessMgmt.Core": 45,
+  "Altinn.Authorization.Integration.Platform": 50
 }
 ```
 
 Below-threshold assemblies here emit a warning in the CI log. Use this section
 as a one-way ratchet for assemblies approaching promotion to `assemblies`.
+`Altinn.AccessMgmt.Core` and `Altinn.Authorization.Integration.Platform` are
+ratcheting toward enforcement as their pure-logic coverage gaps close (#2976).
 
 ### `globalThreshold`
 
