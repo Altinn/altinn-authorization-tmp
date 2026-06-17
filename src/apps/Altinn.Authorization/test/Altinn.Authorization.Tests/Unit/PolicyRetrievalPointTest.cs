@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
-
-using Altinn.Platform.Authorization.Configuration;
 using Altinn.Authorization.Tests.MockServices;
 using Altinn.Authorization.Tests.Util;
-
+using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Services.Implementation;
 using Altinn.Platform.Authorization.Services.Interface;
 using Azure;

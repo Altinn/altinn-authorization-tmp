@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-
 using Altinn.Authorization.ABAC.Xacml;
-using Altinn.Platform.Authorization.Configuration;
 using Altinn.Authorization.Tests.MockServices;
 using Altinn.Authorization.Tests.Util;
+using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Services.Implementation;
 using Altinn.Platform.Events.Tests.Mocks;
 using Microsoft.AspNetCore.Http;

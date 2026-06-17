@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
-
-using Altinn.Platform.Authorization.Configuration;
-using Altinn.Platform.Authorization.Constants;
 using Altinn.Authorization.Tests.Data;
 using Altinn.Authorization.Tests.MockServices;
 using Altinn.Authorization.Tests.Util;
+using Altinn.Platform.Authorization.Configuration;
+using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Models;
 using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Implementation;
 using Altinn.Platform.Authorization.Services.Interface;
-
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

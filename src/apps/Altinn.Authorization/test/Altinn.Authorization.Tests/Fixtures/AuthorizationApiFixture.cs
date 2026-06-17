@@ -1,6 +1,6 @@
-﻿using Altinn.Common.AccessToken.Services;
+﻿using Altinn.Authorization.Tests.MockServices;
+using Altinn.Common.AccessToken.Services;
 using Altinn.Common.Authentication.Configuration;
-using Altinn.Authorization.Tests.MockServices;
 using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Interface;
 using Altinn.Platform.Authorization.Services.Interfaces;
