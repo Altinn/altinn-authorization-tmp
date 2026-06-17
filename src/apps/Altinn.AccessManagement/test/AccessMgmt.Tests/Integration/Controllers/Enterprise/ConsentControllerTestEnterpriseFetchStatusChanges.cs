@@ -391,7 +391,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
                 }
                 else
                 {
-                    Assert.True(false, "Results are not ordered by ChangedDate descending.");
+                    Assert.Fail("Results are not ordered by ChangedDate descending.");
                 }
 
                 // NOTE: Tie-breaker by ConsentEventId cannot be tested as ConsentEventId is not exposed in the DTO.
@@ -634,7 +634,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
-            Assert.Equal(1, result.Items.Count());
+            Assert.Single(result.Items);
             Assert.Null(result.Links.Next);
             Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
             Assert.Equal("accepted", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
@@ -656,7 +656,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
-            Assert.Equal(1, result.Items.Count());
+            Assert.Single(result.Items);
             Assert.Null(result.Links.Next);
             Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
             Assert.Equal("rejected", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
@@ -678,7 +678,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             var result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
-            Assert.Equal(1, result.Items.Count());
+            Assert.Single(result.Items);
             Assert.Null(result.Links.Next);
             Assert.Equal(targetId, result.Items.Single().ConsentRequestId);
             Assert.Equal("revoked", result.Items.Single().EventType, StringComparer.OrdinalIgnoreCase);
