@@ -32,6 +32,8 @@
                 <ModulePath>.*[Tt]ests\.dll$</ModulePath>
                 <ModulePath>.*TestUtils\.dll$</ModulePath>
                 <ModulePath>.*Mocks\.dll$</ModulePath>
+                <ModulePath>.*\.AppHost\.dll$</ModulePath>
+                <ModulePath>.*Altinn\.Authorization\.Cli\.dll$</ModulePath>
                 <ModulePath>.*Altinn\.AccessMgmt\.FFB\.dll$</ModulePath>
                 <ModulePath>.*Altinn\.AccessMgmt\.WebComponents\.dll$</ModulePath>
               </Exclude>
