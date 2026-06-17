@@ -13,8 +13,8 @@ namespace Altinn.Authorization.Testing;
 /// <remarks>
 /// <para>
 /// It is on by default and cheap to leave on: each measurement is just a few counter
-/// updates around a <see cref="Stopwatch"/> reading. When the test process exits, it
-/// writes one summary line to stdout (which shows up in the CI test-lane log):
+/// updates around a <see cref="Stopwatch"/> reading. When the test process exits it
+/// writes one summary line, of the form:
 /// </para>
 /// <code>
 /// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900
@@ -23,6 +23,12 @@ namespace Altinn.Authorization.Testing;
 /// For each bucket, <c>_ms</c> is the total milliseconds spent and <c>_n</c> is how
 /// many times it ran (so <c>host_build_ms=12345 host_build_n=85</c> means 85 host
 /// builds took 12.3 s in total). The example shows the host build dominating.
+/// </para>
+/// <para>
+/// The line goes to stdout, but MTP / dotnet-coverage often swallow the test host's
+/// process-exit output, so set <c>FIXTURE_TIMING_FILE</c> to also append it to a file.
+/// CI sets that variable and prints the file into the test job's log; locally, point
+/// it at a path and read the file after the run.
 /// </para>
 /// <para>
 /// To turn it off, set the environment variable <c>FIXTURE_TIMING=off</c>; every
