@@ -123,13 +123,18 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         {
             Stream dataStream = File.OpenRead("Data/Json/InsertAccessManagementResource/input1.json");
             StreamContent content = new StreamContent(dataStream);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, $"accessmanagement/api/v1/internal/resources")
             {
                 Content = content
             };
 
-            httpRequestMessage.Headers.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("UnitTest", "resourceregistry"));
+            // A malformed platform access token must be rejected by the access-token
+            // handler. (Previously this relied on the "UnitTest" issuer having no
+            // registered signing key; the test certificates are now a single shared
+            // key, so the token has to be invalid on its own merits.)
+            httpRequestMessage.Headers.Add("PlatformAccessToken", "this.is.not.a.valid.token");
 
             // Act
             HttpResponseMessage response = await _client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
