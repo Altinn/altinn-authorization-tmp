@@ -212,26 +212,29 @@ jobs:
       #                         single-type vertical (e.g. PEP has no
       #                         integration tests). Verified: an empty filtered
       #                         run exits 8, which this flag maps to success.
-      # Each lane writes its own .coverage file; the Convert steps below merge
-      # TestResults/*.coverage into one report, so the threshold gate and Sonar
-      # still see whole-suite coverage. `dotnet-coverage collect -- dotnet test`
-      # propagates the test exit code, so a real failure (exit 2) fails the step.
-      - name: Test - unit lane (with coverage)
+      # Coverage is collected only on the nightly `analyze` run. PR runs execute
+      # the tests directly (no dotnet-coverage instrumentation overhead) and still
+      # emit .trx + FixtureTiming. On the analyze run each lane writes its own
+      # .coverage file; the Convert steps below merge TestResults/*.coverage so
+      # Sonar and the coverage report see whole-suite coverage. Those Convert /
+      # report steps self-skip on PR runs (no .coverage file is produced).
+      # `dotnet test` (wrapped or not) propagates the test exit code, so a real
+      # failure (exit 2) fails the step.
+      - name: Test - unit lane (coverage on analyze run)
         id: test_unit
         shell: bash
         working-directory: ${{ inputs.path }}
         run: |
-          dotnet-coverage collect --nologo \
-            --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" \
-            --output TestResults/coverage.unit.coverage --output-format coverage \
-            -- dotnet test -c Release --no-build -bl:binlog/test-unit.binlog \
-              -- --results-directory TestResults/unit --report-xunit-trx \
-                 --filter-trait "Category=Unit" --ignore-exit-code 8
+          test=(dotnet test -c Release --no-build -bl:binlog/test-unit.binlog -- --results-directory TestResults/unit --report-xunit-trx --filter-trait "Category=Unit" --ignore-exit-code 8)
+          if [[ "${{ inputs.analyze }}" == "true" ]]; then
+            dotnet-coverage collect --nologo --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" --output TestResults/coverage.unit.coverage --output-format coverage -- "${test[@]}"
+          else
+            "${test[@]}"
+          fi
 
-      - name: Test - integration lane (with coverage)
-        # Runs even when the unit lane failed (but not when the build failed),
-        # so coverage spans the whole suite and the threshold gate is never
-        # computed on unit-only data.
+      - name: Test - integration lane (coverage on analyze run)
+        # Runs even when the unit lane failed (but not when the build failed), so
+        # on the analyze run coverage spans the whole suite, not unit-only data.
         id: test_integration
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
@@ -242,12 +245,12 @@ jobs:
           # coverage swallow the test host's process-exit stdout.
           FIXTURE_TIMING_FILE: ${{ github.workspace }}/fixture-timing.txt
         run: |
-          dotnet-coverage collect --nologo \
-            --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" \
-            --output TestResults/coverage.integration.coverage --output-format coverage \
-            -- dotnet test -c Release --no-build -bl:binlog/test-integration.binlog \
-              -- --results-directory TestResults/integration --report-xunit-trx \
-                 --filter-trait "Category=Integration" --ignore-exit-code 8
+          test=(dotnet test -c Release --no-build -bl:binlog/test-integration.binlog -- --results-directory TestResults/integration --report-xunit-trx --filter-trait "Category=Integration" --ignore-exit-code 8)
+          if [[ "${{ inputs.analyze }}" == "true" ]]; then
+            dotnet-coverage collect --nologo --settings "$GITHUB_WORKSPACE/eng/testing/coverage.settings" --output TestResults/coverage.integration.coverage --output-format coverage -- "${test[@]}"
+          else
+            "${test[@]}"
+          fi
 
       - name: Setup-timing breakdown (FixtureTiming)
         # Surface FixtureTiming's per-assembly setup-time breakdown (host build vs DB

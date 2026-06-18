@@ -83,11 +83,11 @@ Outputs land in `TestResults/`:
 ## How CI runs it (single pass)
 
 CI does **not** run `run-coverage.ps1`. It runs the suite once under
-`dotnet-coverage collect --settings eng/testing/coverage.settings`, then invokes
-`check-coverage-thresholds.ps1` on the resulting Cobertura file (report-only:
-below-target assemblies are surfaced as warnings, they do not fail the build). Running the tests a
-second time just to collect coverage would double pipeline time, so coverage is parsed
-from the same pass that runs the tests. The exact steps live in
+`dotnet-coverage collect --settings eng/testing/coverage.settings` **on the nightly
+analyze run only**, then invokes `check-coverage-thresholds.ps1` on the resulting
+Cobertura file (report-only: below-target assemblies are surfaced as warnings, they do
+not fail the build). PR runs execute the tests directly, without coverage instrumentation
+— coverage is informational, so it does not need to run on every PR. The exact steps live in
 [`.github/workflows/tpl-vertical-ci.yml`](../../.github/workflows/tpl-vertical-ci.yml).
 
 ## What is excluded from the denominator
