@@ -18,7 +18,7 @@
   },
   "warnings": {
     "Altinn.AccessManagement": 60,
-    "Altinn.AccessMgmt.Core": 50,
+    "Altinn.AccessMgmt.Core": 53,
     "Altinn.Authorization.Integration.Platform": 50
   }
 }
