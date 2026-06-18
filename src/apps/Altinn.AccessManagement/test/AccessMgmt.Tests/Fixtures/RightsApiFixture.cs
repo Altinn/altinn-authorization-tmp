@@ -33,9 +33,9 @@ public class RightsApiFixture : AccessMgmtApiFixture
         ConfigureServices(services =>
         {
             // These tests sign tokens via PrincipalUtil.GetAccessToken, which needs the
-            // issuer-cert-backed SigningKeyResolverMock rather than the default.
+            // issuer-cert-backed PublicSigningKeyProviderMock rather than the default.
             services.RemoveAll<IPublicSigningKeyProvider>();
-            services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+            services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
 
             services.RemoveAll<IPDP>();
             services.AddSingleton<IPDP, PdpPermitMock>();

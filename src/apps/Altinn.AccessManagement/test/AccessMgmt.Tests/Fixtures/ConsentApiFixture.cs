@@ -39,7 +39,7 @@ public class ConsentApiFixture : LegacyApiFixture
             // PlatformAccessToken / maskinporten tokens are signed by {issuer}-org.pem;
             // the default PublicSigningKeyProviderMock only accepts the static test key.
             services.RemoveAll<IPublicSigningKeyProvider>();
-            services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+            services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
 
             // Legacy PdpPermitMock flavour used by the consent tests.
             services.RemoveAll<IPDP>();
