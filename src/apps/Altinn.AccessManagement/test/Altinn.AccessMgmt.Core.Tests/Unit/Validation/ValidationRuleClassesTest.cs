@@ -281,6 +281,67 @@ public class ValidationRuleClassesTest
         Passes(PackageValidation.PackageIsAssignableTo(urns, toType)).Should().BeTrue();
     }
 
+    [Fact]
+    public void PackageIsAssignableTo_NullAssignedToType_Throws()
+    {
+        var urns = new[] { PackageConstants.MainAdministrator.Entity.Urn };
+        Assert.Throws<ArgumentNullException>(() => PackageValidation.PackageIsAssignableTo(urns, null)());
+    }
+
+    // ── PackageValidation.PackageIsAssignableFrom (internal) ──────────────────
+    [Fact]
+    public void PackageIsAssignableFrom_MatchingEntityType_ReturnsNull()
+    {
+        // Agriculture is an organization package; from an organization it is assignable.
+        var fromType = new EntityType { Id = EntityTypeConstants.Organization, Name = "Organisation" };
+        var urns = new[] { PackageConstants.Agriculture.Entity.Urn };
+        Passes(PackageValidation.PackageIsAssignableFrom(urns, fromType)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageIsAssignableFrom_NonMatchingEntityType_ReturnsError()
+    {
+        // Agriculture belongs to the organization entity type, so it is not assignable from a person.
+        var fromType = new EntityType { Id = EntityTypeConstants.Person, Name = "Person" };
+        var urns = new[] { PackageConstants.Agriculture.Entity.Urn };
+        Fails(PackageValidation.PackageIsAssignableFrom(urns, fromType)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageIsAssignableFrom_UnknownPackage_Ignored_ReturnsNull()
+    {
+        // A urn that does not resolve to a known package is skipped, not reported.
+        var fromType = new EntityType { Id = EntityTypeConstants.Person, Name = "Person" };
+        var urns = new[] { "urn:altinn:accesspackage:does-not-exist" };
+        Passes(PackageValidation.PackageIsAssignableFrom(urns, fromType)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageIsAssignableFrom_NullAssignedFromType_Throws()
+    {
+        var urns = new[] { PackageConstants.Agriculture.Entity.Urn };
+        Assert.Throws<ArgumentNullException>(() => PackageValidation.PackageIsAssignableFrom(urns, null)());
+    }
+
+    // ── PackageValidation.PackageIsAssignable (internal) ──────────────────────
+    [Fact]
+    public void PackageIsAssignable_AssignablePackage_ReturnsNull()
+    {
+        Passes(PackageValidation.PackageIsAssignable(PackageConstants.Agriculture.Entity.Urn)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageIsAssignable_NonAssignablePackage_ReturnsError()
+    {
+        Fails(PackageValidation.PackageIsAssignable(PackageConstants.AccountantWithSigningRights.Entity.Urn)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void PackageIsAssignable_UnknownPackage_ReturnsError()
+    {
+        Fails(PackageValidation.PackageIsAssignable("urn:altinn:accesspackage:does-not-exist")).Should().BeTrue();
+    }
+
     // ── PackageValidation.ResourceIsAssignable (internal) ─────────────────────
     [Fact]
     public void ResourceIsAssignable_MaskinportenSchema_ReturnsError()
