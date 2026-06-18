@@ -10,11 +10,13 @@ centralising mocks in `TestUtils`.
 
 ## 1. Why
 
-The suite's cost and flakiness are dominated by one number — **how many web-host
-builds it does** (~71, at ~1.36 s each; DB clones are cheap at 230 ms, template is
-a one-time ~9 s). The #3379 measurement proved this, and the incremental fixture
-sharing there confirmed that ad-hoc cohort sharing plateaus, because the structure
-fights it. This document is the structure those measurements point to.
+For `AccessMgmt.Tests`, the suite's cost and flakiness are dominated by one number — **how
+many web-host builds it does** (~71, at ~1.36 s each; DB clones are cheap at 230 ms, template
+is a one-time ~9 s). The #3379 measurement proved this, and the incremental fixture sharing
+there confirmed that ad-hoc cohort sharing plateaus, because the structure fights it. This
+document is the structure those measurements point to. (Note: that measurement was
+`AccessMgmt.Tests`-only. The per-assembly CI `FixtureTiming` shows the other assemblies are
+instead `db_provision`-bound — a separate, co-equal lever for #3379; see `TEST_SETUP_TIMING.md`.)
 
 ## 2. Current state (measured)
 

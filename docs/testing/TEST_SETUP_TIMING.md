@@ -31,6 +31,29 @@ against Podman (`maxParallelThreads = 4`):
   repo-wide figure cited in #3379 is 111 `IClassFixture` / 85 `ApiFixture`,
   every one a separate cold host build.
 
+## Cross-assembly (CI) — the DB-provision blind spot
+
+The measurement above covers `AccessMgmt.Tests` only, where host build dominates and
+the DB layer is cheap. The per-assembly `FixtureTiming` now printed in CI shows that
+conclusion does **not** generalise: the other assemblies are `db_provision`-bound.
+
+| Assembly | host_build (n) | db_provision (n) | per provision |
+|---|---:|---:|---:|
+| AccessMgmt.Tests | 84.7 s (65) | 66.9 s (64) | **~1.0 s** |
+| Enduser.Api.Tests | 148.3 s (46) | 125.7 s (46) | ~2.7 s |
+| ServiceOwner.Api.Tests | 44.7 s (9) | 119.1 s (9) | **~13 s** |
+| AccessMgmt.Core.Tests | 22.6 s (4) | 121.9 s (4) | **~30 s** |
+| Internal.Api.Tests | 3.3 s (1) | 32.3 s (1) | **~32 s** |
+
+Across the vertical, `db_provision` (~466 s) exceeds host build (~304 s). The per-provision
+cost ranges from ~1 s (`AccessMgmt.Tests`, which clones from a template) to ~13–32 s in
+`ServiceOwner`, `AccessMgmt.Core.Tests` and `Internal` — those assemblies pay a full
+migrate-and-seed per fixture instead of cloning. So the biggest unaddressed setup cost for
+#3379 is not more host-build sharing or container concurrency; it is getting the expensive
+provisions onto the same template-clone fast path `AccessMgmt.Tests` already uses. The
+parallelism decision below was also measured on `AccessMgmt.Tests` only and should be
+re-checked for the provision-bound assemblies, where the limiter may differ.
+
 ## Prototype: fixture sharing (validated)
 
 Sharing one host across a read-only, additive-seed cohort via
@@ -150,4 +173,6 @@ dotnet test src/apps/Altinn.AccessManagement/test/AccessMgmt.Tests/AccessMgmt.Te
 ```
 
 Numbers are from local Podman; absolute values differ on CI hardware, but the
-**ratio** (host build ≫ clone) is the hardware-independent finding.
+**ratio** (host build ≫ clone) is the hardware-independent finding for
+`AccessMgmt.Tests`. It does not hold vertical-wide — see the cross-assembly
+section above, where the other assemblies are `db_provision`-bound.
