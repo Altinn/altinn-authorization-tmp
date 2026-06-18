@@ -23,15 +23,15 @@ truth for the current per-assembly numbers (don't duplicate them here). It has t
 
 - **`assemblies`**: the primary per-assembly targets. CI reports any below their floor as a
   warning; the script fails on these only when run as a gate (without `-WarnOnly`, e.g. locally).
-- **`warnings`**: a softer ratchet tier for assemblies approaching promotion to `assemblies`;
+- **`warnings`**: a softer tier for assemblies approaching promotion to `assemblies`;
   always non-fatal.
 
 In CI neither tier fails the build (the check runs with `-WarnOnly`); both are reported.
 
 ### `globalThreshold`
 
-Currently `0`, so only the explicitly listed assemblies are gated. We
-deliberately do **not** enforce coverage on every assembly in the repo;
+Currently `0`, so only the explicitly listed assemblies are tracked. We
+deliberately do **not** set a coverage target on every assembly in the repo;
 many are thin adapters, generated code, or host wiring where line coverage
 isn't a meaningful target.
 
@@ -130,8 +130,8 @@ whole file.
 
 - **Raising** an existing threshold: open a PR that bumps the number in
   `coverage-thresholds.json`. No other change needed.
-- **Adding** a new enforced assembly: add it to `assemblies` with a
-  realistic floor. If current coverage is close but not quite there, add
+- **Adding** a new tracked assembly: add it to `assemblies` with a
+  realistic target. If current coverage is close but not quite there, add
   it to `warnings` first and promote later.
 - **Lowering** a threshold: discouraged. Include a short rationale in the PR
   description (e.g. "deleted an entire well-covered module"). Prefer adding
