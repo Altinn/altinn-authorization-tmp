@@ -162,12 +162,17 @@ namespace Altinn.Authorization.PEP.Tests
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext("23453546", null, null));
             XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
-
-            // Verify
-            _pdpMock.Setup(a => a.GetDecisionForRequest(It.Is<XacmlJsonRequestRoot>(xr => xr.Request.XForwardedForHeader == null), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
+            _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
 
             // Act
             await _rah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            Assert.Null(request.Request.XForwardedForHeader);
         }
 
         /// <summary>
@@ -182,12 +187,23 @@ namespace Altinn.Authorization.PEP.Tests
             string ipaddress = "18.203.138.153";
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext("organization", "991825827", null, ipaddress));
             XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
-
-            // verify
             _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
 
             // Act
             await _rah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+
+            // Known gap: even with an X-Forwarded-For header present, the PEP does not
+            // copy it onto the decision request. DecisionHelper.CreateDecisionRequest
+            // reads the org/person headers but never sets XForwardedForHeader, so the
+            // PDP never sees the client IP. This pins current behaviour; switch to
+            // Assert.Equal(ipaddress, ...) once IP forwarding is implemented.
+            Assert.Null(request.Request.XForwardedForHeader);
         }
 
         private ClaimsPrincipal CreateUser()
