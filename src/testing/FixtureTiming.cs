@@ -17,7 +17,7 @@ namespace Altinn.Authorization.Testing;
 /// writes one summary line, of the form:
 /// </para>
 /// <code>
-/// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900 server_start_ms=8000 migrate_ms=600 seed_ms=300
+/// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900 server_start_ms=8000 migrate_ms=600 seed_ms=300 provision_wait_ms=4900
 /// </code>
 /// <para>
 /// For each bucket, <c>_ms</c> is the total milliseconds spent and <c>_n</c> is how
@@ -52,6 +52,7 @@ internal static class FixtureTiming
     private static long _serverStartTicks;
     private static long _migrateTicks;
     private static long _seedTicks;
+    private static long _provisionWaitTicks;
     private static int _exitHooked;
 
     /// <summary>Setup phase being measured.</summary>
@@ -77,6 +78,9 @@ internal static class FixtureTiming
 
         /// <summary>One-time seed of the template database (a subset of TemplateBuild).</summary>
         Seed,
+
+        /// <summary>Time blocked on the engine's provisioning lock. Inside DbProvision: when fixtures init concurrently, all but the first wait here while the one-time template build runs, so this is the share of summed DbProvision that is contention, not work.</summary>
+        ProvisionWait,
     }
 
     /// <summary>Times an async <paramref name="action"/> and attributes it to <paramref name="phase"/>.</summary>
@@ -181,6 +185,9 @@ internal static class FixtureTiming
             case Phase.Seed:
                 Interlocked.Add(ref _seedTicks, elapsed.Ticks);
                 break;
+            case Phase.ProvisionWait:
+                Interlocked.Add(ref _provisionWaitTicks, elapsed.Ticks);
+                break;
         }
     }
 
@@ -208,7 +215,8 @@ internal static class FixtureTiming
             $"template_build_ms={Ms(Interlocked.Read(ref _templateBuildTicks))} " +
             $"server_start_ms={Ms(Interlocked.Read(ref _serverStartTicks))} " +
             $"migrate_ms={Ms(Interlocked.Read(ref _migrateTicks))} " +
-            $"seed_ms={Ms(Interlocked.Read(ref _seedTicks))}";
+            $"seed_ms={Ms(Interlocked.Read(ref _seedTicks))} " +
+            $"provision_wait_ms={Ms(Interlocked.Read(ref _provisionWaitTicks))}";
 
         Console.WriteLine(line);
 

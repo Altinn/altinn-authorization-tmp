@@ -45,43 +45,51 @@ conclusion does **not** generalise: the other assemblies are `db_provision`-boun
 | AccessMgmt.Core.Tests | 22.6 s (4) | 121.9 s (4) | **~30 s** |
 | Internal.Api.Tests | 3.3 s (1) | 32.3 s (1) | **~32 s** |
 
-Across the vertical, `db_provision` (~466 s) exceeds host build (~304 s). The per-provision
-cost ranges from ~1 s (`AccessMgmt.Tests`, which clones from a template) to ~13–32 s in
-`ServiceOwner`, `AccessMgmt.Core.Tests` and `Internal` — those assemblies pay a full
-migrate-and-seed per fixture instead of cloning. So the biggest unaddressed setup cost for
-#3379 is not more host-build sharing or container concurrency; it is getting the expensive
-provisions onto the same template-clone fast path `AccessMgmt.Tests` already uses. The
-parallelism decision below was also measured on `AccessMgmt.Tests` only and should be
-re-checked for the provision-bound assemblies, where the limiter may differ.
+The summed `db_provision` exceeds host build across the vertical, and the apparent
+per-provision cost ranges from ~1 s to ~30 s. That "~30 s per provision" reading turned out
+to be an artifact: `db_provision` is a sum across fixtures that init concurrently, and it
+includes the time each fixture spends **blocked on the engine's provisioning lock** while
+the first fixture builds the one-time template. The sub-phase breakdown below isolates that
+wait (`provision_wait`) from real work and shows the provision-bound figure is mostly
+contention, not per-fixture migrate-and-seed. So the #3379 lever for these assemblies is to
+stop serialising every fixture behind a single cold template build at startup (warm the
+template once, up front, or shorten it), not to move them onto a clone path they already
+use. The parallelism decision below was measured on `AccessMgmt.Tests` only and should be
+re-checked for the provision-bound assemblies, where the limiter is this startup gate.
 
 ### What `db_provision` is made of (sub-phase breakdown)
 
 `FixtureTiming` now splits the previously-opaque provision into its constituents, so the
 `db_provision` total above can be attributed rather than guessed at. The
-`===FIXTURE_TIMING===` line carries three extra buckets:
+`===FIXTURE_TIMING===` line carries four extra buckets:
 
 - `server_start_ms` — one-time container acquire/start (image readiness), inside
   `db_provision` but outside the template build.
 - `migrate_ms` / `seed_ms` — the EF migrate and the data seed, the two halves of the
   one-time `template_build`.
+- `provision_wait_ms` — time blocked on the engine's provisioning lock. When fixtures
+  init concurrently, all but the first wait here while the one-time template build runs.
 
-A single-fixture probe of `AccessMgmt.Core.Tests` (one `ApiFixture`, local Podman) shows
-where the first provision's time goes:
+The `AccessMgmt.Core.Tests` integration lane (4 `ApiFixture`s, `maxParallelThreads = 4`,
+local Podman) decomposes its `db_provision` exactly:
 
-| Bucket | Time | Share of `db_provision` (19.2 s) |
+| Bucket | Time | Share of `db_provision` (68.0 s) |
 |---|---:|---|
-| `server_start` (container) | 5.9 s | ~31% |
-| `template_build` | 12.6 s | ~65% |
-| — of which `migrate` | 10.3 s | dominant |
-| — of which `seed` | 0.4 s | negligible |
-| `clone` | 0.2 s | ~1% |
+| `provision_wait` (blocked on the lock) | 49.9 s | **~73%** |
+| `template_build` (one-time) | 12.5 s | ~18% |
+| — of which `migrate` | 11.2 s | dominant |
+| — of which `seed` | 0.3 s | negligible |
+| `server_start` (one-time) | 4.1 s | ~6% |
+| `clone` (4×) | 1.5 s | ~2% |
 
-So the expensive provision is **EF migrate + container start**, not seeding. This sharpens
-the #3379 direction for the provision-bound assemblies: the lever is sharing the
-migrated template (build it once, clone from it) rather than reducing seed work, and
-container start is a fixed ~6 s floor per assembly that only a shared/long-lived container
-would remove. The full-suite per-assembly decomposition now lands in the CI
-`Setup-timing breakdown` log automatically.
+Two findings. First, `migrate` runs **once** (not per fixture) and clones are cheap
+(~0.4 s each): the template **is** shared, so these assemblies do not, in fact, migrate-and-seed
+per fixture. Second, ~73% of the summed `db_provision` is `provision_wait` — three fixtures
+sitting behind the lock while the first does the ~16 s cold build (`migrate` + `server_start`).
+The real provisioning work is ~18 s, which is why the lane's wall-clock is ~32 s, not 68 s.
+So the actionable cost is the **single cold template build that serialises startup**, and
+within it `migrate` dominates (`seed` is negligible). The full-suite per-assembly
+decomposition now lands in the CI `Setup-timing breakdown` log automatically.
 
 ## Prototype: fixture sharing (validated)
 

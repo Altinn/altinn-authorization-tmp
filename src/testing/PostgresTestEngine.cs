@@ -63,7 +63,7 @@ public sealed class PostgresTestEngine
     /// </summary>
     public async Task<PostgresTestDatabase?> CreateDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        await _gate.WaitAsync(cancellationToken);
+        await FixtureTiming.TimeAsync(FixtureTiming.Phase.ProvisionWait, () => _gate.WaitAsync(cancellationToken));
         try
         {
             if (SkipReason is not null)
