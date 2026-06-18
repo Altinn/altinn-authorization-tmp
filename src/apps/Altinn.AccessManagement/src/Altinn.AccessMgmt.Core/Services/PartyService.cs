@@ -54,8 +54,7 @@ public class PartyService(AppDbContext db) : IPartyService
                 RefId = party.EntityType.Equals(EntityTypeConstants.SystemUser.Entity.Name , StringComparison.InvariantCultureIgnoreCase) ? party.PartyUuid.ToString() : null,
                 PartyId = party.PartyId,
                 UserId = party.UserId,
-                EmailIdentifier = party.EmailIdentifier,
-            };
+                EmailIdentifier = party.EmailIdentifier?.Trim().ToLowerInvariant(),
 
             db.Entities.Add(entity);
             var res = await db.SaveChangesAsync(cancellationToken);
