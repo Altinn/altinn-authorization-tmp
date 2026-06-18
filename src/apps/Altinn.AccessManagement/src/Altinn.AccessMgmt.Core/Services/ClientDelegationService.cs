@@ -241,7 +241,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             )
             .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
             .WhereIf(roleFilter.Count > 0, x => roleFilter.Contains(x.Role.Id))
-            .WhereIf(packageFilter.Count > 0, x => packageFilter.Contains(x.RolePackage.Id) || packageFilter.Contains(x.AssignmentPackage.Id))
+.WhereIf(packageFilter.Count > 0, x => (x.RolePackage != null && packageFilter.Contains(x.RolePackage.Id)) || (x.AssignmentPackage != null && packageFilter.Contains(x.AssignmentPackage.Id)))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
