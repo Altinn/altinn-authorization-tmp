@@ -210,7 +210,7 @@ public class InstanceRemovedNotificationHandler(
                         .Split("-")
                         .Last();
 
-                    access.Append($"<li>{instanceSuffix}</li>");
+                    access.Append($"<li>ID: {instanceSuffix}</li>");
                 }
 
                 access.Append($"</ul>");
