@@ -37,13 +37,17 @@ The measurement above covers `AccessMgmt.Tests` only, where host build dominates
 the DB layer is cheap. The per-assembly `FixtureTiming` now printed in CI shows that
 conclusion does **not** generalise: the other assemblies are `db_provision`-bound.
 
-| Assembly | host_build (n) | db_provision (n) | per provision |
+| Assembly | host_build (n) | db_provision (n) | summed ÷ n † |
 |---|---:|---:|---:|
-| AccessMgmt.Tests | 84.7 s (65) | 66.9 s (64) | **~1.0 s** |
+| AccessMgmt.Tests | 84.7 s (65) | 66.9 s (64) | ~1.0 s |
 | Enduser.Api.Tests | 148.3 s (46) | 125.7 s (46) | ~2.7 s |
-| ServiceOwner.Api.Tests | 44.7 s (9) | 119.1 s (9) | **~13 s** |
-| AccessMgmt.Core.Tests | 22.6 s (4) | 121.9 s (4) | **~30 s** |
-| Internal.Api.Tests | 3.3 s (1) | 32.3 s (1) | **~32 s** |
+| ServiceOwner.Api.Tests | 44.7 s (9) | 119.1 s (9) | ~13 s |
+| AccessMgmt.Core.Tests | 22.6 s (4) | 121.9 s (4) | ~30 s |
+| Internal.Api.Tests | 3.3 s (1) | 32.3 s (1) | ~32 s |
+
+† Not per-fixture work. `db_provision` is summed across concurrently-initialising
+fixtures and includes `provision_wait` (time blocked on the one-time template build), so
+this column overstates real cost where `n > 1` — see the sub-phase breakdown below.
 
 The summed `db_provision` exceeds host build across the vertical, and the apparent
 per-provision cost ranges from ~1 s to ~30 s. That "~30 s per provision" reading turned out
