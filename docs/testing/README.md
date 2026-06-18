@@ -21,18 +21,16 @@ self-contained; none of them is a wall of text.
 | 7 | [FLUENT_ASSERTIONS_GUIDELINES.md](FLUENT_ASSERTIONS_GUIDELINES.md) | When and how to use FluentAssertions |
 | 8 | [COVERAGE.md](COVERAGE.md) | Running coverage locally, per-assembly thresholds, ratcheting |
 | 9 | [CI.md](CI.md) | How tests run in the pipeline, Microsoft Testing Platform (MTP), artifacts |
-| 10 | [../SONARCLOUD.md](../SONARCLOUD.md) | Static analysis: exclusions, per-vertical setup, quality gate, debugging |
-
-## Historical / reference
-
-| Doc | Purpose |
-|---|---|
-| [TESTING_INFRASTRUCTURE_OVERHAUL.md](TESTING_INFRASTRUCTURE_OVERHAUL/TESTING_INFRASTRUCTURE_OVERHAUL_PART_1.md) | The 2025 audit and the phased plan that produced the current setup. Marked complete; retained as a ledger of the issues (C1–C5, M1–M8, L1–L3) and the decisions taken. |
-| [steps/INDEX.md](TESTING_INFRASTRUCTURE_OVERHAUL/STEPS_PART_1/INDEX.md) | Chronological step log. Every individual change has a numbered step doc; this index is where follow-up work and blocked items are tracked. |
+| 10 | [BRUNO_API_TESTS.md](BRUNO_API_TESTS.md) | The Bruno API collections — manual/exploratory API tests that double as a behavioral spec for the C# integration tests |
+| 11 | [../SONARCLOUD.md](../SONARCLOUD.md) | Static analysis: exclusions, per-vertical setup, quality gate, debugging |
 
 ## TL;DR for newcomers
 
-- **Test framework:** xUnit v3, all projects target `net9.0`.
+- **Test framework:** xUnit v3, all test projects target `net10.0`.
+- **Unit vs integration:** every test class is tagged `[UnitTest]` or
+  `[IntegrationTest]` (a `Category` trait) and lives under a `Unit/` or
+  `Integration/` folder with a matching namespace segment. CI runs them as
+  two lanes; filter locally with `dotnet test -- --filter-trait "Category=Unit"`.
 - **Assertion library:** [FluentAssertions](FLUENT_ASSERTIONS_GUIDELINES.md)
   (globally imported — no `using` needed).
 - **Integration tests** use a real PostgreSQL via Testcontainers. You need a

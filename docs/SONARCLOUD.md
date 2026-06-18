@@ -1,17 +1,27 @@
 # SonarCloud
 
-SonarCloud runs static analysis on every push and PR — code smells, bugs,
-security hotspots, duplication, and ingested test coverage. Each vertical
-(`apps/*`, `libs/*`, `pkgs/*`) is its own SonarCloud project under the shared
-[`altinn`](https://sonarcloud.io/organizations/altinn) organization, scanned
-in **monorepo mode** so projects are isolated despite sharing a repository.
+SonarCloud runs static analysis — code smells, bugs, security hotspots,
+duplication, and ingested test coverage — **once a day against `main`**, not
+on every push/PR. The per-push model contended for consistently busy runners
+while adding little per-change value: the quality gate is non-blocking,
+security is covered by CodeQL (default setup, on PRs + main), and code smells
+are enforced in-build by Roslyn + StyleCop with per-assembly coverage floors
+gated by `check-coverage-thresholds.ps1`. Sonar's unique value (duplication,
+the maintainability / tech-debt dashboard, coverage trend) is a property of
+`main`, so a daily off-peak scan is sufficient.
+
+Each vertical (`apps/*`, `libs/*`, `pkgs/*`) is its own SonarCloud project
+under the shared [`altinn`](https://sonarcloud.io/organizations/altinn)
+organization, scanned in **monorepo mode** so projects are isolated despite
+sharing a repository.
 
 ## Where the config lives
 
 | File | What it controls |
 |---|---|
 | [`SonarQube.Analysis.xml`](../SonarQube.Analysis.xml) | Shared analysis settings: host URL, exclusions, coverage report paths, duplication exclusions, monorepo flag. Referenced from CI via `/s:`. |
-| [`.github/workflows/tpl-vertical-ci.yml`](../.github/workflows/tpl-vertical-ci.yml) | The `build-test-analyze` job. Passes the four CLI-only properties (key / name / org / token) inline; everything else comes from the XML. |
+| [`.github/workflows/sonar-nightly.yml`](../.github/workflows/sonar-nightly.yml) | The scheduled trigger. Runs daily against `main`, selects the Sonar-enabled verticals, and calls the template below with `analyze: true`. |
+| [`.github/workflows/tpl-vertical-ci.yml`](../.github/workflows/tpl-vertical-ci.yml) | The `build-test-analyze` job. The Sonar steps are gated on the `analyze` input (only the nightly caller sets it). Passes the four CLI-only properties (key / name / org / token) inline; everything else comes from the XML. |
 | `src/apps/<vertical>/conf.json` | Per-vertical opt-in / project key (see below). |
 
 The CI invocation is intentionally minimal:
@@ -52,31 +62,45 @@ project key. Two shapes:
 { "sonarcloud": false }
 ```
 
-Current state:
+> **Default is enabled — set `false` explicitly to opt out.** When `conf.json`
+> omits `sonarcloud` entirely (or the vertical has no `conf.json`),
+> [`_meta.mts`](../.github/scripts/_meta.mts) defaults it to
+> `{ enabled: true }` with a *derived* key `authorization-<slug>`. If no
+> SonarCloud project exists for that derived key, the scanner still runs
+> begin/end and "succeeds", but the upload lands nowhere ("Project not found")
+> — so the steps burn ~78s per scan for no dashboard. A vertical that should
+> **not** be scanned must say so explicitly with `"sonarcloud": false`; this is
+> why every non-scanned vertical carries that line.
+
+Current state — the verticals that are scanned:
 
 | Vertical | Project key |
 |---|---|
 | `apps/Altinn.AccessManagement` | `Authorization_AccessManagement` |
 | `apps/Altinn.Authorization` | `Authorization_Authorization` |
-| `apps/Altinn.Register` | *disabled* (`sonarcloud: false`) |
+
+Every other vertical sets `"sonarcloud": false` and is not scanned. Notably
+`apps/Altinn.Register` is a copy of a codebase that lives in its own
+repository (`Altinn/altinn-register`), which owns its SonarCloud analysis —
+running it (or surfacing its scores) here would be duplicate and misleading.
 
 To onboard a new vertical: create the SonarCloud project under the `altinn`
 organization (Sonar UI → New project → GitHub → pick the repo → set monorepo
 mode), then add `"sonarcloud": { "projectKey": "..." }` to its `conf.json`.
 
-### Automatic skips
+### When it runs
 
-Even when a vertical opts in, the `Detect SonarCloud config` step skips
-Sonar when:
+The `Detect SonarCloud config` step enables Sonar only when **both** hold:
 
-- the PR is from a fork (no `SONAR_TOKEN` access)
-- the PR was opened by `renovate[bot]` or `dependabot[bot]` — bot PRs only
-  touch dependency manifests and produce no useful Sonar findings, so
-  analysing them just burns Sonar minutes per vertical
+- the caller passed `analyze: true` — only [`sonar-nightly.yml`](../.github/workflows/sonar-nightly.yml)
+  does, so PR and push-to-`main` CI never run Sonar
+- the vertical opted in (`sonarProjectKey != 'false'`)
 
-Pushes to `main` (including the merge commit of a bot-authored PR) always
-run Sonar — the bot author check uses `pull_request.user.login`, which is
-null on push events.
+The nightly scan always runs against `main` HEAD, so the fork / bot-author
+guards the per-push model needed are gone — there is no PR context to skip.
+Verticals with `sonarcloud: false` are filtered out by the nightly workflow
+before the matrix fans out, so they are not even built for a scan that would
+be skipped.
 
 ## Exclusions
 
@@ -99,22 +123,43 @@ Tests run **once** under `dotnet-coverage collect`, producing a native
 `.coverage` binary. Two `dotnet-coverage merge` steps then convert it to
 the formats consumed downstream:
 
-| Output | Consumer |
-|---|---|
-| `TestResults/coverage.cobertura.xml` | `eng/testing/check-coverage-thresholds.ps1` |
-| `TestResults/coverage.xml` *(VSCoverage XML)* | SonarCloud (via `sonar.cs.vscoveragexml.reportsPaths` in the XML config) |
+| Output | Consumer | Produced |
+|---|---|---|
+| `TestResults/coverage.cobertura.xml` | `eng/testing/check-coverage-thresholds.ps1` | every run |
+| `TestResults/coverage.xml` *(VSCoverage XML)* | SonarCloud (via `sonar.cs.vscoveragexml.reportsPaths` in the XML config) | analyze (nightly) run only |
 
-Sonar's C# scanner does not accept cobertura, which is why both formats are
-materialized. For local coverage workflow see
-[testing/COVERAGE.md](testing/COVERAGE.md).
+Sonar's C# scanner does not accept cobertura, which is why a second format is
+materialized — but only on the nightly analyze run, the only run that uploads
+to Sonar (the VSCoverage conversion is gated on `SonarCloud begin` having
+run). PR/main CI produces just the cobertura report for the threshold gate.
+For local coverage workflow see [testing/COVERAGE.md](testing/COVERAGE.md).
 
 ## Quality gate
 
-The default SonarCloud quality gate applies. PR decoration posts inline
-comments for issues introduced in the PR's "new code" period; the gate
-result is reported as a check but **does not block merging**
-(`sonar.qualitygate.wait=false` in the XML). To make it blocking, flip that
-property to `true` — expect ~30–90 s added to PR check time.
+The default SonarCloud quality gate applies, evaluated against `main` on each
+nightly scan. Because analysis no longer runs on PRs, there is **no PR
+decoration** — findings surface on the project's SonarCloud dashboard, not as
+inline PR comments. A maintainability / duplication regression introduced by a
+PR is therefore visible on the next nightly scan of `main` (≤24 h later), not
+at PR time; security regressions are still caught at PR time by CodeQL.
+
+The gate is non-blocking (`sonar.qualitygate.wait=false` in the XML) and the
+nightly job does not fail on a red gate — the dashboard is the signal. To be
+alerted on a gate breach, configure SonarCloud's own notifications for the
+project rather than failing the cron.
+
+### New Code definition
+
+Because "new code" can no longer mean "this PR's diff", the New Code period is
+a rolling time window instead. Both scanned projects
+(`Authorization_AccessManagement`, `Authorization_Authorization`) are set to
+**Number of days = 30** in the SonarCloud UI — the gate's new-code conditions
+evaluate against issues introduced on `main` in the last 30 days.
+
+This is project-scoped UI state, not source-controlled. To change it: project →
+**Administration → New Code** (or the org-level default under the `altinn`
+organization). Avoid "Previous version" here — it keys off `sonar.projectVersion`
+release tags, which this pipeline doesn't set.
 
 ## Common operations
 

@@ -27,21 +27,22 @@ namespace Altinn.AccessManagement.Tests.Fixtures;
 /// <see cref="Altinn.AccessManagement.TestUtils.Factories.EFPostgresFactory"/>.
 /// This subclass additionally loads <c>appsettings.test.json</c> (for
 /// non-database test configuration) and sets
-/// <c>PostgreSQLSettings:EnableDBConnection=true</c> +
-/// <c>RunIntegrationTests=true</c> — the same flags the legacy
-/// <c>WebApplicationFixture</c> used — so the production
+/// <c>PostgreSQLSettings:EnableDBConnection=true</c> so the production
 /// <c>AccessManagementHost.ConfigurePostgreSqlConfiguration</c> flips on the
 /// <c>Altinn:Npgsql:*:Migrate:Enabled</c> switch that triggers Yuniql
-/// migrations during host startup.
+/// migrations during host startup. It deliberately does <em>not</em> set
+/// <c>RunIntegrationTests</c>: that would run <c>Program.Init()</c> (EF migrate +
+/// static-data ingest) again on a database already cloned from the migrated and
+/// seeded template, so the template stays the single seed source.
 /// </para>
 /// <para>
 /// Currently the Yuniql pipeline runs once per test database (on host build),
-/// not once per template. If that cost ever becomes a bottleneck, the
-/// template-level alternative (Option 1 in the 16.4 investigation doc) can
-/// be adopted without changing this fixture's public surface.
+/// not once per template. If that cost ever becomes a bottleneck, moving the
+/// Yuniql migration into the template build is possible without changing this
+/// fixture's public surface.
 /// </para>
 /// </remarks>
-public class LegacyApiFixture : ApiFixture
+public class LegacyApiFixture : AccessMgmtApiFixture
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LegacyApiFixture"/> class.
@@ -55,12 +56,17 @@ public class LegacyApiFixture : ApiFixture
 
         WithInMemoryAppsettings(dict =>
         {
-            // Enables the production Yuniql migration pipeline at host startup
-            // so the per-test database receives the legacy accessmanagement.*,
+            // Enables the production Yuniql migration pipeline at host startup so
+            // the per-test database receives the legacy accessmanagement.*,
             // consent.*, and delegation.* schemas + enum types on top of the
-            // EF-provisioned dbo schemas.
+            // EF-provisioned dbo schemas. Yuniql is gated by EnableDBConnection
+            // alone (see AccessManagementHost.ConfigurePostgreSqlConfiguration).
+            //
+            // RunIntegrationTests is intentionally NOT set: it would trigger
+            // Program.Init() (EF migrate + StaticDataIngest + register import) on a
+            // clone that already has the migrated, seeded schema, so it would only
+            // repeat work (the register import is feature-flag gated off in tests).
             dict["PostgreSQLSettings:EnableDBConnection"] = "true";
-            dict["RunIntegrationTests"] = "true";
         });
     }
 }

@@ -4,7 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.Register;
 using Moq;
 
-namespace AccessMgmt.Tests.Moqdata
+namespace Altinn.AccessManagement.Tests.Moqdata
 {
     /// <summary>
     /// Utility class for populating a mock IAmPartyRepository with test data
@@ -13,9 +13,8 @@ namespace AccessMgmt.Tests.Moqdata
     {
         public static void SetupMockPartyRepository(Mock<IAmPartyRepository> _mockAmPartyRepository)
         {
-            // Reset all existing setups
-            _mockAmPartyRepository.Reset();
-
+            // Additive setup only (no Reset): safe to call repeatedly on a mock shared by
+            // several classes in the same collection, without wiping a sibling's setups.
             // Setup specific mock responses for test data
             MinimalParty elenafjear = new MinimalParty
             {

@@ -14,6 +14,7 @@ using ValidationErrors = Altinn.AccessMgmt.Core.Utils.Models.ValidationErrors;
 
 namespace Altinn.AccessManagement.Api.Tests.Controllers;
 
+[UnitTest]
 public class PartyControllerTest
 {
     private static PartyController CreateSut(IPartyService svc)
@@ -48,7 +49,7 @@ public class PartyControllerTest
     };
 
     [Fact]
-    public async Task AddParty_NullToken_ReturnsUnauthorized()
+    public async Task AddParty_NullToken_Returns401MissingToken()
     {
         var result = await CreateSut(new Mock<IPartyService>().Object).AddParty(SampleParty, null, TestContext.Current.CancellationToken);
 
@@ -56,7 +57,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_TokenWithoutAppClaim_ReturnsUnauthorized()
+    public async Task AddParty_TokenWithoutAppClaim_Returns401MissingAppClaim()
     {
         var token = MakeToken(appClaimValue: null);
 
@@ -66,7 +67,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_TokenWithWrongApp_ReturnsUnauthorized()
+    public async Task AddParty_TokenWithWrongApp_Returns401UnauthorizedApp()
     {
         var token = MakeToken("not-authentication");
 
@@ -90,7 +91,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_ValidToken_PartyCreated_ReturnsCreated()
+    public async Task AddParty_ValidToken_PartyCreated_Returns201Created()
     {
         var token = MakeToken("authentication");
         var dto = new AddPartyResultDto { PartyUuid = Guid.NewGuid(), PartyCreated = true };
@@ -104,7 +105,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_ValidToken_PartyExisting_ReturnsOk()
+    public async Task AddParty_ValidToken_PartyExisting_Returns200Ok()
     {
         var token = MakeToken("authentication");
         var dto = new AddPartyResultDto { PartyUuid = Guid.NewGuid(), PartyCreated = false };
@@ -118,7 +119,7 @@ public class PartyControllerTest
     }
 
     [Fact]
-    public async Task AddParty_ValidToken_Register_ReturnsOk()
+    public async Task AddParty_ValidToken_Register_Returns200Ok()
     {
         var token = MakeToken("register");
         var dto = new AddPartyResultDto { PartyUuid = Guid.NewGuid(), PartyCreated = false };

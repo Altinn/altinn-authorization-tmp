@@ -15,6 +15,11 @@ service_bus_firewall = [
   "20.100.48.120/31"
 ]
 
+maintainers_principal_ids = [
+  "c410f062-def4-44f5-9a45-b23ddcdd57c3", # Group: Altinn Product Authorization: Developers Prod
+  "3863fbc0-a24b-42bf-af3d-f45111814457", # Group: Altinn Product Authorization: Admins Prod
+]
+
 appconfiguration = {
   platform_notifications_endpoint     = "http://altinn-notifications.default.svc.cluster.local"
   platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"

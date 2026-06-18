@@ -21,6 +21,7 @@ public class InternalConnectionsControllerTest
     /// <summary>
     /// <see cref="InternalConnectionsController.PostSelfIdentifiedUsers(Guid, Guid, CancellationToken)"/>
     /// </summary>
+    [IntegrationTest]
     public class PostSelfIdentifiedUsers : IClassFixture<ApiFixture>
     {
         public PostSelfIdentifiedUsers(ApiFixture fixture)
@@ -50,7 +51,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_FromSIUserToPerson_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_FromSIUserToPerson_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClient();
 
@@ -67,7 +68,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_FromPersonToPerson_ReturnsBadRequest()
+        public async Task PostSelfIdentifiedUser_FromPersonToPerson_Returns400ForInvalidPersonToPersonAssignment()
         {
             var client = CreateClient();
 
@@ -77,7 +78,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Email_PlatformIssuerWithRegisterAppClaim_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Email_PlatformIssuerWithRegisterAppClaim_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClientWithPlatformToken("register");
             
@@ -94,9 +95,26 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithRegisterAppClaim_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithRegisterAppClaim_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClientWithPlatformToken("register");
+
+            var entityId = TestEntities.EduUserHermioneGranger.Id;
+            var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={entityId}&to={entityId}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<AssignmentDto>(data);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(entityId, result.FromId);
+            Assert.Equal(entityId, result.ToId);
+            Assert.Equal(RoleConstants.SelfRegisteredUser, result.RoleId);
+        }
+
+        [Fact]
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithAuthenticationAppClaim_Returns200WithSelfRegisteredUserAssignment()
+        {
+            var client = CreateClientWithPlatformToken("authentication");
 
             var entityId = TestEntities.EduUserHermioneGranger.Id;
             var response = await client.PostAsync($"{Route}/selfidentifiedusers?from={entityId}&to={entityId}", null, TestContext.Current.CancellationToken);
@@ -129,7 +147,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_ReturnsUnauthorized()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_Returns401ForDisallowedAppClaim()
         {
             var client = CreateClientWithPlatformToken("not-register");
 
