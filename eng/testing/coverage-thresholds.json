@@ -14,7 +14,7 @@
     "Altinn.AccessManagement.Api.Internal": 70,
     "Altinn.AccessManagement.Api.ServiceOwner": 65,
     "Altinn.AccessManagement.Integration": 68,
-    "Altinn.AccessManagement.Core": 64
+    "Altinn.AccessManagement.Core": 75
   },
   "warnings": {
     "Altinn.AccessManagement": 60,
