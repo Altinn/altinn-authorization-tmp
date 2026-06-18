@@ -4,6 +4,7 @@ using System.Text.Json;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
+using Altinn.Common.PEP.Authorization;
 using Altinn.Common.PEP.Configuration;
 using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,8 +13,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace Altinn.Common.PEP.Authorization
+namespace Altinn.Authorization.PEP.Tests
 {
+    [UnitTest]
     public class AppAccessHandlerTest
     {
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
@@ -35,7 +37,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC01Async()
+        public async Task HandleRequirementAsync_PermitDecision_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -56,7 +58,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC02Async()
+        public async Task HandleRequirementAsync_DenyDecision_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -77,7 +79,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC03Async()
+        public async Task HandleRequirementAsync_MultipleResults_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -101,7 +103,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC04Async()
+        public async Task HandleRequirementAsync_MinAuthLevelMet_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -123,7 +125,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC05Async()
+        public async Task HandleRequirementAsync_MinAuthLevelNotMet_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -145,7 +147,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will fail 
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC06Async()
+        public async Task HandleRequirementAsync_NullResponse_ThrowsInvalidOperationException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -162,7 +164,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will fail 
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC07Async()
+        public async Task HandleRequirementAsync_NullResultList_ThrowsInvalidOperationException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -182,7 +184,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: XForwardedForHeader proeprty in request receives the ipaddress from the header
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC08Async()
+        public async Task HandleRequirementAsync_XForwardedForHeaderPresent_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -203,7 +205,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC09Async()
+        public async Task HandleRequirementAsync_SystemUserPermit_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContextSystemUser();
@@ -224,7 +226,7 @@ namespace Altinn.Common.PEP.Authorization
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC10Async()
+        public async Task HandleRequirementAsync_AppUserPermit_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContextAppUser("app_skd_flyttemelding");
