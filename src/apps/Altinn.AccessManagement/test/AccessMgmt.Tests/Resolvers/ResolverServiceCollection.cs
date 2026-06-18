@@ -60,7 +60,7 @@ public static class ResolverServiceCollection
         services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
         services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
         services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-        services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+        services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
         services.AddSingleton<IPartiesClient, PartiesClientMock>();
         services.AddSingleton<IProfileClient, ProfileClientMock>();
         services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();

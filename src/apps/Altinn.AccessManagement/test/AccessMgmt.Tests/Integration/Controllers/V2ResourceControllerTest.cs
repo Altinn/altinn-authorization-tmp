@@ -31,7 +31,7 @@ public class V2ResourceControllerTest : IClassFixture<LegacyApiFixture>
             // PlatformAccessToken is signed by {issuer}-org.pem; default
             // PublicSigningKeyProviderMock only accepts the static test key.
             services.RemoveAll<IPublicSigningKeyProvider>();
-            services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+            services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
         });
 
         _client = fixture.CreateClient(new() { AllowAutoRedirect = false });

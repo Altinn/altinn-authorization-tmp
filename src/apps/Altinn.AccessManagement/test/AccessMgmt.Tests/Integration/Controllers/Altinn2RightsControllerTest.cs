@@ -282,9 +282,9 @@ public class Altinn2RightsControllerTest : IClassFixture<NoDbApiFixture>
 
         // ApiFixture registers PublicSigningKeyProviderMock by default, but these
         // tests sign tokens via PrincipalUtil.GetAccessToken which requires the
-        // issuer-cert-backed SigningKeyResolverMock.
+        // issuer-cert-backed PublicSigningKeyProviderMock.
         services.RemoveAll<IPublicSigningKeyProvider>();
-        services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+        services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
     }
 
     private static string GetUrlParameter(string header, object value) => header switch

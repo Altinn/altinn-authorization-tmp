@@ -19,9 +19,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 // - appsettings.test.json is loaded via ApiFixture.WithAppsettings.
-// - SigningKeyResolverMock replaces ApiFixture's default PublicSigningKeyProviderMock
+// - PublicSigningKeyProviderMock replaces ApiFixture's default PublicSigningKeyProviderMock
 //   because PrincipalUtil.GetAccessToken signs tokens with {issuer}-org.pem certs
-//   that SigningKeyResolverMock loads from disk.
+//   that PublicSigningKeyProviderMock loads from disk.
 // - IResourceMetadataRepository is mocked; these tests do not query the database
 //   directly. ApiFixture still provisions one — an overhead already paid by other
 //   AccessMgmt.Tests consumers.
@@ -53,7 +53,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepositoryMock>();
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
             });
 

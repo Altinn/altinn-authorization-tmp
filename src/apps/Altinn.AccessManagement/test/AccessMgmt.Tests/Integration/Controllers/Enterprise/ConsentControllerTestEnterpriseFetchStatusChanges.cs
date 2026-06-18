@@ -212,7 +212,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
                 // {issuer}-org.pem; default PublicSigningKeyProviderMock only
                 // accepts the static test key.
                 services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
 
                 // Replace ApiFixture's default PermitPdpMock with the legacy
                 // PdpPermitMock flavour used by these tests.
@@ -220,7 +220,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
                 services.AddSingleton<IPDP, PdpPermitMock>();
 
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
 
