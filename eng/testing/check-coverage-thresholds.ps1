@@ -186,7 +186,7 @@ if ($belowThreshold.Count -gt 0) {
     }
 }
 elseif ($globalFloor -gt 0 -or $assemblyThresholds.Count -gt 0) {
-    Write-Host "`nAll enforced assemblies meet their coverage thresholds." -ForegroundColor Green
+    Write-Host "`nAll tracked assemblies meet their coverage targets." -ForegroundColor Green
 }
 
 # Success is explicit: -WarnOnly and the all-pass path both end here. Without

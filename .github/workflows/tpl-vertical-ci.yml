@@ -338,7 +338,7 @@ jobs:
       - name: Convert coverage to cobertura
         # Merges the per-lane .coverage binaries (unit + integration) written
         # by the Test steps and emits cobertura — the format the PowerShell
-        # threshold check below parses. Runs even on test failure so a coverage
+        # coverage report below parses. Runs even on test failure so a coverage
         # regression isn't masked by a separate test failure. The glob tolerates
         # a vertical that produced only one lane's file.
         if: always() && hashFiles(format('{0}/TestResults/*.coverage', inputs.path)) != ''

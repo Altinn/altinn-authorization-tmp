@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Per-assembly minimum line-coverage thresholds (%). CI fails if any assembly in 'assemblies' drops below its floor. Assemblies in 'warnings' emit a warning (non-fatal) when below their floor; use this as a ratchet for assemblies approaching enforcement. 'globalThreshold' of 0 means no implicit floor — only explicitly listed assemblies are enforced.",
+  "$comment": "Per-assembly line-coverage targets (%). In CI the check runs report-only (check-coverage-thresholds.ps1 -WarnOnly): assemblies in 'assemblies' below their target are surfaced as warnings but do NOT fail the build; assemblies in 'warnings' are a softer tier, also non-fatal. Run without -WarnOnly (e.g. locally) the script gates (exits non-zero on a missed target). 'globalThreshold' of 0 means only the explicitly listed assemblies are tracked.",
   "globalThreshold": 0,
   "assemblies": {
     "Altinn.Authorization": 68,
