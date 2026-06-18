@@ -253,11 +253,12 @@ jobs:
           fi
 
       - name: Setup-timing breakdown (FixtureTiming)
-        # Surface FixtureTiming's per-assembly setup-time breakdown (host build vs DB
-        # provisioning vs per-test clone vs one-time template build) directly in this
+        # Surface FixtureTiming's per-assembly setup-time breakdown directly in this
         # job's log, so where test setup time goes is visible without downloading
-        # anything. Informational only; never fails the build. No-op for verticals
-        # whose tests do not use the Postgres engine (no file is written).
+        # anything: host build vs DB provisioning vs per-test clone, plus the one-time
+        # template build split into its sub-phases (container server_start, EF migrate,
+        # seed). Informational only; never fails the build. No-op for verticals whose
+        # tests do not use the Postgres engine (no file is written).
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         shell: bash
         run: |

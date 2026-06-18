@@ -73,7 +73,7 @@ public sealed class PostgresTestEngine
 
             if (!_templateReady)
             {
-                if (!await EnsureServerStartedAsync(cancellationToken))
+                if (!await FixtureTiming.TimeAsync(FixtureTiming.Phase.ServerStart, () => EnsureServerStartedAsync(cancellationToken)))
                 {
                     return null;
                 }

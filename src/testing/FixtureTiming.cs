@@ -17,7 +17,7 @@ namespace Altinn.Authorization.Testing;
 /// writes one summary line, of the form:
 /// </para>
 /// <code>
-/// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900
+/// ===FIXTURE_TIMING=== host_build_ms=12345 host_build_n=85 db_provision_ms=6789 db_provision_n=85 clone_ms=4200 clone_n=85 template_build_ms=900 server_start_ms=8000 migrate_ms=600 seed_ms=300
 /// </code>
 /// <para>
 /// For each bucket, <c>_ms</c> is the total milliseconds spent and <c>_n</c> is how
@@ -49,6 +49,9 @@ internal static class FixtureTiming
     private static long _cloneTicks;
     private static long _cloneCount;
     private static long _templateBuildTicks;
+    private static long _serverStartTicks;
+    private static long _migrateTicks;
+    private static long _seedTicks;
     private static int _exitHooked;
 
     /// <summary>Setup phase being measured.</summary>
@@ -65,6 +68,15 @@ internal static class FixtureTiming
 
         /// <summary>One-time container start + role bootstrap + migrate/seed of the template.</summary>
         TemplateBuild,
+
+        /// <summary>One-time container acquire/start (image pull + readiness). Inside DbProvision, outside TemplateBuild — the previously-unbucketed part of provisioning.</summary>
+        ServerStart,
+
+        /// <summary>One-time EF migrate of the template database (a subset of TemplateBuild).</summary>
+        Migrate,
+
+        /// <summary>One-time seed of the template database (a subset of TemplateBuild).</summary>
+        Seed,
     }
 
     /// <summary>Times an async <paramref name="action"/> and attributes it to <paramref name="phase"/>.</summary>
@@ -160,6 +172,15 @@ internal static class FixtureTiming
             case Phase.TemplateBuild:
                 Interlocked.Add(ref _templateBuildTicks, elapsed.Ticks);
                 break;
+            case Phase.ServerStart:
+                Interlocked.Add(ref _serverStartTicks, elapsed.Ticks);
+                break;
+            case Phase.Migrate:
+                Interlocked.Add(ref _migrateTicks, elapsed.Ticks);
+                break;
+            case Phase.Seed:
+                Interlocked.Add(ref _seedTicks, elapsed.Ticks);
+                break;
         }
     }
 
@@ -184,7 +205,10 @@ internal static class FixtureTiming
             $"db_provision_n={Interlocked.Read(ref _dbProvisionCount)} " +
             $"clone_ms={Ms(Interlocked.Read(ref _cloneTicks))} " +
             $"clone_n={Interlocked.Read(ref _cloneCount)} " +
-            $"template_build_ms={Ms(Interlocked.Read(ref _templateBuildTicks))}";
+            $"template_build_ms={Ms(Interlocked.Read(ref _templateBuildTicks))} " +
+            $"server_start_ms={Ms(Interlocked.Read(ref _serverStartTicks))} " +
+            $"migrate_ms={Ms(Interlocked.Read(ref _migrateTicks))} " +
+            $"seed_ms={Ms(Interlocked.Read(ref _seedTicks))}";
 
         Console.WriteLine(line);
 

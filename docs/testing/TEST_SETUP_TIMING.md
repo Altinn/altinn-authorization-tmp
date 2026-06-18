@@ -54,6 +54,35 @@ provisions onto the same template-clone fast path `AccessMgmt.Tests` already use
 parallelism decision below was also measured on `AccessMgmt.Tests` only and should be
 re-checked for the provision-bound assemblies, where the limiter may differ.
 
+### What `db_provision` is made of (sub-phase breakdown)
+
+`FixtureTiming` now splits the previously-opaque provision into its constituents, so the
+`db_provision` total above can be attributed rather than guessed at. The
+`===FIXTURE_TIMING===` line carries three extra buckets:
+
+- `server_start_ms` — one-time container acquire/start (image readiness), inside
+  `db_provision` but outside the template build.
+- `migrate_ms` / `seed_ms` — the EF migrate and the data seed, the two halves of the
+  one-time `template_build`.
+
+A single-fixture probe of `AccessMgmt.Core.Tests` (one `ApiFixture`, local Podman) shows
+where the first provision's time goes:
+
+| Bucket | Time | Share of `db_provision` (19.2 s) |
+|---|---:|---|
+| `server_start` (container) | 5.9 s | ~31% |
+| `template_build` | 12.6 s | ~65% |
+| — of which `migrate` | 10.3 s | dominant |
+| — of which `seed` | 0.4 s | negligible |
+| `clone` | 0.2 s | ~1% |
+
+So the expensive provision is **EF migrate + container start**, not seeding. This sharpens
+the #3379 direction for the provision-bound assemblies: the lever is sharing the
+migrated template (build it once, clone from it) rather than reducing seed work, and
+container start is a fixed ~6 s floor per assembly that only a shared/long-lived container
+would remove. The full-suite per-assembly decomposition now lands in the CI
+`Setup-timing breakdown` log automatically.
+
 ## Prototype: fixture sharing (validated)
 
 Sharing one host across a read-only, additive-seed cohort via
