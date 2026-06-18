@@ -19,9 +19,10 @@
     owned by another vertical.
 
     Exit codes:
-      0 — all owned assemblies meet their thresholds (or no thresholds set)
-      1 — at least one owned assembly is below its threshold, or no coverage
-          files matched the input pattern(s).
+      0 — all owned assemblies meet their thresholds (or no thresholds set),
+          or -WarnOnly is set and the only problem is below-threshold assemblies
+      1 — at least one owned assembly is below its threshold (unless -WarnOnly),
+          or no coverage files matched the input pattern(s).
 
 .PARAMETER CoverageFiles
     One or more paths (or glob patterns, resolved at invocation time) to
@@ -45,7 +46,12 @@ param(
     [string[]]$CoverageFiles,
     [string]$ThresholdsFile,
     [int]$Threshold = 0,
-    [string]$OwnedRoot = (Get-Location).Path
+    [string]$OwnedRoot = (Get-Location).Path,
+    # Report assemblies below their threshold as warnings and exit 0, instead of
+    # failing. Coverage is then measured and surfaced but never gates CI. (A
+    # missing/unreadable coverage file still fails — that is a broken run, not a
+    # coverage regression.)
+    [switch]$WarnOnly
 )
 $ErrorActionPreference = 'Stop'
 
@@ -168,10 +174,22 @@ if ($warningsBelow.Count -gt 0) {
 }
 
 if ($belowThreshold.Count -gt 0) {
-    Write-Host "`nBelow threshold:" -ForegroundColor Red
-    $belowThreshold | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
-    exit 1
+    if ($WarnOnly) {
+        Write-Host "`nBelow target (report-only - not failing CI):" -ForegroundColor Yellow
+        $belowThreshold | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+        $belowThreshold | ForEach-Object { Write-Host "::warning::Coverage below target: $_" }
+    }
+    else {
+        Write-Host "`nBelow threshold:" -ForegroundColor Red
+        $belowThreshold | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        exit 1
+    }
 }
 elseif ($globalFloor -gt 0 -or $assemblyThresholds.Count -gt 0) {
     Write-Host "`nAll enforced assemblies meet their coverage thresholds." -ForegroundColor Green
 }
+
+# Success is explicit: -WarnOnly and the all-pass path both end here. Without
+# this, the script would fall off the end and leave $LASTEXITCODE at whatever a
+# prior command set, which is non-deterministic for callers in a shared session.
+exit 0
