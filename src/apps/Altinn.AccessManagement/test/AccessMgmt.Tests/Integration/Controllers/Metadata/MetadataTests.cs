@@ -34,7 +34,7 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         _translationService = new TranslationService(_db, memoryCache, NullLogger<TranslationService>.Instance);
 
-        SeedTestData(_db).Wait();
+        fixture.EnsureSeedOnceAsync(() => SeedTestData(_db)).GetAwaiter().GetResult();
     }
 
     public List<Resource> Resources { get; set; } = new List<Resource>();
@@ -91,7 +91,7 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
 
         foreach (var packageResource in packageResources)
         {
-            if (db.PackageResources.AsNoTracking().Count(t => t.Id == packageResource.Id) == 0)
+            if (!db.PackageResources.AsNoTracking().Any(t => t.PackageId == packageResource.PackageId && t.ResourceId == packageResource.ResourceId))
             {
                 db.PackageResources.Add(packageResource);
             }
@@ -102,14 +102,7 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
             db.RolePackages.Add(new RolePackage() { RoleId = RoleConstants.ManagingDirector.Id, PackageId = PackageConstants.Catering.Id });
         }
 
-        try
-        {
-            await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
     }
 
     #region Positive Variant Role Package

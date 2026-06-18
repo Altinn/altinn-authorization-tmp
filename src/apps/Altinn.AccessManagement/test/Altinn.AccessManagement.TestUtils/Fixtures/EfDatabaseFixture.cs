@@ -19,6 +19,9 @@ namespace Altinn.AccessManagement.TestUtils.Fixtures;
 /// </remarks>
 public class EfDatabaseFixture : IAsyncLifetime
 {
+    private readonly SemaphoreSlim _seedGate = new(1, 1);
+    private bool _seeded;
+
     /// <summary>
     /// The per-class test database (a clone of the migrated and seeded template).
     /// </summary>
@@ -30,6 +33,41 @@ public class EfDatabaseFixture : IAsyncLifetime
         Db = await EFPostgresFactory.Create();
     }
 
+    /// <summary>
+    /// Runs <paramref name="seedAsync"/> exactly once for this fixture (i.e. once
+    /// per test class). xUnit constructs the test class once per test method, so a
+    /// seed placed in the constructor would otherwise re-run against the same
+    /// shared database for every method and collide on unique constraints. Call
+    /// this from the constructor instead of seeding directly.
+    /// </summary>
+    public async Task EnsureSeedOnceAsync(Func<Task> seedAsync)
+    {
+        if (_seeded)
+        {
+            return;
+        }
+
+        await _seedGate.WaitAsync();
+        try
+        {
+            if (_seeded)
+            {
+                return;
+            }
+
+            await seedAsync();
+            _seeded = true;
+        }
+        finally
+        {
+            _seedGate.Release();
+        }
+    }
+
     /// <inheritdoc/>
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public ValueTask DisposeAsync()
+    {
+        _seedGate.Dispose();
+        return ValueTask.CompletedTask;
+    }
 }
