@@ -179,7 +179,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         packages ??= [];
         var roleFilter = new List<Guid>();
         var packageFilter = new List<Guid>();
-        
+
         foreach (var r in roles)
         {
             if (RoleConstants.TryGetByAll(r, out var role))
@@ -241,7 +241,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             )
             .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
             .WhereIf(roleFilter.Count > 0, x => roleFilter.Contains(x.Role.Id))
-.WhereIf(packageFilter.Count > 0, x => (x.RolePackage != null && packageFilter.Contains(x.RolePackage.Id)) || (x.AssignmentPackage != null && packageFilter.Contains(x.AssignmentPackage.Id)))
+            .WhereIf(packageFilter.Count > 0, x => (x.RolePackage != null && packageFilter.Contains(x.RolePackage.Id)) || (x.AssignmentPackage != null && packageFilter.Contains(x.AssignmentPackage.Id)))
             .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
 
