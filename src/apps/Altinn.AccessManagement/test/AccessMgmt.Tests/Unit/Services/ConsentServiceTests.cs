@@ -586,10 +586,65 @@ public class ConsentServiceTests
             Times.Once);
     }
 
-    // The null-receiver-resolution case (GetByOrgNo/GetByPersonNo returns null, so MapFromExternalIdenity
-    // returns null and the IsPartyUuid call NREs) is the production defect fixed in PR #3536, which routes
-    // GetConsentEventsForParty through ValidatePartyFromExternalIdentity and pins it there. Not duplicated
-    // here to avoid a conflicting fix on the same method.
+    [Fact]
+    public async Task GetConsentEventsForParty_OrganizationIdReceiverNotFound_ReturnsInvalidOrganizationIdentifierProblem()
+    {
+        // Arrange — external OrganizationId that the register can't resolve.
+        // GetByOrgNo returns null, so MapFromExternalIdenity returns null, and
+        // the service surfaces InvalidOrganizationIdentifier rather than
+        // dereferencing the null urn (production defect fixed in PR #3536).
+        var orgNumber = ContractsOrganizationNumber.Parse("810419512");
+        var receiver = ConsentPartyUrn.OrganizationId.Create(orgNumber);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByOrgNo(orgNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidOrganizationIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidOrganizationIdentifier.StatusCode);
+
+        // The repository must never be reached when the receiver can't be resolved.
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConsentEventsForParty_PersonIdReceiverNotFound_ReturnsInvalidPersonIdentifierProblem()
+    {
+        // Arrange — external PersonId that the register can't resolve.
+        // GetByPersonNo returns null → InvalidPersonIdentifier.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidPersonIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidPersonIdentifier.StatusCode);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     private ConsentService CreateService()
     {
         return new ConsentService(
