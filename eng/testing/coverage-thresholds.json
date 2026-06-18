@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Per-assembly line-coverage targets (%). In CI the check runs report-only (check-coverage-thresholds.ps1 -WarnOnly): assemblies in 'assemblies' below their target are surfaced as warnings but do NOT fail the build; assemblies in 'warnings' are a softer tier, also non-fatal. Run without -WarnOnly (e.g. locally) the script gates (exits non-zero on a missed target). 'globalThreshold' of 0 means only the explicitly listed assemblies are tracked.",
+  "$comment": "Per-assembly line-coverage targets (%). check-coverage-thresholds.ps1 reports per-assembly coverage and surfaces assemblies below their target as warnings; it never fails on coverage, in CI or locally. 'assemblies' is the primary tier and 'warnings' a softer one; both are non-fatal. 'globalThreshold' of 0 means only the explicitly listed assemblies are tracked.",
   "globalThreshold": 0,
   "assemblies": {
     "Altinn.Authorization": 68,

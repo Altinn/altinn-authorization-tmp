@@ -36,7 +36,7 @@ scan; on PR/main CI they are skipped):
    which `--ignore-exit-code 8` treats as success.
 4. **Convert coverage** — `dotnet-coverage merge` into cobertura (for the threshold check) on every run; a second merge into VSCoverage XML (for Sonar) runs only on the analyze run. No re-running tests.
 5. **SonarCloud end** *(analyze run only, verticals that opt in)* — uploads the analysis. Runs even if tests failed so issues found by the scanner are still posted. See [../SONARCLOUD.md](../SONARCLOUD.md).
-6. **Coverage report** — parses the cobertura XML and reports any assembly below its target as a warning; it runs with `-WarnOnly`, so it does not fail the job. See [COVERAGE.md](COVERAGE.md).
+6. **Coverage report** — parses the cobertura XML and reports any assembly below its target as a warning; it never fails on coverage, so it does not gate the job. See [COVERAGE.md](COVERAGE.md).
 7. **Pack** — `dotnet pack` for `pkg`-type verticals only.
 8. **Report failed tests** — post-test step that parses MTP logs and emits per-failure `::group::` + `::error title::` annotations on GitHub Actions.
 9. **Upload artifacts** on failure — MTP `*.log` / `*.trx` files from `TestResults/`. Retention: 3 days.

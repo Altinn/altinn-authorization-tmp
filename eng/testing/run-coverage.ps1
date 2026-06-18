@@ -3,7 +3,8 @@
 .SYNOPSIS
     Local-dev helper: builds and runs every *.Tests project in the repo under
     `dotnet-coverage collect`, producing a per-project Cobertura XML, then
-    delegates threshold enforcement to check-coverage-thresholds.ps1.
+    reports per-assembly coverage via check-coverage-thresholds.ps1 (coverage
+    is reported, never gated).
 
 .DESCRIPTION
     CI does NOT use this script. The CI pipeline runs tests once under
@@ -141,9 +142,9 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Delegate threshold enforcement + pretty summary to the parse-only script
-# (shared with CI, so there's no drift between local and CI output).
-# Pass only the merged file so each assembly appears exactly once.
+# Report per-assembly coverage (pretty summary) via the parse-only script
+# (shared with CI, so there's no drift between local and CI output). Coverage is
+# reported, not gated. Pass only the merged file so each assembly appears once.
 $checkScript = Join-Path $PSScriptRoot 'check-coverage-thresholds.ps1'
 $checkArgs = @{
     CoverageFiles = @($mergedCoverage)
@@ -152,7 +153,8 @@ $checkArgs = @{
 if ($ThresholdsFile) { $checkArgs['ThresholdsFile'] = $ThresholdsFile }
 if ($Threshold -gt 0) { $checkArgs['Threshold'] = $Threshold }
 & $checkScript @checkArgs
-$thresholdExit = $LASTEXITCODE
+# Only non-zero when no coverage was produced (a broken run); never on coverage.
+$reportExit = $LASTEXITCODE
 
 $rg = Get-Command reportgenerator -ErrorAction SilentlyContinue
 if ($rg) {
@@ -168,7 +170,7 @@ if ($failed.Count -gt 0) {
     Write-Host "`nTest failures: $($failed -join ', ')" -ForegroundColor Red
     exit 1
 }
-if ($thresholdExit -ne 0) {
-    exit $thresholdExit
+if ($reportExit -ne 0) {
+    exit $reportExit
 }
 Write-Host "`nDone." -ForegroundColor Green

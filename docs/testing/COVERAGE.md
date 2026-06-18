@@ -2,16 +2,15 @@
 
 The repo uses `dotnet-coverage` to produce Cobertura reports and a small
 PowerShell wrapper to parse them and report per-assembly coverage against
-targets. **CI surfaces assemblies below their target as warnings but does not
-fail the build on coverage** — coverage is tracked, not gated. (The script
-still gates, exiting non-zero, when run without `-WarnOnly`, e.g. locally.)
+targets. **Assemblies below their target are surfaced as warnings; coverage
+never fails the build** — it is reported, not gated, in CI and locally alike.
 
 ## Files
 
 | File | What it is |
 |---|---|
 | [`eng/testing/coverage-thresholds.json`](../../eng/testing/coverage-thresholds.json) | Source of truth for per-assembly minimum line coverage |
-| [`eng/testing/check-coverage-thresholds.ps1`](../../eng/testing/check-coverage-thresholds.ps1) | Parse-only script (reads a Cobertura file, pretty-prints a table, compares against thresholds; exits non-zero when a target is missed, or 0 with `-WarnOnly` — how CI runs it) |
+| [`eng/testing/check-coverage-thresholds.ps1`](../../eng/testing/check-coverage-thresholds.ps1) | Parse-only script (reads a Cobertura file, pretty-prints a table, and reports below-target assemblies as warnings; never fails on coverage) |
 | [`eng/testing/run-coverage.ps1`](../../eng/testing/run-coverage.ps1) | **Local-dev** helper: builds every `*.Tests` project, runs each under `dotnet-coverage collect` in parallel, then invokes the check script |
 | [`eng/testing/run-accessmanagement-coverage.ps1`](../../eng/testing/run-accessmanagement-coverage.ps1) | Local-dev helper scoped to the AccessManagement vertical (faster feedback) |
 | [`eng/testing/coverage.settings`](../../eng/testing/coverage.settings) | `dotnet-coverage` collection settings (passed via `--settings`) that exclude generated code / migrations / tooling from the line totals, so the floors measure the same denominator as SonarCloud |
@@ -21,12 +20,10 @@ still gates, exiting non-zero, when run without `-WarnOnly`, e.g. locally.)
 [`coverage-thresholds.json`](../../eng/testing/coverage-thresholds.json) is the source of
 truth for the current per-assembly numbers (don't duplicate them here). It has two sections:
 
-- **`assemblies`**: the primary per-assembly targets. CI reports any below their floor as a
-  warning; the script fails on these only when run as a gate (without `-WarnOnly`, e.g. locally).
-- **`warnings`**: a softer tier for assemblies approaching promotion to `assemblies`;
-  always non-fatal.
+- **`assemblies`**: the primary per-assembly targets; any below their floor are reported as a warning.
+- **`warnings`**: a softer tier for assemblies approaching promotion to `assemblies`.
 
-In CI neither tier fails the build (the check runs with `-WarnOnly`); both are reported.
+Neither tier fails the build — both are reported.
 
 ### `globalThreshold`
 
@@ -87,7 +84,7 @@ Outputs land in `TestResults/`:
 
 CI does **not** run `run-coverage.ps1`. It runs the suite once under
 `dotnet-coverage collect --settings eng/testing/coverage.settings`, then invokes
-`check-coverage-thresholds.ps1 -WarnOnly` on the resulting Cobertura file (report-only:
+`check-coverage-thresholds.ps1` on the resulting Cobertura file (report-only:
 below-target assemblies are surfaced as warnings, they do not fail the build). Running the tests a
 second time just to collect coverage would double pipeline time, so coverage is parsed
 from the same pass that runs the tests. The exact steps live in
