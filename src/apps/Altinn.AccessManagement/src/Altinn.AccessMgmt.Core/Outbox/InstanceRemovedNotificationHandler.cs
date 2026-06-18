@@ -207,9 +207,9 @@ public class InstanceRemovedNotificationHandler(
                 foreach (var instanceId in instance.InstanceIds)
                 {
                     var instanceSuffix = instanceId
-                        .Split(":")
+                        .Split("-")
                         .Last();
-                    
+
                     access.Append($"<li>{instanceSuffix}</li>");
                 }
 
