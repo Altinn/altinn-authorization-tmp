@@ -31,7 +31,7 @@ self-contained; none of them is a wall of text.
   `[IntegrationTest]` (a `Category` trait) and lives under a `Unit/` or
   `Integration/` folder with a matching namespace segment. CI runs them as
   two lanes; filter locally with `dotnet test -- --filter-trait "Category=Unit"`.
-- **Assertion library:** [FluentAssertions](FLUENT_ASSERTIONS_GUIDELINES.md)
+- **Assertion library:** [AwesomeAssertions](FLUENT_ASSERTIONS_GUIDELINES.md) (free, API-compatible fork of FluentAssertions)
   (globally imported — no `using` needed).
 - **Integration tests** use a real PostgreSQL via Testcontainers. You need a
   **working Docker or Podman** on your machine. See
