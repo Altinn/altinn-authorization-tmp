@@ -42,7 +42,9 @@ namespace Altinn.AccessManagement.Mappers
             CreateMap<AttributeMatch, AttributeMatchExternal>();
             CreateMap<AttributeMatchExternal, AttributeMatch>();
             CreateMap<BaseAttribute, AttributeDto>();
+            CreateMap<BaseAttribute, BaseAttributeExternal>();
             CreateMap<AttributeDto, BaseAttribute>();
+            CreateMap<BaseAttributeExternal, BaseAttribute>();
             CreateMap<PolicyAttributeMatch, PolicyAttributeMatchExternal>();
             CreateMap<PolicyAttributeMatchExternal, PolicyAttributeMatch>();
 
