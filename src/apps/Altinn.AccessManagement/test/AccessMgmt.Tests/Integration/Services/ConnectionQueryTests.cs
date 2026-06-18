@@ -25,7 +25,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
         _db = new AppDbContext(options);
         _query = new ConnectionQuery(_db);
 
-        SeedTestData(_db).GetAwaiter().GetResult();
+        fixture.EnsureSeedOnceAsync(() => SeedTestData(_db)).GetAwaiter().GetResult();
     }
 
     private async Task SeedTestData(AppDbContext db)
@@ -34,14 +34,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
         db.Assignments.AddRange(TestDataSet.Assignments);
         db.Delegations.AddRange(TestDataSet.Delegations);
 
-        try
-        {
-            await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
     }
 
     [Fact]
