@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using ContractsOrganizationNumber = Altinn.Authorization.Api.Contracts.Register.OrganizationNumber;
+using ContractsPersonIdentifier = Altinn.Authorization.Api.Contracts.Register.PersonIdentifier;
 
 namespace Altinn.AccessManagement.Tests.Unit.Services;
 
@@ -489,73 +490,106 @@ public class ConsentServiceTests
         result.Problem.StatusCode.Should().Be(Problems.ConsentNotFound.StatusCode);
     }
 
-    // -----------------------------------------------------------------------
-    // TODO — additional cases the developer should add to fully cover
-    // GetConsentStatusChangesForParty. Each one follows the
-    // arrange-mock / act / verify shape used above.
-    //
-    // 4. GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo
-    //    Mirror of test #2 but for a `ConsentPartyUrn.PersonId`. Mock
-    //    `_amPartyServiceMock.Setup(s => s.GetByPersonNo(personIdentifier, …))`
-    //    instead of `GetByOrgNo`. Confirms the other branch of
-    //    `MapFromExternalIdenity`.
-    //
-    // 5. GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList
-    //    Stub the repo to return `new List<ConsentStatusChange>()`. Assert
-    //    `IsProblem == false` and `Value` is an empty (not null) collection.
-    //    Important because the controller materialises this into a paginated
-    //    response with no `next` link.
-    //
-    // 6. GetConsentStatusChangesForParty_PassesContinuationTokenAndPageSizeVerbatim
-    //    [Theory] with InlineData rows for representative tokens (null, "",
-    //    a base64 cursor) and page sizes (1, 100, 1000). Assert that
-    //    `_consentRepositoryMock.Verify(...)` saw the exact values. The
-    //    page-size clamping lives in the *repository*, not the service, so
-    //    the service must not mutate these arguments.
-    //
-    // 7. GetConsentStatusChangesForParty_CancellationTokenForwarded
-    //    Pass a `CancellationTokenSource.Token` and verify the repository
-    //    received the same token via `It.Is<CancellationToken>(t => t == ct)`.
-    //    Catches "default-token" regressions where someone drops the
-    //    parameter on the way through.
-    //
-    // 8. (Edge) GetConsentStatusChangesForParty_AmPartyServiceReturnsNull_NullReferenceTodayBugReport
-    //    If `GetByOrgNo` returns null, `MapFromExternalIdenity` returns null
-    //    and the service immediately calls `.IsPartyUuid(...)` on it — that
-    //    is a NullReferenceException today. Decide whether to (a) write a
-    //    failing test that pins the bug for a follow-up fix, or (b) skip
-    //    until the service is hardened. Talk to the team before adding it.
-    //
-    // -----------------------------------------------------------------------
-    // Where the *other* tests for this feature live:
-    //
-    //  - Controller (Altinn.AccessManagement.Api.Enterprise.Controllers.ConsentController):
-    //    The integration tests in
-    //    `AccessMgmt.Tests/Controllers/Enterprise/ConsentControllerTestEnterpriseFetchStatusChanges.cs`
-    //    cover auth (401/403), happy path, paging, and tie-breaking. Those
-    //    use the (legacy) `LegacyApiFixture`. New controller tests should
-    //    prefer either:
-    //      a) a direct unit test that instantiates `ConsentController` with
-    //         `Mock<IConsent>` + a stubbed `ClaimsPrincipal` — fastest, and
-    //         enough for the controller's new branches (continuation-link
-    //         building, `Unauthorized` when there's no party in the token,
-    //         `result.Problem.ToActionResult()` propagation), or
-    //      b) `ApiFixture` (docs/testing/FIXTURES.md) when the test needs
-    //         the full MVC pipeline (model binding, auth policies, routing).
-    //    Do not add new consumers of `LegacyApiFixture` (see FIXTURES.md
-    //    section 3).
-    //
-    //  - Repository (Altinn.AccessManagement.Persistence.Consent.ConsentRepository):
-    //    `GetConsentStatusChangesForParty` is mostly a SQL query plus base64
-    //    cursor parsing. The cursor-parsing branch (invalid token → starts
-    //    from beginning, valid token → resumes) and the "latest event per
-    //    consentrequest" projection are the things worth pinning down.
-    //    These need a real Postgres → write them in
-    //    `Altinn.AccessMgmt.PersistenceEF.Tests` against `EFPostgresFactory`
-    //    (template-cloned DB; ~100–500 ms per test). See
-    //    docs/testing/FIXTURES.md "EFPostgresFactory" for the seeding
-    //    strategy.
-    // -----------------------------------------------------------------------
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo()
+    {
+        // Mirror of the OrganizationId test for the other branch of MapFromExternalIdenity: a PersonId
+        // receiver must be resolved to an internal partyUuid via GetByPersonNo before the repository call.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+        var resolvedPartyUuid = Guid.NewGuid();
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MinimalParty { PartyUuid = resolvedPartyUuid, Name = "Test Person" });
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(resolvedPartyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 50, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        _amPartyServiceMock.Verify(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()), Times.Once);
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(resolvedPartyUuid, query, 50, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList()
+    {
+        // The controller materialises this into a paginated response with no next link, so an empty
+        // (not null) collection matters.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        var result = await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1000)]
+    public async Task GetConsentStatusChangesForParty_PassesQueryAndPageSizeVerbatim(int pageSize)
+    {
+        // Page-size clamping lives in the repository, so the service must forward the query object and
+        // the page size unchanged for every valid page size.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        var query = new ConsentEventsQuery(null, null, null, null, new Guid("cd12b899-0795-4a3c-a65f-f8de792ff382"));
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, query, pageSize, CancellationToken.None);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, query, pageSize, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_CancellationTokenForwarded()
+    {
+        // Catches "default-token" regressions where the parameter is dropped on the way through.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        using var cts = new CancellationTokenSource();
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, cts.Token);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.Is<CancellationToken>(t => t == cts.Token)),
+            Times.Once);
+    }
+
+    // The null-receiver-resolution case (GetByOrgNo/GetByPersonNo returns null, so MapFromExternalIdenity
+    // returns null and the IsPartyUuid call NREs) is the production defect fixed in PR #3536, which routes
+    // GetConsentEventsForParty through ValidatePartyFromExternalIdentity and pins it there. Not duplicated
+    // here to avoid a conflicting fix on the same method.
     private ConsentService CreateService()
     {
         return new ConsentService(
