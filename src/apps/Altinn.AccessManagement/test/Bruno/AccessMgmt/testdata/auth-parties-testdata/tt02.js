@@ -1,4 +1,4 @@
-﻿module.exports = {
+module.exports = {
   env: "tt02",
   instancer: {
     personC_instansid : "urn:altinn:instance-id:51817923/2a8c9ece-c4b8-49f1-ad42-343f0a9f2452",
