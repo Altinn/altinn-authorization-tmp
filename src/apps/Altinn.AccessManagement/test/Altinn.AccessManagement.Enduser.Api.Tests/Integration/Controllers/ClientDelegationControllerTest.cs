@@ -396,9 +396,12 @@ public class ClientDelegationControllerTest
             var access = connection.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Rightholder);
             Assert.NotNull(access);
             Assert.Equal(RoleConstants.Rightholder.Id, access.Role.Id);
-            Assert.Equal(PackageConstants.Customs.Id, access.Packages.First().Id);
-            Assert.Equal(PackageConstants.Customs.Entity.Urn, access.Packages.First().Urn);
-            Assert.Equal(PackageConstants.Customs.Entity.AreaId, access.Packages.First().AreaId);
+            
+            var package = access.Packages.FirstOrDefault(p => p.Id == PackageConstants.Customs);
+            Assert.NotNull(package);
+            Assert.Equal(PackageConstants.Customs.Id, package.Id);
+            Assert.Equal(PackageConstants.Customs.Entity.Urn, package.Urn);
+            Assert.Equal(PackageConstants.Customs.Entity.AreaId, package.AreaId);
         }
 
         [Fact]
