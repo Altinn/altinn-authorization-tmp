@@ -248,6 +248,7 @@ if ($totalFailures -gt 0 -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP
     [void]$sb.AppendLine(('{0} failed: {1}.' -f $totalFailures, ($projectSummaries -join ', ')))
     [void]$sb.AppendLine('')
     $jobUrl = Get-JobUrl
+    Write-Host "[demo-verify] resolved summary link -> $jobUrl"
     if ($jobUrl) {
         [void]$sb.AppendLine(('[See the failing tests in this job''s log]({0})' -f $jobUrl))
     }
