@@ -56,8 +56,6 @@ if (-not $logs) {
     exit 0
 }
 
-$grandTotal = 0
-
 foreach ($log in $logs) {
     # PS7 Get-Content auto-detects the UTF-16 BOM these logs carry.
     $lines = Get-Content -LiteralPath $log.FullName
@@ -99,7 +97,6 @@ foreach ($log in $logs) {
     $index = 0
     foreach ($block in $blocks) {
         $index++
-        $grandTotal++
 
         # Header: "failed <FQN>[(args)] (<duration>)" — duration is the last (...).
         $header = $block[0].Trim() -replace '^failed\s+', ''
@@ -176,8 +173,4 @@ foreach ($log in $logs) {
     }
 }
 
-Write-Host ''
-if ($grandTotal -gt 0) {
-    Write-Host ("  Total: {0} failing test{1}." -f $grandTotal, ($(if ($grandTotal -eq 1) { '' } else { 's' })))
-}
 exit 0
