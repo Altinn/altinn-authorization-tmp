@@ -43,12 +43,13 @@ jobs:
       sonarProjectKey: ${{ matrix.sonarcloud }}
       sonarProjectName: ${{ matrix.sonarcloudName }}
 
-  # Run-level timing overview. The per-vertical jobs run in parallel, so none of
-  # them can see the run as a whole; this final job reads every vertical's timings
-  # from the jobs API and writes one rollup (wall-clock / long pole / runner-time /
-  # queue + a per-vertical table) to the run summary page. `always()` so it still
-  # reports when verticals fail.
+  # Timing breakdown. The per-vertical jobs run in parallel, so none of them can
+  # see the run as a whole; this final job reads every vertical's timings from the
+  # jobs API and writes one breakdown (wall-clock / runner-time + a per-vertical
+  # build/test/queue line) to the run summary page. `always()` so it still reports
+  # when verticals fail.
   timing-summary:
+    name: Timing breakdown
     needs: [find-verticals, ci]
     if: ${{ always() && needs.find-verticals.outputs.any == 'true' }}
     runs-on: ubuntu-latest
@@ -67,7 +68,7 @@ jobs:
           pattern: test-counts-*
           path: test-counts
           merge-multiple: true
-      - name: Run-level timing overview
+      - name: Write timing breakdown
         shell: pwsh
         env:
           GH_API_TOKEN: ${{ github.token }}
