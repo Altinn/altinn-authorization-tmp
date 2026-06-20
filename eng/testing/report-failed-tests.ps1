@@ -48,6 +48,43 @@ function Get-RepoRelativePath {
     return $norm
 }
 
+function Get-RunUrl {
+    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_RUN_ID) {
+        return '{0}/{1}/actions/runs/{2}' -f $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_RUN_ID
+    }
+    return $null
+}
+
+function Get-JobUrl {
+    # Deep link to THIS job's page (.../runs/<id>/job/<job_id>). The numeric job id
+    # is not in the environment, so resolve it from the jobs API and identify this
+    # job by the runner it is executing on. Falls back to the run URL if the token,
+    # permissions or a match are missing, so the link is never broken.
+    $runUrl = Get-RunUrl
+    if (-not ($env:GH_API_TOKEN -and $env:GITHUB_API_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_RUN_ID -and $env:RUNNER_NAME)) {
+        return $runUrl
+    }
+    try {
+        $headers = @{
+            Authorization          = "Bearer $($env:GH_API_TOKEN)"
+            Accept                 = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+        }
+        $attempt = if ($env:GITHUB_RUN_ATTEMPT) { $env:GITHUB_RUN_ATTEMPT } else { '1' }
+        $uri = '{0}/repos/{1}/actions/runs/{2}/attempts/{3}/jobs?per_page=100' -f `
+            $env:GITHUB_API_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_RUN_ID, $attempt
+        $jobs = (Invoke-RestMethod -Headers $headers -Uri $uri -Method Get).jobs
+        # One job per runner at a time, so the in-progress job on this runner is us.
+        $job = $jobs | Where-Object { $_.runner_name -eq $env:RUNNER_NAME -and $_.status -eq 'in_progress' } | Select-Object -First 1
+        if (-not $job) {
+            $job = $jobs | Where-Object { $_.runner_name -eq $env:RUNNER_NAME } | Select-Object -Last 1
+        }
+        if ($job -and $job.html_url) { return $job.html_url }
+    }
+    catch { }
+    return $runUrl
+}
+
 $segment = '/' + (($ResultsDirectory -replace '\\', '/').Trim('/')) + '/'
 
 $logs = Get-ChildItem -Path . -Recurse -Filter '*_x64.log' -ErrorAction SilentlyContinue |
@@ -210,9 +247,9 @@ if ($totalFailures -gt 0 -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP
     [void]$sb.AppendLine('')
     [void]$sb.AppendLine(('{0} failed: {1}.' -f $totalFailures, ($projectSummaries -join ', ')))
     [void]$sb.AppendLine('')
-    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_RUN_ID) {
-        $runUrl = '{0}/{1}/actions/runs/{2}' -f $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_RUN_ID
-        [void]$sb.AppendLine(('[See the failing tests in the run log]({0})' -f $runUrl))
+    $jobUrl = Get-JobUrl
+    if ($jobUrl) {
+        [void]$sb.AppendLine(('[See the failing tests in this job''s log]({0})' -f $jobUrl))
     }
     Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sb.ToString()
 }

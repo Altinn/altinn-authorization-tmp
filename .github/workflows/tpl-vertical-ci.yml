@@ -59,6 +59,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # report-failed-tests.ps1 reads the jobs API to deep-link the summary
 
 jobs:
   build-test-analyze:
@@ -223,6 +224,8 @@ jobs:
         id: test_unit
         shell: bash
         working-directory: ${{ inputs.path }}
+        env:
+          GH_API_TOKEN: ${{ github.token }} # lets report-failed-tests.ps1 deep-link the job summary
         run: |
           set +e
           dotnet-coverage collect --nologo \
@@ -252,6 +255,7 @@ jobs:
           # next step prints it into the log. A file is used because MTP / dotnet-
           # coverage swallow the test host's process-exit stdout.
           FIXTURE_TIMING_FILE: ${{ github.workspace }}/fixture-timing.txt
+          GH_API_TOKEN: ${{ github.token }} # lets report-failed-tests.ps1 deep-link the job summary
         run: |
           set +e
           dotnet-coverage collect --nologo \
