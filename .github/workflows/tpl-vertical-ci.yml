@@ -396,3 +396,17 @@ jobs:
           path: ${{ inputs.path }}/binlog/*.binlog
           if-no-files-found: ignore
           retention-days: 1
+
+      - name: Timing summary
+        # Always-on: write a per-step timing breakdown for this job to the run
+        # summary page, so where the build/test time went is visible at a glance
+        # without opening the log. Resolves this job via the jobs API (matched by
+        # runner) — needs actions:read (set above) and the token below. It only
+        # times steps that actually ran, so a PR run and the nightly analyze run
+        # each show their own set. Best-effort; never fails the job.
+        if: always()
+        shell: pwsh
+        env:
+          GH_API_TOKEN: ${{ github.token }}
+        run: |
+          & "$env:GITHUB_WORKSPACE/eng/testing/report-step-timings.ps1"
