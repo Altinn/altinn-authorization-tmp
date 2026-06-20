@@ -236,12 +236,19 @@ foreach ($log in $logs) {
             Write-Host '::endgroup::'
         }
 
-        # One list item in the job summary: `Class.Method`: reason (source link).
+        # One list item per failure, with the test name, reason and source each on
+        # its own line. A trailing two-space sequence is a Markdown hard break, so
+        # the indented continuation lines stay part of the same bullet.
         $reasonText = (($messageLines | ForEach-Object { Format-SummaryText $_ }) -join ' ')
         $src = Format-Source $sourceFile $sourceLine
-        $item = '- `{0}`: {1}' -f $short, $reasonText
-        if ($src) { $item = '{0} ({1})' -f $item, $src }
-        [void]$summary.AppendLine($item)
+        [void]$summary.AppendLine(('- `{0}`  ' -f $short))
+        if ($src) {
+            [void]$summary.AppendLine(('  {0}  ' -f $reasonText))
+            [void]$summary.AppendLine(('  {0}' -f $src))
+        }
+        else {
+            [void]$summary.AppendLine(('  {0}' -f $reasonText))
+        }
     }
 
     [void]$summary.AppendLine('')
