@@ -105,11 +105,26 @@ $lane = (($ResultsDirectory -replace '\\', '/').TrimEnd('/') -split '/')[-1]
 # the test step already shows the full detail. No point repeating it.
 $projectSummaries = [System.Collections.Generic.List[string]]::new()
 $totalFailures = 0
+$lanePassed = 0
+$laneFailed = 0
+$laneSkipped = 0
 
 foreach ($log in $logs) {
     # PS7 Get-Content auto-detects the UTF-16 BOM these logs carry.
     $lines = Get-Content -LiteralPath $log.FullName
     if (-not $lines) { continue }
+
+    # Lane tally: read this project's run-summary block ("succeeded:/failed:/
+    # skipped:") so passed/skipped are counted even for projects with no failures.
+    $inSummary = $false
+    foreach ($raw in $lines) {
+        $line = $raw -replace "`r", ''
+        if ($line -match '^\s*Test run summary') { $inSummary = $true; continue }
+        if (-not $inSummary) { continue }
+        if ($line -match '^\s*succeeded:\s*(\d+)') { $lanePassed += [int]$Matches[1] }
+        elseif ($line -match '^\s*failed:\s*(\d+)') { $laneFailed += [int]$Matches[1] }
+        elseif ($line -match '^\s*skipped:\s*(\d+)') { $laneSkipped += [int]$Matches[1] }
+    }
 
     # Collect each failure as the "failed ..." header line plus every line up to
     # the next failed header or the run summary.
@@ -245,7 +260,9 @@ if ($totalFailures -gt 0 -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP
     $sb = [System.Text.StringBuilder]::new()
     [void]$sb.AppendLine(('### ❌ Failed tests ({0} lane)' -f $lane))
     [void]$sb.AppendLine('')
-    [void]$sb.AppendLine(('{0} failed: {1}.' -f $totalFailures, ($projectSummaries -join ', ')))
+    [void]$sb.AppendLine(('✅ {0} passed · ❌ {1} failed · ⚠️ {2} skipped' -f $lanePassed, $laneFailed, $laneSkipped))
+    [void]$sb.AppendLine('')
+    [void]$sb.AppendLine(('Failing: {0}.' -f ($projectSummaries -join ', ')))
     [void]$sb.AppendLine('')
     $jobUrl = Get-JobUrl
     if ($jobUrl) {
