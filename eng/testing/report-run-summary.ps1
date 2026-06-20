@@ -37,6 +37,19 @@ function Step-Seconds {
     return $secs
 }
 
+# A lane cell: its duration, with the test count in parens when available.
+function Lane-Cell {
+    param($Seconds, $Count)
+    $t = Format-Duration $Seconds
+    if ($null -ne $Count -and "$Count" -ne '') { return '{0} ({1})' -f $t, $Count }
+    return $t
+}
+
+function Max-Len {
+    param([object[]]$Rows, [string]$Prop)
+    ($Rows | ForEach-Object { [string]$_.$Prop } | Measure-Object -Property Length -Maximum).Maximum
+}
+
 try {
     $headers = @{
         Authorization          = "Bearer $($env:GH_API_TOKEN)"
@@ -84,7 +97,31 @@ try {
     if (-not $runStart) { $runStart = $maxCompleted }
     $wall = ($maxCompleted - $runStart).TotalSeconds
 
-    $nameWidth = ($verticals | ForEach-Object { $_.Vertical.Length } | Measure-Object -Maximum).Maximum
+    # Per-lane test counts from the downloaded artifacts (displayName -> counts),
+    # added in parens next to each lane's time. Best-effort: absent = no parens.
+    $counts = @{}
+    $countsDir = Join-Path $env:GITHUB_WORKSPACE 'test-counts'
+    if (Test-Path $countsDir) {
+        Get-ChildItem -Path $countsDir -Recurse -Filter *.tsv -ErrorAction SilentlyContinue | ForEach-Object {
+            $p = (((Get-Content -Raw -LiteralPath $_.FullName) -split "`n")[0]).TrimEnd("`r") -split "`t"
+            if ($p.Count -ge 3) { $counts[$p[0]] = @{ Unit = $p[1]; Integration = $p[2] } }
+        }
+    }
+
+    # Pre-format every cell, then pad each column to its widest so it lines up.
+    $rows = foreach ($v in $sorted) {
+        $c = $counts[$v.Vertical]
+        [pscustomobject]@{
+            Name  = $v.Vertical
+            Build = Format-Duration $v.Build
+            Unit  = Lane-Cell $v.Unit $c.Unit
+            Integ = Lane-Cell $v.Integration $c.Integration
+            Total = Format-Duration $v.Total
+            Queue = Format-Duration $v.Queue
+        }
+    }
+    $wName = Max-Len $rows 'Name'; $wBuild = Max-Len $rows 'Build'; $wUnit = Max-Len $rows 'Unit'
+    $wInteg = Max-Len $rows 'Integ'; $wTotal = Max-Len $rows 'Total'; $wQueue = Max-Len $rows 'Queue'
 
     $sb = [System.Text.StringBuilder]::new()
     [void]$sb.AppendLine('```')
@@ -92,14 +129,10 @@ try {
         (Format-Duration $wall), (Format-Duration $runnerSeconds), $verticals.Count, `
             $(if ($verticals.Count -eq 1) { 'vertical' } else { 'verticals' })))
     [void]$sb.AppendLine('')
-    foreach ($v in $sorted) {
+    foreach ($r in $rows) {
         [void]$sb.AppendLine(('{0}  build {1} · unit {2} · integration {3} · total {4} · queue {5}' -f `
-            $v.Vertical.PadRight($nameWidth), `
-            (Format-Duration $v.Build).PadLeft(7), `
-            (Format-Duration $v.Unit).PadLeft(6), `
-            (Format-Duration $v.Integration).PadLeft(7), `
-            (Format-Duration $v.Total).PadLeft(7), `
-            (Format-Duration $v.Queue).PadLeft(6)))
+            $r.Name.PadRight($wName), $r.Build.PadLeft($wBuild), $r.Unit.PadLeft($wUnit), `
+            $r.Integ.PadLeft($wInteg), $r.Total.PadLeft($wTotal), $r.Queue.PadLeft($wQueue)))
     }
     [void]$sb.AppendLine('```')
     Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sb.ToString()
