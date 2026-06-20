@@ -94,7 +94,7 @@ public static class RoleConstants
         {
             Name = "Rettighetshaver",
             Code = "rettighetshaver",
-            Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten",
+            Description = "Gir mulighet til å motta delegerte fullmakter for en aktør",
             Urn = "urn:altinn:role:rettighetshaver",
             IsKeyRole = false,
             IsAssignable = true,
@@ -104,12 +104,46 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rightholder"),
-            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for the business")
+            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for an actor")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rettshavar"),
-            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for verksemda")
+            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for en aktør")
         ),
+    };
+
+    /// <summary>
+    /// Represents the 'Innehaver av app-styrt instans tilgang' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> aefe8391-3f21-4641-8d96-06ba04c67cfd
+    /// - <c>URN:</c> urn:altinn:role:innehaver-app-styrt-instans-tilgang
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Code:</c> innehaver-app-styrt-instans-tilgang
+    /// - <c>Description:</c>Forhold som alle app-styrte instanstilganger knyttes til
+    /// </remarks>
+    public static ConstantDefinition<Role> InnehaverAppStyrtInstansTilgang { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
+    {
+        Entity = new()
+        {
+            Name = "Innehaver av app-styrt instans tilgang",
+            Code = "innehaver-app-styrt-instans-tilgang",
+            Description = "Forhold som alle app-styrte instanstilganger knyttes til",
+            Urn = "urn:altinn:role:innehaver-app-styrt-instans-tilgang",
+            IsKeyRole = false,
+            IsAssignable = true,
+            IsAvailableForServiceOwners = false,
+            EntityTypeId = EntityTypeConstants.Organization, // Technically this will be used for both persons and organizations which we currently don't have a way to express in the model, but since the main use case is for organizations we will set it to that for now
+            ProviderId = ProviderConstants.Altinn3,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "App-Controlled Instance Access Holder"),
+            KeyValuePair.Create("Description", "Relationship to which all app-controlled instance accesses are linked")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Innehavar av app-styrt instans tilgang"),
+            KeyValuePair.Create("Description", "Forhold som alle app-styrte instanstilgangar blir knytte til")
+        )
     };
 
     /// <summary>

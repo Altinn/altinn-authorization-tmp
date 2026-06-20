@@ -518,7 +518,9 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             AuditAccessor.AuditValues = new AuditValues(changedBy, SystemEntityConstants.Altinn2AddRulesApi, operationId, validFrom);
         }
 
-        var role = RoleConstants.Rightholder;
+        var role = instanceDelegationChange.InstanceDelegationSource == InstanceDelegationSource.App
+            ? RoleConstants.InnehaverAppStyrtInstansTilgang
+            : RoleConstants.Rightholder;
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.FromUuid, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.ToUuid, cancellationToken);
         var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == instanceDelegationChange.ResourceId, cancellationToken);
@@ -662,8 +664,8 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             {
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
 
-                var role = resource.Type.Name == "MaskinportenSchema"
-                    ? RoleConstants.Supplier
+                var role = policy.Rules.InstanceDelegationSource == InstanceDelegationSource.App
+                    ? RoleConstants.InnehaverAppStyrtInstansTilgang
                     : RoleConstants.Rightholder;
 
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
