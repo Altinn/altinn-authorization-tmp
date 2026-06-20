@@ -55,14 +55,31 @@ function Format-SummaryText {
     return ($Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;')
 }
 
+function Get-CommitSha {
+    # The sha to link blobs against. On a pull_request run GITHUB_SHA is the
+    # ephemeral merge commit, whose blob URLs 404 in the web UI; use the PR head
+    # sha from the event payload instead. Falls back to GITHUB_SHA (push to main).
+    if ($env:GITHUB_EVENT_PATH -and (Test-Path -LiteralPath $env:GITHUB_EVENT_PATH)) {
+        try {
+            $sha = (Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json).pull_request.head.sha
+            if ($sha) { return $sha }
+        }
+        catch { }
+    }
+    return $env:GITHUB_SHA
+}
+
 function Format-Source {
-    # "<file>:<line>" as inline code (filename only; the project line gives the
-    # rest). Deliberately not hyperlinked: a pull_request run exposes only the
-    # ephemeral merge commit (GITHUB_SHA), whose blob URLs 404 in the web UI, and
-    # the full path is already in the step log.
+    # "<file>:<line>" (filename only; the project line gives the rest), linked to
+    # the exact line on the head commit when the run context is known, otherwise
+    # the same text as inline code.
     param([string]$File, [string]$Line)
     if (-not $File) { return '' }
-    return '`{0}:{1}`' -f (($File -split '/')[-1]), $Line
+    $text = '{0}:{1}' -f (($File -split '/')[-1]), $Line
+    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $script:CommitSha) {
+        return '[{0}]({1}/{2}/blob/{3}/{4}#L{5})' -f $text, $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $script:CommitSha, $File, $Line
+    }
+    return '`{0}`' -f $text
 }
 
 $segment = '/' + (($ResultsDirectory -replace '\\', '/').Trim('/')) + '/'
@@ -80,6 +97,9 @@ if (-not $logs) {
 
 # Lane name (e.g. "unit" / "integration") for the job-summary heading.
 $lane = (($ResultsDirectory -replace '\\', '/').TrimEnd('/') -split '/')[-1]
+
+# Commit the job-summary source links point at (resolved once).
+$script:CommitSha = Get-CommitSha
 
 # Markdown accumulated for the GitHub job summary, written once at the end.
 $summary = [System.Text.StringBuilder]::new()
