@@ -86,7 +86,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:role:rettighetshaver
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> rettighetshaver
-    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for virksomheten
+    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for en aktør
     /// </remarks>
     public static ConstantDefinition<Role> Rightholder { get; } = new ConstantDefinition<Role>("42cae370-2dc1-4fdc-9c67-c2f4b0f0f829")
     {
@@ -108,7 +108,7 @@ public static class RoleConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rettshavar"),
-            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for en aktør")
+            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for ein aktør")
         ),
     };
 
@@ -120,7 +120,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:role:innehaver-app-styrt-instans-tilgang
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> innehaver-app-styrt-instans-tilgang
-    /// - <c>Description:</c>Forhold som alle app-styrte instanstilganger knyttes til
+    /// - <c>Description:</c> Forhold som alle app-styrte instanstilganger knyttes til
     /// </remarks>
     public static ConstantDefinition<Role> InnehaverAppStyrtInstansTilgang { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
     {
