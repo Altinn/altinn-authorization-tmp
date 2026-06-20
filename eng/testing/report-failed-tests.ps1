@@ -48,20 +48,20 @@ function Get-RepoRelativePath {
     return $norm
 }
 
-function Format-TableText {
-    # Plain-text Markdown table cell: neutralise HTML angle brackets / ampersands so
-    # type names and <null> render literally, and escape the row delimiter.
+function Format-SummaryText {
+    # Neutralise HTML angle brackets / ampersands so type names like List<int> and
+    # <null> render literally in the Markdown summary.
     param([string]$Text)
-    $t = $Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
-    return ($t -replace '\|', '\|')
+    return ($Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;')
 }
 
 function Get-SourceMarkdown {
-    # A linked `path:line` for the job-summary table when the run context is known,
-    # otherwise the path as inline code.
+    # A linked "<file>:<line>" (filename only; the project line gives the rest) when
+    # the run context is known, otherwise the same text as inline code.
     param([string]$File, [string]$Line)
     if (-not $File) { return '' }
-    $text = '{0}:{1}' -f $File, $Line
+    $name = ($File -split '/')[-1]
+    $text = '{0}:{1}' -f $name, $Line
     if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_SHA) {
         return '[{0}]({1}/{2}/blob/{3}/{4}#L{5})' -f $text, $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_SHA, $File, $Line
     }
@@ -127,10 +127,8 @@ foreach ($log in $logs) {
     Write-Host ('─' * 78)
 
     $anyFailures = $true
-    [void]$summary.AppendLine(('#### {0} — {1} failed' -f $project, $blocks.Count))
+    [void]$summary.AppendLine(('**{0}** ({1} failed)' -f $project, $blocks.Count))
     [void]$summary.AppendLine('')
-    [void]$summary.AppendLine('| Test | Reason | Source |')
-    [void]$summary.AppendLine('| --- | --- | --- |')
 
     $index = 0
     foreach ($block in $blocks) {
@@ -221,17 +219,19 @@ foreach ($log in $logs) {
             Write-Host '::endgroup::'
         }
 
-        # One row in the job-summary table.
-        $reasonCell = (($messageLines | ForEach-Object { Format-TableText $_ }) -join '<br>')
-        $testCell = '`' + ($short -replace '\|', '\|') + '`'
-        [void]$summary.AppendLine(('| {0} | {1} | {2} |' -f $testCell, $reasonCell, (Get-SourceMarkdown $sourceFile $sourceLine)))
+        # One list item in the job summary: `Class.Method`: reason (source link).
+        $reasonText = (($messageLines | ForEach-Object { Format-SummaryText $_ }) -join ' ')
+        $src = Get-SourceMarkdown $sourceFile $sourceLine
+        $item = '- `{0}`: {1}' -f $short, $reasonText
+        if ($src) { $item = '{0} ({1})' -f $item, $src }
+        [void]$summary.AppendLine($item)
     }
 
     [void]$summary.AppendLine('')
 }
 
 if ($anyFailures -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
-    $heading = "### ❌ Failed tests — {0} lane`n`n" -f $lane
+    $heading = "### ❌ Failed tests ({0} lane)`n`n" -f $lane
     Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($heading + $summary.ToString())
 }
 
