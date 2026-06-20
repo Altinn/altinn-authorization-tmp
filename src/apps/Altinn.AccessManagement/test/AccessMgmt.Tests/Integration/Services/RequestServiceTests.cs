@@ -73,7 +73,7 @@ public class RequestServiceTests : IClassFixture<EfDatabaseFixture>
 
         var sp = collection.Services.BuildServiceProvider();
 
-        SeedSharedData(_db).GetAwaiter().GetResult();
+        fixture.EnsureSeedOnceAsync(() => SeedSharedData(_db)).GetAwaiter().GetResult();
 
         _requestService = new RequestService(_db, sp.GetRequiredService<IOptions<CoreAppsettings>>());
     }
@@ -83,14 +83,7 @@ public class RequestServiceTests : IClassFixture<EfDatabaseFixture>
         db.Entities.AddRange(OrgFrom, PersonTo);
         db.ResourceTypes.Add(TestResourceType);
 
-        try
-        {
-            await db.SaveChangesAsync(TestAudit);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(TestAudit);
 
         db.ChangeTracker.Clear();
     }
