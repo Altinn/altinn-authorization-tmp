@@ -235,12 +235,6 @@ jobs:
           fi
           code=$?
           set -e
-          # Report this lane's test count (summed .trx total) and time, in-step.
-          # GitHub already shows the step's duration natively; this adds the count.
-          dur=$SECONDS
-          cnt=$(find . -path '*/TestResults/unit/*.trx' -exec grep -ohE 'total="[0-9]+"' {} + 2>/dev/null | grep -oE '[0-9]+' | awk '{s+=$1} END{print s+0}')
-          if [ "$dur" -ge 60 ]; then dstr="$((dur/60))m $((dur%60))s"; else dstr="${dur}s"; fi
-          echo "Unit lane: ${cnt} tests in ${dstr}"
           # Surface the failing tests on this step, then re-raise the real exit code.
           if [ "$code" -ne 0 ]; then
             pwsh -NoProfile -File "$GITHUB_WORKSPACE/eng/testing/report-failed-tests.ps1" -ResultsDirectory TestResults/unit
@@ -270,12 +264,6 @@ jobs:
           fi
           code=$?
           set -e
-          # Report this lane's test count (summed .trx total) and time, in-step.
-          # GitHub already shows the step's duration natively; this adds the count.
-          dur=$SECONDS
-          cnt=$(find . -path '*/TestResults/integration/*.trx' -exec grep -ohE 'total="[0-9]+"' {} + 2>/dev/null | grep -oE '[0-9]+' | awk '{s+=$1} END{print s+0}')
-          if [ "$dur" -ge 60 ]; then dstr="$((dur/60))m $((dur%60))s"; else dstr="${dur}s"; fi
-          echo "Integration lane: ${cnt} tests in ${dstr}"
           # Surface the failing tests on this step, then re-raise the real exit code.
           if [ "$code" -ne 0 ]; then
             pwsh -NoProfile -File "$GITHUB_WORKSPACE/eng/testing/report-failed-tests.ps1" -ResultsDirectory TestResults/integration
