@@ -34,13 +34,17 @@ try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 function Get-RepoRelativePath {
     param([string]$Path)
-    $root = $env:GITHUB_WORKSPACE
-    if ([string]::IsNullOrWhiteSpace($root)) { return $Path }
     $norm = $Path -replace '\\', '/'
-    $root = $root -replace '\\', '/'
-    if ($norm.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return $norm.Substring($root.Length).TrimStart('/')
+    $root = $env:GITHUB_WORKSPACE
+    if (-not [string]::IsNullOrWhiteSpace($root)) {
+        $root = $root -replace '\\', '/'
+        if ($norm.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $norm.Substring($root.Length).TrimStart('/')
+        }
     }
+    # Deterministic builds (ContinuousIntegrationBuild) map the repo root to "/_/",
+    # so lib verticals report frames as /_/src/...; normalise that too.
+    if ($norm -match '^/_/(.+)$') { return $Matches[1] }
     return $norm
 }
 
@@ -158,18 +162,25 @@ foreach ($log in $logs) {
         $short = "$short$argPart"
 
         # Message = block lines before the first stack frame ("at ...").
-        # Stack = from the first "at ..." onward.
+        # Stack = the "at ..." frames from there on.
         $body = $block | Select-Object -Skip 1
         $messageLines = [System.Collections.Generic.List[string]]::new()
         $stackLines = [System.Collections.Generic.List[string]]::new()
         $inStack = $false
         foreach ($l in $body) {
+            $t = $l.Trim()
+            if (-not $t) { continue }
+            # Under parallel execution MTP interleaves per-test progress lines like
+            # "[+10/x2/?0] Asm.dll - Other.Test (3s)"; they are not part of this
+            # failure, so drop them wherever they land.
+            if ($t -match '^\[[+\-x?\d/]+\]') { continue }
             if (-not $inStack -and $l -match '^\s*at\s') { $inStack = $true }
             if ($inStack) {
-                if ($l.Trim()) { $stackLines.Add($l.Trim()) }
+                # Only genuine "at ..." frames belong in the stack.
+                if ($l -match '^\s*at\s') { $stackLines.Add($t) }
             }
-            elseif ($l.Trim()) {
-                $messageLines.Add($l.Trim())
+            else {
+                $messageLines.Add($t)
             }
         }
         if ($messageLines.Count -eq 0) {
