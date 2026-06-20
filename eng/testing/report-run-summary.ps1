@@ -1,11 +1,13 @@
 #!/usr/bin/env pwsh
-# Writes ONE line to the run summary page: total wall-clock and the slowest
-# vertical (the long pole that gates it), with that vertical's build/integration
-# split. The per-vertical jobs run in parallel, so this aggregation job (needs:
-# the matrix) is the only place that can see the run as a whole. Anything more
-# detailed is a click away in the run's own UI.
+# Writes a compact per-vertical timing block to the run summary page: a header
+# (wall-clock, runner-time, vertical count) and one aligned line per vertical
+# (build / unit / integration / total / queue), slowest first.
 #
-# Best-effort: any missing token/permission/data just skips the line, exit 0.
+# The per-vertical jobs run in parallel, so this aggregation job (needs: the
+# matrix) is the only place that can see the run as a whole. Rendered in a code
+# block so the columns line up and the lines don't collapse into one paragraph.
+#
+# Best-effort: any missing token/permission/data just skips the block, exit 0.
 [CmdletBinding()]
 param()
 
@@ -16,10 +18,12 @@ if ([string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) { exit 0 }
 if (-not ($env:GH_API_TOKEN -and $env:GITHUB_API_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_RUN_ID)) { exit 0 }
 
 function Format-Duration {
-    param([double]$Seconds)
+    param($Seconds)
+    if ($null -eq $Seconds) { return '-' }
     # Floor the leading unit. PowerShell's [int] cast ROUNDS (banker's), so
     # [int](280/60) = 5, which would print "5m 40s" for 4m40s.
-    $s = [int][math]::Round($Seconds)
+    $s = [int][math]::Round([double]$Seconds)
+    if ($s -ge 3600) { return '{0}h {1:00}m' -f [int][math]::Floor($s / 3600), [int][math]::Floor(($s % 3600) / 60) }
     if ($s -ge 60) { return '{0}m {1:00}s' -f [int][math]::Floor($s / 60), ($s % 60) }
     return '{0}s' -f $s
 }
@@ -48,18 +52,25 @@ try {
     $verticals = foreach ($job in $jobs) {
         $m = [regex]::Match([string]$job.name, '^ci \((?<v>.+?)\)')
         if (-not $m.Success -or -not $job.started_at -or -not $job.completed_at) { continue }
-        $total = ([datetimeoffset]$job.completed_at - [datetimeoffset]$job.started_at).TotalSeconds
+        $started = [datetimeoffset]$job.started_at
+        $completed = [datetimeoffset]$job.completed_at
+        $total = ($completed - $started).TotalSeconds
         if ($total -lt 0) { continue }
+        $queue = if ($job.created_at) { [math]::Max(0, ($started - [datetimeoffset]$job.created_at).TotalSeconds) } else { 0 }
         [pscustomobject]@{
-            Vertical  = $m.Groups['v'].Value
-            Total     = $total
-            Completed = [datetimeoffset]$job.completed_at
-            Job       = $job
+            Vertical    = $m.Groups['v'].Value
+            Build       = (Step-Seconds $job 'Build')
+            Unit        = (Step-Seconds $job 'Test - unit lane*')
+            Integration = (Step-Seconds $job 'Test - integration lane*')
+            Total       = $total
+            Queue       = $queue
+            Completed   = $completed
         }
     }
     if (-not $verticals) { exit 0 }
 
-    $longPole = $verticals | Sort-Object Total -Descending | Select-Object -First 1
+    $sorted = $verticals | Sort-Object Total -Descending
+    $runnerSeconds = ($verticals | Measure-Object -Property Total -Sum).Sum
 
     # Wall-clock = run start to the last vertical finishing.
     $runStart = $null
@@ -73,18 +84,26 @@ try {
     if (-not $runStart) { $runStart = $maxCompleted }
     $wall = ($maxCompleted - $runStart).TotalSeconds
 
-    # The two phases worth optimizing inside the long pole.
-    $split = @()
-    $build = Step-Seconds $longPole.Job 'Build'
-    $integration = Step-Seconds $longPole.Job 'Test - integration lane*'
-    if ($null -ne $build) { $split += 'build {0}' -f (Format-Duration $build) }
-    if ($null -ne $integration) { $split += 'integration {0}' -f (Format-Duration $integration) }
-    $splitText = if ($split.Count) { ' (' + ($split -join ', ') + ')' } else { '' }
+    $nameWidth = ($verticals | ForEach-Object { $_.Vertical.Length } | Measure-Object -Maximum).Maximum
 
-    $line = '⏱️ CI {0} · slowest: {1} {2}{3}' -f `
-        (Format-Duration $wall), $longPole.Vertical, (Format-Duration $longPole.Total), $splitText
-    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $line
-    Write-Host $line
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.AppendLine('```')
+    [void]$sb.AppendLine(('⏱️ CI {0} wall-clock · {1} runner-time · {2} {3}' -f `
+        (Format-Duration $wall), (Format-Duration $runnerSeconds), $verticals.Count, `
+            $(if ($verticals.Count -eq 1) { 'vertical' } else { 'verticals' })))
+    [void]$sb.AppendLine('')
+    foreach ($v in $sorted) {
+        [void]$sb.AppendLine(('{0}  build {1} · unit {2} · integration {3} · total {4} · queue {5}' -f `
+            $v.Vertical.PadRight($nameWidth), `
+            (Format-Duration $v.Build).PadLeft(7), `
+            (Format-Duration $v.Unit).PadLeft(6), `
+            (Format-Duration $v.Integration).PadLeft(7), `
+            (Format-Duration $v.Total).PadLeft(7), `
+            (Format-Duration $v.Queue).PadLeft(6)))
+    }
+    [void]$sb.AppendLine('```')
+    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sb.ToString()
+    Write-Host $sb.ToString()
 }
 catch {
     Write-Host "report-run-summary: skipped ($($_.Exception.Message))"
