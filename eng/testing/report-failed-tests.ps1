@@ -1,7 +1,6 @@
 #!/usr/bin/env pwsh
 # Surfaces failing tests from a test lane directly in that lane's own step log,
-# in a human-readable form, plus GitHub `::error::` annotations that point at the
-# failing source line.
+# in a human-readable form.
 #
 # The xUnit-v3 / Microsoft-Testing-Platform per-project log
 # (`<Project>_<tfm>_<arch>.log`, UTF-16) carries the test-level detail that the
@@ -173,16 +172,6 @@ foreach ($log in $logs) {
             Write-Host "::group::     Stack trace"
             foreach ($s in $stackLines) { Write-Host "       $s" }
             Write-Host '::endgroup::'
-        }
-
-        # PR-checks annotation, anchored at the failing source line when known.
-        $escTitle = $fqn -replace '%', '%25' -replace "`r", '' -replace "`n", ' '
-        $escMsg = $message -replace '%', '%25' -replace "`r", '' -replace "`n", ' '
-        if ($sourceFile) {
-            Write-Host ("::error file={0},line={1},title={2}::{3}" -f $sourceFile, $sourceLine, $escTitle, $escMsg)
-        }
-        else {
-            Write-Host ("::error title={0}::{1}" -f $escTitle, $escMsg)
         }
     }
 }
