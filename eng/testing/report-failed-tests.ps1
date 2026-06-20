@@ -48,40 +48,6 @@ function Get-RepoRelativePath {
     return $norm
 }
 
-function Format-SummaryText {
-    # Neutralise HTML angle brackets / ampersands so type names like List<int> and
-    # <null> render literally in the Markdown summary.
-    param([string]$Text)
-    return ($Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;')
-}
-
-function Get-CommitSha {
-    # The sha to link blobs against. On a pull_request run GITHUB_SHA is the
-    # ephemeral merge commit, whose blob URLs 404 in the web UI; use the PR head
-    # sha from the event payload instead. Falls back to GITHUB_SHA (push to main).
-    if ($env:GITHUB_EVENT_PATH -and (Test-Path -LiteralPath $env:GITHUB_EVENT_PATH)) {
-        try {
-            $sha = (Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json).pull_request.head.sha
-            if ($sha) { return $sha }
-        }
-        catch { }
-    }
-    return $env:GITHUB_SHA
-}
-
-function Format-Source {
-    # "<file>:<line>" (filename only; the project line gives the rest), linked to
-    # the exact line on the head commit when the run context is known, otherwise
-    # the same text as inline code.
-    param([string]$File, [string]$Line)
-    if (-not $File) { return '' }
-    $text = '{0}:{1}' -f (($File -split '/')[-1]), $Line
-    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $script:CommitSha) {
-        return '[{0}]({1}/{2}/blob/{3}/{4}#L{5})' -f $text, $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $script:CommitSha, $File, $Line
-    }
-    return '`{0}`' -f $text
-}
-
 $segment = '/' + (($ResultsDirectory -replace '\\', '/').Trim('/')) + '/'
 
 $logs = Get-ChildItem -Path . -Recurse -Filter '*_x64.log' -ErrorAction SilentlyContinue |
@@ -98,12 +64,10 @@ if (-not $logs) {
 # Lane name (e.g. "unit" / "integration") for the job-summary heading.
 $lane = (($ResultsDirectory -replace '\\', '/').TrimEnd('/') -split '/')[-1]
 
-# Commit the job-summary source links point at (resolved once).
-$script:CommitSha = Get-CommitSha
-
-# Markdown accumulated for the GitHub job summary, written once at the end.
-$summary = [System.Text.StringBuilder]::new()
-$anyFailures = $false
+# The job summary stays terse: a per-project count and a link to this run, where
+# the test step already shows the full detail. No point repeating it.
+$projectSummaries = [System.Collections.Generic.List[string]]::new()
+$totalFailures = 0
 
 foreach ($log in $logs) {
     # PS7 Get-Content auto-detects the UTF-16 BOM these logs carry.
@@ -143,9 +107,8 @@ foreach ($log in $logs) {
     Write-Host ("  ❌  {0} failed test{1} in {2}" -f $blocks.Count, ($(if ($blocks.Count -eq 1) { '' } else { 's' })), $project)
     Write-Host ('─' * 78)
 
-    $anyFailures = $true
-    [void]$summary.AppendLine(('**{0}** ({1} failed)' -f $project, $blocks.Count))
-    [void]$summary.AppendLine('')
+    $totalFailures += $blocks.Count
+    $projectSummaries.Add(('**{0}** ({1})' -f $project, $blocks.Count))
 
     $index = 0
     foreach ($block in $blocks) {
@@ -235,28 +198,23 @@ foreach ($log in $logs) {
             foreach ($s in $stackLines) { Write-Host "       $s" }
             Write-Host '::endgroup::'
         }
-
-        # One list item per failure, with the test name, reason and source each on
-        # its own line. A trailing two-space sequence is a Markdown hard break, so
-        # the indented continuation lines stay part of the same bullet.
-        $reasonText = (($messageLines | ForEach-Object { Format-SummaryText $_ }) -join ' ')
-        $src = Format-Source $sourceFile $sourceLine
-        [void]$summary.AppendLine(('- `{0}`  ' -f $short))
-        if ($src) {
-            [void]$summary.AppendLine(('  {0}  ' -f $reasonText))
-            [void]$summary.AppendLine(('  {0}' -f $src))
-        }
-        else {
-            [void]$summary.AppendLine(('  {0}' -f $reasonText))
-        }
     }
-
-    [void]$summary.AppendLine('')
 }
 
-if ($anyFailures -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
-    $heading = "### ❌ Failed tests ({0} lane)`n`n" -f $lane
-    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($heading + $summary.ToString())
+# Job summary: a terse count per project plus a link to this run, where the test
+# step above shows the full detail. Deliberately does not repeat the per-test
+# names/messages/sources.
+if ($totalFailures -gt 0 -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.AppendLine(('### ❌ Failed tests ({0} lane)' -f $lane))
+    [void]$sb.AppendLine('')
+    [void]$sb.AppendLine(('{0} failed: {1}.' -f $totalFailures, ($projectSummaries -join ', ')))
+    [void]$sb.AppendLine('')
+    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_RUN_ID) {
+        $runUrl = '{0}/{1}/actions/runs/{2}' -f $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_RUN_ID
+        [void]$sb.AppendLine(('[See the failing tests in the run log]({0})' -f $runUrl))
+    }
+    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $sb.ToString()
 }
 
 exit 0
