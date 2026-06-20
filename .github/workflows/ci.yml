@@ -42,35 +42,3 @@ jobs:
       name: ${{ matrix.name }}
       sonarProjectKey: ${{ matrix.sonarcloud }}
       sonarProjectName: ${{ matrix.sonarcloudName }}
-
-  # Timing breakdown. The per-vertical jobs run in parallel, so none of them can
-  # see the run as a whole; this final job reads every vertical's timings from the
-  # jobs API and writes one breakdown (wall-clock / runner-time + a per-vertical
-  # build/test/queue line) to the run summary page. `always()` so it still reports
-  # when verticals fail.
-  timing-summary:
-    name: Timing breakdown
-    needs: [find-verticals, ci]
-    if: ${{ always() && needs.find-verticals.outputs.any == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read # reads the jobs API to aggregate per-vertical timings
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-      - name: Download test counts
-        # Each vertical uploaded a tiny per-lane test-count file; pull them all so
-        # the summary can show how many tests each lane ran. Best-effort: a run with
-        # no counts (e.g. every vertical failed before testing) must not fail here.
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: test-counts-*
-          path: test-counts
-          merge-multiple: true
-      - name: Write timing breakdown
-        shell: pwsh
-        env:
-          GH_API_TOKEN: ${{ github.token }}
-        run: |
-          & "$env:GITHUB_WORKSPACE/eng/testing/report-run-summary.ps1"

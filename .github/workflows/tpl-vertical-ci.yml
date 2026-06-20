@@ -235,6 +235,12 @@ jobs:
           fi
           code=$?
           set -e
+          # Report this lane's test count (summed .trx total) and time, in-step.
+          # GitHub already shows the step's duration natively; this adds the count.
+          dur=$SECONDS
+          cnt=$(find . -path '*/TestResults/unit/*.trx' -exec grep -ohE 'total="[0-9]+"' {} + 2>/dev/null | grep -oE '[0-9]+' | awk '{s+=$1} END{print s+0}')
+          if [ "$dur" -ge 60 ]; then dstr="$((dur/60))m $((dur%60))s"; else dstr="${dur}s"; fi
+          echo "Unit lane: ${cnt} tests in ${dstr}"
           # Surface the failing tests on this step, then re-raise the real exit code.
           if [ "$code" -ne 0 ]; then
             pwsh -NoProfile -File "$GITHUB_WORKSPACE/eng/testing/report-failed-tests.ps1" -ResultsDirectory TestResults/unit
@@ -264,6 +270,12 @@ jobs:
           fi
           code=$?
           set -e
+          # Report this lane's test count (summed .trx total) and time, in-step.
+          # GitHub already shows the step's duration natively; this adds the count.
+          dur=$SECONDS
+          cnt=$(find . -path '*/TestResults/integration/*.trx' -exec grep -ohE 'total="[0-9]+"' {} + 2>/dev/null | grep -oE '[0-9]+' | awk '{s+=$1} END{print s+0}')
+          if [ "$dur" -ge 60 ]; then dstr="$((dur/60))m $((dur%60))s"; else dstr="${dur}s"; fi
+          echo "Integration lane: ${cnt} tests in ${dstr}"
           # Surface the failing tests on this step, then re-raise the real exit code.
           if [ "$code" -ne 0 ]; then
             pwsh -NoProfile -File "$GITHUB_WORKSPACE/eng/testing/report-failed-tests.ps1" -ResultsDirectory TestResults/integration
@@ -396,41 +408,5 @@ jobs:
         with:
           name: ${{ inputs.slug }}-binlog
           path: ${{ inputs.path }}/binlog/*.binlog
-          if-no-files-found: ignore
-          retention-days: 1
-
-      - name: Test counts
-        # Sum each lane's test count from its .trx (one .trx per test project per
-        # lane) so the run-summary aggregation job can show how many tests ran per
-        # lane. The result is a few-byte file, keyed by displayName — exactly the
-        # label the aggregation job uses for its rows. always() so it still reports
-        # after a lane fails; counts come from whatever .trx the lanes produced.
-        if: always()
-        shell: pwsh
-        working-directory: ${{ inputs.path }}
-        run: |
-          function Count([string]$lane) {
-            $n = 0
-            Get-ChildItem -Path . -Recurse -Filter *.trx -ErrorAction SilentlyContinue |
-              Where-Object { $_.FullName -match "[\\/]TestResults[\\/]$lane[\\/]" } |
-              ForEach-Object {
-                foreach ($m in [regex]::Matches((Get-Content -Raw -LiteralPath $_.FullName), '<Counters[^>]*\btotal="(\d+)"')) {
-                  $n += [int]$m.Groups[1].Value
-                }
-              }
-            return $n
-          }
-          $dir = Join-Path $env:GITHUB_WORKSPACE 'test-counts'
-          New-Item -ItemType Directory -Force -Path $dir | Out-Null
-          $line = "{0}`t{1}`t{2}" -f '${{ inputs.displayName }}', (Count 'unit'), (Count 'integration')
-          Set-Content -LiteralPath (Join-Path $dir '${{ inputs.slug }}.tsv') -Value $line
-          Write-Host $line
-
-      - name: Upload test counts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: test-counts-${{ inputs.slug }}
-          path: test-counts/${{ inputs.slug }}.tsv
           if-no-files-found: ignore
           retention-days: 1
