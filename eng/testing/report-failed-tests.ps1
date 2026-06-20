@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # Surfaces failing tests from a test lane in two places: a human-readable block in
-# that lane's own step log, and a Markdown table appended to the GitHub job summary
+# that lane's own step log, and a Markdown list appended to the GitHub job summary
 # ($GITHUB_STEP_SUMMARY) so the failures also show on the run's summary page.
 #
 # The xUnit-v3 / Microsoft-Testing-Platform per-project log
@@ -55,17 +55,14 @@ function Format-SummaryText {
     return ($Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;')
 }
 
-function Get-SourceMarkdown {
-    # A linked "<file>:<line>" (filename only; the project line gives the rest) when
-    # the run context is known, otherwise the same text as inline code.
+function Format-Source {
+    # "<file>:<line>" as inline code (filename only; the project line gives the
+    # rest). Deliberately not hyperlinked: a pull_request run exposes only the
+    # ephemeral merge commit (GITHUB_SHA), whose blob URLs 404 in the web UI, and
+    # the full path is already in the step log.
     param([string]$File, [string]$Line)
     if (-not $File) { return '' }
-    $name = ($File -split '/')[-1]
-    $text = '{0}:{1}' -f $name, $Line
-    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_SHA) {
-        return '[{0}]({1}/{2}/blob/{3}/{4}#L{5})' -f $text, $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_SHA, $File, $Line
-    }
-    return '`{0}`' -f $text
+    return '`{0}:{1}`' -f (($File -split '/')[-1]), $Line
 }
 
 $segment = '/' + (($ResultsDirectory -replace '\\', '/').Trim('/')) + '/'
@@ -221,7 +218,7 @@ foreach ($log in $logs) {
 
         # One list item in the job summary: `Class.Method`: reason (source link).
         $reasonText = (($messageLines | ForEach-Object { Format-SummaryText $_ }) -join ' ')
-        $src = Get-SourceMarkdown $sourceFile $sourceLine
+        $src = Format-Source $sourceFile $sourceLine
         $item = '- `{0}`: {1}' -f $short, $reasonText
         if ($src) { $item = '{0} ({1})' -f $item, $src }
         [void]$summary.AppendLine($item)
