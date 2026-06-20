@@ -18,8 +18,10 @@ if (-not ($env:GH_API_TOKEN -and $env:GITHUB_API_URL -and $env:GITHUB_REPOSITORY
 
 function Format-Duration {
     param([double]$Seconds)
+    # Floor the minutes. PowerShell's [int] cast ROUNDS (banker's), so
+    # [int](99/60) = 2, not 1 — which would print "2m 39s" for 1m39s.
     $s = [int][math]::Round($Seconds)
-    if ($s -ge 60) { return '{0}m {1:00}s' -f [int]($s / 60), ($s % 60) }
+    if ($s -ge 60) { return '{0}m {1:00}s' -f [int][math]::Floor($s / 60), ($s % 60) }
     return '{0}s' -f $s
 }
 
