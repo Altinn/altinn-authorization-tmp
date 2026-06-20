@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
-# Surfaces failing tests from a test lane directly in that lane's own step log,
-# in a human-readable form.
+# Surfaces failing tests from a test lane in two places: a human-readable block in
+# that lane's own step log, and a Markdown table appended to the GitHub job summary
+# ($GITHUB_STEP_SUMMARY) so the failures also show on the run's summary page.
 #
 # The xUnit-v3 / Microsoft-Testing-Platform per-project log
 # (`<Project>_<tfm>_<arch>.log`, UTF-16) carries the test-level detail that the
@@ -43,6 +44,26 @@ function Get-RepoRelativePath {
     return $norm
 }
 
+function Format-TableText {
+    # Plain-text Markdown table cell: neutralise HTML angle brackets / ampersands so
+    # type names and <null> render literally, and escape the row delimiter.
+    param([string]$Text)
+    $t = $Text -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
+    return ($t -replace '\|', '\|')
+}
+
+function Get-SourceMarkdown {
+    # A linked `path:line` for the job-summary table when the run context is known,
+    # otherwise the path as inline code.
+    param([string]$File, [string]$Line)
+    if (-not $File) { return '' }
+    $text = '{0}:{1}' -f $File, $Line
+    if ($env:GITHUB_SERVER_URL -and $env:GITHUB_REPOSITORY -and $env:GITHUB_SHA) {
+        return '[{0}]({1}/{2}/blob/{3}/{4}#L{5})' -f $text, $env:GITHUB_SERVER_URL, $env:GITHUB_REPOSITORY, $env:GITHUB_SHA, $File, $Line
+    }
+    return '`{0}`' -f $text
+}
+
 $segment = '/' + (($ResultsDirectory -replace '\\', '/').Trim('/')) + '/'
 
 $logs = Get-ChildItem -Path . -Recurse -Filter '*_x64.log' -ErrorAction SilentlyContinue |
@@ -55,6 +76,13 @@ if (-not $logs) {
     Write-Host "No '$ResultsDirectory' test logs found to scan for failing tests."
     exit 0
 }
+
+# Lane name (e.g. "unit" / "integration") for the job-summary heading.
+$lane = (($ResultsDirectory -replace '\\', '/').TrimEnd('/') -split '/')[-1]
+
+# Markdown accumulated for the GitHub job summary, written once at the end.
+$summary = [System.Text.StringBuilder]::new()
+$anyFailures = $false
 
 foreach ($log in $logs) {
     # PS7 Get-Content auto-detects the UTF-16 BOM these logs carry.
@@ -93,6 +121,12 @@ foreach ($log in $logs) {
     Write-Host ('─' * 78)
     Write-Host ("  ❌  {0} failed test{1} in {2}" -f $blocks.Count, ($(if ($blocks.Count -eq 1) { '' } else { 's' })), $project)
     Write-Host ('─' * 78)
+
+    $anyFailures = $true
+    [void]$summary.AppendLine(('#### {0} — {1} failed' -f $project, $blocks.Count))
+    [void]$summary.AppendLine('')
+    [void]$summary.AppendLine('| Test | Reason | Source |')
+    [void]$summary.AppendLine('| --- | --- | --- |')
 
     $index = 0
     foreach ($block in $blocks) {
@@ -138,11 +172,12 @@ foreach ($log in $logs) {
                 $messageLines.Add($l.Trim())
             }
         }
-        $message = ($messageLines -join ' ').Trim()
-        # Drop the MTP/xUnit exception-wrapper prefix so the real exception type and
-        # message lead.
-        $message = $message -replace '^Xunit\.Runner\.InProc\.SystemConsole\.TestingPlatform\.XunitException:\s*', ''
-        if (-not $message) { $message = '(no message — see stack trace / test-results artifact)' }
+        if ($messageLines.Count -eq 0) {
+            $messageLines.Add('(no message — see the stack trace below)')
+        }
+        # Drop the MTP/xUnit exception-wrapper prefix from the first line so the real
+        # exception type and message lead.
+        $messageLines[0] = $messageLines[0] -replace '^Xunit\.Runner\.InProc\.SystemConsole\.TestingPlatform\.XunitException:\s*', ''
 
         # Source location: first user stack frame carrying " in <file>:line".
         $sourceFile = ''
@@ -158,7 +193,11 @@ foreach ($log in $logs) {
 
         Write-Host ''
         Write-Host ("  {0}) {1}" -f $index, $short)
-        Write-Host ("     Reason   {0}" -f $message)
+        # Reason may span several lines; align continuations under the first one.
+        Write-Host ("     Reason   {0}" -f $messageLines[0])
+        for ($i = 1; $i -lt $messageLines.Count; $i++) {
+            Write-Host ("              {0}" -f $messageLines[$i])
+        }
         if ($sourceFile) {
             Write-Host ("     Source   {0}:{1}" -f $sourceFile, $sourceLine)
         }
@@ -170,7 +209,19 @@ foreach ($log in $logs) {
             foreach ($s in $stackLines) { Write-Host "       $s" }
             Write-Host '::endgroup::'
         }
+
+        # One row in the job-summary table.
+        $reasonCell = (($messageLines | ForEach-Object { Format-TableText $_ }) -join '<br>')
+        $testCell = '`' + ($short -replace '\|', '\|') + '`'
+        [void]$summary.AppendLine(('| {0} | {1} | {2} |' -f $testCell, $reasonCell, (Get-SourceMarkdown $sourceFile $sourceLine)))
     }
+
+    [void]$summary.AppendLine('')
+}
+
+if ($anyFailures -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
+    $heading = "### ❌ Failed tests — {0} lane`n`n" -f $lane
+    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($heading + $summary.ToString())
 }
 
 exit 0
