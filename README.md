@@ -79,6 +79,9 @@ az login
 
 ### 2. Start dependencies and configure secrets
 
+Replace `<subscription-id>` and `<key-vault-name>` with the values for your Azure
+environment.
+
 ```bash
 just dev   # starts PostgreSQL and supporting services via the container runtime
 
@@ -87,11 +90,11 @@ dotnet user-secrets set "PostgreSQLSettings:AuthorizationDbAdminPwd" admin --id 
 dotnet user-secrets set "PostgreSQLSettings:ConnectionString" $(just dev-pgsql-connection-string) --id Altinn.Authorization
 dotnet user-secrets set "PostgreSQLSettings:AuthorizationDbPwd" admin --id Altinn.Authorization
 
-az account set --subscription 45177a0a-d27e-490f-9f23-b4726de8ccc1
+az account set --subscription <subscription-id>
 
-dotnet user-secrets set "Platform:Token:TestTool:Endpoint" $(az keyvault secret show --id=https://rgaltinnauth001local.vault.azure.net/secrets/Platform--Token--TestTool--Endpoint --query value --output tsv) --id Altinn.Authorization
-dotnet user-secrets set "Platform:Token:TestTool:Password" $(az keyvault secret show --id=https://rgaltinnauth001local.vault.azure.net/secrets/Platform--Token--TestTool--Password --query value --output tsv) --id Altinn.Authorization
-dotnet user-secrets set "Platform:Token:TestTool:Username" $(az keyvault secret show --id=https://rgaltinnauth001local.vault.azure.net/secrets/Platform--Token--TestTool--Username --query value --output tsv) --id Altinn.Authorization
+dotnet user-secrets set "Platform:Token:TestTool:Endpoint" $(az keyvault secret show --id=https://<key-vault-name>.vault.azure.net/secrets/Platform--Token--TestTool--Endpoint --query value --output tsv) --id Altinn.Authorization
+dotnet user-secrets set "Platform:Token:TestTool:Password" $(az keyvault secret show --id=https://<key-vault-name>.vault.azure.net/secrets/Platform--Token--TestTool--Password --query value --output tsv) --id Altinn.Authorization
+dotnet user-secrets set "Platform:Token:TestTool:Username" $(az keyvault secret show --id=https://<key-vault-name>.vault.azure.net/secrets/Platform--Token--TestTool--Username --query value --output tsv) --id Altinn.Authorization
 ```
 
 ### 3. Bootstrap the database
