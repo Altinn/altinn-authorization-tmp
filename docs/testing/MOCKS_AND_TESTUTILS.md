@@ -67,11 +67,9 @@ lift them into a shared `TestUtils/TestCertificates/` folder rather than copying
 
 ## Assertion library is globally imported
 
-`AwesomeAssertions` (the free, API-compatible fork of FluentAssertions — FA 8.x is
-commercially licensed) is added via `Directory.Build.targets` for every test
+`AwesomeAssertions` is added via `Directory.Build.targets` for every test
 project and test library. It's in `<Using>` so you **don't** need a `using
-AwesomeAssertions;` directive — just call `.Should()` directly. The fluent API is
-identical to FluentAssertions; only the root namespace differs. See
+AwesomeAssertions;` directive — just call `.Should()` directly. See
 [FLUENT_ASSERTIONS_GUIDELINES.md](FLUENT_ASSERTIONS_GUIDELINES.md).
 
 ## Next: [WRITING_TESTS.md](WRITING_TESTS.md)
