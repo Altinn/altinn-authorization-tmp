@@ -18,7 +18,7 @@ _SonarCloud quality metrics for `main`, refreshed by the [nightly scan](docs/SON
 Ensure you have the following languages and tools installed before setting up your development environment.
 
 #### Languages
-- .NET 9.0 & 8.0
+- .NET 10.0 & 9.0
 - TypeScript
 
 #### Tools
