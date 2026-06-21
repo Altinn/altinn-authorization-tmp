@@ -25,7 +25,7 @@ resources, and API schemes.
 | `src/apps/Altinn.AccessManagement` | Access Management app: rights and delegation administration. |
 | `src/apps/Altinn.Register` | Vendored copy of Register, maintained in [altinn-register](https://github.com/Altinn/altinn-register). |
 | `src/libs` | Shared libraries (`Api.Contracts`, `Host`, `Integration`). |
-| `src/pkgs` | Published NuGet packages (`Altinn.Authorization.ABAC`, `Altinn.Authorization.PEP`). |
+| `src/pkgs` | Published NuGet packages (`Altinn.Authorization.ABAC`, `Altinn.Common.PEP`). |
 | `src/tools` | The `Altinn.Authorization.Cli` command-line tool. |
 | `docs` | Documentation (see [Documentation](#documentation)). |
 | `eng` | Build, test, and coverage scripts. |
@@ -35,7 +35,7 @@ resources, and API schemes.
 
 ### Prerequisites
 
-- [.NET SDK 10.0](https://dotnet.microsoft.com/download/dotnet/10.0) (the full build also installs 9.0)
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download/dotnet/10.0)
 - A container runtime, [Docker](https://www.docker.com/get-docker) or [Podman](https://podman.io), for integration tests and local services
 - [PowerShell 7+](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)
 - [Just](https://github.com/casey/just) for the local-development commands
