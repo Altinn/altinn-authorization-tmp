@@ -106,8 +106,8 @@ Open [`http://localhost:8000`](http://localhost:8000) and log in with
 
 ## Documentation
 
-- [Testing guide](docs/testing/README.md) — how the test suite is organised and run.
-- [SonarCloud](docs/SONARCLOUD.md) — static analysis, exclusions, and the quality gate.
+- [Testing guide](docs/testing/README.md): how the test suite is organised and run.
+- [SonarCloud](docs/SONARCLOUD.md): static analysis, exclusions, and the quality gate.
 
 ## Contributing
 
