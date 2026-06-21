@@ -180,30 +180,11 @@ seed race) for no measured gain.
 **Decision: keep `maxParallelThreads: 4`.** The effective lever for these suites
 is fewer host builds (fixture sharing, above), not more threads. Going faster
 would require removing the single-container bottleneck (e.g. a container per
-worker) — out of scope and unlikely to pay off.
-
-### Re-check on a provision-bound assembly (`ServiceOwner.Api.Tests`)
-
-The sweep above ran on `AccessMgmt.Tests`. `ServiceOwner.Api.Tests` has a
-different shape — 9 fixtures with heavy cold host builds (`host_build` ~100 s
-summed, exceeding `db_provision`), so it is plausibly more CPU-bound and a
-candidate to benefit from more threads. Re-measured at `maxParallelThreads: 8`
-(local Podman), all runs green (41/41):
-
-| Run | `maxParallelThreads: 4` | `maxParallelThreads: 8` |
-|---|---:|---:|
-| 1 | 52.1 s | 44.6 s |
-| 2 | — | 47.6 s |
-| 3 | — | 59.0 s |
-
-The first 8-thread run looked ~14% faster, but repeats spread to **44–59 s**
-(summed `host_build` swinging 133 s → 254 s from CPU oversubscription), with the
-worst run slower than the 4-thread baseline. The apparent gain was run-to-run
-variance, not a real speedup, and the contention metrics rose sharply
-(`provision_wait` ~54 s → ~127 s, `clone` ~3 s → ~8 s). So the single-container
-limiter holds here too. **No change: keep `maxParallelThreads: 4`.** No new
-flakiness surfaced across the repeats (the constructor-seed fixes removed the
-re-seed collisions that previously raised the concurrency risk).
+worker) — out of scope and unlikely to pay off. This holds regardless of an
+assembly's shape: on host-build-heavy suites (e.g. `ServiceOwner.Api.Tests`,
+where summed `host_build` exceeds `db_provision`) more threads oversubscribe the
+CPU and add lock contention rather than speed, so `maxParallelThreads` stays 4
+everywhere.
 
 ## Test waits (`Task.Delay` audit)
 
