@@ -15,14 +15,10 @@ Or from the command line:
 dotnet run --project src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement
 ```
 
-## Setting up the database
+## Local development
 
-Access Management needs a local PostgreSQL (Azure runs 14; 15 works locally).
-
-1. Install and start PostgreSQL, choosing an admin password.
-2. Create the database `authorizationdb`.
-3. Create two login roles with privileges on it:
-   - `platform_authorization_admin` (superuser, can-login)
-   - `platform_authorization` (can-login)
-4. Create the schema `delegations` in `authorizationdb`, owned by
-   `platform_authorization_admin`.
+Local setup — containerised PostgreSQL (`just dev`), user secrets, and the
+database bootstrap — is in the
+[repository README](../../../README.md#local-development-environment). Access
+Management uses the `authorizationdb` database (roles `platform_authorization` /
+`platform_authorization_admin`).

@@ -71,6 +71,6 @@ dotnet user-secrets set "Platform:Token:TestTool:Username" $(az keyvault secret 
 2. Log in using:
    - **Username:** `admin@admin.com`
    - **Password:** `admin`
-3. Create the `accessmgmt` database and configure roles:
+3. Create the `authorizationdb` database and configure roles:
    - **Role:** `platform_authorization` (Privileges: `can_login`)
    - **Role:** `platform_authorization_admin` (Privileges: `can_login`, `superuser`)
