@@ -215,7 +215,7 @@ public class ConnectionQuery(AppDbContext db)
         roleSetExclude.Add(RoleConstants.Supplier.Id); // Supplier role should never be included in results as it is only used for maskinporten schemas.
         if (!filter.IncludeAppControlledInstances)
         {
-            roleSetExclude.Add(RoleConstants.AppstyrtRettighetshaver.Id); // App-controlled instance access should be excluded if not explicitly requested.
+            roleSetExclude.Add(RoleConstants.AppControlledRightholder.Id); // App-controlled instance access should be excluded if not explicitly requested.
         }
 
         if (fromSet != null && filter.IncludeDelegation)
@@ -694,7 +694,7 @@ public class ConnectionQuery(AppDbContext db)
         roleSetExclude.Add(RoleConstants.Supplier.Id); // Supplier role should never be included in results as it is only used for maskinporten schemas.
         if (!filter.IncludeAppControlledInstances)
         {
-            roleSetExclude.Add(RoleConstants.AppstyrtRettighetshaver.Id); // App-controlled instance access should be excluded if not explicitly requested.
+            roleSetExclude.Add(RoleConstants.AppControlledRightholder.Id); // App-controlled instance access should be excluded if not explicitly requested.
         }
 
         /*
@@ -1326,7 +1326,7 @@ public class ConnectionQuery(AppDbContext db)
         List<Guid> rightholderRoles = [RoleConstants.Rightholder.Id];
         if (filter.IncludeAppControlledInstances)
         {
-            rightholderRoles.Add(RoleConstants.AppstyrtRettighetshaver.Id);
+            rightholderRoles.Add(RoleConstants.AppControlledRightholder.Id);
         }
 
         if (_rightholderAssignments is null)

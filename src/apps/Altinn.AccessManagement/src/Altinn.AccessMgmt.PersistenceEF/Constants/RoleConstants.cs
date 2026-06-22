@@ -122,7 +122,7 @@ public static class RoleConstants
     /// - <c>Code:</c> appstyrt-rettighetshaver
     /// - <c>Description:</c> Forhold som all app-styrt delegering av tilganger knyttes til
     /// </remarks>
-    public static ConstantDefinition<Role> AppstyrtRettighetshaver { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
+    public static ConstantDefinition<Role> AppControlledRightholder { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
     {
         Entity = new()
         {
@@ -137,7 +137,7 @@ public static class RoleConstants
             ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "App-Controlled Rightsholder"),
+            KeyValuePair.Create("Name", "App-Controlled Rightholder"),
             KeyValuePair.Create("Description", "Relationship to which all app-controlled rights are linked")
         ),
         NN = TranslationEntryList.Create(
