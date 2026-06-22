@@ -1,11 +1,11 @@
 meta {
-  name: GET_status_of_Request_After_created
+  name: PUT_Withdraw_request_on_AccPkg_ServiceOwner
   type: http
-  seq: 2
+  seq: 7
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/serviceowner/delegationrequests/{{tilgangspakkeserviceowner_requestId}}/status
+put {
+  url: {{baseUrl}}/accessmanagement/api/v1/serviceowner/delegationrequests/{{tilgangspakkequestwithdrawId}}/withdraw
   body: none
   auth: inherit
 }
@@ -17,13 +17,14 @@ headers {
 
 script:pre-request {
   const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+    const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
     
-    
+   
     var getTokenParameters = {
       auth_org: sharedtestdata.serviceOwners.ttd.org,
       auth_orgNo: sharedtestdata.serviceOwners.ttd.orgno,
       auth_tokenType: sharedtestdata.authTokenType.enterprise,
-      auth_scopes: sharedtestdata.auth_scopes.serviceownerDelegationRequestRead
+      auth_scopes: sharedtestdata.auth_scopes.serviceownerDelegationRequestWrite
     }
     
     const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
@@ -33,17 +34,16 @@ script:pre-request {
 
 tests {
   const testdata = require(`./testdata/be-om-tilgang/${bru.getEnvVar("tokenEnv")}.js`);
+    
+    test("Withdraw request for access package from Person_user from ServiceOwner", function() {
+      const data = res.getBody();
       
-      test("GET status of POST response based on requestId", function() {
-        const data = res.getBody();
-        
-        expect(res.status).to.equal(200);
-      
-        expect(data).to.exist;
-        const actualStatus = typeof data === "string" ? data : String(data);
-        expect(actualStatus).to.equal(bru.getEnvVar("expectedStatus"));
-        
-      });
+      expect(res.status).to.equal(200);
+     expect(data).to.equal("Withdrawn");
+    });
+    
+   
+    
 }
 
 settings {
