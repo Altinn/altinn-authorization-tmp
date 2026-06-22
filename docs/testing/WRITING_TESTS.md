@@ -128,8 +128,8 @@ public class RoleServiceTests
 - **Inside a class:** tests run sequentially (xUnit default).
 - **Across classes:** they run in parallel.
 - `[Collection("name")]` serialises across classes in the same collection.
-  Use it when the tests share mutable state — e.g. all classes using a
-  `LegacyApiFixture` that resets the Yuniql schema.
+  Use it when the tests share mutable state — e.g. all classes sharing a
+  `LegacyApiFixture` database.
 
 ## Skipping tests
 

@@ -25,8 +25,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 // Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
-// ConsentRepository which binds to the Yuniql-provisioned consent.status_type
-// enum; LegacyApiFixture overlays Yuniql on top of ApiFixture's EF schemas.
+// ConsentRepository which binds to the consent.status_type enum. That enum and
+// the consent schema are created by the EF baseline migration in the template.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
 {
     /// <summary>

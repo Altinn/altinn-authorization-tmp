@@ -15,7 +15,7 @@ namespace Altinn.AccessManagement.Tests.Fixtures;
 
 /// <summary>
 /// Profile fixture for the consent controller tests: <see cref="LegacyApiFixture"/>
-/// (which overlays the Yuniql consent schema) plus the DI configuration every consent
+/// (which provides the EF-provisioned consent schema) plus the DI configuration every consent
 /// test class shares — issuer-cert signing, the legacy <c>PdpPermitMock</c> PDP, a
 /// mocked policy retrieval point, the JWT-cookie stub, and a shared
 /// <c>IAmPartyRepository</c> mock populated from <see cref="MockParyRepositoryPopulator"/>.

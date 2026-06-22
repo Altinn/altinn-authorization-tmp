@@ -1,17 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="Npgsql" />
         <PackageReference Include="Npgsql.OpenTelemetry" />
         <PackageReference Include="Microsoft.Extensions.Azure" />
         <PackageReference Include="System.Linq.Async" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
         <PackageReference Include="Altinn.Authorization.ServiceDefaults" />
-        <PackageReference Include="Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql" />
+        <PackageReference Include="Altinn.Authorization.ServiceDefaults.Npgsql" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,10 +14,6 @@
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Integration\Altinn.AccessManagement.Integration.csproj" />
         <ProjectReference Include="..\Altinn.AccessMgmt.Core\Altinn.AccessMgmt.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Migration/**/*.sql" />
     </ItemGroup>
 
 </Project>

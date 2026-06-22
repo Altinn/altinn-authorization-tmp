@@ -11,9 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 // Why LegacyApiFixture: the endpoint writes through the Dapper-backed
-// ResourceMetadataRepo into accessmanagement.resource (Yuniql schema).
-// ApiFixture alone only provisions the EF dbo schemas; LegacyApiFixture adds
-// the production Yuniql migration pipeline on top.
+// ResourceMetadataRepo into accessmanagement.resource. That legacy schema is
+// created by the EF baseline migration, so it is present in every cloned
+// template alongside the EF dbo schemas.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 /// <summary>

@@ -104,7 +104,8 @@ that mutate *global* state or need a divergent host get a dedicated fixture.
 **E. One convention.** Every web-app fixture descends from `ApiFixture` (the profile
 fixtures `AccessMgmt` / `Legacy` / `Consent` / `Rights` / `NoDb` are subclasses), and the
 scenario / E2E tests use it too — so this is already achieved. `LegacyApiFixture` is
-*retained* as the full-schema (EF + Yuniql) profile, not a separate convention: it is
+*retained* as the full-schema profile (the legacy delegation/accessmanagement/consent
+schemas alongside dbo), not a separate convention: it is
 `ConsentApiFixture`'s base and is used by the Dapper-backed consent / resource tests, so
 deleting it would unwind structure for no gain.
 

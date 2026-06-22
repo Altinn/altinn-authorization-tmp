@@ -12,7 +12,7 @@ namespace Altinn.Authorization.Testing;
 /// <remarks>
 /// <para>
 /// The engine is vertical-agnostic: callers supply how the template is built
-/// (EF migrations + seed, Yuniql SQL, …) through
+/// (EF migrations + seed, raw SQL, …) through
 /// <see cref="PostgresTestEngineOptions.BuildTemplateAsync"/>. It is shared into
 /// test assemblies as linked source (see <c>src/Directory.Build.targets</c>), so
 /// each assembly gets its own static instance and container — no cross-vertical

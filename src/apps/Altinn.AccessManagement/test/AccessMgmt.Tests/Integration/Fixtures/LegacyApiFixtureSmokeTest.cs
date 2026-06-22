@@ -9,9 +9,9 @@ namespace Altinn.AccessManagement.Tests.Integration.Fixtures;
 /// <summary>
 /// Smoke test verifying that <see cref="LegacyApiFixture"/> provisions the
 /// full production database schema — both the EF <c>dbo</c> schemas and the
-/// Yuniql <c>accessmanagement.*</c> / <c>consent.*</c> / <c>delegation.*</c>
-/// schemas (plus enum types) — so tests that rely on the still-extant Dapper
-/// repositories can run against it.
+/// legacy <c>accessmanagement.*</c> / <c>consent.*</c> / <c>delegation.*</c>
+/// schemas (plus enum types) created by the EF baseline migration — so tests
+/// that rely on the still-extant Dapper repositories can run against it.
 /// </summary>
 /// <remarks>
 /// A single tiny test exercising a Dapper-backed repository
@@ -25,9 +25,10 @@ public class LegacyApiFixtureSmokeTest(LegacyApiFixture fixture) : IClassFixture
     private LegacyApiFixture Fixture { get; } = fixture;
 
     [Fact]
-    public async Task InsertAccessManagementResource_WhenYuniqlSchemaIsProvisioned_PersistsResource()
+    public async Task InsertAccessManagementResource_WhenLegacySchemaIsProvisioned_PersistsResource()
     {
-        // Ensure the host has been built so DI + Yuniql migrations ran.
+        // Ensure the host has been built so DI is wired; the legacy schema comes
+        // from the EF baseline migration baked into the cloned template.
         _ = Fixture.BuildConfiguration();
 
         using var scope = Fixture.Services.CreateScope();
@@ -41,7 +42,7 @@ public class LegacyApiFixtureSmokeTest(LegacyApiFixture fixture) : IClassFixture
 
         var inserted = await repo.InsertAccessManagementResource(resource, TestContext.Current.CancellationToken);
 
-        // A successful round-trip proves the Yuniql-provisioned
+        // A successful round-trip proves the EF-provisioned
         // accessmanagement.resource relation exists in the per-test database.
         // (Note: the repo lowercases ResourceType on write and Enum.TryParse on
         // read is case-sensitive, so the returned ResourceType is Default —

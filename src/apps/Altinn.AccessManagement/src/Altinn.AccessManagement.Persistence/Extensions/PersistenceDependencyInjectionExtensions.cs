@@ -11,7 +11,6 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
 using Altinn.AccessMgmt.Core.Services.Legacy;
-using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Altinn.Platform.Register.Enums;
 using Azure.Core;
 using Azure.Storage;
@@ -21,7 +20,6 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 
@@ -132,8 +130,6 @@ public static class PersistenceDependencyInjectionExtensions
 
     private static IHostApplicationBuilder AddDatabase(this IHostApplicationBuilder builder)
     {
-        var fs = new ManifestEmbeddedFileProvider(typeof(PersistenceDependencyInjectionExtensions).Assembly, "Migration");
-
         builder.AddAltinnPostgresDataSource()
             .MapEnum<DelegationChangeType>("delegation.delegationchangetype")
             .MapEnum<UuidType>("delegation.uuidtype")
@@ -165,12 +161,7 @@ public static class PersistenceDependencyInjectionExtensions
                 ConsentPortalViewMode.Hide => "hide",
                 ConsentPortalViewMode.Show => "show",
                 _ => null,
-            }))
-            .AddYuniqlMigrations(serviceKey: null, opts =>
-            {
-                opts.Workspace = "/";
-                opts.WorkspaceFileProvider = fs;
-            });
+            }));
 
         return builder;
     }
