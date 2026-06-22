@@ -157,7 +157,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListMyClients_WithFilter_ReturnsOk()
+        public async Task ListMyClients_WithFilter_Returns200WithFilteredClients()
         {
             var client = CreateClient();
 
@@ -181,7 +181,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListMyClients_WithoutFilter_ReturnsOk()
+        public async Task ListMyClients_WithoutFilter_Returns200WithAllProvidersAndClients()
         {
             var client = CreateClient();
 
@@ -229,7 +229,7 @@ public class ClientDelegationControllerTest
     #region GET accessmanagement/api/v1/enduser/clientdelegations/clients
 
     /// <summary>
-    /// <see cref="ClientDelegationController.GetClients(Guid, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// <see cref="ClientDelegationController.GetClients(Guid, List{string}?, List{string}?, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
     /// </summary>
     [IntegrationTest]
     public class GetClients : IClassFixture<ApiFixture>
@@ -294,6 +294,12 @@ public class ClientDelegationControllerTest
                     PackageId = PackageConstants.Customs,
                 });
 
+                db.AssignmentPackages.Add(new()
+                {
+                    AssignmentId = rightholderfromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Agriculture,
+                });
+
                 db.SaveChanges();
             });
         }
@@ -311,18 +317,18 @@ public class ClientDelegationControllerTest
             return client;
         }
 
-        [Fact(Skip = "PDP returns 500 if party is missing")]
-        public async Task ListClient_ForOrganization_MissingQueryParamPartyBadRequest()
+        [Fact]
+        public async Task ListClient_ForOrganizationMissingPartyParam_Returns403Forbidden()
         {
             var client = CreateClient();
 
             var result = await client.GetAsync($"{Route}/clients", TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
         }
 
         [Fact]
-        public async Task ListClient_ForOrganizationWithCCR_ReturnsOk()
+        public async Task ListClient_ForOrganizationWithCCR_Returns200WithAccountantConnectionPackages()
         {
             var rolepkgs = new List<RolePackage>();
             await Fixture.QueryDb(async db =>
@@ -340,7 +346,7 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
 
             var connection = result.Items.SelectMany(p => p.Access).FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
             Assert.NotNull(connection);
@@ -352,7 +358,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_ForOrganizationWithRightholderFilter_ReturnsOk()
+        public async Task ListClient_ForOrganizationWithRightholderFilter_Returns200WithRightholderFilteredClients()
         {
             var client = CreateClient();
 
@@ -360,7 +366,7 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
             Assert.NotEmpty(result.Items);
             foreach (var item in result.Items)
             {
@@ -373,7 +379,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_ForOrganizationWithRightholderAssignment_ReturnsOk()
+        public async Task ListClient_ForOrganizationWithRightholderAssignment_Returns200WithRightholderClientAndCustomsPackage()
         {
             var client = CreateClient();
 
@@ -381,7 +387,7 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
 
             var connection = result.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
             Assert.NotNull(connection);
@@ -390,13 +396,16 @@ public class ClientDelegationControllerTest
             var access = connection.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Rightholder);
             Assert.NotNull(access);
             Assert.Equal(RoleConstants.Rightholder.Id, access.Role.Id);
-            Assert.Equal(PackageConstants.Customs.Id, access.Packages.First().Id);
-            Assert.Equal(PackageConstants.Customs.Entity.Urn, access.Packages.First().Urn);
-            Assert.Equal(PackageConstants.Customs.Entity.AreaId, access.Packages.First().AreaId);
+
+            var customsPackage = access.Packages.FirstOrDefault(p => p.Id == PackageConstants.Customs.Id);
+            Assert.NotNull(customsPackage);
+            Assert.Equal(PackageConstants.Customs.Id, customsPackage.Id);
+            Assert.Equal(PackageConstants.Customs.Entity.Urn, customsPackage.Urn);
+            Assert.Equal(PackageConstants.Customs.Entity.AreaId, customsPackage.AreaId);
         }
 
         [Fact]
-        public async Task ListClient_ForOrganizationWithForretningsforerFilter_ReturnsOk()
+        public async Task ListClient_ForOrganizationWithForretningsforerFilter_Returns200WithBusinessManagerFilteredClients()
         {
             var client = CreateClient();
 
@@ -404,7 +413,7 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
 
             Assert.NotEmpty(result.Items);
 
@@ -546,18 +555,18 @@ public class ClientDelegationControllerTest
 
         public ApiFixture Fixture { get; }
 
-        [Fact(Skip = "PDP returns 500 if party is missing")]
-        public async Task ListAgents_ForOrganization_MissingQueryParamPartyBadRequest()
+        [Fact]
+        public async Task ListAgents_ForOrganizationMissingPartyParam_Returns403Forbidden()
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/agents", TestContext.Current.CancellationToken);
 
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
-        public async Task ListAgent_ForPersonWithAgentAssignment_ReturnsOk()
+        public async Task ListAgent_ForPersonWithAgentAssignment_Returns200WithAgentConnection()
         {
             var client = CreateClient();
             var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
@@ -576,7 +585,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListAgent_ForPersonWithAgentAssignmentToAnotherOrganization_ReturnsOk()
+        public async Task ListAgent_ForPersonWithAgentAssignmentToAnotherOrganization_Returns200WithoutAgentForOtherOrganization()
         {
             var client = CreateClient();
             var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
@@ -590,7 +599,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListAgent_ForNoAgentAssignment_ReturnsOk()
+        public async Task ListAgent_ForNoAgentAssignment_Returns200WithoutUnrelatedAgent()
         {
             var client = CreateClient();
             var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
@@ -633,7 +642,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task AddAgent_NotPermittedEntityType_ReturnsBadRequest()
+        public async Task AddAgent_NotPermittedEntityType_Returns400WhenEntityTypeDisallowed()
         {
             // Try to add organization as agent
             var client = CreateClient();
@@ -652,7 +661,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task AddAgent_NotPermittedEntityTypeStandardSystemUser_ReturnsBadRequest()
+        public async Task AddAgent_NotPermittedEntityTypeStandardSystemUser_Returns400WhenStandardSystemUserDisallowed()
         {
             // Try to add organization as agent
             var client = CreateClient();
@@ -671,7 +680,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task AddAgent_PermittedEntityTypeAgentSystemUser_ReturnsOk()
+        public async Task AddAgent_PermittedEntityTypeAgentSystemUser_Returns200AndAddsAgentSystemUser()
         {
             // Try to add organization as agent
             var client = CreateClient();
@@ -761,7 +770,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task RemoveAgentWithExistingDelegations_WithCascadeFalse_ReturnsBadRequest()
+        public async Task RemoveAgentWithExistingDelegations_WithCascadeFalse_Returns400WhenDelegationHasActiveConnections()
         {
             // Create Delegation
             var client = CreateClient();
@@ -786,7 +795,7 @@ public class ClientDelegationControllerTest
             // Verify Delegation exists
             var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
+            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(delegationsToAgentPayload);
 
             Assert.NotEmpty(delegationToAgentResult.Items);
 
@@ -813,7 +822,7 @@ public class ClientDelegationControllerTest
             // Ensure Agent is deleted
             var getAgents = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}", TestContext.Current.CancellationToken);
             var getAgentsPayload = await getAgents.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var agentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(getAgentsPayload);
+            var agentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(getAgentsPayload);
 
             Assert.Equal(HttpStatusCode.OK, getAgents.StatusCode);
             Assert.Empty(agentResult.Items);
@@ -935,7 +944,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeFalse_ReturnsBadRequest()
+        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeFalse_Returns400WhenDelegationHasActiveConnections()
         {
             // Create Delegation
             var client = CreateClient();
@@ -954,7 +963,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeTrue_ReturnsOk()
+        public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeTrue_Returns200Ok()
         {
             // Create Delegation
             var client = CreateClient();
@@ -1061,7 +1070,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithValidInput_ReturnsOk()
+        public async Task DelegateAccessPackageToAgent_WithValidInput_Returns200WithDelegationResult()
         {
             var client = CreateClient();
 
@@ -1079,7 +1088,7 @@ public class ClientDelegationControllerTest
 
             var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
+            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(delegationsToAgentPayload);
 
             Assert.NotEmpty(delegationToAgentResult.Items);
 
@@ -1124,7 +1133,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithPackageClientHaventDelegatedToParty_ReturnsBadRequest()
+        public async Task DelegateAccessPackageToAgent_WithPackageClientHaventDelegatedToParty_Returns400WhenUserNotAuthorized()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -1158,7 +1167,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithCanDelegateFalse_ReturnsBadRequest()
+        public async Task DelegateAccessPackageToAgent_WithCanDelegateFalse_Returns400WhenPackageNotDelegable()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -1243,7 +1252,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithValidInput_ReturnsOk()
+        public async Task DelegateAccessPackageToAgent_WithValidInput_Returns200WithDelegationResult()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -1289,7 +1298,7 @@ public class ClientDelegationControllerTest
 
             var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonOrjan}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
+            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(delegationsToAgentPayload);
 
             Assert.NotEmpty(delegationToAgentResult.Items);
 
@@ -1319,7 +1328,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithPackageClientHaventDelegatedToParty_ReturnsBadRequest()
+        public async Task DelegateAccessPackageToAgent_WithPackageClientHaventDelegatedToParty_Returns400WhenUserNotAuthorized()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -1353,7 +1362,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_WithCanDelegateFalse_ReturnsBadRequest()
+        public async Task DelegateAccessPackageToAgent_WithCanDelegateFalse_Returns400WhenPackageNotDelegable()
         {
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
@@ -1582,7 +1591,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateAccessPackageToAgent_DeleteAgentAccessPackageAndDelegation_ReturnsOk()
+        public async Task DelegateAccessPackageToAgent_DeleteAgentAccessPackageAndDelegation_Returns200WithDeleteResults()
         {
             // Create Delegation
             var client = CreateClient();
@@ -1842,7 +1851,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DeleteAccessPackageToAgent_WithValidInput_ReturnsOk()
+        public async Task DeleteAccessPackageToAgent_WithValidInput_Returns200WithDeleteResult()
         {
             // Create Delegation
             var client = CreateClient();
@@ -1891,7 +1900,7 @@ public class ClientDelegationControllerTest
             // Verify Delegation exists
             var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
+            var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(delegationsToAgentPayload);
 
             Assert.NotEmpty(delegationToAgentResult.Items.FirstOrDefault()?.Access.FirstOrDefault()?.Packages);
 
@@ -1915,7 +1924,7 @@ public class ClientDelegationControllerTest
             // Verify Delegation deleted
             getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(delegationsToAgentPayload);
+            delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(delegationsToAgentPayload);
 
             Assert.Empty(delegationToAgentResult.Items);
 

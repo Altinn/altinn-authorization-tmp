@@ -17,8 +17,8 @@ public class PersonIdentifierTest
     // ── Length and content guards ─────────────────────────────────────────────
     [Theory]
     [InlineData("")]
-    [InlineData("0123456789")]    // 10 digits
-    [InlineData("012345678901")]  // 12 digits
+    [InlineData("0123456789")] // 10 digits
+    [InlineData("012345678901")] // 12 digits
     public void TryParse_WrongLength_ReturnsFalse(string input)
     {
         Assert.False(PersonIdentifier.TryParse(input, null, out _));
@@ -31,10 +31,10 @@ public class PersonIdentifierTest
     }
 
     [Theory]
-    [InlineData("0123456789a")]       // letter
-    [InlineData("01234 678901")]      // space (note: 12 chars total when including space, but trimmed view here is wrong length)
-    [InlineData("01-2345-6789")]      // dash + dash → 11 chars but non-numeric
-    [InlineData("0123456789-")]       // 11 chars, last is non-digit
+    [InlineData("0123456789a")] // letter
+    [InlineData("01234 678901")] // space (note: 12 chars total when including space, but trimmed view here is wrong length)
+    [InlineData("01-2345-6789")] // dash + dash → 11 chars but non-numeric
+    [InlineData("0123456789-")] // 11 chars, last is non-digit
     public void TryParse_NonNumeric_ReturnsFalse(string input)
     {
         Assert.False(PersonIdentifier.TryParse(input, null, out _));
@@ -60,7 +60,7 @@ public class PersonIdentifierTest
     }
 
     [Fact]
-    public void Parse_InvalidValue_Throws()
+    public void Parse_InvalidValue_ThrowsFormatException()
     {
         // 02013299996 is the valid 02013299997 with the last (k2) digit
         // flipped — passes length / content guards, fails the modulo-11
@@ -119,7 +119,7 @@ public class PersonIdentifierTest
     }
 
     [Fact]
-    public void Json_DeserializeInvalid_Throws()
+    public void Json_DeserializeInvalid_ThrowsJsonException()
     {
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PersonIdentifier>("\"02013299996\""));
     }

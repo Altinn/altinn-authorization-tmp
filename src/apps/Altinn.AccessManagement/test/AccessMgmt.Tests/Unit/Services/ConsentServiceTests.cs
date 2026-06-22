@@ -10,11 +10,12 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using ContractsOrganizationNumber = Altinn.Authorization.Api.Contracts.Register.OrganizationNumber;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using ContractsOrganizationNumber = Altinn.Authorization.Api.Contracts.Register.OrganizationNumber;
+using ContractsPersonIdentifier = Altinn.Authorization.Api.Contracts.Register.PersonIdentifier;
 
 namespace Altinn.AccessManagement.Tests.Unit.Services;
 
@@ -176,7 +177,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_All_Histograms_OnSuccess()
+    public async Task GetAndStoreAltinn2Consent_Success_RecordsAllHistograms()
     {
         // Arrange: real Meter + listener to capture histogram recordings
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
@@ -216,8 +217,11 @@ public class ConsentServiceTests
         // Act
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        // Allow listener to process
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_get_a2_duration_seconds",
+            "consent_migration_insert_a3_duration_seconds",
+            "consent_migration_update_a2_duration_seconds");
 
         // Assert
         Assert.False(result.IsProblem);
@@ -229,7 +233,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_GetHistogram_OnDuplicate()
+    public async Task GetAndStoreAltinn2Consent_Duplicate_RecordsGetHistogram()
     {
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
         _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
@@ -261,7 +265,9 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_get_a2_duration_seconds");
 
         Assert.False(result.IsProblem);
         Assert.NotNull(result.Value);
@@ -269,7 +275,7 @@ public class ConsentServiceTests
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_UpdateHistogram_OnValidationFailure()
+    public async Task GetAndStoreAltinn2Consent_ValidationFailure_RecordsUpdateHistogram()
     {
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
         _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
@@ -297,14 +303,16 @@ public class ConsentServiceTests
 
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_update_a2_duration_seconds");
 
         Assert.True(result.IsProblem || result.Value == null);
         Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
     }
 
     [Fact]
-    public async Task GetAndStoreAltinn2Consent_Records_OverallHistogram_OnSuccess()
+    public async Task GetAndStoreAltinn2Consent_Success_RecordsOverallHistogram()
     {
         // Arrange: real Meter + listener to capture overall histogram recording
         var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
@@ -338,8 +346,9 @@ public class ConsentServiceTests
         // Act
         var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
 
-        // Allow listener to process
-        await Task.Delay(20, TestContext.Current.CancellationToken);
+        await collector.WaitForMeasurementsAsync(
+            TestContext.Current.CancellationToken,
+            "consent_migration_overall_duration_seconds");
 
         // Assert
         Assert.False(result.IsProblem);
@@ -481,43 +490,161 @@ public class ConsentServiceTests
         result.Problem.StatusCode.Should().Be(Problems.ConsentNotFound.StatusCode);
     }
 
-    // -----------------------------------------------------------------------
-    // TODO — additional cases the developer should add to fully cover
-    // GetConsentStatusChangesForParty. Each one follows the
-    // arrange-mock / act / verify shape used above.
-    //
-    // 4. GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo
-    //    Mirror of test #2 but for a `ConsentPartyUrn.PersonId`. Mock
-    //    `_amPartyServiceMock.Setup(s => s.GetByPersonNo(personIdentifier, …))`
-    //    instead of `GetByOrgNo`. Confirms the other branch of
-    //    `MapFromExternalIdenity`.
-    //
-    // 5. GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList
-    //    Stub the repo to return `new List<ConsentStatusChange>()`. Assert
-    //    `IsProblem == false` and `Value` is an empty (not null) collection.
-    //    Important because the controller materialises this into a paginated
-    //    response with no `next` link.
-    //
-    // 6. GetConsentStatusChangesForParty_PassesContinuationTokenAndPageSizeVerbatim
-    //    [Theory] with InlineData rows for representative tokens (null, "",
-    //    a base64 cursor) and page sizes (1, 100, 1000). Assert that
-    //    `_consentRepositoryMock.Verify(...)` saw the exact values. The
-    //    page-size clamping lives in the *repository*, not the service, so
-    //    the service must not mutate these arguments.
-    //
-    // 7. GetConsentStatusChangesForParty_CancellationTokenForwarded
-    //    Pass a `CancellationTokenSource.Token` and verify the repository
-    //    received the same token via `It.Is<CancellationToken>(t => t == ct)`.
-    //    Catches "default-token" regressions where someone drops the
-    //    parameter on the way through.
-    //
-    // 8. (Edge) GetConsentStatusChangesForParty_AmPartyServiceReturnsNull_NullReferenceTodayBugReport
-    //    If `GetByOrgNo` returns null, `MapFromExternalIdenity` returns null
-    //    and the service immediately calls `.IsPartyUuid(...)` on it — that
-    //    is a NullReferenceException today. Decide whether to (a) write a
-    //    failing test that pins the bug for a follow-up fix, or (b) skip
-    //    until the service is hardened. Talk to the team before adding it.
-    //
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo()
+    {
+        // Mirror of the OrganizationId test for the other branch of MapFromExternalIdenity: a PersonId
+        // receiver must be resolved to an internal partyUuid via GetByPersonNo before the repository call.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+        var resolvedPartyUuid = Guid.NewGuid();
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MinimalParty { PartyUuid = resolvedPartyUuid, Name = "Test Person" });
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(resolvedPartyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 50, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        _amPartyServiceMock.Verify(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()), Times.Once);
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(resolvedPartyUuid, query, 50, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentEventsForParty_OrganizationIdReceiverNotFound_ReturnsInvalidOrganizationIdentifierProblem()
+    {
+        // Arrange — external OrganizationId that the register can't resolve.
+        // GetByOrgNo returns null, so MapFromExternalIdenity returns null, and
+        // the service surfaces InvalidOrganizationIdentifier rather than
+        // dereferencing the null urn.
+        var orgNumber = ContractsOrganizationNumber.Parse("810419512");
+        var receiver = ConsentPartyUrn.OrganizationId.Create(orgNumber);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByOrgNo(orgNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidOrganizationIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidOrganizationIdentifier.StatusCode);
+
+        // The repository must never be reached when the receiver can't be resolved.
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConsentEventsForParty_PersonIdReceiverNotFound_ReturnsInvalidPersonIdentifierProblem()
+    {
+        // Arrange — external PersonId that the register can't resolve.
+        // GetByPersonNo returns null → InvalidPersonIdentifier.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidPersonIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidPersonIdentifier.StatusCode);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList()
+    {
+        // The controller materialises this into a paginated response with no next link, so an empty
+        // (not null) collection matters.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        var result = await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1000)]
+    public async Task GetConsentStatusChangesForParty_PassesQueryAndPageSizeVerbatim(int pageSize)
+    {
+        // Page-size clamping lives in the repository, so the service must forward the query object and
+        // the page size unchanged for every valid page size.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        var query = new ConsentEventsQuery(null, null, null, null, new Guid("cd12b899-0795-4a3c-a65f-f8de792ff382"));
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, query, pageSize, CancellationToken.None);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, query, pageSize, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_CancellationTokenForwarded()
+    {
+        // Catches "default-token" regressions where the parameter is dropped on the way through.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        using var cts = new CancellationTokenSource();
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, cts.Token);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.Is<CancellationToken>(t => t == cts.Token)),
+            Times.Once);
+    }
+
     // -----------------------------------------------------------------------
     // Where the *other* tests for this feature live:
     //
@@ -735,6 +862,30 @@ public class ConsentServiceTests
             }
 
             return Array.Empty<double>();
+        }
+
+        private bool HasMeasurements(string instrumentName) =>
+            _measurements.TryGetValue(instrumentName, out var bag) && !bag.IsEmpty;
+
+        /// <summary>
+        /// Polls until every named instrument has at least one measurement, or the
+        /// timeout elapses (then throws). Replaces a fixed <c>Task.Delay</c> "let the
+        /// listener catch up" wait: returns as soon as the metrics are observed and
+        /// fails loudly — instead of silently — if they never arrive.
+        /// </summary>
+        public async Task WaitForMeasurementsAsync(CancellationToken cancellationToken, params string[] instrumentNames)
+        {
+            var deadline = Environment.TickCount64 + 5000;
+            while (instrumentNames.Any(name => !HasMeasurements(name)))
+            {
+                if (Environment.TickCount64 >= deadline)
+                {
+                    var missing = string.Join(", ", instrumentNames.Where(name => !HasMeasurements(name)));
+                    throw new TimeoutException($"No measurements for instrument(s) [{missing}] within 5000 ms.");
+                }
+
+                await Task.Delay(10, cancellationToken);
+            }
         }
 
         public void Dispose() => _listener.Dispose();

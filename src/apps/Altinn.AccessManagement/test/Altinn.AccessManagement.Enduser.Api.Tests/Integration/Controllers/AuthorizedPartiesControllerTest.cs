@@ -71,7 +71,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 200 OK.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsMalinWithPortalScope_ReturnsOk()
+    public async Task GetAuthorizedParties_AsMalinWithPortalScope_Returns200Ok()
     {
         var client = CreatePortalClient(TestData.MalinEmilie);
 
@@ -85,7 +85,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 200 OK.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsTheaWithPortalScope_ReturnsOk()
+    public async Task GetAuthorizedParties_AsTheaWithPortalScope_Returns200Ok()
     {
         var client = CreatePortalClient(TestData.Thea);
 
@@ -224,7 +224,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 200 OK.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsMalinWithMultipleIncludeFlags_ReturnsOk()
+    public async Task GetAuthorizedParties_AsMalinWithMultipleIncludeFlags_Returns200Ok()
     {
         var client = CreatePortalClient(TestData.MalinEmilie);
 
@@ -238,7 +238,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 403 Forbidden.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_WithWrongScope_ReturnsForbidden()
+    public async Task GetAuthorizedParties_WithWrongScope_Returns403WrongScope()
     {
         var client = CreateClientWithScopes(AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -252,7 +252,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 401 Unauthorized.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_WithNoToken_ReturnsUnauthorized()
+    public async Task GetAuthorizedParties_WithNoToken_Returns401MissingToken()
     {
         var client = Fixture.Server.CreateClient();
 
@@ -266,7 +266,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 200 OK since the policy accepts both portal and system scopes.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsMalinWithSystemScope_ReturnsOk()
+    public async Task GetAuthorizedParties_AsMalinWithSystemScope_Returns200Ok()
     {
         var client = Fixture.Server.CreateClient();
         var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
@@ -426,6 +426,99 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         Assert.True(kaos.AuthorizedInstances.Count >= 2, $"Expected at least 2 instances but got {kaos.AuthorizedInstances.Count}. Response: {content}");
         Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_skd_sirius-skattemelding-v1");
         Assert.Contains(kaos.AuthorizedInstances, i => i.ResourceId == "app_mat_mattilsynet-baker-konditorvare");
+    }
+
+    /// <summary>
+    /// Paula is ManagingDirector of both the Karlstad main unit and its subunit. The authorized-parties
+    /// response returns the main unit at the top level with the subunit nested under Subunits, never as a
+    /// separate top-level party (no duplicate party UUIDs). The subunit exposes at least the main unit's
+    /// roles and access packages. Guards the hovedenhet/underenhet response contract (#3498 area 5).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsPaulaForKarlstad_ReturnsSubunitNestedUnderMainUnitWithoutDuplicates()
+    {
+        HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&includeAccessPackages=true&includeInstances=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
+
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+
+        // The main unit is a top-level party; the subunit is nested, never a separate top-level entry.
+        AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);
+        Assert.NotNull(mainUnit);
+        Assert.DoesNotContain(result.Items, p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+
+        AuthorizedPartyDto subUnit = mainUnit.Subunits.FirstOrDefault(p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+        Assert.NotNull(subUnit);
+
+        // The subunit carries at least the main unit's roles and access packages (hovedenhet/underenhet contract).
+        Assert.NotEmpty(mainUnit.AuthorizedRoles);
+        Assert.NotEmpty(mainUnit.AuthorizedAccessPackages);
+        Assert.All(mainUnit.AuthorizedRoles, role => Assert.Contains(role, subUnit.AuthorizedRoles));
+        Assert.All(mainUnit.AuthorizedAccessPackages, pkg => Assert.Contains(pkg, subUnit.AuthorizedAccessPackages));
+
+        // No party UUID appears more than once across the main units and their nested subunits.
+        List<Guid> allPartyUuids = result.Items
+            .SelectMany(p => p.Subunits.Select(s => s.PartyUuid).Append(p.PartyUuid))
+            .ToList();
+        Assert.Equal(allPartyUuids.Count, allPartyUuids.Distinct().Count());
+    }
+
+    /// <summary>
+    /// A partyFilter on the subunit returns the main unit at the top level with the subunit nested under
+    /// it (the subunit is reachable only through the main unit's hierarchy, not as a top-level party).
+    /// Guards the subunit partyFilter contract (#3498 area 5).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_WithSubunitPartyFilter_ReturnsMainUnitWithSubunitNested()
+    {
+        HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&partyFilter={TestEntities.SubunitKarlstad.Id}", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
+
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);
+        Assert.NotNull(mainUnit);
+        Assert.Contains(mainUnit.Subunits, s => s.PartyUuid == TestEntities.SubunitKarlstad.Id);
+        Assert.DoesNotContain(result.Items, p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+    }
+
+    /// <summary>
+    /// Paula holds an instance delegation on the Karlstad main unit. The authorized-parties response
+    /// surfaces that instance on the main unit but must not inherit it onto the nested subunit, even
+    /// though roles and access packages are inherited. Guards the instance-exclusion half of the
+    /// hovedenhet/underenhet contract (#3498 area 5).
+    /// </summary>
+    [Fact]
+    public async Task GetAuthorizedParties_AsPaulaForKarlstad_SubunitDoesNotInheritMainUnitInstances()
+    {
+        HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
+
+        HttpResponseMessage response = await client.GetAsync($"{Route}?includeRoles=true&includeAccessPackages=true&includeInstances=true", TestContext.Current.CancellationToken);
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {content}");
+
+        PaginatedResult<AuthorizedPartyDto> result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+
+        AuthorizedPartyDto mainUnit = result.Items.FirstOrDefault(p => p.PartyUuid == TestEntities.MainUnitKarlstad.Id);
+        Assert.NotNull(mainUnit);
+        AuthorizedPartyDto subUnit = mainUnit.Subunits.FirstOrDefault(p => p.PartyUuid == TestEntities.SubunitKarlstad.Id);
+        Assert.NotNull(subUnit);
+
+        // The instance is delegated on the main unit, so it surfaces there.
+        Assert.Contains(mainUnit.AuthorizedInstances, i => i.InstanceId == "c3d4e5f6-a7b8-4c9d-8e0f-1a2b3c4d5e6f");
+
+        // The subunit inherits the main unit's roles, but not its authorized instances.
+        Assert.NotEmpty(subUnit.AuthorizedRoles);
+        Assert.Empty(subUnit.AuthorizedInstances);
     }
 
     /// <summary>

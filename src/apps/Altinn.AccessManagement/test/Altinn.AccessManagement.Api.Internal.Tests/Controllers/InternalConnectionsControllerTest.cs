@@ -1,4 +1,7 @@
-﻿using Altinn.AccessManagement.Api.Internal.Controllers;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
+using Altinn.AccessManagement.Api.Internal.Controllers;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
@@ -6,9 +9,6 @@ using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
-using System.Net;
-using System.Security.Claims;
-using System.Text.Json;
 
 namespace Altinn.AccessManagement.Api.Internal.Tests.Controllers;
 
@@ -51,7 +51,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_FromSIUserToPerson_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_FromSIUserToPerson_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClient();
 
@@ -68,7 +68,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_FromPersonToPerson_ReturnsBadRequest()
+        public async Task PostSelfIdentifiedUser_FromPersonToPerson_Returns400ForInvalidPersonToPersonAssignment()
         {
             var client = CreateClient();
 
@@ -78,7 +78,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Email_PlatformIssuerWithRegisterAppClaim_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Email_PlatformIssuerWithRegisterAppClaim_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClientWithPlatformToken("register");
             
@@ -95,7 +95,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithRegisterAppClaim_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithRegisterAppClaim_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClientWithPlatformToken("register");
 
@@ -112,7 +112,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithAuthenticationAppClaim_ReturnsOk()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_Edu_PlatformIssuerWithAuthenticationAppClaim_Returns200WithSelfRegisteredUserAssignment()
         {
             var client = CreateClientWithPlatformToken("authentication");
 
@@ -147,7 +147,7 @@ public class InternalConnectionsControllerTest
         }
 
         [Fact]
-        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_ReturnsUnauthorized()
+        public async Task PostSelfIdentifiedUser_SameGuidFromAndTo_PlatformIssuerWithNotRegisterAppClaim_Returns401ForDisallowedAppClaim()
         {
             var client = CreateClientWithPlatformToken("not-register");
 

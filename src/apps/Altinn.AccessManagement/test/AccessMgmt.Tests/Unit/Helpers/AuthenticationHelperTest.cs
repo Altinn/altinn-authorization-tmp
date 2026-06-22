@@ -135,6 +135,32 @@ public class AuthenticationHelperTest
         AuthenticationHelper.GetSystemUserUuidString(CtxWith()).Should().BeEmpty();
     }
 
+    [Fact]
+    public void GetSystemUserUuid_SystemUserTypeWithEmptyIdArray_ReturnsEmpty()
+    {
+        var json = """{"type":"urn:altinn:systemuser","systemuser_id":[]}""";
+
+        AuthenticationHelper.GetSystemUserUuid(CtxWith(new Claim("authorization_details", json))).Should().Be(Guid.Empty);
+    }
+
+    [Fact]
+    public void GetSystemUserUuid_SystemUserTypeWithInvalidGuid_ReturnsEmpty()
+    {
+        // A non-guid systemuser_id must fall back to Guid.Empty, not throw FormatException,
+        // matching the TryParse contract of the other claim accessors.
+        var json = """{"type":"urn:altinn:systemuser","systemuser_id":["not-a-guid"]}""";
+
+        AuthenticationHelper.GetSystemUserUuid(CtxWith(new Claim("authorization_details", json))).Should().Be(Guid.Empty);
+    }
+
+    [Fact]
+    public void GetSystemUserUuidString_SystemUserTypeWithoutIdArray_ReturnsEmptyString()
+    {
+        var json = """{"type":"urn:altinn:systemuser"}""";
+
+        AuthenticationHelper.GetSystemUserUuidString(CtxWith(new Claim("authorization_details", json))).Should().BeEmpty();
+    }
+
     // ── GetAuthenticatedPartyUuid composition ────────────────────────────────
     [Fact]
     public void GetAuthenticatedPartyUuid_PartyUuidPresent_ReturnsPartyUuid()

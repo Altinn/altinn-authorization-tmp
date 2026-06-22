@@ -72,7 +72,7 @@ namespace Altinn.AccessManagement.Core.Helpers
             }
 
             AuthorizationDetails authDetails = JsonSerializer.Deserialize<AuthorizationDetails>(claim.Value);
-            if (authDetails != null && authDetails.Type == "urn:altinn:systemuser")
+            if (authDetails != null && authDetails.Type == "urn:altinn:systemuser" && authDetails.SystemUserId is { Length: > 0 })
             {
                 return authDetails.SystemUserId[0];
             }
@@ -108,9 +108,9 @@ namespace Altinn.AccessManagement.Core.Helpers
             }
 
             AuthorizationDetails authDetails = JsonSerializer.Deserialize<AuthorizationDetails>(claim.Value);
-            if (authDetails != null && authDetails.Type == "urn:altinn:systemuser")
+            if (authDetails != null && authDetails.Type == "urn:altinn:systemuser" && authDetails.SystemUserId is { Length: > 0 })
             {
-                return Guid.Parse(authDetails.SystemUserId[0]);
+                return Guid.TryParse(authDetails.SystemUserId[0], out Guid systemUserUuid) ? systemUserUuid : Guid.Empty;
             }
 
             return Guid.Empty;
