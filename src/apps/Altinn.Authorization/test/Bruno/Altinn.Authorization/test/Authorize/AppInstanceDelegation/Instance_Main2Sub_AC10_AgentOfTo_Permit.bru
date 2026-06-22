@@ -1,7 +1,7 @@
 meta {
-  name: Instance_P2P_AC1_ResId_InstId_Permit
+  name: Instance_Main2Sub_AC10_AgentOfTo_Permit
   type: http
-  seq: 1
+  seq: 16
 }
 
 post {
@@ -63,14 +63,15 @@ script:pre-request {
   const testdata = require(`./testdata/InstanceDelegation/${bru.getEnvVar("tokenEnv")}.js`);
   
   // Should be the same as the .bru request file. Used as Test-name Tests tab and shows in test result.
-  bru.setVar("requestName", "Instance_P2P_AC1_ResId_InstId_Permit");
+  bru.setVar("requestName", "Instance_Main2Sub_AC10_AgentOfTo_Permit");
   
-  bru.setVar("instanceId",  testdata.instances.p2p.instanceId);
-  bru.setVar("subject",  testdata.persons.hakkeDyr.personId);
-  bru.setVar("partyId",  testdata.persons.ovelseEmpirisk.partyId);
+  bru.setVar("instanceId",  testdata.instances.main2subAgent.instanceId);
+  bru.setVar("subject",  testdata.organizations.legitimJusterbarTiger.subunits.legitimJusterbarTiger.agent.personId);
+  bru.setVar("partyId",  testdata.organizations.ivrigGildTigerAS.partyId);
   
-  //app: ttd/ttd-bruno-tilgangspakke-app
-  // Person A har delegert app-instans til Person B, så B skal få Permit på den instansen.
+  // App: ttd/ttd-bruno-tilgangspakke-app
+  // Tilgangspakke: urn:altinn:accesspackage:revisorattesterer og urn:altinn:accesspackage:motorvognavgift
+  // Hovedenhet A har instansiert en app og er klient hos underenhet B, så agent bruker med riktig klientdelegering/tilgangspakker (revisorattesterer og motorvognavgift) hos B skal få Permit på den instansen.
   
   var getTokenParameters = {
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
