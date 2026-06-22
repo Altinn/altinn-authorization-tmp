@@ -215,7 +215,7 @@ public class ConnectionQuery(AppDbContext db)
         roleSetExclude.Add(RoleConstants.Supplier.Id); // Supplier role should never be included in results as it is only used for maskinporten schemas.
         if (!filter.IncludeAppControlledInstances)
         {
-            roleSetExclude.Add(RoleConstants.InnehaverAppStyrtInstansTilgang.Id); // App-controlled instance access should be excluded if not explicitly requested.
+            roleSetExclude.Add(RoleConstants.AppstyrtRettighetshaver.Id); // App-controlled instance access should be excluded if not explicitly requested.
         }
 
         if (fromSet != null && filter.IncludeDelegation)
@@ -694,7 +694,7 @@ public class ConnectionQuery(AppDbContext db)
         roleSetExclude.Add(RoleConstants.Supplier.Id); // Supplier role should never be included in results as it is only used for maskinporten schemas.
         if (!filter.IncludeAppControlledInstances)
         {
-            roleSetExclude.Add(RoleConstants.InnehaverAppStyrtInstansTilgang.Id); // App-controlled instance access should be excluded if not explicitly requested.
+            roleSetExclude.Add(RoleConstants.AppstyrtRettighetshaver.Id); // App-controlled instance access should be excluded if not explicitly requested.
         }
 
         /*
@@ -1256,7 +1256,7 @@ public class ConnectionQuery(AppDbContext db)
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
         // Assignment → AssignmentInstance
-        var rightholderAssignments = GetRightholderAssignments(allKeys);
+        var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
         var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
         if (rightholderAssignmentIds.Count == 0)
         {
@@ -1326,7 +1326,7 @@ public class ConnectionQuery(AppDbContext db)
         List<Guid> rightholderRoles = [RoleConstants.Rightholder.Id];
         if (filter.IncludeAppControlledInstances)
         {
-            rightholderRoles.Add(RoleConstants.InnehaverAppStyrtInstansTilgang.Id);
+            rightholderRoles.Add(RoleConstants.AppstyrtRettighetshaver.Id);
         }
 
         if (_rightholderAssignments is null)

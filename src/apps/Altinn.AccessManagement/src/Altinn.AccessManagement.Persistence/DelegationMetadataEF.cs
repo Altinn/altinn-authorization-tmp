@@ -519,7 +519,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
         }
 
         var role = instanceDelegationChange.InstanceDelegationSource == InstanceDelegationSource.App
-            ? RoleConstants.InnehaverAppStyrtInstansTilgang
+            ? RoleConstants.AppstyrtRettighetshaver
             : RoleConstants.Rightholder;
         var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.FromUuid, cancellationToken);
         var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.ToUuid, cancellationToken);
@@ -665,7 +665,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                 var resource = await GetResource(policy.Rules.ResourceId, cancellationToken);
 
                 var role = policy.Rules.InstanceDelegationSource == InstanceDelegationSource.App
-                    ? RoleConstants.InnehaverAppStyrtInstansTilgang
+                    ? RoleConstants.AppstyrtRettighetshaver
                     : RoleConstants.Rightholder;
 
                 var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
