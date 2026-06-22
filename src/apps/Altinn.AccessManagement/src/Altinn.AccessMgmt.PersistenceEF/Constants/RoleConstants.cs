@@ -113,23 +113,23 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Innehaver av app-styrt instans tilgang' role.
+    /// Represents the 'Appstyrt Rettighetshaver' role.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> aefe8391-3f21-4641-8d96-06ba04c67cfd
-    /// - <c>URN:</c> urn:altinn:role:innehaver-app-styrt-instans-tilgang
+    /// - <c>URN:</c> urn:altinn:role:appstyrt-rettighetshaver
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Code:</c> innehaver-app-styrt-instans-tilgang
-    /// - <c>Description:</c> Forhold som alle app-styrte instanstilganger knyttes til
+    /// - <c>Code:</c> appstyrt-rettighetshaver
+    /// - <c>Description:</c> Forhold som all app-styrt delegering av tilganger knyttes til
     /// </remarks>
-    public static ConstantDefinition<Role> InnehaverAppStyrtInstansTilgang { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
+    public static ConstantDefinition<Role> AppstyrtRettighetshaver { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
     {
         Entity = new()
         {
-            Name = "Innehaver av app-styrt instans tilgang",
-            Code = "innehaver-app-styrt-instans-tilgang",
-            Description = "Forhold som alle app-styrte instanstilganger knyttes til",
-            Urn = "urn:altinn:role:innehaver-app-styrt-instans-tilgang",
+            Name = "Appstyrt Rettighetshaver",
+            Code = "appstyrt-rettighetshaver",
+            Description = "Forhold som all app-styrt delegering av tilganger knyttes til",
+            Urn = "urn:altinn:role:appstyrt-rettighetshaver",
             IsKeyRole = false,
             IsAssignable = true,
             IsAvailableForServiceOwners = false,
@@ -137,12 +137,12 @@ public static class RoleConstants
             ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "App-Controlled Instance Access Holder"),
-            KeyValuePair.Create("Description", "Relationship to which all app-controlled instance accesses are linked")
+            KeyValuePair.Create("Name", "App-Controlled Rightsholder"),
+            KeyValuePair.Create("Description", "Relationship to which all app-controlled rights are linked")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Innehavar av app-styrt instans tilgang"),
-            KeyValuePair.Create("Description", "Forhold som alle app-styrte instanstilgangar blir knytte til")
+            KeyValuePair.Create("Name", "Appstyrt Rettighetshaver"),
+            KeyValuePair.Create("Description", "Forhold som all app-styrt delegering av tilganger knyttes til")
         )
     };
 
