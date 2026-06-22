@@ -601,8 +601,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             List<ConsentRequestDetailsBffDto> consentRequestList = JsonSerializer.Deserialize<List<ConsentRequestDetailsBffDto>>(responseText, _jsonOptions);
-            Assert.Single(consentRequestList.Where(r => r.Id == requestId && r.RedirectUrl == null).ToList());
-        }
+            Assert.Single(consentRequestList, r => r.Id == requestId && r.RedirectUrl == string.Empty);
 
         [Fact]
         public async Task ListRequests_One_Valid_Hidden_One_Valid_Show()

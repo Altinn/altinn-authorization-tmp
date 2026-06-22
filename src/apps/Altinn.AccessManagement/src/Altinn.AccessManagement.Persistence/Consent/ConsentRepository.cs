@@ -386,7 +386,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
                     Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented", cancellationToken: cancellationToken),
                     RedirectUrl = await reader.IsDBNullAsync(reader.GetOrdinal("redirectUrl"), cancellationToken: cancellationToken)
-                        ? null
+                        ? string.Empty
                         : await reader.GetFieldValueAsync<string>("redirectUrl", cancellationToken: cancellationToken),
                     ConsentRequestEvents = consentRequestEvents,
                     TemplateId = await reader.GetFieldValueAsync<string>("templateId", cancellationToken: cancellationToken),
@@ -527,7 +527,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
                     Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented", cancellationToken: cancellationToken),
                     RedirectUrl = await reader.IsDBNullAsync(reader.GetOrdinal("redirectUrl"), cancellationToken: cancellationToken)
-                        ? null
+                        ? string.Empty
                         : await reader.GetFieldValueAsync<string>("redirectUrl", cancellationToken: cancellationToken),
                     ConsentRequestEvents = await GetEvents(consentRequestId, cancellationToken: cancellationToken),
                     TemplateId = await reader.GetFieldValueAsync<string>("templateId", cancellationToken: cancellationToken),
