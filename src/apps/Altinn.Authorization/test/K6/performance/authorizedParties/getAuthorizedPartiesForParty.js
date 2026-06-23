@@ -1,8 +1,8 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { getAuthorizedPartiesUrl, tokenGeneratorEnv } from "./common/config.js";
-import { expect, describe, randomItem, URL, getEnterpriseToken } from "./common/testimports.js";
-import { buildOptions, getParams, readCsv } from "./commonFunctions.js";
+import { getAuthorizedPartiesUrl, tokenGeneratorEnv } from "../common/config.js";
+import { expect, describe, randomItem, URL, getEnterpriseToken } from "../common/testimports.js";
+import { buildOptions, getParams, readCsv } from "../common/commonFunctions.js";
 
 const randomize = (__ENV.RANDOMIZE ?? 'false') === 'true';
 const env = __ENV.API_ENVIRONMENT ?? 'yt01';
@@ -10,7 +10,7 @@ const byOrganization = (__ENV.BY_ORGANIZATION ?? 'true') === 'true';
 const byUser = (__ENV.BY_USER ?? 'true') === 'true';
 const includeAltinn2 = (__ENV.INCLUDE_ALTINN2 ?? 'false') === 'true';
 
-const partiesFilename = `./testData/orgsIn-${env}-WithPartyUuid.csv`;
+const partiesFilename = import.meta.resolve(`../testData/orgsIn-${env}-WithPartyUuid.csv`);
 const parties = new SharedArray('parties', function () {
   return readCsv(partiesFilename);
 });

@@ -1,6 +1,6 @@
 import { SharedArray } from "k6/data";
-import { randomItem } from "./common/testimports.js";
-import { getParams, buildOptions, readCsv } from "./commonFunctions.js";
+import { randomItem } from "../common/testimports.js";
+import { getParams, buildOptions, readCsv } from "../common/commonFunctions.js";
 import { getAuthorizedParties } from "./getAuthorizedPartiesForParty.js"
 export { setup } from "./getAuthorizedPartiesForParty.js"
 

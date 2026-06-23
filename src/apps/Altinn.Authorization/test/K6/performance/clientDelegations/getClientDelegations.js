@@ -1,12 +1,12 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
 import { SharedArray } from "k6/data";
-import { getAmDelegationUrl } from "./common/config.js";
-import { expect, describe, randomItem, URL, getPersonalToken, randomIntBetween } from "./common/testimports.js";
-import { buildOptions, getParams, breakpoint, stages_target, readCsv } from "./commonFunctions.js";
+import { getAmDelegationUrl } from "../common/config.js";
+import { expect, describe, randomItem, URL, getPersonalToken, randomIntBetween } from "../common/testimports.js";
+import { buildOptions, getParams, breakpoint, stages_target, readCsv } from "../common/commonFunctions.js";
 
 
-const orgsWithPartyUuidFilename = `./testData/orgsIn-yt01-WithPartyUuid.csv`;
+const orgsWithPartyUuidFilename = import.meta.resolve(`../testData/orgsIn-yt01-WithPartyUuid.csv`);
 
 const orgsWithPartyUuid = new SharedArray('orgs2', function () {
   return readCsv(orgsWithPartyUuidFilename);

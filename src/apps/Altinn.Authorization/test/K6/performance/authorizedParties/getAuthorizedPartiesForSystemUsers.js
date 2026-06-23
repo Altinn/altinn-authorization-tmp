@@ -1,11 +1,11 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { getAuthorizedPartiesUrl } from "./common/config.js";
-import { expect, describe, randomItem, URL, getEnterpriseToken } from "./common/testimports.js";
-import { buildOptions, getParams, readCsv } from "./commonFunctions.js";
+import { getAuthorizedPartiesUrl } from "../common/config.js";
+import { expect, describe, randomItem, URL, getEnterpriseToken } from "../common/testimports.js";
+import { buildOptions, getParams, readCsv } from "../common/commonFunctions.js";
 
 
-const systemusersFilename = `./testData/systemusers.csv`;
+const systemusersFilename = import.meta.resolve(`../testData/systemusers.csv`);
 
 const systemUsers = new SharedArray('systemusers', function () {
   return readCsv(systemusersFilename);

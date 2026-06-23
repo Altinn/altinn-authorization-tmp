@@ -1,4 +1,4 @@
-import { getParams, buildOptions } from "./commonFunctions.js";
+import { getParams, buildOptions } from "../common/commonFunctions.js";
 import { getAuthorizedParties, getParty } from "./getAuthorizedPartiesForParty.js"
 export { setup } from "./getAuthorizedPartiesForParty.js"
 

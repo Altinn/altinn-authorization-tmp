@@ -18,7 +18,9 @@ const amAuthorizedPartiesUrl = "api/v1/resourceowner/authorizedparties";
 const amConsentUrl = "api/v1/enterprise/consentrequests/"
 const amRightholders = "api/v1/user/rightholders";
 const amConsentApprove = "api/v1/bff/consentrequests/";
+const amConnections = "api/v1/enduser/connections";
 
+export const apiVersion = __ENV.API_VERSION ?? 'v1';
 export const env = __ENV.API_ENVIRONMENT ?? 'yt01';
 
 export const urls = {
@@ -62,26 +64,32 @@ export const urls = {
             test: testAmBaseUrl + amRightholders,
             staging: stagingAmUiBaseUrl + amRightholders,
             yt01: yt01AmUiBaseUrl + amRightholders
+        },
+        getConnectionsUrl: {
+            test: testAmBaseUrl + amConnections,
+            staging: stagingAmBaseUrl + amConnections,
+            yt01: yt01AmBaseUrl + amConnections
         }
     }
 };
 
-if (!urls[__ENV.API_VERSION]) {
-    throw new Error(`Invalid API version: ${__ENV.API_VERSION}. Please ensure it's set correctly in your environment variables.`);
+if (!urls[apiVersion]) {
+    throw new Error(`Invalid API version: ${apiVersion}. Please ensure it's set correctly in your environment variables.`);
 }
 
-if (!urls[__ENV.API_VERSION]["authorizeUrl"][__ENV.API_ENVIRONMENT]) {
-    throw new Error(`Invalid API environment: ${__ENV.API_ENVIRONMENT}. Please ensure it's set correctly in your environment variables.`);
+if (!urls[apiVersion]["authorizeUrl"][env]) {
+    throw new Error(`Invalid API environment: ${_env}. Please ensure it's set correctly in your environment variables.`);
 }
 
-export const postAuthorizeUrl = urls[__ENV.API_VERSION]["authorizeUrl"][__ENV.API_ENVIRONMENT];
-export const getSystemsUrl = urls[__ENV.API_VERSION]["readSystemsUrl"][__ENV.API_ENVIRONMENT];
-export const getSystemUsersUrl = urls[__ENV.API_VERSION]["systemUsersUrl"][__ENV.API_ENVIRONMENT];
-export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__ENV.API_ENVIRONMENT];
-export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
-export const postConsent = urls[__ENV.API_VERSION]["consentUrl"][__ENV.API_ENVIRONMENT];
-export const postConsentApprove = urls[__ENV.API_VERSION]["consentApproveUrl"][__ENV.API_ENVIRONMENT];
-export const getRightHoldersUrl = urls[__ENV.API_VERSION]["rightHoldersUrl"][__ENV.API_ENVIRONMENT];
+export const postAuthorizeUrl = urls[apiVersion]["authorizeUrl"][env];
+export const getSystemsUrl = urls[apiVersion]["readSystemsUrl"][env];
+export const getSystemUsersUrl = urls[apiVersion]["systemUsersUrl"][env];
+export const getAmDelegationUrl = urls[apiVersion]["amDelegationUrl"][env];
+export const getAuthorizedPartiesUrl = urls[apiVersion]["authorizedPartiesUrl"][env];
+export const postConsent = urls[apiVersion]["consentUrl"][env];
+export const postConsentApprove = urls[apiVersion]["consentApproveUrl"][env];
+export const getRightHoldersUrl = urls[apiVersion]["rightHoldersUrl"][env];
+export const getConnectionsUrl = urls[apiVersion]["getConnectionsUrl"][env];
 export const tokenGeneratorEnv = (() => {
   switch (env) {
     case 'yt01':
