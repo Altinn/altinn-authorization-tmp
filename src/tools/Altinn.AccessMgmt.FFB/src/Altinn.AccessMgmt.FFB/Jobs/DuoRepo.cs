@@ -119,26 +119,36 @@ public sealed class DuoRepo(string accConnString, string? regConnString = null)
     public async Task<Guid?> UpsertAssignment(Guid fromId, Guid toId, Guid roleId, DateTimeOffset validFrom, Guid changedBy, Guid changedBySystem, string changeOperation, CancellationToken ct = default)
     {
         await using var conn = new NpgsqlConnection(accConnString);
-        const string insertSql = """
+        await conn.OpenAsync(ct);
+        await using var tx = await conn.BeginTransactionAsync(ct);
+
+        const string auditSetupSql = """
         CREATE TEMP TABLE IF NOT EXISTS session_audit_context (
         changed_by UUID,
         changed_by_system UUID,
         change_operation_id text
         ) ON COMMIT DROP;
-        
+
         TRUNCATE session_audit_context;
-        
+
         INSERT INTO session_audit_context(changed_by, changed_by_system, change_operation_id)
         VALUES(@changedBy, @changedBySystem, @changeOperation);
-        
+
         SELECT set_config('app.changed_by', @changedBy::text, false),
                set_config('app.changed_by_system', @changedBySystem::text, false),
                set_config('app.change_operation_id', @changeOperation, false);
+        """;
 
+        const string insertSql = """
         INSERT INTO dbo.assignment (id, fromid, toid, roleid, audit_validfrom, audit_changedby, audit_changedbysystem, audit_changeoperation)
         VALUES (@id, @fromId, @toId, @roleId, @validFrom, @changedBy, @changedBySystem, @changeOperation)
         ON CONFLICT (fromid, toid, roleid) DO NOTHING
         RETURNING id;
+        """;
+
+        const string selectSql = """
+        SELECT id FROM dbo.assignment
+        WHERE fromid = @fromId AND toid = @toId AND roleid = @roleId;
         """;
 
         var parameters = new
@@ -153,18 +163,16 @@ public sealed class DuoRepo(string accConnString, string? regConnString = null)
             changeOperation
         };
 
-        var id = await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(insertSql, parameters, cancellationToken: ct));
-        if (id is not null && id != Guid.Empty)
+        await conn.ExecuteAsync(new CommandDefinition(auditSetupSql, parameters, transaction: tx, cancellationToken: ct));
+
+        var id = await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(insertSql, parameters, transaction: tx, cancellationToken: ct));
+        if (id is null || id == Guid.Empty)
         {
-            return id;
+            id = await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(selectSql, parameters, transaction: tx, cancellationToken: ct));
         }
 
-        const string selectSql = """
-        SELECT id FROM dbo.assignment
-        WHERE fromid = @fromId AND toid = @toId AND roleid = @roleId;
-        """;
-
-        return await conn.ExecuteScalarAsync<Guid?>(new CommandDefinition(selectSql, parameters, cancellationToken: ct));
+        await tx.CommitAsync(ct);
+        return id;
     }
 
     public async Task<bool> RemoveAssignmentIfEmpty(Guid assignmentId, Guid changedBy, Guid changedBySystem, string changeOperation)
