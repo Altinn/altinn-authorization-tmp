@@ -1,7 +1,4 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base
 {

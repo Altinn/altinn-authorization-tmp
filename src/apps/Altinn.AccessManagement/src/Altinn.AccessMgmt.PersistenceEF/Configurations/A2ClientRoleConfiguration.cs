@@ -12,5 +12,6 @@ public class A2ClientRoleConfiguration : IEntityTypeConfiguration<A2ClientRole>
         builder.ToDefaultTable();
 
         builder.HasKey(p => p.Id);
+        builder.HasIndex(t => new { t.FacilitatorId, t.FromId }).IncludeProperties(t => t.Id);
     }
 }

@@ -3,7 +3,7 @@
 namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <summary>
-/// Extended delegation
+/// Represents an A2 client role assignment (migrated client delegation).
 /// </summary>
 public class A2ClientRole : BaseA2ClientRole
 {
