@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.FFB.Jobs.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.FFB.Jobs;
 
@@ -29,17 +30,19 @@ public static class AssignmentInstanceCleanupJob
             return;
         }
 
-        int count = 0;
+        int count = 0;          // total processed toward Limit (moved + redundant removed)
+        int moved = 0;
+        int removedDuplicates = 0;
 
         while (count < opts.Limit)
         {
-            var instances = (await repo.GetAccAssignmentInstance(oldRole.Id, changedBySystemId, limit: opts.LoopLimit)).ToList();
+            var instances = (await repo.GetAccAssignmentInstance(oldRole.Id, changedBySystemId, limit: opts.LoopLimit, ct: ct)).ToList();
             if (instances.Count == 0)
             {
                 break;
             }
 
-            var movedThisBatch = 0;
+            var progressedThisBatch = 0;
 
             foreach (var instance in instances)
             {
@@ -58,12 +61,31 @@ public static class AssignmentInstanceCleanupJob
                     continue;
                 }
 
-                // Move AssignmentInstance
-                var updated = await repo.UpdateAssignmentInstance(instance.Id, newAssignmentId.Value, DateTimeOffset.UtcNow, SystemEntityConstants.DBA, SystemEntityConstants.DBA, opts.OperationId);
-                if (!updated)
+                // Move AssignmentInstance onto the new assignment.
+                try
                 {
-                    run.AddLog($"Failed to update AssignmentInstance '{instance.Id}' AssignmentId from '{instance.AssignmentId}' to '{newAssignmentId.Value}'", true);
-                    continue;
+                    var updated = await repo.UpdateAssignmentInstance(instance.Id, newAssignmentId.Value, DateTimeOffset.UtcNow, SystemEntityConstants.DBA, SystemEntityConstants.DBA, opts.OperationId);
+                    if (!updated)
+                    {
+                        run.AddLog($"Failed to update AssignmentInstance '{instance.Id}' AssignmentId from '{instance.AssignmentId}' to '{newAssignmentId.Value}'", true);
+                        continue;
+                    }
+
+                    moved++;
+                }
+                catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+                {
+                    // The target assignment already has an instance for this resource/instance — it was
+                    // already migrated, so this old row is redundant. Delete it instead of moving.
+                    run.AddLog($"AssignmentInstance '{instance.Id}' already exists on target assignment '{newAssignmentId.Value}' — deleting redundant instance.");
+                    var removed = await repo.DeleteAssignmentInstance(instance.Id, SystemEntityConstants.DBA, SystemEntityConstants.DBA, opts.OperationId);
+                    if (!removed)
+                    {
+                        run.AddLog($"Failed to delete redundant AssignmentInstance '{instance.Id}'", true);
+                        continue;
+                    }
+
+                    removedDuplicates++;
                 }
 
                 // Remove Old Assignment if it is now empty (a normal side effect, not a failure)
@@ -74,19 +96,19 @@ public static class AssignmentInstanceCleanupJob
                 }
 
                 count++;
-                movedThisBatch++;
+                progressedThisBatch++;
             }
 
-            // Guard against an endless loop: a full batch was fetched but nothing could be moved,
-            // so the same rows would be returned again on the next iteration.
-            if (movedThisBatch == 0)
+            // Guard against an endless loop: if a full batch was fetched but nothing could be processed
+            // (every instance hit a genuine upsert/update/delete failure), the same rows would return again.
+            if (progressedThisBatch == 0)
             {
-                run.AddLog("No instances in this batch could be moved — stopping to avoid an endless loop.", true);
+                run.AddLog("No instances in this batch could be processed — stopping to avoid an endless loop.", true);
                 break;
             }
         }
 
-        run.AddLog($"Done. Moved {count} assignment instance(s).");
+        run.AddLog($"Done. Moved {moved}, removed {removedDuplicates} redundant assignment instance(s).");
     }
 }
 

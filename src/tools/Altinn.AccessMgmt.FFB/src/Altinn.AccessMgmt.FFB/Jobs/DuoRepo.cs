@@ -267,29 +267,69 @@ public sealed class DuoRepo(string accConnString, string? regConnString = null)
         return affected > 0;
     }
 
+    public async Task<bool> DeleteAssignmentInstance(Guid assignmentInstanceId, Guid changedBy, Guid changedBySystem, string changeOperation)
+    {
+        await using var conn = new NpgsqlConnection(accConnString);
+
+        // Same audit-context preamble as the other mutations (the DELETE fires the history trigger,
+        // which reads both the GUCs and session_audit_context). Affected-row count read via RETURNING CTE.
+        const string deleteSql = """
+        BEGIN TRANSACTION;
+
+        CREATE TEMP TABLE IF NOT EXISTS session_audit_context (
+        changed_by UUID,
+        changed_by_system UUID,
+        change_operation_id text
+        ) ON COMMIT DROP;
+
+        TRUNCATE session_audit_context;
+
+        INSERT INTO session_audit_context(changed_by, changed_by_system, change_operation_id)
+        VALUES(@changedBy, @changedBySystem, @changeOperation);
+
+        SELECT set_config('app.changed_by', @changedBy::text, false),
+               set_config('app.changed_by_system', @changedBySystem::text, false),
+               set_config('app.change_operation_id', @changeOperation, false);
+
+        WITH deleted AS (
+            DELETE FROM dbo.assignmentinstance WHERE id = @assignmentInstanceId RETURNING id
+        )
+        SELECT count(*)::int FROM deleted;
+
+        COMMIT TRANSACTION;
+        """;
+
+        var parameters = new { assignmentInstanceId, changedBy, changedBySystem, changeOperation };
+
+        using var multi = await conn.QueryMultipleAsync(new CommandDefinition(deleteSql, parameters));
+        await multi.ReadAsync();                          // consume the set_config result set
+        var affected = (await multi.ReadAsync<int>()).Single();
+        return affected > 0;
+    }
+
     public async Task<IEnumerable<JobAssignmentInstance>> GetAccAssignmentInstance(Guid assignmentRoleId, Guid changedBySystemId, int limit = 1, CancellationToken ct = default)
     {
         await using var conn = new NpgsqlConnection(accConnString);
-        string sql = $"""
-                SELECT
-            		 ai.id AS Id
-            		,ai.assignmentid as AssignmentId
-            		,a.fromid as AssignmentFromId
-            		,a.toid as AssignmentToId
-            		,ai.audit_validfrom as ValidFrom
-            		,ai.audit_changedby as ChangedBy
-            		,ai.audit_changedbysystem as ChangedBySystem
-            	from
-            		dbo.assignmentinstance ai
-            		inner join dbo.assignment a on a.id = ai.assignmentid
-            	where
-            		ai.audit_changedbysystem = '{changedBySystemId.ToString()}'
-            		and a.roleid = '{assignmentRoleId.ToString()}'
-            	order by
-            		ai.id
-            	limit {limit}
+        const string sql = """
+            SELECT
+                 ai.id AS Id
+                ,ai.assignmentid AS AssignmentId
+                ,a.fromid AS AssignmentFromId
+                ,a.toid AS AssignmentToId
+                ,ai.audit_validfrom AS ValidFrom
+                ,ai.audit_changedby AS ChangedBy
+                ,ai.audit_changedbysystem AS ChangedBySystem
+            FROM dbo.assignmentinstance ai
+            INNER JOIN dbo.assignment a ON a.id = ai.assignmentid
+            WHERE ai.audit_changedbysystem = @changedBySystemId
+              AND a.roleid = @assignmentRoleId
+            ORDER BY ai.id
+            LIMIT @limit
             """;
-        return await conn.QueryAsync<JobAssignmentInstance>(new CommandDefinition(sql, commandTimeout: 0, cancellationToken: ct));
+
+        var parameters = new { assignmentRoleId, changedBySystemId, limit };
+
+        return await conn.QueryAsync<JobAssignmentInstance>(new CommandDefinition(sql, parameters, commandTimeout: 0, cancellationToken: ct));
     }
 
     // ── Entities ──────────────────────────────────────────────────────────────
