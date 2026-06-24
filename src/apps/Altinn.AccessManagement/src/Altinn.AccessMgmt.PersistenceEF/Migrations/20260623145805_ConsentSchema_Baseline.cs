@@ -34,7 +34,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP SCHEMA IF EXISTS consent CASCADE;");
+            // Intentional no-op. This baseline adopts the pre-existing `consent` schema and
+            // its data; it is not reversible. Dropping the schema would destroy live consent
+            // data, and as noted on the class above EF never manages or drops these objects.
+            // Rolling back past the baseline is not supported; reprovision instead.
         }
 
         private static string ReadConsentSchemaScript()
