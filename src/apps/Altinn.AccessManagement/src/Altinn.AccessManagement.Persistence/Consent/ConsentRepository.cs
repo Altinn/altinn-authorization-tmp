@@ -39,13 +39,14 @@ namespace Altinn.AccessManagement.Persistence.Consent
         private const string PARAM_LANGAUGE = "language";        
 
         private const string EventQuery = /*strpsql*/@"
-                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
+                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty, topartyuuid)
                 VALUES (
-                @consentEventId, 
-                @consentRequestId, 
-                @eventtype, 
-                @created, 
-                @performedByParty)
+                @consentEventId,
+                @consentRequestId,
+                @eventtype,
+                @created,
+                @performedByParty,
+                (SELECT topartyuuid FROM consent.consentrequest WHERE consentrequestid = @consentRequestId))
                 RETURNING consentEventId;
                 ";
 
@@ -594,16 +595,19 @@ namespace Altinn.AccessManagement.Persistence.Consent
             var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow() - _consentRequestSafetyLag);
             var consentStatusChanges = new List<ConsentStatusChange>();
 
-            const string consentChangesQuery = @"SELECT
+            const string consentChangesQuery = @"WITH reqs AS MATERIALIZED (
+                                            SELECT consentrequestid
+                                            FROM consent.consentrequest
+                                            WHERE topartyuuid = @partyUuid
+                                        )
+                                        SELECT
                                         ce.consentrequestid,
                                         ce.consenteventid,
                                         ce.eventtype,
                                         ce.created
                                         FROM consent.consentevent ce
-                                        INNER JOIN consent.consentrequest cr
-                                        ON ce.consentrequestid = cr.consentrequestid
                                         WHERE
-                                        cr.topartyuuid = @partyUuid
+                                        ce.consentrequestid IN (SELECT consentrequestid FROM reqs)
                                         AND ce.eventtype <> 'created'
                                         AND ce.consenteventid < @uuid7SafetyBound
                                         AND (@consentRequestId IS NULL OR ce.consentrequestid = @consentRequestId)
