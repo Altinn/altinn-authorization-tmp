@@ -15,6 +15,9 @@ cli := "dotnet run --project './Altinn.Authorization.Cli/src/Altinn.Authorizatio
 @hash-identity USERNAME PASSWORD:
   {{cli}} identity hash '{{USERNAME}}' '{{PASSWORD}}'
 
+@register-copy-local ENV='at22':
+  {{cli}} db cp '${REGISTER_DB_{{uppercase(ENV)}}}' '${REGISTER_DB_LOCAL}' register
+
 @register-export-errors ENV='at22':
   {{cli}} sb export-errors '${REGISTER_SB_{{uppercase(ENV)}}}'
 
