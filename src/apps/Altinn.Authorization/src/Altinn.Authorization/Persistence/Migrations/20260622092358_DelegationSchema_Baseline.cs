@@ -273,7 +273,10 @@ $$;");
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP SCHEMA IF EXISTS delegation CASCADE;");
+            // Intentional no-op. This baseline adopts the pre-existing `delegation` schema and
+            // its data; it is not reversible. Dropping the schema would destroy live delegation
+            // data, and as noted on the class above EF never manages or drops these objects.
+            // Rolling back past the baseline is not supported; reprovision instead.
         }
     }
 }
