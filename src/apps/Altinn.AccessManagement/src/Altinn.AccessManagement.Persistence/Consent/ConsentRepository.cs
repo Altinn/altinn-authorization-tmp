@@ -605,9 +605,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                                         ce.eventtype,
                                         ce.created
                                         FROM consent.consentevent ce
+                                        JOIN reqs ON reqs.consentrequestid = ce.consentrequestid
                                         WHERE
-                                        ce.consentrequestid IN (SELECT consentrequestid FROM reqs)
-                                        AND ce.consenteventid < @uuid7SafetyBound
+                                        ce.consenteventid < @uuid7SafetyBound
                                         AND (@consentRequestId IS NULL OR ce.consentrequestid = @consentRequestId)
                                         AND (@eventTypes      IS NULL OR ce.eventtype = ANY(@eventTypes::consent.event_type[]))
                                         AND (@createdAfter     IS NULL OR ce.created >= @createdAfter)
