@@ -594,17 +594,19 @@ namespace Altinn.AccessManagement.Persistence.Consent
             var uuid7SafetyBound = Guid.CreateVersion7(_timeProvider.GetUtcNow() - _consentRequestSafetyLag);
             var consentStatusChanges = new List<ConsentStatusChange>();
 
-            const string consentChangesQuery = @"SELECT
+            const string consentChangesQuery = @"WITH reqs AS MATERIALIZED (
+                                            SELECT consentrequestid
+                                            FROM consent.consentrequest
+                                            WHERE topartyuuid = @partyUuid
+                                        )
+                                        SELECT
                                         ce.consentrequestid,
                                         ce.consenteventid,
                                         ce.eventtype,
                                         ce.created
                                         FROM consent.consentevent ce
-                                        INNER JOIN consent.consentrequest cr
-                                        ON ce.consentrequestid = cr.consentrequestid
                                         WHERE
-                                        cr.topartyuuid = @partyUuid
-                                        AND ce.eventtype <> 'created'
+                                        ce.consentrequestid IN (SELECT consentrequestid FROM reqs)
                                         AND ce.consenteventid < @uuid7SafetyBound
                                         AND (@consentRequestId IS NULL OR ce.consentrequestid = @consentRequestId)
                                         AND (@eventTypes      IS NULL OR ce.eventtype = ANY(@eventTypes::consent.event_type[]))
