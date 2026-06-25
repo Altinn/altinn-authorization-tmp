@@ -78,6 +78,11 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         var response = await client.GetAsync(Route, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Items);
     }
 
     /// <summary>
@@ -92,6 +97,11 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         var response = await client.GetAsync(Route, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Items);
     }
 
     /// <summary>
@@ -231,6 +241,11 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         var response = await client.GetAsync($"{Route}?includeRoles=true&includeResources=true&includeInstances=true", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Items);
     }
 
     /// <summary>
@@ -279,6 +294,11 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
         var response = await client.GetAsync(Route, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var result = JsonSerializer.Deserialize<PaginatedResult<AuthorizedPartyDto>>(content, JsonOptions);
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Items);
     }
 
     /// <summary>
