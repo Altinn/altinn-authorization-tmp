@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623101722_AddA2ClientRolesTable")]
+    partial class AddA2ClientRolesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,11 +59,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_a2clientrole");
-
-                    b.HasIndex("FacilitatorId", "FromId")
-                        .HasDatabaseName("ix_a2clientrole_facilitatorid_fromid");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("FacilitatorId", "FromId"), new[] { "Id" });
 
                     b.ToTable("a2clientrole", "dbo");
                 });
