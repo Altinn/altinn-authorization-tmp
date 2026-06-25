@@ -99,7 +99,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects 200 OK and Dumbo Adventures in the result.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsManagingDirectorWithIncludeRoles_ReturnsRepresentedOrgAndSelfWithRoles()
+    public async Task GetAuthorizedParties_AsManagingDirectorWithIncludeRoles_Returns200WithRepresentedOrgAndSelfWithRoles()
     {
         HttpClient client = CreatePortalClient(TestData.MalinEmilie);
 
@@ -131,7 +131,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Packages and resources should be empty since only roles are requested.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsRightholderWithIncludeRoles_ReturnsRepresentedOrgsWithRoles()
+    public async Task GetAuthorizedParties_AsRightholderWithIncludeRoles_Returns200WithRepresentedOrgsWithRoles()
     {
         HttpClient client = CreatePortalClient(TestData.Thea);
 
@@ -169,7 +169,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Dumbo should have DAGL packages (Malin is MD), self should have PRIV packages.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsManagingDirectorWithIncludeAccessPackages_ReturnsRepresentedOrgAndSelfWithPackages()
+    public async Task GetAuthorizedParties_AsManagingDirectorWithIncludeAccessPackages_Returns200WithRepresentedOrgAndSelfWithPackages()
     {
         HttpClient client = CreatePortalClient(TestData.MalinEmilie);
 
@@ -195,7 +195,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Dumbo should have the SalarySpecialCategory package via Thea's Rightholder assignment.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsRightholderWithIncludeAccessPackages_ReturnsRepresentedOrgsWithPackages()
+    public async Task GetAuthorizedParties_AsRightholderWithIncludeAccessPackages_Returns200WithRepresentedOrgsWithPackages()
     {
         HttpClient client = CreatePortalClient(TestData.Thea);
 
@@ -285,7 +285,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Thea requests authorized parties and verifies the response deserializes correctly.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_ReturnsValidPaginatedResult()
+    public async Task GetAuthorizedParties_Returns200WithPaginatedResult()
     {
         HttpClient client = CreatePortalClient(TestData.Thea);
 
@@ -303,7 +303,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Validates roles and packages for all parties.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsChairOfTheBoardWithKeyRoles_ReturnsRepresentedOrgAndAuditedOrgViaKeyRole()
+    public async Task GetAuthorizedParties_AsChairOfTheBoardWithKeyRoles_Returns200WithRepresentedOrgAndAuditedOrgViaKeyRole()
     {
         HttpClient client = CreatePortalClient(TestData.AlexTheArtist);
 
@@ -338,7 +338,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects Kaos Magic Design and Arts to appear with instance rights for SiriusSkattemelding and MattilsynetBakeryService.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeInstances_ReturnsDelegatingOrgWithInstances()
+    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeInstances_Returns200WithDelegatingOrgWithInstances()
     {
         HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
 
@@ -362,7 +362,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Expects Kaos to appear but with empty instances list.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsInstanceRecipientWithoutIncludeInstances_ReturnsDelegatingOrgWithoutInstances()
+    public async Task GetAuthorizedParties_AsInstanceRecipientWithoutIncludeInstances_Returns200WithDelegatingOrgWithoutInstances()
     {
         HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
 
@@ -384,7 +384,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// AuthorizedInstances should be empty since includeInstances is not set.
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeResources_ReturnsDelegatingOrgWithResources()
+    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeResources_Returns200WithDelegatingOrgWithResources()
     {
         HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
 
@@ -407,7 +407,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// Kaos should have both resources and instances populated (from seed).
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeResourcesAndInstances_ReturnsDelegatingOrgWithResourcesAndInstances()
+    public async Task GetAuthorizedParties_AsInstanceRecipientWithIncludeResourcesAndInstances_Returns200WithDelegatingOrgWithResourcesAndInstances()
     {
         HttpClient client = CreatePortalClient(TestData.JosephineYvonnesdottir);
 
@@ -435,7 +435,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// roles and access packages. Guards the hovedenhet/underenhet response contract (#3498 area 5).
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsMainUnitManagingDirector_ReturnsSubunitNestedUnderMainUnitWithoutDuplicates()
+    public async Task GetAuthorizedParties_AsMainUnitManagingDirector_Returns200WithSubunitNestedUnderMainUnitWithoutDuplicates()
     {
         HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
 
@@ -497,7 +497,7 @@ public class AuthorizedPartiesControllerTest : IClassFixture<ApiFixture>
     /// hovedenhet/underenhet contract (#3498 area 5).
     /// </summary>
     [Fact]
-    public async Task GetAuthorizedParties_AsMainUnitManagingDirector_SubunitDoesNotInheritMainUnitInstances()
+    public async Task GetAuthorizedParties_AsMainUnitManagingDirector_Returns200WithSubunitWithoutMainUnitInstances()
     {
         HttpClient client = CreatePortalClient(TestEntities.PersonPaula);
 
