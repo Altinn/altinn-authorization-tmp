@@ -70,7 +70,7 @@ public class PolicyDecisionPointTest
         result.Decision.Should().Be(XacmlContextDecision.Deny);
     }
 
-    private const string FirstApplicable = "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable";
+    private static readonly string FirstApplicable = XacmlConstants.CombiningAlgorithms.RuleFirstApplicable;
 
     private static string TwoRulePolicy(string firstEffect, string secondEffect, string combiningAlg) => $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Policy xmlns=""{Ns}"" PolicyId=""urn:test:policy"" Version=""1.0"" RuleCombiningAlgId=""{combiningAlg}"">

@@ -76,7 +76,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Equal("urn:altinn:organizationnumber", request.Request.Resource[0].Attribute[0].AttributeId);
             Assert.Equal("991825827", request.Request.Resource[0].Attribute[0].Value);
         }
@@ -124,7 +124,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Equal("urn:altinn:person:identifier-no", request.Request.Resource[0].Attribute[0].AttributeId);
             Assert.Equal("01014922047", request.Request.Resource[0].Attribute[0].Value);
         }
@@ -171,7 +171,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Null(request.Request.XForwardedForHeader);
         }
 
@@ -196,7 +196,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
 
             // Known gap: even with an X-Forwarded-For header present, the PEP does not
             // copy it onto the decision request. DecisionHelper.CreateDecisionRequest

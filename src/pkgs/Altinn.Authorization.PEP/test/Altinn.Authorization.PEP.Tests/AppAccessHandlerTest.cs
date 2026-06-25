@@ -201,7 +201,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
 
             // Known gap: even with an X-Forwarded-For header present, the PEP does not
             // copy it onto the decision request. The AppAccessRequirement overload of
