@@ -13,10 +13,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries
         /// <summary>
         /// Gets a list of client role delegations from the database context based on the specified parameters.
         /// </summary>
-        /// <param name="dbContext">dBContext to use</param>
+        /// <param name="dbContext">DbContext to use</param>
         /// <param name="fromId">the client the client role delegation is for</param>
         /// <param name="facilitatorId">the service unit performing the client delegation</param>
-        /// <param name="cancellationToken">canselationtoken</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
         public static async Task<IReadOnlyList<ClientRoleAssignment>> GetClientRoleDelegations(
             this AppDbContext dbContext,
@@ -31,7 +31,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries
                    new NpgsqlParameter("fromid", fromId))
 
                .AsNoTracking()
-               .ToListAsync(cancellationToken);            
+               .ToListAsync(cancellationToken);
 
             return rows;
         }

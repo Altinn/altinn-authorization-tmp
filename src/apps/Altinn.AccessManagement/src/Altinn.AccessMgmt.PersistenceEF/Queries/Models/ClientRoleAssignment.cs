@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Altinn.AccessMgmt.PersistenceEF.Queries.Models
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Models
 {
     public class ClientRoleAssignment
     {
         /// <summary>
-        /// The Id for the A2ClientRole, which is the unique identifier for the clint role.
+        /// The Id for the A2ClientRole, which is the unique identifier for the client role.
         /// </summary>
         public Guid Id { get; set; }
     

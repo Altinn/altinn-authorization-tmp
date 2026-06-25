@@ -182,8 +182,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             .Where(e => relationSet.Contains((e.FromId, e.ToId, e.RoleId)))
             .ToList();
 
-        // Check for client delegations assosiated with removed client and remove them as well
-        // TODO: Remove after 1.1.2027 when roles from A2 is retired as a consept.
+        // Check for client delegations associated with removed client and remove them as well
+        // TODO: Remove after 01.01.2027 when roles from A2 is retired as a concept.
         var clientRelations = entities.Where(e => e.RoleId == RoleConstants.BusinessManager.Entity.Id)
             .Select(e => (e.FromId, e.ToId))
             .ToList();
@@ -196,11 +196,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 cancellationToken
             );
 
-            List<Guid> assignmnentIdsToRemove = clientDelegations.Select(t => t.AssignmentId).ToList();
+            List<Guid> assignmentIdsToRemove = clientDelegations.Select(t => t.AssignmentId).ToList();
 
             var clientAssignments = await dbContext.Assignments
                 .AsTracking()
-                .Where(e => assignmnentIdsToRemove.Contains(e.Id))
+                .Where(e => assignmentIdsToRemove.Contains(e.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
 
             entities.AddRange(clientAssignments);
