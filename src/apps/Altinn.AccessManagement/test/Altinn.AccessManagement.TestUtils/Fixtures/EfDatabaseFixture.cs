@@ -42,12 +42,14 @@ public class EfDatabaseFixture : IAsyncLifetime
     /// </summary>
     public async Task EnsureSeedOnceAsync(Func<Task> seedAsync)
     {
+        ArgumentNullException.ThrowIfNull(seedAsync);
+
         if (_seeded)
         {
             return;
         }
 
-        await _seedGate.WaitAsync();
+        await _seedGate.WaitAsync().ConfigureAwait(false);
         try
         {
             if (_seeded)
@@ -55,7 +57,7 @@ public class EfDatabaseFixture : IAsyncLifetime
                 return;
             }
 
-            await seedAsync();
+            await seedAsync().ConfigureAwait(false);
             _seeded = true;
         }
         finally
