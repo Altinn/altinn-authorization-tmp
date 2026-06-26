@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -18,12 +18,12 @@ public class ClientDto
     /// Gets or sets a collection of all access information for the client 
     /// </summary>
     [JsonPropertyName("access")]
-    public List<RoleAccessPackages> Access { get; set; } = [];
+    public List<RoleAccess> Access { get; set; } = [];
 
     /// <summary>
     /// Composite Key instances
     /// </summary>
-    public class RoleAccessPackages
+    public class RoleAccess
     {
         /// <summary>
         /// Roles
@@ -35,6 +35,12 @@ public class ClientDto
         /// Packages
         /// </summary>
         [JsonPropertyName("packages")]
-        public CompactPackageDto[] Packages { get; set; }
+        public List<CompactPackageDto> Packages { get; set; } = [];
+
+        /// <summary>
+        /// Resources
+        /// </summary>
+        [JsonPropertyName("resources")]
+        public List<CompactResourceDto> Resources { get; set; } = [];
     }
 }

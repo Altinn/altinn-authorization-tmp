@@ -12,6 +12,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -110,14 +111,14 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                         var access = clientGroup
                             .Where(x => x.Role is not null)
                             .GroupBy(x => x.Role.Id)
-                            .Select(roleGroup => new ClientDto.RoleAccessPackages
+                            .Select(roleGroup => new ClientDto.RoleAccess
                             {
                                 Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role),
                                 Packages = roleGroup
                                     .Where(p => p.PackageId != Guid.Empty)
                                     .Select(x => packages[x.PackageId])
                                     .DistinctBy(p => p.Id)
-                                    .ToArray(),
+                                    .ToList(),
                             })
                             .ToList();
 
@@ -173,12 +174,19 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ClientDto>>> GetClients(Guid partyUuid, List<string>? roles, List<string>? packages, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ClientDto>>> GetClients(
+        Guid partyUuid,
+        List<string>? roles,
+        List<string>? packages,
+        List<string>? resources,
+        CancellationToken cancellationToken = default)
     {
         roles ??= [];
         packages ??= [];
+
         var roleFilter = new List<Guid>();
         var packageFilter = new List<Guid>();
+        var resourceFilter = new List<Guid>();
 
         foreach (var r in roles)
         {
@@ -250,7 +258,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ClientDto()
             {
                 Client = DtoMapper.Convert(access.First().From),
-                Access = access.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccessPackages
+                Access = access.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
@@ -502,7 +510,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new AgentDto.AgentRoleAccessPackages
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
-                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToArray(),
+                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
                 }).ToList(),
             }).ToList();
 
@@ -536,10 +544,10 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ClientDto()
             {
                 Client = DtoMapper.Convert(e.First().From),
-                Access = e.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccessPackages
+                Access = e.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
-                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToArray(),
+                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
                 }).ToList(),
             }).ToList();
 
@@ -1098,6 +1106,7 @@ public interface IClientDelegationService
         Guid partyUuid,
         List<string>? roles,
         List<string>? packages,
+        List<string>? resourcs,
         CancellationToken cancellationToken = default);
 
     /// <summary>

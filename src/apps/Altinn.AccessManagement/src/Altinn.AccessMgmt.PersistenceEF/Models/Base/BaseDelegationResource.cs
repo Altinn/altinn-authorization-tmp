@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Net.NetworkInformation;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Extensions;
 
@@ -46,4 +47,29 @@ public class BaseDelegationResource : BaseAudit
     /// Resource identifier
     /// </summary>
     public Guid ResourceId { get; set; }
+
+    /// <summary>
+    /// AssignmentPackageId
+    /// </summary>
+    public Guid AssignmentPackageId { get; set; }
+
+    /// <summary>
+    /// AssignmentResourceId
+    /// </summary>
+    public Guid? AssignmentResourceId { get; set; }
+
+    /// <summary>
+    /// Role Package ID
+    /// </summary>
+    public Guid? RolePackageId { get; set; }
+
+    /// <summary>
+    /// Package Resource ID
+    /// </summary>
+    public Guid? PackageResourceId { get; set; }
+
+    /// <summary>
+    /// Role Resource ID
+    /// </summary>
+    public Guid? RoleResourceId { get; set; }
 }

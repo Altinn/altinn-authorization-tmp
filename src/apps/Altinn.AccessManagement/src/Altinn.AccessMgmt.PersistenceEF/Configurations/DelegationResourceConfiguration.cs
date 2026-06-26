@@ -20,6 +20,12 @@ public class DelegationResourceConfiguration : IEntityTypeConfiguration<Delegati
         builder.PropertyWithReference(navKey: t => t.Delegation, foreignKey: t => t.DelegationId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
 
+        builder.PropertyWithReference(navKey: t => t.AssignmentResource, foreignKey: t => t.AssignmentResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+        builder.PropertyWithReference(navKey: t => t.AssignmentPackage, foreignKey: t => t.AssignmentPackageId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+        builder.PropertyWithReference(navKey: t => t.RolePackage, foreignKey: t => t.RolePackageId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+        builder.PropertyWithReference(navKey: t => t.PackageResource, foreignKey: t => t.PackageResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+        builder.PropertyWithReference(navKey: t => t.RoleResource, foreignKey: t => t.RoleResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
+
         builder.HasIndex(t => new { t.DelegationId, t.ResourceId }).IsUnique();
     }
 }

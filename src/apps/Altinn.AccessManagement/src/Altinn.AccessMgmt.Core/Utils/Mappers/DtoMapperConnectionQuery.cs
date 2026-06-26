@@ -296,10 +296,10 @@ public partial class DtoMapper : IDtoMapper
             var entity = client.First().From;
             var party = Convert(entity);
             var roles = client.GroupBy(c => c.Role.Id);
-            var roleAccess = new List<ClientDto.RoleAccessPackages>();
+            var roleAccess = new List<ClientDto.RoleAccess>();
             foreach (var role in roles)
             {
-                var access = new ClientDto.RoleAccessPackages
+                var access = new ClientDto.RoleAccess
                 {
                     Role = ConvertCompactRole(useViaRole ? role.First().ViaRole : role.First().Role),
                     Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
