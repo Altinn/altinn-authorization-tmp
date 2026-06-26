@@ -198,14 +198,14 @@ public class PackageService : IPackageService
     {
         bool filterResourceProviders = resourceProviderCodes != null && resourceProviderCodes.Any();
 
-        string cacheKey = "psa";
+        string cacheKey = "packageSvcAreas";
         if (!_memoryCache.TryGetValue(cacheKey, out List<Area> areas))
         {
             areas = await DbContext.Areas.AsNoTracking().ToListAsync(cancellationToken);
             _memoryCache.Set(cacheKey, areas, _cacheOptions);
         }
 
-        cacheKey = "psp";
+        cacheKey = "packageSvcPackages";
         if (!_memoryCache.TryGetValue(cacheKey, out List<Package> allPackages))
         {
             allPackages = await DbContext.Packages.AsNoTracking().Include(t => t.EntityType).ToListAsync(cancellationToken);
@@ -216,7 +216,7 @@ public class PackageService : IPackageService
 
         var result = new List<PackageDto>();
 
-        cacheKey = "pspr";
+        cacheKey = "packageSvcPackageResources";
         if (!_memoryCache.TryGetValue(cacheKey, out List<PackageResource> allPackageResources))
         {
             allPackageResources = await DbContext.PackageResources.AsNoTracking()
