@@ -228,17 +228,19 @@ public class PackageService : IPackageService
         }
 
         var packageResources = allPackageResources
-            .Where(pr => filterResourceProviders ? resourceProviderCodes.Any(code => pr.Resource.Provider.Code.Contains(code, StringComparison.OrdinalIgnoreCase)) : true);
+            .Where(pr => filterResourceProviders ? resourceProviderCodes.Any(code => pr.Resource?.Provider?.Code?.Contains(code, StringComparison.OrdinalIgnoreCase) == true) : true)
+            .ToList();
+        var resourcesByPackage = packageResources.ToLookup(t => t.PackageId);
 
         foreach (var package in packages)
         {
             // Skip package if the package does not have a valid filtered resource
-            if (filterResourceProviders == true && packageResources.Any(t => t.PackageId == package.Id) == false)
+            if (filterResourceProviders == true && !resourcesByPackage[package.Id].Any())
             {
                 continue;
             }
 
-            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), packageResources.Where(t => t.PackageId == package.Id).Select(t => t.Resource)));
+            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), resourcesByPackage[package.Id].Select(t => t.Resource)));
         }
 
         foreach (var t in result)
