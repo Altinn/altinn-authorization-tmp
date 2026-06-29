@@ -118,3 +118,7 @@ GRANT ALL ON TABLE consent.consentright TO platform_authorization;
 GRANT ALL ON TABLE consent.context TO platform_authorization;
 GRANT ALL ON TABLE consent.metadata TO platform_authorization;
 GRANT ALL ON TABLE consent.resourceattribute TO platform_authorization;
+-- Mirrors the original Yuniql grants. The consent schema has no sequences today
+-- (all UUID PKs), so this is a no-op now; kept for parity and so any sequence later
+-- added to the schema is granted on (re)provisioning.
+GRANT ALL ON ALL SEQUENCES IN SCHEMA consent TO platform_authorization;
