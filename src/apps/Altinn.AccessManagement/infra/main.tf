@@ -194,9 +194,6 @@ module "appsettings" {
   labels = {
     "${var.environment}-access-management" = {
       values = merge({
-        "ConsentMigration:BatchSize"                  = { value = tostring(var.configuration.consent.batch_size) }
-        "ConsentMigration:OnlyExpiredConsents"        = { value = tostring(var.configuration.consent.only_expired_consents) }
-        "ConsentMigration:MaxDegreeOfParallelism"     = { value = tostring(var.configuration.consent.max_degree_of_parallelism) }
         "Consent:EventsPageSize"                      = { value = tostring(var.configuration.consent.events_page_size) }
         "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) } # Deprecated
         "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }  # Deprecated
@@ -472,12 +469,6 @@ module "appsettings" {
     {
       name        = "AccessManagement.ResourceDelegation.EF"
       description = "Specifies if singlerights resource delegation should use ef."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessMgmt.Core.HostedServices.ConsentMigration"
-      description = "Specifies if consent migration service should start"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

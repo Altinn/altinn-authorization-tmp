@@ -14,11 +14,7 @@ platform_workflow_principal_ids = [
 db_max_pool_size = 10
 db_compute_sku   = "D2"
 configuration = {
-  consent = {
-    batch_size                = 5000
-    max_degree_of_parallelism = 10
-    only_expired_consents     = false
-  }
+  consent = {}
   core = {
     request_notify_request_approved_in_seconds = 600
     request_notify_request_pending_in_seconds  = 960
