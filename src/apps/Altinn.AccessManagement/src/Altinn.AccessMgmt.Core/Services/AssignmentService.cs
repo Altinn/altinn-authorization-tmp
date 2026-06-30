@@ -1114,19 +1114,15 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
     public async Task ClearAssignmentsInAfterLife(Guid deadPerson, AuditValues audit, CancellationToken cancellationToken)
     {
         // Find all assignments where toId or fromId is deadPerson, and the role is one of the rightHolder roles used for delegations in Altinn, or Altinn 2 roles migrated to Altinn 3.
-        var rolesToRevoke = await db.Roles.AsNoTracking()
-            .Where(r => r.ProviderId == ProviderConstants.Altinn2.Id)
-            .Select(r => r.Id)
-            .ToListAsync(cancellationToken);
-        rolesToRevoke.Add(RoleConstants.Rightholder.Id);
-        rolesToRevoke.Add(RoleConstants.AppControlledRightholder.Id);
-
         List<Assignment> assignmentsToRevoke = await db.Assignments.AsNoTracking()
-           .Where(t => rolesToRevoke.Contains(t.RoleId))
-           .Where(t => t.ToId == deadPerson || t.FromId == deadPerson)
-           .ToListAsync(cancellationToken);
+             .Where(t => t.ToId == deadPerson || t.FromId == deadPerson)
+             .Where(t =>
+                 t.RoleId == RoleConstants.Rightholder ||
+                 t.RoleId == RoleConstants.AppControlledRightholder ||
+                 t.Role.ProviderId == ProviderConstants.Altinn2.Id)
+             .ToListAsync(cancellationToken);
 
-        // All assignments where deadPerson is agent for an organization should be removed. Removing the agent assignment cascades to removing all client delegations via 
+        // All assignments where deadPerson is agent for an organization should be removed. Removing the agent assignment cascades to removing all client delegations for that agent.
         List<Assignment> agentAssignments = await db.Assignments.AsNoTracking()
            .Where(t => t.ToId == deadPerson && t.RoleId == RoleConstants.Agent)
            .ToListAsync(cancellationToken);
