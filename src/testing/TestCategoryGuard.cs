@@ -9,7 +9,7 @@ namespace Altinn.Authorization.Testing;
 
 /// <summary>
 /// Guards the unit/integration lane split. The CI test lanes select tests with
-/// <c>--filter-trait "Category=Unit"</c> / <c>"Category=Integration"</c>, so a
+/// <c>--filter-trait "Category=Unit"</c> / <c>--filter-trait "Category=Integration"</c>, so a
 /// test method that carries neither category (via <see cref="UnitTestAttribute"/>
 /// or <see cref="IntegrationTestAttribute"/> on the method or its class) matches
 /// no lane and is silently skipped. This test fails the build instead, naming the
@@ -31,7 +31,7 @@ public class TestCategoryGuard
         }
         catch (ReflectionTypeLoadException ex)
         {
-            types = ex.Types.Where(t => t is not null).ToArray()!;
+            types = ex.Types.OfType<Type>().ToArray();
         }
 
         var uncategorised = new List<string>();
