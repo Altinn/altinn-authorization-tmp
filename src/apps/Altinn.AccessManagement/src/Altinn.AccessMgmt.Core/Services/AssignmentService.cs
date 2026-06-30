@@ -1109,7 +1109,8 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
     }
 
     /// <summary>
-    /// Removes all assignments where the deadPerson is either a rightHolder or an agent.
+    /// Removes all assignments tied to a deceased person. This includes all rightHolder assignments or migrated Altinn 2 assignments where the deadPerson is either the from or to party,
+    /// as well as all agent assignments where the deadPerson is the agent. Removing the agent assignment will cascade to removing all client delegations for that agent.
     /// </summary>
     public async Task ClearAssignmentsInAfterLife(Guid deadPerson, AuditValues audit, CancellationToken cancellationToken)
     {
