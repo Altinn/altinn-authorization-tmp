@@ -152,7 +152,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     }
                     finally
                     {
-                        batchId = Guid.CreateVersion7();
+                        // A successful merge drops its own temp table; this guarantees cleanup
+                        // when a failure between ingest and merge leaves a temp table orphaned.
+                        await ingestService.DropTempData<Assignment>(batchId, cancellationToken);
                         batchData.Clear();
                     }
                 }
