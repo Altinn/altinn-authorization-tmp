@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -35,6 +35,12 @@ public class ClientDto
         /// Packages
         /// </summary>
         [JsonPropertyName("packages")]
-        public CompactPackageDto[] Packages { get; set; }
+        public List<CompactPackageDto> Packages { get; set; } = [];
+
+        /// <summary>
+        /// Resources
+        /// </summary>
+        [JsonPropertyName("resources")]
+        public List<CompactResourceDto> Resources { get; set; } = [];
     }
 }

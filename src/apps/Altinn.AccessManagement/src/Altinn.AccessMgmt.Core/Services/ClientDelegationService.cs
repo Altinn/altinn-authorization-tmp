@@ -117,7 +117,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                                     .Where(p => p.PackageId != Guid.Empty)
                                     .Select(x => packages[x.PackageId])
                                     .DistinctBy(p => p.Id)
-                                    .ToArray(),
+                                    .ToList(),
                             })
                             .ToList();
 
@@ -502,7 +502,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new AgentDto.AgentRoleAccessPackages
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
-                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToArray(),
+                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
                 }).ToList(),
             }).ToList();
 
@@ -539,7 +539,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new ClientDto.RoleAccessPackages
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
-                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToArray(),
+                    Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
                 }).ToList(),
             }).ToList();
 
