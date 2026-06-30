@@ -130,12 +130,13 @@ flag-enabled client so the decision is actually exercised.
 
 ---
 
-## 3. `LegacyApiFixture` — Yuniql-backed legacy tests
+## 3. `LegacyApiFixture` — legacy-schema tests
 
 **Location:** `AccessMgmt.Tests/Fixtures/LegacyApiFixture.cs`
-**Use for:** Legacy tests that depend on the full Yuniql-migrated schema and
-haven't been rewritten against EF seed data yet.
-**Database:** Yuniql migrations **and** EF schema side-by-side.
+**Use for:** Tests backed by the Dapper / raw-Npgsql repositories on the
+`accessmanagement`, `delegation` and `consent` schemas.
+**Database:** EF Core (the `dbo` and `consent` schemas) **and** the Yuniql
+`accessmanagement` / `delegation` schemas, side-by-side.
 
 This fixture exists as an explicit bridge. New tests should **not** use it —
 prefer `ApiFixture`. The expected outcome is that the last `LegacyApiFixture`
@@ -180,9 +181,9 @@ runtime is always present.
 ## Other fixtures
 
 - **`AuthorizationDbFixture`** (`Altinn.Authorization.Tests`) — provides a
-  PostgreSQL database with the Authorization Yuniql schema for the
+  PostgreSQL database with the Authorization `delegation` schema for the
   delegation-metadata repository tests. Backed by the shared `PostgresTestEngine`
-  (the Yuniql scripts are replayed once into a template; each test class gets a
+  (the EF Core migrations are applied once into a template; each test class gets a
   clone). (`AuthorizationApiFixture` itself is mock-backed and needs no container.)
 - **`PlatformFixture`** (`Altinn.Authorization.Integration.Tests`) — wires up the
   platform-integration clients against the **live** platform; its tests
