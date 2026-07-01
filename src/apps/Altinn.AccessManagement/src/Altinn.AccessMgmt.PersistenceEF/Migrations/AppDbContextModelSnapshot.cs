@@ -929,9 +929,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.Property<Guid>("AssigmentResourceId")
+                    b.Property<Guid>("AssignmentResourceId")
                         .HasColumnType("uuid")
-                        .HasColumnName("assigmentresourceid");
+                        .HasColumnName("assignmentresourceid");
 
                     b.Property<string>("Audit_ChangeOperation")
                         .HasColumnType("text")
@@ -2290,9 +2290,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("AssigmentResourceId")
+                    b.Property<Guid>("AssignmentResourceId")
                         .HasColumnType("uuid")
-                        .HasColumnName("assigmentresourceid");
+                        .HasColumnName("assignmentresourceid");
 
                     b.Property<string>("Audit_ChangeOperation")
                         .HasColumnType("text")
@@ -2321,8 +2321,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_delegationresource");
 
-                    b.HasIndex("AssigmentResourceId")
-                        .HasDatabaseName("ix_delegationresource_assigmentresourceid");
+                    b.HasIndex("AssignmentResourceId")
+                        .HasDatabaseName("ix_delegationresource_assignmentresourceid");
 
                     b.HasIndex("DelegationId")
                         .HasDatabaseName("ix_delegationresource_delegationid");
@@ -4010,11 +4010,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.DelegationResource", b =>
                 {
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentResource", "AssignmentResource")
-                        .WithMany()
-                        .HasForeignKey("AssigmentResourceId")
+                        .WithMany("DelegationResources")
+                        .HasForeignKey("AssignmentResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_delegationresource_assignmentresource_assigmentresourceid");
+                        .HasConstraintName("fk_delegationresource_assignmentresource_assignmentresourceid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
                         .WithMany()
@@ -4394,6 +4394,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentPackage", b =>
                 {
                     b.Navigation("DelegationPackages");
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.AssignmentResource", b =>
+                {
+                    b.Navigation("DelegationResources");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>

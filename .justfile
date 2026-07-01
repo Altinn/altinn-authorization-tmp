@@ -54,6 +54,9 @@ db-cred:
 am-db-migrate message:
   dotnet ef migrations add -p {{amdir}}/Altinn.AccessMgmt.PersistenceEF -s {{amdir}}/Altinn.AccessManagement {{message}}
 
+am-db-migrate-remove:
+  dotnet ef migrations remove -p {{amdir}}/Altinn.AccessMgmt.PersistenceEF -s {{amdir}}/Altinn.AccessManagement
+
 am-db-update:
   dotnet ef database update -p {{amdir}}/Altinn.AccessMgmt.PersistenceEF -s {{amdir}}/Altinn.AccessManagement
 
