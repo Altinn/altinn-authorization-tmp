@@ -44,7 +44,6 @@ public static class CoreDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IResourceAdministrationPoint, ResourceAdministrationPoint>();
         builder.Services.AddSingleton<IContextRetrievalService, ContextRetrievalService>();
-        builder.Services.AddScoped<IMaskinportenSchemaService, MaskinportenSchemaService>();
 
         builder.Services.AddSingleton<IAccessTokenGenerator, AccessTokenGenerator>();
         builder.Services.AddTransient<ISigningCredentialsResolver, SigningCredentialsResolver>();
