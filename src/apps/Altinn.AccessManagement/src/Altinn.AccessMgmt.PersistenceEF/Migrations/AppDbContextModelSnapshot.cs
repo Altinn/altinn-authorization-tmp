@@ -22,9 +22,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "consent", "event_type", new[] { "created", "rejected", "accepted", "revoked", "deleted", "expired", "used" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "consent", "event_type", new[] { "accepted", "rejected", "deleted", "created", "revoked", "used" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "consent", "portal_view_mode", new[] { "hide", "show" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "consent", "status_type", new[] { "created", "rejected", "accepted", "revoked", "deleted", "expired" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "consent", "status_type", new[] { "unopened", "opened", "accepted", "rejected", "deleted", "created", "revoked" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "hstore");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -2204,7 +2204,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("created");
 
                     b.Property<int>("EventType")
-                        .HasColumnType("integer")
+                        .HasColumnType("consent.event_type")
                         .HasColumnName("eventtype");
 
                     b.Property<Guid>("PerformedByParty")
@@ -2262,7 +2262,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("isdeleted");
 
                     b.Property<int>("PortalViewMode")
-                        .HasColumnType("integer")
+                        .HasColumnType("consent.portal_view_mode")
                         .HasColumnName("portalviewmode");
 
                     b.Property<string>("RedirectUrl")
@@ -2286,7 +2286,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("revoked");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer")
+                        .HasColumnType("consent.status_type")
                         .HasColumnName("status");
 
                     b.Property<string>("TemplateId")

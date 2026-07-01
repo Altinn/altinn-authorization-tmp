@@ -7,7 +7,6 @@ using Altinn.AccessMgmt.PersistenceEF.Configurations.Consent;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Consent;
-using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
@@ -172,9 +171,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ApplyConfiguration(modelBuilder);
         ApplyViewConfiguration(modelBuilder);
 
-        modelBuilder.HasPostgresEnum<ConsentRequestStatusType>("consent", "status_type");
-        modelBuilder.HasPostgresEnum<ConsentRequestEventType>("consent", "event_type");
-        modelBuilder.HasPostgresEnum<ConsentPortalViewMode>("consent", "portal_view_mode");
+        // Declare the existing Postgres enum types with their exact database labels
+        // (these differ from the CLR enum members, e.g. status_type has unopened/opened
+        // and no expired), so the model snapshot matches the live schema.
+        modelBuilder.HasPostgresEnum("consent", "status_type", ["unopened", "opened", "accepted", "rejected", "deleted", "created", "revoked"]);
+        modelBuilder.HasPostgresEnum("consent", "event_type", ["accepted", "rejected", "deleted", "created", "revoked", "used"]);
+        modelBuilder.HasPostgresEnum("consent", "portal_view_mode", ["hide", "show"]);
 
         modelBuilder.UseLowerCaseNamingConvention();
         modelBuilder.HasAnnotation(AuditExtensions.AnnotationName, AuditEFConfiguration.Version);

@@ -11,11 +11,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
     /// This migration only brings those objects under the EF model snapshot so the
     /// repository can query them through <c>AppDbContext</c>; it makes no schema changes,
     /// so both <see cref="Up"/> and <see cref="Down"/> are intentional no-ops.
-    /// EF's generated Up would have created the tables and enum types, which already exist;
-    /// running it would fail and, for the enums, would not match the live labels
-    /// (<c>status_type</c>/<c>event_type</c> carry values not present on the CLR enums).
-    /// The model snapshot in the accompanying Designer file reflects the CLR view and is
-    /// what future migrations diff against.
+    /// The enum types are declared in the model with their exact live labels, and the
+    /// snapshot in the accompanying Designer file is what future migrations diff against.
     /// </summary>
     /// <inheritdoc />
     public partial class ConsentModel : Migration

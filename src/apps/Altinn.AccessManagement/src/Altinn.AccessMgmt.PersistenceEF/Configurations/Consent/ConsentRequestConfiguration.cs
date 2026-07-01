@@ -16,5 +16,7 @@ public class ConsentRequestConfiguration : IEntityTypeConfiguration<ConsentReque
 
         builder.Property(x => x.RequestMessage).HasColumnType("hstore");
         builder.Property(x => x.TemplateId).IsRequired();
+        builder.Property(x => x.Status).HasColumnType("consent.status_type");
+        builder.Property(x => x.PortalViewMode).HasColumnType("consent.portal_view_mode");
     }
 }

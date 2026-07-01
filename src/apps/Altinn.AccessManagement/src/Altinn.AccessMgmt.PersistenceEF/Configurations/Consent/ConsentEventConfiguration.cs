@@ -13,5 +13,6 @@ public class ConsentEventConfiguration : IEntityTypeConfiguration<ConsentEvent>
     {
         builder.ToTable("consentevent", "consent");
         builder.HasKey(x => x.ConsentEventId);
+        builder.Property(x => x.EventType).HasColumnType("consent.event_type");
     }
 }
