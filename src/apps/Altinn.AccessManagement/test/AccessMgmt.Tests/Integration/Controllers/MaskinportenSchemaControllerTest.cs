@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Altinn.AccessManagement.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
@@ -23,7 +16,6 @@ using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
-using Altinn.Platform.Register.Models;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +24,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Xunit;
 using Entity = Altinn.AccessMgmt.PersistenceEF.Models.Entity;
 
 // The five tests that registered PdpPermitMock instead of PepWithPDPAuthorizationMock

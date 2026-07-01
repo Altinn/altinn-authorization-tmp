@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
