@@ -53,7 +53,6 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
-        services.AddHostedService<ConsentMigrationHostedService>();
         services.AddHostedService<OutboxHandlerJob>();
         services.AddHostedService<OutboxReaperJob>();
         services.AddScoped<RegisterHostedService>();
@@ -106,18 +105,9 @@ public static class ServiceCollectionExtensions
         services.AddOptions<CoreAppsettings>()
             .Configure(configureAppsettings);
 
-        // Consent Migration - Configuration
-        services.AddOptions<ConsentMigrationSettings>()
-                .ValidateDataAnnotations()
-                .ValidateOnStart()
-                .BindConfiguration("ConsentMigration");
-
         // Resource Owner Delegation - Configuration
         services.AddOptions<ServiceOwnerDelegationSettings>()
                 .BindConfiguration("ServiceOwnerDelegation");
-
-        // Consent Migration - Services (Core - Scoped)
-        services.AddScoped<IConsentMigrationService, ConsentMigrationService>();
 
         AddJobs(services);
         return services;
@@ -136,6 +126,5 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISingleAppRightSyncService, SingleAppRightSyncService>();
         services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();
         services.AddSingleton<ISingleInstanceRightSyncService, SingleInstanceRightSyncService>();
-        services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
     }
 }
