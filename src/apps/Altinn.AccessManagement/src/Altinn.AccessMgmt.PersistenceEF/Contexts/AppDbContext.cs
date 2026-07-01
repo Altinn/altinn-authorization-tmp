@@ -3,8 +3,11 @@ using System.Diagnostics;
 using System.Text.Json;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
+using Altinn.AccessMgmt.PersistenceEF.Configurations.Consent;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Consent;
+using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
@@ -91,6 +94,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     #endregion
 
+    #region Consent
+
+    public DbSet<ConsentRequest> ConsentRequests => Set<ConsentRequest>();
+
+    public DbSet<ConsentRight> ConsentRights => Set<ConsentRight>();
+
+    public DbSet<ConsentEvent> ConsentEvents => Set<ConsentEvent>();
+
+    public DbSet<ConsentContext> ConsentContexts => Set<ConsentContext>();
+
+    public DbSet<ConsentMetadata> ConsentMetadata => Set<ConsentMetadata>();
+
+    public DbSet<ConsentResourceAttribute> ConsentResourceAttributes => Set<ConsentResourceAttribute>();
+
+    #endregion
+
     #region Audit
 
     public DbSet<AuditArea> AuditAreas => Set<AuditArea>();
@@ -152,6 +171,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ApplyAuditConfiguration(modelBuilder);
         ApplyConfiguration(modelBuilder);
         ApplyViewConfiguration(modelBuilder);
+
+        modelBuilder.HasPostgresEnum<ConsentRequestStatusType>("consent", "status_type");
+        modelBuilder.HasPostgresEnum<ConsentRequestEventType>("consent", "event_type");
+        modelBuilder.HasPostgresEnum<ConsentPortalViewMode>("consent", "portal_view_mode");
+
         modelBuilder.UseLowerCaseNamingConvention();
         modelBuilder.HasAnnotation(AuditExtensions.AnnotationName, AuditEFConfiguration.Version);
     }
@@ -238,6 +262,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<A2ClientRole>(new A2ClientRoleConfiguration());
         modelBuilder.ApplyConfiguration<RightImportProgress>(new RightImportProgressConfiguration());
         modelBuilder.ApplyConfiguration<InstanceSourceType>(new InstanceSourceTypeConfiguration());
+
+        modelBuilder.ApplyConfiguration<ConsentRequest>(new ConsentRequestConfiguration());
+        modelBuilder.ApplyConfiguration<ConsentRight>(new ConsentRightConfiguration());
+        modelBuilder.ApplyConfiguration<ConsentEvent>(new ConsentEventConfiguration());
+        modelBuilder.ApplyConfiguration<ConsentContext>(new ConsentContextConfiguration());
+        modelBuilder.ApplyConfiguration<ConsentMetadata>(new ConsentMetadataConfiguration());
+        modelBuilder.ApplyConfiguration<ConsentResourceAttribute>(new ConsentResourceAttributeConfiguration());
     }
 
     #region Extensions

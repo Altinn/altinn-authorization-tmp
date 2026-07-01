@@ -8,6 +8,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -61,6 +62,14 @@ public static class ServiceCollectionExtensions
     private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+
+        builder.ConfigureDataSource(dataSourceBuilder =>
+        {
+            dataSourceBuilder.MapEnum<ConsentRequestStatusType>("consent.status_type");
+            dataSourceBuilder.MapEnum<ConsentRequestEventType>("consent.event_type");
+            dataSourceBuilder.MapEnum<ConsentPortalViewMode>("consent.portal_view_mode");
+        });
+
         if (_configureTracing)
         {
             builder.ConfigureDataSource((dataSourceBuilder) =>
