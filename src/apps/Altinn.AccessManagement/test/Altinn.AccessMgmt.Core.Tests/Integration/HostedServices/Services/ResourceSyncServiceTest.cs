@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Runtime.CompilerServices;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
@@ -443,6 +443,11 @@ public class ResourceSyncServiceTest : IClassFixture<ApiFixture>
                 yield return page;
                 await Task.Yield();
             }
+        }
+
+        Task<PlatformResponse<List<ResourceRuleModel>>> IAltinnResourceRegistry.GetResourceRules(string id, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 

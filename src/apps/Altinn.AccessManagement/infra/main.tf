@@ -428,6 +428,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.HostedServices.ResourceSync"
+      description = "Feature toggle for enabling/disabling of ResourceQueue updates"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessManagement.HostedServices.ResourceRegistrySync"
       description = "Specifies if the resource register data should streamed from resource register service to access management database."
       label       = "${lower(var.environment)}-access-management"

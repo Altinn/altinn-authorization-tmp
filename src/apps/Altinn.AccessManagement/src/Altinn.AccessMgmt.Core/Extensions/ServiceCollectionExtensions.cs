@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
         services.AddHostedService<SingleRightsHostedService>();
+        services.AddHostedService<ResourceRegistryQueueProcessingService>();
         services.AddHostedService<ConsentMigrationHostedService>();
         services.AddHostedService<OutboxHandlerJob>();
         services.AddHostedService<OutboxReaperJob>();
@@ -70,6 +71,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEntityService, EntityService>();
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IErrorQueueService, ErrorQueueService>();
+        services.AddScoped<IResourceQueueService, ResourceQueueService>();
         services.AddScoped<IRightImportProgressService, RightImportProgressService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
@@ -137,5 +139,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();
         services.AddSingleton<ISingleInstanceRightSyncService, SingleInstanceRightSyncService>();
         services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
+        services.AddSingleton<IResourceQueueSyncService, ResourceQueueSyncService>();
     }
 }

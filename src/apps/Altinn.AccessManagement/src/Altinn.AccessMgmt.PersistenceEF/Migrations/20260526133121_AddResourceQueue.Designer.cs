@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,59 +12,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260526133121_AddResourceQueue")]
+    partial class AddResourceQueue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Altinn:AuditVersion", 3)
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.A2ClientRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createddate");
-
-                    b.Property<Guid>("FacilitatorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("facilitatorid");
-
-                    b.Property<Guid>("FromId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("fromid");
-
-                    b.Property<Guid>("PerformedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performedby");
-
-                    b.Property<string>("RoleCode")
-                        .HasColumnType("text")
-                        .HasColumnName("rolecode");
-
-                    b.Property<Guid>("ToId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("toid");
-
-                    b.HasKey("Id")
-                        .HasName("pk_a2clientrole");
-
-                    b.HasIndex("FacilitatorId", "FromId")
-                        .HasDatabaseName("ix_a2clientrole_facilitatorid_fromid");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("FacilitatorId", "FromId"), new[] { "Id" });
-
-                    b.ToTable("a2clientrole", "dbo");
-                });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Area", b =>
                 {
@@ -1581,10 +1542,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<Guid>("ById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("byid");
-
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
                         .HasColumnName("fromid");
@@ -2415,14 +2372,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_entity");
 
-                    b.HasIndex("EmailIdentifier")
-                        .IsUnique()
-                        .HasDatabaseName("ix_entity_emailidentifier")
-                        .HasFilter("EmailIdentifier IS NOT NULL")
-                        .HasAnnotation("Npgsql:CreatedConcurrently", true);
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("EmailIdentifier"), new[] { "Id" });
-
                     b.HasIndex("OrganizationIdentifier")
                         .IsUnique()
                         .HasDatabaseName("ix_entity_organizationidentifier")
@@ -3149,10 +3098,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<Guid>("ById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("byid");
-
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
                         .HasColumnName("fromid");
@@ -3167,9 +3112,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_requestassignment");
-
-                    b.HasIndex("ById")
-                        .HasDatabaseName("ix_requestassignment_byid");
 
                     b.HasIndex("FromId")
                         .HasDatabaseName("ix_requestassignment_fromid");
@@ -4200,13 +4142,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.RequestAssignment", b =>
                 {
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "By")
-                        .WithMany()
-                        .HasForeignKey("ById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_requestassignment_entity_byid");
-
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "From")
                         .WithMany()
                         .HasForeignKey("FromId")
@@ -4227,8 +4162,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_requestassignment_entity_toid");
-
-                    b.Navigation("By");
 
                     b.Navigation("From");
 

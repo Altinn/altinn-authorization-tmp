@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Integration.Platform.ResourceRegistry;
 
@@ -40,6 +40,43 @@ public partial class AltinnResourceRegistryClient
             ResponseComposer.DeserializeResponseOnSuccess
         );
     }
+
+    public async Task<PlatformResponse<List<ResourceRuleModel>>> GetResourceRules(string id, CancellationToken cancellationToken = default)
+    {
+        List<Action<HttpRequestMessage>> request = [
+            RequestComposer.WithHttpVerb(HttpMethod.Get),
+            RequestComposer.WithSetUri(ResourceRegistryOptions.Value.Endpoint, "/resourceregistry/api/v1/resource", Uri.EscapeDataString(id), "policy", "rules"),
+        ];
+
+        var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
+
+        return ResponseComposer.Handle<List<ResourceRuleModel>>(
+            response,
+            ResponseComposer.DeserializeProblemDetailsOnUnsuccessStatusCode,
+            ResponseComposer.DeserializeResponseOnSuccess
+        );
+    }
+}
+
+public class TypeValueModel
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    [JsonPropertyName("value")]
+    public string Value { get; set; }
+}
+
+public class ResourceRuleModel
+{
+    [JsonPropertyName("subject")]
+    public List<TypeValueModel> Subject { get; set; }
+
+    [JsonPropertyName("action")]
+    public TypeValueModel Action { get; set; }
+
+    [JsonPropertyName("resource")]
+    public List<TypeValueModel> Resource { get; set; }
 }
 
 /// <summary>
