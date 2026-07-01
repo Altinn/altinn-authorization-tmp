@@ -96,7 +96,7 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <summary>
     /// Get all connections the to party has any access to in one query.
     /// </summary>
-    /// <returns>Enumerable of package permissions</returns>
+    /// <returns>List of connection records matching the provided filters</returns>
     Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthers(Guid toId, AuthorizedPartiesFilters filters = null, bool enrichEntities = false, CancellationToken ct = default);
 
     /// <summary>
