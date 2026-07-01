@@ -209,7 +209,7 @@ public class ClientDelegationControllerTest
             Assert.Single(verdiqClients.Access);
             var verdiqAccess = verdiqClients.Access.FirstOrDefault();
 
-            Assert.Equal(2, verdiqAccess.Packages.Length);
+            Assert.Equal(2, verdiqAccess.Packages.Count());
             var verdiqPackageAccountantWithSigningRights = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantWithSigningRights);
             var verdiqPackageAccountantSalary = verdiqAccess.Packages.FirstOrDefault(p => p.Id == PackageConstants.AccountantSalary);
 
@@ -1321,7 +1321,7 @@ public class ClientDelegationControllerTest
             Assert.NotNull(orjanAccess);
 
             Assert.Single(paulasAccess.Access);
-            Assert.Equal(2, paulasAccess.Access.FirstOrDefault()?.Packages.Length);
+            Assert.Equal(2, paulasAccess.Access.FirstOrDefault()?.Packages.Count());
 
             Assert.Single(orjanAccess.Access);
             Assert.Single(orjanAccess.Access.FirstOrDefault()?.Packages);

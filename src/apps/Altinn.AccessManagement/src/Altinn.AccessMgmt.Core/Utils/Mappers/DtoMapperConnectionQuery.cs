@@ -270,7 +270,7 @@ public partial class DtoMapper : IDtoMapper
                 var access = new AgentDto.AgentRoleAccessPackages
                 {
                     Role = ConvertCompactRole(role.First().Role),
-                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToList(),
                 };
 
                 roleAccess.Add(access);
@@ -302,7 +302,7 @@ public partial class DtoMapper : IDtoMapper
                 var access = new ClientDto.RoleAccessPackages
                 {
                     Role = ConvertCompactRole(useViaRole ? role.First().ViaRole : role.First().Role),
-                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToList(),
                 };
 
                 roleAccess.Add(access);
