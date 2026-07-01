@@ -41,8 +41,6 @@ public static class CoreDependencyInjectionExtensions
         builder.Services.AddScoped<IPolicyInformationPoint, PolicyInformationPoint>();
         builder.Services.AddScoped<IPolicyAdministrationPoint, PolicyAdministrationPoint>();
         builder.Services.AddSingleton<IResourceAdministrationPoint, ResourceAdministrationPoint>();
-
-        builder.Services.AddSingleton<IResourceAdministrationPoint, ResourceAdministrationPoint>();
         builder.Services.AddSingleton<IContextRetrievalService, ContextRetrievalService>();
 
         builder.Services.AddSingleton<IAccessTokenGenerator, AccessTokenGenerator>();
