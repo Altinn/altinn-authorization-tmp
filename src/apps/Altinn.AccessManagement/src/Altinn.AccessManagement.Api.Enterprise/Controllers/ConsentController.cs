@@ -87,7 +87,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 }
             }
 
-            Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(consentRequestInternal, consentPartyUrn, false, cancellationToken);
+            Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(consentRequestInternal, consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
             {

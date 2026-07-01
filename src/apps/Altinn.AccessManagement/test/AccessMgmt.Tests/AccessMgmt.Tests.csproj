@@ -58,4 +58,9 @@
     <ItemGroup>
         <Content Include="xunit.runner.json" CopyToOutputDirectory="Always" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Unit\Configuration\" />
+      <Folder Include="Unit\HostedServices\" />
+    </ItemGroup>
 </Project>

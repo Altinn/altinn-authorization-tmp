@@ -145,7 +145,6 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
             // ConfigureServices boilerplate. Per-class ConfigureServices runs after
             // this and still wins for any class that needs a different behaviour.
             services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-            services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClientMock>();
             services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
 
             foreach (var configure in ConfigureServicesActions)
