@@ -224,6 +224,13 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         var schema = entityType.GetSchema();
         var table = entityType.GetTableName();
 
+        // Keyless views (e.g. the "connections" view) map to no real, schema-qualified table —
+        // there is nothing to grant or audit, and a null schema would emit "ON TABLE .connections".
+        if (string.IsNullOrWhiteSpace(table) || string.IsNullOrWhiteSpace(schema))
+        {
+            return;
+        }
+
         // Audit triggers are only for audit-annotated tables...
         if (entityType.FindAnnotation(AuditExtensions.AnnotationName) is not null)
         {
