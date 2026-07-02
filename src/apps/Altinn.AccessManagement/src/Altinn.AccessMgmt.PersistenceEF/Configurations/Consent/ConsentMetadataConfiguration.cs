@@ -6,13 +6,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Configurations.Consent;
 
 /// <summary>
 /// Maps <see cref="ConsentMetadata"/> to the existing <c>consent.metadata</c> table.
-/// The table has no primary key, so the entity is keyless.
+/// The table has no primary key constraint; (<c>consentrightid</c>, <c>id</c>) is used
+/// as the entity key so rows can be inserted through the change tracker.
 /// </summary>
 public class ConsentMetadataConfiguration : IEntityTypeConfiguration<ConsentMetadata>
 {
     public void Configure(EntityTypeBuilder<ConsentMetadata> builder)
     {
         builder.ToTable("metadata", "consent");
-        builder.HasNoKey();
+        builder.HasKey(x => new { x.ConsentRightId, x.Id });
     }
 }

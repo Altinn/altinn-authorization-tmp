@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260701163200_ConsentModel")]
+    [Migration("20260702171605_ConsentModel")]
     partial class ConsentModel
     {
         /// <inheritdoc />
@@ -2234,6 +2234,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("value");
 
+                    b.HasKey("ConsentRightId", "Id")
+                        .HasName("pk_metadata");
+
                     b.ToTable("metadata", "consent");
                 });
 
@@ -2249,8 +2252,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("consented");
 
                     b.Property<DateTimeOffset>("Created")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid?>("FromPartyUuid")
                         .HasColumnType("uuid")
@@ -2261,8 +2266,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("handledbypartyuuid");
 
                     b.Property<bool?>("IsDeleted")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasColumnName("isdeleted");
+                        .HasColumnName("isdeleted")
+                        .HasDefaultValueSql("false");
 
                     b.Property<int>("PortalViewMode")
                         .HasColumnType("consent.portal_view_mode")

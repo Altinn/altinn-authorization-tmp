@@ -18,5 +18,11 @@ public class ConsentRequestConfiguration : IEntityTypeConfiguration<ConsentReque
         builder.Property(x => x.TemplateId).IsRequired();
         builder.Property(x => x.Status).HasColumnType("consent.status_type");
         builder.Property(x => x.PortalViewMode).HasColumnType("consent.portal_view_mode");
+
+        // Both columns have database defaults that apply when an insert leaves them
+        // out (created = CURRENT_TIMESTAMP, isdeleted = false); declare them so EF
+        // omits unset properties instead of sending sentinel values.
+        builder.Property(x => x.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        builder.Property(x => x.IsDeleted).HasDefaultValueSql("false");
     }
 }

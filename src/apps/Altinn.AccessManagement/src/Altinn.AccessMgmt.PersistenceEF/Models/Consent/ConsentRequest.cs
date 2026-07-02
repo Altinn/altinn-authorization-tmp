@@ -1,5 +1,3 @@
-using Altinn.Authorization.Api.Contracts.Consent;
-
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Consent;
 
 /// <summary>
