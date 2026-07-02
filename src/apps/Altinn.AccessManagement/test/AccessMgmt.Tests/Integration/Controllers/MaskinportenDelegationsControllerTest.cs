@@ -108,6 +108,18 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         }
 
         [Fact]
+        public async Task GetMaskinportenDelegations_NonAdminToken_OwnedScope_Returns200()
+        {
+            // Non-admin token whose consumer_prefix ("mp") owns the requested scope prefix ("mp:...") -> authorized.
+            string token = PrincipalUtil.GetOrgToken("SUPPLIER", "910049356", "altinn:maskinporten/delegations", consumerPrefix: new[] { "mp" });
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/maskinporten/delegations/?consumerorg={ConsumerOrgNumber}&scope=mp:test/theworld.read", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetMaskinportenDelegations_AdminToken_Valid_Returns200WithMappedDelegations()
         {
             _client.DefaultRequestHeaders.Authorization = AdminBearer();
