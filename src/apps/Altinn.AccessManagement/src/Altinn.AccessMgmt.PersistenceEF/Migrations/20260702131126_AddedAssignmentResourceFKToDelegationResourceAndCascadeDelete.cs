@@ -16,16 +16,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo",
                 table: "delegationresource",
                 type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: false);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "assignmentresourceid",
                 schema: "dbo_history",
                 table: "auditdelegationresource",
                 type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: false);
 
             migrationBuilder.CreateIndex(
                 name: "ix_delegationresource_assignmentresourceid",

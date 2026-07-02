@@ -14,7 +14,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
 
@@ -118,6 +117,21 @@ public class ClientDelegationControllerTest
                     PackageId = PackageConstants.AccountantWithoutSigningRights,
                 };
 
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                var delegationResourceToPaula = new DelegationResource()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
                 db.Assignments.Add(rightholderFromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
                 db.Assignments.Add(forretningsforerFromOkernBrlToVerdiq);
@@ -137,6 +151,9 @@ public class ClientDelegationControllerTest
                     AssignmentId = rightholderFromNordisToVerdiq.Id,
                     PackageId = PackageConstants.Customs,
                 });
+
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+                db.DelegationResources.Add(delegationResourceToPaula);
 
                 db.SaveChanges();
             });
@@ -181,6 +198,51 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
+        public async Task ListMyClients_WithProviderFilter_Returns200IncludingDelegationResources()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/my/clients?provider={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Single(result.Items);
+
+            var verdiq = result.Items.FirstOrDefault(p => p?.Provider?.Id == TestEntities.OrganizationVerdiqAS);
+            Assert.NotNull(verdiq);
+
+            var verdiqClient = verdiq.Clients.FirstOrDefault();
+            Assert.NotNull(verdiqClient);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, verdiqClient.Client.Id);
+
+            var access = verdiqClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(access);
+
+            Assert.Single(access.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, access.Resources.FirstOrDefault()?.Id);
+        }
+
+        [Fact]
+        public async Task ListMyClients_WithProviderFilterForProviderWithoutDelegationResources_Returns200WithEmptyResources()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/my/clients?provider={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<MyClientDto>>(data);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Single(result.Items);
+
+            var nordis = result.Items.FirstOrDefault(p => p?.Provider?.Id == TestEntities.OrganizationNordisAS);
+            Assert.NotNull(nordis);
+            Assert.Empty(nordis.Clients);
+        }
+
+        [Fact]
         public async Task ListMyClients_WithoutFilter_Returns200WithAllProvidersAndClients()
         {
             var client = CreateClient();
@@ -222,6 +284,11 @@ public class ClientDelegationControllerTest
 
             Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, verdiq.Provider.Id);
             Assert.Equal(TestEntities.OrganizationNordisAS.Id, verdiqClients.Client.Id);
+
+            Assert.Single(verdiqAccess.Resources);
+            var verdiqResource = verdiqAccess.Resources.FirstOrDefault();
+            Assert.NotNull(verdiqResource);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, verdiqResource.Id);
         }
     }
     #endregion
@@ -281,6 +348,14 @@ public class ClientDelegationControllerTest
                     RoleId = RoleConstants.Agent,
                 };
 
+                var assignmentResourceForAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
                 db.Assignments.Add(rightholderfromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
                 db.Assignments.Add(forretningsforerFromOkernBrlToVerdiq);
@@ -299,6 +374,8 @@ public class ClientDelegationControllerTest
                     AssignmentId = rightholderfromNordisToVerdiq.Id,
                     PackageId = PackageConstants.Agriculture,
                 });
+
+                db.AssignmentResources.Add(assignmentResourceForAccountant);
 
                 db.SaveChanges();
             });
@@ -491,6 +568,47 @@ public class ClientDelegationControllerTest
             Assert.DoesNotContain(bedrClientAccess.Packages, package => package.Id == PackageConstants.AOrderSystem);
             Assert.DoesNotContain(bedrClientAccess.Packages, package => package.Id == PackageConstants.SalarySpecialCategory);
             Assert.DoesNotContain(bedrClientAccess.Packages, package => package.Id == PackageConstants.OppgiNaermesteLeder);
+        }
+
+        [Fact]
+        public async Task ListClient_ForOrganizationWithAccountantAssignmentResource_Returns200WithResourceInAccess()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
+
+            var nordisClient = result.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.NotNull(nordisClient);
+
+            var accountantAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(accountantAccess);
+
+            Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, accountantAccess.Resources.FirstOrDefault()?.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_ForOrganizationWithRightholderAssignment_Returns200WithEmptyResourcesOnRightholder()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=rettighetshaver", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
+
+            var nordisClient = result.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.NotNull(nordisClient);
+
+            var rightholderAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Rightholder);
+            Assert.NotNull(rightholderAccess);
+
+            Assert.Empty(rightholderAccess.Resources);
         }
     }
     #endregion

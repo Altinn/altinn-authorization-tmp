@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260701133554_AddedAssignmentResourceFKToDelegationResourceAndCascadeDelete")]
+    [Migration("20260702131126_AddedAssignmentResourceFKToDelegationResourceAndCascadeDelete")]
     partial class AddedAssignmentResourceFKToDelegationResourceAndCascadeDelete
     {
         /// <inheritdoc />
@@ -4020,7 +4020,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_delegationresource_assignmentresource_assignmentresourceid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", "Delegation")
-                        .WithMany()
+                        .WithMany("DelegationResources")
                         .HasForeignKey("DelegationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -4407,6 +4407,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>
                 {
                     b.Navigation("DelegationPackages");
+
+                    b.Navigation("DelegationResources");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.OutboxMessage", b =>
