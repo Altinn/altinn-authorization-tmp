@@ -222,10 +222,20 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 (x, ap) => new { x.Assignment, AssignmentPackage = ap }
             )
             .GroupJoin(
+                db.AssignmentResources,
+                x => x.Assignment.Id,
+                ar => ar.AssignmentId,
+                (x, ar) => new { x.Assignment, x.AssignmentPackage, AssignmentResources = ar }
+            )
+            .SelectMany(
+                x => x.AssignmentResources.DefaultIfEmpty(),
+                (x, ar) => new { x.Assignment, x.AssignmentPackage, AssignmentResource = ar }
+            )
+            .GroupJoin(
                 db.RolePackages,
                 x => x.Assignment.RoleId,
                 rp => rp.RoleId,
-                (x, rps) => new { x.Assignment, x.AssignmentPackage, RolePackages = rps }
+                (x, rps) => new { x.Assignment, x.AssignmentPackage, x.AssignmentResource, RolePackages = rps }
             )
             .SelectMany(
                 x => x.RolePackages.DefaultIfEmpty(),
@@ -234,6 +244,8 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     x.Assignment.To,
                     x.Assignment.From,
                     x.Assignment.Role,
+                    x.AssignmentResource,
+                    x.AssignmentResource.Resource,
                     AssignmentPackage = x.AssignmentPackage.Package,
                     RolePackage = rp.Package,
                     RolePackageEntityVariantId = rp.EntityVariantId
@@ -262,6 +274,9 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                             .Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage))
                             .DistinctBy(p => p.Id),
                     ],
+                    Resources = [
+                        .. r.Where(p => p.AssignmentResource is { }).Select(p => DtoMapper.ConvertCompactResource(p.Resource))
+                    ]
                 }).ToList(),
             }).ToList();
     }

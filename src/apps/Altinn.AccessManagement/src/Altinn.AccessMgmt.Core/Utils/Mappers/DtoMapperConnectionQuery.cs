@@ -92,7 +92,7 @@ public partial class DtoMapper : IDtoMapper
             })
             .ToList();
     }
-
+    
     public static List<ResourcePermissionDto> ConvertResources(IEnumerable<AssignmentResource> res)
     {
         return res
