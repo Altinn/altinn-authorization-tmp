@@ -146,16 +146,6 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
             Assert.Equal(new[] { Scope }, scopes);
         }
 
-        [Fact]
-        public async Task GetMaskinportenDelegations_LegacyAliasRoute_AdminToken_Valid_Returns200()
-        {
-            _client.DefaultRequestHeaders.Authorization = AdminBearer();
-
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema?supplierorg={SupplierOrgNumber}&consumerorg={ConsumerOrgNumber}&scope={Scope}", TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
         private static AuthenticationHeaderValue AdminBearer()
         {
             string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", "altinn:maskinporten/delegations.admin");
