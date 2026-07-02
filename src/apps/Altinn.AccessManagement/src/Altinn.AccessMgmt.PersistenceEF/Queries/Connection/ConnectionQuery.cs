@@ -280,20 +280,29 @@ public class ConnectionQuery(AppDbContext db)
                     db.Assignments,
                     x => x.d.FromId,
                     a2 => a2.ToId,
-                    (x, a2) => new ConnectionQueryBaseRecord
-                    {
-                        AssignmentId = a2.Id,
-                        DelegationId = null,
-                        FromId = a2.FromId,
-                        ToId = x.d.ToId,
-                        RoleId = a2.RoleId,
-                        ViaId = x.d.FromId,
-                        ViaRoleId = x.d.RoleId,
-                        Reason = ConnectionReason.KeyRole,
-                        IsKeyRoleAccess = true,
-                        IsMainUnitAccess = false,
-                        IsRoleMap = false,
-                    });
+                    (x, a2) => new { x, a2 }
+                )
+                .Join(
+                    db.Entities,
+                    y => y.a2.FromId,
+                    e => e.Id,
+                    (y, e) => new { y.x, y.a2, e }
+                )
+                .Where(z => !(z.e.VariantId == EntityVariantConstants.IKS.Id && z.a2.RoleId == RoleConstants.ParticipantSharedResponsibility.Id))
+                .Select(z => new ConnectionQueryBaseRecord
+                {
+                    AssignmentId = z.a2.Id,
+                    DelegationId = null,
+                    FromId = z.a2.FromId,
+                    ToId = z.x.d.ToId,
+                    RoleId = z.a2.RoleId,
+                    ViaId = z.x.d.FromId,
+                    ViaRoleId = z.x.d.RoleId,
+                    Reason = ConnectionReason.KeyRole,
+                    IsKeyRoleAccess = true,
+                    IsMainUnitAccess = false,
+                    IsRoleMap = false,
+                });
 
         var a1 = filter.IncludeKeyRole
             ? direct.Concat(keyrole)
