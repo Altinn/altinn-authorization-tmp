@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 namespace Altinn.AccessManagement.Api.ServiceOwner.Models
 {
     /// <summary>
-    /// This model describes a delegation. A delegation is an action that says which resource is delegated by supplier to consumer org
+    /// Describes an active MaskinportenSchema delegation: the consumer organization has delegated a
+    /// resource to the supplier organization that acts on its behalf.
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class MPDelegationExternal
@@ -35,7 +36,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Models
         public HashSet<string> Scopes { get; set; }
 
         /// <summary>
-        /// Gets or sets the time for when the delegation was preformed
+        /// Gets or sets the time for when the delegation was performed
         /// </summary>
         [JsonPropertyName("created")]
         public DateTime? Created { get; set; }

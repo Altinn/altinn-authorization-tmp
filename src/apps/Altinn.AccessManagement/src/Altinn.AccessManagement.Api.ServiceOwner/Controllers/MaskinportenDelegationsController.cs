@@ -43,6 +43,7 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(500)]
         public async Task<ActionResult<List<MPDelegationExternal>>> GetMaskinportenDelegations([FromQuery] string? supplierOrg, [FromQuery] string? consumerOrg, [FromQuery] string? scope, CancellationToken cancellationToken)
@@ -64,25 +65,25 @@ namespace Altinn.AccessManagement.Api.ServiceOwner.Controllers
 
             if (string.IsNullOrWhiteSpace(scope) && string.IsNullOrWhiteSpace(supplierOrg) && string.IsNullOrWhiteSpace(consumerOrg))
             {
-                ProblemDetails result = new() { Title = $"Query without parameter; {nameof(scope)}, must provide at least one of; {nameof(supplierOrg)}, {nameof(consumerOrg)}", Status = StatusCodes.Status400BadRequest, Type = "https://tools.ietf.org/html/rfc7231#section-6.5.3" };
+                ProblemDetails result = new() { Title = $"Missing query parameters; provide at least one of: {nameof(scope)}, {nameof(supplierOrg)}, {nameof(consumerOrg)}", Status = StatusCodes.Status400BadRequest, Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1" };
                 return StatusCode(StatusCodes.Status400BadRequest, result);
             }
 
             if (!string.IsNullOrEmpty(supplierOrg) && !IsValidOrganizationNumber(supplierOrg))
             {
-                ModelState.AddModelError(nameof(supplierOrg), "Supplierorg is not an valid organization number");
+                ModelState.AddModelError(nameof(supplierOrg), "supplierOrg is not a valid organization number");
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
             if (!string.IsNullOrEmpty(consumerOrg) && !IsValidOrganizationNumber(consumerOrg))
             {
-                ModelState.AddModelError(nameof(consumerOrg), "Consumerorg is not an valid organization number");
+                ModelState.AddModelError(nameof(consumerOrg), "consumerOrg is not a valid organization number");
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
             try
             {
-                List<Delegation> delegations = await _delegation.GetMaskinportenDelegations(supplierOrg!, consumerOrg!, scope!, cancellationToken);
+                List<Delegation> delegations = await _delegation.GetMaskinportenDelegations(supplierOrg, consumerOrg, scope, cancellationToken);
                 return delegations.Select(ToExternal).ToList();
             }
             catch (ArgumentException ex)

@@ -16,6 +16,6 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="consumerOrg">Organization number of the consumer that gave the delegation</param>
         /// <param name="scope">Maskinporten scope the delegation gives access to</param>
         /// <param name="cancellationToken">CancellationToken</param>
-        Task<List<Delegation>> GetMaskinportenDelegations(string supplierOrg, string consumerOrg, string scope, CancellationToken cancellationToken = default);
+        Task<List<Delegation>> GetMaskinportenDelegations(string? supplierOrg, string? consumerOrg, string? scope, CancellationToken cancellationToken = default);
     }
 }

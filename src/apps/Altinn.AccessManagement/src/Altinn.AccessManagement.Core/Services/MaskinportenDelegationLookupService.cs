@@ -38,7 +38,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<List<Delegation>> GetMaskinportenDelegations(string supplierOrg, string consumerOrg, string scope, CancellationToken cancellationToken = default)
+        public async Task<List<Delegation>> GetMaskinportenDelegations(string? supplierOrg, string? consumerOrg, string? scope, CancellationToken cancellationToken = default)
         {
             int consumerPartyId = 0;
             Entity consumerParty = null;
@@ -105,16 +105,16 @@ namespace Altinn.AccessManagement.Core.Services
                 return delegations;
             }
 
-            return await BuildDelegationsResponseUsingUuids(delegationChanges, resources);
+            return await BuildDelegationsResponseUsingUuids(delegationChanges, resources, cancellationToken);
         }
 
-        private async Task<List<Delegation>> BuildDelegationsResponseUsingUuids(List<DelegationChange> delegationChanges, IEnumerable<ServiceResource> resources = null)
+        private async Task<List<Delegation>> BuildDelegationsResponseUsingUuids(List<DelegationChange> delegationChanges, IEnumerable<ServiceResource> resources, CancellationToken cancellationToken)
         {
             List<Delegation> delegations = new List<Delegation>();
             List<Guid> parties = delegationChanges.Select(d => (Guid)d.FromUuid).ToList();
             parties.AddRange(delegationChanges.Select(d => (Guid)d.ToUuid).ToList());
 
-            var partyList = await _contextRetrievalService.GetPartiesByUuids(parties);
+            var partyList = await _contextRetrievalService.GetPartiesByUuids(parties, cancellationToken: cancellationToken);
 
             foreach (DelegationChange delegationChange in delegationChanges)
             {
