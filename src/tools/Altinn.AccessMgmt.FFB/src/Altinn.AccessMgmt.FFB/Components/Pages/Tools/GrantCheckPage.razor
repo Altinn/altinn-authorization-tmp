@@ -1,5 +1,6 @@
 @page "/tools/grant-check"
 @using Altinn.AccessMgmt.FFB.Services
+@using Altinn.AccessMgmt.PersistenceEF.Extensions
 @using Dapper
 @using Microsoft.EntityFrameworkCore
 @inject IEnvironmentDbContextFactory DbFactory
@@ -92,13 +93,15 @@
     <MudAlert Severity="Severity.Warning" Class="mb-2"><b>@env:</b> @message</MudAlert>
 }
 
-@if (_checkedAt is not null && _error is null)
+@if (_checkedAt is not null && _error is null && _environmentsChecked > 0)
 {
+    var unfixedCount = _missing.Count(r => !r.IsFixed);
+
     <MudStack Row="true" Spacing="2" Class="mb-4" AlignItems="AlignItems.Center">
         <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@_okCount ok</MudChip>
-        @if (_missing.Count > 0)
+        @if (unfixedCount > 0)
         {
-            <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Error">@_missing.Count mangler grants</MudChip>
+            <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Error">@unfixedCount mangler grants</MudChip>
         }
         @if (_missingFromDb.Count > 0)
         {
@@ -119,7 +122,7 @@
         }
     </MudStack>
 
-    @if (_missing.Count == 0 && _missingFromDb.Count == 0)
+    @if (unfixedCount == 0 && _missingFromDb.Count == 0)
     {
         <MudAlert Severity="Severity.Success">
             Alle @_okCount tabeller har korrekte grants for de valgte rollene.
@@ -170,13 +173,16 @@
                                 <MudText Typo="Typo.body2" Style="font-family:monospace">@m.Role — @m.Privilege</MudText>
                             }
                         }
-                        <MudText Typo="Typo.subtitle2" Class="mb-2 mt-3">SQL som kjøres:</MudText>
-                        <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
-                            @foreach (var role in _checkedRoles)
-                            {
-                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(result.Schema, result.Table, role, _checkedPrivileges)</MudText>
-                            }
-                        </div>
+                        @if (result.Missing.Count > 0)
+                        {
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 mt-3">SQL som kjøres:</MudText>
+                            <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
+                                @foreach (var stmt in GrantStatements(result))
+                                {
+                                    <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@stmt</MudText>
+                                }
+                            </div>
+                        }
                         @if (result.Error is not null)
                         {
                             <MudAlert Severity="Severity.Error" Dense="true" Class="mt-3">@result.Error</MudAlert>
@@ -202,8 +208,9 @@
 }
 
 @code {
-    private static readonly string[] Roles = ["platform_authorization", "platform_authorization_admin"];
-    private static readonly string[] AllPrivileges = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRIGGER", "REFERENCES"];
+    // Shared with the migration SQL generator so the two never drift apart.
+    private static readonly IReadOnlyList<string> Roles = TableGrantConstants.Roles;
+    private static readonly IReadOnlyList<string> AllPrivileges = TableGrantConstants.Privileges;
 
     private readonly Dictionary<string, bool> _roleSelected = Roles.ToDictionary(r => r, _ => true);
     private readonly Dictionary<string, bool> _privilegeSelected = AllPrivileges.ToDictionary(p => p, _ => true);
@@ -215,6 +222,7 @@
     private DateTimeOffset? _checkedAt;
     private string? _error;
     private int _okCount;
+    private int _environmentsChecked;
     private List<TableGrant> _missing = [];
     private List<(string Env, string Schema, string Table)> _missingFromDb = [];
     private List<(string Env, string Message)> _envErrors = [];
@@ -267,6 +275,7 @@
         _missingFromDb = [];
         _envErrors = [];
         _okCount = 0;
+        _environmentsChecked = 0;
         _checkedAt = null;
         _checkedRoles = Roles.Where(r => _roleSelected[r]).ToList();
         _checkedPrivileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
@@ -280,12 +289,14 @@
             var missingFromDb = new List<(string Env, string Schema, string Table)>();
             var envErrors = new List<(string Env, string Message)>();
             var okCount = 0;
+            var checkedCount = 0;
 
             foreach (var env in envs)
             {
                 try
                 {
                     okCount += await CheckEnvironment(env, schemas, missing, missingFromDb);
+                    checkedCount++;
                 }
                 catch (Exception ex)
                 {
@@ -297,6 +308,7 @@
             _missingFromDb = missingFromDb;
             _envErrors = envErrors;
             _okCount = okCount;
+            _environmentsChecked = checkedCount;
             _checkedAt = DateTimeOffset.Now;
         }
         catch (Exception ex)
@@ -321,10 +333,8 @@
         var conn = db.Database.GetDbConnection();
 
         // has_table_privilege throws if a role does not exist — verify up front.
-        // Roles are compile-time constants, so inline them (avoids Npgsql binding the array as a
-        // single parameter, which would produce invalid `rolname IN $1` syntax).
         var existingRoles = (await conn.QueryAsync<string>(
-            $"SELECT rolname FROM pg_roles WHERE rolname IN ({SqlInList(_checkedRoles)})"))
+            "SELECT rolname FROM pg_roles WHERE rolname = ANY(@roles)", new { roles = _checkedRoles }))
             .ToHashSet(StringComparer.Ordinal);
 
         var missingRoles = _checkedRoles.Where(r => !existingRoles.Contains(r)).ToList();
@@ -364,26 +374,19 @@
                 continue;
             }
 
-            var dp = new DynamicParameters();
-            dp.Add("schema", schema);
-            var placeholders = new List<string>(toCheck.Count);
-            for (var i = 0; i < toCheck.Count; i++)
-            {
-                dp.Add($"t{i}", toCheck[i]);
-                placeholders.Add($"@t{i}");
-            }
-
-            // Roles/privileges are constants (safe to inline); table names bound as params.
-            var sql = $"""
+            // Npgsql binds arrays natively, so pass tables/roles/privileges as parameters.
+            const string sql = """
                 SELECT t.tbl AS "Table", r.role AS "Role", p.priv AS "Privilege"
-                FROM unnest(ARRAY[{string.Join(",", placeholders)}]::text[]) AS t(tbl)
-                CROSS JOIN (VALUES {SqlValues(_checkedRoles)}) AS r(role)
-                CROSS JOIN (VALUES {SqlValues(_checkedPrivileges)}) AS p(priv)
+                FROM unnest(@tables::text[]) AS t(tbl)
+                CROSS JOIN unnest(@roles::text[]) AS r(role)
+                CROSS JOIN unnest(@privs::text[]) AS p(priv)
                 WHERE NOT has_table_privilege(r.role, format('%I.%I', @schema, t.tbl), p.priv)
                 ORDER BY t.tbl, r.role, p.priv
                 """;
 
-            var rows = (await conn.QueryAsync<GrantRow>(sql, dp)).ToList();
+            var rows = (await conn.QueryAsync<GrantRow>(
+                sql,
+                new { tables = toCheck, roles = _checkedRoles, privs = _checkedPrivileges, schema })).ToList();
             var byTable = rows.GroupBy(r => r.Table, StringComparer.Ordinal)
                 .ToDictionary(g => g.Key, g => g.Select(r => (r.Role, r.Privilege)).ToList(), StringComparer.Ordinal);
 
@@ -405,9 +408,9 @@
         {
             using var db = DbFactory.CreateContext(result.Environment);
             var conn = db.Database.GetDbConnection();
-            foreach (var role in _checkedRoles)
+            foreach (var statement in GrantStatements(result))
             {
-                await conn.ExecuteAsync(GrantSql(result.Schema, result.Table, role, _checkedPrivileges));
+                await conn.ExecuteAsync(statement);
             }
 
             result.Missing = [];
@@ -440,14 +443,18 @@
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+    // One GRANT per role, listing only the privileges that were actually missing for that role.
+    private static IEnumerable<string> GrantStatements(TableGrant result) =>
+        result.Missing
+            .GroupBy(m => m.Role, StringComparer.Ordinal)
+            .Select(g => GrantSql(
+                result.Schema,
+                result.Table,
+                g.Key,
+                g.Select(m => m.Privilege).Distinct(StringComparer.Ordinal)));
+
     private static string GrantSql(string schema, string table, string role, IEnumerable<string> privileges) =>
         $"GRANT {string.Join(", ", privileges)} ON TABLE {Quote(schema)}.{Quote(table)} TO {Quote(role)};";
-
-    private static string SqlValues(IEnumerable<string> items) =>
-        string.Join(", ", items.Select(i => $"('{i.Replace("'", "''")}')"));
-
-    private static string SqlInList(IEnumerable<string> items) =>
-        string.Join(", ", items.Select(i => $"'{i.Replace("'", "''")}'"));
 
     private static string Quote(string identifier) =>
         $"\"{identifier.Replace("\"", "\"\"")}\"";

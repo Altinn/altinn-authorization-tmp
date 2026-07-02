@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
@@ -409,9 +409,11 @@ public static class TableRegistry
                     var raw = await db.OutboxMessages
                         .GroupBy(o => new { o.CreatedAt.DayOfWeek })
                         .Select(g => new { g.Key.DayOfWeek, Count = g.Count() })
-                        .OrderByDescending(g => g.DayOfWeek)
                         .ToListAsync();
-                    return raw.ConvertAll(g => new TableGroupRow($"{g.DayOfWeek}", g.Count));
+                    return raw
+                        .OrderBy(g => ((int)g.DayOfWeek + 6) % 7)   // Monday-first (DayOfWeek has Sunday = 0)
+                        .Select(g => new TableGroupRow($"{g.DayOfWeek}", g.Count))
+                        .ToList();
                 }),
             ],
         },
