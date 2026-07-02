@@ -3,31 +3,59 @@
 @using Dapper
 @using Microsoft.EntityFrameworkCore
 @inject IEnvironmentDbContextFactory DbFactory
-@inject EnvironmentState EnvState
 
 <PageTitle>Grant Check</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Grant Check</MudText>
 <MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
-    Går gjennom alle tabellene i DbContext-modellen for et gitt schema og sjekker at
-    <code>@Roles[0]</code> og <code>@Roles[1]</code> har de valgte privilegiene på hver tabell.
-    Manglende grants kan fikses ved å kjøre <code>GRANT</code>-scriptet direkte.
+    Går gjennom alle tabellene i DbContext-modellen for de valgte schemaene og sjekker at de valgte
+    rollene har de valgte privilegiene på hver tabell, i hvert valgte miljø. Manglende grants kan fikses
+    ved å kjøre <code>GRANT</code>-scriptet direkte.
 </MudText>
 
 @* ── Input panel ──────────────────────────────────────────────────────────── *@
 <MudPaper Elevation="1" Class="pa-4 mb-6">
-    <MudGrid Spacing="3" AlignItems="Center">
-        <MudItem xs="12" sm="4">
-            <MudTextField @bind-Value="_schema"
-                          Label="Schema"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          HelperText="F.eks. dbo eller dbo_history"
-                          Immediate="true" />
+    <MudGrid Spacing="3">
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Miljø:</MudText>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+                @foreach (var env in DbFactory.Environments)
+                {
+                    var e = env;
+                    var configured = DbFactory.IsConfigured(e);
+                    <MudCheckBox @bind-Value="_envSelected[e]"
+                                 Label="@e"
+                                 Disabled="@(!configured)"
+                                 Color="Color.Primary"
+                                 Dense="true" />
+                }
+            </MudStack>
         </MudItem>
 
-        <MudItem xs="12">
-            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Privilegier som sjekkes:</MudText>
+        <MudItem xs="12" md="4">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Schema:</MudText>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+                @foreach (var schema in _schemaSelected.Keys)
+                {
+                    var s = schema;
+                    <MudCheckBox @bind-Value="_schemaSelected[s]" Label="@s" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Roller:</MudText>
+            <MudStack Wrap="Wrap.Wrap" Spacing="0">
+                @foreach (var role in Roles)
+                {
+                    var r = role;
+                    <MudCheckBox @bind-Value="_roleSelected[r]" Label="@r" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Privilegier:</MudText>
             <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
                 @foreach (var priv in AllPrivileges)
                 {
@@ -41,13 +69,10 @@
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.PlayArrow"
-                       Disabled="@(_running || string.IsNullOrWhiteSpace(_schema) || !AnyPrivilegeSelected)"
+                       Disabled="@(_running || !CanRun)"
                        OnClick="RunCheck">
                 @(_running ? "Sjekker..." : "Kjør sjekk")
             </MudButton>
-            <MudText Typo="Typo.caption" Class="mud-text-secondary ml-3">
-                Miljø: @EnvState.Current
-            </MudText>
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -60,6 +85,11 @@
 @if (_error is not null)
 {
     <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+}
+
+@foreach (var (env, message) in _envErrors)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-2"><b>@env:</b> @message</MudAlert>
 }
 
 @if (_checkedAt is not null && _error is null)
@@ -92,7 +122,7 @@
     @if (_missing.Count == 0 && _missingFromDb.Count == 0)
     {
         <MudAlert Severity="Severity.Success">
-            Alle @_okCount tabeller i <code>@_schema</code> har korrekte grants for begge roller.
+            Alle @_okCount tabeller har korrekte grants for de valgte rollene.
         </MudAlert>
     }
 
@@ -110,7 +140,8 @@
                         {
                             <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
                         }
-                        <MudText Typo="Typo.subtitle1" Style="font-family:monospace">@($"{_schema}.{result.Table}")</MudText>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default">@result.Environment</MudChip>
+                        <MudText Typo="Typo.subtitle1" Style="font-family:monospace">@($"{result.Schema}.{result.Table}")</MudText>
                         <MudSpacer />
                         @if (result.IsFixed)
                         {
@@ -141,9 +172,9 @@
                         }
                         <MudText Typo="Typo.subtitle2" Class="mb-2 mt-3">SQL som kjøres:</MudText>
                         <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
-                            @foreach (var role in Roles)
+                            @foreach (var role in _checkedRoles)
                             {
-                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(_schema, result.Table, role, _checkedPrivileges)</MudText>
+                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(result.Schema, result.Table, role, _checkedPrivileges)</MudText>
                             }
                         </div>
                         @if (result.Error is not null)
@@ -162,9 +193,9 @@
             <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2">
                 Tabeller i modellen som ikke finnes i DB (ikke sjekket for grants):
             </MudText>
-            @foreach (var t in _missingFromDb)
+            @foreach (var (env, schema, table) in _missingFromDb)
             {
-                <MudText Typo="Typo.body2" Style="font-family:monospace">@($"{_schema}.{t}")</MudText>
+                <MudText Typo="Typo.body2" Style="font-family:monospace">@($"[{env}] {schema}.{table}")</MudText>
             }
         </MudPaper>
     }
@@ -174,22 +205,59 @@
     private static readonly string[] Roles = ["platform_authorization", "platform_authorization_admin"];
     private static readonly string[] AllPrivileges = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRIGGER", "REFERENCES"];
 
+    private readonly Dictionary<string, bool> _roleSelected = Roles.ToDictionary(r => r, _ => true);
     private readonly Dictionary<string, bool> _privilegeSelected = AllPrivileges.ToDictionary(p => p, _ => true);
+    private Dictionary<string, bool> _envSelected = new(StringComparer.Ordinal);
+    private Dictionary<string, bool> _schemaSelected = new(StringComparer.Ordinal);
 
-    private string _schema = "dbo";
     private bool _running;
     private bool _fixingAll;
     private DateTimeOffset? _checkedAt;
     private string? _error;
     private int _okCount;
     private List<TableGrant> _missing = [];
-    private List<string> _missingFromDb = [];
+    private List<(string Env, string Schema, string Table)> _missingFromDb = [];
+    private List<(string Env, string Message)> _envErrors = [];
 
-    // Privileges captured at the time of the last check — used for the GRANT preview and fix so they
-    // stay consistent even if the user toggles the checkboxes afterwards.
+    // Roles/privileges captured at the time of the last check — used for the GRANT preview and fix so
+    // they stay consistent even if the user toggles the checkboxes afterwards.
+    private List<string> _checkedRoles = [];
     private List<string> _checkedPrivileges = [];
 
-    private bool AnyPrivilegeSelected => _privilegeSelected.Values.Any(v => v);
+    private bool CanRun =>
+        _envSelected.Values.Any(v => v) &&
+        _schemaSelected.Values.Any(v => v) &&
+        _roleSelected.Values.Any(v => v) &&
+        _privilegeSelected.Values.Any(v => v);
+
+    protected override void OnInitialized()
+    {
+        _envSelected = DbFactory.Environments.ToDictionary(e => e, _ => false, StringComparer.Ordinal);
+
+        // Schema options come from the (environment-independent) EF model.
+        var modelEnv = DbFactory.Environments.FirstOrDefault(DbFactory.IsConfigured);
+        try
+        {
+            using var db = DbFactory.CreateContext(modelEnv!);
+            var schemas = db.Model.GetEntityTypes()
+                .Select(t => t.GetSchema())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Select(s => s!)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .ToList();
+
+            _schemaSelected = schemas.ToDictionary(
+                s => s,
+                s => string.Equals(s, "dbo", StringComparison.OrdinalIgnoreCase),
+                StringComparer.Ordinal);
+        }
+        catch
+        {
+            // No configured environment — fall back to the known schemas.
+            _schemaSelected = new(StringComparer.Ordinal) { ["dbo"] = true, ["dbo_history"] = false };
+        }
+    }
 
     private async Task RunCheck()
     {
@@ -197,87 +265,38 @@
         _error = null;
         _missing = [];
         _missingFromDb = [];
+        _envErrors = [];
         _okCount = 0;
         _checkedAt = null;
+        _checkedRoles = Roles.Where(r => _roleSelected[r]).ToList();
+        _checkedPrivileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
+        var envs = _envSelected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+        var schemas = _schemaSelected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
         StateHasChanged();
 
         try
         {
-            var schema = _schema.Trim();
-            _checkedPrivileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
-            using var db = DbFactory.CreateContext(EnvState.Current);
+            var missing = new List<TableGrant>();
+            var missingFromDb = new List<(string Env, string Schema, string Table)>();
+            var envErrors = new List<(string Env, string Message)>();
+            var okCount = 0;
 
-            var modelTables = db.Model.GetEntityTypes()
-                .Where(t => string.Equals(t.GetSchema(), schema, StringComparison.OrdinalIgnoreCase))
-                .Select(t => t.GetTableName())
-                .Where(t => !string.IsNullOrEmpty(t))
-                .Select(t => t!)
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(t => t, StringComparer.Ordinal)
-                .ToList();
-
-            if (modelTables.Count == 0)
+            foreach (var env in envs)
             {
-                _error = $"Ingen tabeller i modellen for schema '{schema}'.";
-                return;
-            }
-
-            var conn = db.Database.GetDbConnection();
-
-            // has_table_privilege throws if a role does not exist — verify up front.
-            // Roles are compile-time constants, so inline them (avoids Npgsql binding the array as a
-            // single parameter, which would produce invalid `rolname IN $1` syntax).
-            var existingRoles = (await conn.QueryAsync<string>(
-                $"SELECT rolname FROM pg_roles WHERE rolname IN ({SqlInList(Roles)})"))
-                .ToHashSet(StringComparer.Ordinal);
-
-            var missingRoles = Roles.Where(r => !existingRoles.Contains(r)).ToList();
-            if (missingRoles.Count > 0)
-            {
-                _error = $"Rollene finnes ikke i databasen: {string.Join(", ", missingRoles)}. Kan ikke sjekke grants.";
-                return;
-            }
-
-            // Only check tables that actually exist in the DB — model may be ahead of the environment.
-            var dbTables = (await conn.QueryAsync<string>(
-                "SELECT tablename FROM pg_tables WHERE schemaname = @schema", new { schema }))
-                .ToHashSet(StringComparer.Ordinal);
-
-            var toCheck = modelTables.Where(dbTables.Contains).ToList();
-            _missingFromDb = modelTables.Where(t => !dbTables.Contains(t)).ToList();
-
-            if (toCheck.Count > 0)
-            {
-                var dp = new DynamicParameters();
-                dp.Add("schema", schema);
-                var placeholders = new List<string>(toCheck.Count);
-                for (var i = 0; i < toCheck.Count; i++)
+                try
                 {
-                    dp.Add($"t{i}", toCheck[i]);
-                    placeholders.Add($"@t{i}");
+                    okCount += await CheckEnvironment(env, schemas, missing, missingFromDb);
                 }
-
-                // Roles/privileges are compile-time constants (safe to inline); table names bound as params.
-                var sql = $"""
-                    SELECT t.tbl AS "Table", r.role AS "Role", p.priv AS "Privilege"
-                    FROM unnest(ARRAY[{string.Join(",", placeholders)}]::text[]) AS t(tbl)
-                    CROSS JOIN (VALUES {SqlValues(Roles)}) AS r(role)
-                    CROSS JOIN (VALUES {SqlValues(_checkedPrivileges)}) AS p(priv)
-                    WHERE NOT has_table_privilege(r.role, format('%I.%I', @schema, t.tbl), p.priv)
-                    ORDER BY t.tbl, r.role, p.priv
-                    """;
-
-                var rows = (await conn.QueryAsync<GrantRow>(sql, dp)).ToList();
-                var byTable = rows.GroupBy(r => r.Table, StringComparer.Ordinal)
-                    .ToDictionary(g => g.Key, g => g.Select(r => (r.Role, r.Privilege)).ToList(), StringComparer.Ordinal);
-
-                _missing = toCheck
-                    .Where(byTable.ContainsKey)
-                    .Select(t => new TableGrant { Table = t, Missing = byTable[t] })
-                    .ToList();
-                _okCount = toCheck.Count - _missing.Count;
+                catch (Exception ex)
+                {
+                    envErrors.Add((env, ex.Message));
+                }
             }
 
+            _missing = missing;
+            _missingFromDb = missingFromDb;
+            _envErrors = envErrors;
+            _okCount = okCount;
             _checkedAt = DateTimeOffset.Now;
         }
         catch (Exception ex)
@@ -291,6 +310,92 @@
         }
     }
 
+    /// <summary>Checks one environment and appends its findings. Returns the number of OK tables.</summary>
+    private async Task<int> CheckEnvironment(
+        string env,
+        List<string> schemas,
+        List<TableGrant> missing,
+        List<(string Env, string Schema, string Table)> missingFromDb)
+    {
+        using var db = DbFactory.CreateContext(env);
+        var conn = db.Database.GetDbConnection();
+
+        // has_table_privilege throws if a role does not exist — verify up front.
+        // Roles are compile-time constants, so inline them (avoids Npgsql binding the array as a
+        // single parameter, which would produce invalid `rolname IN $1` syntax).
+        var existingRoles = (await conn.QueryAsync<string>(
+            $"SELECT rolname FROM pg_roles WHERE rolname IN ({SqlInList(_checkedRoles)})"))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var missingRoles = _checkedRoles.Where(r => !existingRoles.Contains(r)).ToList();
+        if (missingRoles.Count > 0)
+        {
+            throw new InvalidOperationException($"Rollene finnes ikke i databasen: {string.Join(", ", missingRoles)}.");
+        }
+
+        var okCount = 0;
+
+        foreach (var schema in schemas)
+        {
+            var modelTables = db.Model.GetEntityTypes()
+                .Where(t => string.Equals(t.GetSchema(), schema, StringComparison.OrdinalIgnoreCase))
+                .Select(t => t.GetTableName())
+                .Where(t => !string.IsNullOrEmpty(t))
+                .Select(t => t!)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(t => t, StringComparer.Ordinal)
+                .ToList();
+
+            if (modelTables.Count == 0)
+            {
+                continue;
+            }
+
+            // Only check tables that actually exist in the DB — model may be ahead of the environment.
+            var dbTables = (await conn.QueryAsync<string>(
+                "SELECT tablename FROM pg_tables WHERE schemaname = @schema", new { schema }))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var toCheck = modelTables.Where(dbTables.Contains).ToList();
+            missingFromDb.AddRange(modelTables.Where(t => !dbTables.Contains(t)).Select(t => (env, schema, t)));
+
+            if (toCheck.Count == 0)
+            {
+                continue;
+            }
+
+            var dp = new DynamicParameters();
+            dp.Add("schema", schema);
+            var placeholders = new List<string>(toCheck.Count);
+            for (var i = 0; i < toCheck.Count; i++)
+            {
+                dp.Add($"t{i}", toCheck[i]);
+                placeholders.Add($"@t{i}");
+            }
+
+            // Roles/privileges are constants (safe to inline); table names bound as params.
+            var sql = $"""
+                SELECT t.tbl AS "Table", r.role AS "Role", p.priv AS "Privilege"
+                FROM unnest(ARRAY[{string.Join(",", placeholders)}]::text[]) AS t(tbl)
+                CROSS JOIN (VALUES {SqlValues(_checkedRoles)}) AS r(role)
+                CROSS JOIN (VALUES {SqlValues(_checkedPrivileges)}) AS p(priv)
+                WHERE NOT has_table_privilege(r.role, format('%I.%I', @schema, t.tbl), p.priv)
+                ORDER BY t.tbl, r.role, p.priv
+                """;
+
+            var rows = (await conn.QueryAsync<GrantRow>(sql, dp)).ToList();
+            var byTable = rows.GroupBy(r => r.Table, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.Select(r => (r.Role, r.Privilege)).ToList(), StringComparer.Ordinal);
+
+            missing.AddRange(toCheck
+                .Where(byTable.ContainsKey)
+                .Select(t => new TableGrant { Environment = env, Schema = schema, Table = t, Missing = byTable[t] }));
+            okCount += toCheck.Count - byTable.Count;
+        }
+
+        return okCount;
+    }
+
     private async Task FixTable(TableGrant result)
     {
         result.IsFixing = true;
@@ -298,11 +403,11 @@
 
         try
         {
-            using var db = DbFactory.CreateContext(EnvState.Current);
+            using var db = DbFactory.CreateContext(result.Environment);
             var conn = db.Database.GetDbConnection();
-            foreach (var role in Roles)
+            foreach (var role in _checkedRoles)
             {
-                await conn.ExecuteAsync(GrantSql(_schema.Trim(), result.Table, role, _checkedPrivileges));
+                await conn.ExecuteAsync(GrantSql(result.Schema, result.Table, role, _checkedPrivileges));
             }
 
             result.Missing = [];
@@ -359,6 +464,10 @@
 
     private sealed class TableGrant
     {
+        public string Environment { get; set; } = "";
+
+        public string Schema { get; set; } = "";
+
         public string Table { get; set; } = "";
 
         public List<(string Role, string Privilege)> Missing { get; set; } = [];
