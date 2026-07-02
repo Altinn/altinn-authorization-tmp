@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessMgmt.Core.Validation;
 
@@ -14,7 +15,7 @@ public static class AssignmentA2RoleValidation
         if (a2Assignments is { } && a2Assignments.Any())
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.AssignmentHasActiveConnections, $"QUERY/{paramName}", [new("roles", $"following roles has active assignments [{string.Join(",", a2Assignments.Select(r => r.Role.Name))}].")]);
+                errors.Add(ValidationErrors.AssignmentHasActiveConnections, $"QUERY/{paramName}", [new("roles", $"following roles has active assignments [{string.Join(",", a2Assignments.Select(r => r.Role?.Name ?? r.RoleId.ToString()))}].")]);
         }
 
         return null;
