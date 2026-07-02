@@ -26,10 +26,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
-// ConsentRepository which binds to the consent.status_type enum. The consent
-// schema is provisioned by EF Core (ConsentSchema_Baseline); LegacyApiFixture
-// additionally overlays the Yuniql accessmanagement/delegation schemas.
+// Uses LegacyApiFixture: the consent schema (and the EF-backed ConsentRepositoryEF)
+// is provisioned by EF Core (ConsentSchema_Baseline); LegacyApiFixture additionally
+// overlays the Yuniql accessmanagement/delegation schemas that other host components
+// still bind to.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
 {
     /// <summary>
@@ -64,7 +64,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
             SetupMockPartyRepository();
 
             Guid requestId = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf1");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
                 Language = "nb",
@@ -97,7 +97,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
             SetupMockPartyRepository();
 
             Guid requestId = Guid.Parse("4a73a516-7a91-435c-8a0e-0f4659588594");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
                 Language = "nb",
@@ -129,7 +129,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
             SetupMockPartyRepository();
 
             Guid requestId = Guid.Parse("4a73a516-7a91-435c-8a0e-0f4659588595");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
                 Language = "nb",
@@ -162,7 +162,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
             SetupMockPartyRepository();
 
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             await repositgo.CreateRequest(await GetRequest(requestId), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), TestContext.Current.CancellationToken);
 
             HttpClient client = GetTestClient();
@@ -194,7 +194,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed77");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
             await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), TestContext.Current.CancellationToken);
@@ -235,7 +235,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("d1bedb7d-a682-4668-9f84-7a56b3d733ab");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
             await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), TestContext.Current.CancellationToken);
@@ -271,7 +271,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.MaskinPorten
         {
             SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed46");
-            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.CreateConsentRepository();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
             await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), TestContext.Current.CancellationToken);

@@ -1,9 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Integration.Clients;
@@ -15,7 +12,6 @@ using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Altinn.Platform.Register.Enums;
 using Azure.Core;
 using Azure.Storage;
-using CommunityToolkit.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
@@ -51,7 +47,7 @@ public static class PersistenceDependencyInjectionExtensions
 
         builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepo>();
 
-        builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();
+        builder.Services.AddScoped<IConsentRepository, ConsentRepositoryEF>();
         builder.Services.AddSingleton<IAltinn2ConsentClient, Altinn2ConsentClient>();
 
         builder.AddDatabase();
@@ -139,33 +135,6 @@ public static class PersistenceDependencyInjectionExtensions
             .MapEnum<UuidType>("delegation.uuidtype")
             .MapEnum<InstanceDelegationMode>("delegation.instancedelegationmode")
             .MapEnum<InstanceDelegationSource>("delegation.instancedelegationsource")
-            .MapEnum<ConsentRequestStatusType>("consent.status_type", new EnumNameTranslator<ConsentRequestStatusType>(static value => value switch
-            {
-                ConsentRequestStatusType.Accepted => "accepted",
-                ConsentRequestStatusType.Rejected => "rejected",
-                ConsentRequestStatusType.Created => "created",
-                ConsentRequestStatusType.Revoked => "revoked",
-                ConsentRequestStatusType.Deleted => "deleted",
-                ConsentRequestStatusType.Expired => "expired",
-                _ => null,
-            }))
-            .MapEnum<ConsentRequestEventType>("consent.event_type", new EnumNameTranslator<ConsentRequestEventType>(static value => value switch
-            {
-                ConsentRequestEventType.Accepted => "accepted",
-                ConsentRequestEventType.Rejected => "rejected",
-                ConsentRequestEventType.Created => "created",
-                ConsentRequestEventType.Revoked => "revoked",
-                ConsentRequestEventType.Deleted => "deleted",
-                ConsentRequestEventType.Expired => "expired",
-                ConsentRequestEventType.Used => "used",
-                _ => null,
-            }))
-            .MapEnum<ConsentPortalViewMode>("consent.portal_view_mode", new EnumNameTranslator<ConsentPortalViewMode>(static value => value switch
-            {
-                ConsentPortalViewMode.Hide => "hide",
-                ConsentPortalViewMode.Show => "show",
-                _ => null,
-            }))
             .AddYuniqlMigrations(serviceKey: null, opts =>
             {
                 opts.Workspace = "/";
@@ -176,55 +145,4 @@ public static class PersistenceDependencyInjectionExtensions
     }
 
     private sealed record Marker;
-
-    private sealed class EnumNameTranslator<TEnum>
-    : INpgsqlNameTranslator
-    where TEnum : struct, Enum
-    {
-        private readonly ImmutableArray<(string MemberName, string PgName)> _values;
-
-        public EnumNameTranslator(Func<TEnum, string?> resolver)
-        {
-            var enumValues = Enum.GetValues<TEnum>();
-            var builder = ImmutableArray.CreateBuilder<(string MemberName, string PgName)>(enumValues.Length);
-
-            foreach (var enumValue in enumValues)
-            {
-                var memberName = enumValue.ToString();
-                var name = resolver(enumValue);
-                if (name is null)
-                {
-                    ThrowHelper.ThrowInvalidOperationException($"Missing mapping for enum member '{memberName}' in type '{typeof(TEnum).FullName}'");
-                }
-
-                builder.Add((memberName, name));
-            }
-
-            builder.Sort(static (l, r) => string.CompareOrdinal(l.MemberName, r.MemberName));
-            _values = builder.ToImmutable();
-        }
-
-        public string TranslateMemberName(string clrName)
-        {
-            var index = _values.AsSpan().BinarySearch(new MemberNameMatcher(clrName));
-
-            if (index < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(clrName));
-            }
-
-            return _values[index].PgName;
-        }
-
-        public string TranslateTypeName(string clrName)
-            => ThrowHelper.ThrowNotSupportedException<string>();
-    }
-
-    private readonly struct MemberNameMatcher(string memberName)
-        : IComparable<(string MemberName, string PgName)>
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int CompareTo((string MemberName, string PgName) other)
-            => string.CompareOrdinal(memberName, other.MemberName);
-    }
 }

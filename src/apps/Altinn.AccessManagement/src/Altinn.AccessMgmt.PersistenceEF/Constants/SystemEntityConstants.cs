@@ -398,6 +398,32 @@ public static class SystemEntityConstants
     };
 
     /// <summary>
+    /// Represents the ConsentApi system entity.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> c9c63f97-1200-44af-a286-1ddcbeb47ccd
+    /// - <c>Name:</c> ConsentApi
+    /// - <c>RefId:</c> accessmgmt-consent-api
+    /// - <c>TypeId:</c> Internal entity type
+    /// - <c>VariantId:</c> Standard variant
+    /// </remarks>
+    public static ConstantDefinition<Entity> ConsentApi { get; } = new ConstantDefinition<Entity>(AuditDefaults.ConsentApi)
+    {
+        Entity = new()
+        {
+            Name = nameof(AuditDefaults.ConsentApi),
+            RefId = "accessmgmt-consent-api",
+            ParentId = null,
+            TypeId = EntityTypeConstants.Internal,
+            VariantId = EntityVariantConstants.Standard,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Consent API")),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Samtykke-API")),
+    };
+
+    /// <summary>
     /// Represents the ServiceOwnerApi system entity.
     /// </summary>
     /// <remarks>

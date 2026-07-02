@@ -1,5 +1,10 @@
-﻿using Altinn.AccessManagement.TestUtils.Fixtures;
+﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.TestUtils.Fixtures;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessManagement.Tests.Fixtures;
 
@@ -71,5 +76,16 @@ public class LegacyApiFixture : AccessMgmtApiFixture
             // repeat work (the register import is feature-flag gated off in tests).
             dict["PostgreSQLSettings:EnableDBConnection"] = "true";
         });
+    }
+
+    /// <summary>
+    /// Resolves an <see cref="IConsentRepository"/> the way the application consumes it:
+    /// from a service scope with audit values populated. The scope lives until the
+    /// fixture is disposed.
+    /// </summary>
+    public IConsentRepository CreateConsentRepository()
+    {
+        IServiceScope scope = Services.CreateEFScope(new AuditValues(SystemEntityConstants.StaticDataIngest));
+        return scope.ServiceProvider.GetRequiredService<IConsentRepository>();
     }
 }

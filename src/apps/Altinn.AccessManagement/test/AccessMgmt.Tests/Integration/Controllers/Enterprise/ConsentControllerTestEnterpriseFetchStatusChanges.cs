@@ -930,7 +930,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             foreach (var consentId in createdConsentIds.Skip(skip).Take(rejectTake))
             {
                 HttpClient rejectClient = GetTestClient();
-                IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
+                IConsentRepository repositgo = _fixture.CreateConsentRepository();
 
                 string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
                 rejectClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

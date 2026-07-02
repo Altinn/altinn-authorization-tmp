@@ -24,10 +24,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-// Uses LegacyApiFixture: the consent flow goes through the Dapper-backed
-// ConsentRepository which binds to the consent.status_type enum. The consent
-// schema is provisioned by EF Core (ConsentSchema_Baseline); LegacyApiFixture
-// additionally overlays the Yuniql accessmanagement/delegation schemas.
+// Uses LegacyApiFixture: the consent schema (and the EF-backed ConsentRepositoryEF)
+// is provisioned by EF Core (ConsentSchema_Baseline); LegacyApiFixture additionally
+// overlays the Yuniql accessmanagement/delegation schemas that other host components
+// still bind to.
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
 {
     /// <summary>
