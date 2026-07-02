@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
@@ -398,11 +398,20 @@ public static class TableRegistry
                 G("Dato (opprettet)", async db =>
                 {
                     var raw = await db.OutboxMessages
-                        .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
-                        .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
-                        .OrderByDescending(g => g.Year).ThenByDescending(g => g.Month)
+                        .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                        .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Count = g.Count() })
+                        .OrderByDescending(g => g.Year).ThenByDescending(g => g.Month).ThenByDescending(g => g.Day)
                         .ToListAsync();
-                    return raw.ConvertAll(g => new TableGroupRow($"{g.Year:D4}-{g.Month:D2}", g.Count));
+                    return raw.ConvertAll(g => new TableGroupRow($"{g.Year:D4}-{g.Month:D2}-{g.Day:D2}", g.Count));
+                }),
+                G("Ukedag (opprettet)", async db =>
+                {
+                    var raw = await db.OutboxMessages
+                        .GroupBy(o => new { o.CreatedAt.DayOfWeek })
+                        .Select(g => new { g.Key.DayOfWeek, Count = g.Count() })
+                        .OrderByDescending(g => g.DayOfWeek)
+                        .ToListAsync();
+                    return raw.ConvertAll(g => new TableGroupRow($"{g.DayOfWeek}", g.Count));
                 }),
             ],
         },

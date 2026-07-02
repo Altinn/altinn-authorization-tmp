@@ -1,0 +1,347 @@
+@page "/tools/grant-check"
+@using Altinn.AccessMgmt.FFB.Services
+@using Dapper
+@using Microsoft.EntityFrameworkCore
+@inject IEnvironmentDbContextFactory DbFactory
+@inject EnvironmentState EnvState
+
+<PageTitle>Grant Check</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Grant Check</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Går gjennom alle tabellene i DbContext-modellen for et gitt schema og sjekker at
+    <code>@Roles[0]</code> og <code>@Roles[1]</code> har
+    <code>@string.Join(", ", Privileges)</code> på hver tabell. Manglende grants kan fikses ved å
+    kjøre <code>GRANT</code>-scriptet direkte.
+</MudText>
+
+@* ── Input panel ──────────────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-6">
+    <MudGrid Spacing="3" AlignItems="Center">
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="_schema"
+                          Label="Schema"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          HelperText="F.eks. dbo eller dbo_history"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="8">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                       Disabled="@(_running || string.IsNullOrWhiteSpace(_schema))"
+                       OnClick="RunCheck">
+                @(_running ? "Sjekker..." : "Kjør sjekk")
+            </MudButton>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary ml-3">
+                Miljø: @EnvState.Current
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_running)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+}
+
+@if (_checkedAt is not null && _error is null)
+{
+    <MudStack Row="true" Spacing="2" Class="mb-4" AlignItems="AlignItems.Center">
+        <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@_okCount ok</MudChip>
+        @if (_missing.Count > 0)
+        {
+            <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Error">@_missing.Count mangler grants</MudChip>
+        }
+        @if (_missingFromDb.Count > 0)
+        {
+            <MudChip T="string" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">@_missingFromDb.Count i modell, ikke i DB</MudChip>
+        }
+        <MudText Typo="Typo.caption" Class="mud-text-secondary">@_checkedAt?.ToString("HH:mm:ss")</MudText>
+        <MudSpacer />
+        @if (_missing.Any(r => !r.IsFixed && r.Error is null))
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Error"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Build"
+                       Disabled="_fixingAll"
+                       OnClick="FixAll">
+                @(_fixingAll ? "Fikser..." : "Fiks alle")
+            </MudButton>
+        }
+    </MudStack>
+
+    @if (_missing.Count == 0 && _missingFromDb.Count == 0)
+    {
+        <MudAlert Severity="Severity.Success">
+            Alle @_okCount tabeller i <code>@_schema</code> har korrekte grants for begge roller.
+        </MudAlert>
+    }
+
+    @foreach (var result in _missing)
+    {
+        <MudPaper Elevation="1" Class="mb-3">
+            <MudExpansionPanel Dense="true">
+                <TitleContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        @if (result.IsFixed)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                        }
+                        <MudText Typo="Typo.subtitle1" Style="font-family:monospace">@($"{_schema}.{result.Table}")</MudText>
+                        <MudSpacer />
+                        @if (result.IsFixed)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.Check">Fikset</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Error">@result.Missing.Count mangler</MudChip>
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       Disabled="@result.IsFixing"
+                                       OnClick="@(() => FixTable(result))">
+                                @(result.IsFixing ? "..." : "Kjør GRANT")
+                            </MudButton>
+                        }
+                    </MudStack>
+                </TitleContent>
+                <ChildContent>
+                    <div class="pa-4">
+                        @if (result.Missing.Count > 0)
+                        {
+                            <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">Mangler:</MudText>
+                            @foreach (var m in result.Missing)
+                            {
+                                <MudText Typo="Typo.body2" Style="font-family:monospace">@m.Role — @m.Privilege</MudText>
+                            }
+                        }
+                        <MudText Typo="Typo.subtitle2" Class="mb-2 mt-3">SQL som kjøres:</MudText>
+                        <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
+                            @foreach (var role in Roles)
+                            {
+                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(_schema, result.Table, role)</MudText>
+                            }
+                        </div>
+                        @if (result.Error is not null)
+                        {
+                            <MudAlert Severity="Severity.Error" Dense="true" Class="mt-3">@result.Error</MudAlert>
+                        }
+                    </div>
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudPaper>
+    }
+
+    @if (_missingFromDb.Count > 0)
+    {
+        <MudPaper Elevation="0" Class="pa-4 mt-4" Style="border:1px solid var(--mud-palette-warning)">
+            <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2">
+                Tabeller i modellen som ikke finnes i DB (ikke sjekket for grants):
+            </MudText>
+            @foreach (var t in _missingFromDb)
+            {
+                <MudText Typo="Typo.body2" Style="font-family:monospace">@($"{_schema}.{t}")</MudText>
+            }
+        </MudPaper>
+    }
+}
+
+@code {
+    private static readonly string[] Roles = ["platform_authorization", "platform_authorization_admin"];
+    private static readonly string[] Privileges = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRIGGER", "REFERENCES"];
+
+    private string _schema = "dbo";
+    private bool _running;
+    private bool _fixingAll;
+    private DateTimeOffset? _checkedAt;
+    private string? _error;
+    private int _okCount;
+    private List<TableGrant> _missing = [];
+    private List<string> _missingFromDb = [];
+
+    private async Task RunCheck()
+    {
+        _running = true;
+        _error = null;
+        _missing = [];
+        _missingFromDb = [];
+        _okCount = 0;
+        _checkedAt = null;
+        StateHasChanged();
+
+        try
+        {
+            var schema = _schema.Trim();
+            using var db = DbFactory.CreateContext(EnvState.Current);
+
+            var modelTables = db.Model.GetEntityTypes()
+                .Where(t => string.Equals(t.GetSchema(), schema, StringComparison.OrdinalIgnoreCase))
+                .Select(t => t.GetTableName())
+                .Where(t => !string.IsNullOrEmpty(t))
+                .Select(t => t!)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(t => t, StringComparer.Ordinal)
+                .ToList();
+
+            if (modelTables.Count == 0)
+            {
+                _error = $"Ingen tabeller i modellen for schema '{schema}'.";
+                return;
+            }
+
+            var conn = db.Database.GetDbConnection();
+
+            // has_table_privilege throws if a role does not exist — verify up front.
+            var existingRoles = (await conn.QueryAsync<string>(
+                "SELECT rolname FROM pg_roles WHERE rolname IN @roles", new { roles = Roles }))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var missingRoles = Roles.Where(r => !existingRoles.Contains(r)).ToList();
+            if (missingRoles.Count > 0)
+            {
+                _error = $"Rollene finnes ikke i databasen: {string.Join(", ", missingRoles)}. Kan ikke sjekke grants.";
+                return;
+            }
+
+            // Only check tables that actually exist in the DB — model may be ahead of the environment.
+            var dbTables = (await conn.QueryAsync<string>(
+                "SELECT tablename FROM pg_tables WHERE schemaname = @schema", new { schema }))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var toCheck = modelTables.Where(dbTables.Contains).ToList();
+            _missingFromDb = modelTables.Where(t => !dbTables.Contains(t)).ToList();
+
+            if (toCheck.Count > 0)
+            {
+                var dp = new DynamicParameters();
+                dp.Add("schema", schema);
+                var placeholders = new List<string>(toCheck.Count);
+                for (var i = 0; i < toCheck.Count; i++)
+                {
+                    dp.Add($"t{i}", toCheck[i]);
+                    placeholders.Add($"@t{i}");
+                }
+
+                // Roles/privileges are compile-time constants (safe to inline); table names bound as params.
+                var sql = $"""
+                    SELECT t.tbl AS "Table", r.role AS "Role", p.priv AS "Privilege"
+                    FROM unnest(ARRAY[{string.Join(",", placeholders)}]::text[]) AS t(tbl)
+                    CROSS JOIN (VALUES {SqlValues(Roles)}) AS r(role)
+                    CROSS JOIN (VALUES {SqlValues(Privileges)}) AS p(priv)
+                    WHERE NOT has_table_privilege(r.role, format('%I.%I', @schema, t.tbl), p.priv)
+                    ORDER BY t.tbl, r.role, p.priv
+                    """;
+
+                var rows = (await conn.QueryAsync<GrantRow>(sql, dp)).ToList();
+                var byTable = rows.GroupBy(r => r.Table, StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Select(r => (r.Role, r.Privilege)).ToList(), StringComparer.Ordinal);
+
+                _missing = toCheck
+                    .Where(byTable.ContainsKey)
+                    .Select(t => new TableGrant { Table = t, Missing = byTable[t] })
+                    .ToList();
+                _okCount = toCheck.Count - _missing.Count;
+            }
+
+            _checkedAt = DateTimeOffset.Now;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _running = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task FixTable(TableGrant result)
+    {
+        result.IsFixing = true;
+        StateHasChanged();
+
+        try
+        {
+            using var db = DbFactory.CreateContext(EnvState.Current);
+            var conn = db.Database.GetDbConnection();
+            foreach (var role in Roles)
+            {
+                await conn.ExecuteAsync(GrantSql(_schema.Trim(), result.Table, role));
+            }
+
+            result.Missing = [];
+            result.IsFixed = true;
+            result.Error = null;
+        }
+        catch (Exception ex)
+        {
+            result.Error = ex.Message;
+        }
+        finally
+        {
+            result.IsFixing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task FixAll()
+    {
+        _fixingAll = true;
+        StateHasChanged();
+
+        foreach (var result in _missing.Where(r => !r.IsFixed && r.Error is null).ToList())
+        {
+            await FixTable(result);
+        }
+
+        _fixingAll = false;
+        StateHasChanged();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    private static string GrantSql(string schema, string table, string role) =>
+        $"GRANT {string.Join(", ", Privileges)} ON TABLE {Quote(schema)}.{Quote(table)} TO {Quote(role)};";
+
+    private static string SqlValues(IEnumerable<string> items) =>
+        string.Join(", ", items.Select(i => $"('{i.Replace("'", "''")}')"));
+
+    private static string Quote(string identifier) =>
+        $"\"{identifier.Replace("\"", "\"\"")}\"";
+
+    // ── Models ────────────────────────────────────────────────────────────────
+    private sealed class GrantRow
+    {
+        public string Table { get; set; } = "";
+
+        public string Role { get; set; } = "";
+
+        public string Privilege { get; set; } = "";
+    }
+
+    private sealed class TableGrant
+    {
+        public string Table { get; set; } = "";
+
+        public List<(string Role, string Privilege)> Missing { get; set; } = [];
+
+        public bool IsFixing { get; set; }
+
+        public bool IsFixed { get; set; }
+
+        public string? Error { get; set; }
+    }
+}

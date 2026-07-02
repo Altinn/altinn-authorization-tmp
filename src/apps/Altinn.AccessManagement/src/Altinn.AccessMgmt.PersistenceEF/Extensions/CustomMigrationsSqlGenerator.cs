@@ -224,22 +224,22 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             return;
         }
 
-        if (entityType.FindAnnotation(AuditExtensions.AnnotationName) is null)
-        {
-            return;
-        }
-
         var schema = entityType.GetSchema();
         var table = entityType.GetTableName();
 
-        builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(schema!, table!, columns));
-        builder.EndCommand();
+        if (entityType.FindAnnotation(AuditExtensions.AnnotationName) is not null)
+        {
+            builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(schema!, table!, columns));
+            builder.EndCommand();
 
-        builder.AppendLine(GenerateAuditUpdateFunctionAndTrigger(schema!, table!, columns));
-        builder.EndCommand();
+            builder.AppendLine(GenerateAuditUpdateFunctionAndTrigger(schema!, table!, columns));
+            builder.EndCommand();
 
-        builder.AppendLine(GenerateAuditDeleteFunctionAndTrigger(schema!, table!, columns));
-        builder.EndCommand();
+            builder.AppendLine(GenerateAuditDeleteFunctionAndTrigger(schema!, table!, columns));
+            builder.EndCommand();
+
+            return;
+        }
 
         builder.AppendLine(GenerateGrants(schema!, table!));
         builder.EndCommand();
