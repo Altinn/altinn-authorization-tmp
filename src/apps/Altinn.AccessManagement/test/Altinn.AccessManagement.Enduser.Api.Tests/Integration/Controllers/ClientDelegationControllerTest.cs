@@ -610,6 +610,29 @@ public class ClientDelegationControllerTest
 
             Assert.Empty(rightholderAccess.Resources);
         }
+
+        [Fact]
+        public async Task ListClient_ForOrganizationWithAccountantRoleFilter_Returns200WithResourceInFilteredAccess()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=regnskapsforer", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ClientDto>>(data);
+
+            var nordisClient = result.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.NotNull(nordisClient);
+
+            Assert.DoesNotContain(nordisClient.Access, a => a.Role.Id == RoleConstants.Rightholder);
+
+            var accountantAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(accountantAccess);
+
+            Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, accountantAccess.Resources.FirstOrDefault()?.Id);
+        }
     }
     #endregion
 
