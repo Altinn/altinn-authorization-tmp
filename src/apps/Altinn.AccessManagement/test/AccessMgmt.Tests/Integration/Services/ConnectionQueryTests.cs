@@ -259,9 +259,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
 
         Assert.DoesNotContain(dbResult, r =>
-            r.FromId == iksId /*&&
-            r.ViaRoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
-            r.Reason == ConnectionReason.KeyRole*/);
+            r.FromId == iksId);
     }
 
     [Fact]
