@@ -72,10 +72,20 @@ public static class EFPostgresFactory
 
     private static async Task BuildTemplateAsync(PostgresTestDatabase template)
     {
+        // Pooling is off for the template build: options that make the Npgsql provider
+        // create an internal NpgsqlDataSource (enum mappings, ConfigureDataSource) cache
+        // it in EF's global service-provider cache, beyond this throwaway container and
+        // beyond NpgsqlConnection.ClearAllPools(). An idle pooled connection to the
+        // template database would then fail every CREATE DATABASE ... WITH TEMPLATE.
+        var migrationConnection = new NpgsqlConnectionStringBuilder(template.Admin.ToString())
+        {
+            Pooling = false,
+        };
+
         using var sp = new ServiceCollection()
             .AddAccessManagementDatabase(opts =>
             {
-                opts.MigrationConnectionString = template.Admin.ToString();
+                opts.MigrationConnectionString = migrationConnection.ToString();
                 opts.Source = SourceType.Migration;
                 opts.EnableEFPooling = false;
             }).BuildServiceProvider();

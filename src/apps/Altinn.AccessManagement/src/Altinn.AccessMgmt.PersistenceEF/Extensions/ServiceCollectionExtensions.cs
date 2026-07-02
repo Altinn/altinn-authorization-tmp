@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
+using Altinn.AccessMgmt.PersistenceEF.Models.Consent;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -209,7 +210,27 @@ public static class ServiceCollectionExtensions
 
     private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
-        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
+        options.UseNpgsql(databaseOptions.AppConnectionString, npgsql =>
+        {
+            ConfigureNpgsql(npgsql);
+            MapConsentEnums(npgsql);
+        });
+    }
+
+    /// <summary>
+    /// ADO-level mapping for the consent Postgres enums, applied to the app context only.
+    /// The CLR enums mirror the database labels one-to-one, so the default (snake_case)
+    /// name translation is exact; the model-side declaration lives in
+    /// <c>AppDbContext.OnModelCreating</c>. The migration context must not map them:
+    /// migrations run plain SQL and never bind the enums, and with enum definitions
+    /// present the provider fails to create the migrations history table on an empty
+    /// database (its create batch references the history schema before creating it).
+    /// </summary>
+    private static void MapConsentEnums(NpgsqlDbContextOptionsBuilder builder)
+    {
+        builder.MapEnum<ConsentRequestStatusType>("status_type", "consent");
+        builder.MapEnum<ConsentRequestEventType>("event_type", "consent");
+        builder.MapEnum<ConsentPortalViewMode>("portal_view_mode", "consent");
     }
 }
 
