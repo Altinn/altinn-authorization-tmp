@@ -205,8 +205,10 @@
             var conn = db.Database.GetDbConnection();
 
             // has_table_privilege throws if a role does not exist — verify up front.
+            // Roles are compile-time constants, so inline them (avoids Npgsql binding the array as a
+            // single parameter, which would produce invalid `rolname IN $1` syntax).
             var existingRoles = (await conn.QueryAsync<string>(
-                "SELECT rolname FROM pg_roles WHERE rolname IN @roles", new { roles = Roles }))
+                $"SELECT rolname FROM pg_roles WHERE rolname IN ({SqlInList(Roles)})"))
                 .ToHashSet(StringComparer.Ordinal);
 
             var missingRoles = Roles.Where(r => !existingRoles.Contains(r)).ToList();
@@ -318,6 +320,9 @@
 
     private static string SqlValues(IEnumerable<string> items) =>
         string.Join(", ", items.Select(i => $"('{i.Replace("'", "''")}')"));
+
+    private static string SqlInList(IEnumerable<string> items) =>
+        string.Join(", ", items.Select(i => $"'{i.Replace("'", "''")}'"));
 
     private static string Quote(string identifier) =>
         $"\"{identifier.Replace("\"", "\"\"")}\"";
