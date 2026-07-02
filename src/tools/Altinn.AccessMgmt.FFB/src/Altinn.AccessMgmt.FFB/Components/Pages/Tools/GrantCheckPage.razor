@@ -10,9 +10,8 @@
 <MudText Typo="Typo.h4" GutterBottom="true">Grant Check</MudText>
 <MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
     Går gjennom alle tabellene i DbContext-modellen for et gitt schema og sjekker at
-    <code>@Roles[0]</code> og <code>@Roles[1]</code> har
-    <code>@string.Join(", ", Privileges)</code> på hver tabell. Manglende grants kan fikses ved å
-    kjøre <code>GRANT</code>-scriptet direkte.
+    <code>@Roles[0]</code> og <code>@Roles[1]</code> har de valgte privilegiene på hver tabell.
+    Manglende grants kan fikses ved å kjøre <code>GRANT</code>-scriptet direkte.
 </MudText>
 
 @* ── Input panel ──────────────────────────────────────────────────────────── *@
@@ -26,11 +25,23 @@
                           HelperText="F.eks. dbo eller dbo_history"
                           Immediate="true" />
         </MudItem>
-        <MudItem xs="12" sm="8">
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Privilegier som sjekkes:</MudText>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+                @foreach (var priv in AllPrivileges)
+                {
+                    var p = priv;
+                    <MudCheckBox @bind-Value="_privilegeSelected[p]" Label="@p" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.PlayArrow"
-                       Disabled="@(_running || string.IsNullOrWhiteSpace(_schema))"
+                       Disabled="@(_running || string.IsNullOrWhiteSpace(_schema) || !AnyPrivilegeSelected)"
                        OnClick="RunCheck">
                 @(_running ? "Sjekker..." : "Kjør sjekk")
             </MudButton>
@@ -132,7 +143,7 @@
                         <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
                             @foreach (var role in Roles)
                             {
-                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(_schema, result.Table, role)</MudText>
+                                <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@GrantSql(_schema, result.Table, role, _checkedPrivileges)</MudText>
                             }
                         </div>
                         @if (result.Error is not null)
@@ -161,7 +172,9 @@
 
 @code {
     private static readonly string[] Roles = ["platform_authorization", "platform_authorization_admin"];
-    private static readonly string[] Privileges = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRIGGER", "REFERENCES"];
+    private static readonly string[] AllPrivileges = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRIGGER", "REFERENCES"];
+
+    private readonly Dictionary<string, bool> _privilegeSelected = AllPrivileges.ToDictionary(p => p, _ => true);
 
     private string _schema = "dbo";
     private bool _running;
@@ -171,6 +184,12 @@
     private int _okCount;
     private List<TableGrant> _missing = [];
     private List<string> _missingFromDb = [];
+
+    // Privileges captured at the time of the last check — used for the GRANT preview and fix so they
+    // stay consistent even if the user toggles the checkboxes afterwards.
+    private List<string> _checkedPrivileges = [];
+
+    private bool AnyPrivilegeSelected => _privilegeSelected.Values.Any(v => v);
 
     private async Task RunCheck()
     {
@@ -185,6 +204,7 @@
         try
         {
             var schema = _schema.Trim();
+            _checkedPrivileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
             using var db = DbFactory.CreateContext(EnvState.Current);
 
             var modelTables = db.Model.GetEntityTypes()
@@ -242,7 +262,7 @@
                     SELECT t.tbl AS "Table", r.role AS "Role", p.priv AS "Privilege"
                     FROM unnest(ARRAY[{string.Join(",", placeholders)}]::text[]) AS t(tbl)
                     CROSS JOIN (VALUES {SqlValues(Roles)}) AS r(role)
-                    CROSS JOIN (VALUES {SqlValues(Privileges)}) AS p(priv)
+                    CROSS JOIN (VALUES {SqlValues(_checkedPrivileges)}) AS p(priv)
                     WHERE NOT has_table_privilege(r.role, format('%I.%I', @schema, t.tbl), p.priv)
                     ORDER BY t.tbl, r.role, p.priv
                     """;
@@ -282,7 +302,7 @@
             var conn = db.Database.GetDbConnection();
             foreach (var role in Roles)
             {
-                await conn.ExecuteAsync(GrantSql(_schema.Trim(), result.Table, role));
+                await conn.ExecuteAsync(GrantSql(_schema.Trim(), result.Table, role, _checkedPrivileges));
             }
 
             result.Missing = [];
@@ -315,8 +335,8 @@
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-    private static string GrantSql(string schema, string table, string role) =>
-        $"GRANT {string.Join(", ", Privileges)} ON TABLE {Quote(schema)}.{Quote(table)} TO {Quote(role)};";
+    private static string GrantSql(string schema, string table, string role, IEnumerable<string> privileges) =>
+        $"GRANT {string.Join(", ", privileges)} ON TABLE {Quote(schema)}.{Quote(table)} TO {Quote(role)};";
 
     private static string SqlValues(IEnumerable<string> items) =>
         string.Join(", ", items.Select(i => $"('{i.Replace("'", "''")}')"));
