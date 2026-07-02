@@ -5,14 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     /// <summary>
-    /// Adopts the pre-existing <c>consent</c> schema into the EF model. The enum types,
-    /// the six consent tables, their keys and indexes already exist, created by the
-    /// <see cref="ConsentSchema_Baseline"/> migration (embedded <c>ConsentSchema.sql</c>).
-    /// This migration only brings those objects under the EF model snapshot so the
-    /// repository can query them through <c>AppDbContext</c>; it makes no schema changes,
-    /// so both <see cref="Up"/> and <see cref="Down"/> are intentional no-ops.
-    /// The enum types are declared in the model with their exact live labels, and the
-    /// snapshot in the accompanying Designer file is what future migrations diff against.
+    /// Brings the <c>consent</c> schema under the EF model so it can be queried through
+    /// <c>AppDbContext</c>. The schema is owned by <see cref="ConsentSchema_Baseline"/>, so this
+    /// migration changes nothing: <see cref="Up"/> and <see cref="Down"/> are no-ops and only the
+    /// model snapshot is updated.
     /// </summary>
     /// <inheritdoc />
     public partial class ConsentModel : Migration
@@ -20,15 +16,13 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Intentional no-op: the consent schema and its objects already exist
-            // (see ConsentSchema_Baseline). This migration only updates the EF model snapshot.
+            // No-op: the consent schema is owned by ConsentSchema_Baseline; only the model snapshot changes.
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Intentional no-op. Adopting the pre-existing consent schema into the model is
-            // not reversible; dropping the schema would destroy live consent data.
+            // No-op: adopting an existing schema into the model is not reversible.
         }
     }
 }
