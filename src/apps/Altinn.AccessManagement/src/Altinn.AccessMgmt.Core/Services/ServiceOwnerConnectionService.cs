@@ -8,14 +8,12 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class ServiceOwnerConnectionService(
         AppDbContext dbContext,
-        IConnectionService connectionService,
-        IFeatureManager featureManager) : IServiceOwnerConnectionService
+        IConnectionService connectionService) : IServiceOwnerConnectionService
     {
         /// <inheritdoc />
         public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
