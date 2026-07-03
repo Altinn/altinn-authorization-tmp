@@ -28,7 +28,15 @@ builder.Services.AddSingleton<GrantCheckService>();
 builder.Services.AddSingleton<ConstantsCheckService>();
 
 // Page data services
+builder.Services.AddSingleton<EntityDetailsService>();
+builder.Services.AddSingleton<AssignmentDetailsService>();
+builder.Services.AddSingleton<DelegationDetailsService>();
+builder.Services.AddSingleton<RoleDetailsService>();
+builder.Services.AddSingleton<PackageDetailsService>();
+builder.Services.AddSingleton<ProviderDetailsService>();
 builder.Services.AddSingleton<ResourceDetailsService>();
+builder.Services.AddSingleton<EntityTypeDetailsService>();
+builder.Services.AddSingleton<EntityVariantDetailsService>();
 
 builder.Services.AddSingleton<IJobRunStore, JobRunStore>();
 
