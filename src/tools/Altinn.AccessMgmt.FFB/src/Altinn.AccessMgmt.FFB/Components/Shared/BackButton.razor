@@ -1,0 +1,9 @@
+@inject IJSRuntime JS
+
+<MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+               Color="Color.Default"
+               OnClick="GoBack" />
+
+@code {
+    private async Task GoBack() => await JS.InvokeVoidAsync("history.go", -1);
+}
