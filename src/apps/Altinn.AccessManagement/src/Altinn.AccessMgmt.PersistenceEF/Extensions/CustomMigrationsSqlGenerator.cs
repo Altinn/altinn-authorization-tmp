@@ -172,8 +172,6 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
 
             var columns = GetDataColumnNames(effectiveModel, table!, schema);
 
-            // GenerateScripts emits grants for every table and adds audit triggers only for
-            // audit-annotated entities — so non-audit tables must reach it too, not be skipped here.
             GenerateScripts(entityType, effectiveModel, builder, columns);
         }
     }
@@ -224,14 +222,11 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         var schema = entityType.GetSchema();
         var table = entityType.GetTableName();
 
-        // Keyless views (e.g. the "connections" view) map to no real, schema-qualified table —
-        // there is nothing to grant or audit, and a null schema would emit "ON TABLE .connections".
         if (string.IsNullOrWhiteSpace(table) || string.IsNullOrWhiteSpace(schema))
         {
             return;
         }
 
-        // Audit triggers are only for audit-annotated tables...
         if (entityType.FindAnnotation(AuditExtensions.AnnotationName) is not null)
         {
             builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(schema!, table!, columns));
@@ -244,7 +239,6 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             builder.EndCommand();
         }
 
-        // ...but every table must get the grants (previously audit tables returned early and were skipped).
         builder.AppendLine(GenerateGrants(schema!, table!));
         builder.EndCommand();
     }
