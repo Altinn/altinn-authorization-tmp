@@ -304,6 +304,42 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             r.Reason == ConnectionReason.KeyRole);
     }
 
+    [Fact]
+    public async Task HasConnection_IksWithDeltakerDeltAnsvarRole_ReturnsFalse()
+    {
+        var fromId = TestDataSet.GetEntity("IKS Selskap").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.False(result);
+        Assert.Null(reason);
+    }
+
+    [Fact]
+    public async Task HasConnection_NonIksWithDeltakerDeltAnsvarRole_ReturnsKeyRole()
+    {
+        var fromId = TestDataSet.GetEntity("Non-IKS Selskap").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.True(result);
+        Assert.Equal(ConnectionReason.KeyRole, reason);
+    }
+
+    [Fact]
+    public async Task HasConnection_IksWithDifferentRole_ReturnsKeyRole()
+    {
+        var fromId = TestDataSet.GetEntity("IKS Selskap 2").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.True(result);
+        Assert.Equal(ConnectionReason.KeyRole, reason);
+    }
+
     [Theory]
     [MemberData(nameof(GetFilterCombinations))]
     public async Task GetConnectionsAsync_AllFilterFlagCombinations_DoesNotThrow(bool[] flags, bool useSingle)
