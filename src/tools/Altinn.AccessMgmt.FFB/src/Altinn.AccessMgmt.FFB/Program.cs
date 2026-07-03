@@ -19,6 +19,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddMudServices();
 
+// Environment infrastructure
 builder.Services.Configure<EnvironmentsConfig>(builder.Configuration);
 builder.Services.AddSingleton<IEnvironmentDbContextFactory, EnvironmentDbContextFactory>();
 builder.Services.AddScoped<EnvironmentState>();
@@ -28,6 +29,7 @@ builder.Services.AddSingleton<GrantCheckService>();
 builder.Services.AddSingleton<ConstantsCheckService>();
 
 // Page data services
+builder.Services.AddSingleton<EntitySearchService>();
 builder.Services.AddSingleton<EntityDetailsService>();
 builder.Services.AddSingleton<AssignmentDetailsService>();
 builder.Services.AddSingleton<DelegationDetailsService>();
@@ -38,6 +40,7 @@ builder.Services.AddSingleton<ResourceDetailsService>();
 builder.Services.AddSingleton<EntityTypeDetailsService>();
 builder.Services.AddSingleton<EntityVariantDetailsService>();
 
+// Job infrastructure
 builder.Services.AddSingleton<IJobRunStore, JobRunStore>();
 
 builder.Services.Configure<NotificationsConfig>(builder.Configuration.GetSection("Notifications"));

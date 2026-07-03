@@ -17,15 +17,21 @@ public abstract class EnvironmentPageBase : ComponentBase, IDisposable
     /// <summary>The single page-blocking busy flag, managed by <see cref="RunAsync"/>.</summary>
     protected bool Loading { get; private set; }
 
-    /// <summary>Page-level error message, set from <see cref="ErrorText.Flatten"/> by <see cref="RunAsync"/>.</summary>
-    protected string? Error { get; private set; }
+    /// <summary>
+    /// Page-level error message, set from <see cref="ErrorText.Flatten"/> by <see cref="RunAsync"/>.
+    /// Pages may also set it directly for input validation, or clear it when resetting state.
+    /// </summary>
+    protected string? Error { get; set; }
 
     protected override void OnInitialized()
     {
         EnvState.OnChange += HandleEnvironmentChanged;
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Unsubscribes from environment changes. Overrides must call <c>base.Dispose()</c>.
+    /// </summary>
+    public virtual void Dispose()
     {
         EnvState.OnChange -= HandleEnvironmentChanged;
     }

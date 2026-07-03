@@ -1,14 +1,11 @@
 @page "/tools/outbox"
+@inherits EnvironmentPageBase
 @using Altinn.AccessMgmt.PersistenceEF.Contexts
-@using Altinn.AccessMgmt.PersistenceEF.Models
 @using Altinn.AccessMgmt.PersistenceEF.Models.Base
 @using Microsoft.EntityFrameworkCore
-@using Altinn.AccessMgmt.FFB.Services
 @inject IEnvironmentDbContextFactory DbFactory
-@inject EnvironmentState EnvState
 @inject NavigationManager Nav
 @inject IDialogService DialogService
-@implements IDisposable
 
 <PageTitle>Outbox</PageTitle>
 
@@ -104,7 +101,7 @@
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Search"
-                       Disabled="_loading"
+                       Disabled="Loading"
                        OnClick="Load">
                 Hent meldinger
             </MudButton>
@@ -119,13 +116,13 @@
 </MudPaper>
 
 @* ── Status ────────────────────────────────────────────────────────────────── *@
-@if (_loading || _resetting)
+@if (Loading || _resetting)
 {
     <MudProgressLinear Color="@(_resetting ? Color.Warning : Color.Primary)" Indeterminate="true" Class="mb-4" />
 }
-@if (_error is not null)
+@if (Error is not null)
 {
-    <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Class="mb-4">@Error</MudAlert>
 }
 @if (_resetMessage is not null)
 {
@@ -148,7 +145,7 @@
                    Color="Color.Warning"
                    Size="Size.Small"
                    StartIcon="@Icons.Material.Filled.RestartAlt"
-                   Disabled="_resetting || _loading"
+                   Disabled="_resetting || Loading"
                    OnClick="ConfirmReset">
             Tilbakestill til pending
         </MudButton>
@@ -287,28 +284,20 @@
     // ── Data ──────────────────────────────────────────────────────────────────
 
     private List<OutboxMessage>? _results;
-    private bool _loading;
     private bool _resetting;
-    private string? _error;
     private string? _resetMessage;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    protected override async Task OnInitializedAsync()
-    {
-        EnvState.OnChange += OnEnvChanged;
-        await Load();
-    }
+    protected override Task OnInitializedAsync() => Load();
 
-    public void Dispose()
+    protected override Task OnEnvironmentChangedAsync()
     {
-        EnvState.OnChange -= OnEnvChanged;
-    }
-
-    private void OnEnvChanged()
-    {
+        // Results belong to the previous environment.
         _results = null;
-        InvokeAsync(StateHasChanged);
+        _resetMessage = null;
+        Error = null;
+        return Task.CompletedTask;
     }
 
     private void OnHandlerChanged(string? value)
@@ -353,12 +342,9 @@
 
     private async Task Load()
     {
-        _error = null;
         _resetMessage = null;
-        _loading = true;
-        StateHasChanged();
 
-        try
+        await RunAsync(async () =>
         {
             using var db = DbFactory.CreateContext(EnvState.Current);
 
@@ -367,15 +353,7 @@
                 .OrderByDescending(m => m.CreatedAt)
                 .Take(MaxRows)
                 .ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            _error = $"Databasefeil: {ex.Message}";
-        }
-        finally
-        {
-            _loading = false;
-        }
+        });
     }
 
     private async Task ConfirmReset()
@@ -398,7 +376,7 @@
 
     private async Task ResetStatus()
     {
-        _error = null;
+        Error = null;
         _resetMessage = null;
         _resetting = true;
         StateHasChanged();
@@ -414,12 +392,12 @@
                     .SetProperty(m => m.StartedAt, (DateTime?)null)
                     .SetProperty(m => m.CompletedAt, (DateTime?)null));
 
-            _resetMessage = $"{count} melding(er) tilbakestilt til Pending.";
             await Load();
+            _resetMessage = $"{count} melding(er) tilbakestilt til Pending.";
         }
         catch (Exception ex)
         {
-            _error = $"Feil ved tilbakestilling: {ex.Message}";
+            Error = $"Feil ved tilbakestilling: {ex.Message}";
         }
         finally
         {

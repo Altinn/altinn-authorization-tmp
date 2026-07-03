@@ -1,13 +1,10 @@
 @page "/tools/connection-query"
-@using Altinn.AccessMgmt.PersistenceEF.Models
 @using Altinn.AccessMgmt.PersistenceEF.Queries.Connection
 @using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models
 @using Microsoft.EntityFrameworkCore
 @using System.Diagnostics
-@using Altinn.AccessMgmt.FFB.Services
+@inherits EnvironmentPageBase
 @inject IEnvironmentDbContextFactory DbFactory
-@inject EnvironmentState EnvState
-@implements IDisposable
 
 <PageTitle>Connection Query</PageTitle>
 
@@ -92,7 +89,7 @@
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Search"
-                       Disabled="@(!HasFilter || _loading)"
+                       Disabled="@(!HasFilter || Loading)"
                        OnClick="RunQuery">
                 Kjør spørring
             </MudButton>
@@ -102,14 +99,14 @@
 </MudPaper>
 
 @* ── Status ────────────────────────────────────────────────────────────────── *@
-@if (_loading)
+@if (Loading)
 {
     <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
 }
 
-@if (_error is not null)
+@if (Error is not null)
 {
-    <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    <MudAlert Severity="Severity.Error" Class="mb-4">@Error</MudAlert>
 }
 
 @* ── Results ───────────────────────────────────────────────────────────────── *@
@@ -327,32 +324,18 @@
 
     private List<Role> _allRoles = [];
     private List<ConnectionQueryExtendedRecord>? _results;
-    private bool _loading;
-    private string? _error;
     private TimeSpan? _queryDuration;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    protected override async Task OnInitializedAsync()
-    {
-        EnvState.OnChange += OnEnvChanged;
-        await LoadRoles();
-    }
+    protected override async Task OnInitializedAsync() => await LoadRoles();
 
-    public void Dispose()
-    {
-        EnvState.OnChange -= OnEnvChanged;
-    }
-
-    private void OnEnvChanged()
+    protected override async Task OnEnvironmentChangedAsync()
     {
         _results = null;
         _selectedRole = null;
-        InvokeAsync(async () =>
-        {
-            await LoadRoles();
-            StateHasChanged();
-        });
+        Error = null;
+        await LoadRoles();
     }
 
     // ── Data loading ──────────────────────────────────────────────────────────
@@ -388,13 +371,9 @@
 
     // ── Query ─────────────────────────────────────────────────────────────────
 
-    private async Task RunQuery()
+    private async Task RunQuery() => await RunAsync(async () =>
     {
-        _error = null;
         _results = null;
-        _loading = true;
-        StateHasChanged();
-
         var sw = Stopwatch.StartNew();
 
         try
@@ -424,17 +403,12 @@
                 ? await cq.GetConnectionsFromOthersAsync(filter)
                 : await cq.GetConnectionsToOthersAsync(filter);
         }
-        catch (Exception ex)
-        {
-            _error = $"Feil: {ex.Message}";
-        }
         finally
         {
             sw.Stop();
             _queryDuration = sw.Elapsed;
-            _loading = false;
         }
-    }
+    });
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 

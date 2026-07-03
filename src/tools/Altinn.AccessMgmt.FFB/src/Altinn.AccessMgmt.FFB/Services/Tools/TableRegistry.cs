@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Altinn.AccessMgmt.FFB.Components.Pages.Tools;
+namespace Altinn.AccessMgmt.FFB.Services.Tools;
 
 public sealed class TableDefinition
 {

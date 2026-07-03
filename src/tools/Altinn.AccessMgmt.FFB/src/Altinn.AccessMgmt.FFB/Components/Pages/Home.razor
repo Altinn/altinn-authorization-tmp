@@ -46,19 +46,33 @@
             <MudText Typo="Typo.overline" Class="mud-text-secondary">Legge til et nytt verktøy</MudText>
             <MudDivider Class="my-2" />
             <MudText Typo="Typo.body2" Class="mb-3 mud-text-secondary">
-                Et verktøy er en vanlig Blazor-side med direkte DB-tilgang via EF Core.
+                Et verktøy er en tynn Blazor-side som kaller en tjeneste. All DB-logikk
+                ligger i tjenesten; siden holder kun UI-state.
             </MudText>
             <ol class="ffb-guide">
                 <li>
-                    Opprett <code>Components/Pages/Tools/MinSide.razor</code><br />
-                    med <code>@@page "/tools/min-side"</code>
+                    Opprett tjenesten <code>Services/Tools/MinSideService.cs</code> med signaturen
+                    <pre class="ffb-pre">public sealed class MinSideService(IEnvironmentDbContextFactory dbFactory)
+{
+    public async Task&lt;MinResult&gt; RunAsync(
+        string environment, ..., CancellationToken ct = default)
+    {
+        using var db = dbFactory.CreateContext(environment);
+        ...
+    }
+}</pre>
+                    og registrer den som singleton i <code>Program.cs</code>.
                 </li>
                 <li>
-                    Bruk disse to injeksjonene for DB-tilgang:
-                    <pre class="ffb-pre">@@inject IEnvironmentDbContextFactory DbFactory
-@@inject EnvironmentState EnvState
+                    Opprett <code>Components/Pages/Tools/MinSide.razor</code>
+                    med <code>@@page "/tools/min-side"</code> og
+                    <pre class="ffb-pre">@@inherits EnvironmentPageBase
+@@inject MinSideService Service
 
-using var db = DbFactory.CreateContext(EnvState.Current);</pre>
+private async Task Run() => await RunAsync(async () =>
+    _result = await Service.RunAsync(EnvState.Current, ...));</pre>
+                    Basen gir <code>Loading</code>/<code>Error</code> og miljøbytte-håndtering
+                    (overstyr <code>OnEnvironmentChangedAsync</code> for å tømme/relaste).
                 </li>
                 <li>Legg til nav-lenke i <code>Components/Layout/NavMenu.razor</code> under «Verktøy».</li>
             </ol>
@@ -94,7 +108,10 @@ using var db = DbFactory.CreateContext(EnvState.Current);</pre>
                 </li>
                 <li>
                     Opprett <code>Components/Pages/Jobs/MinNyJob.razor</code>.
-                    Følg mønsteret fra <code>EntitySync.razor</code> (start-panel + <code>&lt;JobRunCard&gt;</code>).
+                    Følg mønsteret fra <code>EntitySync.razor</code>:
+                    <code>&lt;EnvironmentMultiSelect&gt;</code> for miljøvalg,
+                    <code>&lt;JobRunList&gt;</code> for kjøringslisten (kall <code>Refresh()</code>
+                    etter start), og <code>Confirm.ShowAsync</code> før destruktive steg.
                 </li>
                 <li>Legg til nav-lenke i <code>NavMenu.razor</code> under «Jobber».</li>
                 <li>
