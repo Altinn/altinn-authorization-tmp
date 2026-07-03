@@ -278,6 +278,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
 
         Assert.Contains(dbResult, r =>
             r.FromId == nonIksId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
             r.ViaRoleId == RoleConstants.ManagingDirector.Id &&
             r.Reason == ConnectionReason.KeyRole);
     }
