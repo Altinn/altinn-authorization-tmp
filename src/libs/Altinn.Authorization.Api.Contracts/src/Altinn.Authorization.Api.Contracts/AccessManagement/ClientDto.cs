@@ -18,12 +18,12 @@ public class ClientDto
     /// Gets or sets a collection of all access information for the client 
     /// </summary>
     [JsonPropertyName("access")]
-    public List<RoleAccessPackages> Access { get; set; } = [];
+    public List<RoleAccess> Access { get; set; } = [];
 
     /// <summary>
     /// Composite Key instances
     /// </summary>
-    public class RoleAccessPackages
+    public class RoleAccess
     {
         /// <summary>
         /// Roles
