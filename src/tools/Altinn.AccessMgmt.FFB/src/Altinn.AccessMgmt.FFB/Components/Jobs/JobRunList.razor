@@ -1,0 +1,61 @@
+@inject IJobRunStore RunStore
+
+@if (_runs.Count > 0)
+{
+    <MudText Typo="Typo.h6" Class="mb-3">Kjøringer</MudText>
+    @foreach (var run in _runs)
+    {
+        <JobRunCard Run="@run" OnChanged="@Refresh" ExtraActions="@(ExtraActions?.Invoke(run))" />
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public string JobName { get; set; } = default!;
+
+    /// <summary>Also include runs stored under "{JobName}:Execute".</summary>
+    [Parameter] public bool IncludeExecuteRuns { get; set; } = true;
+
+    /// <summary>Match execute runs by prefix instead of exact name (multi-runner jobs).</summary>
+    [Parameter] public bool ExecuteRunsByPrefix { get; set; }
+
+    /// <summary>Per-run extra action buttons, rendered inside the run card.</summary>
+    [Parameter] public RenderFragment<JobRun>? ExtraActions { get; set; }
+
+    private readonly HashSet<Guid> _subscribed = [];
+    private List<JobRun> _runs = [];
+
+    protected override void OnInitialized() => RefreshRuns();
+
+    /// <summary>Re-queries the store and re-renders. Pages call this after starting new runs.</summary>
+    public void Refresh()
+    {
+        RefreshRuns();
+        StateHasChanged();
+    }
+
+    private void RefreshRuns()
+    {
+        IEnumerable<JobRun> runs = RunStore.GetForJob(JobName);
+        if (IncludeExecuteRuns)
+        {
+            runs = runs.Concat(ExecuteRunsByPrefix
+                ? RunStore.GetForJobPrefix($"{JobName}:Execute")
+                : RunStore.GetForJob($"{JobName}:Execute"));
+        }
+
+        _runs = runs.OrderByDescending(r => r.StartedAt).ToList();
+
+        foreach (var run in _runs)
+        {
+            Subscribe(run);
+        }
+    }
+
+    private void Subscribe(JobRun run)
+    {
+        if (_subscribed.Add(run.Id))
+        {
+            run.OnUpdated += () => InvokeAsync(Refresh);
+        }
+    }
+}

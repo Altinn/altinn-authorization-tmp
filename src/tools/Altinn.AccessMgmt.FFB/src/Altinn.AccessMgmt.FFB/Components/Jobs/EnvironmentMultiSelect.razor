@@ -1,0 +1,27 @@
+@inject IEnvironmentDbContextFactory EnvFactory
+
+<MudText Typo="Typo.body2" Class="mb-2 mud-text-secondary">@Label</MudText>
+<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+    @foreach (var env in EnvFactory.Environments)
+    {
+        var e = env;
+        var configured = EnvFactory.IsConfigured(e);
+        <MudCheckBox @bind-Value="Selection[e]"
+                     Label="@e"
+                     Disabled="@(!configured)"
+                     Color="Color.Primary" />
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public Dictionary<string, bool> Selection { get; set; } = default!;
+    [Parameter] public string Label { get; set; } = "Miljø:";
+
+    protected override void OnInitialized()
+    {
+        foreach (var env in EnvFactory.Environments)
+        {
+            Selection.TryAdd(env, false);
+        }
+    }
+}
