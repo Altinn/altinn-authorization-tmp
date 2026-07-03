@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.FFB.Jobs;
 using Altinn.AccessMgmt.FFB.Jobs.Models;
 using Altinn.AccessMgmt.FFB.Services;
 using Altinn.AccessMgmt.FFB.Services.Contracts;
+using Altinn.AccessMgmt.FFB.Services.Tools;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -20,6 +21,10 @@ builder.Services.AddMudServices();
 builder.Services.Configure<EnvironmentsConfig>(builder.Configuration);
 builder.Services.AddSingleton<IEnvironmentDbContextFactory, EnvironmentDbContextFactory>();
 builder.Services.AddScoped<EnvironmentState>();
+
+// Tool services
+builder.Services.AddSingleton<GrantCheckService>();
+builder.Services.AddSingleton<ConstantsCheckService>();
 
 builder.Services.AddSingleton<IJobRunStore, JobRunStore>();
 
