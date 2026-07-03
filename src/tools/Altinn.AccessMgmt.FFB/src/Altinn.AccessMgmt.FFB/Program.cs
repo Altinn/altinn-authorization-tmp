@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.FFB.Jobs;
 using Altinn.AccessMgmt.FFB.Jobs.Models;
 using Altinn.AccessMgmt.FFB.Services;
 using Altinn.AccessMgmt.FFB.Services.Contracts;
+using Altinn.AccessMgmt.FFB.Services.PageData;
 using Altinn.AccessMgmt.FFB.Services.Tools;
 using MudBlazor.Services;
 
@@ -25,6 +26,9 @@ builder.Services.AddScoped<EnvironmentState>();
 // Tool services
 builder.Services.AddSingleton<GrantCheckService>();
 builder.Services.AddSingleton<ConstantsCheckService>();
+
+// Page data services
+builder.Services.AddSingleton<ResourceDetailsService>();
 
 builder.Services.AddSingleton<IJobRunStore, JobRunStore>();
 
