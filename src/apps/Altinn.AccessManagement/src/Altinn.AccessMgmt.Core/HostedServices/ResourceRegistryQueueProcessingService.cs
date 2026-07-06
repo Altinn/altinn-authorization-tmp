@@ -26,7 +26,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         private readonly CancellationTokenSource _stop = new();
 
         /// <summary>
-        /// Dispatches the Altinn roles synchronization process in a separate task.
+        /// Dispatches the resource queue synchronization process in a separate task.
         /// </summary>
         /// <param name="state">Cancellation token for stopping execution.</param>
         private async Task SyncResourcesDispatcher(object state)

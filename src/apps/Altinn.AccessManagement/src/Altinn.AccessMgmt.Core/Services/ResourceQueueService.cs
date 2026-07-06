@@ -8,13 +8,13 @@ namespace Altinn.AccessMgmt.Core.Services
     public class ResourceQueueService(AppDbContext db) : IResourceQueueService
     {
         /// <inheritdoc />
-        public async Task<List<ResourceQueue>> RetrieveItemsForProcessing(long retriveFrom, CancellationToken cancellationToken)
+        public async Task<List<ResourceQueue>> RetrieveItemsForProcessing(long retrieveFrom, CancellationToken cancellationToken)
         {
             var items = await db.ResourceQueue.AsNoTracking()
-            .Where(t => t.Id >= retriveFrom)
-            .OrderBy(t => t.Id)
-            .Take(100)
-            .ToListAsync(cancellationToken);
+                .Where(t => t.Id >= retrieveFrom)
+                .OrderBy(t => t.Id)
+                .Take(100)
+                .ToListAsync(cancellationToken);
 
             return items;
         }

@@ -5,11 +5,11 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts
     public interface IResourceQueueService
     {
         /// <summary>
-        /// Retrieves all errors marked for ReProcessing of the defined type.
+        /// Retrieves queued resources for processing, starting from the specified id (inclusive).
         /// </summary>
-        /// <param name="retriveFrom">value to retrive from used to fetching a page at a time</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-        /// <returns></returns>
-        Task<List<ResourceQueue>> RetrieveItemsForProcessing(long retriveFrom = 1, CancellationToken cancellationToken = default);        
+        /// <param name="retrieveFrom">The id to start retrieving from (inclusive), used for paging.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>The next page of queued resources ordered by id.</returns>
+        Task<List<ResourceQueue>> RetrieveItemsForProcessing(long retrieveFrom = 1, CancellationToken cancellationToken = default);        
     }
 }

@@ -3,12 +3,12 @@
 namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <summary>
-/// Extended delegation
+/// Resource queue entity used for defining the identifiers to syncronice from the resource registry into the access management database
 /// </summary>
 public class ResourceQueue : BaseResourceQueue
 {
     /// <summary>
-    /// Json containing the instance/app/resource
+    /// The identifier for a given resource in the resource registry.
     /// </summary>
     public string ResourceIdentifier { get; set; }
 }

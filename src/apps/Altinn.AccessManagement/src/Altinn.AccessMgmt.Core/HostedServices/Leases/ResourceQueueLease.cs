@@ -6,7 +6,7 @@
 internal class ResourceQueueLease()
 {
     /// <summary>
-    /// The URL of the next page of All Altinn roles data.
+    ///  The id of the next queue item to fetch (inclusive).
     /// </summary>
-    public long NextElementToFetch { get; set; }
+    public long NextElementToFetch { get; set; } = 1;
 }

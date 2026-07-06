@@ -50,6 +50,9 @@ public static class AccessMgmtFeatureFlags
     /// </summary>
     public const string HostedServicesAltinnBankruptcyEstateRoleSync = $"AccessMgmt.Core.HostedServices.AltinnBankruptcyEstateRoleSync";
 
+    /// <summary>
+    /// Specifies if the resource queue based resource synchronization hosted service is enabled.
+    /// </summary>
     public const string HostedServicesResourceSync = $"AccessMgmt.Core.HostedServices.ResourceSync";
 
     /// <summary>
