@@ -188,9 +188,9 @@ namespace Altinn.Platform.Authorization.Controllers
         {
             try
             {
-                XacmlJsonRequestRoot jsonRequest = RequestMapper.ToInternal(authorizationRequest);
+                XacmlJsonRequestRoot jsonRequest = authorizationRequest.ToInternal();
                 XacmlJsonResponse xacmlResponse = await Authorize(jsonRequest.Request, true, cancellationToken);
-                return RequestMapper.ToExternal(xacmlResponse);
+                return xacmlResponse.ToExternal();
             }
             catch (Exception ex)
             {
@@ -218,7 +218,7 @@ namespace Altinn.Platform.Authorization.Controllers
                 {
                     try
                     {
-                        List<XacmlContextRequest> requestList = GetRequestForLog(RequestMapper.ToInternal(authorizationRequest).Request);
+                        List<XacmlContextRequest> requestList = GetRequestForLog(authorizationRequest.ToInternal().Request);
                         if (requestList.Count == 1 && logSingleRequest)
                         {
                             await _eventLog.CreateAuthorizationEvent(_featureManager, requestList[0], HttpContext, xacmlContextResponse, cancellationToken);
@@ -237,7 +237,7 @@ namespace Altinn.Platform.Authorization.Controllers
                     }
                 }
 
-                return RequestMapper.ToExternal(jsonResult);
+                return jsonResult.ToExternal();
             }
         }
 

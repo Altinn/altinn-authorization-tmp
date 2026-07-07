@@ -15,17 +15,17 @@ namespace Altinn.Platform.Authorization.Models.External
         /// </summary>
         /// <param name="request">The external request root.</param>
         /// <returns>The internal request root.</returns>
-        public static partial XacmlJsonRequestRoot ToInternal(XacmlJsonRequestRootExternal request);
+        public static partial XacmlJsonRequestRoot ToInternal(this XacmlJsonRequestRootExternal request);
 
         /// <summary>
         /// Maps an internal XACML JSON response to the external representation.
         /// </summary>
         /// <param name="response">The internal response.</param>
         /// <returns>The external response.</returns>
-        public static partial XacmlJsonResponseExternal ToExternal(XacmlJsonResponse response);
+        public static partial XacmlJsonResponseExternal ToExternal(this XacmlJsonResponse response);
 
         // XForwardedForHeader is enrichment set from the incoming HTTP request, never part of the request body.
         [MapperIgnoreTarget(nameof(XacmlJsonRequest.XForwardedForHeader))]
-        private static partial XacmlJsonRequest ToInternal(XacmlJsonRequestExternal request);
+        private static partial XacmlJsonRequest ToInternal(this XacmlJsonRequestExternal request);
     }
 }

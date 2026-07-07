@@ -34,7 +34,7 @@ public class RequestMapperTest
             },
         };
 
-        XacmlJsonRequestRoot result = RequestMapper.ToInternal(external);
+        XacmlJsonRequestRoot result = external.ToInternal();
 
         // The internal and external models share member names, so structural
         // equivalence against the external source verifies every mapped member.
@@ -60,7 +60,7 @@ public class RequestMapperTest
             },
         };
 
-        XacmlJsonRequestRoot result = RequestMapper.ToInternal(external);
+        XacmlJsonRequestRoot result = external.ToInternal();
 
         result.Request.XPathVersion.Should().BeNull();
         result.Request.Category.Should().BeNull();
@@ -84,7 +84,7 @@ public class RequestMapperTest
             },
         };
 
-        XacmlJsonRequestRoot result = RequestMapper.ToInternal(external);
+        XacmlJsonRequestRoot result = external.ToInternal();
 
         result.Request.XForwardedForHeader.Should().BeNull();
     }
@@ -163,7 +163,7 @@ public class RequestMapperTest
             ],
         };
 
-        XacmlJsonResponseExternal result = RequestMapper.ToExternal(response);
+        XacmlJsonResponseExternal result = response.ToExternal();
 
         result.Should().BeEquivalentTo(response);
     }
@@ -183,7 +183,7 @@ public class RequestMapperTest
             ],
         };
 
-        XacmlJsonResponseExternal result = RequestMapper.ToExternal(response);
+        XacmlJsonResponseExternal result = response.ToExternal();
 
         result.Response[0].Status.StatusDetails.Should().NotBeSameAs(response.Response[0].Status.StatusDetails);
         result.Response[0].Status.StatusDetails.Should().Equal("detail1");
@@ -208,7 +208,7 @@ public class RequestMapperTest
             ],
         };
 
-        XacmlJsonResponseExternal result = RequestMapper.ToExternal(response);
+        XacmlJsonResponseExternal result = response.ToExternal();
 
         XacmlJsonResultExternal mapped = result.Response.Should().ContainSingle().Which;
         mapped.Decision.Should().Be("NotApplicable");
@@ -224,7 +224,7 @@ public class RequestMapperTest
     {
         XacmlJsonResponse response = new() { Response = null };
 
-        XacmlJsonResponseExternal result = RequestMapper.ToExternal(response);
+        XacmlJsonResponseExternal result = response.ToExternal();
 
         result.Response.Should().BeNull();
     }
