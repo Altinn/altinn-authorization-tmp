@@ -878,7 +878,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
 
     /// <inheritdoc/>
     public async Task<Result<List<DelegationDto>>> RemoveAgentDelegation(
-        Guid partyUuid, 
+        Guid partyUuid,
         Guid fromUuid,
         Guid toUuid,
         DelegationBatchInputDto payload,

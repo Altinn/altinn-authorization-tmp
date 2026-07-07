@@ -1,4 +1,4 @@
-﻿# Cross platform shebang:
+# Cross platform shebang:
 shebang := if os() == 'windows' { 'pwsh.exe' } else { '/usr/bin/env pwsh'}
 amdir := 'src/apps/Altinn.AccessManagement/src'
 

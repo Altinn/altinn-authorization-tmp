@@ -543,6 +543,48 @@ public class DtoMapperConnectionQueryTest
         result.Should().HaveCount(2);
     }
 
+    [Fact]
+    public void ConvertToAgentDto_SameResourceInTwoRecords_MapsAndDeduplicatesResourcesPerRole()
+    {
+        var from1 = MakeEntity("Client1");
+        var from2 = MakeEntity("Client2");
+        var to = MakeEntity("Agent");
+        var role = MakeRole();
+        var res = MakeQueryResource("Invoice Resource");
+        var rec1 = MakeRecord(from1, to, role, resources: [res]);
+        var rec2 = MakeRecord(from2, to, role, resources: [res]);
+
+        var result = DtoMapper.ConvertToAgentDto([rec1, rec2]);
+
+        result.Should().ContainSingle();
+        result[0].Access.Should().ContainSingle();
+        result[0].Access[0].Resources.Should().ContainSingle(r => r.Id == res.Id);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ConvertToClientDto
+    // ══════════════════════════════════════════════════════════════════════════
+    [Fact]
+    public void ConvertToClientDto_SamePackageAndResourceInTwoRecords_MapsAndDeduplicatesPerRole()
+    {
+        var from = MakeEntity("Client");
+        var to1 = MakeEntity("Agent1");
+        var to2 = MakeEntity("Agent2");
+        var role = MakeRole();
+        var pkg = MakeQueryPackage();
+        var res = MakeQueryResource("Invoice Resource");
+        var rec1 = MakeRecord(from, to1, role, packages: [pkg], resources: [res]);
+        var rec2 = MakeRecord(from, to2, role, packages: [pkg], resources: [res]);
+
+        var result = DtoMapper.ConvertToClientDto([rec1, rec2]);
+
+        result.Should().ContainSingle();
+        result[0].Client!.Id.Should().Be(from.Id);
+        result[0].Access.Should().ContainSingle();
+        result[0].Access[0].Packages.Should().ContainSingle(p => p.Id == pkg.Id);
+        result[0].Access[0].Resources.Should().ContainSingle(r => r.Id == res.Id);
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // Convert(ConnectionQueryPackage) / Convert(ConnectionQueryResource)
     // ══════════════════════════════════════════════════════════════════════════

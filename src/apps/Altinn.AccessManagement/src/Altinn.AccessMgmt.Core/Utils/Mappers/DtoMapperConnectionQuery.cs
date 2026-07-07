@@ -92,7 +92,7 @@ public partial class DtoMapper : IDtoMapper
             })
             .ToList();
     }
-    
+
     public static List<ResourcePermissionDto> ConvertResources(IEnumerable<AssignmentResource> res)
     {
         return res
@@ -270,7 +270,8 @@ public partial class DtoMapper : IDtoMapper
                 var access = new AgentDto.AgentRoleAccessPackages
                 {
                     Role = ConvertCompactRole(role.First().Role),
-                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToList(),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).DistinctBy(p => p.Id).ToList(),
+                    Resources = role.SelectMany(r => r.Resources.Select(res => ConvertCompactResource(res))).DistinctBy(res => res.Id).ToList(),
                 };
 
                 roleAccess.Add(access);
@@ -302,7 +303,8 @@ public partial class DtoMapper : IDtoMapper
                 var access = new ClientDto.RoleAccess
                 {
                     Role = ConvertCompactRole(useViaRole ? role.First().ViaRole : role.First().Role),
-                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToList(),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).DistinctBy(p => p.Id).ToList(),
+                    Resources = role.SelectMany(r => r.Resources.Select(res => ConvertCompactResource(res))).DistinctBy(res => res.Id).ToList(),
                 };
 
                 roleAccess.Add(access);

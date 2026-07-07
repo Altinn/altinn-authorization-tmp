@@ -1,4 +1,4 @@
-﻿name: altinn_authorization
+name: altinn_authorization
 services:
   redis:
     image: redis:7.4-alpine
