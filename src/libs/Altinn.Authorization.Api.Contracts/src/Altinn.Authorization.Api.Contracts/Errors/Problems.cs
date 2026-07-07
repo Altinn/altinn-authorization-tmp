@@ -181,4 +181,8 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ResourceNotDelegable { get; }
     = _factory.Create(42, HttpStatusCode.BadRequest, "The resource is not available for delegation");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor SsnNotFound { get; }
+    = _factory.Create(43, HttpStatusCode.NotFound, "The SSN was not found");
 }

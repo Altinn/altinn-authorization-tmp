@@ -50,5 +50,10 @@
         /// Altinn Authorization base url
         /// </summary>
         public string? ApiAuthorizationEndpoint { get; set; }
+
+        /// <summary>
+        /// Id-Porten API base url
+        /// </summary>
+        public string? IdPortenApiEndpoint { get; set; }
     }
 }
