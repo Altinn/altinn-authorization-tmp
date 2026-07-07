@@ -1,31 +1,23 @@
+using System.Net;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.IdPortenAuthorization;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.ProblemDetails;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services
 {
     public class IdPortenAuthorizationService : IIdPortenAuthorizationService
     {
-        private readonly ILogger<IdPortenAuthorizationService> _logger;
         private readonly IAMPartyService _ampartyService;
-        private readonly GeneralSettings _generalSettings;
         private readonly IIdPortenAuthorizationClient _idPortenAuthorizationClient;
 
         public IdPortenAuthorizationService(
-            ILogger<IdPortenAuthorizationService> logger,
             IAMPartyService ampartyService,
-            IOptions<GeneralSettings> generalSettings,
             IIdPortenAuthorizationClient idPortenAuthorizationClient)
         {
-            _logger = logger;
             _ampartyService = ampartyService;
-            _generalSettings = generalSettings.Value;
             _idPortenAuthorizationClient = idPortenAuthorizationClient;
         }
 
@@ -40,7 +32,13 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             // look up authorizations from IdPorten using ssn
-            return await _idPortenAuthorizationClient.GetIdPortenAuthorizations(ssn, cancellationToken);
+            IdPortenClientResult<List<IdPortenAuthorization>> result = await _idPortenAuthorizationClient.GetIdPortenAuthorizations(ssn, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return MapToProblem(result.StatusCode);
+            }
+
+            return result.Value;
         }
 
         public async Task<Result<bool>> DeleteIdPortenAuthorization(Guid partyUuid, string id, CancellationToken cancellationToken)
@@ -54,7 +52,13 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             // delete authorization from IdPorten using ssn and id
-            return await _idPortenAuthorizationClient.DeleteIdPortenAuthorization(ssn, id, cancellationToken);
+            IdPortenClientResult<bool> result = await _idPortenAuthorizationClient.DeleteIdPortenAuthorization(ssn, id, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return MapToProblem(result.StatusCode);
+            }
+
+            return result.Value;
         }
 
         private async Task<string?> GetSsnFromPartyUuid(Guid partyUuid, CancellationToken cancellationToken)
@@ -62,6 +66,14 @@ namespace Altinn.AccessManagement.Core.Services
             // look up ssn from partyUuid
             MinimalParty party = await _ampartyService.GetByUid(partyUuid, cancellationToken);
             return party?.PersonId;
-        } 
+        }
+
+        private static ProblemDescriptor MapToProblem(HttpStatusCode statusCode) => statusCode switch
+        {
+            HttpStatusCode.BadRequest => Problems.IdPortenAuthorizationBadRequest,
+            HttpStatusCode.Unauthorized => Problems.IdPortenAuthorizationUnauthorized,
+            HttpStatusCode.Forbidden => Problems.IdPortenAuthorizationForbidden,
+            _ => Problems.IdPortenAuthorizationInternalServerError,
+        };
     }
 }

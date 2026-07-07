@@ -68,8 +68,58 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
             string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseText, _jsonOptions);
-            
+
             Assert.Equal("AM-00043", problemDetails.ErrorCode.ToString());
+        }
+
+        /// <summary>
+        /// Test case: Get IdPorten authorization when the external IdPorten API returns a non-success status.
+        /// Scenario: The external API responds with 400/401/403/500 (driven by the party's SSN in the mock).
+        /// Expected: The status is mapped to the corresponding AM problem and forwarded to the caller.
+        /// </summary>
+        [Theory]
+        [InlineData("00000000-0000-0000-0005-000000002598", HttpStatusCode.BadRequest, "AM-00044")]
+        [InlineData("00000000-0000-0000-0005-000000002203", HttpStatusCode.Unauthorized, "AM-00045")]
+        [InlineData("00000000-0000-0000-0005-000000003899", HttpStatusCode.Forbidden, "AM-00046")]
+        [InlineData("00000000-0000-0000-0005-000000002182", HttpStatusCode.InternalServerError, "AM-00047")]
+        public async Task GetIdPortenAuthorizations_ExternalApiReturnsError_ForwardsMappedProblem(string partyUuid, HttpStatusCode expectedStatusCode, string expectedErrorCode)
+        {
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse(partyUuid), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            using HttpRequestMessage request = new(HttpMethod.Get, "accessmanagement/api/v1/bff/idportenauthorization");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
+            string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseText, _jsonOptions);
+
+            Assert.Equal(expectedStatusCode, response.StatusCode);
+            Assert.Equal(expectedErrorCode, problemDetails.ErrorCode.ToString());
+        }
+
+        /// <summary>
+        /// Test case: Delete IdPorten authorization when the external IdPorten API returns a non-success status.
+        /// Scenario: The external API responds with 400/401/403/500 (driven by the party's SSN in the mock).
+        /// Expected: The status is mapped to the corresponding AM problem and forwarded to the caller.
+        /// </summary>
+        [Theory]
+        [InlineData("00000000-0000-0000-0005-000000002598", HttpStatusCode.BadRequest, "AM-00044")]
+        [InlineData("00000000-0000-0000-0005-000000002203", HttpStatusCode.Unauthorized, "AM-00045")]
+        [InlineData("00000000-0000-0000-0005-000000003899", HttpStatusCode.Forbidden, "AM-00046")]
+        [InlineData("00000000-0000-0000-0005-000000002182", HttpStatusCode.InternalServerError, "AM-00047")]
+        public async Task DeleteIdPortenAuthorization_ExternalApiReturnsError_ForwardsMappedProblem(string partyUuid, HttpStatusCode expectedStatusCode, string expectedErrorCode)
+        {
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse(partyUuid), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            using HttpRequestMessage request = new(HttpMethod.Delete, "accessmanagement/api/v1/bff/idportenauthorization/some-authorization-id");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
+            string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseText, _jsonOptions);
+
+            Assert.Equal(expectedStatusCode, response.StatusCode);
+            Assert.Equal(expectedErrorCode, problemDetails.ErrorCode.ToString());
         }
     }
 }

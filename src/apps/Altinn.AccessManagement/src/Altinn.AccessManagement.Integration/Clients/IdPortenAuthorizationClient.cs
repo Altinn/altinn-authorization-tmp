@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,7 +42,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     }
 
     /// <inheritdoc/>
-    public async Task<List<IdPortenAuthorization>> GetIdPortenAuthorizations(string ssn, CancellationToken cancellationToken)
+    public async Task<IdPortenClientResult<List<IdPortenAuthorization>>> GetIdPortenAuthorizations(string ssn, CancellationToken cancellationToken)
     {
         try
         {
@@ -52,17 +51,18 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
             var body = new { ssn = ssn };
             string json = JsonSerializer.Serialize(body, _serializerOptions);
             StringContent requestBody = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             HttpResponseMessage response = await _client.PostAsync(uriBuilder.Uri, requestBody, cancellationToken);
             string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
-                return JsonSerializer.Deserialize<List<IdPortenAuthorization>>(responseContent, _serializerOptions);
+                var value = JsonSerializer.Deserialize<List<IdPortenAuthorization>>(responseContent, _serializerOptions);
+                return new(response.StatusCode, value);
             }
 
             _logger.LogError("AccessManagement // IdPortenAuthorizationClient // GetIdPortenAuthorizations // Unexpected HttpStatusCode: {StatusCode}\n {ResponseContent}", response.StatusCode, responseContent);
-            return null;
+            return new(response.StatusCode, null);
         }
         catch (Exception ex)
         {
@@ -72,7 +72,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     }
 
     /// <inheritdoc/>
-    public async Task<bool> DeleteIdPortenAuthorization(string ssn, string id, CancellationToken cancellationToken)
+    public async Task<IdPortenClientResult<bool>> DeleteIdPortenAuthorization(string ssn, string id, CancellationToken cancellationToken)
     {
         try
         {
@@ -92,11 +92,11 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
 
             if (response.IsSuccessStatusCode)
             {
-                return true;
+                return new(response.StatusCode, true);
             }
 
             _logger.LogError("AccessManagement // IdPortenAuthorizationClient // DeleteIdPortenAuthorization // Unexpected HttpStatusCode: {StatusCode}\n {ResponseContent}", response.StatusCode, responseContent);
-            return false;
+            return new(response.StatusCode, false);
         }
         catch (Exception ex)
         {
