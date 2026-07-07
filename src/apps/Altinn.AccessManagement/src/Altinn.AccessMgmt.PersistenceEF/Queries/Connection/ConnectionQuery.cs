@@ -672,7 +672,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
+    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
     {
         /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
 
@@ -804,9 +804,10 @@ public class ConnectionQuery(AppDbContext db)
         */
         var keyRoleAssignments =
             from all in allAssignments.Concat(roleMapAssignments) // Must include RoleMap assignments
-            join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId
+            join fromEntity in db.Entities on all.FromId equals fromEntity.Id
+            join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId            
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
-            where role.IsKeyRole
+            where role.IsKeyRole && !(fromEntity.VariantId == EntityVariantConstants.IKS.Id && all.RoleId == RoleConstants.ParticipantSharedResponsibility.Id)
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = all.AssignmentId,

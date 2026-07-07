@@ -340,6 +340,66 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         Assert.Equal(ConnectionReason.KeyRole, reason);
     }
 
+    [Fact]
+    public async Task KeyRole_ToOthers_IksWithDeltakerDeltAnsvar_IsNotIncluded()
+    {
+        var iksId = TestDataSet.GetEntity("IKS Selskap").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { iksId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, true, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task KeyRole_ToOthers_NonIksWithDeltakerDeltAnsvar_IsIncluded()
+    {
+        var nonIksId = TestDataSet.GetEntity("Non-IKS Selskap").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { nonIksId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, true, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task KeyRole_ToOthers_IksWithDifferentRole_IsIncluded()
+    {
+        var iksId2 = TestDataSet.GetEntity("IKS Selskap 2").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { iksId2 },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, true, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.Accountant.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
     [Theory]
     [MemberData(nameof(GetFilterCombinations))]
     public async Task GetConnectionsAsync_AllFilterFlagCombinations_DoesNotThrow(bool[] flags, bool useSingle)
