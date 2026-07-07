@@ -59,8 +59,6 @@ public static partial class StaticDataIngest
         var roleRepr = RoleConstants.NorwegianRepresentativeForeignEntity.Id;
         /*SAM*/
         var roleSam = RoleConstants.CoOwners.Id;
-        /*SENS*/
-        var roleSens = RoleConstants.MainroleForSensitiveServices.Id;
         /*SREVA*/
         var roleSreva = RoleConstants.RegisteredAuditor.Id;
         /*A0212*/
@@ -195,8 +193,6 @@ public static partial class StaticDataIngest
 
             new RoleMap() { HasRoleId = rolePriv, GetRoleId = roleA0282 },
 
-            new RoleMap() { HasRoleId = roleSens, GetRoleId = roleA0286 },
-
             new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleA0293 },
             new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleA0293 },
             new RoleMap() { HasRoleId = roleDtso, GetRoleId = roleA0293 },
@@ -282,8 +278,6 @@ public static partial class StaticDataIngest
             new RoleMap() { HasRoleId = roleLede,  GetRoleId = roleECKEYROLE },
             new RoleMap() { HasRoleId = roleRepr,  GetRoleId = roleECKEYROLE },
             new RoleMap() { HasRoleId = roleSreva, GetRoleId = roleECKEYROLE },
-
-            new RoleMap() { HasRoleId = roleSens, GetRoleId = roleEKTJ },
 
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleHADM },
             new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleHADM },
