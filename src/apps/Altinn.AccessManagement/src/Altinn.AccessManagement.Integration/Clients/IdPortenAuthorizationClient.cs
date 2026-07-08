@@ -107,7 +107,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
 
     private async Task<HttpRequestMessage> CreateRequest(string ssn, string uri, HttpMethod method, CancellationToken cancellationToken)
     {
-        var body = new { ssn = ssn };
+        var body = new { pid = ssn };
         string json = JsonSerializer.Serialize(body, _serializerOptions);
         StringContent requestBody = new StringContent(json, Encoding.UTF8, "application/json");
 
