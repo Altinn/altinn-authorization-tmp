@@ -1,10 +1,14 @@
 ﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Integration.Clients;
+using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Services;
 using Altinn.AccessManagement.Integration.Services.Interfaces;
 using Altinn.AccessManagement.Services;
+using Altinn.ApiClients.Maskinporten.Extensions;
+using Altinn.ApiClients.Maskinporten.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 
@@ -33,6 +37,14 @@ public static class IntegrationDependencyInjectionExtensions
         builder.Services.AddHttpClient<IAuthenticationClient, AuthenticationClient>();
         builder.Services.AddHttpClient<IIdPortenAuthorizationClient, IdPortenAuthorizationClient>();
         builder.Services.AddSingleton<IResourceRegistryClient, ResourceRegistryClient>();
+
+        // ID-porten authorizations: the Maskinporten handler attaches an access token to every
+        // outgoing request on the typed client, using the JWK from IdPortenAuthorizationSettings.
+        IdPortenAuthorizationMaskinportenClientSettings idPortenAuthorizationSettings =
+            builder.Configuration.GetSection("IdPortenAuthorizationMaskinportenClientSettings").Get<IdPortenAuthorizationMaskinportenClientSettings>()
+            ?? new IdPortenAuthorizationMaskinportenClientSettings();
+        builder.Services.Configure<IdPortenAuthorizationMaskinportenClientSettings>(builder.Configuration.GetSection("IdPortenAuthorizationMaskinportenClientSettings"));
+        builder.Services.AddMaskinportenHttpClient<SettingsJwkClientDefinition, IdPortenAuthorizationMaskinportenClientDefinition>(idPortenAuthorizationSettings);
 
         builder.Services.AddHttpClient<IAltinnRolesClient, AltinnRolesClient>()
             .ReplaceResilienceHandler(static c =>

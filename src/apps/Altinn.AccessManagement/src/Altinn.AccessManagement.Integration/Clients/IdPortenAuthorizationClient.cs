@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models.IdPortenAuthorization;
 using Altinn.AccessManagement.Integration.Configuration;
-using Altinn.Common.AccessTokenClient.Services;
+using Altinn.ApiClients.Maskinporten.Interfaces;
+using Altinn.ApiClients.Maskinporten.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,6 +22,8 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     private readonly ILogger _logger;
     private readonly HttpClient _client;
     private readonly PlatformSettings _platformSettings;
+    private readonly IMaskinportenService _maskinportenService;
+    private readonly IdPortenAuthorizationMaskinportenClientSettings _maskinportenClientSettings;
     private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     /// <summary>
@@ -28,16 +32,20 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     /// <param name="httpClient">HttpClient from default httpclientfactory</param>
     /// <param name="logger">the logger</param>
     /// <param name="platformSettings">the platform setttings</param>
-    /// <param name="accessTokenGenerator">An instance of the AccessTokenGenerator service.</param>
+    /// <param name="maskinportenService">An instance of the Maskinporten service.</param>
+    /// <param name="maskinportenClientSettings">The Maskinporten client settings.</param>
     public IdPortenAuthorizationClient(
         HttpClient httpClient,
         ILogger<IdPortenAuthorizationClient> logger,
         IOptions<PlatformSettings> platformSettings,
-        IAccessTokenGenerator accessTokenGenerator)
+        IMaskinportenService maskinportenService,
+        IOptions<IdPortenAuthorizationMaskinportenClientSettings> maskinportenClientSettings)
     {
         _logger = logger;
         _client = httpClient;
         _platformSettings = platformSettings.Value;
+        _maskinportenService = maskinportenService;
+        _maskinportenClientSettings = maskinportenClientSettings.Value;
         _serializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
@@ -48,11 +56,10 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
         {
             UriBuilder uriBuilder = new UriBuilder($"{_platformSettings.IdPortenApiEndpoint}api-provider/authorizations");
 
-            var body = new { ssn = ssn };
-            string json = JsonSerializer.Serialize(body, _serializerOptions);
-            StringContent requestBody = new StringContent(json, Encoding.UTF8, "application/json");
+            var request = await CreateRequest(ssn, uriBuilder.Uri.ToString(), HttpMethod.Post, cancellationToken);
 
-            HttpResponseMessage response = await _client.PostAsync(uriBuilder.Uri, requestBody, cancellationToken);
+            HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+
             string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (response.IsSuccessStatusCode)
@@ -78,14 +85,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
         {
             UriBuilder uriBuilder = new UriBuilder($"{_platformSettings.IdPortenApiEndpoint}api-provider/authorizations/{id}");
 
-            var body = new { ssn = ssn };
-            string json = JsonSerializer.Serialize(body, _serializerOptions);
-            StringContent requestBody = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var request = new HttpRequestMessage(HttpMethod.Delete, uriBuilder.Uri)
-            {
-                Content = requestBody
-            };
+            var request = await CreateRequest(ssn, uriBuilder.Uri.ToString(), HttpMethod.Delete, cancellationToken);
 
             HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
             string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -103,5 +103,25 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
             _logger.LogError(ex, "AccessManagement // IdPortenAuthorizationClient // DeleteIdPortenAuthorization // Exception");
             throw;
         }
+    }
+
+    private async Task<HttpRequestMessage> CreateRequest(string ssn, string uri, HttpMethod method, CancellationToken cancellationToken)
+    {
+        var body = new { ssn = ssn };
+        string json = JsonSerializer.Serialize(body, _serializerOptions);
+        StringContent requestBody = new StringContent(json, Encoding.UTF8, "application/json");
+
+        TokenResponse tokenResponse = await _maskinportenService.GetToken(_maskinportenClientSettings.EncodedJwk, _maskinportenClientSettings.Environment, _maskinportenClientSettings.ClientId, _maskinportenClientSettings.Scope, string.Empty);
+        var request = new HttpRequestMessage(method, uri)
+        {
+            Content = requestBody,
+            Headers = 
+            { 
+                Accept = { new MediaTypeWithQualityHeaderValue("application/json") },
+                Authorization = new AuthenticationHeaderValue("Bearer", tokenResponse.AccessToken)
+            }
+        };
+        
+        return request;
     }
 }
