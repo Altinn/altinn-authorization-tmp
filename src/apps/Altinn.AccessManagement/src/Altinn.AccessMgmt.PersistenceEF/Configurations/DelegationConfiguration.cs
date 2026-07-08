@@ -23,13 +23,15 @@ public class DelegationConfiguration : IEntityTypeConfiguration<Delegation>
         builder.CollectionPropertyWithReference(
             collectionNav: t => t.DelegationResources,
             referenceNav: t => t.Delegation,
-            foreignKey: t => t.DelegationId
+            foreignKey: t => t.DelegationId,
+            deleteBehavior: DeleteBehavior.Cascade
         );
 
         builder.CollectionPropertyWithReference(
             collectionNav: t => t.DelegationPackages,
             referenceNav: t => t.Delegation,
-            foreignKey: t => t.DelegationId
+            foreignKey: t => t.DelegationId,
+            deleteBehavior: DeleteBehavior.Cascade
         );
 
         builder.HasIndex(t => new { t.FromId, t.ToId, t.FacilitatorId }).IsUnique();

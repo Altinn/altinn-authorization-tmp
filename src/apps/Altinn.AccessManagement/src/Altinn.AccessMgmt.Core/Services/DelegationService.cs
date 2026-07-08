@@ -100,51 +100,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     }
 
     /// <inheritdoc/>
-    public async Task<bool> AddResourceToDelegation(Guid userId, Guid delegationId, Guid resourceId, CancellationToken cancellationToken = default)
-    {
-        /*
-        [ ] Check i Package is Delegable (?)
-        [ ] Check i Resource is Delegable
-        */
-
-        /* 
-        [X] Check if user is DelegationAdmin on FromId 
-        [X] Check if assignment has the resource
-        [X] Check if the assignment role has the resource
-        [X] Check if the assignment packages has the resource
-        */
-
-        var resource = await resourceService.GetResource(resourceId, cancellationToken);
-
-        var delegation = await GetDelegation(delegationId, cancellationToken);
-        var fromAssignment = await assignmentService.GetAssignment(delegation.FromId, cancellationToken);
-
-        var assignmentResources = await assignmentService.GetAssignmentResources(fromAssignment.Id, cancellationToken);
-
-        // TODO: Add Assignment Variant to include RoleVariantPackages
-        var roleResources = await roleService.GetRoleResources(fromAssignment.RoleId, variantId: null, includePackageResoures: true, cancellationToken);
-
-        if (assignmentResources.Count(t => t.Id == resourceId) == 0
-            && roleResources.Count(t => t.Id == resourceId) == 0
-            )
-        {
-            throw new InvalidOperationException($"The source assignment does not have the resource '{resource.Name}'");
-        }
-
-        await db.DelegationResources.AddAsync(
-            new DelegationResource()
-            {
-                DelegationId = delegationId,
-                ResourceId = resourceId
-            },
-            cancellationToken
-        );
-        var result = await db.SaveChangesAsync(cancellationToken);
-
-        return result > 0;
-    }
-
-    /// <inheritdoc/>
     public async Task<IEnumerable<CreateDelegationResponseDto>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken)
     {
         // Find Facilitator

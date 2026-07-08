@@ -17,7 +17,7 @@ public sealed class AppDbDesignTimeContextFactory : IDesignTimeDbContextFactory<
     {
         var connectionString = new ConfigurationBuilder()
             .AddEnvironmentVariables()
-            .AddUserSecrets<AppDbDesignTimeContextFactory>()
+            .AddUserSecrets<AppDbDesignTimeContextFactory>(optional: true)
             .Build();
 
         var path = "PostgreSQLSettings:AdminConnectionString";
