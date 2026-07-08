@@ -79,8 +79,6 @@ public static partial class StaticDataIngest
         var roleA0278 = RoleConstants.PlanningAndConstruction.Id;
         /*A0282*/
         var roleA0282 = RoleConstants.PrivateTaxAffairs.Id;
-        /*A0286*/
-        var roleA0286 = RoleConstants.ConfidentialInformation.Id;
         /*A0293*/
         var roleA0293 = RoleConstants.AlgeaTestData.Id;
         /*A0294*/
@@ -103,8 +101,6 @@ public static partial class StaticDataIngest
         var roleBOBES = RoleConstants.BankruptcyWrite.Id;
         /*ECKEYROLE*/
         var roleECKEYROLE = RoleConstants.Eckeyrole.Id;
-        /*EKTJ*/
-        var roleEKTJ = RoleConstants.ExplicitServiceDelegation.Id;
         /*HADM*/
         var roleHADM = RoleConstants.MainAdministratorA2.Id;
         /*HVASK*/
@@ -470,7 +466,6 @@ public static partial class StaticDataIngest
 
             // Add delegable role mapping for Hovedadministrator
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.ManagingDirector.Id },
-            new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.ExplicitServiceDelegation.Id },
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.ConfidentialInformation.Id },
 
             new RoleMap() { HasRoleId = RoleConstants.MainAdministrator.Id, GetRoleId = RoleConstants.SalariesAndPersonnelEmployee.Id },

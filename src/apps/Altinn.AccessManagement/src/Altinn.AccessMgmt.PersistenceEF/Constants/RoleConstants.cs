@@ -4716,39 +4716,6 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Eksplisitt tjenestedelegering' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 1225bc46-4b03-4b63-b6e8-58926b29a97b
-    /// - <c>URN:</c> urn:altinn:rolecode:EKTJ
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> EKTJ
-    /// - <c>Description:</c> Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis
-    /// </remarks>
-    public static ConstantDefinition<Role> ExplicitServiceDelegation { get; } = new ConstantDefinition<Role>("1225bc46-4b03-4b63-b6e8-58926b29a97b")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Eksplisitt tjenestedelegering",
-            Code = "ektj",
-            Description = "Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis",
-            Urn = "urn:altinn:rolecode:ektj",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = true,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Explicit service delegation"),
-            KeyValuePair.Create("Description", "Non-delegable role for services to be delegated as single rights")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Eksplisitt tenestedelegering"),
-            KeyValuePair.Create("Description", "Ikkje-delegerbar rolle for tenester som kun skal delegerast enkeltvis")
-        )
-    };
-
-    /// <summary>
     /// Represents the 'Hovedadministrator' role.
     /// </summary>
     /// <remarks>
