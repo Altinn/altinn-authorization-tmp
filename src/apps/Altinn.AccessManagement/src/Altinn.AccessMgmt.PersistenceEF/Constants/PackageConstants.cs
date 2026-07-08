@@ -7816,4 +7816,43 @@ public static class PackageConstants
     };
 
     #endregion
+
+    #region Brukerstyrt Signering
+
+    /// <summary>
+    /// Represents the 'Øvrige - Salg av løsøre av større verdi' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 5cc87c94-e0c0-46fe-a053-2a29081aef0f
+    /// - <c>URN:</c> urn:altinn:accesspackage:vergemal-ovrige-salg-losore-storre-verdi
+    /// - <c>Provider:</c> CivilRightsAuthority
+    /// - <c>Code:</c> vergemal-ovrige-salg-losore-storre-verdi
+    /// - <c>Description:</c> Øvrige - Salg av løsøre av større verdi
+    /// </remarks>
+    public static ConstantDefinition<Package> RuntimeDelegatedSigning { get; } = new ConstantDefinition<Package>("8cb5c1f8-fad7-4ae0-b02b-8ad4cb2652eb")
+    {
+        Entity = new()
+        {
+            Name = "Brukerstyrt signering",
+            Code = "runtime-delegated-signing",
+            Description = "Delegering av brukerstyrt signering for virksomheter",
+            Urn = "urn:altinn:accesspackage:runtime-delegated-signing",
+            IsDelegable = false,
+            IsAssignable = true,
+            IsAvailableForServiceOwners = true,
+            EntityTypeId = EntityTypeConstants.Organization,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", ""),
+            KeyValuePair.Create("Description", "")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", ""),
+            KeyValuePair.Create("Description", "")
+        ),
+    };
+
+    #endregion
 }
