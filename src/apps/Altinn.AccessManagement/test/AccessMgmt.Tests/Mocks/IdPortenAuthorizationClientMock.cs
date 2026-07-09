@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(AMPartyServiceMock).Assembly.Location).LocalPath);
             string partiesPath = Path.Combine(unitTestFolder, "Data", "IdPortenAuthorization", "IdPortenAuthorization_list.json");
             string content = File.ReadAllText(partiesPath);
-            List<IdPortenAuthorization> results = JsonSerializer.Deserialize<List<IdPortenAuthorization>>(content, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            List<IdPortenAuthorization> results = JsonSerializer.Deserialize<List<IdPortenAuthorization>>(content);
             return Task.FromResult(new IdPortenClientResult<List<IdPortenAuthorization>>(HttpStatusCode.OK, results));
         }
 

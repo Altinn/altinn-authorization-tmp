@@ -52,7 +52,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(authorizations);
             Assert.Single(authorizations);
-            Assert.Equal("DDXh0PZpGwXaUHUhdiHsj6KwqWY_McHgwCZhul5hcBtbEcswPQSIgktfp5eul5_5MgFv0G2VeDXcV25uQ2JgTqN5renlPA", authorizations[0].Authorization_id.ToString());
+            Assert.Equal("DDXh0PZpGwXaUHUhdiHsj6KwqWY_McHgwCZhul5hcBtbEcswPQSIgktfp5eul5_5MgFv0G2VeDXcV25uQ2JgTqN5renlPA", authorizations[0].AuthorizationId);
         }
 
         /// <summary>
