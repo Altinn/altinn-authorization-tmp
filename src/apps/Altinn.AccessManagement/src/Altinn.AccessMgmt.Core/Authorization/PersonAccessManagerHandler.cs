@@ -65,7 +65,14 @@ public class PersonAccessManagerHandler(
 
         // User is an access manager for the party. Check if party is a person.
         var entity = await entityService.GetEntity(party, httpContext.RequestAborted);
-        if (entity is not null && entity.TypeId == EntityTypeConstants.Person.Id)
+        if (entity is null)
+        {
+            // Cannot determine party type → fail closed for from-others when user is not the party.
+            context.Fail();
+            return;
+        }
+
+        if (entity.TypeId == EntityTypeConstants.Person.Id)
         {
             // Access manager for a person cannot access from-others direction (AC-2.2)
             context.Fail();

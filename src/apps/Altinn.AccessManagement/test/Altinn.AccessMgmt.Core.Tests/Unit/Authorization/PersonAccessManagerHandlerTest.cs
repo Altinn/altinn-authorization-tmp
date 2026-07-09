@@ -163,15 +163,15 @@ public class PersonAccessManagerHandlerTest
     }
 
     [Fact]
-    public async Task FromOthersDirection_EntityNotFound_Succeeds()
+    public async Task FromOthersDirection_EntityNotFound_Fails()
     {
-        // If entity lookup returns null, fail open (let other handlers handle validation)
+        // If entity lookup returns null, fail closed (deny access)
         var (handler, httpCtx) = CreateSut($"?party={PersonPartyId}&to={PersonPartyId}", AccessManagerId, null);
         var ctx = MakeContext(httpCtx.User);
 
         await handler.HandleAsync(ctx);
 
-        Assert.True(ctx.HasSucceeded);
+        Assert.True(ctx.HasFailed);
     }
 
     [Fact]
