@@ -78,9 +78,11 @@
 @* ── Runs ─────────────────────────────────────────────────────────────────── *@
 <JobRunList @ref="_runList" JobName="@IngestCleanupJob.JobName" MatchByPrefix="true">
     <ExtraActions Context="run">
+        @* Scan runs are named "IngestCleanup:{filter}"; execute runs contain ":Execute". *@
         @if (run.Status == JobStatus.Completed &&
              run.SqlOutput.Count > 0 &&
-             run.JobName == IngestCleanupJob.JobName)
+             run.JobName.StartsWith($"{IngestCleanupJob.JobName}:", StringComparison.Ordinal) &&
+             !run.JobName.Contains(":Execute", StringComparison.Ordinal))
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Error"
