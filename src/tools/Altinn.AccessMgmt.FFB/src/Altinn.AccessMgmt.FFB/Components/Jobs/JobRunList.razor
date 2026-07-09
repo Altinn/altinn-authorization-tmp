@@ -1,4 +1,5 @@
 @inject IJobRunStore RunStore
+@implements IDisposable
 
 @if (_runs.Count > 0)
 {
@@ -25,10 +26,22 @@
     /// <summary>Per-run extra action buttons, rendered inside the run card.</summary>
     [Parameter] public RenderFragment<JobRun>? ExtraActions { get; set; }
 
-    private readonly HashSet<Guid> _subscribed = [];
+    private readonly Dictionary<Guid, JobRun> _subscribed = [];
     private List<JobRun> _runs = [];
 
     protected override void OnInitialized() => RefreshRuns();
+
+    public void Dispose()
+    {
+        // JobRun instances live in the singleton store; without this the handlers
+        // (and the component they capture) would outlive the page.
+        foreach (var run in _subscribed.Values)
+        {
+            run.OnUpdated -= HandleRunUpdated;
+        }
+
+        _subscribed.Clear();
+    }
 
     /// <summary>Re-queries the store and re-renders. Pages call this after starting new runs.</summary>
     public void Refresh()
@@ -59,9 +72,11 @@
 
     private void Subscribe(JobRun run)
     {
-        if (_subscribed.Add(run.Id))
+        if (_subscribed.TryAdd(run.Id, run))
         {
-            run.OnUpdated += () => InvokeAsync(Refresh);
+            run.OnUpdated += HandleRunUpdated;
         }
     }
+
+    private void HandleRunUpdated() => _ = InvokeAsync(Refresh);
 }
