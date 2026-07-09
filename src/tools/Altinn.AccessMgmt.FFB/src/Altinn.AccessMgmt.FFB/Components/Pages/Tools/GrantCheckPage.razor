@@ -1,7 +1,6 @@
 @page "/tools/grant-check"
 @using Altinn.AccessMgmt.PersistenceEF.Extensions
 @inherits EnvironmentPageBase
-@inject IEnvironmentDbContextFactory DbFactory
 @inject GrantCheckService GrantService
 
 <PageTitle>Grant Check</PageTitle>
@@ -17,19 +16,7 @@
 <MudPaper Elevation="1" Class="pa-4 mb-6">
     <MudGrid Spacing="3">
         <MudItem xs="12">
-            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Miljø:</MudText>
-            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
-                @foreach (var env in DbFactory.Environments)
-                {
-                    var e = env;
-                    var configured = DbFactory.IsConfigured(e);
-                    <MudCheckBox @bind-Value="_envSelected[e]"
-                                 Label="@e"
-                                 Disabled="@(!configured)"
-                                 Color="Color.Primary"
-                                 Dense="true" />
-                }
-            </MudStack>
+            <EnvironmentMultiSelect Selection="_envSelected" Dense="true" />
         </MudItem>
 
         <MudItem xs="12" md="4">
@@ -238,7 +225,6 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        _envSelected = DbFactory.Environments.ToDictionary(e => e, _ => false, StringComparer.Ordinal);
 
         // Schema options come from the (environment-independent) EF model.
         _schemaSelected = GrantService.GetModelSchemas().ToDictionary(

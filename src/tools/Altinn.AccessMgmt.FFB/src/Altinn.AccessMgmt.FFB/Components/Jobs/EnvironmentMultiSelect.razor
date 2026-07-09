@@ -9,13 +9,15 @@
         <MudCheckBox @bind-Value="Selection[e]"
                      Label="@e"
                      Disabled="@(!configured)"
-                     Color="Color.Primary" />
+                     Color="Color.Primary"
+                     Dense="@Dense" />
     }
 </MudStack>
 
 @code {
     [Parameter, EditorRequired] public Dictionary<string, bool> Selection { get; set; } = default!;
     [Parameter] public string Label { get; set; } = "Miljø:";
+    [Parameter] public bool Dense { get; set; }
 
     protected override void OnInitialized()
     {
