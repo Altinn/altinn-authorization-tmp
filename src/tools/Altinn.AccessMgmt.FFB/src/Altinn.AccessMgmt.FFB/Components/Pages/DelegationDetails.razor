@@ -51,78 +51,60 @@ else
     <MudGrid>
         @* ── From assignment ── *@
         <MudItem xs="12" md="6">
-            <MudCard Elevation="1">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudText Typo="Typo.h6">From Assignment</MudText>
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
-                                           Size="Size.Small"
-                                           Href="@($"/assignment/{_data.Delegation.FromId}")"
-                                           aria-label="Open assignment" />
-                        </MudStack>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent Class="pa-0">
-                    <MudSimpleTable Dense="true" Hover="false" Bordered="false">
-                        <tbody>
-                            <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.FromId</SummaryRow>
-                            <SummaryRow Label="Role">
-                                <MudLink Href="@($"/role/{_data.Delegation.From?.RoleId}")">@(_data.Delegation.From?.Role?.Name ?? _data.Delegation.From?.RoleId.ToString())</MudLink>
-                            </SummaryRow>
-                            <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.From?.Role?.Urn ?? "–")</SummaryRow>
-                            <SummaryRow Label="From (granter)">
-                                <MudLink Href="@($"/entity/{_data.Delegation.From?.FromId}")">
-                                    @(OriginalGranter?.Name ?? _data.Delegation.From?.FromId.ToString())
-                                </MudLink>
-                            </SummaryRow>
-                            <SummaryRow Label="To (delegator)">
-                                <MudLink Href="@($"/entity/{_data.Delegation.From?.ToId}")">
-                                    @(Delegator?.Name ?? _data.Delegation.From?.ToId.ToString())
-                                </MudLink>
-                            </SummaryRow>
-                        </tbody>
-                    </MudSimpleTable>
-                </MudCardContent>
-            </MudCard>
+            <SummaryCard Title="From Assignment">
+                <HeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                   Size="Size.Small"
+                                   Href="@($"/assignment/{_data.Delegation.FromId}")"
+                                   aria-label="Open assignment" />
+                </HeaderActions>
+                <ChildContent>
+                    <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.FromId</SummaryRow>
+                    <SummaryRow Label="Role">
+                        <MudLink Href="@($"/role/{_data.Delegation.From?.RoleId}")">@(_data.Delegation.From?.Role?.Name ?? _data.Delegation.From?.RoleId.ToString())</MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.From?.Role?.Urn ?? "–")</SummaryRow>
+                    <SummaryRow Label="From (granter)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.From?.FromId}")">
+                            @(OriginalGranter?.Name ?? _data.Delegation.From?.FromId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="To (delegator)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.From?.ToId}")">
+                            @(Delegator?.Name ?? _data.Delegation.From?.ToId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                </ChildContent>
+            </SummaryCard>
         </MudItem>
 
         @* ── To assignment ── *@
         <MudItem xs="12" md="6">
-            <MudCard Elevation="1">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudText Typo="Typo.h6">To Assignment</MudText>
-                            <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
-                                           Size="Size.Small"
-                                           Href="@($"/assignment/{_data.Delegation.ToId}")"
-                                           aria-label="Open assignment" />
-                        </MudStack>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent Class="pa-0">
-                    <MudSimpleTable Dense="true" Hover="false" Bordered="false">
-                        <tbody>
-                            <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.ToId</SummaryRow>
-                            <SummaryRow Label="Role">
-                                <MudLink Href="@($"/role/{_data.Delegation.To?.RoleId}")">@(_data.Delegation.To?.Role?.Name ?? _data.Delegation.To?.RoleId.ToString())</MudLink>
-                            </SummaryRow>
-                            <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.To?.Role?.Urn ?? "–")</SummaryRow>
-                            <SummaryRow Label="From (delegator)">
-                                <MudLink Href="@($"/entity/{_data.Delegation.To?.FromId}")">
-                                    @(Delegator?.Name ?? _data.Delegation.To?.FromId.ToString())
-                                </MudLink>
-                            </SummaryRow>
-                            <SummaryRow Label="To (recipient)">
-                                <MudLink Href="@($"/entity/{_data.Delegation.To?.ToId}")">
-                                    @(Recipient?.Name ?? _data.Delegation.To?.ToId.ToString())
-                                </MudLink>
-                            </SummaryRow>
-                        </tbody>
-                    </MudSimpleTable>
-                </MudCardContent>
-            </MudCard>
+            <SummaryCard Title="To Assignment">
+                <HeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                   Size="Size.Small"
+                                   Href="@($"/assignment/{_data.Delegation.ToId}")"
+                                   aria-label="Open assignment" />
+                </HeaderActions>
+                <ChildContent>
+                    <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.ToId</SummaryRow>
+                    <SummaryRow Label="Role">
+                        <MudLink Href="@($"/role/{_data.Delegation.To?.RoleId}")">@(_data.Delegation.To?.Role?.Name ?? _data.Delegation.To?.RoleId.ToString())</MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.To?.Role?.Urn ?? "–")</SummaryRow>
+                    <SummaryRow Label="From (delegator)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.To?.FromId}")">
+                            @(Delegator?.Name ?? _data.Delegation.To?.FromId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="To (recipient)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.To?.ToId}")">
+                            @(Recipient?.Name ?? _data.Delegation.To?.ToId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                </ChildContent>
+            </SummaryCard>
         </MudItem>
 
         @* ── Meta ── *@
