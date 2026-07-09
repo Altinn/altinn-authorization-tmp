@@ -184,7 +184,7 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor SsnNotFound { get; }
-    = _factory.Create(43, HttpStatusCode.NotFound, "The SSN was not found");
+    = _factory.Create(43, HttpStatusCode.BadRequest, "The SSN was not found");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor IdPortenAuthorizationBadRequest { get; }

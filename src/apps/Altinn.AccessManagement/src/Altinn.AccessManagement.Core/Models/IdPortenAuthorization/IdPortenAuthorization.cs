@@ -28,12 +28,12 @@ namespace Altinn.AccessManagement.Core.Models.IdPortenAuthorization
         /// <summary>
         /// Timestamp of when the authorization was granted
         /// </summary>
-        public int Authorized_at { get; set; }
+        public long Authorized_at { get; set; }
 
         /// <summary>
         /// Timestamp of when the authorization expires
         /// </summary>
-        public int Expires { get; set; }
+        public long Expires { get; set; }
 
         /// <summary>
         /// Scopes granted for the authorization

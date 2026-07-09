@@ -4,18 +4,18 @@ using Altinn.AccessManagement.Core.Models.IdPortenAuthorization;
 namespace Altinn.AccessManagement.Core.Clients.Interfaces
 {
     /// <summary>
-    /// Interface for the consent service
+    /// Interface for the IdPorten authorization client
     /// </summary>
     public interface IIdPortenAuthorizationClient
     {
         /// <summary>
-        /// Returns a specific concent based on the id
+        /// Returns all ID-porten authorizations for the given user.
         /// </summary>
         /// <returns></returns>
         Task<IdPortenClientResult<List<IdPortenAuthorization>>> GetIdPortenAuthorizations(string ssn, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a specific concent based on the id. For end user
+        /// Deletes a specific ID-porten authorization based on the id.
         /// </summary>
         /// <returns></returns>
         Task<IdPortenClientResult<bool>> DeleteIdPortenAuthorization(string ssn, string id, CancellationToken cancellationToken);

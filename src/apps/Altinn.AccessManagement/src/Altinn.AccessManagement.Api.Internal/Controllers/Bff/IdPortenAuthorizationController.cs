@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 {
     /// <summary>
-    /// API controller for managing consent information for end users.
-    /// All endpoints are accessible only from the Altinn Portal to ensure that end users are properly informed about the details of their consents.
+    /// API controller for managing ID-porten authorizations for end users.
+    /// All endpoints are accessible only from the Altinn Portal to ensure that end users are properly informed about the details of their ID-porten authorizations.
     /// The controller enforces the portal scope for authorization to access its methods.
     /// </summary>
     [Route("accessmanagement/api/v1/bff/idportenauthorization")]
     [ApiController]
-    public class IdPortenAuthorizationController(IIdPortenAuthorizationService IdPortenAuthorizationService) : ControllerBase
+    public class IdPortenAuthorizationController(IIdPortenAuthorizationService idPortenAuthorizationService) : ControllerBase
     {
         [HttpGet]
         [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
@@ -28,7 +28,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
-            Result<List<IdPortenAuthorization>> result = await IdPortenAuthorizationService.GetIdPortenAuthorizations((Guid)userUuid, cancellationToken);
+            Result<List<IdPortenAuthorization>> result = await idPortenAuthorizationService.GetIdPortenAuthorizations(userUuid.Value, cancellationToken);
             if (result.IsProblem)
             {
                 return result.Problem.ToActionResult();
@@ -48,7 +48,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
-            Result<bool> result = await IdPortenAuthorizationService.DeleteIdPortenAuthorization((Guid)userUuid, id, cancellationToken);
+            Result<bool> result = await idPortenAuthorizationService.DeleteIdPortenAuthorization(userUuid.Value, id, cancellationToken);
             if (result.IsProblem)
             {
                 return result.Problem.ToActionResult();

@@ -33,7 +33,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         };
 
         /// <summary>
-        /// Test case: Get IdPorten authorization
+        /// Test case: Get IdPorten authorizations
         /// Scenario: User has one IdPorten authorization
         /// Expected: Returns 200 with details
         /// </summary>
@@ -50,12 +50,15 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
             List<IdPortenAuthorization> authorizations = await response.Content.ReadFromJsonAsync<List<IdPortenAuthorization>>(cancellationToken: TestContext.Current.CancellationToken);
             
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(authorizations);
+            Assert.Single(authorizations);
+            Assert.Equal("DDXh0PZpGwXaUHUhdiHsj6KwqWY_McHgwCZhul5hcBtbEcswPQSIgktfp5eul5_5MgFv0G2VeDXcV25uQ2JgTqN5renlPA", authorizations[0].Authorization_id.ToString());
         }
 
         /// <summary>
-        /// Test case: Get IdPorten authorization
-        /// Scenario: User has one IdPorten authorization
-        /// Expected: Returns 200 with details
+        /// Test case: Get IdPorten authorizations
+        /// Scenario: Unknown user (no valid partyUuid) attempts to get IdPorten authorizations
+        /// Expected: Returns 400 with details
         /// </summary>
         [Fact]
         public async Task GetIdPortenAuthorization_Returns404ForNonExistentUser()
