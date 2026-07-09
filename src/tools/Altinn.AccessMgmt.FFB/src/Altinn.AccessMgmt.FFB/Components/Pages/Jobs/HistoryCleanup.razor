@@ -17,7 +17,7 @@
 
     <MudGrid>
         <MudItem xs="12">
-            <EnvironmentMultiSelect Selection="_selected" Label="Kjør på miljø:" />
+            <EnvironmentMultiSelect @bind-Selection="_selected" Label="Kjør på miljø:" />
         </MudItem>
 
         <MudItem xs="12">
@@ -89,7 +89,7 @@
 </JobRunList>
 
 @code {
-    private readonly Dictionary<string, bool> _selected = new();
+    private Dictionary<string, bool> _selected = new();
     private readonly Dictionary<string, bool> _selectedTables =
         HistoryCleanupJob.KnownTables.Keys.ToDictionary(k => k, _ => true);
     private bool _executeImmediately;

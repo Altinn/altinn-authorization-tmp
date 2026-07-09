@@ -79,7 +79,7 @@
 
         @* Environment *@
         <MudItem xs="12">
-            <EnvironmentMultiSelect Selection="_selected" />
+            <EnvironmentMultiSelect @bind-Selection="_selected" />
         </MudItem>
 
         @* Buttons *@
@@ -104,7 +104,7 @@
             .OrderBy(e => e.Entity.RefId)
             .ToList();
 
-    private readonly Dictionary<string, bool> _selected = new();
+    private Dictionary<string, bool> _selected = new();
 
     private Guid _changedBySystemId = SystemEntityConstants.DBA.Id;
     private string _oldRole = "";

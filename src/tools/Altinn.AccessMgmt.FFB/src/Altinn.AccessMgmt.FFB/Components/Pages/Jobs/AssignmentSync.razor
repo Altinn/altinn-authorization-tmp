@@ -17,7 +17,7 @@
 
     <MudGrid>
         <MudItem xs="12">
-            <EnvironmentMultiSelect Selection="_selected" Label="Kjør på miljø:" />
+            <EnvironmentMultiSelect @bind-Selection="_selected" Label="Kjør på miljø:" />
         </MudItem>
 
         <MudItem xs="12" sm="6">
@@ -83,7 +83,7 @@
             .OrderBy(e => e.Entity.RefId)
             .ToList();
 
-    private readonly Dictionary<string, bool> _selected = new();
+    private Dictionary<string, bool> _selected = new();
     private Guid _systemAccountId = SystemEntityConstants.DBA.Id;
     private bool _forceFullScan;
     private JobRunList _runList = default!;

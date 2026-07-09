@@ -15,7 +15,7 @@
     <MudText Typo="Typo.h6" Class="mb-3">Start ny kjøring</MudText>
 
     <div class="mb-4">
-        <EnvironmentMultiSelect Selection="_selected" Label="Kjør på miljø:" />
+        <EnvironmentMultiSelect @bind-Selection="_selected" Label="Kjør på miljø:" />
     </div>
 
     <MudButton Variant="Variant.Filled"
@@ -54,7 +54,7 @@
 </JobRunList>
 
 @code {
-    private readonly Dictionary<string, bool> _selected = new();
+    private Dictionary<string, bool> _selected = new();
     private JobRunList _runList = default!;
 
     private void StartJobs()

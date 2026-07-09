@@ -58,7 +58,7 @@
 
         @* Environment *@
         <MudItem xs="12">
-            <EnvironmentMultiSelect Selection="_selected" />
+            <EnvironmentMultiSelect @bind-Selection="_selected" />
         </MudItem>
 
         @* Buttons *@
@@ -98,7 +98,7 @@
             .OrderBy(e => e.Entity.RefId)
             .ToList();
 
-    private readonly Dictionary<string, bool> _selected = new();
+    private Dictionary<string, bool> _selected = new();
     private string _resourceRefId = "";
     private string _operationId = "";
     private Guid _systemAccountId = SystemEntityConstants.DBA.Id;
