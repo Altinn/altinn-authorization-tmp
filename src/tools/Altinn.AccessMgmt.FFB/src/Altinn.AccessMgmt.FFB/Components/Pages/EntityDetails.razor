@@ -15,6 +15,13 @@ else if (Error is not null)
 else if (_data is null)
 {
     <MudAlert Severity="Severity.Error">Entity not found: @Id</MudAlert>
+    <MudButton Class="mt-4"
+               Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               Href="/entity-search">
+        Back to search
+    </MudButton>
 }
 else
 {
