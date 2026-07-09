@@ -76,7 +76,7 @@
 </MudPaper>
 
 @* ── Runs ─────────────────────────────────────────────────────────────────── *@
-<JobRunList @ref="_runList" JobName="@IngestCleanupJob.JobName" ExecuteRunsByPrefix="true">
+<JobRunList @ref="_runList" JobName="@IngestCleanupJob.JobName" MatchByPrefix="true">
     <ExtraActions Context="run">
         @if (run.Status == JobStatus.Completed &&
              run.SqlOutput.Count > 0 &&

@@ -15,8 +15,12 @@
     /// <summary>Also include runs stored under "{JobName}:Execute".</summary>
     [Parameter] public bool IncludeExecuteRuns { get; set; } = true;
 
-    /// <summary>Match execute runs by prefix instead of exact name (multi-runner jobs).</summary>
-    [Parameter] public bool ExecuteRunsByPrefix { get; set; }
+    /// <summary>
+    /// Also include every run whose name starts with "{JobName}:", for jobs that encode
+    /// variants into the run name (e.g. "IngestCleanup:{filter}" and
+    /// "IngestCleanup:{filter}:Execute [1/2]"). Makes IncludeExecuteRuns redundant.
+    /// </summary>
+    [Parameter] public bool MatchByPrefix { get; set; }
 
     /// <summary>Per-run extra action buttons, rendered inside the run card.</summary>
     [Parameter] public RenderFragment<JobRun>? ExtraActions { get; set; }
@@ -36,11 +40,13 @@
     private void RefreshRuns()
     {
         IEnumerable<JobRun> runs = RunStore.GetForJob(JobName);
-        if (IncludeExecuteRuns)
+        if (MatchByPrefix)
         {
-            runs = runs.Concat(ExecuteRunsByPrefix
-                ? RunStore.GetForJobPrefix($"{JobName}:Execute")
-                : RunStore.GetForJob($"{JobName}:Execute"));
+            runs = runs.Concat(RunStore.GetForJobPrefix($"{JobName}:"));
+        }
+        else if (IncludeExecuteRuns)
+        {
+            runs = runs.Concat(RunStore.GetForJob($"{JobName}:Execute"));
         }
 
         _runs = runs.OrderByDescending(r => r.StartedAt).ToList();
