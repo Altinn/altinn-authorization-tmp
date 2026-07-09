@@ -11,14 +11,17 @@ namespace Altinn.AccessMgmt.FFB.Components.Shared;
 /// </summary>
 public abstract class EnvironmentPageBase : ComponentBase, IDisposable
 {
+    private CancellationTokenSource? _cts;
+    private int _version;
+
     [Inject]
     protected EnvironmentState EnvState { get; set; } = default!;
 
-    /// <summary>The single page-blocking busy flag, managed by <see cref="RunAsync"/>.</summary>
+    /// <summary>The single page-blocking busy flag, managed by <see cref="RunAsync(Func{CancellationToken, Task})"/>.</summary>
     protected bool Loading { get; private set; }
 
     /// <summary>
-    /// Page-level error message, set from <see cref="ErrorText.Flatten"/> by <see cref="RunAsync"/>.
+    /// Page-level error message, set from <see cref="ErrorText.Flatten"/> by <see cref="RunAsync(Func{CancellationToken, Task})"/>.
     /// Pages may also set it directly for input validation, or clear it when resetting state.
     /// </summary>
     protected string? Error { get; set; }
@@ -29,34 +32,66 @@ public abstract class EnvironmentPageBase : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Unsubscribes from environment changes. Overrides must call <c>base.Dispose()</c>.
+    /// Unsubscribes from environment changes and cancels any in-flight run.
+    /// Overrides must call <c>base.Dispose()</c>.
     /// </summary>
     public virtual void Dispose()
     {
         EnvState.OnChange -= HandleEnvironmentChanged;
+        _cts?.Cancel();
     }
 
     /// <summary>
     /// Runs page work with Loading/Error handling and re-renders before and after.
     /// </summary>
-    protected async Task RunAsync(Func<Task> work)
+    protected Task RunAsync(Func<Task> work) => RunAsync(_ => work());
+
+    /// <summary>
+    /// Runs page work with Loading/Error handling and re-renders before and after.
+    /// Starting a new run cancels the previous one and takes over the page state,
+    /// so a stale load (e.g. from before an environment switch) cannot overwrite
+    /// a newer one's data, Loading flag, or Error.
+    /// </summary>
+    protected async Task RunAsync(Func<CancellationToken, Task> work)
     {
+        _cts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _cts = cts;
+        var version = ++_version;
+
         Loading = true;
         Error = null;
         StateHasChanged();
 
         try
         {
-            await work();
+            await work(cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            // Superseded by a newer run, which owns the page state now.
         }
         catch (Exception ex)
         {
-            Error = ErrorText.Flatten(ex);
+            if (version == _version)
+            {
+                Error = ErrorText.Flatten(ex);
+            }
         }
         finally
         {
-            Loading = false;
-            StateHasChanged();
+            if (version == _version)
+            {
+                Loading = false;
+                StateHasChanged();
+            }
+
+            if (ReferenceEquals(_cts, cts))
+            {
+                _cts = null;
+            }
+
+            cts.Dispose();
         }
     }
 

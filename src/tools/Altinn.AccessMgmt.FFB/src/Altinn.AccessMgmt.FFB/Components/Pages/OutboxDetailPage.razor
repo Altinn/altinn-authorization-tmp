@@ -173,13 +173,13 @@
 
     // ── Query ─────────────────────────────────────────────────────────────────
 
-    private async Task LoadMessage()
+    private async Task LoadMessage(CancellationToken ct)
     {
         using var db = DbFactory.CreateContext(EnvState.Current);
         _message = await db.OutboxMessages
             .AsNoTracking()
             .Include(m => m.OutboxMessageLogs)
-            .FirstOrDefaultAsync(m => m.Id == Id);
+            .FirstOrDefaultAsync(m => m.Id == Id, ct);
 
         if (_message is not null)
         {

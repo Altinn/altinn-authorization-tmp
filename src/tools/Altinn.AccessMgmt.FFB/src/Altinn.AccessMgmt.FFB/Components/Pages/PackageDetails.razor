@@ -156,5 +156,5 @@ else
 
     protected override Task OnEnvironmentChangedAsync() => RunAsync(LoadAsync);
 
-    private async Task LoadAsync() => _data = await DataService.GetAsync(EnvState.Current, Id);
+    private async Task LoadAsync(CancellationToken ct) => _data = await DataService.GetAsync(EnvState.Current, Id, ct);
 }
