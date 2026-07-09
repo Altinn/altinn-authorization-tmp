@@ -211,11 +211,6 @@
     private List<MissingTable> _missingFromDb = [];
     private List<(string Env, string Message)> _envErrors = [];
 
-    // Roles/privileges captured at the time of the last check — used by the check calls so
-    // they stay consistent even if the user toggles the checkboxes afterwards.
-    private List<string> _checkedRoles = [];
-    private List<string> _checkedPrivileges = [];
-
     private bool CanRun =>
         _envSelected.Values.Any(v => v) &&
         _schemaSelected.Values.Any(v => v) &&
@@ -241,8 +236,11 @@
         _okCount = 0;
         _environmentsChecked = 0;
         _checkedAt = null;
-        _checkedRoles = Roles.Where(r => _roleSelected[r]).ToList();
-        _checkedPrivileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
+
+        // Snapshot the selections so all environments in this run use the same
+        // roles/privileges even if the user toggles checkboxes mid-run.
+        var roles = Roles.Where(r => _roleSelected[r]).ToList();
+        var privileges = AllPrivileges.Where(p => _privilegeSelected[p]).ToList();
         var envs = _envSelected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
         var schemas = _schemaSelected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
 
@@ -250,7 +248,7 @@
         {
             try
             {
-                var result = await GrantService.CheckEnvironmentAsync(env, schemas, _checkedRoles, _checkedPrivileges);
+                var result = await GrantService.CheckEnvironmentAsync(env, schemas, roles, privileges);
                 _okCount += result.OkCount;
                 _missing.AddRange(result.Missing);
                 _missingFromDb.AddRange(result.MissingFromDb);
