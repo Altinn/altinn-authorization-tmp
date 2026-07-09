@@ -141,9 +141,9 @@ tests {
     const expectedInstanceResourceId = testdata.resources.appInstanceDelegation.resourceId;
     const expectedInstancesMainUnit = [
       expectedMainUnit.instanceIdDelegatedToPerson,
-      // Key-role instance delegation is currently not returned for main unit with orgCode=ttd filter
-      // in AT22 dataset, while subunit still returns both instance delegations.
-      // Keep this strict to current expected behavior for this filtered scenario.
+      // TODO: Re-enable this test once Inbox Delegation supports instance delegations to organizations.
+  // At the moment, app-controlled instance delegations are not included in the Authorized Parties response,
+  // making this test case irrelevant.
     ];
     const expectedInstancesSubUnit = [
       expectedSubUnit.instanceIdDelegatedToPerson,
