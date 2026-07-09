@@ -358,17 +358,14 @@
 
     private async Task ConfirmReset()
     {
-        var parameters = new DialogParameters<ConfirmDialog>
-        {
-            { x => x.ContentText, $"Sett Status = Pending og Retries = 0 for alle {_results!.Count} meldinger i gjeldende resultat?" },
-            { x => x.ButtonText, "Tilbakestill" },
-            { x => x.Color, Color.Warning },
-        };
+        var confirmed = await Confirm.ShowAsync(
+            DialogService,
+            "Tilbakestill til pending",
+            $"Sett Status = Pending og Retries = 0 for alle {_results!.Count} meldinger i gjeldende resultat?",
+            "Tilbakestill",
+            Color.Warning);
 
-        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Tilbakestill til pending", parameters);
-        var result = await dialog.Result;
-
-        if (result is { Canceled: false })
+        if (confirmed)
         {
             await ResetStatus();
         }
@@ -397,7 +394,7 @@
         }
         catch (Exception ex)
         {
-            Error = $"Feil ved tilbakestilling: {ex.Message}";
+            Error = $"Feil ved tilbakestilling: {ErrorText.Flatten(ex)}";
         }
         finally
         {
