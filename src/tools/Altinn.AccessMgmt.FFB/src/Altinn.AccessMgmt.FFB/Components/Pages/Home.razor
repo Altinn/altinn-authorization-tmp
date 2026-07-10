@@ -48,30 +48,23 @@
             <ol class="ffb-guide">
                 <li>
                     Opprett tjenesten <code>Services/Tools/MinSideService.cs</code> med signaturen
-                    <pre class="ffb-pre">public sealed class MinSideService(IEnvironmentDbContextFactory dbFactory)
-{
-    public async Task&lt;MinResult&gt; RunAsync(
-        string environment, ..., CancellationToken ct = default)
-    {
-        using var db = dbFactory.CreateContext(environment);
-        ...
-    }
-}</pre>
-                    og registrer den som singleton i <code>Program.cs</code>.
+                    <code>RunAsync(string environment, ..., CancellationToken ct = default)</code>.
+                    Den registreres automatisk i DI.
                 </li>
                 <li>
-                    Opprett <code>Components/Pages/Tools/MinSide.razor</code>
-                    med <code>@@page "/tools/min-side"</code> og
-                    <pre class="ffb-pre">@@inherits EnvironmentPageBase
-@@inject MinSideService Service
-
-private async Task Run() => await RunAsync(async () =>
-    _result = await Service.RunAsync(EnvState.Current, ...));</pre>
-                    Basen gir <code>Loading</code>/<code>Error</code> og miljøbytte-håndtering
-                    (overstyr <code>OnEnvironmentChangedAsync</code> for å tømme/relaste).
+                    Opprett <code>Components/Pages/Tools/MinSide.razor</code> med
+                    <code>@@inherits EnvironmentPageBase</code> og kjør arbeid via
+                    <code>RunAsync(...)</code> — basen gir <code>Loading</code>/<code>Error</code>
+                    og miljøbytte-håndtering (overstyr <code>OnEnvironmentChangedAsync</code>).
                 </li>
-                <li>Legg til nav-lenke i <code>Components/Layout/NavMenu.razor</code> under «Verktøy».</li>
+                <li>
+                    Legg til én oppføring i <code>Components/Layout/NavRegistry.cs</code> —
+                    siden dukker opp både i menyen og her på Hjem.
+                </li>
             </ol>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Fullstendig oppskrift med kodeeksempler: <code>README.md</code> i prosjektrota.
+            </MudText>
         </MudPaper>
 
         <MudPaper Elevation="1" Class="pa-4 mb-4">
@@ -83,39 +76,31 @@ private async Task Run() => await RunAsync(async () =>
             </MudText>
             <ol class="ffb-guide">
                 <li>
-                    Opprett <code>Jobs/MinNyJob.cs</code>:
-                    <pre class="ffb-pre">public static class MinNyJob
-{
-    public const string JobName = "MinNyJob";
-
-    public static async Task RunAsync(
-        DuoRepo repo, JobRun run,
-        MinNyJobOptions opts, CancellationToken ct = default)
-    {
-        run.AddLog("Starter...");
-        var rows = await repo.QueryAccAsync&lt;MyDto&gt;(sql, ct: ct);
-        run.AddSql(rows.Select(r => $"-- {r.Id}"));
-    }
-}</pre>
+                    Opprett <code>Jobs/MinNyJob.cs</code> — statisk klasse med
+                    <code>JobName</code>-konstant, <code>RunAsync(DuoRepo, JobRun, opts, ct)</code>
+                    og options-record i samme fil.
                 </li>
                 <li>
-                    Legg til <code>StartMinNyJob(...)</code> i <code>IJobRunner</code>
+                    Legg til <code>StartMinNy(...)</code> i <code>IJobRunner</code>
                     og implementer i <code>JobRunner.cs</code> via <code>FireAndForget</code>.
                 </li>
                 <li>
-                    Opprett <code>Components/Pages/Jobs/MinNyJob.razor</code>.
-                    Følg mønsteret fra <code>EntitySync.razor</code>:
-                    <code>&lt;EnvironmentMultiSelect&gt;</code> for miljøvalg,
-                    <code>&lt;JobRunList&gt;</code> for kjøringslisten (kall <code>Refresh()</code>
-                    etter start), og <code>Confirm.ShowAsync</code> før destruktive steg.
+                    Opprett <code>Components/Pages/Jobs/MinNyJob.razor</code> etter mønsteret
+                    fra <code>AssignmentSync.razor</code>: <code>&lt;EnvironmentMultiSelect&gt;</code>,
+                    <code>&lt;JobRunList&gt;</code> (kall <code>Refresh()</code> etter start) og
+                    <code>Confirm.ShowAsync</code> før destruktive steg.
                 </li>
-                <li>Legg til nav-lenke i <code>NavMenu.razor</code> under «Jobber».</li>
+                <li>Legg til én oppføring i <code>NavRegistry.cs</code>.</li>
                 <li>
-                    <em>Valgfritt — planlegging:</em> Legg til konstant i <code>JobTypes</code>
-                    (<code>Config/JobSchedulesConfig.cs</code>) og en <code>case</code> i
-                    <code>JobSchedulerService.FireSchedule</code>.
+                    <em>Valgfritt — planlegging:</em> krever <code>JobTypes</code>-konstant,
+                    <code>ScheduledMinNyOptions</code> + property på <code>JobScheduleEntry</code>,
+                    og <code>case</code> + mapper i <code>JobSchedulerService.FireSchedule</code>.
                 </li>
             </ol>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Fullstendig oppskrift, inkludert kjørenavn-grammatikken som
+                <code>JobRunList</code> matcher på: <code>README.md</code> i prosjektrota.
+            </MudText>
         </MudPaper>
 
         <MudPaper Elevation="1" Class="pa-4">
