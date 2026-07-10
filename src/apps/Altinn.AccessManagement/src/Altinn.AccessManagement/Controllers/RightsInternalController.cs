@@ -8,13 +8,13 @@ using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessManagement.Mappers;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Utilities;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.ProblemDetails;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -29,7 +29,6 @@ namespace Altinn.AccessManagement.Controllers
     public class RightsInternalController : ControllerBase
     {
         private readonly ILogger _logger;
-        private readonly IMapper _mapper;
         private readonly IPolicyInformationPoint _pip;
         private readonly ISingleRightsService _rights;
         private readonly IAltinn2RightsService _rightsForAltinn2;
@@ -39,15 +38,13 @@ namespace Altinn.AccessManagement.Controllers
         /// Initializes a new instance of the <see cref="RightsInternalController"/> class.
         /// </summary>
         /// <param name="logger">the logger</param>
-        /// <param name="mapper">handler for mapping between internal and external models</param>
         /// <param name="policyInformationPoint">The policy information point</param>
         /// <param name="singleRightsService">Service implementation for providing rights operations for BFF and external integrations</param>
         /// <param name="rightsForAltinn2">Service implementation for providing rights operations for Altinn 2 integrations</param>
         /// <param name="assignmentService">Service implementation for assignment operations</param>
-        public RightsInternalController(ILogger<RightsInternalController> logger, IMapper mapper, IPolicyInformationPoint policyInformationPoint, ISingleRightsService singleRightsService, IAltinn2RightsService rightsForAltinn2, IAssignmentService assignmentService)
+        public RightsInternalController(ILogger<RightsInternalController> logger, IPolicyInformationPoint policyInformationPoint, ISingleRightsService singleRightsService, IAltinn2RightsService rightsForAltinn2, IAssignmentService assignmentService)
         {
             _logger = logger;
-            _mapper = mapper;
             _pip = policyInformationPoint;
             _rights = singleRightsService;
             _rightsForAltinn2 = rightsForAltinn2;
@@ -85,7 +82,7 @@ namespace Altinn.AccessManagement.Controllers
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
 
-                RightsDelegationCheckRequest rightDelegationStatusRequestInternal = _mapper.Map<RightsDelegationCheckRequest>(rightsDelegationCheckRequest);
+                RightsDelegationCheckRequest rightDelegationStatusRequestInternal = rightsDelegationCheckRequest.ToInternal();
                 rightDelegationStatusRequestInternal.From = reportee.SingleToList();
 
                 DelegationCheckResponse delegationCheckResultInternal = await _rights.RightsDelegationCheck(authenticatedUserId, authenticationLevel, rightDelegationStatusRequestInternal);
@@ -99,7 +96,7 @@ namespace Altinn.AccessManagement.Controllers
                     return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
                 }
 
-                return _mapper.Map<List<RightDelegationCheckResultExternal>>(delegationCheckResultInternal.RightDelegationCheckResults);
+                return delegationCheckResultInternal.RightDelegationCheckResults.ToExternal();
             }
             catch (ValidationException valEx)
             {
@@ -152,7 +149,7 @@ namespace Altinn.AccessManagement.Controllers
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
 
-                DelegationLookup rightsDelegationRequestInternal = _mapper.Map<DelegationLookup>(rightsDelegationRequest);
+                DelegationLookup rightsDelegationRequestInternal = rightsDelegationRequest.ToInternal();
                 rightsDelegationRequestInternal.From = reportee.SingleToList();
 
                 DelegationActionResult delegationResultInternal = await _rights.DelegateRights(authenticatedUserId, authenticatedUserPartyUuid, authenticationLevel, rightsDelegationRequestInternal, cancellationToken);
@@ -166,7 +163,7 @@ namespace Altinn.AccessManagement.Controllers
                     return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
                 }
 
-                return _mapper.Map<RightsDelegationResponseExternal>(delegationResultInternal);
+                return delegationResultInternal.ToExternal();
             }
             catch (ValidationException valEx)
             {
@@ -202,7 +199,7 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<IActionResult> GetOfferedRights([FromRoute] int party, [FromQuery] Guid? to, CancellationToken cancellationToken)
         {
             var delegations = await _rightsForAltinn2.GetOfferedRights(party, to, cancellationToken);
-            var response = _mapper.Map<IEnumerable<RightDelegationExternal>>(delegations);
+            var response = delegations.ToExternal();
             return Ok(response);
         }
 
@@ -223,7 +220,7 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<IActionResult> GetReceivedRights([FromRoute] int party, CancellationToken cancellationToken)
         {
             var delegations = await _rightsForAltinn2.GetReceivedRights(party, cancellationToken);
-            var response = _mapper.Map<IEnumerable<RightDelegationExternal>>(delegations);
+            var response = delegations.ToExternal();
             return Ok(response);
         }
 
@@ -259,7 +256,7 @@ namespace Altinn.AccessManagement.Controllers
                 }
 
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
-                var delegation = _mapper.Map<DelegationLookup>(body);
+                var delegation = body.ToInternal();
 
                 delegation.To = reportee.SingleToList();
 
@@ -325,7 +322,7 @@ namespace Altinn.AccessManagement.Controllers
                 }
 
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
-                var delegation = _mapper.Map<DelegationLookup>(body);
+                var delegation = body.ToInternal();
 
                 delegation.From = reportee.SingleToList();
                 var result = await _rights.RevokeRightsDelegation(authenticatedUserId, authenticatedUserPartyUuid, delegation, cancellationToken);
@@ -376,7 +373,7 @@ namespace Altinn.AccessManagement.Controllers
         [FeatureGate(FeatureFlags.RightsDelegationApi)]
         public async Task<IActionResult> ClearAccessCache([FromRoute] int party, [FromBody] BaseAttributeExternal to, CancellationToken cancellationToken)
         {
-            BaseAttribute toAttribute = _mapper.Map<BaseAttribute>(to);
+            BaseAttribute toAttribute = to.ToInternal();
             HttpResponseMessage response = await _rightsForAltinn2.ClearReporteeRights(party, toAttribute, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {

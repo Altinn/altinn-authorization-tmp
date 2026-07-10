@@ -6,11 +6,11 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessManagement.Mappers;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.ProblemDetails;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,19 +23,15 @@ namespace Altinn.AccessManagement.Controllers;
 [Route("accessmanagement/api")]
 public class AppsInstanceDelegationController : ControllerBase
 {
-    private readonly IMapper _mapper;
     private readonly IAppsInstanceDelegationService _appInstanceDelegationService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppsInstanceDelegationController"/> class.
     /// </summary>
-    /// <param name="mapper">mapper service</param>
     /// <param name="appInstanceDelegationService">app instance delegation handler</param>
     public AppsInstanceDelegationController(
-        IMapper mapper,
         IAppsInstanceDelegationService appInstanceDelegationService)
     {
-        _mapper = mapper;
         _appInstanceDelegationService = appInstanceDelegationService;
     }
 
@@ -76,7 +72,7 @@ public class AppsInstanceDelegationController : ControllerBase
         }
 
         PaginatedLinks? next = new PaginatedLinks(null);
-        IEnumerable<ResourceRightDelegationCheckResultDto> data = _mapper.Map<IEnumerable<ResourceRightDelegationCheckResultDto>>(serviceResult.Value.ResourceRightDelegationCheckResults);
+        IEnumerable<ResourceRightDelegationCheckResultDto> data = serviceResult.Value.ResourceRightDelegationCheckResults.ToDto();
 
         Paginated<ResourceRightDelegationCheckResultDto> result = new Paginated<ResourceRightDelegationCheckResultDto>(next, data);
 
@@ -113,7 +109,7 @@ public class AppsInstanceDelegationController : ControllerBase
             return Forbid();
         }
 
-        AppsInstanceDelegationRequest request = _mapper.Map<AppsInstanceDelegationRequest>(appInstanceDelegationRequestDto);
+        AppsInstanceDelegationRequest request = appInstanceDelegationRequestDto.ToInternal();
 
         request.ResourceId = resourceId;
         request.InstanceId = instanceId;
@@ -134,10 +130,10 @@ public class AppsInstanceDelegationController : ControllerBase
 
         if (validDelegations == totalDelegations)
         {
-            return Ok(_mapper.Map<AppsInstanceDelegationResponseDto>(serviceResult.Value));
+            return Ok(serviceResult.Value.ToDto());
         }
 
-        return StatusCode(StatusCodes.Status206PartialContent, _mapper.Map<AppsInstanceDelegationResponseDto>(serviceResult.Value));
+        return StatusCode(StatusCodes.Status206PartialContent, serviceResult.Value.ToDto());
     }
 
     /// <summary>
@@ -183,7 +179,7 @@ public class AppsInstanceDelegationController : ControllerBase
             return serviceResult.Problem.ToActionResult();
         }
 
-        List<AppsInstanceDelegationResponseDto> list = _mapper.Map<List<AppsInstanceDelegationResponseDto>>(serviceResult.Value);
+        List<AppsInstanceDelegationResponseDto> list = serviceResult.Value.ToDto();
         PaginatedLinks links = new PaginatedLinks(null);
         Paginated<AppsInstanceDelegationResponseDto> result = new Paginated<AppsInstanceDelegationResponseDto>(links, list);
 
@@ -211,7 +207,7 @@ public class AppsInstanceDelegationController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult?> Revoke([FromBody] AppsInstanceDelegationRequestDto appInstanceDelegationRequestDto, [FromRoute] string resourceId, [FromRoute] string instanceId, [FromHeader(Name = "PlatformAccessToken")] string token, CancellationToken cancellationToken = default)
     {
-        AppsInstanceDelegationRequest request = _mapper.Map<AppsInstanceDelegationRequest>(appInstanceDelegationRequestDto);
+        AppsInstanceDelegationRequest request = appInstanceDelegationRequestDto.ToInternal();
 
         ResourceIdUrn.ResourceId? performer = GetOrgAppFromToken(token);
 
@@ -238,10 +234,10 @@ public class AppsInstanceDelegationController : ControllerBase
 
         if (validDelegations == totalDelegations)
         {
-            return Ok(_mapper.Map<AppsInstanceRevokeResponseDto>(serviceResult.Value));
+            return Ok(serviceResult.Value.ToDto());
         }
 
-        return StatusCode(StatusCodes.Status206PartialContent, _mapper.Map<AppsInstanceRevokeResponseDto>(serviceResult.Value));
+        return StatusCode(StatusCodes.Status206PartialContent, serviceResult.Value.ToDto());
     }
 
     /// <summary>
@@ -286,7 +282,7 @@ public class AppsInstanceDelegationController : ControllerBase
             return serviceResult.Problem?.ToActionResult();
         }
 
-        List<AppsInstanceRevokeResponseDto> items = _mapper.Map<List<AppsInstanceRevokeResponseDto>>(serviceResult.Value);
+        List<AppsInstanceRevokeResponseDto> items = serviceResult.Value.ToDto();
         PaginatedLinks links = new PaginatedLinks(null);
 
         Paginated<AppsInstanceRevokeResponseDto> result = new(links, items);

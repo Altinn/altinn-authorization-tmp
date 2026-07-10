@@ -1,11 +1,11 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessManagement.Mappers;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Authorization.Api.Contracts.Authorization;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -16,7 +16,6 @@ namespace Altinn.AccessManagement.Controllers;
 [Route("accessmanagement/api/v1/policyinformation")]
 [ApiController]
 public class PolicyInformationPointController(
-    IMapper mapper,
     IPolicyInformationPoint pip,
     IAuthorizedPartyRepoServiceEf authorizedPartyRepoService
     ) : ControllerBase
@@ -44,7 +43,7 @@ public class PolicyInformationPointController(
             return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
         }
 
-        return mapper.Map<List<DelegationChangeExternal>>(response.DelegationChanges);
+        return response.DelegationChanges.ToExternal();
     }
 
     /// <summary>

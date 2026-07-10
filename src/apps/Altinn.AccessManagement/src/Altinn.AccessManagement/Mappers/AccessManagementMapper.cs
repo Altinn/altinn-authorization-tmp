@@ -1,92 +1,130 @@
-﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.ResourceRegistry;
-using Altinn.AccessManagement.Enums;
+using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.AccessManagement.Core.Models.Rights;
 using Altinn.AccessManagement.Models;
 using Altinn.Authorization.ABAC.Constants;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
-using Altinn.Platform.Register.Models;
+using Altinn.Urn.Json;
+using Riok.Mapperly.Abstractions;
 
-namespace Altinn.AccessManagement.Mappers
+namespace Altinn.AccessManagement.Mappers;
+
+/// <summary>
+/// Maps between the internal rights/delegation models and the external API models used by the AccessManagement controllers.
+/// </summary>
+[Mapper]
+public static partial class AccessManagementMapper
 {
     /// <summary>
-    /// A class that holds the access management mapper configuration
+    /// Maps a rights delegation check request to its internal representation. The From attribute is set separately by the caller from the authenticated reportee.
     /// </summary>
-    public class AccessManagementMapper : AutoMapper.Profile
+    [MapperIgnoreTarget(nameof(RightsDelegationCheckRequest.From))]
+    public static partial RightsDelegationCheckRequest ToInternal(this RightsDelegationCheckRequestExternal request);
+
+    /// <summary>
+    /// Maps a list of rights delegation check results to their external representation.
+    /// </summary>
+    public static partial List<RightDelegationCheckResultExternal> ToExternal(this List<RightDelegationCheckResult> results);
+
+    [MapProperty(nameof(RightDelegationCheckResult.Action) + "." + nameof(AttributeMatch.Value), nameof(RightDelegationCheckResultExternal.Action))]
+    private static partial RightDelegationCheckResultExternal ToExternal(this RightDelegationCheckResult result);
+
+    /// <summary>
+    /// Maps a rights delegation request to a delegation lookup. The From attribute is set separately by the caller from the authenticated reportee.
+    /// </summary>
+    [MapperIgnoreTarget(nameof(DelegationLookup.From))]
+    public static partial DelegationLookup ToInternal(this RightsDelegationRequestExternal request);
+
+    /// <summary>
+    /// Maps a request to revoke an offered delegation to a delegation lookup. The From attribute is set separately by the caller from the authenticated reportee.
+    /// </summary>
+    [MapperIgnoreTarget(nameof(DelegationLookup.From))]
+    public static partial DelegationLookup ToInternal(this RevokeOfferedDelegationExternal request);
+
+    /// <summary>
+    /// Maps a request to revoke a received delegation to a delegation lookup. The To attribute is set separately by the caller from the authenticated reportee.
+    /// </summary>
+    [MapperIgnoreTarget(nameof(DelegationLookup.To))]
+    public static partial DelegationLookup ToInternal(this RevokeReceivedDelegationExternal request);
+
+    /// <summary>
+    /// Maps a right specified by resource and action to its internal representation. The action is only identified by its attribute value on the
+    /// external model, so the internal <see cref="AttributeMatch"/> is reconstructed using the well-known XACML action attribute id.
+    /// </summary>
+    private static Right ToInternal(this BaseRightExternal right) => new()
     {
-        /// <summary>
-        /// Configuration for accessmanagement mapper
-        /// </summary>
-        public AccessManagementMapper()
-        {
-            AllowNullCollections = true;
-            CreateMap<Party, PartyExternal>();
-            CreateMap<Delegation, DelegationExternal>();
-            CreateMap<CompetentAuthority, CompetentAuthorityExternal>()
-                .ForMember(dest => dest.Orgcode, act => act.MapFrom(src => src.Orgcode))
-                .ForMember(dest => dest.Organization, act => act.MapFrom(src => src.Organization))
-                .ForMember(dest => dest.Name, act => act.MapFrom(src => src.Name));
-            CreateMap<ResourceReference, ResourceReferenceExternal>()
-                .ForMember(dest => dest.ReferenceType, act => act.MapFrom(src => src.ReferenceType))
-                .ForMember(dest => dest.ReferenceSource, act => act.MapFrom(src => src.ReferenceSource))
-                .ForMember(dest => dest.Reference, act => act.MapFrom(src => src.Reference));
-            CreateMap<AttributeMatch, AttributeMatchExternal>();
-            CreateMap<AttributeMatchExternal, AttributeMatch>();
-            CreateMap<BaseAttribute, AttributeDto>();
-            CreateMap<BaseAttribute, BaseAttributeExternal>();
-            CreateMap<AttributeDto, BaseAttribute>();
-            CreateMap<BaseAttributeExternal, BaseAttribute>();
-            CreateMap<PolicyAttributeMatch, PolicyAttributeMatchExternal>();
-            CreateMap<PolicyAttributeMatchExternal, PolicyAttributeMatch>();
+        Resource = right.Resource.ToInternal(),
+        Action = new AttributeMatch { Id = XacmlConstants.MatchAttributeIdentifiers.ActionId, Value = right.Action }
+    };
 
-            // Rights
-            CreateMap<RightSource, RightSourceExternal>();
-            CreateMap<RightSourceExternal, RightSource>();
-            CreateMap<RightsDelegationCheckRequestExternal, RightsDelegationCheckRequest>();
-            CreateMap<RightDelegationCheckResult, RightDelegationCheckResultExternal>()
-                .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
-            CreateMap<Detail, DetailExternal>();
-            CreateMap<Right, RightExternal>()
-                .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
-            CreateMap<BaseRightExternal, Right>()
-                .ForMember(dest => dest.Action, opt => opt.MapFrom(src =>
-                    new AttributeMatch
-                    {
-                        Id = XacmlConstants.MatchAttributeIdentifiers.ActionId,
-                        Value = src.Action
-                    }));
-            CreateMap<Right, BaseRightExternal>()
-                .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
-            CreateMap<RightDelegation, RightDelegationExternal>();
+    private static partial List<AttributeMatch> ToInternal(this List<AttributeMatchExternal> matches);
 
-            // Delegation
-            CreateMap<RightsDelegationRequestExternal, DelegationLookup>();
-            CreateMap<RevokeOfferedDelegationExternal, DelegationLookup>();
-            CreateMap<RevokeReceivedDelegationExternal, DelegationLookup>();
-            CreateMap<DelegationActionResult, RightsDelegationResponseExternal>()
-                .ForMember(dest => dest.RightDelegationResults, act => act.MapFrom(src => src.Rights));
-            CreateMap<RightDelegationResult, RightDelegationResultExternal>()
-                .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
-            CreateMap<DelegationChange, DelegationChangeExternal>();
-            CreateMap<DelegationChangeType, DelegationChangeTypeExternal>();
+    /// <summary>
+    /// Maps the result of a rights delegation to its external representation.
+    /// </summary>
+    [MapProperty(nameof(DelegationActionResult.Rights), nameof(RightsDelegationResponseExternal.RightDelegationResults))]
+    public static partial RightsDelegationResponseExternal ToExternal(this DelegationActionResult result);
 
-            CreateMap<AuthorizedParty, AuthorizedPartyDto>();
-            CreateMap<AuthorizedParty.AuthorizedResourceInstance, AuthorizedPartyDto.AuthorizedResourceInstance>();
-            CreateMap<AuthorizedPartyType, AuthorizedPartyTypeDto>();
-            CreateMap<AppsInstanceDelegationRequestDto, AppsInstanceDelegationRequest>()
-                .ForMember(dest => dest.From, act => act.MapFrom(src => src.From.Value))
-                .ForMember(dest => dest.To, act => act.MapFrom(src => src.To.Value));
-            CreateMap<Models.RightDto, RightInternal>()
-                .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
-            CreateMap<AppsInstanceDelegationResponse, AppsInstanceDelegationResponseDto>();
-            CreateMap<InstanceRightDelegationResult, RightDelegationResultDto>();
-            CreateMap<InstanceDelegationModeExternal, InstanceDelegationMode>();
-            CreateMap<AppsInstanceRevokeResponse, AppsInstanceRevokeResponseDto>();
-            CreateMap<InstanceRightRevokeResult, RightRevokeResultDto>();
-            CreateMap<ResourceRightDelegationCheckResult, ResourceRightDelegationCheckResultDto>();
-        }
+    [MapProperty(nameof(RightDelegationResult.Action) + "." + nameof(AttributeMatch.Value), nameof(RightDelegationResultExternal.Action))]
+    private static partial RightDelegationResultExternal ToExternal(this RightDelegationResult result);
 
-        private static bool IsGuid(string value) => Guid.TryParse(value, out _);
-    }
+    /// <summary>
+    /// Maps rights delegated to or from Altinn 2 to their external representation.
+    /// </summary>
+    public static partial IEnumerable<RightDelegationExternal> ToExternal(this IEnumerable<RightDelegation> delegations);
+
+    /// <summary>
+    /// Maps an attribute used to identify the recipient to clear access caching for. The Urn is only present on the internal model and stays unset here.
+    /// </summary>
+    [MapperIgnoreTarget(nameof(BaseAttribute.Urn))]
+    public static partial BaseAttribute ToInternal(this BaseAttributeExternal attribute);
+
+    /// <summary>
+    /// Maps a list of delegation changes to their external representation.
+    /// </summary>
+    public static partial List<DelegationChangeExternal> ToExternal(this List<DelegationChange> changes);
+
+    /// <summary>
+    /// Maps a request to delegate access to an app instance to its internal representation. ResourceId, InstanceId, PerformedBy,
+    /// InstanceDelegationMode and InstanceDelegationSource are not present on the request body and are set separately by the caller.
+    /// </summary>
+    [MapperIgnoreTarget(nameof(AppsInstanceDelegationRequest.ResourceId))]
+    [MapperIgnoreTarget(nameof(AppsInstanceDelegationRequest.InstanceId))]
+    [MapperIgnoreTarget(nameof(AppsInstanceDelegationRequest.PerformedBy))]
+    [MapperIgnoreTarget(nameof(AppsInstanceDelegationRequest.InstanceDelegationMode))]
+    [MapperIgnoreTarget(nameof(AppsInstanceDelegationRequest.InstanceDelegationSource))]
+    [MapProperty(nameof(AppsInstanceDelegationRequestDto.From) + "." + nameof(UrnJsonTypeValue<PartyUrn>.Value), nameof(AppsInstanceDelegationRequest.From))]
+    [MapProperty(nameof(AppsInstanceDelegationRequestDto.To) + "." + nameof(UrnJsonTypeValue<PartyUrn>.Value), nameof(AppsInstanceDelegationRequest.To))]
+    public static partial AppsInstanceDelegationRequest ToInternal(this AppsInstanceDelegationRequestDto dto);
+
+    [MapProperty(nameof(RightDto.Action) + "." + nameof(UrnJsonTypeValue<ActionUrn>.Value), nameof(RightInternal.Action))]
+    private static partial RightInternal ToInternal(this RightDto right);
+
+    /// <summary>
+    /// Maps the result of an app instance delegation to its external representation.
+    /// </summary>
+    public static partial AppsInstanceDelegationResponseDto ToDto(this AppsInstanceDelegationResponse response);
+
+    /// <summary>
+    /// Maps a list of app instance delegation results to their external representation.
+    /// </summary>
+    public static partial List<AppsInstanceDelegationResponseDto> ToDto(this List<AppsInstanceDelegationResponse> responses);
+
+    private static partial RightDelegationResultDto ToDto(this InstanceRightDelegationResult result);
+
+    /// <summary>
+    /// Maps the result of an app instance revoke to its external representation.
+    /// </summary>
+    public static partial AppsInstanceRevokeResponseDto ToDto(this AppsInstanceRevokeResponse response);
+
+    /// <summary>
+    /// Maps a list of app instance revoke results to their external representation.
+    /// </summary>
+    public static partial List<AppsInstanceRevokeResponseDto> ToDto(this List<AppsInstanceRevokeResponse> responses);
+
+    private static partial RightRevokeResultDto ToDto(this InstanceRightRevokeResult result);
+
+    /// <summary>
+    /// Maps a list of resource right delegation check results to their external representation.
+    /// </summary>
+    public static partial IEnumerable<ResourceRightDelegationCheckResultDto> ToDto(this List<ResourceRightDelegationCheckResult> results);
 }

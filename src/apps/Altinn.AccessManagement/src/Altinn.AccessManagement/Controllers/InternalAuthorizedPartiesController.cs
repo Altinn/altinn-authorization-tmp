@@ -6,10 +6,10 @@ using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -23,7 +23,6 @@ namespace Altinn.AccessManagement.Controllers;
 [Route("accessmanagement/api/v1/")]
 public class InternalAuthorizedPartiesController(
     ILogger<InternalAuthorizedPartiesController> logger,
-    IMapper mapper,
     IAuthorizedPartyRepoServiceEf authorizedPartyRepoService,
     IAuthorizedPartiesService authorizedPartiesService
     ) : ControllerBase
@@ -98,7 +97,7 @@ public class InternalAuthorizedPartiesController(
 
             if (userId != 0)
             {
-                return mapper.Map<List<AuthorizedPartyDto>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
+                return DtoMapper.ConvertToAuthorizedPartiesDto(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken)).ToList();
             }
 
             return Unauthorized();
@@ -192,7 +191,7 @@ public class InternalAuthorizedPartiesController(
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
-            return mapper.Map<AuthorizedPartyDto>(authorizedParty);
+            return DtoMapper.ConvertToAuthorizedPartyDto(authorizedParty);
         }
         catch (Exception ex)
         {
@@ -258,7 +257,7 @@ public class InternalAuthorizedPartiesController(
             }
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByPartyId(entity.PartyId.Value, filters, cancellationToken);
-            return mapper.Map<List<AuthorizedPartyDto>>(authorizedParties);
+            return DtoMapper.ConvertToAuthorizedPartiesDto(authorizedParties).ToList();
         }
         catch (ArgumentException ex)
         {
