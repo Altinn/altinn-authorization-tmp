@@ -152,7 +152,7 @@ else
                         <MudText Typo="Typo.body2">@(context.Resource?.Type?.Name ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="RefId">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Resource?.RefId ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Resource?.RefId ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="Provider">
                         <MudLink Href="@($"/provider/{context.Resource?.ProviderId}")">@(context.Resource?.Provider?.Name ?? "–")</MudLink>
@@ -183,7 +183,7 @@ else
                         <MudLink Href="@($"/package/{context.PackageId}")">@(context.Package?.Name ?? context.PackageId.ToString())</MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Package?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Package?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="Area">
                         <MudText Typo="Typo.body2">@(context.Package?.Area?.Name ?? "–")</MudText>
@@ -194,7 +194,7 @@ else
                     <MudTd DataLabel="From AssignmentPackage">
                         @if (context.AssignmentPackageId.HasValue)
                         {
-                            <MudText Typo="Typo.caption" Style="font-family:monospace">@context.AssignmentPackageId</MudText>
+                            <MudText Typo="Typo.caption" Class="mono">@context.AssignmentPackageId</MudText>
                         }
                         else
                         {

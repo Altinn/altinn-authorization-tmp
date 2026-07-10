@@ -106,7 +106,7 @@
         }
         else
         {
-            <div style="overflow-x:auto;overflow-y:auto;max-height:500px;font-family:monospace;font-size:.82rem;padding:.5rem">
+            <div class="mono" style="overflow-x:auto;overflow-y:auto;max-height:500px;font-size:.82rem;padding:.5rem">
                 <JsonTree Element="_jsonDoc.RootElement" Depth="0" />
             </div>
         }
@@ -132,7 +132,7 @@
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Tidspunkt">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">
+                        <MudText Typo="Typo.caption" Class="mono">
                             @context.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
                         </MudText>
                     </MudTd>
@@ -140,7 +140,7 @@
                         <MudText Typo="Typo.body2">@context.Attempt</MudText>
                     </MudTd>
                     <MudTd DataLabel="Melding">
-                        <MudText Typo="Typo.body2" Style="white-space:pre-wrap;font-family:monospace;font-size:.8rem">
+                        <MudText Typo="Typo.body2" Class="mono" Style="white-space:pre-wrap;font-size:.8rem">
                             @context.Log
                         </MudText>
                     </MudTd>

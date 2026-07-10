@@ -90,7 +90,7 @@ else
                         <MudText Typo="Typo.body2">@(context.Resource?.Type?.Name ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="RefId">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Resource?.RefId ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Resource?.RefId ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="Provider">
                         <MudLink Href="@($"/provider/{context.Resource?.ProviderId}")">@(context.Resource?.Provider?.Name ?? "–")</MudLink>
@@ -120,7 +120,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Package?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Package?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="EntityVariant">
                         @if (context.EntityVariantId.HasValue)
@@ -168,7 +168,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.GetRole?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.GetRole?.Urn ?? "–")</MudText>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
@@ -188,7 +188,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.HasRole?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.HasRole?.Urn ?? "–")</MudText>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>

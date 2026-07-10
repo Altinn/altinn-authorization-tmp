@@ -61,7 +61,7 @@ else
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="ID">
-                    <MudText Typo="Typo.caption" Style="font-family:monospace">@context.Id</MudText>
+                    <MudText Typo="Typo.caption" Class="mono">@context.Id</MudText>
                 </MudTd>
                 <MudTd DataLabel="Jobb">
                     <MudChip T="string" Size="Size.Small" Color="@JobColor(context.JobType)">
@@ -72,7 +72,7 @@ else
                     <MudText Typo="Typo.body2">@context.Environment</MudText>
                 </MudTd>
                 <MudTd DataLabel="Cron">
-                    <MudText Typo="Typo.caption" Style="font-family:monospace">@context.Cron</MudText>
+                    <MudText Typo="Typo.caption" Class="mono">@context.Cron</MudText>
                 </MudTd>
                 <MudTd DataLabel="Status">
                     @if (context.Enabled)

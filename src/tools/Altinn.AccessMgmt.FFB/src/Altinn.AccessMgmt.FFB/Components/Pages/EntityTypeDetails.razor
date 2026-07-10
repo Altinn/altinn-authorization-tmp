@@ -82,7 +82,7 @@ else
                         <MudLink Href="@($"/role/{context.Id}")">@context.Name</MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="IsKeyRole">
                         <MudIcon Icon="@(context.IsKeyRole ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
@@ -126,7 +126,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Role?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Role?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="IsKeyRole">
                         <MudIcon Icon="@(context.Role?.IsKeyRole == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"

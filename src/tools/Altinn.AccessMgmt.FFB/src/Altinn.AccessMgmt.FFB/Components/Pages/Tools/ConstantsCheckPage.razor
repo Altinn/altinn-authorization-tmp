@@ -158,7 +158,7 @@
         @<div class="mb-2">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                 <MudIcon Icon="@icon" Size="Size.Small" Color="@iconColor" />
-                <MudText Typo="Typo.body2" Style="font-family:monospace;flex:1">@issue.Description</MudText>
+                <MudText Typo="Typo.body2" Class="mono" Style="flex:1">@issue.Description</MudText>
                 @if (issue.IsFixed)
                 {
                     <MudChip T="string" Size="Size.Small" Color="Color.Success"
@@ -184,7 +184,7 @@
             {
                 <div style="margin:4px 0 0 24px;padding:8px 10px;background:rgba(211,47,47,0.08);border-left:3px solid var(--mud-palette-error);border-radius:0 4px 4px 0">
                     <MudText Typo="Typo.caption" Color="Color.Error"
-                             Style="font-family:monospace;white-space:pre-wrap;word-break:break-all;user-select:text">@issue.Error</MudText>
+                             Class="mono" Style="white-space:pre-wrap;word-break:break-all;user-select:text">@issue.Error</MudText>
                 </div>
             }
         </div>;

@@ -162,7 +162,7 @@
 
             <TemplateColumn Title="ID" SortBy="@(x => x.Id)">
                 <CellTemplate>
-                    <MudText Typo="Typo.caption" Style="font-family:monospace">
+                    <MudText Typo="Typo.caption" Class="mono">
                         @context.Item.Id.ToString()[..8]…
                     </MudText>
                 </CellTemplate>
@@ -190,7 +190,7 @@
 
             <TemplateColumn Title="RefId" SortBy="@(x => x.RefId ?? string.Empty)">
                 <CellTemplate>
-                    <MudText Typo="Typo.caption" Style="font-family:monospace">
+                    <MudText Typo="Typo.caption" Class="mono">
                         @(context.Item.RefId ?? "–")
                     </MudText>
                 </CellTemplate>

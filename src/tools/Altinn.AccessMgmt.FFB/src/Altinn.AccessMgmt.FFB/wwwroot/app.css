@@ -8,6 +8,11 @@
     content: "An error has occurred."
 }
 
+/* Monospace text (ids, URNs, codes, SQL) — use instead of inline font-family styles. */
+.mono {
+    font-family: monospace;
+}
+
 /* Label/value rows inside SummaryCard (see Components/Shared/SummaryRow.razor). */
 .summary-label {
     width: 35%;

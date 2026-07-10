@@ -81,7 +81,7 @@ else
                         <MudText Typo="Typo.body2">@(context.Resource?.Type?.Name ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="RefId">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Resource?.RefId ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Resource?.RefId ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="Provider">
                         <MudLink Href="@($"/provider/{context.Resource?.ProviderId}")">@(context.Resource?.Provider?.Name ?? "–")</MudLink>
@@ -111,7 +111,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Role?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Role?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="EntityVariant">
                         @if (context.EntityVariantId.HasValue)

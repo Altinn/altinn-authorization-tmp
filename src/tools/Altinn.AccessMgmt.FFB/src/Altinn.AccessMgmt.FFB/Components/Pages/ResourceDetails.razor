@@ -59,7 +59,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Package?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Package?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="Area">
                         <MudText Typo="Typo.body2">@(context.Package?.Area?.Name ?? "–")</MudText>
@@ -93,7 +93,7 @@ else
                         </MudLink>
                     </MudTd>
                     <MudTd DataLabel="URN">
-                        <MudText Typo="Typo.caption" Style="font-family:monospace">@(context.Role?.Urn ?? "–")</MudText>
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Role?.Urn ?? "–")</MudText>
                     </MudTd>
                     <MudTd DataLabel="IsKeyRole">
                         <MudIcon Icon="@(context.Role?.IsKeyRole == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"

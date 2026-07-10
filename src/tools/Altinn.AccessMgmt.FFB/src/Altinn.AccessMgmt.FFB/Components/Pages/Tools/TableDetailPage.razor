@@ -15,7 +15,7 @@ else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
         <BackButton />
-        <MudText Typo="Typo.h4" Style="font-family:monospace">@_table.DisplayName</MudText>
+        <MudText Typo="Typo.h4" Class="mono">@_table.DisplayName</MudText>
         <MudChip T="string" Size="Size.Small" Color="Color.Default">@_table.Category</MudChip>
     </MudStack>
 
@@ -104,7 +104,7 @@ else
                                         @foreach (var row in rows.Take(30))
                                         {
                                             <tr>
-                                                <td style="font-family:monospace;font-size:.8125rem">
+                                                <td class="mono" style="font-size:.8125rem">
                                                     @row.Key
                                                 </td>
                                                 <td style="text-align:right;font-size:.8125rem">

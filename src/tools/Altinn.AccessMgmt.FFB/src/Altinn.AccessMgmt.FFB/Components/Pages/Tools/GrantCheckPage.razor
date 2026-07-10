@@ -130,7 +130,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
                         }
                         <MudChip T="string" Size="Size.Small" Color="Color.Default">@result.Environment</MudChip>
-                        <MudText Typo="Typo.subtitle1" Style="font-family:monospace">@($"{result.Schema}.{result.Table}")</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="mono">@($"{result.Schema}.{result.Table}")</MudText>
                         <MudSpacer />
                         @if (result.IsFixed)
                         {
@@ -156,7 +156,7 @@
                             <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">Mangler:</MudText>
                             @foreach (var m in result.Missing)
                             {
-                                <MudText Typo="Typo.body2" Style="font-family:monospace">@m.Role — @m.Privilege</MudText>
+                                <MudText Typo="Typo.body2" Class="mono">@m.Role — @m.Privilege</MudText>
                             }
                         }
                         @if (result.Missing.Count > 0)
@@ -165,7 +165,7 @@
                             <div style="background:var(--mud-palette-background-grey);border-radius:4px;padding:8px 10px">
                                 @foreach (var stmt in GrantCheckService.GrantStatements(result))
                                 {
-                                    <MudText Typo="Typo.caption" Style="font-family:monospace;white-space:pre-wrap;user-select:text">@stmt</MudText>
+                                    <MudText Typo="Typo.caption" Class="mono" Style="white-space:pre-wrap;user-select:text">@stmt</MudText>
                                 }
                             </div>
                         }
@@ -187,7 +187,7 @@
             </MudText>
             @foreach (var t in _missingFromDb)
             {
-                <MudText Typo="Typo.body2" Style="font-family:monospace">@($"[{t.Environment}] {t.Schema}.{t.Table}")</MudText>
+                <MudText Typo="Typo.body2" Class="mono">@($"[{t.Environment}] {t.Schema}.{t.Table}")</MudText>
             }
         </MudPaper>
     }

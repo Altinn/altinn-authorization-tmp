@@ -161,7 +161,7 @@ else
                 <RowTemplate>
                     <MudTd DataLabel="Role">
                         <MudLink Href="@($"/role/{context.RoleId}")">@(context.Role?.Name ?? context.RoleId.ToString())</MudLink>
-                        <MudText Typo="Typo.caption" Style="font-family:monospace;color:var(--mud-palette-text-secondary)">@context.Role?.Urn</MudText>
+                        <MudText Typo="Typo.caption" Class="mono" Style="color:var(--mud-palette-text-secondary)">@context.Role?.Urn</MudText>
                     </MudTd>
                     <MudTd DataLabel="Given to">
                         <MudLink Href="@($"/entity/{context.ToId}")">@(context.To?.Name ?? context.ToId.ToString())</MudLink>
@@ -195,7 +195,7 @@ else
                 <RowTemplate>
                     <MudTd DataLabel="Role">
                         <MudLink Href="@($"/role/{context.RoleId}")">@(context.Role?.Name ?? context.RoleId.ToString())</MudLink>
-                        <MudText Typo="Typo.caption" Style="font-family:monospace;color:var(--mud-palette-text-secondary)">@context.Role?.Urn</MudText>
+                        <MudText Typo="Typo.caption" Class="mono" Style="color:var(--mud-palette-text-secondary)">@context.Role?.Urn</MudText>
                     </MudTd>
                     <MudTd DataLabel="At entity">
                         <MudLink Href="@($"/entity/{context.FromId}")">@(context.From?.Name ?? context.FromId.ToString())</MudLink>
@@ -236,7 +236,7 @@ else
                 <RowTemplate>
                     <MudTd DataLabel="Role">
                         <MudLink Href="@($"/role/{context.From?.RoleId}")">@(context.From?.Role?.Name ?? context.From?.RoleId.ToString())</MudLink>
-                        <MudText Typo="Typo.caption" Style="font-family:monospace;color:var(--mud-palette-text-secondary)">@context.From?.Role?.Urn</MudText>
+                        <MudText Typo="Typo.caption" Class="mono" Style="color:var(--mud-palette-text-secondary)">@context.From?.Role?.Urn</MudText>
                     </MudTd>
                     <MudTd DataLabel="Delegated to">
                         <MudLink Href="@($"/entity/{context.To?.ToId}")">@(context.To?.To?.Name ?? context.To?.ToId.ToString())</MudLink>
@@ -274,7 +274,7 @@ else
                 <RowTemplate>
                     <MudTd DataLabel="Role">
                         <MudLink Href="@($"/role/{context.To?.RoleId}")">@(context.To?.Role?.Name ?? context.To?.RoleId.ToString())</MudLink>
-                        <MudText Typo="Typo.caption" Style="font-family:monospace;color:var(--mud-palette-text-secondary)">@context.To?.Role?.Urn</MudText>
+                        <MudText Typo="Typo.caption" Class="mono" Style="color:var(--mud-palette-text-secondary)">@context.To?.Role?.Urn</MudText>
                     </MudTd>
                     <MudTd DataLabel="Delegated by">
                         <MudLink Href="@($"/entity/{context.From?.ToId}")">@(context.From?.To?.Name ?? context.From?.ToId.ToString())</MudLink>
