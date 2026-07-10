@@ -27,6 +27,7 @@ public static class NavRegistry
 {
     public static readonly IReadOnlyList<NavEntry> All =
     [
+
         // ── Verktøy ───────────────────────────────────────────────────────────
         new("/entity-search", Icons.Material.Filled.ManageSearch, "Entity-søk",
             "Søk på entities via RefId, navn eller ID direkte mot databasen.", NavGroup.Tool),
