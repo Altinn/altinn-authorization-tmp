@@ -1,9 +1,7 @@
 @page "/tools/outbox"
 @inherits EnvironmentPageBase
-@using Altinn.AccessMgmt.PersistenceEF.Contexts
 @using Altinn.AccessMgmt.PersistenceEF.Models.Base
-@using Microsoft.EntityFrameworkCore
-@inject IEnvironmentDbContextFactory DbFactory
+@inject OutboxService OutboxService
 @inject NavigationManager Nav
 @inject IDialogService DialogService
 
@@ -40,7 +38,7 @@
                        Margin="Margin.Dense"
                        Clearable="true">
                 <MudSelectItem T="string?" Value="@((string?)null)">Alle</MudSelectItem>
-                @foreach (var h in KnownHandlers)
+                @foreach (var h in OutboxHandlerRegistry.KnownHandlers)
                 {
                     var hv = h;
                     <MudSelectItem T="string?" Value="@hv">@hv</MudSelectItem>
@@ -51,7 +49,7 @@
         @* ── Per-handler data model + filters ──────────────────────────────── *@
         @if (_handler is not null)
         {
-            @if (HandlerSchemas.TryGetValue(_handler, out var schema))
+            @if (OutboxHandlerRegistry.Schemas.TryGetValue(_handler, out var schema))
             {
                 <MudItem xs="12">
                     <MudExpansionPanel Text="Datamodell (JSON)">
@@ -62,7 +60,7 @@
                 </MudItem>
             }
 
-            @if (HandlerFilterFields.TryGetValue(_handler, out var fields))
+            @if (OutboxHandlerRegistry.FilterFields.TryGetValue(_handler, out var fields))
             {
                 @foreach (var (label, jsonKey) in fields)
                 {
@@ -230,48 +228,6 @@
 
     private static readonly OutboxStatus[] AllStatuses = Enum.GetValues<OutboxStatus>();
 
-    private static readonly string[] KnownHandlers =
-    [
-        "access_added", "access_removed",
-        "agent_added", "agent_removed",
-        "client_added", "client_removed",
-        "rightholder_added", "rightholder_removed",
-        "instance_added", "instance_removed",
-        "request_reviewed", "request_pending",
-    ];
-
-    private static readonly Dictionary<string, (string Label, string JsonKey)[]> HandlerFilterFields = new()
-    {
-        ["access_added"]        = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["access_removed"]      = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["agent_added"]         = [("Agent (AgentId)", "AgentId"),   ("Provider (ProviderId)", "ProviderId")],
-        ["agent_removed"]       = [("Agent (AgentId)", "AgentId"),   ("Provider (ProviderId)", "ProviderId")],
-        ["client_added"]        = [("Agent (AgentId)", "AgentId"),   ("Provider (ProviderId)", "ProviderId")],
-        ["client_removed"]      = [("Agent (AgentId)", "AgentId"),   ("Provider (ProviderId)", "ProviderId")],
-        ["rightholder_added"]   = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["rightholder_removed"] = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["instance_added"]      = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["instance_removed"]    = [("Fra (FromId)", "FromId"),       ("Til (ToId)", "ToId")],
-        ["request_reviewed"]    = [("Reviewer", "ReviewerId"),       ("Mottaker (RecipientId)", "RecipientId")],
-        ["request_pending"]     = [("Requester (RequesterId)", "RequesterId"), ("Mottaker (RecipientId)", "RecipientId")],
-    };
-
-    private static readonly Dictionary<string, string> HandlerSchemas = new()
-    {
-        ["access_added"]        = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\",\n  \"PackageIds\": [\"<guid>\"],\n  \"ResourceIds\": [\"<guid>\"],\n  \"Updated\": 1\n}",
-        ["access_removed"]      = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\",\n  \"PackageIds\": [\"<guid>\"],\n  \"ResourceIds\": [\"<guid>\"],\n  \"Updated\": 1\n}",
-        ["agent_added"]         = "{\n  \"AgentId\": \"<guid>\",\n  \"ProviderId\": \"<guid>\"\n}",
-        ["agent_removed"]       = "{\n  \"AgentId\": \"<guid>\",\n  \"ProviderId\": \"<guid>\"\n}",
-        ["client_added"]        = "{\n  \"AgentId\": \"<guid>\",\n  \"ProviderId\": \"<guid>\",\n  \"Clients\": [\"<guid>\"],\n  \"Updated\": 1\n}",
-        ["client_removed"]      = "{\n  \"AgentId\": \"<guid>\",\n  \"ProviderId\": \"<guid>\",\n  \"Clients\": [\"<guid>\"],\n  \"Updated\": 1\n}",
-        ["rightholder_added"]   = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\"\n}",
-        ["rightholder_removed"] = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\"\n}",
-        ["instance_added"]      = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\",\n  \"Instances\": [{\"InstanceIds\": [\"<string>\"], \"ResourceId\": \"<guid>\"}],\n  \"Updated\": 1\n}",
-        ["instance_removed"]    = "{\n  \"FromId\": \"<guid>\",\n  \"ToId\": \"<guid>\",\n  \"Instances\": [{\"InstanceIds\": [\"<string>\"], \"ResourceId\": \"<guid>\"}],\n  \"Updated\": 1\n}",
-        ["request_reviewed"]    = "{\n  \"ReviewerId\": \"<guid>\",\n  \"RecipientId\": \"<guid>\",\n  \"Resources\": [{\"Ref\": \"<guid>\", \"IsApproved\": true}],\n  \"Packages\": [{\"Ref\": \"<guid>\", \"IsApproved\": true}],\n  \"Updated\": 1\n}",
-        ["request_pending"]     = "{\n  \"RequesterId\": \"<guid>\",\n  \"RecipientId\": \"<guid>\",\n  \"ResourceIds\": [\"<guid>\"],\n  \"PackageIds\": [\"<guid>\"],\n  \"Updated\": 1\n}",
-    };
-
     // ── Filter state ──────────────────────────────────────────────────────────
 
     private DateTime? _from = DateTime.Today.AddDays(-1);
@@ -308,52 +264,13 @@
 
     // ── Query ─────────────────────────────────────────────────────────────────
 
-    private IQueryable<OutboxMessage> BuildQuery(AppDbContext db)
-    {
-        var activeStatuses = _selectedStatuses
-            .Where(kv => kv.Value)
-            .Select(kv => kv.Key)
-            .ToList();
-
-        var fromUtc = (_from ?? DateTime.Today.AddDays(-1)).ToUniversalTime();
-        var toUtc = (_to ?? DateTime.Today.AddDays(1)).AddDays(1).ToUniversalTime();
-
-        var query = db.OutboxMessages
-            .Where(m => m.CreatedAt >= fromUtc && m.CreatedAt < toUtc)
-            .Where(m => activeStatuses.Contains(m.Status))
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(_handler))
-        {
-            query = query.Where(m => m.Handler == _handler);
-        }
-
-        foreach (var (jsonKey, value) in _dataFilters)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                var pattern = $"%\"{jsonKey}\":\"{value}\"%";
-                query = query.Where(m => EF.Functions.Like(m.Data, pattern));
-            }
-        }
-
-        return query;
-    }
-
     private async Task Load()
     {
         _resetMessage = null;
 
-        await RunAsync(async () =>
-        {
-            using var db = DbFactory.CreateContext(EnvState.Current);
-
-            _results = await BuildQuery(db)
-                .AsNoTracking()
-                .OrderByDescending(m => m.CreatedAt)
-                .Take(MaxRows)
-                .ToListAsync();
-        });
+        await RunAsync(async ct =>
+            _results = await OutboxService.SearchAsync(
+                EnvState.Current, _from, _to, _handler, ActiveStatuses(), _dataFilters, MaxRows, ct));
     }
 
     private async Task ConfirmReset()
@@ -380,14 +297,8 @@
 
         try
         {
-            using var db = DbFactory.CreateContext(EnvState.Current);
-
-            var count = await BuildQuery(db)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(m => m.Status, OutboxStatus.Pending)
-                    .SetProperty(m => m.Retries, 0)
-                    .SetProperty(m => m.StartedAt, (DateTime?)null)
-                    .SetProperty(m => m.CompletedAt, (DateTime?)null));
+            var count = await OutboxService.ResetToPendingAsync(
+                EnvState.Current, _from, _to, _handler, ActiveStatuses(), _dataFilters);
 
             await Load();
             _resetMessage = $"{count} melding(er) tilbakestilt til Pending.";
@@ -411,6 +322,12 @@
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private List<OutboxStatus> ActiveStatuses() =>
+        _selectedStatuses
+            .Where(kv => kv.Value)
+            .Select(kv => kv.Key)
+            .ToList();
 
     private static Color StatusColor(OutboxStatus status) => status switch
     {
