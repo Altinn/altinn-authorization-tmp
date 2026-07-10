@@ -1,6 +1,6 @@
 using MudBlazor;
 
-namespace Altinn.AccessMgmt.FFB.Components.Jobs;
+namespace Altinn.AccessMgmt.FFB.Components.Shared;
 
 /// <summary>
 /// Convenience wrapper around <see cref="ConfirmDialog"/> so pages confirm
