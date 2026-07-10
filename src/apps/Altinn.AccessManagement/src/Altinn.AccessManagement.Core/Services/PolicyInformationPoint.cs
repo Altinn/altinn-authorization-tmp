@@ -409,16 +409,18 @@ namespace Altinn.AccessManagement.Core.Services
             List<string> resourceIds = resourceId.SingleToList();
 
             Guid? fromParty = null;
-            HashSet<Guid> toParties = null;
+            List<Guid> toParties = null;
+            HashSet<Guid> toPartiesRuntimeDelegated = null;
 
             var from = await _dbContext.Entities
-                    .AsNoTracking()
+                    .AsNoTracking() 
                     .Where(e => e.PartyId == reporteePartyId)
                     .FirstOrDefaultAsync(cancellationToken);
             if (includeInstanceDelegations)
             {
                 fromParty = from?.Id;
-                toParties = new HashSet<Guid>();
+                toParties = new List<Guid>();
+                toPartiesRuntimeDelegated = [];
             }
 
             // Check if mainunit exists
@@ -501,8 +503,8 @@ namespace Altinn.AccessManagement.Core.Services
                             .Where(e => e.ParentId.HasValue && representativeFormTasks.Select(k => k.Assignment.FromId).Distinct().Contains(e.ParentId.Value))
                             .ToListAsync(cancellationToken);
 
-                        toParties.UnionWith(representativeFormTasks.Select(t => t.Assignment.FromId));
-                        toParties.UnionWith(representativeFormTasksSubUnits.Select(s => s.Id));
+                        toPartiesRuntimeDelegated.UnionWith(representativeFormTasks.Select(t => t.Assignment.FromId));
+                        toPartiesRuntimeDelegated.UnionWith(representativeFormTasksSubUnits.Select(s => s.Id));
                     }
                 }
             }
@@ -518,13 +520,13 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     if (coveredByPartyUuids.Any())
                     {
-                        toParties.UnionWith(coveredByPartyUuids);
+                        toParties.AddRange(coveredByPartyUuids);
                     }
                 }
             }
 
             // 3. Get all instance delegations of the resource both directly delegated to user and indirectly through keyrole units and the new 
-            if (includeInstanceDelegations && fromParty.HasValue && toParties.Count > 0)
+            if (includeInstanceDelegations && fromParty.HasValue && (toParties.Count > 0 || toPartiesRuntimeDelegated.Count > 0))
             {
                 if (resourceMatchType == ResourceAttributeMatchType.AltinnAppId)
                 {
@@ -532,15 +534,15 @@ namespace Altinn.AccessManagement.Core.Services
                     resourceIds = $"app_{resourceOrgApp[0]}_{resourceOrgApp[1]}".SingleToList();
                 }
 
-                delegations.AddRange(await GetInstanceDelegations(resourceIds, fromParty.Value, toParties.ToList(), cancellationToken));
+                delegations.AddRange(await GetInstanceDelegations(resourceIds, fromParty.Value, toParties.ToList(), toPartiesRuntimeDelegated.ToList(), cancellationToken));
             }
 
             return delegations;
         }
 
-        private async Task<IEnumerable<DelegationChange>> GetInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, CancellationToken cancellationToken = default)
+        private async Task<IEnumerable<DelegationChange>> GetInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toRuntimeDelegated, CancellationToken cancellationToken = default)
         {
-            IEnumerable<InstanceDelegationChange> instanceDelegations = await _delegationRepository.GetActiveInstanceDelegations(resourceIds, from, to, cancellationToken);
+            IEnumerable<InstanceDelegationChange> instanceDelegations = await _delegationRepository.GetActiveInstanceDelegations(resourceIds, from, to, toRuntimeDelegated, cancellationToken);
             return from InstanceDelegationChange instanceDelegation in instanceDelegations
                    let delegationChange = new DelegationChange
                    {

@@ -34,6 +34,11 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     private const int DaveUserId = 20930001;
     private const int DavePartyId = 50930001;
 
+    // Subject: Patrick (has RuntimeDelegatedSigning from TechCorpSubUnit)
+    private static readonly Guid PersonPatrickId = Guid.Parse("0196c000-0001-7001-8001-000000000050");
+    private const int PatrickUserId = 20930050;
+    private const int PatrickPartyId = 50930050;
+
     // Signing organizations
     private static readonly Guid OrgTechCorpId = Guid.Parse("0196c000-0001-7001-8001-000000000010");
     private static readonly Guid OrgTechCorpSubUnitId = Guid.Parse("0196c000-0001-7001-8001-000000000011");
@@ -56,11 +61,13 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     private static readonly Guid AssignFrankToTechCorp = Guid.Parse("0196c000-0002-7001-8001-000000000002");
     private static readonly Guid AssignFrankToTechCorpSubUnit = Guid.Parse("0196c000-0002-7001-8001-000000000003");
     private static readonly Guid AssignFrankToMegaCorp = Guid.Parse("0196c000-0002-7001-8001-000000000004");
+    private static readonly Guid AssignTechCorpSubUnitToPatrick = Guid.Parse("0196c000-0002-7001-8001-000000000005");
 
     // Instance IDs used in result assertions
     private const string InstanceIdTechCorp = "urn:altinn:instance-id:50930020/aabbccdd-0001-4001-8001-000000000001";
     private const string InstanceIdTechCorpSubUnit = "urn:altinn:instance-id:50930020/aabbccdd-0002-4001-8001-000000000002";
     private const string InstanceIdMegaCorp = "urn:altinn:instance-id:50930020/aabbccdd-0003-4001-8001-000000000003";
+    private const string InstanceIdTechCorpNotAppDelegated = "urn:altinn:instance-id:50930020/aabbccdd-0004-4001-8001-000000000004";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PolicyInformationPointRuntimeDelegatedSigningTest"/> class.
@@ -73,6 +80,18 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
         fixture.EnsureSeedOnce<PolicyInformationPointRuntimeDelegatedSigningTest>(db =>
         {
             db.Entities.AddRange(
+                new Entity()
+                {
+                    Id = PersonPatrickId,
+                    Name = "Patrick",
+                    TypeId = EntityTypeConstants.Person,
+                    VariantId = EntityVariantConstants.Person,
+                    PersonIdentifier = "07019012345",
+                    RefId = "07019012345",
+                    PartyId = PatrickPartyId,
+                    UserId = PatrickUserId,
+                    DateOfBirth = new DateOnly(1990, 1, 7),
+                },
                 new Entity()
                 {
                     Id = PersonDaveId,
@@ -154,6 +173,21 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 PackageId = PackageConstants.RuntimeDelegatedSigning.Id,
             });
 
+            // TechCorpSubUnit grants Patrick the RuntimeDelegatedSigning package
+            db.Assignments.Add(new Assignment()
+            {
+                Id = AssignTechCorpSubUnitToPatrick,
+                FromId = OrgTechCorpSubUnitId,
+                ToId = PersonPatrickId,
+                RoleId = RoleConstants.Rightholder,
+            });
+
+            db.AssignmentPackages.Add(new AssignmentPackage()
+            {
+                AssignmentId = AssignTechCorpSubUnitToPatrick,
+                PackageId = PackageConstants.RuntimeDelegatedSigning.Id,
+            });
+
             // Frank → TechCorp instance delegation (direct org)
             db.Assignments.Add(new Assignment()
             {
@@ -168,6 +202,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 AssignmentId = AssignFrankToTechCorp,
                 ResourceId = TestData.NavSykepengerDialog.Id,
                 InstanceId = InstanceIdTechCorp,
+                InstanceSourceType = InstanceSourceTypeConstants.AltinnApp,
                 PolicyPath = "nav_sykepenger_dialog/50930020/p50930010/delegationpolicy.xml",
                 PolicyVersion = "2025-01-01T00:00:00.0000000Z",
             });
@@ -186,6 +221,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 AssignmentId = AssignFrankToTechCorpSubUnit,
                 ResourceId = TestData.NavSykepengerDialog.Id,
                 InstanceId = InstanceIdTechCorpSubUnit,
+                InstanceSourceType = InstanceSourceTypeConstants.AltinnApp,
                 PolicyPath = "nav_sykepenger_dialog/50930020/p50930011/delegationpolicy.xml",
                 PolicyVersion = "2025-01-02T00:00:00.0000000Z",
             });
@@ -204,8 +240,19 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 AssignmentId = AssignFrankToMegaCorp,
                 ResourceId = TestData.NavSykepengerDialog.Id,
                 InstanceId = InstanceIdMegaCorp,
+                InstanceSourceType = InstanceSourceTypeConstants.AltinnApp,
                 PolicyPath = "nav_sykepenger_dialog/50930020/p50930040/delegationpolicy.xml",
                 PolicyVersion = "2025-01-03T00:00:00.0000000Z",
+            });
+
+            db.AssignmentInstances.Add(new AssignmentInstance()
+            {
+                AssignmentId = AssignFrankToTechCorp,
+                ResourceId = TestData.NavSykepengerDialog.Id,
+                InstanceId = InstanceIdTechCorpNotAppDelegated,
+                InstanceSourceType = InstanceSourceTypeConstants.EndUser,
+                PolicyPath = "nav_sykepenger_dialog/50930020/p50930012/delegationpolicy.xml",
+                PolicyVersion = "2025-01-04T00:00:00.0000000Z",
             });
 
             db.SaveChanges();
@@ -217,10 +264,10 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     /// <summary>
     /// Test: When Dave holds the RuntimeDelegatedSigning package from TechCorp,
     /// querying delegation changes from Frank's party returns the instance delegation
-    /// that Frank created for TechCorp directly.
+    /// that Frank created for TechCorp directly and the instance given to the sub-unit.
     /// </summary>
     [Fact]
-    public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningFromOrg_ReturnsOrgInstanceDelegation()
+    public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningFromOrg_ReturnsOrgAndSubOrgAppInstanceDelegationNotEnduserInstanceDelegation()
     {
         var request = new
         {
@@ -239,12 +286,19 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
         var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(
             _options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
 
         Assert.Contains(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
             d.FromUuid == PersonFrankId &&
             d.ToUuid == OrgTechCorpId &&
             d.InstanceId == InstanceIdTechCorp);
+
+        Assert.Contains(result, d =>
+            d.ResourceId == "nav_sykepenger_dialog" &&
+            d.FromUuid == PersonFrankId &&
+            d.ToUuid == OrgTechCorpSubUnitId &&
+            d.InstanceId == InstanceIdTechCorpSubUnit);
     }
 
     /// <summary>
@@ -253,11 +307,11 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     /// because sub-units of the signing org are included in the lookup.
     /// </summary>
     [Fact]
-    public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningFromOrg_ReturnsSubUnitInstanceDelegation()
+    public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningFromSubOrg_ReturnsSubUnitAppInstanceDelegation()
     {
         var request = new
         {
-            subject = new { id = "urn:altinn:userid", value = DaveUserId.ToString() },
+            subject = new { id = "urn:altinn:userid", value = PatrickUserId.ToString() },
             party = new { id = "urn:altinn:partyid", value = FrankPartyId.ToString() },
             resource = new[] { new { id = "urn:altinn:resource", value = "nav_sykepenger_dialog" } }
         };
@@ -272,6 +326,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
         var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(
             _options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
+        Assert.Single(result);
 
         Assert.Contains(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
@@ -285,7 +340,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     /// the instance delegation that Frank created for MegaCorp is not returned.
     /// </summary>
     [Fact]
-    public async Task GetDelegationChanges_UserHasNoRuntimeDelegatedSigningFromOrg_DoesNotReturnOrgInstanceDelegation()
+    public async Task GetDelegationChanges_UserHasNoRuntimeDelegatedSigningFromOrg_DoesNotReturnOrgAppInstanceDelegation()
     {
         var request = new
         {

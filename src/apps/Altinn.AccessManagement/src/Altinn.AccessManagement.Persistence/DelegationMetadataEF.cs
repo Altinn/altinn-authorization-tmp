@@ -757,16 +757,31 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toRuntimeDelegated, CancellationToken cancellationToken = default)
     {
-        var result = await DbContext.AssignmentInstances.AsNoTracking()
-           .Include(t => t.Assignment).ThenInclude(t => t.From)
-           .Include(t => t.Assignment).ThenInclude(t => t.To)
-           .Include(t => t.Resource).ThenInclude(t => t.Type)
-           .Where(t => t.Assignment.FromId == from)
-           .Where(t => resourceIds.Contains(t.Resource.RefId))
-           .Where(t => to.Contains(t.Assignment.ToId))
-           .ToListAsync(cancellationToken);
+        HashSet<AssignmentInstance> result = [];
+
+        result.UnionWith(await DbContext.AssignmentInstances.AsNoTracking()
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
+            .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Where(t => t.Assignment.FromId == from)
+            .Where(t => resourceIds.Contains(t.Resource.RefId))
+            .Where(t => to.Contains(t.Assignment.ToId))
+            .ToListAsync(cancellationToken));
+
+        if (toRuntimeDelegated != null && toRuntimeDelegated.Any())
+        {
+            result.UnionWith(await DbContext.AssignmentInstances.AsNoTracking()
+               .Include(t => t.Assignment).ThenInclude(t => t.From)
+               .Include(t => t.Assignment).ThenInclude(t => t.To)
+               .Include(t => t.Resource).ThenInclude(t => t.Type)
+               .Where(t => t.Assignment.FromId == from)
+               .Where(t => resourceIds.Contains(t.Resource.RefId))
+               .Where(t => t.InstanceSourceTypeId == InstanceSourceTypeConstants.AltinnApp.Id)
+               .Where(t => toRuntimeDelegated.Contains(t.Assignment.ToId))
+               .ToListAsync(cancellationToken));
+        }
 
         return result.Select(Convert).ToList();
     }
