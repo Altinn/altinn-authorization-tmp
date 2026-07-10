@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Reflection;
 using Altinn.AccessMgmt.FFB.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -17,16 +19,28 @@ public sealed class ConstantsCheckService(IEnvironmentDbContextFactory dbFactory
     /// </summary>
     public async Task<IReadOnlyList<CheckResult>> RunAllChecksAsync(string environment, CancellationToken ct = default)
     {
-        return await Task.WhenAll(
-            CheckEntityTypesAsync(environment, ct),
-            CheckEntityVariantsAsync(environment, ct),
-            CheckAreaGroupsAsync(environment, ct),
-            CheckAreasAsync(environment, ct),
-            CheckProviderTypesAsync(environment, ct),
-            CheckProvidersAsync(environment, ct),
-            CheckSystemEntitiesAsync(environment, ct),
-            CheckRolesAsync(environment, ct),
-            CheckPackagesAsync(environment, ct));
+        // Every Check*Async method must be listed here to run; the assert below
+        // catches a written-but-unregistered check in debug builds.
+        Func<string, CancellationToken, Task<CheckResult>>[] checks =
+        [
+            CheckEntityTypesAsync,
+            CheckEntityVariantsAsync,
+            CheckAreaGroupsAsync,
+            CheckAreasAsync,
+            CheckProviderTypesAsync,
+            CheckProvidersAsync,
+            CheckSystemEntitiesAsync,
+            CheckRolesAsync,
+            CheckPackagesAsync,
+        ];
+
+        Debug.Assert(
+            checks.Length == typeof(ConstantsCheckService)
+                .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Count(m => m.Name.StartsWith("Check", StringComparison.Ordinal) && m.Name.EndsWith("Async", StringComparison.Ordinal)),
+            "Every Check*Async method must be registered in the checks list above.");
+
+        return await Task.WhenAll(checks.Select(check => check(environment, ct)));
     }
 
     /// <summary>
