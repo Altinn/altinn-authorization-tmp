@@ -1,9 +1,7 @@
-﻿using System;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Resolvers;
-using Altinn.AccessManagement.Core.Resolvers.Extensions;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Resolvers;
@@ -60,12 +58,12 @@ public static class ResolverServiceCollection
         services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
         services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
         services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-        services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+        services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
         services.AddSingleton<IPartiesClient, PartiesClientMock>();
         services.AddSingleton<IProfileClient, ProfileClientMock>();
         services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
         services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-        services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
+        services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientDataMock>();
         services.AddSingleton<IProfileClient, ProfileClientMock>();
         services.AddSingleton<IAuthenticationClient, AuthenticationMock>();
     }
