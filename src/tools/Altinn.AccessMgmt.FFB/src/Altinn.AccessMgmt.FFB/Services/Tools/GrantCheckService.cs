@@ -20,8 +20,7 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
         string environment,
         IReadOnlyList<string> schemas,
         IReadOnlyList<string> roles,
-        IReadOnlyList<string> privileges,
-        CancellationToken ct = default)
+        IReadOnlyList<string> privileges)
     {
         var roleList = roles.ToList();
         var privilegeList = privileges.ToList();
@@ -103,7 +102,7 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
     /// <summary>
     /// Executes the GRANT statements for one table against the table's environment.
     /// </summary>
-    public async Task FixTableAsync(TableGrant table, CancellationToken ct = default)
+    public async Task FixTableAsync(TableGrant table)
     {
         using var db = dbFactory.CreateContext(table.Environment);
         var conn = db.Database.GetDbConnection();

@@ -46,7 +46,7 @@ public sealed class ConstantsCheckService(IEnvironmentDbContextFactory dbFactory
     /// <summary>
     /// Executes an issue's fix delegate against a fresh context for the environment.
     /// </summary>
-    public async Task ExecuteFixAsync(string environment, FixableIssue issue, CancellationToken ct = default)
+    public async Task ExecuteFixAsync(string environment, FixableIssue issue)
     {
         if (issue.Fix is null)
         {
