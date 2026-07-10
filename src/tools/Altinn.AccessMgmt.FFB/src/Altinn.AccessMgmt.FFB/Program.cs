@@ -4,8 +4,6 @@ using Altinn.AccessMgmt.FFB.Jobs;
 using Altinn.AccessMgmt.FFB.Jobs.Models;
 using Altinn.AccessMgmt.FFB.Services;
 using Altinn.AccessMgmt.FFB.Services.Contracts;
-using Altinn.AccessMgmt.FFB.Services.PageData;
-using Altinn.AccessMgmt.FFB.Services.Tools;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -24,21 +22,9 @@ builder.Services.Configure<EnvironmentsConfig>(builder.Configuration);
 builder.Services.AddSingleton<IEnvironmentDbContextFactory, EnvironmentDbContextFactory>();
 builder.Services.AddScoped<EnvironmentState>();
 
-// Tool services
-builder.Services.AddSingleton<GrantCheckService>();
-builder.Services.AddSingleton<ConstantsCheckService>();
-
-// Page data services
-builder.Services.AddSingleton<EntitySearchService>();
-builder.Services.AddSingleton<EntityDetailsService>();
-builder.Services.AddSingleton<AssignmentDetailsService>();
-builder.Services.AddSingleton<DelegationDetailsService>();
-builder.Services.AddSingleton<RoleDetailsService>();
-builder.Services.AddSingleton<PackageDetailsService>();
-builder.Services.AddSingleton<ProviderDetailsService>();
-builder.Services.AddSingleton<ResourceDetailsService>();
-builder.Services.AddSingleton<EntityTypeDetailsService>();
-builder.Services.AddSingleton<EntityVariantDetailsService>();
+// Tool and page data services (Services/Tools + Services/PageData) are registered
+// by convention — see ServiceCollectionExtensions.AddPageServices.
+builder.Services.AddPageServices();
 
 // Job infrastructure
 builder.Services.AddSingleton<IJobRunStore, JobRunStore>();
