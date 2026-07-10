@@ -162,7 +162,7 @@
             select new JobScheduleEntry
             {
                 Id = $"ingest-{env.ToLowerInvariant()}-{filterKey}",
-                JobType = "IngestCleanup",
+                JobType = JobTypes.IngestCleanup,
                 Environment = env,
                 Cron = "0 */4 * * *",
                 Enabled = true,

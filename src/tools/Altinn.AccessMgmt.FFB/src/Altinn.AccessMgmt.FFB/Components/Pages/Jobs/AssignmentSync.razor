@@ -132,7 +132,7 @@
             .Select(kv => new JobScheduleEntry
             {
                 Id = $"assignment-sync-{kv.Key.ToLowerInvariant()}",
-                JobType = "AssignmentSync",
+                JobType = JobTypes.AssignmentSync,
                 Environment = kv.Key,
                 Cron = "0 2 * * *",
                 Enabled = true,

@@ -141,7 +141,7 @@
             select new JobScheduleEntry
             {
                 Id = $"history-{env.ToLowerInvariant()}-{tableKey.ToLowerInvariant()}",
-                JobType = "HistoryCleanup",
+                JobType = JobTypes.HistoryCleanup,
                 Environment = env,
                 Cron = "0 3 * * *",
                 Enabled = true,

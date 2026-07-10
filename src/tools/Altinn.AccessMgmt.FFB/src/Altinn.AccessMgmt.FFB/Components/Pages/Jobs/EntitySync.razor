@@ -94,7 +94,7 @@
             .Select(kv => new JobScheduleEntry
             {
                 Id = $"entity-sync-{kv.Key.ToLowerInvariant()}",
-                JobType = "EntitySync",
+                JobType = JobTypes.EntitySync,
                 Environment = kv.Key,
                 Cron = "0 3 * * *",
                 Enabled = true,
