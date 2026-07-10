@@ -138,7 +138,7 @@
         }
 
         await RunAsync(async ct =>
-            _results = await SearchService.SearchAsync(EnvState.Current, term, _includeDeleted, ct));
+            _results = await SearchService.SearchAsync(EnvState.Current, term, _includeDeleted, ct: ct));
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)

@@ -9,10 +9,10 @@ namespace Altinn.AccessMgmt.FFB.Services.PageData;
 /// </summary>
 public sealed class EntitySearchService(IEnvironmentDbContextFactory dbFactory)
 {
-    /// <summary>Maximum number of hits returned; the page tells the user to narrow the search.</summary>
+    /// <summary>Default maximum number of hits returned; the search page tells the user to narrow the search.</summary>
     public const int MaxResults = 50;
 
-    public async Task<List<Entity>> SearchAsync(string environment, string term, bool includeDeleted, CancellationToken ct = default)
+    public async Task<List<Entity>> SearchAsync(string environment, string term, bool includeDeleted, int maxResults = MaxResults, CancellationToken ct = default)
     {
         using var db = dbFactory.CreateContext(environment);
 
@@ -36,7 +36,7 @@ public sealed class EntitySearchService(IEnvironmentDbContextFactory dbFactory)
 
         return await query
             .OrderBy(e => e.Name)
-            .Take(MaxResults)
+            .Take(maxResults)
             .ToListAsync(ct);
     }
 }
