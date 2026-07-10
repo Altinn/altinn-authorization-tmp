@@ -1,10 +1,9 @@
 @page "/tools/connection-query"
 @using Altinn.AccessMgmt.PersistenceEF.Queries.Connection
 @using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models
-@using Microsoft.EntityFrameworkCore
 @using System.Diagnostics
 @inherits EnvironmentPageBase
-@inject IEnvironmentDbContextFactory DbFactory
+@inject ConnectionQueryService QueryService
 
 <PageTitle>Connection Query</PageTitle>
 
@@ -344,14 +343,11 @@
     {
         try
         {
-            using var db = DbFactory.CreateContext(EnvState.Current);
-            _allRoles = await db.Roles
-                .AsNoTracking()
-                .OrderBy(r => r.Name)
-                .ToListAsync();
+            _allRoles = await QueryService.GetRolesAsync(EnvState.Current);
         }
         catch
         {
+            // Role autocomplete is optional — an unreachable environment should not break the page.
             _allRoles = [];
         }
     }
@@ -371,7 +367,7 @@
 
     // ── Query ─────────────────────────────────────────────────────────────────
 
-    private async Task RunQuery() => await RunAsync(async () =>
+    private async Task RunQuery() => await RunAsync(async ct =>
     {
         _results = null;
         var sw = Stopwatch.StartNew();
@@ -396,12 +392,7 @@
                 EnrichPackageResources = _enrichPackageResources,
             };
 
-            using var db = DbFactory.CreateContext(EnvState.Current);
-            var cq = new Altinn.AccessMgmt.PersistenceEF.Queries.Connection.ConnectionQuery(db);
-
-            _results = _direction == ConnectionQueryDirection.FromOthers
-                ? await cq.GetConnectionsFromOthersAsync(filter)
-                : await cq.GetConnectionsToOthersAsync(filter);
+            _results = await QueryService.QueryAsync(EnvState.Current, filter, _direction, ct);
         }
         finally
         {
