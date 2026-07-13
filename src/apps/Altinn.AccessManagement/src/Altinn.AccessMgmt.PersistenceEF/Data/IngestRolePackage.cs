@@ -1459,15 +1459,15 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.ServicesNUF.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, CanAssign = true, HasAccess = true },
             new RolePackage() { RoleId = RoleConstants.BusinessManager, PackageId = PackageConstants.BusinessAndAccessManagementNUF.Id, EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, CanAssign = true, HasAccess = true },
 
-            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.RuntimeDelegatedSigning.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
         };
 
         foreach (var d in data)

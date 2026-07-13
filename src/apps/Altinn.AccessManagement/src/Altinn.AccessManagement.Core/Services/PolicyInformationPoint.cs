@@ -496,7 +496,7 @@ namespace Altinn.AccessManagement.Core.Services
                             .Where(t => t.ToId == subject.Id)
                             .Include(t => t.From)
                             .Join(_dbContext.AssignmentPackages, a => a.Id, p => p.AssignmentId, (a, p) => new { Assignment = a, AssignmentPackage = p })
-                            .Where(t => t.AssignmentPackage.PackageId == PackageConstants.RuntimeDelegatedSigning)
+                            .Where(t => t.AssignmentPackage.PackageId == PackageConstants.CompanyRepresentativeFormTasks)
                             .ToListAsync(cancellationToken);
                         var representativeFormTasksSubUnits = await _dbContext.Entities
                             .AsNoTracking()

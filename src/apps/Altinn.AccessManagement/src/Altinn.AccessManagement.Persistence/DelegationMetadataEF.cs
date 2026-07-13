@@ -777,6 +777,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                .Include(t => t.Assignment).ThenInclude(t => t.To)
                .Include(t => t.Resource).ThenInclude(t => t.Type)
                .Where(t => t.Assignment.FromId == from)
+               .Where(t => t.Assignment.RoleId == RoleConstants.AppControlledRightholder.Id)
                .Where(t => resourceIds.Contains(t.Resource.RefId))
                .Where(t => t.InstanceSourceTypeId == InstanceSourceTypeConstants.AltinnApp.Id)
                .Where(t => toRuntimeDelegated.Contains(t.Assignment.ToId))

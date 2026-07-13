@@ -7820,23 +7820,23 @@ public static class PackageConstants
     #region Brukerstyrt Signering
 
     /// <summary>
-    /// Represents the 'Øvrige - Salg av løsøre av større verdi' role.
+    /// Represents the 'Virksomhetens representant - skjemaoppgaver' access package.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 5cc87c94-e0c0-46fe-a053-2a29081aef0f
-    /// - <c>URN:</c> urn:altinn:accesspackage:vergemal-ovrige-salg-losore-storre-verdi
-    /// - <c>Provider:</c> CivilRightsAuthority
-    /// - <c>Code:</c> vergemal-ovrige-salg-losore-storre-verdi
-    /// - <c>Description:</c> Øvrige - Salg av løsøre av større verdi
+    /// - <c>Id:</c> 8cb5c1f8-fad7-4ae0-b02b-8ad4cb2652eb
+    /// - <c>URN:</c> urn:altinn:accesspackage:virksomhetens-representant-skjemaoppgaver
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Code:</c> virksomhetens-representant-skjemaoppgaver
+    /// - <c>Description:</c> Delegering av virksomhetens representant for skjemaoppgaver
     /// </remarks>
-    public static ConstantDefinition<Package> RuntimeDelegatedSigning { get; } = new ConstantDefinition<Package>("8cb5c1f8-fad7-4ae0-b02b-8ad4cb2652eb")
+    public static ConstantDefinition<Package> CompanyRepresentativeFormTasks { get; } = new ConstantDefinition<Package>("8cb5c1f8-fad7-4ae0-b02b-8ad4cb2652eb")
     {
         Entity = new()
         {
-            Name = "Brukerstyrt signering",
-            Code = "runtime-delegated-signing",
-            Description = "Delegering av brukerstyrt signering for virksomheter",
-            Urn = "urn:altinn:accesspackage:runtime-delegated-signing",
+            Name = "Virksomhetens representant - skjemaoppgaver",
+            Code = "virksomhetens-representant-skjemaoppgaver",
+            Description = "Delegering av virksomhetens representant for skjemaoppgaver",
+            Urn = "urn:altinn:accesspackage:virksomhetens-representant-skjemaoppgaver",
             IsDelegable = false,
             IsAssignable = true,
             IsAvailableForServiceOwners = true,
@@ -7845,12 +7845,12 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", ""),
-            KeyValuePair.Create("Description", "")
+            KeyValuePair.Create("Name", "Company representative - form tasks"),
+            KeyValuePair.Create("Description", "Delegation of company representative for form tasks")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", ""),
-            KeyValuePair.Create("Description", "")
+            KeyValuePair.Create("Name", "Representant for verksemda - skjemaopp­gåver"),
+            KeyValuePair.Create("Description", "Delegering av representant for verksemda for skjemaopp­gåver")
         ),
     };
 

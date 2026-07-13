@@ -39,6 +39,16 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     private const int PatrickUserId = 20930050;
     private const int PatrickPartyId = 50930050;
 
+    // Subject: Nina (has RuntimeDelegatedSigning from TechCorpSubUnit)
+    private static readonly Guid PersonNinaId = Guid.Parse("0196c000-0001-7001-8001-000000000060");
+    private const int NinaUserId = 20930060;
+    private const int NinaPartyId = 50930060;
+
+    // Subject: Erica (has RuntimeDelegatedSigning from TechCorpSubUnit)
+    private static readonly Guid PersonEricaId = Guid.Parse("0196c000-0001-7001-8001-000000000070");
+    private const int EricaUserId = 20930070;
+    private const int EricaPartyId = 50930070;
+
     // Signing organizations
     private static readonly Guid OrgTechCorpId = Guid.Parse("0196c000-0001-7001-8001-000000000010");
     private static readonly Guid OrgTechCorpSubUnitId = Guid.Parse("0196c000-0001-7001-8001-000000000011");
@@ -62,6 +72,10 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     private static readonly Guid AssignFrankToTechCorpSubUnit = Guid.Parse("0196c000-0002-7001-8001-000000000003");
     private static readonly Guid AssignFrankToMegaCorp = Guid.Parse("0196c000-0002-7001-8001-000000000004");
     private static readonly Guid AssignTechCorpSubUnitToPatrick = Guid.Parse("0196c000-0002-7001-8001-000000000005");
+    private static readonly Guid AssignTechCorpToNina = Guid.Parse("0196c000-0002-7001-8001-000000000006");
+    private static readonly Guid AssignTechCorpToNinaViaKeyRole = Guid.Parse("0196c000-0002-7001-8001-000000000007");
+    private static readonly Guid AssignTechCorpToEricaViaKeyRole = Guid.Parse("0196c000-0002-7001-8001-000000000008");
+    private static readonly Guid AssignFrankToTechCorpEndUser = Guid.Parse("0196c000-0002-7001-8001-000000000009");
 
     // Instance IDs used in result assertions
     private const string InstanceIdTechCorp = "urn:altinn:instance-id:50930020/aabbccdd-0001-4001-8001-000000000001";
@@ -80,6 +94,30 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
         fixture.EnsureSeedOnce<PolicyInformationPointRuntimeDelegatedSigningTest>(db =>
         {
             db.Entities.AddRange(
+                new Entity()
+                {
+                    Id = PersonNinaId,
+                    Name = "Nina",
+                    TypeId = EntityTypeConstants.Person,
+                    VariantId = EntityVariantConstants.Person,
+                    PersonIdentifier = "08019012345",
+                    RefId = "08019012345",
+                    PartyId = NinaPartyId,
+                    UserId = NinaUserId,
+                    DateOfBirth = new DateOnly(1990, 1, 8),
+                },
+                new Entity()
+                {
+                    Id = PersonEricaId,
+                    Name = "Erica",
+                    TypeId = EntityTypeConstants.Person,
+                    VariantId = EntityVariantConstants.Person,
+                    PersonIdentifier = "09019012345",
+                    RefId = "09019012345",
+                    PartyId = EricaPartyId,
+                    UserId = EricaUserId,
+                    DateOfBirth = new DateOnly(1990, 1, 9),
+                },
                 new Entity()
                 {
                     Id = PersonPatrickId,
@@ -170,7 +208,39 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
             db.AssignmentPackages.Add(new AssignmentPackage()
             {
                 AssignmentId = AssignTechCorpToDave,
-                PackageId = PackageConstants.RuntimeDelegatedSigning.Id,
+                PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id,
+            });
+
+            // TechCorp grants Nina a key role and the RuntimeDelegatedSigning package
+            db.Assignments.Add(new Assignment()
+            {
+                Id = AssignTechCorpToNinaViaKeyRole,
+                FromId = OrgTechCorpId,
+                ToId = PersonNinaId,
+                RoleId = RoleConstants.ManagingDirector,
+            });
+
+            db.Assignments.Add(new Assignment()
+            {
+                Id = AssignTechCorpToNina,
+                FromId = OrgTechCorpId,
+                ToId = PersonNinaId,
+                RoleId = RoleConstants.Rightholder,
+            });
+
+            db.AssignmentPackages.Add(new AssignmentPackage()
+            {
+                AssignmentId = AssignTechCorpToNina,
+                PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id,
+            });
+
+            // TechCorp grants Erica a key role
+            db.Assignments.Add(new Assignment()
+            {
+                Id = AssignTechCorpToEricaViaKeyRole,
+                FromId = OrgTechCorpId,
+                ToId = PersonEricaId,
+                RoleId = RoleConstants.ChairOfTheBoard,
             });
 
             // TechCorpSubUnit grants Patrick the RuntimeDelegatedSigning package
@@ -185,7 +255,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
             db.AssignmentPackages.Add(new AssignmentPackage()
             {
                 AssignmentId = AssignTechCorpSubUnitToPatrick,
-                PackageId = PackageConstants.RuntimeDelegatedSigning.Id,
+                PackageId = PackageConstants.CompanyRepresentativeFormTasks.Id,
             });
 
             // Frank → TechCorp instance delegation (direct org)
@@ -194,7 +264,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 Id = AssignFrankToTechCorp,
                 FromId = PersonFrankId,
                 ToId = OrgTechCorpId,
-                RoleId = RoleConstants.Rightholder,
+                RoleId = RoleConstants.AppControlledRightholder,
             });
 
             db.AssignmentInstances.Add(new AssignmentInstance()
@@ -213,7 +283,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 Id = AssignFrankToTechCorpSubUnit,
                 FromId = PersonFrankId,
                 ToId = OrgTechCorpSubUnitId,
-                RoleId = RoleConstants.Rightholder,
+                RoleId = RoleConstants.AppControlledRightholder,
             });
 
             db.AssignmentInstances.Add(new AssignmentInstance()
@@ -245,9 +315,18 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
                 PolicyVersion = "2025-01-03T00:00:00.0000000Z",
             });
 
+            // Frank → TechCorp instance delegation (direct org) end user delegation (not AltinnApp) to verify that the source type is filtered out of the results
+            db.Assignments.Add(new Assignment()
+            {
+                Id = AssignFrankToTechCorpEndUser,
+                FromId = PersonFrankId,
+                ToId = OrgTechCorpId,
+                RoleId = RoleConstants.Rightholder,
+            });
+
             db.AssignmentInstances.Add(new AssignmentInstance()
             {
-                AssignmentId = AssignFrankToTechCorp,
+                AssignmentId = AssignFrankToTechCorpEndUser,
                 ResourceId = TestData.NavSykepengerDialog.Id,
                 InstanceId = InstanceIdTechCorpNotAppDelegated,
                 InstanceSourceType = InstanceSourceTypeConstants.EndUser,
@@ -265,6 +344,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
     /// Test: When Dave holds the RuntimeDelegatedSigning package from TechCorp,
     /// querying delegation changes from Frank's party returns the instance delegation
     /// that Frank created for TechCorp directly and the instance given to the sub-unit.
+    /// if the delegation source method was AltinnApp
     /// </summary>
     [Fact]
     public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningFromOrg_ReturnsOrgAndSubOrgAppInstanceDelegationNotEnduserInstanceDelegation()
@@ -287,6 +367,88 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
             _options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
         Assert.Equal(2, result.Count);
+
+        Assert.Contains(result, d =>
+            d.ResourceId == "nav_sykepenger_dialog" &&
+            d.FromUuid == PersonFrankId &&
+            d.ToUuid == OrgTechCorpId &&
+            d.InstanceId == InstanceIdTechCorp);
+
+        Assert.Contains(result, d =>
+            d.ResourceId == "nav_sykepenger_dialog" &&
+            d.FromUuid == PersonFrankId &&
+            d.ToUuid == OrgTechCorpSubUnitId &&
+            d.InstanceId == InstanceIdTechCorpSubUnit);
+    }
+
+    /// <summary>
+    /// Test: When Nina holds the RuntimeDelegatedSigning package from TechCorp and also a key role,
+    /// querying delegation changes from Frank's party returns the instance delegation
+    /// that Frank created for TechCorp directly and the instance given to the sub-unit.
+    /// if the delegation source method was AltinnApp
+    /// </summary>
+    [Fact]
+    public async Task GetDelegationChanges_UserHasRuntimeDelegatedSigningAndKeyRoleFromOrg_ReturnsOrgAndSubOrgAppInstanceDelegationNotEnduserInstanceDelegation()
+    {
+        var request = new
+        {
+            subject = new { id = "urn:altinn:userid", value = NinaUserId.ToString() },
+            party = new { id = "urn:altinn:partyid", value = FrankPartyId.ToString() },
+            resource = new[] { new { id = "urn:altinn:resource", value = "nav_sykepenger_dialog" } }
+        };
+
+        var response = await _client.PostAsJsonAsync(
+            "accessmanagement/api/v1/policyinformation/getdelegationchanges",
+            request,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(
+            _options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+        Assert.Equal(5, result.Count);
+
+        Assert.Contains(result, d =>
+            d.ResourceId == "nav_sykepenger_dialog" &&
+            d.FromUuid == PersonFrankId &&
+            d.ToUuid == OrgTechCorpId &&
+            d.InstanceId == InstanceIdTechCorp);
+
+        Assert.Contains(result, d =>
+            d.ResourceId == "nav_sykepenger_dialog" &&
+            d.FromUuid == PersonFrankId &&
+            d.ToUuid == OrgTechCorpSubUnitId &&
+            d.InstanceId == InstanceIdTechCorpSubUnit);
+    }
+
+    /// <summary>
+    /// Test: When Erica holds the a key role,
+    /// querying delegation changes from Frank's party returns the instance delegation
+    /// that Frank created for TechCorp directly and the instance given to the sub-unit.
+    /// if the delegation source method was AltinnApp
+    /// </summary>
+    [Fact]
+    public async Task GetDelegationChanges_UserHasKeyRoleFromOrg_ReturnsOrgAndSubOrgAppInstanceDelegationNotEnduserInstanceDelegation()
+    {
+        var request = new
+        {
+            subject = new { id = "urn:altinn:userid", value = EricaUserId.ToString() },
+            party = new { id = "urn:altinn:partyid", value = FrankPartyId.ToString() },
+            resource = new[] { new { id = "urn:altinn:resource", value = "nav_sykepenger_dialog" } }
+        };
+
+        var response = await _client.PostAsJsonAsync(
+            "accessmanagement/api/v1/policyinformation/getdelegationchanges",
+            request,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(
+            _options, TestContext.Current.CancellationToken);
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count);
 
         Assert.Contains(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
