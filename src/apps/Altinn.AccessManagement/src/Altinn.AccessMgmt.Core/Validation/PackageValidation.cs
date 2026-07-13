@@ -86,7 +86,7 @@ public static class PackageValidation
         if (notAssignablePackages.Any())
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", notAssignablePackages)} are not assignable to given entitytype.")]);
+                errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", notAssignablePackages)} are not assignable to the given entitytype in input.")]);
         }
 
         return null;
