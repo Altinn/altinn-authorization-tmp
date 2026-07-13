@@ -490,7 +490,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                     if (includeInstanceDelegations)
                     {
-                        // Fetch all the parties the subject user has the CompanyRepresentativeFormTasks package for, and add them to seperate list of toPartiesRuntimeDelegated to verify only AltinnApp instance delegations.
+                        // Fetch all the parties the subject user has the CompanyRepresentativeFormTasks package for, and add them to separate list of toPartiesRuntimeDelegated to verify only AltinnApp instance delegations.
                         var representativeFormTasks = await _dbContext.Assignments
                             .AsNoTracking()
                             .Where(t => t.ToId == subject.Id)
@@ -525,7 +525,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            // 3. Get all instance delegations of the resource both directly delegated to user and indirectly through keyrole units and the new 
+            // 3. Get all instance delegations of the resource both directly delegated to user and indirectly through keyrole units and runtime-delegated signing packages
             if (includeInstanceDelegations && fromParty.HasValue && (toParties.Count > 0 || toPartiesRuntimeDelegated.Count > 0))
             {
                 if (resourceMatchType == ResourceAttributeMatchType.AltinnAppId)
