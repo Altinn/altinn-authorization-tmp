@@ -525,7 +525,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            // 3. Get all instance delegations of the resource both directly delegated to user and indirectly through keyrole units and the new 
+            // 3. Get all instance delegations of the resource both directly delegated to user and indirectly through keyrole units and runtime-delegated signing packages
             if (includeInstanceDelegations && fromParty.HasValue && (toParties.Count > 0 || toPartiesRuntimeDelegated.Count > 0))
             {
                 if (resourceMatchType == ResourceAttributeMatchType.AltinnAppId)
