@@ -1,12 +1,13 @@
 locals {
   app_settings = {
-    "Platform:Notifications:Endpoint"    = var.appconfiguration.platform_notifications_endpoint
-    "Platform:SblBridge:Endpoint"        = var.appconfiguration.platform_sbl_bridge_endpoint
-    "Platform:ResourceRegistry:Endpoint" = var.appconfiguration.platform_resource_registry_endpoint
-    "Platform:Register:Endpoint"         = var.appconfiguration.platform_register_endpoint
-    "Platform:AccessManagement:Endpoint" = var.appconfiguration.platform_accessmanagement_endpoint
-    "Lease:StorageAccount:BlobEndpoint"  = azurerm_storage_account.storage.primary_blob_endpoint
-    "Altinn:MaskinPorten:Endpoint"       = var.appconfiguration.maskinporten_endpoint
+    "Platform:Notifications:Endpoint"     = var.appconfiguration.platform_notifications_endpoint
+    "Platform:SblBridge:Endpoint"         = var.appconfiguration.platform_sbl_bridge_endpoint
+    "Platform:ResourceRegistry:Endpoint"  = var.appconfiguration.platform_resource_registry_endpoint
+    "Platform:Register:Endpoint"          = var.appconfiguration.platform_register_endpoint
+    "Platform:AccessManagement:Endpoint"  = var.appconfiguration.platform_accessmanagement_endpoint
+    "PlatformSettings:IdPortenApiEndpoint" = var.appconfiguration.platform_id_porten_api_endpoint
+    "Lease:StorageAccount:BlobEndpoint"   = azurerm_storage_account.storage.primary_blob_endpoint
+    "Altinn:MaskinPorten:Endpoint"        = var.appconfiguration.maskinporten_endpoint
   }
 }
 

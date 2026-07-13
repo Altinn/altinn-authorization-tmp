@@ -26,6 +26,7 @@ appconfiguration = {
   platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
   platform_accessmanagement_endpoint  = "http://altinn-access-management.default.svc.cluster.local"
   platform_sbl_bridge_endpoint        = "https://at23.altinn.cloud/sblbridge/"
+  platform_id_porten_api_endpoint     = "https://authorization-api.test.idporten.no/"
   maskinporten_endpoint               = "https://test.maskinporten.no/"
 }
 
