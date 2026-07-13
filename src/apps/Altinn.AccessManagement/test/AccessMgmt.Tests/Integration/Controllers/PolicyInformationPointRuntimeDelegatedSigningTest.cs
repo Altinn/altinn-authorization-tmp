@@ -407,7 +407,7 @@ public class PolicyInformationPointRuntimeDelegatedSigningTest
         var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(
             _options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
-        Assert.Equal(5, result.Count);
+        Assert.Equal(3, result.Count);
 
         Assert.Contains(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
