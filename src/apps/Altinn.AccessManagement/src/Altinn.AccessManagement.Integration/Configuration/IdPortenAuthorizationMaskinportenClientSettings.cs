@@ -1,61 +1,33 @@
-using Altinn.ApiClients.Maskinporten.Interfaces;
-
 namespace Altinn.AccessManagement.Integration.Configuration
 {
     /// <summary>
     /// Configuration settings for the Maskinporten client used to integrate with the ID-porten authorizations API
     /// </summary>
-    public class IdPortenAuthorizationMaskinportenClientSettings : IMaskinportenSettings
+    public class IdPortenAuthorizationMaskinportenClientSettings
     {
-        /// <inheritdoc/>
-        public string Environment { get; set; }
+        /// <summary>
+        /// Id-Porten API base url
+        /// </summary>
+        public string IdPortenApiEndpoint { get; set; } = string.Empty;
+            
+        /// <summary>
+        /// The Maskinporten environment. Valid values are test or prod
+        /// </summary>
+        public string Environment { get; set; } = string.Empty;
 
-        /// <inheritdoc/>
-        public string ClientId { get; set; }
+        /// <summary>
+        /// ClientID to use to connect to Maskinporten
+        /// </summary>
+        public string ClientId { get; set; } = string.Empty;
 
-        /// <inheritdoc/>
-        public string Scope { get; set; }
+        /// <summary>
+        /// Scopes to request. Must be provisioned on the supplied client.
+        /// </summary>
+        public string Scope { get; set; } = string.Empty;
 
-        /// <inheritdoc/>
-        public string EncodedJwk { get; set; }
-
-        /// <inheritdoc/>
-        public string Resource { get; set; }
-
-        /// <inheritdoc/>
-        public string CertificatePkcs12Path { get; set; }
-
-        /// <inheritdoc/>
-        public string CertificatePkcs12Password { get; set; }
-
-        /// <inheritdoc/>
-        public string CertificateStoreThumbprint { get; set; }
-
-        /// <inheritdoc/>
-        public string EncodedX509 { get; set; }
-
-        /// <inheritdoc/>
-        public string ConsumerOrgNo { get; set; }
-
-        /// <inheritdoc/>
-        public string EnterpriseUserName { get; set; }
-
-        /// <inheritdoc/>
-        public string EnterpriseUserPassword { get; set; }
-
-        /// <inheritdoc/>
-        public bool? ExhangeToAltinnToken { get; set; }
-
-        /// <inheritdoc/>
-        public string TokenExchangeEnvironment { get; set; }
-
-        /// <inheritdoc/>
-        public bool? UseAltinnTestOrg { get; set; }
-
-        /// <inheritdoc/>
-        public bool? EnableDebugLogging { get; set; }
-
-        /// <inheritdoc/>
-        public bool? OverwriteAuthorizationHeader { get; set; }
+        /// <summary>
+        /// Base64 Encoded Json Web Key 
+        /// </summary>
+        public string EncodedJwk { get; set; } = string.Empty;
     }
 }

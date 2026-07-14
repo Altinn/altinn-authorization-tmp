@@ -8,7 +8,6 @@ using Altinn.AccessManagement.Services;
 using Altinn.ApiClients.Maskinporten.Extensions;
 using Altinn.ApiClients.Maskinporten.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 
@@ -38,13 +37,13 @@ public static class IntegrationDependencyInjectionExtensions
         builder.Services.AddHttpClient<IIdPortenAuthorizationClient, IdPortenAuthorizationClient>();
         builder.Services.AddSingleton<IResourceRegistryClient, ResourceRegistryClient>();
 
-        // ID-porten authorizations: the Maskinporten handler attaches an access token to every
-        // outgoing request on the typed client, using the JWK from IdPortenAuthorizationSettings.
-        IdPortenAuthorizationMaskinportenClientSettings idPortenAuthorizationSettings =
-            builder.Configuration.GetSection("IdPortenAuthorizationMaskinportenClientSettings").Get<IdPortenAuthorizationMaskinportenClientSettings>()
-            ?? new IdPortenAuthorizationMaskinportenClientSettings();
+        // ID-porten authorizations: the client fetches its Maskinporten token manually via
+        // IMaskinportenService, using the JWK/settings bound from IdPortenAuthorizationMaskinportenClientSettings.
+        // AddMaskinportenHttpClient is what registers IMaskinportenService in DI (the service the client depends on).
         builder.Services.Configure<IdPortenAuthorizationMaskinportenClientSettings>(builder.Configuration.GetSection("IdPortenAuthorizationMaskinportenClientSettings"));
-        builder.Services.AddMaskinportenHttpClient<SettingsJwkClientDefinition, IdPortenAuthorizationMaskinportenClientDefinition>(idPortenAuthorizationSettings);
+        builder.Services.AddMaskinportenHttpClient<SettingsJwkClientDefinition>(
+            "idporten-authorization-maskinporten",
+            builder.Configuration.GetSection("IdPortenAuthorizationMaskinportenClientSettings"));
 
         builder.Services.AddHttpClient<IAltinnRolesClient, AltinnRolesClient>()
             .ReplaceResilienceHandler(static c =>

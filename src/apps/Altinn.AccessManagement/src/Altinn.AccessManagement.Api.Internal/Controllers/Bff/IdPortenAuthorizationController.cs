@@ -15,11 +15,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
     /// </summary>
     [Route("accessmanagement/api/v1/bff/idportenauthorization")]
     [ApiController]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     public class IdPortenAuthorizationController(IIdPortenAuthorizationService idPortenAuthorizationService) : ControllerBase
     {
         [HttpGet]
-        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-        [Route("", Name = "bffgetidportenauthorizations")]
+        [Route("")]
         public async Task<IActionResult> GetIdPortenAuthorizations(CancellationToken cancellationToken = default)
         {
             Guid? userUuid = UserUtil.GetUserUuid(User);
@@ -38,7 +38,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         }
 
         [HttpDelete]
-        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("{id}", Name = "bffdeleteidportenauthorization")]
         public async Task<IActionResult> DeleteIdPortenAuthorization(string id, CancellationToken cancellationToken = default)
         {

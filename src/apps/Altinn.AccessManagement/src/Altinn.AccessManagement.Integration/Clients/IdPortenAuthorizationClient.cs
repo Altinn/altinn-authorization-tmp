@@ -21,7 +21,6 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
 {
     private readonly ILogger _logger;
     private readonly HttpClient _client;
-    private readonly PlatformSettings _platformSettings;
     private readonly IMaskinportenService _maskinportenService;
     private readonly IdPortenAuthorizationMaskinportenClientSettings _maskinportenClientSettings;
     private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -31,19 +30,16 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     /// </summary>
     /// <param name="httpClient">HttpClient from default httpclientfactory</param>
     /// <param name="logger">the logger</param>
-    /// <param name="platformSettings">the platform setttings</param>
     /// <param name="maskinportenService">An instance of the Maskinporten service.</param>
     /// <param name="maskinportenClientSettings">The Maskinporten client settings.</param>
     public IdPortenAuthorizationClient(
         HttpClient httpClient,
         ILogger<IdPortenAuthorizationClient> logger,
-        IOptions<PlatformSettings> platformSettings,
         IMaskinportenService maskinportenService,
         IOptions<IdPortenAuthorizationMaskinportenClientSettings> maskinportenClientSettings)
     {
         _logger = logger;
         _client = httpClient;
-        _platformSettings = platformSettings.Value;
         _maskinportenService = maskinportenService;
         _maskinportenClientSettings = maskinportenClientSettings.Value;
         _serializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -54,7 +50,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     {
         try
         {
-            UriBuilder uriBuilder = new UriBuilder($"{_platformSettings.IdPortenApiEndpoint}api-provider/authorizations");
+            UriBuilder uriBuilder = new UriBuilder($"{_maskinportenClientSettings.IdPortenApiEndpoint}api-provider/authorizations");
 
             var request = await CreateRequest(ssn, uriBuilder.Uri.ToString(), HttpMethod.Post, cancellationToken);
 
@@ -83,7 +79,7 @@ public class IdPortenAuthorizationClient : IIdPortenAuthorizationClient
     {
         try
         {
-            UriBuilder uriBuilder = new UriBuilder($"{_platformSettings.IdPortenApiEndpoint}api-provider/authorizations/{id}");
+            UriBuilder uriBuilder = new UriBuilder($"{_maskinportenClientSettings.IdPortenApiEndpoint}api-provider/authorizations/{id}");
 
             var request = await CreateRequest(ssn, uriBuilder.Uri.ToString(), HttpMethod.Delete, cancellationToken);
 
