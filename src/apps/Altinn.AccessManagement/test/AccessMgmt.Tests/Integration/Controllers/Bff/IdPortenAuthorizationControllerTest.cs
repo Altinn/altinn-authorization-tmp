@@ -61,7 +61,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         /// Expected: Returns 400 with details
         /// </summary>
         [Fact]
-        public async Task GetIdPortenAuthorization_Returns404ForNonExistentUser()
+        public async Task GetIdPortenAuthorization_Returns400ForNonExistentUser()
         {
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("3a10eb9f-1b80-4788-9f24-2db3c0f16684"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             using HttpRequestMessage request = new(HttpMethod.Get, "accessmanagement/api/v1/bff/idportenauthorization");
@@ -69,9 +69,11 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
 
             HttpResponseMessage response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
             string responseText = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseText, _jsonOptions);
 
+            AltinnValidationProblemDetails? problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseText, _jsonOptions);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(problemDetails);
             Assert.Equal("AM-00043", problemDetails.ErrorCode.ToString());
         }
 
