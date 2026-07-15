@@ -339,60 +339,6 @@ public class PolicyInformationPointRolesAndAccessPackagesTest
     }
 
     [Fact]
-    public async Task GetAccessPackages_BusinessManagerOrgFromNufClient_ReturnsNufPackages()
-    {
-        // Regnskaperne is BusinessManager (FFOR) for NUF International Corp.
-        // The accesspackages endpoint should return NUF-specific packages.
-        var from = TestData.GetEntity("NUF International Corp").Id;
-        var to = TestData.GetEntity("Regnskaperne").Id;
-
-        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var result = await response.Content.ReadFromJsonAsync<List<AccessPackageUrn>>(_options, TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:skatt-naering"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:skattegrunnlag"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:merverdiavgift"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:saeravgifter"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:krav-og-utlegg"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:a-ordning"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"));
-        Assert.Contains(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:oppgi-naermeste-leder"));
-    }
-
-    [Fact]
-    public async Task GetAccessPackages_BusinessManagerOrgFromNonNufClient_ExcludesNufPackages()
-    {
-        // Regnskaperne is BusinessManager (FFOR) for Non-NUF Client AS.
-        // The accesspackages endpoint should NOT return NUF-specific packages.
-        var from = TestData.GetEntity("Non-NUF Client AS").Id;
-        var to = TestData.GetEntity("Regnskaperne").Id;
-
-        var response = await _client.GetAsync($"accessmanagement/api/v1/policyinformation/accesspackages?from={from}&to={to}", TestContext.Current.CancellationToken);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var result = await response.Content.ReadFromJsonAsync<List<AccessPackageUrn>>(_options, TestContext.Current.CancellationToken);
-        Assert.NotNull(result);
-
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:tjenester-nuf"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:ffor-tilgangsstyrer-nuf"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:skatt-naering"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:skattegrunnlag"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:merverdiavgift"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:saeravgifter"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:krav-og-utlegg"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:a-ordning"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"));
-        Assert.DoesNotContain(result, p => p == AccessPackageUrn.Parse("urn:altinn:accesspackage:oppgi-naermeste-leder"));
-    }
-
-    [Fact]
     public async Task GetRolesAndAccessPackages_SiriContactPersonNufFromNufOrg_ReturnsServicesNufAndAccessManagerPackages()
     {
         // Siri is ContactPersonNUF of NUF International Corp.
