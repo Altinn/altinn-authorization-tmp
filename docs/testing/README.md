@@ -22,7 +22,8 @@ self-contained; none of them is a wall of text.
 | 8 | [COVERAGE.md](COVERAGE.md) | Running coverage locally, per-assembly targets (reported, not gated) |
 | 9 | [CI.md](CI.md) | How tests run in the pipeline, Microsoft Testing Platform (MTP), artifacts |
 | 10 | [BRUNO_API_TESTS.md](BRUNO_API_TESTS.md) | The Bruno API collections — manual/exploratory API tests that double as a behavioral spec for the C# integration tests |
-| 11 | [../SONARCLOUD.md](../SONARCLOUD.md) | Static analysis: exclusions, per-vertical setup, quality gate, debugging |
+| 11 | [INTEGRATION_COVERAGE_GAPS.md](INTEGRATION_COVERAGE_GAPS.md) | Working gap report (#3378): deep Bruno scenarios missing from the C# integration suites, ranked, with a proposed batch plan |
+| 12 | [../SONARCLOUD.md](../SONARCLOUD.md) | Static analysis: exclusions, per-vertical setup, quality gate, debugging |
 
 ## TL;DR for newcomers
 
