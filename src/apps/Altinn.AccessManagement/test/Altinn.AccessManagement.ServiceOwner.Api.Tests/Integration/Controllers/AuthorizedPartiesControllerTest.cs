@@ -177,7 +177,7 @@ public class AuthorizedPartiesControllerTest
             var client = CreateServiceOwnerClient(Fixture, TestData.NAV.Entity.OrganizationIdentifier);
 
             var query = $"{OldRoute}?anyOfResourceIds={TestData.SiriusSkattemelding.RefId}" +
-                        "&includeResources=true&includeInstances=true";
+                        "&includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true";
 
             // Act
             var response = await client.PostAsJsonAsync(query, JosephineSubject, TestContext.Current.CancellationToken);
@@ -202,12 +202,12 @@ public class AuthorizedPartiesControllerTest
             var client = CreateServiceOwnerClient(Fixture, TestData.NAV.Entity.OrganizationIdentifier);
 
             var query = $"{OldRoute}?anyOfResourceIds={TestData.SiriusSkattemelding.RefId}" +
-                        "&includeResources=false&includeInstances=true";
+                        "&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=true";
 
             // Act
             var response = await client.PostAsJsonAsync(query, JosephineSubject, TestContext.Current.CancellationToken);
 
-            // Assert: instances populated, resources still empty.
+            // Assert: only instances populated; roles, access packages and resources stay empty.
             var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -216,6 +216,8 @@ public class AuthorizedPartiesControllerTest
 
             var kaos = parties.FirstOrDefault(p => p.PartyUuid == TestData.KaosMagicDesignAndArts.Id);
             Assert.NotNull(kaos);
+            Assert.Empty(kaos.AuthorizedRoles);
+            Assert.Empty(kaos.AuthorizedAccessPackages);
             Assert.Empty(kaos.AuthorizedResources);
             Assert.NotEmpty(kaos.AuthorizedInstances);
         }
