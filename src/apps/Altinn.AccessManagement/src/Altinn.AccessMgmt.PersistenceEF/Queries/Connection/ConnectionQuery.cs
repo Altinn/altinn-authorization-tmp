@@ -102,7 +102,7 @@ public class ConnectionQuery(AppDbContext db)
                 kr.IsKeyRole == true && 
                 k.ToId == toId && 
                 (a.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || a.From.VariantId != EntityVariantConstants.IKS.Id) &&
-                (k.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || a.From.VariantId != EntityVariantConstants.IKS.Id)
+                (k.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || a.To.VariantId != EntityVariantConstants.IKS.Id)
             select 1;
 
             if (await keyRoles.AnyAsync())
