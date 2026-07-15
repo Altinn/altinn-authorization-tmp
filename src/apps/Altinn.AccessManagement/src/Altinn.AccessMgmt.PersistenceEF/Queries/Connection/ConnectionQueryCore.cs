@@ -1,8 +1,6 @@
-﻿using System.Text.Json;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -122,7 +120,7 @@ public class ConnectionQueryCore
                     !filter.IncludeSubConnections || !delayFromFilter)
             : BuildBaseQueryToOthers(filter);
 
-        return baseQuery.ToList();
+        return await baseQuery.ToListAsync(ct);
     }
 
     /// <summary>
@@ -133,7 +131,7 @@ public class ConnectionQueryCore
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
-        var assignmentPackageKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
+        var assignmentPackageKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder.Id).Select(k => k.AssignmentId).Distinct().ToList();
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
         SortedSet<Guid> assignmentPackageIds = [];
@@ -399,7 +397,7 @@ public class ConnectionQueryCore
             RoleConstants.AccountantWithoutSigningRights.Id,
             RoleConstants.AccountantWithSigningRights.Id,
             RoleConstants.AccountantSalary.Id,
-            RoleConstants.AssistantAuditor,
+            RoleConstants.AssistantAuditor.Id,
             RoleConstants.AuditorInCharge.Id
         };
 
