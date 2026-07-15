@@ -99,11 +99,6 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <returns>List of connection records matching the provided filters</returns>
     Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthers(Guid toId, AuthorizedPartiesFilters filters = null, bool enrichEntities = false, CancellationToken ct = default);
 
-    /// <summary>
-    /// Get list of packages the to party has access to, on behalf of the from party
-    /// </summary>
-    /// <returns>Enumerable of package permissions</returns>
-    Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionsFromOthers(Guid toId, AuthorizedPartiesFilters filters = null, CancellationToken ct = default);
 
     /// <summary>
     /// Get resources by provider code and/or resource ids

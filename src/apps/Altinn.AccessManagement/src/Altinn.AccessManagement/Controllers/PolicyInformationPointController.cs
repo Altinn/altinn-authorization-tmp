@@ -1,9 +1,8 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
-using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +17,7 @@ namespace Altinn.AccessManagement.Controllers;
 public class PolicyInformationPointController(
     IMapper mapper,
     IPolicyInformationPoint pip,
-    IAuthorizedPartyRepoServiceEf authorizedPartyRepoService
+    ConnectionQueryCore connectionQueryCore
     ) : ControllerBase
 {
     /// <summary>
@@ -48,30 +47,6 @@ public class PolicyInformationPointController(
     }
 
     /// <summary>
-    /// Endpoint to lookup all access packages a given to-party uuid has for a given from-party uuid
-    /// </summary>
-    /// <param name="from">The uuid of the party to lookup if the to-party has access packages for</param>
-    /// <param name="to">The uuid of the party to lookup access packages on behalf of the from-party</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>A list of all access package urns to-party has access to on behalf of the from-party</returns>
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet]
-    [Route("accesspackages")]
-    public async Task<ActionResult> GetAccessPackages([FromQuery] Guid from, [FromQuery] Guid to, CancellationToken cancellationToken)
-    {
-        List<AccessPackageUrn> packages = new();
-
-        var filter = new AuthorizedPartiesFilters { IncludeAccessPackages = true, IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True, PartyFilter = new SortedDictionary<Guid, Guid> { { from, from } } };
-        var connectionPackages = await authorizedPartyRepoService.GetPipConnectionsFromOthers(to, filters: filter, ct: cancellationToken);
-        if (connectionPackages != null)
-        {
-            packages.AddRange(connectionPackages.SelectMany(conPackage => conPackage.Packages.Select(pkg => AccessPackageUrn.Parse(pkg.Urn))));
-        }
-
-        return Ok(packages);
-    }
-
-    /// <summary>
     /// Endpoint to lookup all roles and access packages a given to-party uuid has for a given from-party uuid
     /// </summary>
     /// <param name="from">The uuid of the party to lookup if the to-party has access packages for</param>
@@ -85,27 +60,41 @@ public class PolicyInformationPointController(
     {
         PipResponseDto pipResponse = new();
 
-        var filter = new AuthorizedPartiesFilters { IncludeAccessPackages = true, IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True, PartyFilter = new SortedDictionary<Guid, Guid> { { from, from } } };
-        var connections = await authorizedPartyRepoService.GetPipConnectionsFromOthers(to, filters: filter, ct: cancellationToken);
-        if (connections != null)
+        var filter = new ConnectionQueryFilter
         {
-            pipResponse.AccessPackages = connections.SelectMany(conPackage => conPackage.Packages.Select(pkg => AccessPackageUrn.Parse(pkg.Urn))).Distinct().ToList();
+            ToIds = [to],
+            FromIds = [from],
+            IncludeSubConnections = true,
+            IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
+            IncludePackages = true,
+        };
 
-            foreach (var conRole in connections.Where(c => c.AssignmentId.HasValue))
+        var baseRecords = await connectionQueryCore.GetBaseConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, cancellationToken);
+        var pkgs = await connectionQueryCore.LoadPackagesByKeyAsync(baseRecords, filter, cancellationToken);
+
+        pipResponse.AccessPackages = pkgs.Pairs
+            .SelectMany(kv => kv.Value)
+            .Where(p => !string.IsNullOrWhiteSpace(p.Urn))
+            .Select(p => AccessPackageUrn.Parse(p.Urn))
+            .Distinct()
+            .ToList();
+
+        foreach (var conRole in baseRecords.Where(c => c.AssignmentId.HasValue))
+        {
+            if (RoleConstants.TryGetById(conRole.RoleId, out var role) && role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id)
             {
-                if (RoleConstants.TryGetById(conRole.RoleId, out var role) && role.Id != RoleConstants.Rightholder.Id && role.Id != RoleConstants.Agent.Id)
+                pipResponse.Roles.Add(RoleUrn.Parse(role.Entity.Urn));
+
+                if (!string.IsNullOrWhiteSpace(role.Entity.LegacyUrn))
                 {
-                    pipResponse.Roles.Add(RoleUrn.Parse(role.Entity.Urn));
-                    
-                    if (!string.IsNullOrWhiteSpace(role.Entity.LegacyUrn))
-                    {
-                        pipResponse.Roles.Add(RoleUrn.Parse(role.Entity.LegacyUrn));
-                    }
+                    pipResponse.Roles.Add(RoleUrn.Parse(role.Entity.LegacyUrn));
                 }
             }
-
-            pipResponse.Roles = pipResponse.Roles.Distinct().ToList();
         }
+
+        pipResponse.Roles = pipResponse.Roles.Distinct().ToList();
 
         return Ok(pipResponse);
     }
