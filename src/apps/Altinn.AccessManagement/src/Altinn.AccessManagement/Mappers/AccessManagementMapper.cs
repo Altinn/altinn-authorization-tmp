@@ -52,7 +52,7 @@ public static partial class AccessManagementMapper
     /// </summary>
     private static Right ToInternal(this BaseRightExternal right) => new()
     {
-        Resource = right.Resource.ToInternal(),
+        Resource = right.Resource?.ToInternal(),
         Action = new AttributeMatch { Id = XacmlConstants.MatchAttributeIdentifiers.ActionId, Value = right.Action }
     };
 
