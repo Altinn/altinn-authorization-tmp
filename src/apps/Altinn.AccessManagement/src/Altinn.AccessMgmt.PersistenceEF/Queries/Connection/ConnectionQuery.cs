@@ -45,13 +45,14 @@ public class ConnectionQuery : ConnectionQueryCore
             }
 
             var baseQuery = direction == ConnectionQueryDirection.FromOthers
-                ? BuildBaseQueryFromOthers(
+                ? await BuildBaseQueryFromOthersAsync(
                         filter,
                         filter.IncludeSubConnections && !delayChildNesting,
-                        !filter.IncludeSubConnections || !delayFromFilter)
+                        !filter.IncludeSubConnections || !delayFromFilter,
+                        ct)
                 : BuildBaseQueryToOthers(filter);
 
-            var result = baseQuery.Select(ToDtoEmpty).ToList();
+            var result = await baseQuery.Select(x => ToDtoEmpty(x)).ToListAsync(ct);
             if (filter.IncludePackages || filter.EnrichPackageResources)
             {
                 try

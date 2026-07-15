@@ -101,7 +101,7 @@ public class ConnectionQueryCore
 
     /// <summary>
     /// Builds and executes the base connection query, returning base records without entity enrichment.
-    /// Optionally loads packages.
+    /// Use <see cref="LoadPackagesByKeyAsync"/> to attach packages to the returned records.
     /// </summary>
     public async Task<List<ConnectionQueryBaseRecord>> GetBaseConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, CancellationToken ct = default)
     {
@@ -114,10 +114,11 @@ public class ConnectionQueryCore
         }
 
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
-            ? BuildBaseQueryFromOthers(
+            ? await BuildBaseQueryFromOthersAsync(
                     filter,
                     filter.IncludeSubConnections && !delayChildNesting,
-                    !filter.IncludeSubConnections || !delayFromFilter)
+                    !filter.IncludeSubConnections || !delayFromFilter,
+                    ct)
             : BuildBaseQueryToOthers(filter);
 
         return await baseQuery.ToListAsync(ct);
@@ -272,7 +273,8 @@ public class ConnectionQueryCore
                 // else we need to consider check for role packages
                 List<Guid> rolePackagesForEntityForKey = [];
                 if (rolePackagesForEntity.TryGetValue(key.RoleId, out var entityDict)
-                    && entityDict.TryGetValue(entityVariants[key.FromId], out var entityIds))
+                    && entityVariants.TryGetValue(key.FromId, out var variantId)
+                    && entityDict.TryGetValue(variantId, out var entityIds))
                 {
                     rolePackagesForEntityForKey = entityIds;
                 }
@@ -360,7 +362,7 @@ public class ConnectionQueryCore
         }
     }
 
-    protected IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthers(ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter)
+    protected async Task<IQueryable<ConnectionQueryBaseRecord>> BuildBaseQueryFromOthersAsync(ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter, CancellationToken ct = default)
     {
         var toId = filter.ToIds.First();
         var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
@@ -372,21 +374,21 @@ public class ConnectionQueryCore
 
         if (fromSet != null && filter.IncludeDelegation)
         {
-            var parentIds = Db.Entities
+            var parentIds = await Db.Entities
                 .Where(e => fromSet.Distinct().Contains(e.Id) && e.ParentId != null)
                 .AsNoTracking()
                 .Select(e => e.ParentId.Value)
                 .Distinct()
-                .ToList();
+                .ToListAsync(ct);
             fromSetForDelegation.UnionWith(parentIds);
 
-            var enksOfInnh = Db.Assignments
+            var enksOfInnh = await Db.Assignments
                 .AsNoTracking()
                 .Where(a => fromSet.Distinct().Contains(a.ToId))
                 .Where(a => a.RoleId == RoleConstants.Innehaver.Id)
                 .Select(a => a.FromId)
                 .Distinct()
-                .ToList();
+                .ToListAsync(ct);
             fromSetForDelegation.UnionWith(enksOfInnh);
         }
 
