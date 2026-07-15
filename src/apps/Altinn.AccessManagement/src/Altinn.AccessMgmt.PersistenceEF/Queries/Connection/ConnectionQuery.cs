@@ -95,16 +95,14 @@ public class ConnectionQuery(AppDbContext db)
         {
             var keyRoles =
             from a in db.Assignments.AsNoTracking()
-            join fromEntity in db.Entities.AsNoTracking() on a.FromId equals fromEntity.Id
-            join toEntity in db.Entities.AsNoTracking() on a.ToId equals toEntity.Id
             join k in db.Assignments.AsNoTracking() on a.ToId equals k.FromId            
             join kr in db.Roles.AsNoTracking() on k.RoleId equals kr.Id
             where
                 a.FromId == fromId && 
                 kr.IsKeyRole == true && 
                 k.ToId == toId && 
-                (a.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || fromEntity.VariantId != EntityVariantConstants.IKS.Id) &&
-                (k.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || toEntity.VariantId != EntityVariantConstants.IKS.Id)
+                (a.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || a.From.VariantId != EntityVariantConstants.IKS.Id) &&
+                (k.RoleId != RoleConstants.ParticipantSharedResponsibility.Id || a.From.VariantId != EntityVariantConstants.IKS.Id)
             select 1;
 
             if (await keyRoles.AnyAsync())
