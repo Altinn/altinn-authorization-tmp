@@ -776,7 +776,7 @@ public class DelegationMetadataRepository : IDelegationMetadataRepository
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toRuntimeDelegated, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toAppControlledRightholders, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

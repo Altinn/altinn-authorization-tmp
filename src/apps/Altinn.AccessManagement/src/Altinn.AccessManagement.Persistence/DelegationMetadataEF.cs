@@ -757,7 +757,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toRuntimeDelegated, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toAppControlledRightholders, CancellationToken cancellationToken = default)
     {
         HashSet<AssignmentInstance> result = [];
 
@@ -770,7 +770,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
             .Where(t => to.Contains(t.Assignment.ToId))
             .ToListAsync(cancellationToken));
 
-        if (toRuntimeDelegated != null && toRuntimeDelegated.Any())
+        if (toAppControlledRightholders != null && toAppControlledRightholders.Any())
         {
             result.UnionWith(await DbContext.AssignmentInstances.AsNoTracking()
                .Include(t => t.Assignment).ThenInclude(t => t.From)
@@ -780,7 +780,7 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
                .Where(t => t.Assignment.RoleId == RoleConstants.AppControlledRightholder.Id)
                .Where(t => resourceIds.Contains(t.Resource.RefId))
                .Where(t => t.InstanceSourceTypeId == InstanceSourceTypeConstants.AltinnApp.Id)
-               .Where(t => toRuntimeDelegated.Contains(t.Assignment.ToId))
+               .Where(t => toAppControlledRightholders.Contains(t.Assignment.ToId))
                .ToListAsync(cancellationToken));
         }
 

@@ -645,7 +645,7 @@ namespace Altinn.AccessManagement.Persistence
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toRuntimeDelegated, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, List<Guid> toAppControlledRightholders, CancellationToken cancellationToken = default)
         {
             using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
 
