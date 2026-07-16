@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class DelegationService(AppDbContext db, IAssignmentService assignmentService, IRoleService roleService, IPackageService packageService, IResourceService resourceService, IEntityService entityService) : IDelegationService
+public class DelegationService(AppDbContext db, IAssignmentService assignmentService, IRoleService roleService, IPackageService packageService, IEntityService entityService) : IDelegationService
 {
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> GetDelegations(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
