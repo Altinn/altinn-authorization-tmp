@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 using DelegationPackage = Altinn.AccessMgmt.PersistenceEF.Models.DelegationPackage;
@@ -11,22 +12,29 @@ using DelegationPackage = Altinn.AccessMgmt.PersistenceEF.Models.DelegationPacka
 namespace Altinn.AccessManagement.Tests.Integration.Services;
 
 [IntegrationTest]
-public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
+public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 {
+    private readonly EfDatabaseFixture _fixture;
     private readonly AppDbContext _db;
     private readonly ConnectionQuery _query;
 
     public ConnectionQueryTests(EfDatabaseFixture fixture)
     {
+        _fixture = fixture;
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(fixture.Db.Admin.ToString())
             .Options;
 
         _db = new AppDbContext(options);
         _query = new ConnectionQuery(_db);
-
-        SeedTestData(_db).GetAwaiter().GetResult();
     }
+
+    /// <inheritdoc />
+    public async ValueTask InitializeAsync() => await _fixture.EnsureSeedOnceAsync(() => SeedTestData(_db));
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     private async Task SeedTestData(AppDbContext db)
     {
@@ -34,18 +42,11 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
         db.Assignments.AddRange(TestDataSet.Assignments);
         db.Delegations.AddRange(TestDataSet.Delegations);
 
-        try
-        {
-            await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
     }
 
     [Fact]
-    public async Task Petter()
+    public async Task GetConnectionsFromOthers_Petter_ReturnsBakerJohnsenWithSubUnits()
     {
         var orgId = TestDataSet.GetEntity("Regnskaperne").Id;
         var personId = TestDataSet.GetEntity("Petter").Id;
@@ -63,7 +64,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             EnrichPackageResources = false
         };
 
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
@@ -77,7 +78,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Gunnar()
+    public async Task GetConnectionsFromOthers_Gunnar_ReturnsBakerJohnsenWithSubUnits()
     {
         var orgId = TestDataSet.GetEntity("Regnskaperne").Id;
         var personId = TestDataSet.GetEntity("Gunnar").Id;
@@ -95,7 +96,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             EnrichPackageResources = false
         };
 
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
@@ -109,7 +110,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Nina()
+    public async Task GetConnectionsFromOthers_Nina_ReturnsSkrikFrisorOnly()
     {
         var orgId = TestDataSet.GetEntity("Skrik Frisør").Id;
         var personId = TestDataSet.GetEntity("Nina").Id;
@@ -127,14 +128,14 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             EnrichPackageResources = false
         };
 
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
     }
 
     [Fact]
-    public async Task William()
+    public async Task GetConnectionsFromOthers_William_ReturnsRegnskaperneWithOsloSubUnit()
     {
         var orgId = TestDataSet.GetEntity("Revi").Id;
         var personId = TestDataSet.GetEntity("William").Id;
@@ -152,7 +153,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             EnrichPackageResources = false
         };
 
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
@@ -164,7 +165,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Terje()
+    public async Task GetConnectionsFromOthers_Terje_ReturnsRegnskaperneWithOsloSubUnit()
     {
         var orgId = TestDataSet.GetEntity("Revi").Id;
         var personId = TestDataSet.GetEntity("Terje").Id;
@@ -182,7 +183,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             EnrichPackageResources = false
         };
 
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, true, TestContext.Current.CancellationToken);
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
         var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         Assert.Single<ConnectionDto>(connections, t => t.Party.Id == orgId);
@@ -194,7 +195,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Petter_ShouldGetConnection_To_Baker_Via_BDO_When_KeyRoleIsEnabled()
+    public async Task GetConnections_KeyRoleEnabled_ReturnsBakerConnectionForPetter()
     {
         var filter = new ConnectionQueryFilter
         {
@@ -203,14 +204,14 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             IncludeKeyRole = true
         };
 
-        var result = await _query.GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, true, TestContext.Current.CancellationToken);
+        var result = await _query.GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
         Assert.True(result.Any(), "Expected a connections, but none were found.");
     }
 
     [Fact]
-    public async Task Petter_ShouldNotGetConnection_To_Baker_When_KeyRoleIsDisabled()
+    public async Task GetConnections_KeyRoleDisabled_ReturnsNoBakerConnectionForPetter()
     {
         var filter = new ConnectionQueryFilter
         {
@@ -226,7 +227,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Baker_ShouldExist()
+    public async Task SeededEntities_QueryByRefId_ReturnsBakerJohnsen()
     {
         var petter = await _db.Entities.AsNoTracking().SingleAsync(t => t.RefId == "ORG-01", cancellationToken: TestContext.Current.CancellationToken);
 
@@ -235,7 +236,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
     }
 
     [Fact]
-    public async Task Organization_ShouldExist()
+    public async Task SeededEntityTypes_QueryOrganization_ReturnsOrganisasjon()
     {
         var orgType = await _db.EntityTypes.AsNoTracking().SingleAsync(t => t.Id == EntityTypeConstants.Organization, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -243,9 +244,165 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
         Assert.Equal("Organisasjon", orgType.Name);
     }
 
+    [Fact]
+    public async Task KeyRole_IksWithDeltakerDeltAnsvar_IsNotIncluded()
+    {
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+        var iksId = TestDataSet.GetEntity("IKS Selskap").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { personId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(dbResult, r =>
+            r.FromId == iksId);
+    }
+
+    [Fact]
+    public async Task KeyRole_NonIksWithDeltakerDeltAnsvar_IsIncluded()
+    {
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+        var nonIksId = TestDataSet.GetEntity("Non-IKS Selskap").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { personId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.FromId == nonIksId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
+            r.ViaRoleId == RoleConstants.ManagingDirector.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task KeyRole_IksWithDifferentKeyRole_IsIncluded()
+    {
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+        var iksId = TestDataSet.GetEntity("IKS Selskap 2").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { personId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.FromId == iksId &&
+            r.RoleId == RoleConstants.Accountant.Id &&
+            r.ViaRoleId == RoleConstants.ManagingDirector.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task HasConnection_IksWithDeltakerDeltAnsvarRole_ReturnsFalse()
+    {
+        var fromId = TestDataSet.GetEntity("IKS Selskap").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.False(result);
+        Assert.Null(reason);
+    }
+
+    [Fact]
+    public async Task HasConnection_NonIksWithDeltakerDeltAnsvarRole_ReturnsKeyRole()
+    {
+        var fromId = TestDataSet.GetEntity("Non-IKS Selskap").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.True(result);
+        Assert.Equal(ConnectionReason.KeyRole, reason);
+    }
+
+    [Fact]
+    public async Task HasConnection_IksWithDifferentRole_ReturnsKeyRole()
+    {
+        var fromId = TestDataSet.GetEntity("IKS Selskap 2").Id;
+        var toId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.KeyRole]);
+
+        Assert.True(result);
+        Assert.Equal(ConnectionReason.KeyRole, reason);
+    }
+
+    [Fact]
+    public async Task KeyRole_ToOthers_IksWithDeltakerDeltAnsvar_IsNotIncluded()
+    {
+        var iksId = TestDataSet.GetEntity("IKS Selskap").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { iksId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.DoesNotContain(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task KeyRole_ToOthers_NonIksWithDeltakerDeltAnsvar_IsIncluded()
+    {
+        var nonIksId = TestDataSet.GetEntity("Non-IKS Selskap").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { nonIksId },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
+    [Fact]
+    public async Task KeyRole_ToOthers_IksWithDifferentRole_IsIncluded()
+    {
+        var iksId2 = TestDataSet.GetEntity("IKS Selskap 2").Id;
+        var personId = TestDataSet.GetEntity("Rådmann Kommune").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { iksId2 },
+            IncludeKeyRole = true,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        Assert.Contains(dbResult, r =>
+            r.ToId == personId &&
+            r.RoleId == RoleConstants.Accountant.Id &&
+            r.Reason == ConnectionReason.KeyRole);
+    }
+
     [Theory]
     [MemberData(nameof(GetFilterCombinations))]
-    public async Task GetConnectionsAsync_ShouldNotThrow(bool[] flags, bool useSingle)
+    public async Task GetConnectionsAsync_AllFilterFlagCombinations_DoesNotThrow(bool[] flags, bool useSingle)
     {
         var filter = new ConnectionQueryFilter
         {
@@ -264,7 +421,11 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>
             OnlyUniqueResults = flags[7]
         };
 
-        await _query.GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, ct: TestContext.Current.CancellationToken);
+        // Every flag combination must produce a valid query that runs against the database
+        // without the query builder throwing. Any combination that faults is a regression.
+        var exception = await Record.ExceptionAsync(() => _query.GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, ct: TestContext.Current.CancellationToken));
+
+        Assert.Null(exception);
     }
 
     public static IEnumerable<object[]> GetFilterCombinations()
@@ -327,6 +488,13 @@ internal static class TestDataSet
 
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000003"), Name = "Siri", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "07018412345", RefId = "07018412345", DateOfBirth = DateOnly.Parse("1984-01-07") },
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000004"), Name = "Lars", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "08018412345", RefId = "08018412345", DateOfBirth = DateOnly.Parse("1984-01-08") },
+
+        // IKS keyrole test entities
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7839-8b2a-8794bf7a929d"), Name = "Rådmann Kommune", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "09018412345", RefId = "09018412345", DateOfBirth = DateOnly.Parse("1984-01-09") },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7e40-9ea1-4362ea2aefa5"), Name = "Kommune", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.KOMM, OrganizationIdentifier = "605001750", ParentId = null, RefId = "605001750" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-76ee-a7d9-f2d76ac7187b"), Name = "IKS Selskap", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.IKS, OrganizationIdentifier = "605001769", ParentId = null, RefId = "605001769" },
+        new Entity() { Id = Guid.Parse("019f21f7-aa45-75ce-a26f-a4a06f238604"), Name = "IKS Selskap 2", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.IKS, OrganizationIdentifier = "605001785", ParentId = null, RefId = "605001785" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7a77-8203-e7ca159053d0"), Name = "Non-IKS Selskap", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "605001777", ParentId = null, RefId = "605001777" },
     };
 
 #pragma warning disable SA1401 // Fields should be private
@@ -346,6 +514,12 @@ internal static class TestDataSet
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000011"), FromId = Entities.First(t => t.Name == "Non-NUF Client AS").Id, ToId = Entities.First(t => t.Name == "Regnskaperne").Id, RoleId = RoleConstants.BusinessManager }, // Forretningsfører from non-NUF client
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000012"), FromId = Entities.First(t => t.Name == "NUF International Corp").Id, ToId = Entities.First(t => t.Name == "Siri").Id, RoleId = RoleConstants.ContactPersonNUF }, // Kontaktperson NUF
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000013"), FromId = Entities.First(t => t.Name == "NUF International Corp").Id, ToId = Entities.First(t => t.Name == "Lars").Id, RoleId = RoleConstants.NorwegianRepresentativeForeignEntity }, // Norsk representant for utenlandsk foretak
+
+        // IKS keyrole test assignments
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7604-8518-2ddb45c89645"), FromId = Entities.First(t => t.Name == "Kommune").Id, ToId = Entities.First(t => t.Name == "Rådmann Kommune").Id, RoleId = RoleConstants.ManagingDirector }, // daglig-leder (different keyrole)
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7532-9427-433385e63908"), FromId = Entities.First(t => t.Name == "IKS Selskap").Id, ToId = Entities.First(t => t.Name == "Kommune").Id, RoleId = RoleConstants.ParticipantSharedResponsibility }, // deltaker-delt-ansvar (keyrole) for IKS Selskap
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7b15-bfc8-4d596bc18d01"), FromId = Entities.First(t => t.Name == "IKS Selskap 2").Id, ToId = Entities.First(t => t.Name == "Kommune").Id, RoleId = RoleConstants.Accountant }, // Regnskapsfører  (not deltaker-delt-ansvar) for IKS Selskap
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7d79-87ce-f1dcdf1bba79"), FromId = Entities.First(t => t.Name == "Non-IKS Selskap").Id, ToId = Entities.First(t => t.Name == "Kommune").Id, RoleId = RoleConstants.ParticipantSharedResponsibility }, // deltaker-delt-ansvar (keyrole) for Non IKS Selskap
     };
 
     internal static Assignment GetAssignment(string fromName, string toName, Guid roleId)

@@ -58,6 +58,23 @@ fixture.EnsureSeedOnce<MyControllerTest>(async db =>
 The callback runs exactly once per fixture lifetime even when the fixture is
 shared across classes via `ICollectionFixture<ApiFixture>`.
 
+#### Seed-data contract
+
+`ApiFixture` is **not** an empty database — it provisions a baseline set of
+entities, parties and assignments (see `TestDataSeeds` / `TestEntities` /
+`TestData` in `Altinn.AccessManagement.TestUtils`). Your test code should:
+
+- **Assert against owned data, not global counts.** Use scoped assertions
+  (`Assert.Contains` / `Assert.Empty` on a filtered set), never "exactly N rows
+  in the table" — the baseline and other classes' `EnsureSeedOnce` data coexist
+  in a shared DB.
+- **Use disjoint IDs.** When seeding your own rows, use IDs that cannot collide
+  with the baseline or another class sharing the fixture; a primary-key clash
+  surfaces as a seed-time failure, not a clean assertion error.
+- **Reuse the named baseline actors** (`TestData.MalinEmilie`,
+  `TestData.JinxArcane`, `TestEntities.MainUnitKarlstad`, …) rather than
+  inventing parties, so the register/profile/roles mocks already resolve them.
+
 ### Why you configure in the constructor only
 
 Once `CreateClient()` / `CreateTestClient()` is called, the underlying
@@ -100,14 +117,26 @@ var client = fixture.WithWebHostBuilder(b =>
     .CreateClient();
 ```
 
+**Feature flags only apply through the injected mock.** A flag-gated path (for
+example the access-package enrichment in `ContextHandler`, gated by
+`SystemUserAccessPackageAuthorization` / `UserAccessPackageAuthorization`) is
+only enabled when you build the client with the configured `IFeatureManager`
+mock (via `WithWebHostBuilder` / a `GetTestClient(featureManager: …)` helper) —
+the default `BuildClient()` does not pick up the per-class `featureManageMock`
+setups. This is a subtle trap for **negative** decision tests: a flag-gated
+enrichment that is silently *off* yields the same `NotApplicable` you expect for
+"no access", so the test passes for the wrong reason. Run such tests through the
+flag-enabled client so the decision is actually exercised.
+
 ---
 
-## 3. `LegacyApiFixture` — Yuniql-backed legacy tests
+## 3. `LegacyApiFixture` — legacy-schema tests
 
 **Location:** `AccessMgmt.Tests/Fixtures/LegacyApiFixture.cs`
-**Use for:** Legacy tests that depend on the full Yuniql-migrated schema and
-haven't been rewritten against EF seed data yet.
-**Database:** Yuniql migrations **and** EF schema side-by-side.
+**Use for:** Tests backed by the Dapper / raw-Npgsql repositories on the
+`accessmanagement`, `delegation` and `consent` schemas.
+**Database:** EF Core (the `dbo` and `consent` schemas) **and** the Yuniql
+`accessmanagement` / `delegation` schemas, side-by-side.
 
 This fixture exists as an explicit bridge. New tests should **not** use it —
 prefer `ApiFixture`. The expected outcome is that the last `LegacyApiFixture`
@@ -152,9 +181,9 @@ runtime is always present.
 ## Other fixtures
 
 - **`AuthorizationDbFixture`** (`Altinn.Authorization.Tests`) — provides a
-  PostgreSQL database with the Authorization Yuniql schema for the
+  PostgreSQL database with the Authorization `delegation` schema for the
   delegation-metadata repository tests. Backed by the shared `PostgresTestEngine`
-  (the Yuniql scripts are replayed once into a template; each test class gets a
+  (the EF Core migrations are applied once into a template; each test class gets a
   clone). (`AuthorizationApiFixture` itself is mock-backed and needs no container.)
 - **`PlatformFixture`** (`Altinn.Authorization.Integration.Tests`) — wires up the
   platform-integration clients against the **live** platform; its tests

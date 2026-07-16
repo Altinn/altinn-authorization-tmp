@@ -4,16 +4,13 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Xml;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ABAC.Constants;
@@ -62,8 +59,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointWithWrittenPoliciesMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
             });
@@ -128,8 +123,8 @@ public partial class ConnectionsControllerTest
         /// - Each rule targets the correct org/app resource attributes
         /// - Each rule contains exactly one action
         /// </summary>
-        [Fact(Skip = "Failing with 500 error during delegation - requires investigation")]
-        public async Task AddInstanceRights_AsMalinForDumboToKaos_WithValidRightKeys_ReturnsCreated()
+        [Fact]
+        public async Task AddInstanceRights_AsManagingDirectorToOrganization_WithValidRightKeys_Returns201WithDelegatedInstanceRights()
         {
             List<string> rightKeys = await GetDelegatableInstanceRightKeys("app_skd_sirius-skattemelding-v1", SiriusInstanceId);
             Assert.NotEmpty(rightKeys);
@@ -151,7 +146,11 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(policyFactory);
             Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            var (policyPath, content) = policyFactory.WrittenPolicies.Last();
+            // WrittenPolicies is shared by all tests in the class and is unordered,
+            // so select this delegation's policy by its blob path.
+            byte[] content = Assert.Single(
+                policyFactory.WrittenPolicies,
+                p => p.Key.Contains("app_skd_sirius-skattemelding-v1") && p.Key.Contains($"to_{TestData.KaosMagicDesignAndArts.Id}")).Value;
             XacmlPolicy policy;
             using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
             {
@@ -256,7 +255,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithInvalidResource_ReturnsBadRequest()
+        public async Task AddInstanceRights_WithInvalidResource_Returns400ForInvalidResource()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-fake-right-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
@@ -274,7 +273,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithReadScope_ReturnsForbidden()
+        public async Task AddInstanceRights_WithReadScope_Returns403ForReadScope()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -292,7 +291,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithToOthersReadScope_ReturnsForbidden()
+        public async Task AddInstanceRights_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
@@ -310,7 +309,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task AddInstanceRights_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -328,7 +327,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest because the controller rejects empty right key lists.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithEmptyRightKeys_ReturnsBadRequest()
+        public async Task AddInstanceRights_WithEmptyRightKeys_Returns400ForEmptyRightKeys()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = [] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
@@ -346,7 +345,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithInvalidInstanceUrn_ReturnsBadRequest()
+        public async Task AddInstanceRights_WithInvalidInstanceUrn_Returns400ForInvalidInstanceUrn()
         {
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
@@ -364,7 +363,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task AddInstanceRights_WithNoToken_ReturnsUnauthorized()
+        public async Task AddInstanceRights_WithNoToken_Returns401ForMissingToken()
         {
             var client = Fixture.Server.CreateClient();
             var body = new InstanceRightsDelegationDto { DirectRightKeys = ["some-key"] };

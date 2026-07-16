@@ -1,13 +1,11 @@
-using System.Net;
+﻿using System.Net;
 using System.Runtime.CompilerServices;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform;
 using Altinn.Authorization.Integration.Platform.ResourceRegistry;
@@ -154,6 +152,11 @@ public class ResourceSyncServiceTest : IClassFixture<ApiFixture>
         var lease = new FakeLease();
         var svc = ResolveService();
         await svc.SyncResources(lease, TestContext.Current.CancellationToken);
+
+        // A problem page stops the sync before any resource is processed, so the
+        // lease watermark is never advanced (contrast the upsert test, which
+        // asserts Since is set on success).
+        Assert.Equal(default, lease.Data.Since);
     }
 
     [Fact]
@@ -323,14 +326,32 @@ public class ResourceSyncServiceTest : IClassFixture<ApiFixture>
             ],
         })];
 
-        await ResolveService().SyncResources(new FakeLease(), TestContext.Current.CancellationToken);
+        var lease = new FakeLease();
+        await ResolveService().SyncResources(lease, TestContext.Current.CancellationToken);
+
+        // The unparseable resource URN is skipped, so the resource is never
+        // processed and the lease watermark stays at its initial value.
+        Assert.Equal(default, lease.Data.Since);
     }
 
     [Fact]
     public async Task SyncResources_ReturnsEarly_WhenResourceProcessingThrows()
     {
         var refId = "rsst-throw-" + Guid.NewGuid().ToString("N");
-        Registry.ResourceFactory = _ => Success(NewResourceModel(refId));
+
+        // A resource with no competent authority makes ConvertToResource dereference
+        // a null Orgcode and throw, which exercises the page-level catch that returns
+        // early. (A non-existent role subject does not throw - UpsertRoleCodeResource
+        // looks it up with FirstOrDefault and skips when absent - so it would not
+        // reach this path.)
+        Registry.ResourceFactory = _ => Success(new ResourceModel
+        {
+            Identifier = refId,
+            Title = new ResourceTitle { Nb = "Resource " + refId },
+            Description = new ResourceDescription { Nb = "Description for " + refId },
+            HasCompetentAuthority = null,
+            ResourceType = "GenericAccessResource",
+        });
         Registry.StreamPagesFactory = (_, _) => [Success(new PageStream<ResourceUpdatedModel>
         {
             Stats = new PageStream<ResourceUpdatedModel>.StatsStream(),
@@ -339,15 +360,20 @@ public class ResourceSyncServiceTest : IClassFixture<ApiFixture>
             [
                 new ResourceUpdatedModel
                 {
-                    // No role exists with this LegacyUrn/Urn → UpsertRoleCodeResource throws KeyNotFoundException.
-                    SubjectUrn = "urn:altinn:rolecode:does-not-exist-" + Guid.NewGuid().ToString("N"),
+                    SubjectUrn = "urn:altinn:rolecode:priv",
                     ResourceUrn = "urn:altinn:resource:" + refId,
                     UpdatedAt = DateTime.UtcNow,
                 },
             ],
         })];
 
-        await ResolveService().SyncResources(new FakeLease(), TestContext.Current.CancellationToken);
+        var lease = new FakeLease();
+        await ResolveService().SyncResources(lease, TestContext.Current.CancellationToken);
+
+        // Processing the page throws, so the sync returns early and records no
+        // progress: the lease watermark stays at its initial value, so the next run
+        // retries from the same point instead of skipping the failed page.
+        Assert.Equal(default, lease.Data.Since);
     }
 
     private IResourceSyncService ResolveService()

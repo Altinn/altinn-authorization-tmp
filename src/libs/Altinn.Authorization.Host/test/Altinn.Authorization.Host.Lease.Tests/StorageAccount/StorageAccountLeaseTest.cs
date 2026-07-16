@@ -1,7 +1,4 @@
-using System.CodeDom.Compiler;
-using System.Diagnostics.Metrics;
 using Altinn.Authorization.Host.Lease.StorageAccount;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.Authorization.Host.Lease.Tests
@@ -63,10 +60,12 @@ namespace Altinn.Authorization.Host.Lease.Tests
 
             for (var i = 0; i < 100; i++)
             {
-                await lease.Update(new LeaseData()
-                {
-                    Counter = i,
-                }, TestContext.Current.CancellationToken);
+                await lease.Update(
+                    new LeaseData()
+                    {
+                        Counter = i,
+                    },
+                    TestContext.Current.CancellationToken);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(90), CancellationToken.None);

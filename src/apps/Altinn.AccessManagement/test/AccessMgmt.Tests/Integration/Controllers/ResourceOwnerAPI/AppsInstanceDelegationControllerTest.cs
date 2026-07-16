@@ -1,71 +1,38 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Altinn.AccessManagement.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Tests.Data;
-using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Utils;
-using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Common.AccessToken.Services;
-using Altinn.Common.PEP.Interfaces;
-using AltinnCore.Authentication.JwtCookie;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
-// Migrated from CustomWebApplicationFactory<AppsInstanceDelegationController> to ApiFixture
-// as part of Phase 2.2 (Sub-step 16.2a — AccessMgmt.Tests WAF consolidation, Group A
-// single-configuration migrations). All tests share a single mock set (the previous
-// `WithPDPMock` extension point was dead code), so DI is registered once in the
-// constructor; per-test HttpClients are built via fixture.CreateClient().
-// See: overhaul part-1 step 16
+// The shared RightsApiFixture provides the mock graph (PDP, policy/delegation data
+// layer, issuer-cert signing); this class only adds appsettings and seed data.
+// Per-test HttpClients are built via fixture.CreateClient().
 namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 
 [IntegrationTest]
-public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
+[Collection(RightsDbCollection.Name)]
+public class AppsInstanceDelegationControllerTest
 {
-    private readonly ApiFixture _fixture;
+    private readonly RightsApiFixture _fixture;
     private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     /// <summary>
-    /// Constructor setting up the shared <see cref="ApiFixture"/> with the mocks
-    /// required by this controller's tests.
+    /// Constructor setting up the shared <see cref="RightsApiFixture"/> with the
+    /// appsettings and seed data required by this controller's tests.
     /// </summary>
-    /// <param name="fixture">Shared <see cref="ApiFixture"/>.</param>
-    public AppsInstanceDelegationControllerTest(ApiFixture fixture)
+    /// <param name="fixture">Shared <see cref="RightsApiFixture"/>.</param>
+    public AppsInstanceDelegationControllerTest(RightsApiFixture fixture)
     {
         _fixture = fixture;
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
-        fixture.ConfigureServices(services =>
-        {
-            services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-            services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-            services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
-            services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-            services.AddSingleton<IPartiesClient, PartiesClientMock>();
-            services.AddSingleton<IProfileClient, ProfileClientMock>();
-            services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-            services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-            services.AddSingleton<IPDP, PdpPermitMock>();
-            services.AddSingleton<IAltinn2RightsClient, Tests.Mocks.Altinn2RightsClientMock>();
-
-            // ApiFixture registers PublicSigningKeyProviderMock by default, but these
-            // tests sign tokens via PrincipalUtil.GetAccessToken which requires the
-            // issuer-cert-backed SigningKeyResolverMock.
-            services.RemoveAll<IPublicSigningKeyProvider>();
-            services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-        });
 
         fixture.EnsureSeedOnce<AppsInstanceDelegationControllerTest>(db =>
         {
@@ -100,6 +67,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
             VariantId = EntityVariantConstants.Person,
             IsDeleted = false,
         },
+
         // From party used by DelegationMetadataRepositoryMock for RevokeAll/Get tests
         new()
         {
@@ -111,6 +79,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
             VariantId = EntityVariantConstants.AS,
             IsDeleted = false,
         },
+
         // Synthetic To parties used by DelegationMetadataRepositoryMock for RevokeAll test
         new()
         {
@@ -138,7 +107,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegationCheck_Ok), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task DelegationCheck_ValidToken_OK(string platformToken, string resourceId, string instanceId, Paginated<ResourceRightDelegationCheckResultDto> expected)
+    public async Task DelegationCheck_ValidToken_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<ResourceRightDelegationCheckResultDto> expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -165,7 +134,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalReadForAppNoExistingPolicy), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalSignForAppExistingPolicy), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateNormalReadForAppNoExistingPolicyOrganizatonNumber), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_OK(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegate_Returns200Ok(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -189,7 +158,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppOnlyExistingPolicyRevokeLast), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppMultipleExistingPolicyRevoke), MemberType = typeof(TestDataAppsInstanceDelegation))]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeReadForAppNoExistingPolicyRevokeLast), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Revoke_OK(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceRevokeResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevoke_Returns200Ok(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceRevokeResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -205,7 +174,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAll), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_RevokeAll_OK(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceRevokeResponseDto> expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevokeAll_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceRevokeResponseDto> expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -221,7 +190,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAllToManyPolicyFiles), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_RevokeAll_ToManyPolicyFilesToUpdate(string platformToken, string resourceId, string instanceId, AltinnProblemDetails expected)
+    public async Task AppsInstanceDelegationController_ValidTokenRevokeAllTooManyPolicyFiles_Returns400BadRequest(string platformToken, string resourceId, string instanceId, AltinnProblemDetails expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -237,7 +206,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.RevokeAllUnathorized), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_NoToken_RevokeAll_Unauthorized(string resourceId, string instanceId)
+    public async Task AppsInstanceDelegationController_NoTokenRevokeAll_Returns401Unauthorized(string resourceId, string instanceId)
     {
         var client = GetTestClient(null);
 
@@ -256,7 +225,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateReadForAppNoExistingPolicyNoResponceDBWrite), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_DBWriteFails(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegateDBWriteFails_Returns206PartialContent(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AppsInstanceDelegationResponseDto expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -278,7 +247,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
     /// </summary>
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.DelegateToPartyNotExisting), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Delegate_InvalidParty(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AltinnProblemDetails expected)
+    public async Task AppsInstanceDelegationController_ValidTokenDelegateInvalidParty_Returns400BadRequest(string platformToken, AppsInstanceDelegationRequestDto request, string resourceId, string instanceId, AltinnProblemDetails expected)
     {
         var client = GetTestClient(platformToken);
 
@@ -294,7 +263,7 @@ public class AppsInstanceDelegationControllerTest : IClassFixture<ApiFixture>
 
     [Theory]
     [MemberData(nameof(TestDataAppsInstanceDelegation.GetAllAppDelegatedInstances), MemberType = typeof(TestDataAppsInstanceDelegation))]
-    public async Task AppsInstanceDelegationController_ValidToken_Get_OK(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceDelegationResponseDto> expected)
+    public async Task AppsInstanceDelegationController_ValidTokenGet_Returns200Ok(string platformToken, string resourceId, string instanceId, Paginated<AppsInstanceDelegationResponseDto> expected)
     {
         var client = GetTestClient(platformToken);
 

@@ -63,7 +63,7 @@ public sealed class PostgresTestEngine
     /// </summary>
     public async Task<PostgresTestDatabase?> CreateDatabaseAsync(CancellationToken cancellationToken = default)
     {
-        await _gate.WaitAsync(cancellationToken);
+        await FixtureTiming.TimeAsync(FixtureTiming.Phase.ProvisionWait, () => _gate.WaitAsync(cancellationToken));
         try
         {
             if (SkipReason is not null)
@@ -73,16 +73,19 @@ public sealed class PostgresTestEngine
 
             if (!_templateReady)
             {
-                if (!await EnsureServerStartedAsync(cancellationToken))
+                if (!await FixtureTiming.TimeAsync(FixtureTiming.Phase.ServerStart, () => EnsureServerStartedAsync(cancellationToken)))
                 {
                     return null;
                 }
 
-                await BootstrapRolesAsync(cancellationToken);
-                await ExecAsync($"CREATE DATABASE {_options.TemplateDatabaseName};", cancellationToken);
-                var template = NewDatabase(_options.TemplateDatabaseName);
-                await _options.BuildTemplateAsync(template);
-                NpgsqlConnection.ClearAllPools();
+                await FixtureTiming.TimeAsync(FixtureTiming.Phase.TemplateBuild, async () =>
+                {
+                    await BootstrapRolesAsync(cancellationToken);
+                    await ExecAsync($"CREATE DATABASE {_options.TemplateDatabaseName};", cancellationToken);
+                    var template = NewDatabase(_options.TemplateDatabaseName);
+                    await _options.BuildTemplateAsync(template);
+                    NpgsqlConnection.ClearAllPools();
+                });
                 _templateReady = true;
             }
         }
@@ -92,9 +95,9 @@ public sealed class PostgresTestEngine
         }
 
         var name = $"test_{Interlocked.Increment(ref _databaseInstance)}";
-        await ExecAsync(
+        await FixtureTiming.TimeAsync(FixtureTiming.Phase.Clone, () => ExecAsync(
             $"CREATE DATABASE {name} WITH TEMPLATE {_options.TemplateDatabaseName} OWNER {_options.ApplicationUser};",
-            cancellationToken);
+            cancellationToken));
         return NewDatabase(name);
     }
 
@@ -105,8 +108,7 @@ public sealed class PostgresTestEngine
             // Both `.Build()` and `StartAsync` reach for the Docker daemon, so they
             // must be inside the try — a field initializer would surface as an
             // unrecoverable fixture-construction failure instead of a skip.
-            _server = new PostgreSqlBuilder()
-                .WithImage(_options.Image)
+            _server = new PostgreSqlBuilder(_options.Image)
                 .WithCleanUp(true)
                 .Build();
             await _server.StartAsync(cancellationToken);

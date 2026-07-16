@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -10,7 +9,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,7 +47,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
             });
         }
@@ -73,7 +70,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with Josephine listed as a user with access.
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_AsJinxForKaos_SiriusSkattemelding_ReturnsJosephine()
+        public async Task GetInstanceUsers_AsManagingDirector_SiriusSkattemelding_ReturnsRightholder()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -100,7 +97,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with Josephine listed (same rightholder, different resource instance).
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_AsJinxForKaos_MattilsynetBakery_ReturnsJosephine()
+        public async Task GetInstanceUsers_AsManagingDirector_MattilsynetBakery_ReturnsRightholder()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -122,7 +119,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with an empty list.
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_AsJinxForKaos_NonExistentInstance_ReturnsEmptyList()
+        public async Task GetInstanceUsers_AsManagingDirector_NonExistentInstance_ReturnsEmptyList()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -143,7 +140,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_WithReadScope_ReturnsForbidden()
+        public async Task GetInstanceUsers_WithReadScope_Returns403ForReadScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -159,7 +156,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_WithToOthersReadScope_ReturnsForbidden()
+        public async Task GetInstanceUsers_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -175,7 +172,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden (requires to-others write).
         /// </summary>
         [Fact]
-        public async Task GetInstanceUsers_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task GetInstanceUsers_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 

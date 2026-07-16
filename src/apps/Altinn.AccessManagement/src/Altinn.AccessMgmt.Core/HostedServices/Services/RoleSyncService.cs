@@ -1,10 +1,13 @@
-﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using System.Diagnostics;
+using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Telemetry;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
@@ -32,6 +35,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private readonly ILogger<RoleSyncService> _logger;
     private readonly IServiceProvider _serviceProvider;
 
+    private KeyValuePair<string, object> OtelTags { get; } = new KeyValuePair<string, object?>("service", nameof(RoleSyncService));
+
     /// <inheritdoc />
     public async Task SyncRoles(ILease lease, bool isInit = false, CancellationToken cancellationToken = default)
     {
@@ -52,89 +57,108 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             return;
         }
 
+        using var activity = CoreTelemetry.ActivitySource.StartActivity(nameof(RoleSyncService), ActivityKind.Internal);
         await foreach (var page in await _register.StreamRoles([], leaseData.RoleStreamNextPageLink, cancellationToken))
         {
-            if (page.IsProblem)
+            try
             {
-                Log.ResponseError(_logger, page.StatusCode);
-                throw new InvalidOperationException("Stream page is not successful");
-            }
-
-            _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
-
-            var flushed = 0;
-            foreach (var item in page.Content.Data)
-            {
-                var assignment = MapToAssignment(item);
-                if (ShouldSetParent(item))
+                if (page?.Content?.Data?.Count() == 0)
                 {
-                    if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitBEDR)))
-                    {
-                        flushed += await Flush();
-                    }
-                    else if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitAAFY)))
-                    {
-                        flushed += await Flush();
-                    }
-                }
-                else
-                {
-                    if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: assignment.RoleId)))
-                    {
-                        flushed += await Flush();
-                    }
+                    break;
                 }
 
-                if (item.Type == ExternalRoleAssignmentEvent.EventType.Added)
+                if (page.IsProblem)
                 {
-                    addAssignments.Add(assignment);
+                    Log.ResponseError(_logger, page.StatusCode);
+                    throw new InvalidOperationException("Stream page is not successful");
+                }
+
+                _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
+
+                var flushed = 0;
+                foreach (var item in page.Content.Data)
+                {
+                    var assignment = MapToAssignment(item);
                     if (ShouldSetParent(item))
                     {
-                        addParent[assignment.FromId] = assignment.ToId;
+                        if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitBEDR)))
+                        {
+                            flushed += await Flush();
+                        }
+                        else if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitAAFY)))
+                        {
+                            flushed += await Flush();
+                        }
                     }
-                }
-                else if (item.Type == ExternalRoleAssignmentEvent.EventType.Removed)
-                {
-                    removeAssignments.Add(assignment);
-                    if (ShouldSetParent(item))
+                    else
                     {
-                        removeParent[assignment.FromId] = assignment.ToId;
+                        if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: assignment.RoleId)))
+                        {
+                            flushed += await Flush();
+                        }
                     }
 
-                    flushed += await Flush();
+                    if (item.Type == ExternalRoleAssignmentEvent.EventType.Added)
+                    {
+                        addAssignments.Add(assignment);
+                        if (ShouldSetParent(item))
+                        {
+                            addParent[assignment.FromId] = assignment.ToId;
+                        }
+                    }
+                    else if (item.Type == ExternalRoleAssignmentEvent.EventType.Removed)
+                    {
+                        removeAssignments.Add(assignment);
+                        if (ShouldSetParent(item))
+                        {
+                            removeParent[assignment.FromId] = assignment.ToId;
+                        }
+
+                        flushed += await Flush();
+                    }
+                }
+
+                flushed += await Flush();
+
+                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+                {
+                    break;
+                }
+
+                if (flushed > 0)
+                {
+                    leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
+                    await lease.Update(leaseData, cancellationToken);
                 }
             }
-
-            flushed += await Flush();
-
-            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            catch (Exception ex)
             {
+                activity?.AddException(ex);
+                activity?.SetStatus(ActivityStatusCode.Error);
+                CoreTelemetry.HostedServicesFailures.Add(1, OtelTags);
+                CoreTelemetry.HostedServicesOk.Record(0, OtelTags);
                 return;
             }
+        }
 
-            if (flushed > 0)
-            {
-                leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
-                await lease.Update(leaseData, cancellationToken);
-            }
+        CoreTelemetry.HostedServicesSuccess.Add(1, OtelTags);
+        CoreTelemetry.HostedServicesOk.Record(1, OtelTags);
+        async Task<int> Flush()
+        {
+            var result = 0;
+            result += await SetParents(appDbContextFactory, addParent, cancellationToken);
+            result += await IngestAssigments(ingestService, addAssignments, options, cancellationToken);
 
-            async Task<int> Flush()
-            {
-                var result = 0;
-                result += await SetParents(appDbContextFactory, addParent, cancellationToken);
-                result += await IngestAssigments(ingestService, addAssignments, options, cancellationToken);
+            result += await RemoveParents(appDbContextFactory, removeParent, cancellationToken);
+            result += await RemoveAssignments(appDbContextFactory, removeAssignments, cancellationToken);
 
-                result += await RemoveParents(appDbContextFactory, removeParent, cancellationToken);
-                result += await RemoveAssignments(appDbContextFactory, removeAssignments, cancellationToken);
+            seen.Clear();
+            addParent.Clear();
+            removeParent.Clear();
+            addAssignments.Clear();
+            removeAssignments.Clear();
 
-                seen.Clear();
-                addParent.Clear();
-                removeParent.Clear();
-                addAssignments.Clear();
-                removeAssignments.Clear();
-
-                return result;
-            }
+            return result;
         }
     }
 
@@ -157,6 +181,30 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         entities = entities
             .Where(e => relationSet.Contains((e.FromId, e.ToId, e.RoleId)))
             .ToList();
+
+        // Check for client delegations associated with removed client and remove them as well
+        // TODO: Remove after 01.01.2027 when roles from A2 is retired as a concept.
+        var clientRelations = entities.Where(e => e.RoleId == RoleConstants.BusinessManager.Entity.Id)
+            .Select(e => (e.FromId, e.ToId))
+            .ToList();
+
+        foreach (var clientRelation in clientRelations)
+        {
+            var clientDelegations = await dbContext.GetClientRoleDelegations(
+                clientRelation.FromId,
+                clientRelation.ToId,
+                cancellationToken
+            );
+
+            List<Guid> assignmentIdsToRemove = clientDelegations.Select(t => t.AssignmentId).ToList();
+
+            var clientAssignments = await dbContext.Assignments
+                .AsTracking()
+                .Where(e => assignmentIdsToRemove.Contains(e.Id))
+                .ToListAsync(cancellationToken: cancellationToken);
+
+            entities.AddRange(clientAssignments);
+        }
 
         dbContext.RemoveRange(entities);
         return await dbContext.SaveChangesAsync(cancellationToken);

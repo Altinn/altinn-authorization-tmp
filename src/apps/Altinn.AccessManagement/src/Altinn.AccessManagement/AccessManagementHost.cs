@@ -21,7 +21,6 @@ using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
-using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Host.Startup;
@@ -38,8 +37,6 @@ using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
@@ -47,7 +44,6 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -367,14 +363,22 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.ALTINN_SERVICEOWNER_DELEGATIONREQUESTS_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])))
             .AddPolicy(AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE])))
-            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDRECTIONAL_READ, policy => policy.AddRequirementConditionalScope(
-                new ConditionalScope(ConditionalScope.FromOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ),
-                new ConditionalScope(ConditionalScope.ToOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ)
-            ))
-            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE, policy => policy.AddRequirementConditionalScope(
-                new ConditionalScope(ConditionalScope.FromOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE),
-                new ConditionalScope(ConditionalScope.ToOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE)
-            ))
+            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDRECTIONAL_READ, policy =>
+            {
+                policy.AddRequirementConditionalScope(
+                    new ConditionalScope(ConditionalScope.FromOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ),
+                    new ConditionalScope(ConditionalScope.ToOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ)
+                );
+                policy.Requirements.Add(new PersonAccessManagerRequirement());
+            })
+            .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_BIDIRECTIONAL_WRITE, policy =>
+            {
+                policy.AddRequirementConditionalScope(
+                    new ConditionalScope(ConditionalScope.FromOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE),
+                    new ConditionalScope(ConditionalScope.ToOthers, AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE)
+                );
+                policy.Requirements.Add(new PersonAccessManagerRequirement());
+            })
             .AddPolicy(AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE_TOOTHERS, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_ENDUSER_REQUESTS_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_REQUESTS_READ])))
             .AddPolicy(AuthzConstants.POLICY_ENDUSER_REQUESTS_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_REQUESTS_WRITE])));

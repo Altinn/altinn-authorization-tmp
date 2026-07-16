@@ -232,78 +232,6 @@ namespace Altinn.AccessManagement.Tests.Utils
         }
 
         /// <summary>
-        /// Assert that two <see cref="MaskinportenSchemaDelegationExternal"/> have the same property in the same positions.
-        /// </summary>
-        /// <param name="expected">An instance with the expected values.</param>
-        /// <param name="actual">The instance to verify.</param>
-        public static void AssertMaskinportenSchemaDelegationExternalEqual(MaskinportenSchemaDelegationExternal expected, MaskinportenSchemaDelegationExternal actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-
-            Assert.Equal(expected.OfferedByPartyId, actual.OfferedByPartyId);
-            Assert.Equal(expected.OfferedByName, actual.OfferedByName);
-            Assert.Equal(expected.OfferedByOrganizationNumber, actual.OfferedByOrganizationNumber);
-            Assert.Equal(expected.CoveredByPartyId, actual.CoveredByPartyId);
-            Assert.Equal(expected.CoveredByName, actual.CoveredByName);
-            Assert.Equal(expected.CoveredByOrganizationNumber, actual.CoveredByOrganizationNumber);
-            ////Assert.Equal(expected.PerformedByUserId, actual.PerformedByUserId);
-            Assert.Equal(expected.ResourceId, actual.ResourceId);
-        }
-
-        /// <summary>
-        /// Assert that two <see cref="CompetentAuthorityExternal"/> have the same property in the same positions.
-        /// </summary>
-        /// <param name="expected">An instance with the expected values.</param>
-        /// <param name="actual">The instance to verify.</param>
-        public static void AssertCompetentAuthorityEqual(CompetentAuthorityExternal expected, CompetentAuthorityExternal actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-
-            Assert.Equal(expected?.Orgcode, actual.Orgcode);
-            Assert.Equal(expected?.Organization, actual.Organization);
-            Assert.Equal(expected?.Name, actual.Name);
-        }
-
-        /// <summary>
-        /// Assert that two <see cref="MPDelegationExternal"/> have the same property in the same positions.
-        /// </summary>
-        /// <param name="expected">An instance with the expected values.</param>
-        /// <param name="actual">The instance to verify.</param>
-        public static void AssertDelegationEqual(MPDelegationExternal expected, MPDelegationExternal actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-
-            Assert.Equal(expected.SupplierOrg, actual.SupplierOrg);
-            Assert.Equal(expected.ConsumerOrg, actual.ConsumerOrg);
-            Assert.Equal(expected.Scopes, actual.Scopes);
-            Assert.Equal(expected.DelegationSchemeId, actual.DelegationSchemeId);
-            Assert.Equal(expected.Created, actual.Created);
-        }
-
-        /// <summary>
-        /// Assert that two <see cref="PartyExternal"/> have the same property in the same positions.
-        /// </summary>
-        /// <param name="expected">An instance with the expected values.</param>
-        /// <param name="actual">The instance to verify.</param>
-        public static void AssertPartyEqual(PartyExternal expected, PartyExternal actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-
-            Assert.Equal(expected.PartyTypeName, actual.PartyTypeName);
-            Assert.Equal(expected.OrgNumber, actual.OrgNumber);
-            Assert.Equal(expected.Organization.Name, actual.Organization.Name);
-            Assert.Equal(expected.Organization.OrgNumber, actual.Organization.OrgNumber);
-            Assert.Equal(expected.Organization.UnitType, actual.Organization.UnitType);
-            Assert.Equal(expected.PartyId, actual.PartyId);
-            Assert.Equal(expected.UnitType, actual.UnitType);
-            Assert.Equal(expected.Name, actual.Name);
-        }
-
-        /// <summary>
         /// Assert that two <see cref="Rule"/> have the same property in the same positions.
         /// </summary>
         /// <param name="expected">An instance with the expected values.</param>
@@ -360,20 +288,6 @@ namespace Altinn.AccessManagement.Tests.Utils
 
             AssertCollections(expected.UserSubjects, actual.UserSubjects, AssertAttributeMatchExternalEqual);
             AssertCollections(expected.PolicySubjects, actual.PolicySubjects, AssertPolicySubjects);
-        }
-
-        /// <summary>
-        /// Assert that two <see cref="BaseRightExternal"/> have the same property in the same positions.
-        /// </summary>
-        /// <param name="expected">An instance with the expected values.</param>
-        /// <param name="actual">The instance to verify.</param>
-        public static void AssertBaseRightExternalEqual(BaseRightExternal expected, BaseRightExternal actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-
-            AssertCollections(expected.Resource, actual.Resource, AssertAttributeMatchExternalEqual);
-            Assert.Equal(expected.Action, actual.Action);
         }
 
         /// <summary>

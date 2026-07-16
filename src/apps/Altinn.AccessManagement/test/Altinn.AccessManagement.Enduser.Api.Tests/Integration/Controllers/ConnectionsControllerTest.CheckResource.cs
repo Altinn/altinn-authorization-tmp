@@ -2,15 +2,12 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -57,7 +54,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
             });
             Fixture.EnsureSeedOnce<CheckResource>(db =>
@@ -93,7 +89,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 3 rights (read, access, subscribe) all granted with RoleAccess and PackageAccess.
         /// </summary>
         [Fact]
-        public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_ReturnsOK()
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_RolesAndPackages_Returns200WithRightsGrantedByRolesAndPackages()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
@@ -134,7 +130,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 3 rights all granted with PackageAccess but not RoleAccess.
         /// </summary>
         [Fact]
-        public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_ReturnsOK()
+        public async Task CheckResource_NavSykemeldingDialog_FullAccess_Packages_Returns200WithRightsGrantedByPackages()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=nav_sykepenger_dialog", TestContext.Current.CancellationToken);
@@ -176,7 +172,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with 17 rights (mix of granted and denied).
         /// </summary>
         [Fact]
-        public async Task CheckResource_DiheOmsetningsoppgave_PartialAccess_RolesAndPackages_ReturnsOK()
+        public async Task CheckResource_DiheOmsetningsoppgave_PartialAccess_RolesAndPackages_Returns200WithPartiallyGrantedRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
             HttpResponseMessage response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=app_dihe_omsetningsoppgave-for-alkohol", TestContext.Current.CancellationToken);
@@ -218,7 +214,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckResource_WithReadScope_ReturnsForbidden()
+        public async Task CheckResource_WithReadScope_Returns403ForReadScope()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
             var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);
@@ -230,7 +226,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckResource_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task CheckResource_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
             var response = await client.GetAsync($"{Route}/resources/delegationcheck?party={TestData.DumboAdventures.Id}&resource=test-delegation-check-resource", TestContext.Current.CancellationToken);

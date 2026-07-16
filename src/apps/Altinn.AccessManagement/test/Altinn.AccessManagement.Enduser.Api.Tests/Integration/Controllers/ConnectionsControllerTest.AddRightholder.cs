@@ -4,16 +4,13 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Api.Enduser.Models;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -52,7 +49,6 @@ public partial class ConnectionsControllerTest
             Fixture.ConfigureServices(services =>
             {
                 services.AddSingleton<IUserProfileLookupService, UserProfileLookupServiceMock>();
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
             });
             Fixture.EnsureSeedOnce<AddRightholder>(db =>
             {
@@ -79,7 +75,7 @@ public partial class ConnectionsControllerTest
         /// Persons require an existing connection; expects 400 BadRequest with EntityNotExists validation error.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithJosephine_ReturnsProblem()
+        public async Task AddRightholder_AsManagingDirectorForUnconnectedPerson_ReturnsProblem()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -101,7 +97,7 @@ public partial class ConnectionsControllerTest
         /// Organizations do not require an existing connection; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_ReturnsOk()
+        public async Task AddRightholder_AsManagingDirectorForOrganization_Returns200WithAssignment()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -123,7 +119,7 @@ public partial class ConnectionsControllerTest
         /// The mock UserProfileLookupService resolves Bodil by SSN; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_ReturnsOk()
+        public async Task AddRightholder_AsManagingDirectorForPersonViaPersonInput_Returns200WithAssignment()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -147,7 +143,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_WithReadScope_ReturnsForbidden()
+        public async Task AddRightholder_WithReadScope_Returns403ForReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -161,7 +157,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task AddRightholder_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 

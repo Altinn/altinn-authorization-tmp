@@ -5,16 +5,13 @@ using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
-using Altinn.Platform.Register.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -28,15 +25,12 @@ public class InternalAuthorizedPartiesController(
     ILogger<InternalAuthorizedPartiesController> logger,
     IMapper mapper,
     IAuthorizedPartyRepoServiceEf authorizedPartyRepoService,
-    [FromKeyedServices("newConnectionQueryOnlyImplementation")] IAuthorizedPartiesService newConnectionQueryOnlyImplementation,
-    [FromKeyedServices("oldDelegationMetadataEfImplementation")] IAuthorizedPartiesService oldDelegationMetadataEfImplementation
+    IAuthorizedPartiesService authorizedPartiesService
     ) : ControllerBase
 {
     /// <summary>
-    /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for the authenticated user
+    /// Endpoint for retrieving all authorized parties for the authenticated user
     /// </summary>
-    /// <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
-    /// <param name="includeAltinn3">Optional (Default: True): Whether Authorized Parties from Altinn 3 should be included in the underlying result set.</param>
     /// <param name="includeRoles">Optional (Default: True): Whether authorized roles should be included in the result set.</param>
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
@@ -55,14 +49,12 @@ public class InternalAuthorizedPartiesController(
     [Authorize]
     [Route("authorizedparties")]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(List<AuthorizedPartyExternal>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<AuthorizedPartyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [FeatureGate(FeatureFlags.RightsDelegationApi)]
-    public async Task<ActionResult<List<AuthorizedPartyExternal>>> GetAuthorizedParties(
-        [FromQuery] bool includeAltinn2 = false,
-        [FromQuery] bool includeAltinn3 = true,
+    public async Task<ActionResult<List<AuthorizedPartyDto>>> GetAuthorizedParties(
         [FromQuery] bool includeRoles = true,
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
@@ -76,12 +68,8 @@ public class InternalAuthorizedPartiesController(
     {
         try
         {
-            var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
-
             var filters = new AuthorizedPartiesFilters
             {
-                IncludeAltinn2 = includeAltinn2,
-                IncludeAltinn3 = includeAltinn3,
                 IncludeRoles = includeRoles,
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
@@ -110,13 +98,7 @@ public class InternalAuthorizedPartiesController(
 
             if (userId != 0)
             {
-                return mapper.Map<List<AuthorizedPartyExternal>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
-            }
-
-            string systemUserUuid = AuthenticationHelper.GetSystemUserUuidString(HttpContext);
-            if (!string.IsNullOrWhiteSpace(systemUserUuid))
-            {
-                return mapper.Map<List<AuthorizedPartyExternal>>(await authorizedPartiesService.GetAuthorizedPartiesBySystemUserUuid(systemUserUuid, filters, cancellationToken));
+                return mapper.Map<List<AuthorizedPartyDto>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
             }
 
             return Unauthorized();
@@ -129,11 +111,9 @@ public class InternalAuthorizedPartiesController(
     }
 
     /// <summary>
-    /// Endpoint for retrieving a given authorized party if it exists (with option to include Authorized Parties, aka Reportees from Altinn 2, when getting the underlying list of authorized parties) in the authenticated user's list of authorized parties
+    /// Endpoint for retrieving a given authorized party if it exists in the authenticated user's list of authorized parties
     /// </summary>
     /// <param name="partyId">The partyId to get if exists in the authenticated user's list of authorized parties</param>
-    /// <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
-    /// <param name="includeAltinn3">Optional (Default: True): Whether Authorized Parties from Altinn 3 should be included in the underlying result set.</param>
     /// <param name="includeRoles">Optional (Default: True): Whether authorized roles should be included in the result set.</param>
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
@@ -151,15 +131,13 @@ public class InternalAuthorizedPartiesController(
     [Authorize]
     [Route("authorizedparty/{partyId}")]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(List<AuthorizedPartyExternal>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<AuthorizedPartyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [FeatureGate(FeatureFlags.RightsDelegationApi)]
-    public async Task<ActionResult<AuthorizedPartyExternal>> GetAuthorizedParty(
+    public async Task<ActionResult<AuthorizedPartyDto>> GetAuthorizedParty(
         [FromRoute] int partyId,
-        [FromQuery] bool includeAltinn2 = false,
-        [FromQuery] bool includeAltinn3 = true,
         [FromQuery] bool includeRoles = true,
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
@@ -172,8 +150,6 @@ public class InternalAuthorizedPartiesController(
     {
         try
         {
-            var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
-
             if (partyId == 0)
             {
                 ModelState.AddModelError("InvalidParty", "The party id must be a valid non-zero integer");
@@ -182,8 +158,6 @@ public class InternalAuthorizedPartiesController(
 
             var filters = new AuthorizedPartiesFilters
             {
-                IncludeAltinn2 = includeAltinn2,
-                IncludeAltinn3 = includeAltinn3,
                 IncludeRoles = includeRoles,
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
@@ -218,7 +192,7 @@ public class InternalAuthorizedPartiesController(
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
-            return mapper.Map<AuthorizedPartyExternal>(authorizedParty);
+            return mapper.Map<AuthorizedPartyDto>(authorizedParty);
         }
         catch (Exception ex)
         {
@@ -228,11 +202,9 @@ public class InternalAuthorizedPartiesController(
     }
 
     /// <summary>
-    /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for the authenticated user
+    /// Endpoint for retrieving all authorized parties for a given party
     /// </summary>
     /// <param name="party">The party to retrieve the list of authorized parties for</param>
-    /// <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
-    /// <param name="includeAltinn3">Optional (Default: True): Whether Authorized Parties from Altinn 3 should be included in the underlying result set.</param>
     /// <param name="includeRoles">Optional (Default: True): Whether authorized roles should be included in the result set.</param>
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
@@ -249,15 +221,13 @@ public class InternalAuthorizedPartiesController(
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
     [Route("{party}/authorizedparties")]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(List<AuthorizedPartyExternal>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<AuthorizedPartyDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [FeatureGate(FeatureFlags.RightsDelegationApi)]
-    public async Task<ActionResult<List<AuthorizedPartyExternal>>> GetAuthorizedPartiesAsAccessManager(
+    public async Task<ActionResult<List<AuthorizedPartyDto>>> GetAuthorizedPartiesAsAccessManager(
         [FromRoute] int party,
-        [FromQuery] bool includeAltinn2 = false,
-        [FromQuery] bool includeAltinn3 = true,
         [FromQuery] bool includeRoles = true,
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
@@ -269,12 +239,8 @@ public class InternalAuthorizedPartiesController(
     {
         try
         {
-            var authorizedPartiesService = AuthorizedPartiesSettings.UsingConnectionQueryOnly ? newConnectionQueryOnlyImplementation : oldDelegationMetadataEfImplementation;
-
             var filters = new AuthorizedPartiesFilters
             {
-                IncludeAltinn2 = includeAltinn2,
-                IncludeAltinn3 = includeAltinn3,
                 IncludeRoles = includeRoles,
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
@@ -292,7 +258,7 @@ public class InternalAuthorizedPartiesController(
             }
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByPartyId(entity.PartyId.Value, filters, cancellationToken);
-            return mapper.Map<List<AuthorizedPartyExternal>>(authorizedParties);
+            return mapper.Map<List<AuthorizedPartyDto>>(authorizedParties);
         }
         catch (ArgumentException ex)
         {

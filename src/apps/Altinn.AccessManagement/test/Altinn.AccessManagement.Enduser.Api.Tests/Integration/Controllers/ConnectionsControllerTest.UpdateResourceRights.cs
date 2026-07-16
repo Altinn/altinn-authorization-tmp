@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Xml;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -12,7 +11,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ABAC.Constants;
@@ -65,8 +63,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
             });
@@ -141,7 +137,7 @@ public partial class ConnectionsControllerTest
         /// Uses valid right keys obtained from delegation check. Expects 200 OK.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_AsMalinForDumboToMille_WithValidRightKeys_ReturnsOk()
+        public async Task UpdateResourceRights_AsManagingDirectorToOrganization_WithValidRightKeys_Returns200WithUpdatedResourceRights()
         {
             List<string> rightKeys = await GetDelegatableRightKeys("app_mat_mattilsynet-baker-konditorvare");
             Assert.NotEmpty(rightKeys);
@@ -166,7 +162,11 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(policyFactory);
             Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            var (path, content) = policyFactory.WrittenPolicies.Last();
+            // WrittenPolicies is shared by all tests in the class and is unordered,
+            // so select this delegation's policy by its blob path.
+            byte[] content = Assert.Single(
+                policyFactory.WrittenPolicies,
+                p => p.Key.Contains("mattilsynet-baker-konditorvare")).Value;
             XacmlPolicy policy;
             using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
             {
@@ -218,7 +218,7 @@ public partial class ConnectionsControllerTest
         /// Expects 200 OK.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithEmptyRightKeys_ReturnsOk()
+        public async Task UpdateResourceRights_WithEmptyRightKeys_Returns200Ok()
         {
             List<string> rightKeys = await GetDelegatableRightKeys("app_mat_mattilsynet-baker-konditorvare");
             Assert.NotEmpty(rightKeys);
@@ -243,7 +243,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest with an invalid resource error.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithInvalidResource_ReturnsBadRequest()
+        public async Task UpdateResourceRights_WithInvalidResource_Returns400ForInvalidResource()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-fake-right-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
@@ -261,7 +261,7 @@ public partial class ConnectionsControllerTest
         /// The service requires an existing connection. Expects 400 BadRequest.
         /// </summary>
         // [Fact]  // Enable when https://github.com/Altinn/altinn-authorization-tmp/issues/2716 is fixed
-        public async Task UpdateResourceRights_ToPartyWithNoConnection_ReturnsBadRequest()
+        public async Task UpdateResourceRights_ToPartyWithNoConnection_Returns400BadRequest()
         {
             List<string> rightKeys = await GetDelegatableRightKeys("app_mat_mattilsynet-baker-konditorvare");
             Assert.NotEmpty(rightKeys);
@@ -282,7 +282,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithReadScope_ReturnsForbidden()
+        public async Task UpdateResourceRights_WithReadScope_Returns403ForReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -300,7 +300,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task UpdateResourceRights_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -318,7 +318,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateResourceRights_WithToOthersReadScope_ReturnsForbidden()
+        public async Task UpdateResourceRights_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);

@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Xml;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -12,7 +11,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ABAC.Constants;
@@ -54,8 +52,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointWithWrittenPoliciesMock>();
                 services.AddSingleton<IPolicyFactory, PolicyFactoryMock>();
             });
@@ -142,13 +138,8 @@ public partial class ConnectionsControllerTest
         /// - GetInstanceRights returns the updated set of rights
         /// - Written XACML policy matches the updated right keys
         /// </summary>
-        /// <remarks>
-        /// SKIPPED: Test fails with 500 Internal Server Error during AddInitialInstanceRights call.
-        /// Error: "The delegation failed" (AM-00029). Requires investigation of delegation service behavior.
-        /// Not related to feature flag removal work in issue #2810.
-        /// </remarks>
-        [Fact(Skip = "Failing with 500 error during delegation - requires investigation")]
-        public async Task UpdateInstanceRights_AsJinxToThea_WithMoreRightKeys_ReturnsOkAndUpdatesRights()
+        [Fact]
+        public async Task UpdateInstanceRights_AsManagingDirectorToRecipient_WithMoreRightKeys_ReturnsOkAndUpdatesRights()
         {
             List<string> allRightKeys = await GetDelegatableInstanceRightKeys("app_skd_sirius-skattemelding-v1", SiriusInstanceIdForUpdate);
             Assert.True(allRightKeys.Count >= 2, $"Expected at least 2 delegatable right keys, but got {allRightKeys.Count}");
@@ -222,9 +213,12 @@ public partial class ConnectionsControllerTest
             // Step 5: Verify the written XACML policy
             var policyFactory = Fixture.Server.Services.GetRequiredService<IPolicyFactory>() as PolicyFactoryMock;
             Assert.NotNull(policyFactory);
-            Assert.NotEmpty(policyFactory.WrittenPolicies);
 
-            var (_, content) = policyFactory.WrittenPolicies.Last();
+            // WrittenPolicies is shared by all tests in the class and is unordered,
+            // so select this delegation's policy by its blob path.
+            byte[] content = Assert.Single(
+                policyFactory.WrittenPolicies,
+                p => p.Key.Contains("app_skd_sirius-skattemelding-v1") && p.Key.Contains($"to_{TestData.Thea.Id}")).Value;
             XacmlPolicy policy;
             using (XmlReader reader = XmlReader.Create(new MemoryStream(content)))
             {
@@ -255,7 +249,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithReadScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithReadScope_Returns403ForReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
@@ -273,7 +267,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithToOthersReadScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
@@ -291,7 +285,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task UpdateInstanceRights_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
@@ -309,13 +303,8 @@ public partial class ConnectionsControllerTest
         /// verifying that rights are reduced. Uses Alex→Milena (separate from Jinx→Thea) and a different
         /// resource to avoid shared state collisions.
         /// </summary>
-        /// <remarks>
-        /// SKIPPED: Test fails with 500 Internal Server Error during initial delegation (PostAsJsonAsync).
-        /// Error: "The delegation failed" (AM-00029). Requires investigation of delegation service behavior.
-        /// Not related to feature flag removal work in issue #2810.
-        /// </remarks>
-        [Fact(Skip = "Failing with 500 error during delegation - requires investigation")]
-        public async Task UpdateInstanceRights_AsAlexToMilena_ReduceRights_RemovesExcessRights()
+        [Fact]
+        public async Task UpdateInstanceRights_AsChairOfTheBoardToRecipient_ReduceRights_RemovesExcessRights()
         {
             const string instanceIdForReduce = "urn:altinn:instance-id:50401002/e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8092";
 
@@ -379,7 +368,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task UpdateInstanceRights_WithNoToken_ReturnsUnauthorized()
+        public async Task UpdateInstanceRights_WithNoToken_Returns401ForMissingToken()
         {
             var client = Fixture.Server.CreateClient();
             var body = new RightKeyListDto { DirectRightKeys = ["some-key"] };

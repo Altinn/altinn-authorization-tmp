@@ -1,25 +1,18 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
-using Altinn.Authorization.ABAC.Constants;
-using Altinn.Platform.Authorization.Constants;
 using Altinn.Authorization.Tests.Data;
 using Altinn.Authorization.Tests.Fixtures;
 using Altinn.Authorization.Tests.MockServices;
 using Altinn.Authorization.Tests.Util;
+using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Models;
 using Altinn.Platform.Authorization.Services.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Altinn.Authorization.Tests.Integration
 {
-    [Collection("Our Test Collection #1")]
+    [Collection(PolicyTestCollection.Name)]
     [IntegrationTest]
     public class PolicyControllerTest : IClassFixture<AuthorizationApiFixture>
     {
@@ -39,7 +32,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: WritePolicyAsync returns true and status code 200.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC01()
+        public async Task WritePolicy_XmlPolicyForOrgAndApp_Returns200Ok()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Xacml/3.0/AltinnApps/skd/taxreport/policy.xml");
@@ -63,7 +56,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: WritePolicyAsync returns true and status code 200.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC02()
+        public async Task WritePolicy_JsonPolicyForOrgAndApp_Returns200Ok()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Xacml/3.0/AltinnApps/AltinnApps0009Request.json");
@@ -87,7 +80,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetPolicyAsync returns status code 500.
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC03()
+        public async Task WritePolicy_NullContent_Returns400BadRequest()
         {
             string token = PrincipalUtil.GetAccessToken("studio.designer");
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -105,7 +98,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: WritePolicyAsync returns status code 500. 
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC04()
+        public async Task WritePolicy_MissingOrgQueryString_Returns400BadRequest()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Xacml/3.0/AltinnApps/AltinnApps0009Request.json");
@@ -127,7 +120,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: WritePolicyAsync returns status code 500. 
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC05()
+        public async Task WritePolicy_MissingAppQueryString_Returns400BadRequest()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Xacml/3.0/AltinnApps/skd/taxreport/policy.xml");
@@ -149,7 +142,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: WritePolicyAsync returns 401
         /// </summary>
         [Fact]
-        public async Task WritePolicy_TC06()
+        public async Task WritePolicy_DesignerTokenWithInvalidClaims_Returns403Forbidden()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Xacml/3.0/AltinnApps/AltinnApps0009Request.json");
@@ -173,7 +166,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetRolesWithAccess returns 200 with list of roles
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess_TC01()
+        public async Task GetRolesWithAccess_ExistingApp_Returns200WithRoleCodes()
         {
             // Arrange
             string org = "skd";
@@ -196,7 +189,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetRolesWithAccess returns 404
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess_TC02()
+        public async Task GetRolesWithAccess_NonExistingApp_Returns404NotFound()
         {
             // Arrange
             string org = "doesntexisit";
@@ -214,7 +207,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetRolesWithAccess returns 400
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess_TC03()
+        public async Task GetRolesWithAccess_BlankOrg_Returns400BadRequest()
         {
             // Arrange
             string org = " ";
@@ -232,7 +225,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetRolesWithAccess returns 200 with empty list
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess_TC04()
+        public async Task GetRolesWithAccess_PolicyWithNoRoles_Returns200WithEmptyList()
         {
             // Arrange
             string org = "testorg";
@@ -253,7 +246,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetResourcepolicies returns a list of ResourcePolicy that contains 3 ResourcePolicies and several actions
         /// </summary>
         [Fact]
-        public async Task GetResourcePoliciesFromXacmlPolicies_TC05()
+        public async Task GetResourcePoliciesFromXacmlPolicies_ValidOrgAndApp_Returns200WithResourcePolicies()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetResourcePolicies/SKDTaxReport2Request.json");
@@ -289,7 +282,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with a "not found" errormessage
         /// </summary>
         [Fact]
-        public async Task GetResourcePoliciesFromXacmlPolicies_InvalidApp_TC06()
+        public async Task GetResourcePoliciesFromXacmlPolicies_InvalidApp_Returns200WithNoValidPolicyError()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetResourcePolicies/SKDInvalidAppRequest.json");
@@ -324,7 +317,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with an "app must be defined" errormessage
         /// </summary>
         [Fact]
-        public async Task GetResourcePoliciesFromXacmlPolicies_NoApp_TC07()
+        public async Task GetResourcePoliciesFromXacmlPolicies_NoApp_Returns200WithAppMustBeDefinedError()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetResourcePolicies/SKDMissingAppRequest.json");
@@ -358,7 +351,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with an "Organisation must be defined" errormessage
         /// </summary>
         [Fact]
-        public async Task GetResourcePoliciesFromXacmlPolicies_NoOrg_TC08()
+        public async Task GetResourcePoliciesFromXacmlPolicies_NoOrg_Returns200WithOrganisationMustBeDefinedError()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetResourcePolicies/SKDMissingOrgRequest.json");
@@ -392,7 +385,7 @@ namespace Altinn.Authorization.Tests.Integration
         /// Expected: GetResourcepolicies returns a MinimumAuthenticationLevel and an empty ResourcePolicies list
         /// </summary>
         [Fact]
-        public async Task GetResourcePoliciesFromXacmlPolicies_TC09()
+        public async Task GetResourcePoliciesFromXacmlPolicies_PolicyResourceDoesNotMatchOrgApp_Returns200WithEmptyResourcePolicies()
         {
             // Arrange
             Stream dataStream = File.OpenRead("Data/Json/GetResourcePolicies/SKDUndefinedRequest.json");

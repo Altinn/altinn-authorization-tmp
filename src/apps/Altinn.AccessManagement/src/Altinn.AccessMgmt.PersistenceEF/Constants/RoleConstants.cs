@@ -86,7 +86,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:role:rettighetshaver
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> rettighetshaver
-    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for virksomheten
+    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for en aktør
     /// </remarks>
     public static ConstantDefinition<Role> Rightholder { get; } = new ConstantDefinition<Role>("42cae370-2dc1-4fdc-9c67-c2f4b0f0f829")
     {
@@ -94,7 +94,7 @@ public static class RoleConstants
         {
             Name = "Rettighetshaver",
             Code = "rettighetshaver",
-            Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten",
+            Description = "Gir mulighet til å motta delegerte fullmakter for en aktør",
             Urn = "urn:altinn:role:rettighetshaver",
             IsKeyRole = false,
             IsAssignable = true,
@@ -104,12 +104,46 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rightholder"),
-            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for the business")
+            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for an actor")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rettshavar"),
-            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for verksemda")
+            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for ein aktør")
         ),
+    };
+
+    /// <summary>
+    /// Represents the 'Appstyrt Rettighetshaver' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> aefe8391-3f21-4641-8d96-06ba04c67cfd
+    /// - <c>URN:</c> urn:altinn:role:appstyrt-rettighetshaver
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Code:</c> appstyrt-rettighetshaver
+    /// - <c>Description:</c> Forhold som all app-styrt delegering av tilganger knyttes til
+    /// </remarks>
+    public static ConstantDefinition<Role> AppControlledRightholder { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
+    {
+        Entity = new()
+        {
+            Name = "Appstyrt Rettighetshaver",
+            Code = "appstyrt-rettighetshaver",
+            Description = "Forhold som all app-styrt delegering av tilganger knyttes til",
+            Urn = "urn:altinn:role:appstyrt-rettighetshaver",
+            IsKeyRole = false,
+            IsAssignable = true,
+            IsAvailableForServiceOwners = false,
+            EntityTypeId = EntityTypeConstants.Organization, // Technically this will be used for both persons and organizations which we currently don't have a way to express in the model, but since the main use case is for organizations we will set it to that for now
+            ProviderId = ProviderConstants.Altinn3,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "App-Controlled Rightholder"),
+            KeyValuePair.Create("Description", "Relationship to which all app-controlled rights are linked")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Appstyrt Rettighetshaver"),
+            KeyValuePair.Create("Description", "Forhold som all app-styrt delegering av tilganger knyttes til")
+        )
     };
 
     /// <summary>
@@ -4649,72 +4683,6 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'ECKEYROLE' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> e0684f66-a46e-4706-a754-8889b532509c
-    /// - <c>URN:</c> urn:altinn:rolecode:ECKEYROLE
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> ECKEYROLE
-    /// - <c>Description:</c> Nøkkelrolle for virksomhetsertifikatbrukere
-    /// </remarks>
-    public static ConstantDefinition<Role> Eckeyrole { get; } = new ConstantDefinition<Role>("e0684f66-a46e-4706-a754-8889b532509c")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "ECKEYROLE",
-            Code = "eckeyrole",
-            Description = "Nøkkelrolle for virksomhetsertifikatbrukere",
-            Urn = "urn:altinn:rolecode:eckeyrole",
-            IsKeyRole = true,
-            IsAvailableForServiceOwners = false,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ECKEYROLE"),
-            KeyValuePair.Create("Description", "Key role for enterprise users")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ECKEYROLE"),
-            KeyValuePair.Create("Description", "Nøkkelrolle for virksomhetsertifikatbrukere")
-        )
-    };
-
-    /// <summary>
-    /// Represents the 'Eksplisitt tjenestedelegering' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 1225bc46-4b03-4b63-b6e8-58926b29a97b
-    /// - <c>URN:</c> urn:altinn:rolecode:EKTJ
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> EKTJ
-    /// - <c>Description:</c> Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis
-    /// </remarks>
-    public static ConstantDefinition<Role> ExplicitServiceDelegation { get; } = new ConstantDefinition<Role>("1225bc46-4b03-4b63-b6e8-58926b29a97b")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Eksplisitt tjenestedelegering",
-            Code = "ektj",
-            Description = "Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis",
-            Urn = "urn:altinn:rolecode:ektj",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = true,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Explicit service delegation"),
-            KeyValuePair.Create("Description", "Non-delegable role for services to be delegated as single rights")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Eksplisitt tenestedelegering"),
-            KeyValuePair.Create("Description", "Ikkje-delegerbar rolle for tenester som kun skal delegerast enkeltvis")
-        )
-    };
-
-    /// <summary>
     /// Represents the 'Hovedadministrator' role.
     /// </summary>
     /// <remarks>
@@ -5045,39 +5013,6 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Taushetsbelagt post fra kommunen' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 1a15b75c-2387-4278-ba3a-7eb1cffe1653
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS01
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> SENS01
-    /// - <c>Description:</c> Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang
-    /// </remarks>
-    public static ConstantDefinition<Role> ConfidentialCorrespondenceFromTheMunicipality { get; } = new ConstantDefinition<Role>("1a15b75c-2387-4278-ba3a-7eb1cffe1653")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Taushetsbelagt post fra kommunen",
-            Code = "sens01",
-            Description = "Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang",
-            Urn = "urn:altinn:rolecode:sens01",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = true,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Confidential correspondence from the municipality"),
-            KeyValuePair.Create("Description", "This role provides access to services with confidential information from the municipality")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Taushetslagd post frå kommunen"),
-            KeyValuePair.Create("Description", "Rolla gir tilgang til tenester med taushetsalgd informasjon frå kommunen.")
-        )
-    };
-
-    /// <summary>
     /// Represents the 'Signerer av Samordnet registermelding' role.
     /// </summary>
     /// <remarks>
@@ -5272,39 +5207,6 @@ public static class RoleConstants
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Energi, miljø og klima"),
             KeyValuePair.Create("Description", "Tilgang til tenester relatert til energi, miljø og klima. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir")
-        ),
-    };
-
-    /// <summary>
-    /// Represents the 'Hovedrolle for sensitive tjeneste' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 478f710a-4af1-412d-9c67-de976fd0b229
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> SENS
-    /// - <c>Description:</c> Hovedrolle for sensitive tjeneste
-    /// </remarks>
-    public static ConstantDefinition<Role> MainroleForSensitiveServices { get; } = new ConstantDefinition<Role>("478f710a-4af1-412d-9c67-de976fd0b229")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Hovedrolle for sensitive tjeneste",
-            Code = "sens",
-            Description = "Hovedrolle for sensitive tjeneste",
-            Urn = "urn:altinn:rolecode:sens",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Hovedrolle for sensitive tjeneste"),
-            KeyValuePair.Create("Description", "Hovedrolle for sensitive tjeneste")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Hovudrolle for sensitive tenester"),
-            KeyValuePair.Create("Description", "Hovudrolle for sensitive teneste")
         ),
     };
 

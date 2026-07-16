@@ -25,18 +25,21 @@ scan; on PR/main CI they are skipped):
    sequential lanes selected by the `Category` trait: a fast **unit** lane
    (`--filter-trait "Category=Unit"`) then a slower **integration** lane
    (`--filter-trait "Category=Integration"`). Both reuse the single build (`--no-build`) and
-   each is wrapped by `dotnet-coverage collect` into its own `.coverage`
-   binary (`coverage.unit.coverage` / `coverage.integration.coverage`) and
-   writes TRX into a per-lane `TestResults/<lane>/` subdir. The integration
-   lane runs even if the unit lane failed (but not if the build failed) so
-   coverage spans the whole suite. The Convert steps below merge
-   `TestResults/*.coverage` into one report, so the threshold gate and Sonar
-   still see whole-suite coverage. A lane that selects 0 tests in a
-   single-type vertical (e.g. `pkg: PEP` has no integration tests) exits 8,
-   which `--ignore-exit-code 8` treats as success.
-4. **Convert coverage** — `dotnet-coverage merge` into cobertura (for the threshold check) on every run; a second merge into VSCoverage XML (for Sonar) runs only on the analyze run. No re-running tests.
+   write TRX into a per-lane `TestResults/<lane>/` subdir. On the nightly
+   **analyze** run each lane is wrapped by `dotnet-coverage collect` into its own
+   `.coverage` binary (`coverage.unit.coverage` / `coverage.integration.coverage`);
+   **PR runs execute the tests directly, without coverage instrumentation.** The
+   integration lane runs even if the unit lane failed (but not if the build
+   failed) so coverage spans the whole suite. The integration lane also passes
+   `-p:TestLane=Integration`: assemblies that declare
+   `<HasIntegrationTests>false</HasIntegrationTests>` are skipped outright (see
+   [Integration lane gate](#integration-lane-gate) below) instead of producing a
+   zero-test run. For runs that still end up with nothing executed (tests
+   skipped at runtime), MTP exits 8, which `--ignore-exit-code 8` treats as
+   success.
+4. **Convert coverage** *(analyze run only — PR runs produce no `.coverage`, so these self-skip)* — `dotnet-coverage merge` into cobertura for the coverage report, and a second merge into VSCoverage XML for Sonar. No re-running tests.
 5. **SonarCloud end** *(analyze run only, verticals that opt in)* — uploads the analysis. Runs even if tests failed so issues found by the scanner are still posted. See [../SONARCLOUD.md](../SONARCLOUD.md).
-6. **Coverage threshold check** — parses the cobertura XML and fails the job if any enforced assembly is below its floor. See [COVERAGE.md](COVERAGE.md).
+6. **Coverage report** — parses the cobertura XML and reports any assembly below its target as a warning; it never fails on coverage, so it does not gate the job. See [COVERAGE.md](COVERAGE.md).
 7. **Pack** — `dotnet pack` for `pkg`-type verticals only.
 8. **Report failed tests** — post-test step that parses MTP logs and emits per-failure `::group::` + `::error title::` annotations on GitHub Actions.
 9. **Upload artifacts** on failure — MTP `*.log` / `*.trx` files from `TestResults/`. Retention: 3 days.
@@ -54,16 +57,47 @@ xUnit v3 is self-hosted on MTP. A few things the pipeline relies on:
 - MTP exit codes:
   - `0` — all tests passed
   - `8` — no tests ran: either all were `[Skip]`ped, or a `--filter-trait`
-    lane selected 0 tests in a single-type vertical (treated as success via
-    `--ignore-exit-code 8`)
+    lane selected 0 tests (treated as success via `--ignore-exit-code 8`)
   - non-zero — failures
+- MTP's per-assembly summary line prints `Failed!` whenever nothing passed
+  (`TotalFailed > 0 || TotalPassed == 0` in
+  `Microsoft.Testing.Platform.MSBuild`'s `InvokeTestingPlatformTask`), so a
+  zero-test or all-skipped run is logged as
+  `Failed! - Failed: 0, Passed: 0, Skipped: 0, Total: 0` even when the exit
+  code is mapped to success. There is no MTP option to change that display —
+  the integration lane gate below exists to keep such runs from happening.
 
-## Threshold enforcement scope
+## Integration lane gate
 
-Threshold enforcement is scoped to the **owning vertical**: the Authorization
-vertical only enforces thresholds for `Altinn.Authorization*` assemblies;
-AccessManagement only enforces its own set. This prevents one vertical's CI
-from failing because another vertical changed coverage numbers.
+A test assembly with no integration tests would still be executed by the
+integration lane, match zero tests, and be logged as `Failed! ... Total: 0`
+(see above). To keep the log truthful, such projects declare in their csproj:
+
+```xml
+<HasIntegrationTests>false</HasIntegrationTests>
+```
+
+When the integration lane runs (`dotnet test -p:TestLane=Integration`),
+`src/Directory.Build.targets` imports
+[`src/testing/IntegrationLaneGate.targets`](../../src/testing/IntegrationLaneGate.targets)
+for these projects, which replaces the test invocation with a skip message.
+Unit lanes, plain `dotnet test`, and IDE runs are unaffected — every assembly
+always has unit tests (`TestCategoryGuard` itself is one), so only the
+integration lane can select zero tests.
+
+The declaration cannot go stale: `TestCategoryGuard` (compiled into every test
+assembly, runs in the unit lane) fails when the declared value does not match
+the assembly's actual tests — in both directions. Integration tests that are
+permanently `[Skip]`ped do not count as runnable (an all-skipped run is also
+logged as `Failed!`), which is why `Altinn.Authorization.Host.Lease.Tests`
+declares `false` despite containing (perma-skipped) integration tests.
+
+## Coverage reporting scope
+
+Coverage reporting is scoped to the **owning vertical**: the Authorization
+vertical reports on `Altinn.Authorization*` assemblies; AccessManagement reports
+on its own set. This keeps one vertical's coverage report from being muddied by
+another vertical's code.
 
 ## Container runtime
 

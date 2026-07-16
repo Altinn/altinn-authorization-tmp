@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -25,7 +24,8 @@ public partial class ConnectionsControllerTest
     /// Tests for <see cref="ConnectionsController.CheckPackage(Guid, IEnumerable{Guid}, IEnumerable{string}, CancellationToken)"/>.
     /// </summary>
     [IntegrationTest]
-    public class CheckPackage : IClassFixture<ApiFixture>
+    [Collection(ConnectionsReadOnlyCollection.Name)]
+    public class CheckPackage
     {
         public CheckPackage(ApiFixture fixture)
         {
@@ -51,7 +51,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with results for the requested packages.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_AsMalinForDumbo_ByPackageIds_ReturnsOkWithResults()
+        public async Task CheckPackage_AsManagingDirector_ByPackageIds_ReturnsOkWithResults()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -87,7 +87,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with results.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_AsJinxForKaos_ByPackageUrns_ReturnsOkWithResults()
+        public async Task CheckPackage_AsManagingDirector_ByPackageUrns_ReturnsOkWithResults()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -111,7 +111,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with a non-empty list.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_AsMalinForDumbo_NoFilter_ReturnsOkWithAllDelegatablePackages()
+        public async Task CheckPackage_AsManagingDirector_NoFilter_ReturnsOkWithAllDelegatablePackages()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -135,7 +135,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_WithReadScope_ReturnsForbidden()
+        public async Task CheckPackage_WithReadScope_Returns403ForReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -151,7 +151,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_WithToOthersReadScope_ReturnsForbidden()
+        public async Task CheckPackage_WithToOthersReadScope_Returns403ForToOthersReadScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -167,7 +167,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task CheckPackage_WithFromOthersWriteScope_ReturnsForbidden()
+        public async Task CheckPackage_WithFromOthersWriteScope_Returns403ForFromOthersWriteScope()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_WRITE);
 

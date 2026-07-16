@@ -1,8 +1,5 @@
 ﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Altinn.Authorization.Tests.Fixtures;
-using Xunit;
 
 namespace Altinn.Authorization.Tests.Integration.Health
 {
@@ -28,7 +25,7 @@ namespace Altinn.Authorization.Tests.Integration.Health
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task VerifyHealthCheck_OK()
+        public async Task VerifyHealthCheck_Returns200Ok()
         {
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "/health");
 

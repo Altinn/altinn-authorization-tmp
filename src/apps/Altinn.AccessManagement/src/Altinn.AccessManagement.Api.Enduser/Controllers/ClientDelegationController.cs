@@ -3,7 +3,6 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Audit;
@@ -178,10 +177,11 @@ public class ClientDelegationController(
     public async Task<IActionResult> GetClients(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "roles")] List<string>? roles,
+        [FromQuery(Name = "packages")] List<string>? packages,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetClients(party, roles, cancellationToken);
+        var result = await clientDelegationService.GetClients(party, roles, packages, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

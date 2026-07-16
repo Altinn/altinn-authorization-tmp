@@ -15,7 +15,6 @@ reasons.
 | `Mocks/` | Canonical mock implementations of external clients and platform services |
 | `Models/` | Shared DTO constants, seed data |
 | `Data/` | Static seed data (XACML policies, roles, packages, …) used by the template DB and by unit tests |
-| `TestCertificates/` | Consolidated `.pfx` / `.pem` files used across the repo (Step 11) |
 
 ## Canonical mocks
 
@@ -51,10 +50,11 @@ extension points instead.
 
 ## Test certificates
 
-Test certificates are **not duplicated per project**. They live in
-`TestUtils/TestCertificates/` and are consumed by whichever test project
-needs them. If you add a new certificate, add it there — not next to a single
-test class.
+Test certificates currently live in the `AccessMgmt.Tests/` project root
+(`platform-org.pfx`/`.pem`, `ttd-org.pfx`/`.pem`, `selfSignedTestCertificate.pfx`,
+`selfSignedTestCertificatePublic.cer`) and are consumed by that project. They are
+**not duplicated across projects**; if another test project comes to need them,
+lift them into a shared `TestUtils/TestCertificates/` folder rather than copying.
 
 ## Adding a new mock
 
@@ -65,11 +65,11 @@ test class.
 5. Extract common seeding behaviour into a static helper so other projects can
    reuse it.
 
-## FluentAssertions is globally imported
+## Assertion library is globally imported
 
-`FluentAssertions` 7.0.0 is added via `Directory.Build.targets` for every test
+`AwesomeAssertions` is added via `Directory.Build.targets` for every test
 project and test library. It's in `<Using>` so you **don't** need a `using
-FluentAssertions;` directive — just call `.Should()` directly. See
-[FLUENT_ASSERTIONS_GUIDELINES.md](FLUENT_ASSERTIONS_GUIDELINES.md).
+AwesomeAssertions;` directive — just call `.Should()` directly. See
+[AWESOME_ASSERTIONS_GUIDELINES.md](AWESOME_ASSERTIONS_GUIDELINES.md).
 
 ## Next: [WRITING_TESTS.md](WRITING_TESTS.md)

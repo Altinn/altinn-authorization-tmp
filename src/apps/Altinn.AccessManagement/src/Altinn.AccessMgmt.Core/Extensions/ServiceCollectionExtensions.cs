@@ -12,21 +12,45 @@ using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Outbox;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Telemetry;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using AMPartyService = Altinn.AccessMgmt.Core.Services.AMPartyService;
 
 namespace Altinn.AccessMgmt.Core.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds Core Telemetry
+    /// </summary>
+    public static TracerProviderBuilder AddCoreTelemetry(this TracerProviderBuilder builder) =>
+        builder.AddSource(CoreTelemetry.SourceName);
+
+    /// <summary>
+    /// Adds Core Telemetry
+    /// </summary>
+    public static MeterProviderBuilder AddCoreTelemetry(this MeterProviderBuilder builder) =>
+        builder.AddMeter(CoreTelemetry.SourceName);
+    
+    /// <summary>
+    /// Enables Core Telemetry.
+    /// </summary>
+    public static IServiceCollection AddCoreOtel(this IServiceCollection services)
+    {
+        services.ConfigureOpenTelemetryMeterProvider(otel => otel.AddCoreTelemetry());
+        services.ConfigureOpenTelemetryTracerProvider(otel => otel.AddCoreTelemetry());
+        return services;
+    }
+
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration, Action<CoreAppsettings> configureAppsettings = null)
     {
+        services.AddCoreOtel();
         services.AddHostedService<RegisterHostedService>();
-        services.AddHostedService<AltinnRoleHostedService>();
-        services.AddHostedService<SingleRightsHostedService>();
         services.AddHostedService<ConsentMigrationHostedService>();
         services.AddHostedService<OutboxHandlerJob>();
         services.AddHostedService<OutboxReaperJob>();
@@ -48,13 +72,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IClientDelegationService, ClientDelegationService>();
         services.AddScoped<IRequestService, RequestService>();
-        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>("newConnectionQueryOnlyImplementation");
-        services.AddKeyedScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEfOld>("oldDelegationMetadataEfImplementation");
+        services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
         services.AddScoped<IServiceOwnerConnectionService, ServiceOwnerConnectionService>();
         services.AddScoped<IConsentDelegationCheckService, ConsentDelegationCheckService>();
 
         services.AddScoped<IAuthorizationScopeProvider, DefaultAuthorizationScopeProvider>();
         services.AddScoped<IAuthorizationHandler, ScopeConditionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, PersonAccessManagerHandler>();
 
         // NOTE: can be removed once RequestReviewedNotificationHandler is in production.
         services.AddTransient<RightholderAddedNotificationHandler>();
@@ -102,14 +126,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPartySyncService, PartySyncService>();
         services.AddSingleton<IRoleSyncService, RoleSyncService>();
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
-        services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
-        services.AddSingleton<IPrivateTaxAffairRoleSyncService, PrivateTaxAffairRoleSyncService>();
-        services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
-        services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
-        services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
-        services.AddSingleton<ISingleAppRightSyncService, SingleAppRightSyncService>();
-        services.AddSingleton<ISingleResourceRegistryRightSyncService, SingleResourceRegistryRightSyncService>();
-        services.AddSingleton<ISingleInstanceRightSyncService, SingleInstanceRightSyncService>();
         services.AddSingleton<IConsentMigrationSyncService, ConsentMigrationSyncService>();
     }
 }

@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Altinn.AccessManagement.Core.Enums;
+﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Enums;
-using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Utils;
 using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.Authorization.ABAC.Xacml;
-using Xunit;
 
 namespace Altinn.AccessManagement.Tests.Unit.Helpers
 {
@@ -38,7 +34,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public void GetAltinnAppsPolicyPath()
+        public void GetAltinnAppsPolicyPath_OrgAndApp_ReturnsExpectedPath()
         {
             // Arrange
             string expected = $"org1/app1/policy.xml";
@@ -61,7 +57,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task GetRolesWithAccess()
+        public async Task GetRolesWithAccess_FromPolicy_ReturnsExpectedRoles()
         {
             // Arrange
             XacmlPolicy policy = await _policyRetrievalPointMock.GetPolicyAsync("resource1", TestContext.Current.CancellationToken);
@@ -86,7 +82,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Argument exception has the expected error message
         /// </summary>
         [Fact]
-        public void GetDelegationPolicyPath_OrgEmpty()
+        public void GetDelegationPolicyPath_OrgEmpty_ThrowsArgumentException()
         {
             // Arrange
             string expectedArgumentException = "Org was not defined";
@@ -117,7 +113,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Argument exception has the expected error message
         /// </summary>
         [Fact]
-        public void GetDelegationPolicyPath_AppEmpty()
+        public void GetDelegationPolicyPath_AppEmpty_ThrowsArgumentException()
         {
             // Arrange
             string expectedArgumentException = "App was not defined";
@@ -148,7 +144,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Argument exception has the expected error message
         /// </summary>
         [Fact]
-        public void GetDelegationPolicyPath_ResourceIdEmpty()
+        public void GetDelegationPolicyPath_ResourceIdEmpty_ThrowsArgumentException()
         {
             // Arrange
             string expectedArgumentException = "ResourceRegistryId was not defined";

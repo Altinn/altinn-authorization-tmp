@@ -2,14 +2,12 @@
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,8 +49,6 @@ public partial class ConnectionsControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
             });
         }
@@ -76,7 +72,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with direct rights (read, write from the delegation policy).
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJinxForKaosToJosephine_SiriusSkattemelding_WithToOthersScope_ReturnsOkWithDirectRights()
+        public async Task GetInstanceRights_AsManagingDirectorToRightholder_SiriusSkattemelding_WithToOthersScope_ReturnsOkWithDirectRights()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -113,7 +109,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with the same direct rights.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJosephineFromKaos_SiriusSkattemelding_WithFromOthersScope_ReturnsOkWithDirectRights()
+        public async Task GetInstanceRights_AsRightholderFromOrganization_SiriusSkattemelding_WithFromOthersScope_ReturnsOkWithDirectRights()
         {
             HttpClient client = CreateClient(TestData.JosephineYvonnesdottir.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -138,7 +134,7 @@ public partial class ConnectionsControllerTest
         /// The delegation policy grants only read, so fewer rights than SiriusSkattemelding.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJinxForKaosToJosephine_MattilsynetBakery_WithToOthersScope_ReturnsOkWithDirectRights()
+        public async Task GetInstanceRights_AsManagingDirectorToRightholder_MattilsynetBakery_WithToOthersScope_ReturnsOkWithDirectRights()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -163,7 +159,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJosephineFromKaos_WithToOthersScope_ReturnsForbidden()
+        public async Task GetInstanceRights_AsRightholderFromOrganization_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             HttpClient client = CreateClient(TestData.JosephineYvonnesdottir.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -179,7 +175,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_AsJinxForKaosToJosephine_WithFromOthersScope_ReturnsForbidden()
+        public async Task GetInstanceRights_AsManagingDirectorToRightholder_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -195,7 +191,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithWriteScope_ReturnsForbidden()
+        public async Task GetInstanceRights_WithWriteScope_Returns403ForWriteScope()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -211,7 +207,7 @@ public partial class ConnectionsControllerTest
         /// Expects 400 BadRequest with a validation error.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithInvalidInstanceUrn_ReturnsBadRequest()
+        public async Task GetInstanceRights_WithInvalidInstanceUrn_Returns400ForInvalidInstanceUrn()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -227,7 +223,7 @@ public partial class ConnectionsControllerTest
         /// Expects 401 Unauthorized.
         /// </summary>
         [Fact]
-        public async Task GetInstanceRights_WithNoToken_ReturnsUnauthorized()
+        public async Task GetInstanceRights_WithNoToken_Returns401ForMissingToken()
         {
             var client = Fixture.Server.CreateClient();
 

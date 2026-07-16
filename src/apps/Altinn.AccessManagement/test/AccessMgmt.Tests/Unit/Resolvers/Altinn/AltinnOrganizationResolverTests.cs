@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Altinn.AccessManagement.Core.Models;
+﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Resolvers;
 using Altinn.AccessManagement.Tests.Resolvers;
-using Xunit;
 
 namespace Altinn.AccessManagement.Tests.Unit.Resolvers.Altinn;
 
@@ -26,7 +22,7 @@ public class AltinnOrganizationResolverTests
     [MemberData(nameof(ResolveIdentifierNoToPartyId), MemberType = typeof(AltinnOrganizationResolverTests))]
     [MemberData(nameof(ResolvePartyIdToIdentifierNo), MemberType = typeof(AltinnOrganizationResolverTests))]
     [MemberData(nameof(ResolveUnkownPartyIdToEmptyResult), MemberType = typeof(AltinnOrganizationResolverTests))]
-    public async Task TestResolveOrganzation(IEnumerable<AttributeMatch> attributes, IEnumerable<string> wants, Action<IEnumerable<AttributeMatch>> assert)
+    public async Task Resolve_OrganizationAttributes_ResolvesExpectedMatches(IEnumerable<AttributeMatch> attributes, IEnumerable<string> wants, Action<IEnumerable<AttributeMatch>> assert)
     {
         var resolver = ResolverServiceCollection.ConfigureServices(ResolverServiceCollection.DefaultServiceCollection);
 

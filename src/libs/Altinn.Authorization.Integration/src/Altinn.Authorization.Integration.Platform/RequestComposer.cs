@@ -1,12 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Web;
-using Altinn.Common.AccessTokenClient.Services;
-using CommunityToolkit.Diagnostics;
 
 namespace Altinn.Authorization.Integration.Platform;
 
@@ -135,8 +130,8 @@ internal static class RequestComposer
 
     public static Action<HttpRequestMessage> WithBasicAuth(string username, string password) => request =>
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nameof(username));
-        ArgumentException.ThrowIfNullOrWhiteSpace(nameof(password));
+        ArgumentException.ThrowIfNullOrWhiteSpace(username);
+        ArgumentException.ThrowIfNullOrWhiteSpace(password);
 
         var cred = $"{username}:{password}";
         request.Headers.Authorization = new("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(cred)));

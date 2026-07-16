@@ -37,7 +37,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC01Async()
+        public async Task HandleRequirementAsync_PermitDecision_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -58,7 +58,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC02Async()
+        public async Task HandleRequirementAsync_DenyDecision_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -79,7 +79,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC03Async()
+        public async Task HandleRequirementAsync_MultipleResults_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -103,7 +103,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC04Async()
+        public async Task HandleRequirementAsync_MinAuthLevelMet_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -125,7 +125,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: context will fail
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC05Async()
+        public async Task HandleRequirementAsync_MinAuthLevelNotMet_Fails()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -147,7 +147,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will fail 
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC06Async()
+        public async Task HandleRequirementAsync_NullResponse_ThrowsInvalidOperationException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -164,7 +164,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will fail 
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC07Async()
+        public async Task HandleRequirementAsync_NullResultList_ThrowsInvalidOperationException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -184,7 +184,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: XForwardedForHeader proeprty in request receives the ipaddress from the header
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC08Async()
+        public async Task HandleRequirementAsync_XForwardedForHeaderPresent_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -192,12 +192,24 @@ namespace Altinn.Authorization.PEP.Tests
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext(ipaddress));
             XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
             AddObligationWithMinAuthLv(response, "2");
-
-            // verify
             _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
 
             // Act
             await _aah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
+
+            // Known gap: even with an X-Forwarded-For header present, the PEP does not
+            // copy it onto the decision request. The AppAccessRequirement overload of
+            // DecisionHelper.CreateDecisionRequest is not even passed the headers, so
+            // XForwardedForHeader is never set and the PDP never sees the client IP.
+            // This pins current behaviour; switch to Assert.Equal(ipaddress, ...) once
+            // IP forwarding is implemented.
+            Assert.Null(request.Request.XForwardedForHeader);
         }
 
         /// <summary>
@@ -205,7 +217,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC09Async()
+        public async Task HandleRequirementAsync_SystemUserPermit_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContextSystemUser();
@@ -226,7 +238,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC10Async()
+        public async Task HandleRequirementAsync_AppUserPermit_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContextAppUser("app_skd_flyttemelding");
@@ -301,7 +313,7 @@ namespace Altinn.Authorization.PEP.Tests
 
             if (!string.IsNullOrEmpty(xForwardedForHeader))
             {
-                httpContext.Request.Headers.Add("x-forwarded-for", xForwardedForHeader);
+                httpContext.Request.Headers["x-forwarded-for"] = xForwardedForHeader;
             }
 
             return httpContext;

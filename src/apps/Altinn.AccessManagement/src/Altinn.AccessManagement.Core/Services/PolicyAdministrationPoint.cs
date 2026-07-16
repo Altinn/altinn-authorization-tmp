@@ -1,20 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
-using System.Threading;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.Authorization.ABAC.Xacml;
-using Altinn.Platform.Register.Models;
 using Azure;
 using Azure.Storage.Blobs.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils.Settings;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -196,6 +190,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 DelegationChangeType = changeType,
                 InstanceDelegationMode = rules.InstanceDelegationMode,
+                InstanceDelegationSource = rules.InstanceDelegationSource,
                 ResourceId = rules.ResourceId,
                 InstanceId = rules.InstanceId,
 
@@ -302,18 +297,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc />
         public async Task<InstanceRight> TryWriteInstanceDelegationPolicyRules(InstanceRight rules, bool ignoreExistingPolicy = false, CancellationToken cancellationToken = default)
         {
-            bool useEF = FeatureFlags.UseInstanceDelegationEF;
-            bool validPath;
-            string path;
-
-            if (useEF)
-            {
-                validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
-            else
-            {
-                validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-            }
+            bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
             if (validPath)
             {
@@ -364,18 +348,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception ex)
             {
-                bool useEF = FeatureFlags.UseInstanceDelegationEF;
-                bool validPath;
-                string path;
-
-                if (useEF)
-                {
-                    validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
-                else
-                {
-                    validPath = DelegationHelper.TryGetDelegationPolicyPathFromInstanceRule(rules, out path);
-                }
+                bool validPath = DelegationHelper.TryGetNewDelegationPolicyPathFromInstanceRule(rules, out string path);
 
                 if (validPath)
                 {

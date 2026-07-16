@@ -58,16 +58,23 @@ public class ConsentMigrationHostedServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_StartsSuccessfully()
+    public async Task StartAsync_NoConfiguration_StartsWithoutThrowing()
     {
-        // Arrange
+        // Arrange - no feature manager setup, so the flag resolves to disabled.
         var service = CreateService();
 
         // Act
         await service.StartAsync(CancellationToken.None);
 
-        // Assert - no exception thrown
-        Assert.True(true);
+        // Assert - StartAsync launched the background loop, and with the feature off the
+        // loop parks in the feature-disabled delay without acquiring a lease or processing.
+        Assert.NotNull(service.ExecuteTask);
+        _leaseServiceMock.Verify(
+            x => x.TryAcquireNonBlocking(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _syncServiceMock.Verify(
+            x => x.ProcessBatch(It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -357,37 +364,7 @@ public class ConsentMigrationHostedServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ExecuteAsync_CancellationRequested_StopsProcessing()
-    {
-        // Arrange
-        _featureManagerMock
-            .Setup(x => x.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesConsentMigration))
-            .ReturnsAsync(true);
-
-        _leaseServiceMock
-            .Setup(x => x.TryAcquireNonBlocking("access_management_consent_migration", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(_leaseMock.Object);
-
-        _syncServiceMock
-            .Setup(x => x.ProcessBatch(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(5);
-
-        var service = CreateService();
-        using var testCts = new CancellationTokenSource();
-
-        // Act
-        var serviceTask = service.StartAsync(testCts.Token);
-        await Task.Delay(10, TestContext.Current.CancellationToken);
-
-        testCts.Cancel();
-        await Task.WhenAny(serviceTask, Task.Delay(1000, TestContext.Current.CancellationToken));
-
-        // Assert - no exception thrown, service stops cleanly
-        Assert.True(true);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_LeaseDisposedAfterProcessing()
+    public async Task ExecuteAsync_Cancelled_DisposesLeaseAfterProcessing()
     {
         // Arrange
         _featureManagerMock
@@ -537,7 +514,7 @@ public class ConsentMigrationHostedServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task StopAsync_StopsSuccessfully()
+    public async Task StopAsync_AfterStart_StopsWithoutThrowing()
     {
         // Arrange
         var service = CreateService();
@@ -547,12 +524,15 @@ public class ConsentMigrationHostedServiceTests : IDisposable
         await service.StartAsync(testCts.Token);
         await service.StopAsync(CancellationToken.None);
 
-        // Assert - no exception thrown
-        Assert.True(true);
+        // Assert - StopAsync unwinds the background loop: ExecuteAsync was started and has
+        // run to completion by the time StopAsync returns (it would hang if the loop ignored
+        // the stop signal).
+        Assert.NotNull(service.ExecuteTask);
+        Assert.True(service.ExecuteTask!.IsCompleted, "ExecuteAsync loop should have stopped after StopAsync");
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesCorrectLeaseName()
+    public async Task ExecuteAsync_FeatureEnabled_AcquiresLeaseWithExpectedName()
     {
         // Arrange
         const string expectedLeaseName = "access_management_consent_migration";

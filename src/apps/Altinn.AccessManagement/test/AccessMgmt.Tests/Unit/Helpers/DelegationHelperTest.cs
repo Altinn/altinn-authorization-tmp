@@ -2,7 +2,6 @@
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Enums;
-using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Utils;
 using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.Authorization.ABAC.Xacml;
@@ -31,7 +30,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
         /// </summary>
         [Fact]
-        public void SortRulesByDelegationPolicyPath_ThreeAppsSameOfferedByAndCoveredBy_Success()
+        public void SortRulesByDelegationPolicyPath_ThreeAppsSameOfferedByAndCoveredBy_ReturnsRulesGroupedByPolicyPath()
         {
             // Arrange
             int delegatedByUserId = 20001336;
@@ -91,7 +90,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
         /// </summary>
         [Fact]
-        public void SortRulesByDelegationPolicyPath_OneAppSameOfferedBy_ThreeCoveredBy_Success()
+        public void SortRulesByDelegationPolicyPath_OneAppSameOfferedByThreeCoveredBy_ReturnsRulesGroupedByPolicyPath()
         {
             // Arrange
             int delegatedByUserId = 20001336;
@@ -147,7 +146,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
         /// </summary>
         [Fact]
-        public void SortRulesByDelegationPolicyPath_Unsortables_Success()
+        public void SortRulesByDelegationPolicyPath_RuleMissingOrg_ReturnedAsUnsortable()
         {
             // Arrange
             int delegatedByUserId = 20001336;
@@ -201,7 +200,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_True()
+        public async Task PolicyContainsMatchingRule_PolicyContainsRule_ReturnsTrue()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "write", "org1", "app1");
@@ -225,7 +224,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_PolicyResourcesOutOfOrder_True()
+        public async Task PolicyContainsMatchingRule_PolicyResourcesOutOfOrder_ReturnsTrue()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "read", "org1", "unorderedresources");
@@ -250,7 +249,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_SingleComplexRulePolicy_True()
+        public async Task PolicyContainsMatchingRule_SingleComplexRulePolicy_ReturnsTrue()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "eat", "org1", "singlecomplexrule", appresource: "banana");
@@ -274,7 +273,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_SignForTask_True()
+        public async Task PolicyContainsMatchingRule_SignForTask_ReturnsTrue()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "sign", "org1", "app1", task: "task1");
@@ -298,7 +297,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is not found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_InvalidAction_False()
+        public async Task PolicyContainsMatchingRule_InvalidAction_ReturnsFalse()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "sign", "org1", "app1");
@@ -322,7 +321,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is not found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_InvalidOrg_False()
+        public async Task PolicyContainsMatchingRule_InvalidOrg_ReturnsFalse()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "read", "org2", "app1");
@@ -346,7 +345,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is not found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_InvalidApp_False()
+        public async Task PolicyContainsMatchingRule_InvalidApp_ReturnsFalse()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "read", "org2", "app1");
@@ -371,7 +370,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is not found and expected result is returned
         /// </summary>
         [Fact]
-        public async Task PolicyContainsMatchingRule_PolicyContainsRule_PolicyWithoutAppLevelResource_False()
+        public async Task PolicyContainsMatchingRule_PolicyWithoutAppLevelResource_ReturnsFalse()
         {
             // Arrange
             Rule rule = TestDataUtil.GetRuleModel(20001337, 50001337, "20001336", AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, "eat", "org1", "singlecomplexrule");
@@ -395,7 +394,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// Rule is not found and expected result is returned
         /// </summary>
         [Fact]
-        public void ParseSystemUserTypeAndIdentifierFromUrn_Succsess()
+        public void TryGetPerformerFromAttributeMatches_SystemUserUrn_ReturnsTrueAndSystemUserType()
         {
             string idString = "56224CB5-E8BF-4569-86EC-6CF104B63F74";
             List<AttributeMatch> input = new List<AttributeMatch>
@@ -418,7 +417,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// returns True and output Type set to UuidType.Organization and Id set to correct Uuid
         /// </summary>
         [Fact]
-        public void ParseOrganizationTypeAndIdentifierFromUrn_Succsess()
+        public void TryGetPerformerFromAttributeMatches_OrganizationUrn_ReturnsTrueAndOrganizationType()
         {
             string idString = "9867756B-625E-4904-815E-889A5824C33C";
             List<AttributeMatch> input = new List<AttributeMatch>
@@ -441,7 +440,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// returns True and output Type set to UuidType.Person and Id set to correct Uuid
         /// </summary>
         [Fact]
-        public void ParsePersonTypeAndIdentifierFromUrn_Succsess()
+        public void TryGetPerformerFromAttributeMatches_PersonUrn_ReturnsTrueAndPersonType()
         {
             string idString = "7514B58F-ABBC-42F7-98EB-11BCE123E757";
             List<AttributeMatch> input = new List<AttributeMatch>
@@ -464,7 +463,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// returns True and output Type set to UuidType.EnterpriseUser and Id set to correct Uuid
         /// </summary>
         [Fact]
-        public void ParseEnterpriseUserTypeAndIdentifierFromUrn_Succsess()
+        public void TryGetPerformerFromAttributeMatches_EnterpriseUserUrn_ReturnsTrueAndEnterpriseUserType()
         {
             string idString = "1CF6DFC5-31BC-48F4-A5ED-48711DC0FF4B";
             List<AttributeMatch> input = new List<AttributeMatch>
@@ -487,7 +486,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers
         /// returns False and output Type set to UuidType.NotSpecified and Id set to NULL
         /// </summary>
         [Fact]
-        public void ParseSsnTypeAndIdentifierFromUrn_Failure()
+        public void TryGetPerformerFromAttributeMatches_SsnPersonId_ReturnsFalse()
         {
             string idString = "01010149978";
             List<AttributeMatch> input = new List<AttributeMatch>

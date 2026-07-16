@@ -5,7 +5,6 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -43,9 +42,6 @@ public class ServiceOwnerConnectionsControllerTest
                 dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:2"] = PackageConstants.Agriculture.Entity.Code;
             });
 
-            // Enable the Altinn 2 role revoke feature flag for all tests in this class
-            Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.Altinn2RoleRevoke);
-
             Fixture.EnsureSeedOnce<AddRevokePackages>(db =>
             {
                 // Seed any initial data needed for tests
@@ -74,7 +70,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithValidRequest_ReturnsOk()
+        public async Task AddPackage_WithValidRequest_Returns200WithCreatedAssignmentPackage()
         {
             // Arrange
             var client = CreateClient();
@@ -157,7 +153,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithInvalidPackageUrn_ReturnsForbidden()
+        public async Task AddPackage_WithInvalidPackageUrn_Returns403PackageNotWhitelisted()
         {
             // Arrange
             var client = CreateClient();
@@ -181,7 +177,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithFromAsOrganizationIdentifiersForPersonPackage_BadRequest()
+        public async Task AddPackage_WithFromAsOrganizationIdentifiersForPersonPackage_Returns400OrganizationFromNotSupportedForPersonPackage()
         {
             // Arrange
             var client = CreateClient();
@@ -208,7 +204,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_ToOrganisation_ReturnsOk()
+        public async Task AddPackage_ToOrganisation_Returns200WithCreatedAssignmentPackage()
         {
             // Arrange
             var client = CreateClient();
@@ -244,7 +240,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_FromOrganisationOnPackageThatSupportsOrganisation_ReturnsOk()
+        public async Task AddPackage_FromOrganisationOnPackageThatSupportsOrganisation_Returns200WithCreatedAssignmentPackage()
         {
             // Arrange
             var client = CreateClient();
@@ -280,7 +276,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentIsRevoked_ReturnsNoContent()
+        public async Task RevokePackage_WhereAssignmentIsRevoked_Returns204NoContent()
         {
             // Arrange - First create a package delegation, then revoke it
             var client = CreateClient();
@@ -318,7 +314,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentIsNotRevoked_ReturnsNoContent()
+        public async Task RevokePackage_WhereAssignmentIsNotRevoked_Returns204NoContent()
         {
             // Arrange - Create an assignment with two packages via service owner, revoke one
             var client = CreateClient();
@@ -380,7 +376,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentDoesNotExist_ReturnsNoContent()
+        public async Task RevokePackage_WhereAssignmentDoesNotExist_Returns204NoContent()
         {
             // Arrange
             var client = CreateClient();
@@ -404,7 +400,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentPackageDoesNotExist_ReturnsNoContent()
+        public async Task RevokePackage_WhereAssignmentPackageDoesNotExist_Returns204NoContent()
         {
             // Arrange - Create an assignment with one package, then try to revoke a different package
             var client = CreateClient();
@@ -449,7 +445,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task RevokePackage_WhereAssignmentWasNotPerformedByServiceOwner_ReturnsBadRequest()
+        public async Task RevokePackage_WhereAssignmentWasNotPerformedByServiceOwner_Returns400AssignmentNotDelegatedByServiceOwner()
         {
             // Arrange - Seed an assignment+package that was NOT created by the service owner
             var client = CreateClient();
@@ -496,7 +492,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithoutAuthentication_ReturnsUnauthorized()
+        public async Task AddPackage_WithoutAuthentication_Returns401MissingAuthentication()
         {
             // Arrange
             var client = Fixture.Server.CreateClient(); // No auth token
@@ -520,7 +516,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithWrongScope_ReturnsForbidden()
+        public async Task AddPackage_WithWrongScope_Returns403MissingRequiredScope()
         {
             // Arrange
             var client = Fixture.Server.CreateClient();
@@ -550,7 +546,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithPackageNotInWhitelist_ReturnsForbidden()
+        public async Task AddPackage_WithPackageNotInWhitelist_Returns403PackageNotWhitelisted()
         {
             // Arrange
             var client = CreateClient();
@@ -574,7 +570,7 @@ public class ServiceOwnerConnectionsControllerTest
         }
 
         [Fact]
-        public async Task AddPackage_WithServiceOwnerNotInWhitelist_ReturnsForbidden()
+        public async Task AddPackage_WithServiceOwnerNotInWhitelist_Returns403ServiceOwnerNotWhitelisted()
         {
             // Arrange - Create client with a different organization that's not in the whitelist
             var client = Fixture.Server.CreateClient();
@@ -726,106 +722,4 @@ public class ServiceOwnerConnectionsControllerTest
 
     #endregion
 
-    #region POST accessmanagement/api/v1/serviceowner/connections/accesspackages/revoke - Altinn2RoleRevoke flag disabled
-
-    /// <summary>
-    /// Tests for <see cref="ConnectionsController.RevokePackages"/> when the
-    /// <see cref="AccessMgmtFeatureFlags.Altinn2RoleRevoke"/> feature flag is <b>disabled</b>.
-    /// A separate fixture class is required because the host is sealed before test methods run,
-    /// so the flag must be configured from the constructor.
-    /// </summary>
-    [IntegrationTest]
-    public class RevokePackages_Altinn2RoleFlagDisabled : IClassFixture<ApiFixture>
-    {
-        public RevokePackages_Altinn2RoleFlagDisabled(ApiFixture fixture)
-        {
-            Fixture = fixture;
-
-            Fixture.WithInMemoryAppsettings(dict =>
-            {
-                dict[$"ServiceOwnerDelegation:PackageWhiteList:{TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier}:0"] = PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code;
-            });
-
-            // Explicitly disable the Altinn 2 role revoke feature flag for all tests in this class
-            Fixture.WithDisabledFeatureFlag(AccessMgmtFeatureFlags.Altinn2RoleRevoke);
-
-            Fixture.EnsureSeedOnce<RevokePackages_Altinn2RoleFlagDisabled>(db =>
-            {
-                db.SaveChanges();
-            });
-        }
-
-        public ApiFixture Fixture { get; }
-
-        private HttpClient CreateClient()
-        {
-            var client = Fixture.Server.CreateClient();
-            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
-            {
-                claims.Add(new Claim(AltinnCoreClaimTypes.Org, "SKD"));
-                claims.Add(new Claim("scope", AuthzConstants.SCOPE_SERVICEOWNER_PACKAGE_DELEGATION_WRITE));
-                claims.Add(new Claim("consumer", GetConsumerClaimJson(TestData.StorMektigTenesteeier.Entity.OrganizationIdentifier)));
-            });
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-            return client;
-        }
-
-        private static string GetConsumerClaimJson(string orgNumber)
-            => $$"""{ "authority":"iso6523-actorid-upis", "ID":"0192:{{orgNumber}}"}""";
-
-        [Fact]
-        public async Task RevokePackage_InnbyggerSkatteforholdPrivatpersoner_WithFeatureFlagOff_AndSameProvider_DoesNotRevokePrivateTaxAffairsAssignment()
-        {
-            // Arrange
-            var client = CreateClient();
-
-            ServiceOwnerConnectionPartyUrn.PersonId from = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.HildeStrand.Entity.PersonIdentifier));
-            ServiceOwnerConnectionPartyUrn.PersonId to = ServiceOwnerConnectionPartyUrn.PersonId.Create(PersonIdentifier.Parse(TestData.LarsBakke.Entity.PersonIdentifier));
-            AccessPackageUrn.AccessPackage package = AccessPackageUrn.AccessPackage.Create(new AccessPackageIdentifier(PackageConstants.InnbyggerSkatteforholdPrivatpersoner.Entity.Code));
-
-            ServiceOwnerAccessPackageDelegation addRequest = new()
-            {
-                From = from,
-                To = to,
-                PackageUrn = package
-            };
-
-            // First add the package (performed by StorMektigTenesteeier)
-            var addResponse = await client.PostAsJsonAsync($"{Route}/accesspackages", addRequest, TestContext.Current.CancellationToken);
-            Assert.Equal(HttpStatusCode.OK, addResponse.StatusCode);
-
-            // Seed a PrivateTaxAffairs assignment delegated by the SAME provider (StorMektigTenesteeier)
-            await Fixture.QueryDb(async db =>
-            {
-                var skatteforholdRole = new Assignment
-                {
-                    FromId = TestData.HildeStrand.Id,
-                    ToId = TestData.LarsBakke.Id,
-                    RoleId = RoleConstants.PrivateTaxAffairs,
-                };
-                db.Assignments.Add(skatteforholdRole);
-                await db.SaveChangesAsync(new AuditValues(TestData.StorMektigTenesteeier.Id), TestContext.Current.CancellationToken);
-            });
-
-            // Act - Revoke the package as StorMektigTenesteeier
-            var revokeResponse = await client.PostAsJsonAsync($"{Route}/accesspackages/revoke", addRequest, TestContext.Current.CancellationToken);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
-
-            // Verify the PrivateTaxAffairs assignment is still present because the feature flag is off
-            await Fixture.QueryDb(async db =>
-            {
-                var privateTaxAffairsAssignment = await db.Assignments
-                    .Where(a => a.FromId == TestData.HildeStrand.Id)
-                    .Where(a => a.ToId == TestData.LarsBakke.Id)
-                    .Where(a => a.RoleId == RoleConstants.PrivateTaxAffairs)
-                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
-
-                Assert.NotNull(privateTaxAffairsAssignment);
-            });
-        }
     }
-
-    #endregion
-}

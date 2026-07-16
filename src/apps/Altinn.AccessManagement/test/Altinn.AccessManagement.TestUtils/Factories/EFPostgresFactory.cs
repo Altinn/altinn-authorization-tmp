@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Xunit;
 
 namespace Altinn.AccessManagement.TestUtils.Factories;
 
@@ -41,6 +40,7 @@ public static class EFPostgresFactory
         ApplicationUser = DbUserName,
         AdminUser = DbAdminName,
         Password = DbPassword,
+
         // AccessManagement's test app role has always been a superuser; keep it.
         ApplicationUserIsSuperuser = true,
         BuildTemplateAsync = BuildTemplateAsync,
@@ -81,8 +81,8 @@ public static class EFPostgresFactory
 
         var audit = new AuditValues(SystemEntityConstants.StaticDataIngest);
         using var db = sp.CreateEFScope(audit).ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
-        await TestDataSeeds.Exec(db);
+        await FixtureTiming.TimeAsync(FixtureTiming.Phase.Migrate, () => db.Database.MigrateAsync());
+        await FixtureTiming.TimeAsync(FixtureTiming.Phase.Seed, () => TestDataSeeds.Exec(db));
     }
 }
 

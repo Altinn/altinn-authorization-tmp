@@ -3,7 +3,6 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +42,7 @@ public class SystemUserClientDelegationControllerTest
     #region GetClients
 
     [Fact]
-    public async Task GetClients_InvalidRole_ReturnsBadRequest()
+    public async Task GetClients_InvalidRole_Returns400InvalidRole()
     {
         var result = await CreateSut().GetClients(Party, roles: ["not-a-valid-role"], cancellationToken: TestContext.Current.CancellationToken);
 
@@ -51,7 +50,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task GetClients_ValidRoles_ReturnsOk()
+    public async Task GetClients_ValidRoles_Returns200WithClients()
     {
         var assignmentSvc = new Mock<IAssignmentService>();
         assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
@@ -64,7 +63,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task GetClients_NoRoles_UsesDefaultsAndReturnsOk()
+    public async Task GetClients_NoRolesUsesDefaults_Returns200WithDefaultRoleClients()
     {
         var assignmentSvc = new Mock<IAssignmentService>();
         assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
@@ -80,7 +79,7 @@ public class SystemUserClientDelegationControllerTest
     #region GetClientDelegations
 
     [Fact]
-    public async Task GetClientDelegations_ReturnsOk()
+    public async Task GetClientDelegations_Returns200WithDelegations()
     {
         var connectionSvc = new Mock<IConnectionService>();
         connectionSvc.Setup(s => s.GetConnectionsToAgent(Party, SystemUser, Client, It.IsAny<CancellationToken>()))
@@ -97,7 +96,7 @@ public class SystemUserClientDelegationControllerTest
     #region PostClientDelegation
 
     [Fact]
-    public async Task PostClientDelegation_ReturnsOk()
+    public async Task PostClientDelegation_Returns200WithCreatedDelegations()
     {
         var delegationSvc = new Mock<IDelegationService>();
         delegationSvc.Setup(s => s.CreateClientDelegation(It.IsAny<CreateSystemDelegationRequestDto>(), Party, It.IsAny<CancellationToken>()))
@@ -114,7 +113,7 @@ public class SystemUserClientDelegationControllerTest
     #region DeleteDelegation
 
     [Fact]
-    public async Task DeleteDelegation_NotFound_ReturnsBadRequest()
+    public async Task DeleteDelegation_NotFound_Returns400DelegationNotFound()
     {
         var delegationSvc = new Mock<IDelegationService>();
         delegationSvc.Setup(s => s.GetDelegation(DelegationId, It.IsAny<CancellationToken>()))
@@ -127,7 +126,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task DeleteDelegation_WrongFacilitator_ReturnsBadRequest()
+    public async Task DeleteDelegation_WrongFacilitator_Returns400WrongFacilitator()
     {
         var delegation = new Delegation { FacilitatorId = Guid.NewGuid(), FromId = Guid.NewGuid() };
         var delegationSvc = new Mock<IDelegationService>();
@@ -141,7 +140,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task DeleteDelegation_AssignmentToIdMismatch_ReturnsBadRequest()
+    public async Task DeleteDelegation_AssignmentToIdMismatch_Returns400AssignmentToIdMismatch()
     {
         var delegation = new Delegation { FacilitatorId = Party, FromId = Guid.NewGuid() };
         var assignment = new Assignment { FromId = Guid.NewGuid(), ToId = Guid.NewGuid() };
@@ -161,7 +160,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task DeleteDelegation_Success_ReturnsOk()
+    public async Task DeleteDelegation_Success_Returns200Ok()
     {
         var delegation = new Delegation { FacilitatorId = Party, FromId = Guid.NewGuid() };
         var assignment = new Assignment { FromId = Guid.NewGuid(), ToId = Party };
@@ -187,7 +186,7 @@ public class SystemUserClientDelegationControllerTest
     #region DeleteAssignment
 
     [Fact]
-    public async Task DeleteAssignment_NotFound_ReturnsBadRequest()
+    public async Task DeleteAssignment_NotFound_Returns400AssignmentNotFound()
     {
         var assignmentSvc = new Mock<IAssignmentService>();
         assignmentSvc.Setup(s => s.GetAssignment(AssignmentId, It.IsAny<CancellationToken>()))
@@ -200,7 +199,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task DeleteAssignment_WrongFromParty_ReturnsBadRequest()
+    public async Task DeleteAssignment_WrongFromParty_Returns400WrongFromParty()
     {
         var assignment = new Assignment { FromId = Guid.NewGuid(), ToId = Guid.NewGuid() };
         var assignmentSvc = new Mock<IAssignmentService>();
@@ -233,7 +232,7 @@ public class SystemUserClientDelegationControllerTest
     }
 
     [Fact]
-    public async Task DeleteAssignment_Success_ReturnsOk()
+    public async Task DeleteAssignment_Success_Returns200Ok()
     {
         var assignment = new Assignment
         {

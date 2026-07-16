@@ -17,7 +17,6 @@ using Altinn.Authorization.ABAC;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Platform.Register.Enums;
-using Altinn.Platform.Register.Models;
 using Altinn.Urn;
 using Altinn.Urn.Json;
 using Authorization.Platform.Authorization.Models;
@@ -178,24 +177,6 @@ namespace Altinn.AccessManagement.Core.Services
             EnrichRightsDictionaryWithRightsFromPolicy(result, policy, policyType, rightsQuery.To, minimumAuthenticationLevel: minimumAuthenticationLevel, returnAllPolicyRights: false, getDelegableRights: true);
 
             return result.Values.Where(r => r.CanDelegate.HasValue && r.CanDelegate.Value).ToList();
-        }
-
-        /// <inheritdoc />
-        public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
-        {
-            return await _delegationRepository.GetNextPageAppDelegationChanges(appRightFeedId, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
-        {
-            return await _delegationRepository.GetNextPageResourceDelegationChanges(appRightFeedId, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long instanceRightFeedId = 1, CancellationToken cancellationToken = default)
-        {
-            return await _delegationRepository.GetNextPageInstanceDelegationChanges(instanceRightFeedId, cancellationToken);
         }
 
         private async Task<XacmlPolicy> GetPolicy(List<AttributeMatch> resource, CancellationToken cancellationToken)

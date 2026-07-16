@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessManagement.TestUtils;
 
@@ -12,6 +13,13 @@ namespace Altinn.AccessManagement.TestUtils;
 public static class TestDataSeeds
 {
     /// <summary>
+    /// Assignment id for Paula's managing-director role on the Karlstad main unit. Pinned so an
+    /// instance delegation can be hung off it (see <see cref="Exec"/>) to assert that subunits do
+    /// not inherit the main unit's authorized instances.
+    /// </summary>
+    private static readonly Guid PaulaKarlstadMainAssignmentId = Guid.Parse("0196a0b1-0001-7001-8001-000000000099");
+
+    /// <summary>
     /// Applies a minimal set of test entities to the provided <see cref="AppDbContext"/>
     /// and saves the changes. This method is safe to call during test database
     /// bootstrapping and is idempotent if called on a fresh database.
@@ -22,6 +30,7 @@ public static class TestDataSeeds
         #region Resource Types
         db.ResourceTypes.Add(TestData.TestResourceType);
         db.ResourceTypes.Add(TestData.CorrespondenceResourceType);
+        db.ResourceTypes.Add(TestData.MaskinportenSchemaResourceType);
         #endregion
 
         #region Entities
@@ -126,6 +135,17 @@ public static class TestDataSeeds
                 ToId = TestEntities.PersonPaula,
                 RoleId = RoleConstants.ManagingDirector,
             },
+
+            // Paula is also a rightholder on the Karlstad main unit, carrying an instance delegation.
+            // This is the path through which authorized instances surface (mirrors the Kaos/Josephine seed),
+            // used to assert that the subunit does not inherit the main unit's instances.
+            new()
+            {
+                Id = PaulaKarlstadMainAssignmentId,
+                FromId = TestEntities.MainUnitKarlstad,
+                ToId = TestEntities.PersonPaula,
+                RoleId = RoleConstants.Rightholder,
+            },
         ]);
         #endregion
 
@@ -133,6 +153,18 @@ public static class TestDataSeeds
         db.Assignments.AddRange(TestData.Assignments);
         db.AssignmentPackages.AddRange(TestData.AssignmentPackages);
         db.AssignmentInstances.AddRange(TestData.AssignmentInstances);
+
+        // An instance delegated to Paula on the Karlstad MAIN unit. Used to assert that a subunit
+        // does not inherit the main unit's authorized instances (roles/packages are inherited, instances are not).
+        db.AssignmentInstances.Add(new AssignmentInstance
+        {
+            AssignmentId = PaulaKarlstadMainAssignmentId,
+            ResourceId = TestData.SiriusSkattemelding.Id,
+            InstanceId = "urn:altinn:instance-id:50208075/c3d4e5f6-a7b8-4c9d-8e0f-1a2b3c4d5e6f",
+            PolicyPath = "sirius-skattemelding-v1/karlstad-main/delegationpolicy.xml",
+            PolicyVersion = "1.0",
+        });
+
         db.AssignmentResources.AddRange(TestData.AssignmentResources);
         //// db.Delegations.AddRange(TestData.Delegations);
         #endregion
@@ -145,6 +177,7 @@ public static class TestDataSeeds
         db.Resources.Add(TestData.NavSykepengerSykmelding);
         db.Resources.Add(TestData.SkattResource);
         db.Resources.Add(TestData.TestdirektoratetCorrespondenceService);
+        db.Resources.Add(TestData.NonDelegableMaskinportenSchema);
         db.Resources.AddRange(TestData.MvaResource);
 
         #endregion

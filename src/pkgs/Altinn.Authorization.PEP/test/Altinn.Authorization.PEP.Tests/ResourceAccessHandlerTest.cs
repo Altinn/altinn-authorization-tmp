@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata;
+﻿using System.Reflection.Metadata;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
@@ -15,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Altinn.Authorization.PEP.Tests
 {
@@ -40,7 +36,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC01Async()
+        public async Task HandleRequirementAsync_PartyIdPermit_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -61,7 +57,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Context will succeed
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC02Async()
+        public async Task HandleRequirementAsync_OrganizationNumberPermit_SucceedsWithOrgAttribute()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -76,7 +72,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Equal("urn:altinn:organizationnumber", request.Request.Resource[0].Attribute[0].AttributeId);
             Assert.Equal("991825827", request.Request.Resource[0].Attribute[0].Value);
         }
@@ -87,7 +83,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// </summary>
         [Fact]
 
-        public async Task HandleRequirementAsync_TC03Async()
+        public async Task HandleRequirementAsync_InvalidOrganizationNumber_ThrowsArgumentException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -109,7 +105,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// </summary>
         [Fact]
 
-        public async Task HandleRequirementAsync_TC04Async()
+        public async Task HandleRequirementAsync_PersonIdentifierPermit_SucceedsWithPersonAttribute()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -124,7 +120,7 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.True(context.HasSucceeded);
             Assert.False(context.HasFailed);
 
-            XacmlJsonRequestRoot request = _pdpMock.Invocations[0].Arguments[0] as XacmlJsonRequestRoot;
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Equal("urn:altinn:person:identifier-no", request.Request.Resource[0].Attribute[0].AttributeId);
             Assert.Equal("01014922047", request.Request.Resource[0].Attribute[0].Value);
         }
@@ -135,7 +131,7 @@ namespace Altinn.Authorization.PEP.Tests
         /// </summary>
         [Fact]
 
-        public async Task HandleRequirementAsync_TC05Async()
+        public async Task HandleRequirementAsync_InvalidPersonIdentifier_ThrowsArgumentException()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
@@ -156,18 +152,23 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: Request header does not have a xforwardedforheader and therefore the header property in xacmljsonrequest will be null
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC06Async()
+        public async Task HandleRequirementAsync_NoXForwardedForHeader_SendsNullHeader()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext("23453546", null, null));
             XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
-
-            // Verify
-            _pdpMock.Setup(a => a.GetDecisionForRequest(It.Is<XacmlJsonRequestRoot>(xr => xr.Request.XForwardedForHeader == null), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
+            _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
 
             // Act
             await _rah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
+            Assert.Null(request.Request.XForwardedForHeader);
         }
 
         /// <summary>
@@ -175,19 +176,30 @@ namespace Altinn.Authorization.PEP.Tests
         /// Expected: XForwardedForHeader proeprty in request receives the ipaddress from the header
         /// </summary>
         [Fact]
-        public async Task HandleRequirementAsync_TC07Async()
+        public async Task HandleRequirementAsync_XForwardedForHeaderPresent_Succeeds()
         {
             // Arrange 
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
             string ipaddress = "18.203.138.153";
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext("organization", "991825827", null, ipaddress));
             XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
-
-            // verify
             _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
 
             // Act
             await _rah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
+
+            // Known gap: even with an X-Forwarded-For header present, the PEP does not
+            // copy it onto the decision request. DecisionHelper.CreateDecisionRequest
+            // reads the org/person headers but never sets XForwardedForHeader, so the
+            // PDP never sees the client IP. This pins current behaviour; switch to
+            // Assert.Equal(ipaddress, ...) once IP forwarding is implemented.
+            Assert.Null(request.Request.XForwardedForHeader);
         }
 
         private ClaimsPrincipal CreateUser()
@@ -210,17 +222,17 @@ namespace Altinn.Authorization.PEP.Tests
             httpContext.Request.RouteValues.Add("party", party);
             if (!string.IsNullOrEmpty(orgHeader))
             {
-                httpContext.Request.Headers.Add("Altinn-Party-OrganizationNumber", orgHeader);
+                httpContext.Request.Headers["Altinn-Party-OrganizationNumber"] = orgHeader;
             }
 
             if (!string.IsNullOrEmpty(ssnHeader))
             {
-                httpContext.Request.Headers.Add("Altinn-Party-SocialSecurityNumber", ssnHeader);
+                httpContext.Request.Headers["Altinn-Party-SocialSecurityNumber"] = ssnHeader;
             }
 
             if (!string.IsNullOrEmpty(xForwardedForHeader))
             {
-                httpContext.Request.Headers.Add("x-forwarded-for", xForwardedForHeader);
+                httpContext.Request.Headers["x-forwarded-for"] = xForwardedForHeader;
             }
 
             return httpContext;

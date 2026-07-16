@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessMgmt.Core.Utils;
 using Altinn.Authorization.Api.Contracts.Register;
 
 namespace Altinn.AccessManagement.Utilities;
@@ -37,6 +36,11 @@ public static class IdentifierUtil
     /// </remarks>
     public static bool IsValidOrganizationNumber(string orgNo)
     {
+        if (string.IsNullOrEmpty(orgNo))
+        {
+            return false;
+        }
+
         int[] weight = { 3, 2, 7, 6, 5, 4, 3, 2 };
 
         // Validation only done for 8 and 9 digit numbers

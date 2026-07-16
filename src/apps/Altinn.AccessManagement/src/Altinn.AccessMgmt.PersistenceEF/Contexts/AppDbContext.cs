@@ -1,16 +1,11 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text.Json;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
-using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -84,6 +79,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RequestAssignmentResource> RequestAssignmentResources => Set<RequestAssignmentResource>();
 
     public DbSet<ErrorQueue> ErrorQueue => Set<ErrorQueue>();
+
+    public DbSet<A2ClientRole> A2ClientRole => Set<A2ClientRole>();
 
     public DbSet<RightImportProgress> RightImportProgress => Set<RightImportProgress>();
 
@@ -233,6 +230,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RequestAssignmentPackage>(new RequestAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestAssignmentResource>(new RequestAssignmentResourceConfiguration());
         modelBuilder.ApplyConfiguration<ErrorQueue>(new ErrorQueueConfiguration());
+        modelBuilder.ApplyConfiguration<A2ClientRole>(new A2ClientRoleConfiguration());
         modelBuilder.ApplyConfiguration<RightImportProgress>(new RightImportProgressConfiguration());
         modelBuilder.ApplyConfiguration<InstanceSourceType>(new InstanceSourceTypeConfiguration());
     }

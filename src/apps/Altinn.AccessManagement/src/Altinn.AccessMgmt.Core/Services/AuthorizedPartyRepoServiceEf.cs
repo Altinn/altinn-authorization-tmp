@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -126,34 +125,6 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             ExcludeDeleted = false
         },
         ConnectionQueryDirection.FromOthers,
-        useNewQuery: true,
-        ct);
-    }
-
-    /// <inheritdoc />
-    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersOld(
-        Guid toId,
-        AuthorizedPartiesFilters filters = null,
-        CancellationToken ct = default)
-    {
-        return await connectionQuery.GetConnectionsAsync(
-        new ConnectionQueryFilter()
-        {
-            ToIds = [toId],
-            FromIds = filters?.PartyFilter?.Keys.ToList(),
-            PackageIds = filters?.PackageFilter?.Keys.ToList(),
-            EnrichEntities = false,
-            IncludeSubConnections = true,
-            IncludeKeyRole = filters?.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True ? true : false,
-            IncludeMainUnitConnections = true,
-            IncludeDelegation = true,
-            IncludePackages = filters?.IncludeAccessPackages == true || filters?.PackageFilter?.Keys?.Count > 0,
-            IncludeResources = false,
-            EnrichPackageResources = false,
-            ExcludeDeleted = false
-        },
-        ConnectionQueryDirection.FromOthers,
-        useNewQuery: true,
         ct);
     }
 
@@ -180,7 +151,6 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
                 ExcludeDeleted = false
             },
             ConnectionQueryDirection.FromOthers,
-            useNewQuery: true,
             ct);
     }
 

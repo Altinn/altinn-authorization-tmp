@@ -70,7 +70,8 @@ public class DeepTranslationExtensionsTests : IClassFixture<EfDatabaseFixture>
         Assert.Equal("Property registration", translated.Name);
         Assert.NotNull(translated.Area);
         Assert.Equal("Construction, Infrastructure and Real Estate", translated.Area.Name);
-        Assert.Equal("This authorization area includes access packages related to construction, infrastructure and real estate.",
+        Assert.Equal(
+            "This authorization area includes access packages related to construction, infrastructure and real estate.",
             translated.Area.Description);
     }
 
@@ -513,10 +514,8 @@ public class DeepTranslationExtensionsTests : IClassFixture<EfDatabaseFixture>
 
     #endregion
 
-    #region Performance Tests
-
     [Fact]
-    public async Task TranslateDeepAsync_LargePackageCollection_CompletesInReasonableTime()
+    public async Task TranslateDeepAsync_LargePackageCollection_TranslatesAllPackages()
     {
         // Arrange - Create 50 packages using only constant IDs to avoid DB access during parallel operations
         var translationService = CreateTranslationService();
@@ -535,21 +534,17 @@ public class DeepTranslationExtensionsTests : IClassFixture<EfDatabaseFixture>
         }).ToList();
 
         // Act - Parallel translation safe because all entities use constant IDs
-        var startTime = DateTime.UtcNow;
         var translated = await packages.TranslateDeepAsync(translationService, "eng", true);
-        var duration = DateTime.UtcNow - startTime;
 
-        // Assert - Should complete within reasonable time (parallel processing should help)
+        // Assert - all packages translate correctly (no wall-clock assertion; a fixed
+        // time budget flakes under CI load / GC pauses)
         Assert.Equal(50, translated.Count());
-        Assert.True(duration.TotalSeconds < 10, $"Translation took {duration.TotalSeconds} seconds, expected < 10 seconds");
 
         // Verify translations actually happened
         var firstPackage = translated.First();
         Assert.Equal("Property registration", firstPackage.Name);
         Assert.Equal("Construction, Infrastructure and Real Estate", firstPackage.Area.Name);
     }
-
-    #endregion
 
     #region Edge Cases
 

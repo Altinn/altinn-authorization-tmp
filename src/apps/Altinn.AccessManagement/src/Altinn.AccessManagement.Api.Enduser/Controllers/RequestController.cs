@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
 using System.Net.Mime;
 using System.Security.Claims;
 using Altinn.AccessManagement.Api.Enduser.Models;
@@ -294,7 +293,22 @@ public class RequestController(
             return problem.ToActionResult();
         }
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
+
+        if (request.From.Id == authUserUuid) //User is authorizing his own request, check if he is mainadmin
+        {
+            // Check pdp is mainadmin
+            bool isMainAdmin = await AuthorizeResourceAccess("altinn_access_management_hovedadmin", request.To.Id, User, "write");
+            if (!isMainAdmin)
+            {
+                errorBuilder.Add(ValidationErrors.RequestFromSelfNotAllowed);
+            }
+
+            if (errorBuilder.TryBuild(out problem))
+            {
+                return problem.ToActionResult();
+            }
+        }
 
         // Guaranteed non-null here: TryBuild above returned false, so the null/auth check passed.
         return request!.Type switch
@@ -349,7 +363,7 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
@@ -432,7 +446,7 @@ public class RequestController(
     {
         ValidationErrorBuilder errorBuilder = default;
 
-        var authUserUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
+        var authUserUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(HttpContext);
         var (hasConnections, _) = await connectionQuery.HasConnection(to, party);
         if (!hasConnections)
         {
