@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -15,15 +14,15 @@ public sealed class AppDbDesignTimeContextFactory : IDesignTimeDbContextFactory<
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var connectionString = new ConfigurationBuilder()
+        var configuration = new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .AddUserSecrets<AppDbDesignTimeContextFactory>(optional: true)
             .Build();
 
         var path = "PostgreSQLSettings:AdminConnectionString";
-        if (connectionString.GetValue<string>(path) is var cs && string.IsNullOrEmpty(cs))
+        if (configuration.GetValue<string>(path) is var cs && string.IsNullOrEmpty(cs))
         {
-            Console.WriteLine($"The configuration path '{path}' is missing or empty. Please check your environment variables, User Secrets, or Environment Variables. Trying default values.");
+            Console.WriteLine($"The configuration path '{path}' is missing or empty. Set it through an environment variable or user secrets. Trying default values.");
             cs = "Database=authorizationdb;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
         }
 

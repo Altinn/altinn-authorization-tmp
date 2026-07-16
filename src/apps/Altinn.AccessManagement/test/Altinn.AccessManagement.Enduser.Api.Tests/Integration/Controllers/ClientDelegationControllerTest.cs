@@ -198,7 +198,7 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListMyClients_WithProviderFilterForProviderWithoutDelegationResources_Returns200WithEmptyClients()
+        public async Task ListMyClients_WithProviderFilterForProviderWithoutDelegations_Returns200WithEmptyClients()
         {
             var client = CreateClient();
 
