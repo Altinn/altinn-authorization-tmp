@@ -15,6 +15,8 @@ public class SwaggerDocTest
 {
     public const string ClientDelegationV1Route = "/accessmanagement/api/v1/enduser/clientdelegations";
 
+    public const string ClientDelegationV2Route = "/accessmanagement/api/v2/enduser/clientdelegations";
+
     /// <summary>
     /// Fetches a swagger document and returns the response together with the
     /// path keys of the parsed document.
@@ -57,6 +59,31 @@ public class SwaggerDocTest
             var (_, paths) = await GetSwaggerDoc(Client, "v1");
 
             paths.Should().NotContain(p => p.Contains("/v2/", StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// Tests for the v2 swagger document. Only the client delegation API is
+    /// versioned, so the v2 document must contain its /v2/ paths and nothing
+    /// else.
+    /// </summary>
+    [IntegrationTest]
+    public class V2Doc : IClassFixture<ApiFixture>
+    {
+        public V2Doc(ApiFixture fixture)
+        {
+            Client = fixture.BuildConfiguration();
+        }
+
+        private HttpClient Client { get; }
+
+        [Fact]
+        public async Task GetSwaggerJson_V2Doc_Returns200WithOnlyClientDelegationV2Paths()
+        {
+            var (_, paths) = await GetSwaggerDoc(Client, "v2");
+
+            paths.Should().NotBeEmpty();
+            paths.Should().OnlyContain(p => p.StartsWith($"{ClientDelegationV2Route}/", StringComparison.Ordinal));
         }
     }
 }
