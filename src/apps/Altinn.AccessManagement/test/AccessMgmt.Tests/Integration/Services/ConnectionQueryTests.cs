@@ -425,14 +425,14 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
     public static IEnumerable<object[]> GetFilterCombinations()
     {
         var combinations = new List<object[]>();
-        var total = 1 << 8;
+        var total = 1 << 7;
 
         foreach (var useSingle in new[] { true, false })
         {
             for (int i = 0; i < total; i++)
             {
-                var flags = new bool[8];
-                for (int j = 0; j < 8; j++)
+                var flags = new bool[7];
+                for (int j = 0; j < 7; j++)
                 {
                     flags[j] = (i & (1 << j)) != 0;
                 }

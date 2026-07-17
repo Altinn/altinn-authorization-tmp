@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>This class provides properties to specify different filtering criteria for connection queries, such
 /// as filtering by IDs of entities involved in the connection, roles, packages, and resources. It also includes options
-/// to control the inclusion of additional data and the uniqueness of results.</remarks>
+/// to control the inclusion of additional data.</remarks>
 public sealed class ConnectionQueryFilter
 {
     /// <summary>
