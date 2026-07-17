@@ -843,12 +843,12 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
     [Fact]
     public async Task GetConnectionsFromOthers_SupplierRoleAlwaysExcluded()
     {
-        var personId = TestDataSet.GetEntity("Petter").Id;
+        var consumerId = TestDataSet.GetEntity("Consumer Corp").Id;
         var supplierId = TestDataSet.GetEntity("Supplier Corp").Id;
 
         var filter = new ConnectionQueryFilter
         {
-            ToIds = new[] { personId },
+            ToIds = new[] { supplierId },
             IncludeKeyRole = true,
             IncludeDelegation = true,
             EnrichEntities = false,
@@ -856,8 +856,28 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
 
         var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
 
-        // Supplier Corp has a Supplier-role assignment to Petter, but it must never appear
-        Assert.DoesNotContain(dbResult, r => r.FromId == supplierId && r.RoleId == RoleConstants.Supplier.Id);
+        // Consumer Corp has added Supplier Corp as their supplier, but the connection shoul not be included in ConnectionQuery results
+        Assert.DoesNotContain(dbResult, r => r.FromId == consumerId && r.RoleId == RoleConstants.Supplier.Id);
+    }
+
+    [Fact]
+    public async Task GetConnectionsToOthers_SupplierRoleAlwaysExcluded()   
+    {
+        var consumerId = TestDataSet.GetEntity("Consumer Corp").Id;
+        var supplierId = TestDataSet.GetEntity("Supplier Corp").Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            FromIds = new[] { consumerId },
+            IncludeKeyRole = true,
+            IncludeDelegation = true,
+            EnrichEntities = false,
+        };
+
+        var dbResult = await _query.GetConnectionsToOthersAsync(filter, TestContext.Current.CancellationToken);
+
+        // Consumer Corp has added Supplier Corp as their supplier, but the connection shoul not be included in ConnectionQuery results
+        Assert.DoesNotContain(dbResult, r => r.ToId == supplierId && r.RoleId == RoleConstants.Supplier.Id);
     }
 
     #endregion
@@ -1155,8 +1175,9 @@ internal static class TestDataSet
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000020"), Name = "ENK Frisør", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.ENK, OrganizationIdentifier = "ORG-ENK-01", ParentId = null, RefId = "ORG-ENK-01" },
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000021"), Name = "Ole ENK Innehaver", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "10018412345", RefId = "10018412345", DateOfBirth = DateOnly.Parse("1984-01-10") },
 
-        // Supplier test entity
+        // Supplier/Consumer test entities
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000040"), Name = "Supplier Corp", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-SUPP-01", ParentId = null, RefId = "ORG-SUPP-01" },
+        new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000041"), Name = "Consumer Corp", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-CONS-01", ParentId = null, RefId = "ORG-CONS-01" },
 
         // Deleted entity for ExcludeDeleted tests
         new Entity() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000030"), Name = "Deleted Org", TypeId = EntityTypeConstants.Organization, VariantId = EntityVariantConstants.AS, OrganizationIdentifier = "ORG-DEL-01", ParentId = null, RefId = "ORG-DEL-01", IsDeleted = true, DeletedAt = DateTimeOffset.UtcNow.AddDays(-10) },
@@ -1191,7 +1212,7 @@ internal static class TestDataSet
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000013"), FromId = Entities.First(t => t.Name == "NUF International Corp").Id, ToId = Entities.First(t => t.Name == "Lars").Id, RoleId = RoleConstants.NorwegianRepresentativeForeignEntity }, // Norsk representant for utenlandsk foretak
 
         // Supplier role assignment (should always be excluded from results)
-        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000041"), FromId = Entities.First(t => t.Name == "Supplier Corp").Id, ToId = Entities.First(t => t.Name == "Petter").Id, RoleId = RoleConstants.Supplier }, // Supplier role
+        new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000041"), FromId = Entities.First(t => t.Name == "Consumer Corp").Id, ToId = Entities.First(t => t.Name == "Supplier Corp").Id, RoleId = RoleConstants.Supplier }, // Supplier role
 
         // AppControlledRightholder assignment for Nina from Skrik Frisør
         new Assignment() { Id = Guid.Parse("0195efb8-7c80-7a01-8001-000000000042"), FromId = Entities.First(t => t.Name == "Skrik Frisør").Id, ToId = Entities.First(t => t.Name == "Nina").Id, RoleId = RoleConstants.AppControlledRightholder }, // App-controlled rightholder
