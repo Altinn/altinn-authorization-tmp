@@ -192,13 +192,13 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             );
 
         // Group by provider in memory to avoid the very expensive SQL "order by" clause EF
-        // generates for grouped queries. Assume partyid is always set on provider entities.
+        // generates for grouped queries.
         var packageRowsList = await packageRows.ToListAsync(cancellationToken);
         var resourceRowsList = await resourceRows.ToListAsync(cancellationToken);
         var executedQuery = packageRowsList
             .Select(x => new { x.Client, x.Provider, x.Role, x.PackageId, ResourceId = Guid.Empty })
             .Concat(resourceRowsList.Select(x => new { x.Client, x.Provider, x.Role, PackageId = Guid.Empty, x.ResourceId }))
-            .GroupBy(x => x.Provider.PartyId ?? 0)
+            .GroupBy(x => x.Provider.Id)
             .ToList();
 
         var packageIds = executedQuery.SelectMany(q => q).Select(q => q.PackageId).Distinct().ToList();
@@ -308,7 +308,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 Access = [
                     new()
                     {
-                        Role = DtoMapper.ConvertCompactRole(a.Role),
+                        Role = DtoMapper.ConvertCompactRole(RoleConstants.Agent.Entity),
                         Packages = [],
                         Resources = [],
                     }
