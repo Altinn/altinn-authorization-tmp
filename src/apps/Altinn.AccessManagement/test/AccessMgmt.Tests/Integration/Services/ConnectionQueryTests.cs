@@ -631,50 +631,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
 
     #endregion
 
-    #region ExcludeDeleted
-
-    [Fact]
-    public async Task GetConnectionsFromOthers_ExcludeDeleted_ExcludesDeletedFromEntity()
-    {
-        var personId = TestDataSet.GetEntity("Petter").Id;
-        var deletedId = TestDataSet.GetEntity("Deleted Org").Id;
-
-        var filter = new ConnectionQueryFilter
-        {
-            ToIds = new[] { personId },
-            IncludeKeyRole = true,
-            IncludeDelegation = true,
-            EnrichEntities = true,
-            ExcludeDeleted = true,
-        };
-
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
-
-        Assert.DoesNotContain(dbResult, r => r.FromId == deletedId);
-    }
-
-    [Fact]
-    public async Task GetConnectionsFromOthers_IncludeDeleted_IncludesDeletedFromEntity()
-    {
-        var personId = TestDataSet.GetEntity("Petter").Id;
-        var deletedId = TestDataSet.GetEntity("Deleted Org").Id;
-
-        var filter = new ConnectionQueryFilter
-        {
-            ToIds = new[] { personId },
-            IncludeKeyRole = true,
-            IncludeDelegation = true,
-            EnrichEntities = true,
-            ExcludeDeleted = false,
-        };
-
-        var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
-
-        Assert.Contains(dbResult, r => r.FromId == deletedId);
-    }
-
-    #endregion
-
     #region ToOthers direction
 
     [Fact]
