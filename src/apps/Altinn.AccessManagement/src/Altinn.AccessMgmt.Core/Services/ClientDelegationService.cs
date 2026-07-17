@@ -525,7 +525,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                             .DistinctBy(p => p.Id),
                     ],
                     Resources = [
-                        .. r.Where(p => p.AssignmentResource is { }).DistinctBy(r => r.AssignmentResource.Id).Select(p => DtoMapper.ConvertCompactResource(p.Resource))
+                        .. r.Where(p => p.AssignmentResource is { }).Select(p => DtoMapper.ConvertCompactResource(p.Resource)).DistinctBy(x => x.Id)
                     ]
                 }).ToList(),
             }).ToList();

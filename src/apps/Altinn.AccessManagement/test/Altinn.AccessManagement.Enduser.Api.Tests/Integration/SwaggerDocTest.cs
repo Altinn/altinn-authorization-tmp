@@ -17,6 +17,8 @@ public class SwaggerDocTest
 
     public const string ClientDelegationV2Route = "/accessmanagement/api/v2/enduser/clientdelegations";
 
+    public const string AuthorizedPartiesV1Route = "/accessmanagement/api/v1/enduser/authorizedparties";
+
     /// <summary>
     /// Fetches a swagger document and returns the response together with the
     /// path keys of the parsed document.
@@ -51,6 +53,14 @@ public class SwaggerDocTest
             var (_, paths) = await GetSwaggerDoc(Client, "v1");
 
             paths.Should().Contain(p => p.StartsWith($"{ClientDelegationV1Route}/", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task GetSwaggerJson_V1Doc_Returns200WithUnversionedControllerPaths()
+        {
+            var (_, paths) = await GetSwaggerDoc(Client, "v1");
+
+            paths.Should().Contain(p => p.StartsWith(AuthorizedPartiesV1Route, StringComparison.Ordinal));
         }
 
         [Fact]
