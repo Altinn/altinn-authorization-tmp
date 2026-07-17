@@ -513,21 +513,12 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
     [Fact]
     public async Task HasConnection_Hierarchy_SubunitToPersonViaMainUnit_ReturnsHierarchy()
     {
-        // Baker Johnsen - Oslo is a subunit of Baker Johnsen, which has an assignment to Regnskaperne->Petter path
-        // Hierarchy: assignment from Baker Johnsen to Regnskaperne (ToId), sub-entity Baker Johnsen - Oslo (Id) has ParentId = Baker Johnsen
-        var fromId = TestDataSet.GetEntity("Baker Johnsen - Oslo").Id;
+        // Regnskaperne - Oslo is a subunit of Regnskaperne, which has an assignment to Petter
+        // Hierarchy: assignment from Regnskaperne to Petter, sub-entity Regnskaperne - Oslo (Id) has ParentId = Regnskaperne
+        var fromId = TestDataSet.GetEntity("Regnskaperne - Oslo").Id;
         var toId = TestDataSet.GetEntity("Petter").Id;
 
-        // Hierarchy check: from a in Assignments where a.ToId == toId, join e where e.ParentId == a.FromId and e.Id == fromId
-        // We need: assignment where ToId=Petter and FromId=Baker Johnsen, then entity Baker Johnsen - Oslo with ParentId=Baker Johnsen
-        // Assignment: Regnskaperne -> Petter (not Baker Johnsen -> Petter)
-        // Actually the hierarchy query is: assignments where a.ToId == toId, joined with entities where e.ParentId == a.FromId and e.Id == fromId
-        // So we need an assignment with ToId=Petter where FromId is the parent of fromId (Baker Johnsen - Oslo's parent = Baker Johnsen)
-        // Assignment: Regnskaperne -> Petter has FromId = Regnskaperne, not Baker Johnsen
-        // Let's use Regnskaperne - Oslo -> Petter path: Regnskaperne has assignment to Petter, Oslo has ParentId = Regnskaperne
-        var fromIdOslo = TestDataSet.GetEntity("Regnskaperne - Oslo").Id;
-
-        var (result, reason) = await _query.HasConnection(fromIdOslo, toId, [ConnectionReason.Hierarchy]);
+        var (result, reason) = await _query.HasConnection(fromId, toId, [ConnectionReason.Hierarchy]);
 
         Assert.True(result);
         Assert.Equal(ConnectionReason.Hierarchy, reason);
@@ -657,7 +648,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
     #region ENK/Innehaver
 
     [Fact]
-    public async Task GetConnectionsFromOthers_EnkInhehaver_ReturnsInnehaverAsConnection()
+    public async Task GetConnectionsFromOthers_EnkInnehaver_ReturnsInnehaverAsConnection()
     {
         // ENK Frisør has Innehaver -> Ole, and Accountant role to Regnskaperne
         // So when querying FromOthers for Petter (who is DagligLeder of Regnskaperne),
@@ -962,7 +953,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         };
 
         var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
-        var connections = DtoMapper.ConvertFromOthers(dbResult, false);
 
         // Baker Johnsen should appear but without sub-entities (Oslo, Bergen, Kristiansand)
         // When IncludeSubConnections=false, child nesting is skipped AND Innehaver connections are skipped
