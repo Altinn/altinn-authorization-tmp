@@ -57,7 +57,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeKeyRole = true,
             EnrichEntities = true,
             IncludeDelegation = true,
-            OnlyUniqueResults = false,
             IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
             ExcludeDeleted = false,
@@ -89,7 +88,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeKeyRole = true,
             EnrichEntities = true,
             IncludeDelegation = true,
-            OnlyUniqueResults = false,
             IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
             ExcludeDeleted = false,
@@ -121,7 +119,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeKeyRole = true,
             EnrichEntities = true,
             IncludeDelegation = true,
-            OnlyUniqueResults = false,
             IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
             ExcludeDeleted = false,
@@ -146,7 +143,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeKeyRole = true,
             EnrichEntities = true,
             IncludeDelegation = true,
-            OnlyUniqueResults = false,
             IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
             ExcludeDeleted = false,
@@ -176,7 +172,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeKeyRole = true,
             EnrichEntities = true,
             IncludeDelegation = true,
-            OnlyUniqueResults = false,
             IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
             ExcludeDeleted = false,
@@ -417,8 +412,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
             IncludeResources = flags[3],
             EnrichEntities = flags[4],
             EnrichPackageResources = flags[5],
-            ExcludeDeleted = flags[6],
-            OnlyUniqueResults = flags[7]
+            ExcludeDeleted = flags[6]
         };
 
         // Every flag combination must produce a valid query that runs against the database

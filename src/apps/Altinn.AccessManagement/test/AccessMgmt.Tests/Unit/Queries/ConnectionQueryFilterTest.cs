@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
 // See: overhaul part-2 step 21
 namespace Altinn.AccessManagement.Tests.Unit.Queries;
@@ -107,7 +107,6 @@ public class ConnectionQueryFilterTest
         // Default flag values are part of the public contract — a regression
         // that flipped any of these would silently change the shape of every
         // unfiltered query.
-        filter.OnlyUniqueResults.Should().BeFalse();
         filter.EnrichEntities.Should().BeTrue();
         filter.IncludePackages.Should().BeFalse();
         filter.IncludeResources.Should().BeFalse();

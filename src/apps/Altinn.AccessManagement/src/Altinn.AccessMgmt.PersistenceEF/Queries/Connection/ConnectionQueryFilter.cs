@@ -54,11 +54,6 @@ public sealed class ConnectionQueryFilter
     public IReadOnlyCollection<string> InstanceIds { get; init; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether only unique results should be returned.
-    /// </summary>
-    public bool OnlyUniqueResults { get; set; } = false;
-
-    /// <summary>
     /// Gets or sets a value indicating whether to enrich entities with more details.
     /// </summary>
     public bool EnrichEntities { get; init; } = true;
