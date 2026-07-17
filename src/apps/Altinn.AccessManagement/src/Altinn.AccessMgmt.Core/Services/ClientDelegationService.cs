@@ -363,6 +363,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .ThenInclude(d => d.Package)
             .Include(d => d.DelegationResources)
             .ThenInclude(d => d.Resource)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (existingDelegation is null)
@@ -438,6 +439,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .Include(p => p.DelegationPackages)
             .Include(p => p.DelegationResources)
             .Where(p => p.DelegationPackages.Any() || p.DelegationResources.Any())
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         foreach (var existingDelegation in existingDelegations)

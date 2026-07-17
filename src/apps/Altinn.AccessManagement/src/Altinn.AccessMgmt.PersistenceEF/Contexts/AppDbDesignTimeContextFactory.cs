@@ -20,10 +20,15 @@ public sealed class AppDbDesignTimeContextFactory : IDesignTimeDbContextFactory<
             .Build();
 
         var path = "PostgreSQLSettings:AdminConnectionString";
-        if (configuration.GetValue<string>(path) is var cs && string.IsNullOrEmpty(cs))
+        var cs = configuration.GetValue<string>(path);
+        if (string.IsNullOrWhiteSpace(cs))
         {
             Console.WriteLine($"The configuration path '{path}' is missing or empty. Set it through an environment variable or user secrets. Trying default values.");
             cs = "Database=authorizationdb;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
+        }
+        else
+        {
+            cs = string.Format(cs, configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd"));
         }
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
