@@ -460,11 +460,12 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             return new List<ContractsV2.ClientDto>();
         }
 
-        var query = await db.Assignments
+        var clientAssignments = db.Assignments
             .AsNoTracking()
             .Where(a => a.ToId == partyUuid && !ExcludeClientRoles.Contains(a.RoleId))
-            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId))
-            .Include(a => a.From)
+            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId));
+
+        var packageRows = await clientAssignments
             .GroupJoin(
                 db.AssignmentPackages,
                 a => a.Id,
@@ -476,40 +477,46 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 (x, ap) => new { x.Assignment, AssignmentPackage = ap }
             )
             .GroupJoin(
-                db.AssignmentResources,
-                x => x.Assignment.Id,
-                ar => ar.AssignmentId,
-                (x, ar) => new { x.Assignment, x.AssignmentPackage, AssignmentResources = ar }
-            )
-            .SelectMany(
-                x => x.AssignmentResources.DefaultIfEmpty(),
-                (x, ar) => new { x.Assignment, x.AssignmentPackage, AssignmentResource = ar }
-            )
-            .GroupJoin(
                 db.RolePackages,
                 x => x.Assignment.RoleId,
                 rp => rp.RoleId,
-                (x, rps) => new { x.Assignment, x.AssignmentPackage, x.AssignmentResource, RolePackages = rps }
+                (x, rps) => new { x.Assignment, x.AssignmentPackage, RolePackages = rps }
             )
             .SelectMany(
                 x => x.RolePackages.DefaultIfEmpty(),
                 (x, rp) => new
                 {
-                    x.Assignment.To,
                     x.Assignment.From,
                     x.Assignment.Role,
-                    x.AssignmentResource,
-                    x.AssignmentResource.Resource,
                     AssignmentPackage = x.AssignmentPackage.Package,
                     RolePackage = rp.Package,
                     RolePackageEntityVariantId = rp.EntityVariantId
                 }
             )
-            .Where(x => x.RolePackage != null || x.AssignmentPackage != null || x.AssignmentResource != null)
-            .WhereIf(roleFilter.Count > 0, x => roleFilter.Contains(x.Role.Id))
+            .Where(x => x.RolePackage != null || x.AssignmentPackage != null)
             .WhereIf(packageFilter.Count > 0, x => (x.RolePackage != null && packageFilter.Contains(x.RolePackage.Id)) || (x.AssignmentPackage != null && packageFilter.Contains(x.AssignmentPackage.Id)))
-            .GroupBy(x => x.From.Id)
             .ToListAsync(cancellationToken);
+
+        // Resources are fetched as their own row set to avoid a packages x resources product per
+        // assignment. Under a package filter an assignment's resources are only included when the
+        // assignment also has a matching package, which mirrors the row survival in the package set.
+        var resourceRows = await clientAssignments
+            .WhereIf(packageFilter.Count > 0, a =>
+                db.AssignmentPackages.Any(ap => ap.AssignmentId == a.Id && packageFilter.Contains(ap.PackageId)) ||
+                db.RolePackages.Any(rp => rp.RoleId == a.RoleId && packageFilter.Contains(rp.PackageId)))
+            .Join(
+                db.AssignmentResources,
+                a => a.Id,
+                ar => ar.AssignmentId,
+                (a, ar) => new { a.From, a.Role, ar.Resource }
+            )
+            .ToListAsync(cancellationToken);
+
+        var query = packageRows
+            .Select(x => new { x.From, x.Role, x.AssignmentPackage, x.RolePackage, x.RolePackageEntityVariantId, Resource = (Resource)null })
+            .Concat(resourceRows.Select(x => new { x.From, x.Role, AssignmentPackage = (Package)null, RolePackage = (Package)null, RolePackageEntityVariantId = (Guid?)null, x.Resource }))
+            .GroupBy(x => x.From.Id)
+            .ToList();
 
         return query
             .Select(access =>
@@ -529,7 +536,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                             .DistinctBy(p => p.Id),
                     ],
                     Resources = [
-                        .. r.Where(p => p.AssignmentResource is { }).Select(p => DtoMapper.ConvertCompactResource(p.Resource)).DistinctBy(x => x.Id)
+                        .. r.Where(p => p.Resource is { }).Select(p => DtoMapper.ConvertCompactResource(p.Resource)).DistinctBy(x => x.Id)
                     ]
                 }).ToList(),
             }).ToList();
