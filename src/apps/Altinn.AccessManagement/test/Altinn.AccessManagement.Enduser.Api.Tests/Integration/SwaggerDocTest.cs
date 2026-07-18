@@ -7,9 +7,10 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration;
 /// <summary>
 /// Regression tests for the generated swagger documents. The v1 document is
 /// extracted by APIM under the name "v1" at <c>/swagger/v1/swagger.json</c>,
-/// so both its URL and its content must stay stable. Swagger is only mapped
-/// in the Development environment, which is the default environment for the
-/// <see cref="ApiFixture"/> test host.
+/// so its URL, document name and path set must stay stable. Schema and
+/// operation contents are owned by the endpoints themselves and are not
+/// pinned here. Swagger is only mapped in the Development environment, which
+/// is the default environment for the <see cref="ApiFixture"/> test host.
 /// </summary>
 public class SwaggerDocTest
 {

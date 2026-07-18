@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
@@ -21,6 +21,8 @@ namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers.V2;
 public class ClientDelegationControllerTest
 {
     public const string Route = "accessmanagement/api/v2/enduser/clientdelegations";
+
+    public static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     #region GET accessmanagement/api/v2/enduser/clientdelegations/my/clients
 
@@ -657,7 +659,7 @@ public class ClientDelegationControllerTest
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data);
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data, SerializerOptions);
 
             // Ensure proper error returned
             Assert.Single(problem.Errors);
@@ -779,7 +781,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
 
             // Ensure proper error returned
-            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(deleteResponsePayload);
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(deleteResponsePayload, SerializerOptions);
             Assert.Single(problem.Errors);
             Assert.All(problem.Errors, error =>
             {
@@ -918,7 +920,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
             // Ensure proper error returned
-            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data);
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data, SerializerOptions);
             Assert.Single(problem.Errors);
             Assert.All(problem.Errors, error =>
             {
