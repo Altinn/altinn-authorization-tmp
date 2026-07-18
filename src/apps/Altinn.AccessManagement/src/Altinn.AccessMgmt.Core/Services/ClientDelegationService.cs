@@ -201,20 +201,24 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .GroupBy(x => x.Provider.Id)
             .ToList();
 
-        var packageIds = executedQuery.SelectMany(q => q).Select(q => q.PackageId).Distinct().ToList();
-        var packagesRaw = await db.Packages.AsNoTracking()
-            .Where(p => packageIds.Contains(p.Id))
-            .ToListAsync(cancellationToken);
+        var packageIds = executedQuery.SelectMany(q => q).Select(q => q.PackageId).Where(id => id != Guid.Empty).Distinct().ToList();
+        List<Package> packagesRaw = packageIds.Count > 0
+            ? await db.Packages.AsNoTracking()
+                .Where(p => packageIds.Contains(p.Id))
+                .ToListAsync(cancellationToken)
+            : [];
         SortedList<Guid, CompactPackageDto> packages = new SortedList<Guid, CompactPackageDto>(packagesRaw.Count);
         foreach (var package in packagesRaw)
         {
             packages.Add(package.Id, DtoMapper.ConvertCompactPackage(package));
         }
 
-        var resourceIds = executedQuery.SelectMany(q => q).Select(q => q.ResourceId).Distinct().ToList();
-        var resourcesRaw = await db.Resources.AsNoTracking()
-            .Where(r => resourceIds.Contains(r.Id))
-            .ToListAsync(cancellationToken);
+        var resourceIds = executedQuery.SelectMany(q => q).Select(q => q.ResourceId).Where(id => id != Guid.Empty).Distinct().ToList();
+        List<Resource> resourcesRaw = resourceIds.Count > 0
+            ? await db.Resources.AsNoTracking()
+                .Where(r => resourceIds.Contains(r.Id))
+                .ToListAsync(cancellationToken)
+            : [];
         SortedList<Guid, CompactResourceDto> resourcesMap = new(resourcesRaw.Count);
         foreach (var resource in resourcesRaw)
         {
@@ -557,6 +561,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     public async Task<Result<List<ContractsV2.AgentDto>>> GetAgentsV2(Guid partyUuid, CancellationToken cancellationToken = default)
     {
         var query = await db.Assignments
+            .AsNoTracking()
             .Where(a => a.FromId == partyUuid && a.RoleId == RoleConstants.Agent)
             .Include(a => a.To)
             .ToListAsync(cancellationToken);
