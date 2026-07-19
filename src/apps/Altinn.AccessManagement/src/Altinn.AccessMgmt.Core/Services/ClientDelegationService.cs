@@ -847,6 +847,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 x.Delegation.To.To,
                 x.Delegation.From.Role,
                 x.DelegationPackage.Package,
+                AgentAddedAt = x.Delegation.To.Audit_ValidFrom,
             })
             .GroupBy(x => x.To.Id)
             .ToListAsync(cancellationToken);
@@ -856,7 +857,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ContractsV2.AgentPackagesDto()
             {
                 Agent = DtoMapper.Convert(e.First().To),
-                AgentAddedAt = e.First().To.Audit_ValidFrom,
+                AgentAddedAt = e.First().AgentAddedAt,
                 Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.AgentPackagesDto.RoleAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
