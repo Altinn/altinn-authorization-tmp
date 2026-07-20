@@ -17,7 +17,7 @@ public class ConnectionQuery(AppDbContext db)
     // It looks like the same join order is chosen no matter if we use a low value (1) or a very large value. A very large value is
     // chosen to ensure that the cutoff doesn't really reduce the result set.
     private const int PostgresPlanHintTakeLimit = 100_000_000;
-    private List<ConnectionQueryExtendedRecord>? _rightholderAssignments = null;
+    private readonly ConnectionResourceLoader _resourceLoader = new(db);
 
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
     {
@@ -121,7 +121,6 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
-            _rightholderAssignments = null;
             bool delayChildNesting = true;
             bool delayFromFilter = true;
             if (direction == ConnectionQueryDirection.ToOthers || (filter.FromIds?.Count > 0 && filter.FromIds?.Count <= 20))
@@ -167,7 +166,7 @@ public class ConnectionQuery(AppDbContext db)
             {
                 if (filter.IncludeResources)
                 {
-                    result = await LoadResourcesByKeyAsync(result, filter, ct);
+                    result = await _resourceLoader.LoadResourcesByKeyAsync(result, filter, ct);
                 }
             }
             catch (Exception ex)
@@ -179,7 +178,7 @@ public class ConnectionQuery(AppDbContext db)
             {
                 if (filter.IncludeInstances)
                 {
-                    result = await LoadInstancesByKeyAsync(result, filter, ct);
+                    result = await _resourceLoader.LoadInstancesByKeyAsync(result, filter, ct);
                 }
             }
             catch (Exception ex)
@@ -953,154 +952,7 @@ public class ConnectionQuery(AppDbContext db)
         return index;
     }
 
-    private async Task<List<ConnectionQueryExtendedRecord>> LoadResourcesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
-    {
-        var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
-        var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
-        var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToList();
-        if (rightholderAssignmentIds.Count == 0)
-        {
-            return allKeys;
-        }
-
-        var assignmentResources = await db.AssignmentResources
-            .Where(ai => rightholderAssignmentIds.Contains(ai.AssignmentId))
-            .Select(ai => new { ai.AssignmentId, ai.Id, ai.ResourceId })
-            .WhereIf(resourceSet is not null, x => resourceSet!.Contains(x.ResourceId))
-            .Join(db.Resources, x => x.ResourceId, r => r.Id, (x, r) => new
-            {
-                x.AssignmentId,
-                r.Id,
-                r.Name,
-                r.RefId
-            })
-            .AsNoTracking()
-            .ToListAsync(ct);
-
-        SortedList<Guid, List<ConnectionQueryResource>> resourcesByAssignment = [];
-        foreach (var ai in assignmentResources)
-        {
-            if (resourcesByAssignment.TryGetValue(ai.AssignmentId, out var list))
-            {
-                list.Add(new ConnectionQueryResource()
-                {
-                    Id = ai.Id,
-                    Name = ai.Name,
-                    RefId = ai.RefId
-                });
-            }
-            else
-            {
-                resourcesByAssignment[ai.AssignmentId] =
-                [
-                    new ConnectionQueryResource()
-                    {
-                        Id = ai.Id,
-                        Name = ai.Name,
-                        RefId = ai.RefId
-                    }
-                ];
-            }
-        }
-
-        foreach (var key in allKeys)
-        {
-            if (key.AssignmentId.HasValue && resourcesByAssignment.TryGetValue((Guid)key.AssignmentId!, out var list))
-            {
-                key.Resources = list;
-            }
-        }
-
-        return allKeys;
-    }
-
-    private async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
-    {
-        var instanceSet = filter.InstanceIds?.Count > 0 ? new HashSet<string>(filter.InstanceIds) : null;
-        var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
-
-        // Assignment → AssignmentInstance
-        var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
-        var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
-        if (rightholderAssignmentIds.Count == 0)
-        {
-            return allKeys;
-        }
-
-        var assignmentInstances = await db.AssignmentInstances
-            .Where(ai => rightholderAssignmentIds.Contains(ai.AssignmentId))
-            .Select(ai => new { ai.AssignmentId, ai.Id, ai.ResourceId, ai.InstanceId })
-            .WhereIf(instanceSet is not null, x => instanceSet!.Contains(x.InstanceId))
-            .WhereIf(resourceSet is not null, x => resourceSet!.Contains(x.ResourceId))
-            .Join(db.Resources, x => x.ResourceId, r => r.Id, (x, r) => new
-            {
-                x.AssignmentId,
-                x.Id,
-                x.ResourceId,
-                x.InstanceId,
-                ResourceName = r.Name,
-                ResourceRefId = r.RefId
-            })
-            .AsNoTracking()
-            .ToListAsync(ct);
-
-        SortedList<Guid, List<ConnectionQueryInstance>> instancesByAssignment = [];
-        foreach (var ai in assignmentInstances)
-        {
-            if (instancesByAssignment.TryGetValue(ai.AssignmentId, out var list))
-            {
-                list.Add(new ConnectionQueryInstance()
-                {
-                    Id = ai.Id,
-                    ResourceId = ai.ResourceId,
-                    InstanceId = ai.InstanceId,
-                    ResourceName = ai.ResourceName,
-                    ResourceRefId = ai.ResourceRefId
-                });
-            }
-            else
-            {
-                instancesByAssignment[ai.AssignmentId] =
-                [
-                    new ConnectionQueryInstance()
-                    {
-                        Id = ai.Id,
-                        ResourceId = ai.ResourceId,
-                        InstanceId = ai.InstanceId,
-                        ResourceName = ai.ResourceName,
-                        ResourceRefId = ai.ResourceRefId
-                    }
-                ];
-            }
-        }
-
-        foreach (var key in allKeys.Where(k => k.AssignmentId.HasValue && rightholderAssignmentIds.Contains((Guid)k.AssignmentId) && k.Reason != ConnectionReason.Hierarchy && !k.IsMainUnitAccess))
-        {
-            if (key.AssignmentId.HasValue && instancesByAssignment.TryGetValue((Guid)key.AssignmentId!, out var list))
-            {
-                key.Instances = list;
-            }
-        }
-
-        return allKeys;
-    }
-
-    private List<ConnectionQueryExtendedRecord> GetRightholderAssignments(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter)
-    {
-        List<Guid> rightholderRoles = [RoleConstants.Rightholder.Id];
-        if (filter.IncludeAppControlledInstances)
-        {
-            rightholderRoles.Add(RoleConstants.AppControlledRightholder.Id);
-        }
-
-        if (_rightholderAssignments is null)
-        {
-            _rightholderAssignments = allKeys.Where(a => a.AssignmentId.HasValue && rightholderRoles.Contains(a.RoleId)).ToList();
-        }
-
-        return _rightholderAssignments;
-    }
 
     private async Task EnrichPackageResourcesAsync(ConnectionIndex<ConnectionQueryPackage> packageIndex, ConnectionQueryFilter filter, CancellationToken ct = default)
     {
