@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +13,7 @@ internal class ConnectionEntityEnricher(AppDbContext db)
     /// <summary>
     /// Enriches the given records with entity, role, and child-nesting data.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> EnrichAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryDirection direction, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> EnrichAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter, CancellationToken ct)
     {
         var entityDict = await FetchEntitiesAsync(allKeys, ct);
         var childrenDict = doChildNesting ? await FetchChildrenAsync(entityDict, filter, applyFromFilter, ct) : [];

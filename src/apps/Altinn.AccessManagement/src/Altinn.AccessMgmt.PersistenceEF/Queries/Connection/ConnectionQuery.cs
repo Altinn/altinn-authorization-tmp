@@ -192,7 +192,6 @@ public class ConnectionQuery(AppDbContext db)
                 var enricher = new ConnectionEntityEnricher(db);
                 result = await enricher.EnrichAsync(
                     result,
-                    direction,
                     filter,
                     filter.IncludeSubConnections && delayChildNesting,
                     filter.IncludeSubConnections && delayFromFilter,
