@@ -138,12 +138,12 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ContractsV2.MyClientDto>>> GetMyClientsV2(Guid partyUuid, List<Guid> providerUuids, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ContractsV2.MyClientDto>>> GetMyClientsV2(Guid agentUuid, List<Guid> providerUuids, CancellationToken cancellationToken = default)
     {
         providerUuids ??= [];
         var connectionsQuery = db.Assignments
             .AsNoTracking()
-            .Where(a => a.ToId == partyUuid && a.RoleId == RoleConstants.Agent)
+            .Where(a => a.ToId == agentUuid && a.RoleId == RoleConstants.Agent)
             .WhereIf(providerUuids.Count > 0, a => providerUuids.Contains(a.FromId))
             .Join(
                 db.Entities,
@@ -296,19 +296,19 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ContractsV2.AgentDto>>> GetMyProvidersV2(Guid partyUuid, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ContractsV2.MyClientProviderDto>>> GetMyProvidersV2(Guid agentUuid, CancellationToken cancellationToken = default)
     {
         var query = await db.Assignments
             .AsNoTracking()
             .Include(a => a.From)
-            .Where(a => a.ToId == partyUuid && a.RoleId == RoleConstants.Agent)
+            .Where(a => a.ToId == agentUuid && a.RoleId == RoleConstants.Agent)
             .ToListAsync(cancellationToken);
 
         return query
-            .Select(a => new ContractsV2.AgentDto
+            .Select(a => new ContractsV2.MyClientProviderDto
             {
-                Agent = DtoMapper.Convert(a.From),
-                AgentAddedAt = a.Audit_ValidFrom,
+                Provider = DtoMapper.Convert(a.From),
+                ProviderAddedAt = a.Audit_ValidFrom,
                 Access = [
                     new()
                     {
@@ -498,12 +498,9 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .ToListAsync(cancellationToken);
 
         // Resources are fetched as their own row set to avoid a packages x resources product per
-        // assignment. Under a package filter an assignment's resources are only included when the
-        // assignment also has a matching package, which mirrors the row survival in the package set.
+        // assignment. The packages filter does not apply to resources: delegated single resources
+        // are tied to rightholder assignments and follow the role filter.
         var resourceRows = await clientAssignments
-            .WhereIf(packageFilter.Count > 0, a =>
-                db.AssignmentPackages.Any(ap => ap.AssignmentId == a.Id && packageFilter.Contains(ap.PackageId)) ||
-                db.RolePackages.Any(rp => rp.RoleId == a.RoleId && packageFilter.Contains(rp.PackageId)))
             .Join(
                 db.AssignmentResources,
                 a => a.Id,
@@ -1459,11 +1456,11 @@ public interface IClientDelegationService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets clients available to the party, grouped by provider,
+    /// Gets clients available to the authenticated agent, grouped by provider,
     /// including delegated roles, packages and resources.
     /// </summary>
     Task<Result<List<ContractsV2.MyClientDto>>> GetMyClientsV2(
-        Guid partyUuid,
+        Guid agentUuid,
         List<Guid> providerUuids,
         CancellationToken cancellationToken = default);
 
@@ -1475,10 +1472,11 @@ public interface IClientDelegationService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets providers that have assigned the Agent role to the given user/party.
+    /// Gets providers that have assigned the Agent role to the authenticated agent,
+    /// seen from the agent's perspective.
     /// </summary>
-    Task<Result<List<ContractsV2.AgentDto>>> GetMyProvidersV2(
-        Guid partyUuid,
+    Task<Result<List<ContractsV2.MyClientProviderDto>>> GetMyProvidersV2(
+        Guid agentUuid,
         CancellationToken cancellationToken = default);
 
     /// <summary>

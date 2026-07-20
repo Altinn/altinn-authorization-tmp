@@ -40,13 +40,13 @@ public class ClientDelegationController(
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        if (partyUuid == Guid.Empty)
+        var authenticatedUser = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (authenticatedUser == Guid.Empty)
         {
             return Unauthorized();
         }
 
-        var result = await clientDelegationService.GetMyClientsV2(partyUuid, provider, cancellationToken);
+        var result = await clientDelegationService.GetMyClientsV2(authenticatedUser, provider, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -57,19 +57,19 @@ public class ClientDelegationController(
 
     [HttpGet("my/clientproviders")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_READ)]
-    [ProducesResponseType<PaginatedResult<ContractsV2.AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<ContractsV2.MyClientProviderDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetMyClientProviders(CancellationToken cancellationToken = default)
     {
-        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        if (partyUuid == Guid.Empty)
+        var authenticatedUser = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (authenticatedUser == Guid.Empty)
         {
             return Unauthorized();
         }
 
-        var result = await clientDelegationService.GetMyProvidersV2(partyUuid, cancellationToken);
+        var result = await clientDelegationService.GetMyProvidersV2(authenticatedUser, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -89,13 +89,13 @@ public class ClientDelegationController(
         [FromQuery(Name = "provider")][Required] Guid provider,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        if (partyUuid == Guid.Empty)
+        var authenticatedUser = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (authenticatedUser == Guid.Empty)
         {
             return Unauthorized();
         }
 
-        var result = await clientDelegationService.DeleteMyProvider(partyUuid, provider, cancellationToken);
+        var result = await clientDelegationService.DeleteMyProvider(authenticatedUser, provider, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -107,30 +107,23 @@ public class ClientDelegationController(
     [HttpDelete("my/clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_MYCLIENTS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
-    [ProducesResponseType<List<DelegationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteMyClientViaProvider(
         [FromQuery(Name = "provider")][Required] Guid provider,
-        [FromQuery(Name = "from")][Required] Guid from,
-        [FromBody] DelegationBatchInputDto payload,
+        [FromQuery(Name = "client")][Required] Guid client,
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        if (!cascade && payload is { })
-        {
-            return await DeleteMyPackagesToClientViaProvider(provider, from, payload, cancellationToken);
-        }
-
-        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        if (partyUuid == Guid.Empty)
+        var authenticatedUser = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (authenticatedUser == Guid.Empty)
         {
             return Unauthorized();
         }
 
-        var problem = await clientDelegationService.RemoveClientFromAgent(provider, from, partyUuid, cascade, cancellationToken);
+        var problem = await clientDelegationService.RemoveClientFromAgent(provider, client, authenticatedUser, cascade, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -148,17 +141,17 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteMyPackagesToClientViaProvider(
         [FromQuery(Name = "provider")][Required] Guid provider,
-        [FromQuery(Name = "from")][Required] Guid from,
+        [FromQuery(Name = "client")][Required] Guid client,
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
-        if (partyUuid == Guid.Empty)
+        var authenticatedUser = AuthenticationHelper.GetAuthenticatedPartyUuid(httpContextAccessor.HttpContext);
+        if (authenticatedUser == Guid.Empty)
         {
             return Unauthorized();
         }
 
-        var result = await clientDelegationService.DeleteMyClient(partyUuid, provider, from, payload, cancellationToken);
+        var result = await clientDelegationService.DeleteMyClient(authenticatedUser, provider, client, payload, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -225,13 +218,13 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAgent(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "to")] Guid? to,
+        [FromQuery(Name = "agent")] Guid? agent,
         [FromBody] PersonInput? person,
         CancellationToken cancellationToken = default)
     {
         var entity = await inputValidation.SanitizeToInput(
             party,
-            to,
+            agent,
             person,
             options =>
             {
@@ -264,11 +257,11 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAgent(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "agent")][Required] Guid agent,
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        var problem = await clientDelegationService.RemoveAgent(party, to, cascade, cancellationToken);
+        var problem = await clientDelegationService.RemoveAgent(party, agent, cascade, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -287,12 +280,12 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAgentsClient(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "from")][Required] Guid from,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "client")][Required] Guid client,
+        [FromQuery(Name = "agent")][Required] Guid agent,
         [FromQuery(Name = "cascade")] bool cascade = false,
         CancellationToken cancellationToken = default)
     {
-        var problem = await clientDelegationService.RemoveClientFromAgent(party, from, to, cascade, cancellationToken);
+        var problem = await clientDelegationService.RemoveClientFromAgent(party, client, agent, cascade, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -310,10 +303,10 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetDelegatedAccessPackagesToAgentsViaPartyAsync(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "agent")][Required] Guid agent,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetDelegatedAccessPackagesToAgentsViaPartyV2(party, to, cancellationToken);
+        var result = await clientDelegationService.GetDelegatedAccessPackagesToAgentsViaPartyV2(party, agent, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -331,11 +324,11 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetDelegatedAccessPackagesFromClientsViaParty(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "from")][Required] Guid from,
+        [FromQuery(Name = "client")][Required] Guid client,
         CancellationToken cancellationToken = default
     )
     {
-        var result = await clientDelegationService.GetDelegatedAccessPackagesFromClientsViaPartyV2(party, from, cancellationToken);
+        var result = await clientDelegationService.GetDelegatedAccessPackagesFromClientsViaPartyV2(party, client, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -354,12 +347,12 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DelegateAccessPackageToAgent(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "from")][Required] Guid from,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "client")][Required] Guid client,
+        [FromQuery(Name = "agent")][Required] Guid agent,
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.DelegateAccessPackageToAgent(party, from, to, payload, cancellationToken);
+        var result = await clientDelegationService.DelegateAccessPackageToAgent(party, client, agent, payload, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -378,13 +371,13 @@ public class ClientDelegationController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteAgentAccessPackage(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "from")][Required] Guid from,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "client")][Required] Guid client,
+        [FromQuery(Name = "agent")][Required] Guid agent,
         [FromBody][Required] DelegationBatchInputDto payload,
         CancellationToken cancellationToken = default
     )
     {
-        var result = await clientDelegationService.RemoveAgentDelegation(party, from, to, payload, cancellationToken);
+        var result = await clientDelegationService.RemoveAgentDelegation(party, client, agent, payload, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

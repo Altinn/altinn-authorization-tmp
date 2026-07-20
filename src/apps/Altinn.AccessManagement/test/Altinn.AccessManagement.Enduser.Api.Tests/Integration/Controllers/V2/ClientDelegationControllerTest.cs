@@ -327,13 +327,14 @@ public class ClientDelegationControllerTest
             var response = await client.GetAsync($"{Route}/my/clientproviders", TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.AgentDto>>(data);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.MyClientProviderDto>>(data);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(2, result.Items.Count());
 
-            var verdiq = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.OrganizationVerdiqAS);
+            var verdiq = result.Items.FirstOrDefault(p => p.Provider.Id == TestEntities.OrganizationVerdiqAS);
             Assert.NotNull(verdiq);
+            Assert.NotNull(verdiq.Provider);
 
             var access = Assert.Single(verdiq.Access);
             Assert.Empty(access.Packages);
@@ -655,7 +656,7 @@ public class ClientDelegationControllerTest
         {
             // Try to add organization as agent
             var client = CreateClient();
-            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.OrganizationNordisAS}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.OrganizationNordisAS}", null, TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -673,7 +674,7 @@ public class ClientDelegationControllerTest
         public async Task AddAgent_PermittedEntityTypeAgentSystemUser_Returns200AndAddsAgentSystemUser()
         {
             var client = CreateClient();
-            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.SystemUserClient}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.SystemUserClient}", null, TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -751,7 +752,7 @@ public class ClientDelegationControllerTest
             // Create Delegation
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
-                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}",
+                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
                 new DelegationBatchInputDto()
                 {
                     Values = [
@@ -768,14 +769,14 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // Verify Delegation exists
-            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientPackagesDto>>(delegationsToAgentPayload);
 
             Assert.NotEmpty(delegationToAgentResult.Items);
 
             // Delete Delegation without cascade
-            var deleteResponse = await client.DeleteAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}&cascade=false", TestContext.Current.CancellationToken);
+            var deleteResponse = await client.DeleteAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.PersonPaula}&cascade=false", TestContext.Current.CancellationToken);
             var deleteResponsePayload = await deleteResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
@@ -789,7 +790,7 @@ public class ClientDelegationControllerTest
             });
 
             // Delete with cascade true
-            deleteResponse = await client.DeleteAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}&cascade=true", TestContext.Current.CancellationToken);
+            deleteResponse = await client.DeleteAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.PersonPaula}&cascade=true", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
@@ -914,7 +915,7 @@ public class ClientDelegationControllerTest
         public async Task RemoveAgentsClientWithExistingDelegations_WithCascadeFalse_Returns400WhenDelegationHasActiveConnections()
         {
             var client = CreateClient();
-            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -943,7 +944,7 @@ public class ClientDelegationControllerTest
                 Assert.NotNull(delegation);
             });
 
-            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonOrjan}&cascade=true", TestContext.Current.CancellationToken);
+            var response = await client.DeleteAsync($"{Route}/agents/clients?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonOrjan}&cascade=true", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -1021,7 +1022,7 @@ public class ClientDelegationControllerTest
             var client = CreateClient();
 
             var response = await client.PostAsJsonAsync(
-                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}",
+                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
                 new DelegationBatchInputDto()
                 {
                     Values = [
@@ -1042,7 +1043,7 @@ public class ClientDelegationControllerTest
             Assert.NotEmpty(delegationResult);
             Assert.True(delegationResult.All(d => d.Changed));
 
-            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientPackagesDto>>(delegationsToAgentPayload);
 
@@ -1053,7 +1054,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(RoleConstants.Rightholder.Entity.Code, agentAccess.Access.FirstOrDefault()?.Role?.Code);
             Assert.Equal(PackageConstants.Customs.Entity.Urn, agentAccess.Access.FirstOrDefault()?.Packages?.FirstOrDefault().Urn);
 
-            var getDelegationFromClient = await client.GetAsync($"{Route}/clients/accesspackages?party={TestEntities.OrganizationVerdiqAS.Id}&from={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            var getDelegationFromClient = await client.GetAsync($"{Route}/clients/accesspackages?party={TestEntities.OrganizationVerdiqAS.Id}&client={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
             var delegationsFromClientPayload = await getDelegationFromClient.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var delegationsFromClientResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.AgentPackagesDto>>(delegationsFromClientPayload);
 
@@ -1129,7 +1130,7 @@ public class ClientDelegationControllerTest
             // Create Delegation
             var client = CreateClient();
             var response = await client.PostAsJsonAsync(
-                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}",
+                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
                 new DelegationBatchInputDto()
                 {
                     Values = [
@@ -1146,7 +1147,7 @@ public class ClientDelegationControllerTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // Delete Delegation
-            using var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&from={TestEntities.OrganizationNordisAS}&to={TestEntities.PersonPaula}")
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}")
             {
                 Content = JsonContent.Create(new DelegationBatchInputDto()
                 {
@@ -1169,7 +1170,7 @@ public class ClientDelegationControllerTest
             Assert.True(deleteResult.All(d => d.Changed));
 
             // Verify Delegation deleted
-            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
+            var getDelegationsToAgent = await client.GetAsync($"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&agent={TestEntities.PersonPaula}", TestContext.Current.CancellationToken);
             var delegationsToAgentPayload = await getDelegationsToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientPackagesDto>>(delegationsToAgentPayload);
 
