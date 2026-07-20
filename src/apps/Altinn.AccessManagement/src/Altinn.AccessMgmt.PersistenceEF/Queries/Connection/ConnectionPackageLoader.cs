@@ -19,7 +19,7 @@ internal class ConnectionPackageLoader(AppDbContext db)
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
         var index = new ConnectionIndex<ConnectionQueryPackage>();
 
-        var assignmentPackageKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId).Distinct().ToList();
+        var assignmentPackageKeys = keys.Where(k => k.AssignmentId.HasValue && k.RoleId == RoleConstants.Rightholder).Select(k => k.AssignmentId!.Value).Distinct().ToHashSet();
 
         SortedList<Guid, List<Guid>> assignmentPackages = [];
         SortedSet<Guid> assignmentPackageIds = [];
@@ -44,7 +44,7 @@ internal class ConnectionPackageLoader(AppDbContext db)
             }
         }
 
-        var rolePackageKeys = keys.Where(k => k.AssignmentId.HasValue).Select(k => k.RoleId).Distinct().ToList();
+        var rolePackageKeys = keys.Where(k => k.AssignmentId.HasValue).Select(k => k.RoleId).Distinct().ToHashSet();
         var rolePackagesRaw = await db.RolePackages.Where(r => r.HasAccess && rolePackageKeys.Contains(r.RoleId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))
             .Select(rp => new { rp.PackageId, rp.RoleId, rp.EntityVariantId })
@@ -87,7 +87,7 @@ internal class ConnectionPackageLoader(AppDbContext db)
         }
 
         SortedList<Guid, Guid> entityVariants = [];
-        var entityKeys = keys.Where(k => k.AssignmentId.HasValue && rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToList();
+        var entityKeys = keys.Where(k => k.AssignmentId.HasValue && rolePackagesForEntity.ContainsKey(k.RoleId)).Select(k => k.FromId).Distinct().ToHashSet();
         if (entityKeys.Count > 0)
         {
             var entityVariantsRaw = await db.Entities.Where(e => entityKeys.Contains(e.Id))
@@ -99,7 +99,7 @@ internal class ConnectionPackageLoader(AppDbContext db)
             }
         }
 
-        var delegationIds = keys.Select(k => k.DelegationId).Where(id => id != null).Distinct().ToList();
+        var delegationIds = keys.Select(k => k.DelegationId).Where(id => id != null).Select(id => id!.Value).Distinct().ToHashSet();
         var delegationPackagesRaw = delegationIds.Count == 0 ? [] :
             await db.DelegationPackages.Where(d => delegationIds.Contains(d.DelegationId))
             .WhereIf(packageSet is not null, p => packageSet!.Contains(p.PackageId))

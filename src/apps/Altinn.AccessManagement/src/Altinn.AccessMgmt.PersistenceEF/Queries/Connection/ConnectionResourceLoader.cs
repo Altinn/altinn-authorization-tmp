@@ -16,7 +16,7 @@ internal class ConnectionResourceLoader(AppDbContext db)
     /// </summary>
     public static List<ConnectionQueryExtendedRecord> GetRightholderAssignments(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter)
     {
-        List<Guid> rightholderRoles = [RoleConstants.Rightholder.Id];
+        HashSet<Guid> rightholderRoles = new() { RoleConstants.Rightholder.Id };
         if (filter.IncludeAppControlledInstances)
         {
             rightholderRoles.Add(RoleConstants.AppControlledRightholder.Id);
@@ -33,7 +33,7 @@ internal class ConnectionResourceLoader(AppDbContext db)
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
         var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
-        var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
         if (rightholderAssignmentIds.Count == 0)
         {
             return allKeys;
@@ -100,7 +100,7 @@ internal class ConnectionResourceLoader(AppDbContext db)
 
         // Assignment → AssignmentInstance
         var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
-        var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToList();
+        var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
         if (rightholderAssignmentIds.Count == 0)
         {
             return allKeys;
