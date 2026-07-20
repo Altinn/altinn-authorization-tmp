@@ -163,28 +163,33 @@ public class ConnectionQuery(AppDbContext db)
                 }
             }
 
-            try
+            if (filter.IncludeResources || filter.IncludeInstances)
             {
-                if (filter.IncludeResources)
-                {
-                    result = await _resourceLoader.LoadResourcesByKeyAsync(result, filter, ct);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to include resources", ex);
-            }
+                var rightholderAssignments = ConnectionResourceLoader.GetRightholderAssignments(result, filter);
 
-            try
-            {
-                if (filter.IncludeInstances)
+                try
                 {
-                    result = await _resourceLoader.LoadInstancesByKeyAsync(result, filter, ct);
+                    if (filter.IncludeResources)
+                    {
+                        result = await _resourceLoader.LoadResourcesByKeyAsync(result, rightholderAssignments, filter, ct);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to include instances", ex);
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to include resources", ex);
+                }
+
+                try
+                {
+                    if (filter.IncludeInstances)
+                    {
+                        result = await _resourceLoader.LoadInstancesByKeyAsync(result, rightholderAssignments, filter, ct);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to include instances", ex);
+                }
             }
 
             if (filter.EnrichEntities)

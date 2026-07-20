@@ -28,11 +28,10 @@ internal class ConnectionResourceLoader(AppDbContext db)
     /// <summary>
     /// Loads resources for each rightholder assignment key and attaches them to the corresponding records.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> LoadResourcesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> LoadResourcesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, List<ConnectionQueryExtendedRecord> rightholderAssignments, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
-        var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
         var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
         if (rightholderAssignmentIds.Count == 0)
         {
@@ -93,13 +92,12 @@ internal class ConnectionResourceLoader(AppDbContext db)
     /// <summary>
     /// Loads instances for each rightholder assignment key and attaches them to the corresponding records.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, List<ConnectionQueryExtendedRecord> rightholderAssignments, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var instanceSet = filter.InstanceIds?.Count > 0 ? new HashSet<string>(filter.InstanceIds) : null;
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
         // Assignment → AssignmentInstance
-        var rightholderAssignments = GetRightholderAssignments(allKeys, filter);
         var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
         if (rightholderAssignmentIds.Count == 0)
         {
