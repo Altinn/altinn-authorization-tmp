@@ -189,10 +189,10 @@
             }
         </div>;
 
-    private async Task RunChecks() => await RunAsync(async () =>
+    private async Task RunChecks() => await RunAsync(async ct =>
     {
         _results = [];
-        _results = [.. await ConstantsService.RunAllChecksAsync(EnvState.Current)];
+        _results = [.. await ConstantsService.RunAllChecksAsync(EnvState.Current, ct)];
         _checkedAt = DateTimeOffset.Now;
     });
 

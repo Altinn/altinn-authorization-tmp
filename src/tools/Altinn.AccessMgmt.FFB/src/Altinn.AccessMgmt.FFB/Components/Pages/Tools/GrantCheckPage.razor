@@ -228,7 +228,7 @@
             StringComparer.Ordinal);
     }
 
-    private async Task RunCheck() => await RunAsync(async () =>
+    private async Task RunCheck() => await RunAsync(async ct =>
     {
         _missing = [];
         _missingFromDb = [];
@@ -248,14 +248,15 @@
         {
             try
             {
-                var result = await GrantService.CheckEnvironmentAsync(env, schemas, roles, privileges);
+                var result = await GrantService.CheckEnvironmentAsync(env, schemas, roles, privileges, ct);
                 _okCount += result.OkCount;
                 _missing.AddRange(result.Missing);
                 _missingFromDb.AddRange(result.MissingFromDb);
                 _environmentsChecked++;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                // Cancellation must reach RunAsync instead of becoming a per-env error.
                 _envErrors.Add((env, ErrorText.Flatten(ex)));
             }
         }

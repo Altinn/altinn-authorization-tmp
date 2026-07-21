@@ -166,7 +166,7 @@ else
     {
         if (_table is null) return;
 
-        await RunAsync(async () =>
+        await RunAsync(async ct =>
         {
             _statsLoaded = false;
 
@@ -185,6 +185,10 @@ else
             })).ToList();
 
             await Task.WhenAll([countTask, .. groupTasks]);
+
+            // TableRegistry delegates cannot take the token, so the queries run to
+            // completion — but a cancelled (superseded) run must not publish them.
+            ct.ThrowIfCancellationRequested();
 
             _totalCount = await countTask;
             _groupResults = (await Task.WhenAll(groupTasks)).ToList();
