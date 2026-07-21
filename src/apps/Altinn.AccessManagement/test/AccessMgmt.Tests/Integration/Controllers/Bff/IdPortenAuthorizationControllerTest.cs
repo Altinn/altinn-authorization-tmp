@@ -115,7 +115,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Bff
         public async Task DeleteIdPortenAuthorization_ExternalApiReturnsError_ForwardsMappedProblem(string partyUuid, HttpStatusCode expectedStatusCode, string expectedErrorCode)
         {
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse(partyUuid), AuthzConstants.SCOPE_PORTAL_ENDUSER);
-            using HttpRequestMessage request = new(HttpMethod.Delete, "accessmanagement/api/v1/bff/idportenauthorization/some-authorization-id");
+            using HttpRequestMessage request = new(HttpMethod.Delete, "accessmanagement/api/v1/bff/idportenauthorization?id=some-authorization-id");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await _client.SendAsync(request, TestContext.Current.CancellationToken);

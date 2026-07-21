@@ -47,8 +47,8 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [Route("{id}", Name = "bffdeleteidportenauthorization")]
-        public async Task<IActionResult> DeleteIdPortenAuthorization(string id, CancellationToken cancellationToken = default)
+        [Route("")]
+        public async Task<IActionResult> DeleteIdPortenAuthorization([FromQuery] string id, CancellationToken cancellationToken = default)
         {
             Guid? userUuid = UserUtil.GetUserUuid(User);
             if (userUuid == null)
