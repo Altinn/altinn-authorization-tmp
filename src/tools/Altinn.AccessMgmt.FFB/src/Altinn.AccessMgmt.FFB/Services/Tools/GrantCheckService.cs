@@ -20,7 +20,8 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
         string environment,
         IReadOnlyList<string> schemas,
         IReadOnlyList<string> roles,
-        IReadOnlyList<string> privileges)
+        IReadOnlyList<string> privileges,
+        CancellationToken ct = default)
     {
         var roleList = roles.ToList();
         var privilegeList = privileges.ToList();
@@ -29,8 +30,9 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
         var conn = db.Database.GetDbConnection();
 
         // has_table_privilege throws if a role does not exist — verify up front.
-        var existingRoles = (await conn.QueryAsync<string>(
-            "SELECT rolname FROM pg_roles WHERE rolname = ANY(@roles)", new { roles = roleList }))
+        // Dapper only honors the token through a CommandDefinition.
+        var existingRoles = (await conn.QueryAsync<string>(new CommandDefinition(
+            "SELECT rolname FROM pg_roles WHERE rolname = ANY(@roles)", new { roles = roleList }, cancellationToken: ct)))
             .ToHashSet(StringComparer.Ordinal);
 
         var missingRoles = roleList.Where(r => !existingRoles.Contains(r)).ToList();
@@ -60,8 +62,8 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
             }
 
             // Only check tables that actually exist in the DB — model may be ahead of the environment.
-            var dbTables = (await conn.QueryAsync<string>(
-                "SELECT tablename FROM pg_tables WHERE schemaname = @schema", new { schema }))
+            var dbTables = (await conn.QueryAsync<string>(new CommandDefinition(
+                "SELECT tablename FROM pg_tables WHERE schemaname = @schema", new { schema }, cancellationToken: ct)))
                 .ToHashSet(StringComparer.Ordinal);
 
             var toCheck = modelTables.Where(dbTables.Contains).ToList();
@@ -84,9 +86,10 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
                 ORDER BY t.tbl, r.role, p.priv
                 """;
 
-            var rows = (await conn.QueryAsync<GrantRow>(
+            var rows = (await conn.QueryAsync<GrantRow>(new CommandDefinition(
                 sql,
-                new { tables = toCheck, roles = roleList, privs = privilegeList, schema })).ToList();
+                new { tables = toCheck, roles = roleList, privs = privilegeList, schema },
+                cancellationToken: ct))).ToList();
             var byTable = rows.GroupBy(r => r.Table, StringComparer.Ordinal)
                 .ToDictionary(g => g.Key, g => g.Select(r => (r.Role, r.Privilege)).ToList(), StringComparer.Ordinal);
 
@@ -102,13 +105,13 @@ public sealed class GrantCheckService(IEnvironmentDbContextFactory dbFactory)
     /// <summary>
     /// Executes the GRANT statements for one table against the table's environment.
     /// </summary>
-    public async Task FixTableAsync(TableGrant table)
+    public async Task FixTableAsync(TableGrant table, CancellationToken ct = default)
     {
         using var db = dbFactory.CreateContext(table.Environment);
         var conn = db.Database.GetDbConnection();
         foreach (var statement in GrantStatements(table))
         {
-            await conn.ExecuteAsync(statement);
+            await conn.ExecuteAsync(new CommandDefinition(statement, cancellationToken: ct));
         }
     }
 
