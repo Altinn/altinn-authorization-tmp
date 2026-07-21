@@ -6,7 +6,8 @@ namespace Altinn.AccessMgmt.FFB.Services;
 public static class ErrorText
 {
     /// <summary>
-    /// Flattens an exception chain into a display string (distinct messages joined by blank lines).
+    /// Flattens an exception chain into a display string, skipping consecutive
+    /// duplicate messages, joined by blank lines.
     /// </summary>
     public static string Flatten(Exception ex)
     {
@@ -14,7 +15,7 @@ public static class ErrorText
         var inner = ex.InnerException;
         while (inner is not null)
         {
-            if (inner.Message != ex.Message)
+            if (inner.Message != parts[^1])
             {
                 parts.Add(inner.Message);
             }
