@@ -19,7 +19,7 @@ else if (_data is null)
 else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
-        <BackButton />
+        <BackButton FallbackHref="@($"/entity/{_data.Assignment.FromId}")" />
         <MudText Typo="Typo.h4">Assignment</MudText>
         <MudChip T="string" Color="Color.Primary" Size="Size.Small">
             @(_data.Assignment.Role?.Name ?? _data.Assignment.RoleId.ToString())

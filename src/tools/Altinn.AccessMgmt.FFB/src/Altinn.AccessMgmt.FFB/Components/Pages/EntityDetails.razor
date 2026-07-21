@@ -26,7 +26,7 @@ else if (_data is null)
 else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-1">
-        <BackButton />
+        <BackButton FallbackHref="/entity-search" />
         <MudText Typo="Typo.h4">@_data.Entity.Name</MudText>
         @if (_data.Entity.IsDeleted)
         {

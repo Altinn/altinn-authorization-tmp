@@ -19,7 +19,7 @@ else if (_data is null)
 else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
-        <BackButton />
+        <BackButton FallbackHref="@($"/entity-type/{_data.Variant.TypeId}")" />
         <MudText Typo="Typo.h4">@_data.Variant.Name</MudText>
     </MudStack>
     <MudText Typo="Typo.body2" Class="mb-6 mud-text-secondary">@_data.Variant.Description</MudText>

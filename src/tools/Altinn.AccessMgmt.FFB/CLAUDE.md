@@ -21,7 +21,8 @@ Full arkitektur og oppskrifter: se `README.md` i denne mappen. Bygg:
   `OnInitialized`/`Dispose` må kalle `base.`-varianten.
 - **Navigasjon:** nye verktøy-/jobbsider registreres i `Components/Layout/NavRegistry.cs`
   (én oppføring → meny + Hjem). Tilbake-navigasjon er alltid `<BackButton />` (browser-historikk);
-  detaljsider lenkes inn med `MudLink`.
+  dyplenkbare sider setter `FallbackHref` til naturlig foreldreside så knappen virker uten
+  historikk. Detaljsider lenkes inn med `MudLink`.
 - **Jobber:** statiske klasser i `Jobs/` med `JobName`-konstant og options-record; orkestreres
   av `IJobRunner`. Kjørenavn-grammatikk: preview = `{JobName}`, execute = `{JobName}:Execute`,
   variant = `{JobName}:{filter}` (→ `JobRunList MatchByPrefix="true"`). Bruk alltid

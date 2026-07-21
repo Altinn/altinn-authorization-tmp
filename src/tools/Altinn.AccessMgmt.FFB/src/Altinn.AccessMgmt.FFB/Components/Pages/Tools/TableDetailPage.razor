@@ -14,7 +14,7 @@
 else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
-        <BackButton />
+        <BackButton FallbackHref="/tools/tables" />
         <MudText Typo="Typo.h4" Class="mono">@_table.DisplayName</MudText>
         <MudChip T="string" Size="Size.Small" Color="Color.Default">@_table.Category</MudChip>
     </MudStack>

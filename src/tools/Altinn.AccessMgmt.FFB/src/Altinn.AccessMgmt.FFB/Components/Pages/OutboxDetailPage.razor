@@ -8,7 +8,7 @@
 <PageTitle>Outbox @Id.ToString()[..8]</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
-    <BackButton />
+    <BackButton FallbackHref="/tools/outbox" />
     <MudText Typo="Typo.h5">Outbox-melding</MudText>
     @if (_message is not null)
     {

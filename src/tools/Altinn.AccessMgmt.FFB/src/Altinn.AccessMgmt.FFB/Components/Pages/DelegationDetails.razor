@@ -20,7 +20,7 @@ else if (_data is null)
 else
 {
     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
-        <BackButton />
+        <BackButton FallbackHref="@(_data.Delegation.From is not null ? $"/entity/{_data.Delegation.From.ToId}" : "/entity-search")" />
         <MudText Typo="Typo.h4">Delegation</MudText>
         <MudChip T="string" Color="Color.Primary" Size="Size.Small">@(ChainRole?.Name ?? "–")</MudChip>
     </MudStack>
