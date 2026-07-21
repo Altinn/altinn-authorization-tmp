@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models.IdPortenAuthorization;
@@ -19,6 +20,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
     public class IdPortenAuthorizationController(IIdPortenAuthorizationService idPortenAuthorizationService) : ControllerBase
     {
         [HttpGet]
+        [ProducesResponseType<List<IdPortenAuthorization>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Route("")]
         public async Task<IActionResult> GetIdPortenAuthorizations(CancellationToken cancellationToken = default)
         {
@@ -38,6 +43,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         }
 
         [HttpDelete]
+        [ProducesResponseType<bool>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [Route("{id}", Name = "bffdeleteidportenauthorization")]
         public async Task<IActionResult> DeleteIdPortenAuthorization(string id, CancellationToken cancellationToken = default)
         {
