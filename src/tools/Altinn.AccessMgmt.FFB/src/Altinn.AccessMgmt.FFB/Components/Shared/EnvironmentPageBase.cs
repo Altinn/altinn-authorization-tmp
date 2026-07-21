@@ -101,9 +101,19 @@ public abstract class EnvironmentPageBase : ComponentBase, IDisposable
     /// </summary>
     protected virtual Task OnEnvironmentChangedAsync() => Task.CompletedTask;
 
-    private void HandleEnvironmentChanged() => _ = InvokeAsync(async () =>
+    private void HandleEnvironmentChanged()
     {
-        await OnEnvironmentChangedAsync();
-        StateHasChanged();
-    });
+        // Invalidate any in-flight run. Details pages start a new run (which also
+        // cancels), but tool pages only clear their fields — without this cancel the
+        // old run would keep going and write the previous environment's results back
+        // after the clear. Deliberately no version bump: the cancelled run's finally
+        // block must still clear Loading, since no new run may be starting.
+        _cts?.Cancel();
+
+        _ = InvokeAsync(async () =>
+        {
+            await OnEnvironmentChangedAsync();
+            StateHasChanged();
+        });
+    }
 }
