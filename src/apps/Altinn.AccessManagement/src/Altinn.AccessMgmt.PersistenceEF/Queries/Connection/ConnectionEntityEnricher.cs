@@ -43,7 +43,6 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             .Entities
             .AsNoTracking()
             .Where(e => parties.Contains(e.Id))
-            .Include(t => t.Parent)
             .Select(e => new Entity()
             {
                 Id = e.Id,
@@ -162,7 +161,7 @@ internal class ConnectionEntityEnricher(AppDbContext db)
     }
 
     /// <summary>
-    /// Attaches entities/roles to records, filters deleted, and expands children.
+    /// Attaches entities/roles to records, and expands children.
     /// </summary>
     private static List<ConnectionQueryExtendedRecord> ApplyEnrichment(List<ConnectionQueryExtendedRecord> allKeys, Dictionary<Guid, Entity> entityDict, Dictionary<Guid, List<Entity>> childrenDict, Dictionary<Guid, Role> rolesDict, bool doChildNesting, bool applyFromFilter, ConnectionQueryFilter filter)
     {
@@ -173,7 +172,7 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             c.To = entityDict[c.ToId];
             c.Via = c.ViaId != null ? entityDict[(Guid)c.ViaId] : null;
             c.Role = c.RoleId != Guid.Empty ? rolesDict[c.RoleId] : null;
-            c.ViaRole = c.ViaRoleId != null && c?.ViaRoleId != Guid.Empty ? rolesDict[(Guid)c.ViaRoleId] : null;
+            c.ViaRole = c.ViaRoleId != null && c.ViaRoleId != Guid.Empty ? rolesDict[(Guid)c.ViaRoleId] : null;
             keysWithChildren.Add(c);
 
             if (doChildNesting && c.Reason != ConnectionReason.Hierarchy && childrenDict.TryGetValue(c.From.Id, out List<Entity> childrenForKey))
