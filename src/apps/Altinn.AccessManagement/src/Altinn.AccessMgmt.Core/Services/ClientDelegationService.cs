@@ -1383,7 +1383,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/client",
-                [new($"{fromId}", "entity do not exist.")]
+                [new($"{fromId}", "entity does not exist.")]
             );
         }
 
@@ -1392,7 +1392,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/agent",
-                [new($"{toId}", "entity do not exist.")]
+                [new($"{toId}", "entity does not exist.")]
             );
         }
 
@@ -1836,7 +1836,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 "$QUERY/party",
-                [new($"{partyUuid}", "entity do not exist.")]
+                [new($"{partyUuid}", "entity does not exist.")]
             );
         }
 
@@ -1845,7 +1845,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/client",
-                [new($"{fromUuid}", "entity do not exist.")]
+                [new($"{fromUuid}", "entity does not exist.")]
             );
         }
 
@@ -1854,7 +1854,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/agent",
-                [new($"{toUuid}", "entity do not exist.")]
+                [new($"{toUuid}", "entity does not exist.")]
             );
         }
 
@@ -1965,16 +1965,19 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     .AsTracking()
                     .FirstOrDefaultAsync(d => d.Id == delegation.DelegationId, cancellationToken);
 
-                await ClientRemovedNotification.Upsert(
-                    db,
-                    partyUuid,
-                    fromUuid,
-                    toUuid,
-                    appsettings?.Value?.Notifications?.ClientRemovedNotifyInSeconds ?? ClientRemovedNotification.DefaultNotifyInSeconds,
-                    cancellationToken
-                );
+                if (deleteDelegation is { })
+                {
+                    await ClientRemovedNotification.Upsert(
+                        db,
+                        partyUuid,
+                        fromUuid,
+                        toUuid,
+                        appsettings?.Value?.Notifications?.ClientRemovedNotifyInSeconds ?? ClientRemovedNotification.DefaultNotifyInSeconds,
+                        cancellationToken
+                    );
 
-                db.Delegations.Remove(deleteDelegation);
+                    db.Delegations.Remove(deleteDelegation);
+                }
             }
         }
 
