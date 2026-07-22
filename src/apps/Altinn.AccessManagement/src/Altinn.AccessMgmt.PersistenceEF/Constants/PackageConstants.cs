@@ -7827,7 +7827,7 @@ public static class PackageConstants
     /// - <c>URN:</c> urn:altinn:accesspackage:virksomhetens-representant-skjemaoppgaver
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> virksomhetens-representant-skjemaoppgaver
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakt til rollen som virksomhetens representant for skjemaoppgaver, Motakeren av tilgangspakken kan da utføre alle oppgaver applikasjoner har definert at denne virksomheten skal utføre på vegne av virksomheten.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakt til rollen som virksomhetens representant for skjemaoppgaver, Mottakeren av tilgangspakken kan da utføre alle oppgaver applikasjoner har definert at denne virksomheten skal utføre på vegne av virksomheten.
     /// </remarks>
     public static ConstantDefinition<Package> CompanyRepresentativeFormTasks { get; } = new ConstantDefinition<Package>("8cb5c1f8-fad7-4ae0-b02b-8ad4cb2652eb")
     {
