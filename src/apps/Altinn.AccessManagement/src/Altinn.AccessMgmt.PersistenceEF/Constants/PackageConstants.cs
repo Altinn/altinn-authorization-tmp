@@ -7835,7 +7835,7 @@ public static class PackageConstants
         {
             Name = "Virksomhetens representant - skjemaoppgaver",
             Code = "virksomhetens-representant-skjemaoppgaver",
-            Description = "Denne tilgangspakken gir fullmakt til rollen som virksomhetens representant for skjemaoppgaver, Motakeren av tilgangspakken kan da utføre alle oppgaver applikasjoner har definert at denne virksomheten skal utføre på vegne av virksomheten.",
+            Description = "Denne tilgangspakken gir fullmakt til rollen som virksomhetens representant for skjemaoppgaver, Mottakeren av tilgangspakken kan da utføre alle oppgaver applikasjoner har definert at denne virksomheten skal utføre på vegne av virksomheten.",
             Urn = "urn:altinn:accesspackage:virksomhetens-representant-skjemaoppgaver",
             IsDelegable = false,
             IsAssignable = true,
