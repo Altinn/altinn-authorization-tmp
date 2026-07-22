@@ -761,14 +761,17 @@ public class DelegationMetadataEF(IAuditAccessor AuditAccessor, AppDbContext DbC
     {
         HashSet<AssignmentInstance> result = [];
 
-        result.UnionWith(await DbContext.AssignmentInstances.AsNoTracking()
-            .Include(t => t.Assignment).ThenInclude(t => t.From)
-            .Include(t => t.Assignment).ThenInclude(t => t.To)
-            .Include(t => t.Resource).ThenInclude(t => t.Type)
-            .Where(t => t.Assignment.FromId == from)
-            .Where(t => resourceIds.Contains(t.Resource.RefId))
-            .Where(t => to.Contains(t.Assignment.ToId))
-            .ToListAsync(cancellationToken));
+        if (to is { Count: > 0 })
+        {
+            result.UnionWith(await DbContext.AssignmentInstances.AsNoTracking()
+                .Include(t => t.Assignment).ThenInclude(t => t.From)
+                .Include(t => t.Assignment).ThenInclude(t => t.To)
+                .Include(t => t.Resource).ThenInclude(t => t.Type)
+                .Where(t => t.Assignment.FromId == from)
+                .Where(t => resourceIds.Contains(t.Resource.RefId))
+                .Where(t => to.Contains(t.Assignment.ToId))
+                .ToListAsync(cancellationToken));
+        }
 
         if (toAppControlledRightholders != null && toAppControlledRightholders.Any())
         {
