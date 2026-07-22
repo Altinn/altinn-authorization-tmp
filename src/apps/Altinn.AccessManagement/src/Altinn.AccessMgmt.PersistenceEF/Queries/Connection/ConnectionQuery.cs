@@ -171,7 +171,11 @@ public class ConnectionQuery(AppDbContext db)
                 {
                     if (filter.IncludeResources)
                     {
-                        result = await _resourceLoader.LoadResourcesByKeyAsync(result, rightholderAssignments, filter, ct);
+                        var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
+                        if (rightholderAssignmentIds.Count > 0)
+                        {
+                            result = await _resourceLoader.LoadResourcesByKeyAsync(result, rightholderAssignmentIds, filter, ct);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -183,7 +187,11 @@ public class ConnectionQuery(AppDbContext db)
                 {
                     if (filter.IncludeInstances)
                     {
-                        result = await _resourceLoader.LoadInstancesByKeyAsync(result, rightholderAssignments, filter, ct);
+                        var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
+                        if (rightholderAssignmentIds.Count > 0)
+                        {
+                            result = await _resourceLoader.LoadInstancesByKeyAsync(result, rightholderAssignmentIds, filter, ct);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -812,7 +820,6 @@ public class ConnectionQuery(AppDbContext db)
         IsRoleMap = x.IsRoleMap
     };
 }
-
 
 internal static class ConnectionQueryExtensions
 {

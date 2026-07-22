@@ -28,15 +28,9 @@ internal class ConnectionResourceLoader(AppDbContext db)
     /// <summary>
     /// Loads resources for each rightholder assignment key and attaches them to the corresponding records.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> LoadResourcesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, List<ConnectionQueryExtendedRecord> rightholderAssignments, ConnectionQueryFilter filter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> LoadResourcesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, HashSet<Guid> rightholderAssignmentIds, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
-
-        var rightholderAssignmentIds = rightholderAssignments.Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
-        if (rightholderAssignmentIds.Count == 0)
-        {
-            return allKeys;
-        }
 
         var assignmentResources = await db.AssignmentResources
             .Where(ai => rightholderAssignmentIds.Contains(ai.AssignmentId))
@@ -92,17 +86,10 @@ internal class ConnectionResourceLoader(AppDbContext db)
     /// <summary>
     /// Loads instances for each rightholder assignment key and attaches them to the corresponding records.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, List<ConnectionQueryExtendedRecord> rightholderAssignments, ConnectionQueryFilter filter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> LoadInstancesByKeyAsync(List<ConnectionQueryExtendedRecord> allKeys, HashSet<Guid> rightholderAssignmentIds, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var instanceSet = filter.InstanceIds?.Count > 0 ? new HashSet<string>(filter.InstanceIds) : null;
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
-
-        // Assignment → AssignmentInstance
-        var rightholderAssignmentIds = rightholderAssignments.Where(a => a.Reason != ConnectionReason.Hierarchy && !a.IsMainUnitAccess).Select(a => (Guid)a.AssignmentId).Distinct().ToHashSet();
-        if (rightholderAssignmentIds.Count == 0)
-        {
-            return allKeys;
-        }
 
         var assignmentInstances = await db.AssignmentInstances
             .Where(ai => rightholderAssignmentIds.Contains(ai.AssignmentId))
