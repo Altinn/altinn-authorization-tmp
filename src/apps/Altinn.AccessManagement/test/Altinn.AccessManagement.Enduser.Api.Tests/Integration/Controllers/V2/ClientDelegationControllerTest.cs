@@ -1610,6 +1610,13 @@ public class ClientDelegationControllerTest
                     RoleId = RoleConstants.Agent,
                 };
 
+                var agentFromVerdiqToOrjan = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonOrjan,
+                    RoleId = RoleConstants.Agent,
+                };
+
                 // The client Nordis delegated the bakery service to the facilitator Verdiq as a single resource.
                 var assignmentResourceAccountant = new AssignmentResource()
                 {
@@ -1621,7 +1628,16 @@ public class ClientDelegationControllerTest
 
                 db.Assignments.Add(accountantFromNordisToVerdiq);
                 db.Assignments.Add(agentFromVerdiqToPaula);
+                db.Assignments.Add(agentFromVerdiqToOrjan);
                 db.AssignmentResources.Add(assignmentResourceAccountant);
+
+                // Verdiq also holds an accountant package from Nordis. Resources available through the
+                // package have no AssignmentResource and are not delegable as single resources.
+                db.AssignmentPackages.Add(new()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.AccountantWithSigningRights,
+                });
 
                 db.SaveChanges();
             });
@@ -1726,11 +1742,12 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task DelegateResource_WithResourceNotReceivedAsSingleResource_Returns400WithUserNotAuthorized()
+        public async Task DelegateResource_WithResourceHeldThroughAccessPackageOnly_Returns400WithUserNotAuthorized()
         {
             var client = CreateClient();
 
-            // Sirius is not delegated to Verdiq as a single resource, so it cannot be delegated onward.
+            // Verdiq holds an accountant package from Nordis, but Sirius is not delegated to Verdiq as a
+            // single resource. Package held access does not make a resource delegable onward.
             var response = await client.PostAsJsonAsync(
                 $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
                 new ContractsV2.ResourceDelegationBatchInputDto()
@@ -1764,6 +1781,52 @@ public class ClientDelegationControllerTest
                     .ToListAsync(TestContext.Current.CancellationToken);
 
                 Assert.Empty(delegationResources);
+            });
+        }
+
+        [Fact]
+        public async Task DelegateResource_WithDuplicateResourceInPayload_Returns200WithSingleDelegationResource()
+        {
+            var client = CreateClient();
+
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonOrjan}",
+                new ContractsV2.ResourceDelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Resources = [TestData.MattilsynetBakeryService.Id, TestData.MattilsynetBakeryService.Id]
+                        },
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Resources = [TestData.MattilsynetBakeryService.Id]
+                        }
+                    ]
+                },
+                TestContext.Current.CancellationToken
+            );
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var result = JsonSerializer.Deserialize<List<ContractsV2.ResourceDelegationDto>>(data);
+            Assert.Equal(3, result.Count);
+            Assert.Single(result, r => r.Changed);
+
+            // One delegation and one delegation resource row despite the repeated entries.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegations = await db.Delegations
+                    .Include(d => d.DelegationResources)
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonOrjan.Id)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                var delegation = Assert.Single(delegations);
+                var delegationResource = Assert.Single(delegation.DelegationResources);
+                Assert.Equal(TestData.MattilsynetBakeryService.Id, delegationResource.ResourceId);
             });
         }
 

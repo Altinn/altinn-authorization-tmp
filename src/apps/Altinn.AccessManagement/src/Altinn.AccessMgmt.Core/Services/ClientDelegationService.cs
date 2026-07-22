@@ -1453,6 +1453,13 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         }
 
         var result = new List<ContractsV2.ResourceDelegationDto>();
+
+        // The batch can repeat a role across values or a resource within a value. Rows added to the
+        // change tracker are invisible to the database lookups, so created delegations and delegation
+        // resources are tracked locally to keep repeated entries idempotent instead of colliding with
+        // the unique indexes at save time.
+        var createdDelegations = new Dictionary<Guid, Delegation>();
+        var addedDelegationResources = new HashSet<(Guid DelegationId, Guid ResourceId)>();
         foreach (var input in inputs)
         {
             var resourceIds = input.Resources.Select(r => r.ResourceId).Distinct().ToList();
@@ -1471,7 +1478,9 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
 
             var assignmentResources = await db.AssignmentResources.AsNoTracking().Where(ar => ar.AssignmentId == clientAssignment.Id && resourceIds.Contains(ar.ResourceId)).ToListAsync(cancellationToken);
 
-            var delegation = await db.Delegations.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == partyId, cancellationToken);
+            var delegation = createdDelegations.TryGetValue(clientAssignment.Id, out var createdDelegation)
+                ? createdDelegation
+                : await db.Delegations.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == partyId, cancellationToken);
             if (delegation is null)
             {
                 delegation = new Delegation()
@@ -1482,6 +1491,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 };
 
                 db.Delegations.Add(delegation);
+                createdDelegations[clientAssignment.Id] = delegation;
                 await ClientAddedNotification.Upsert(
                     db,
                     partyId,
@@ -1510,7 +1520,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     continue;
                 }
 
-                var delegationResourceExist = await existingDelegationResources.AnyAsync(
+                var delegationResourceExist = addedDelegationResources.Contains((delegation.Id, resource.ResourceId)) || await existingDelegationResources.AnyAsync(
                     t =>
                     t.DelegationId == delegation.Id &&
                     t.ResourceId == resource.ResourceId &&
@@ -1525,6 +1535,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                         DelegationId = delegation.Id,
                         AssignmentResourceId = assignmentResource.Id,
                     });
+                    addedDelegationResources.Add((delegation.Id, resource.ResourceId));
                 }
 
                 result.Add(new()
