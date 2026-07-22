@@ -32,7 +32,7 @@ public class ConnectionQuery(AppDbContext db)
         RoleConstants.AssistantAuditor.Id,
         RoleConstants.AuditorInCharge.Id
     ];
-     
+    
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
     {
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, ct);
