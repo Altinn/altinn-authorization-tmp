@@ -1502,7 +1502,14 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 );
             }
 
-            var existingDelegationResources = db.DelegationResources.Where(t => t.DelegationId == delegation.Id);
+            // A delegation created in this batch has no persisted rows yet, so the lookup only runs
+            // for pre existing delegations, once per input value.
+            List<DelegationResource> existingDelegationResources = createdDelegations.ContainsKey(clientAssignment.Id)
+                ? []
+                : await db.DelegationResources
+                    .AsNoTracking()
+                    .Where(t => t.DelegationId == delegation.Id && resourceIds.Contains(t.ResourceId))
+                    .ToListAsync(cancellationToken);
             foreach (var resource in input.Resources)
             {
                 // Only resources the facilitator received as a single resource assignment from the client
@@ -1520,12 +1527,8 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     continue;
                 }
 
-                var delegationResourceExist = addedDelegationResources.Contains((delegation.Id, resource.ResourceId)) || await existingDelegationResources.AnyAsync(
-                    t =>
-                    t.DelegationId == delegation.Id &&
-                    t.ResourceId == resource.ResourceId &&
-                    t.AssignmentResourceId == assignmentResource.Id,
-                    cancellationToken);
+                var delegationResourceExist = addedDelegationResources.Contains((delegation.Id, resource.ResourceId))
+                    || existingDelegationResources.Any(t => t.ResourceId == resource.ResourceId && t.AssignmentResourceId == assignmentResource.Id);
 
                 if (!delegationResourceExist)
                 {
