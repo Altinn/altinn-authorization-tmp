@@ -578,12 +578,47 @@ public class ClientDelegationControllerTest
             Fixture = fixture;
             Fixture.EnsureSeedOnce<GetAgents>(db =>
             {
-                db.Assignments.Add(new Assignment()
+                var agentFromNordisToPaula = new Assignment()
                 {
                     FromId = TestEntities.OrganizationNordisAS.Id,
                     ToId = TestEntities.PersonPaula,
                     RoleId = RoleConstants.Agent,
-                });
+                };
+
+                var accountantFromVerdiqToNordis = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.OrganizationNordisAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromVerdiqToNordis.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                var delegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromVerdiqToNordis.Id,
+                    ToId = agentFromNordisToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationNordisAS.Id,
+                };
+
+                var delegationResourceToPaula = new DelegationResource()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
+                db.Assignments.Add(agentFromNordisToPaula);
+                db.Assignments.Add(accountantFromVerdiqToNordis);
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+                db.Delegations.Add(delegationToPaula);
+                db.DelegationResources.Add(delegationResourceToPaula);
 
                 db.SaveChanges();
             });
@@ -620,6 +655,27 @@ public class ClientDelegationControllerTest
             Assert.NotNull(access);
             Assert.Empty(access.Packages);
             Assert.Empty(access.Resources);
+        }
+
+        [Fact]
+        public async Task ListAgent_ForAgentWithDelegatedResource_Returns200WithResourcesPerRole()
+        {
+            var client = CreateClient();
+            var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.AgentDto>>(data);
+
+            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
+            Assert.NotNull(connection);
+
+            var accountantAccess = connection.Access.FirstOrDefault(r => r.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(accountantAccess);
+            Assert.Empty(accountantAccess.Packages);
+
+            var resource = Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
         }
     }
     #endregion
@@ -1175,6 +1231,760 @@ public class ClientDelegationControllerTest
             var delegationToAgentResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientPackagesDto>>(delegationsToAgentPayload);
 
             Assert.Empty(delegationToAgentResult.Items);
+        }
+    }
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.DeleteAgentAccessPackage(Guid, Guid, Guid, DelegationBatchInputDto, CancellationToken)"/>
+    /// Batch removal spanning multiple roles, where each role empties its own delegation.
+    /// </summary>
+    [IntegrationTest]
+    public class DeleteAgentAccessPackagesAcrossRoles : IClassFixture<ApiFixture>
+    {
+        public DeleteAgentAccessPackagesAcrossRoles(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<DeleteAgentAccessPackagesAcrossRoles>(db =>
+            {
+                var rightholderFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentPackageCustoms = new AssignmentPackage()
+                {
+                    AssignmentId = rightholderFromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Customs.Id,
+                };
+
+                // Each role has its own delegation to Paula carrying a single package.
+                var rightholderDelegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = rightholderFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var accountantDelegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var rolePackage = db.RolePackages.FirstOrDefault(r => r.RoleId == RoleConstants.Accountant && r.PackageId == PackageConstants.AccountantWithSigningRights);
+                var rightholderDelegationPackage = new DelegationPackage()
+                {
+                    DelegationId = rightholderDelegationToPaula.Id,
+                    AssignmentPackageId = assignmentPackageCustoms.Id,
+                    PackageId = PackageConstants.Customs.Id,
+                };
+
+                var accountantDelegationPackage = new DelegationPackage()
+                {
+                    DelegationId = accountantDelegationToPaula.Id,
+                    RolePackageId = rolePackage.Id,
+                    PackageId = PackageConstants.AccountantWithSigningRights.Id,
+                };
+
+                db.Assignments.Add(rightholderFromNordisToVerdiq);
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.AssignmentPackages.Add(assignmentPackageCustoms);
+                db.Delegations.Add(rightholderDelegationToPaula);
+                db.Delegations.Add(accountantDelegationToPaula);
+                db.DelegationPackages.Add(rightholderDelegationPackage);
+                db.DelegationPackages.Add(accountantDelegationPackage);
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE}"));
+            });
+
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task DeleteAccessPackages_WithBatchEmptyingTwoDelegationsAcrossRoles_Returns200WithBothDelegationsRemoved()
+        {
+            var client = CreateClient();
+
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}")
+            {
+                Content = JsonContent.Create(new DelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Rightholder.Entity.Code,
+                            Packages = [PackageConstants.Customs.Entity.Urn],
+                        },
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Packages = [PackageConstants.AccountantWithSigningRights.Entity.Urn],
+                        }
+                    ]
+                })
+            };
+
+            var deleteResponse = await client.SendAsync(request, TestContext.Current.CancellationToken);
+            var deleteResponsePayload = await deleteResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+            var deleteResult = JsonSerializer.Deserialize<List<DelegationDto>>(deleteResponsePayload);
+            Assert.Equal(2, deleteResult.Count);
+            Assert.True(deleteResult.All(d => d.Changed));
+
+            // Both delegations were emptied by their own role in the batch, so both must be removed.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegations = await db.Delegations
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonPaula.Id)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                Assert.Empty(delegations);
+            });
+        }
+    }
+    #endregion
+
+    #region GET accessmanagement/api/v2/enduser/clientdelegations/agents/resources
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.GetDelegatedResourcesToAgentsViaParty(Guid, Guid, CancellationToken)"/>
+    /// </summary>
+    [IntegrationTest]
+    public class GetDelegatedResourcesToAgents : IClassFixture<ApiFixture>
+    {
+        public GetDelegatedResourcesToAgents(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<GetDelegatedResourcesToAgents>(db =>
+            {
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                var delegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationResourceToPaula = new DelegationResource()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+                db.Delegations.Add(delegationToPaula);
+                db.DelegationResources.Add(delegationResourceToPaula);
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task ListDelegatedResourcesToAgent_ForAgentWithDelegatedResource_Returns200WithResourcesGroupedByClient()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS.Id}&agent={TestEntities.PersonPaula.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientResourcesDto>>(data);
+
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+
+            var access = Assert.Single(nordisClient.Access);
+            Assert.Equal(RoleConstants.Accountant.Id, access.Role.Id);
+
+            var resource = Assert.Single(access.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
+        }
+
+        [Fact]
+        public async Task ListDelegatedResourcesToAgent_ForAgentWithoutDelegatedResources_Returns200WithEmptyResult()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS.Id}&agent={TestEntities.PersonOrjan.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientResourcesDto>>(data);
+
+            Assert.Empty(result.Items);
+        }
+    }
+    #endregion
+
+    #region GET accessmanagement/api/v2/enduser/clientdelegations/clients/resources
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.GetDelegatedResourcesFromClientsViaParty(Guid, Guid, CancellationToken)"/>
+    /// </summary>
+    [IntegrationTest]
+    public class GetDelegatedResourcesFromClients : IClassFixture<ApiFixture>
+    {
+        public GetDelegatedResourcesFromClients(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<GetDelegatedResourcesFromClients>(db =>
+            {
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                var delegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationResourceToPaula = new DelegationResource()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+                db.Delegations.Add(delegationToPaula);
+                db.DelegationResources.Add(delegationResourceToPaula);
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ));
+            });
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task ListDelegatedResourcesFromClient_ForClientWithDelegatedResource_Returns200WithResourcesGroupedByAgent()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients/resources?party={TestEntities.OrganizationVerdiqAS.Id}&client={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.AgentResourcesDto>>(data);
+
+            var paulaAgent = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.PersonPaula.Id, paulaAgent.Agent.Id);
+            Assert.NotEqual(default, paulaAgent.AgentAddedAt);
+
+            var access = Assert.Single(paulaAgent.Access);
+            Assert.Equal(RoleConstants.Accountant.Id, access.Role.Id);
+
+            var resource = Assert.Single(access.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
+        }
+    }
+    #endregion
+
+    #region POST accessmanagement/api/v2/enduser/clientdelegations/agents/resources
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.DelegateResourceToAgent(Guid, Guid, Guid, ContractsV2.ResourceDelegationBatchInputDto, CancellationToken)"/>
+    /// </summary>
+    [IntegrationTest]
+    public class DelegateResourceToAgent : IClassFixture<ApiFixture>
+    {
+        public DelegateResourceToAgent(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<DelegateResourceToAgent>(db =>
+            {
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                // The client Nordis delegated the bakery service to the facilitator Verdiq as a single resource.
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE}"));
+            });
+
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task DelegateResource_WithSingleResourceAssignment_Returns200WithLinkedAssignmentResource()
+        {
+            var client = CreateClient();
+
+            var delegationResult = await Delegate(client);
+
+            var delegated = Assert.Single(delegationResult);
+            Assert.True(delegated.Changed);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, delegated.ResourceId);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, delegated.FromId);
+            Assert.Equal(TestEntities.PersonPaula.Id, delegated.ToId);
+            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, delegated.ViaId);
+
+            // Second delegation is a no-op.
+            delegationResult = await Delegate(client);
+            delegated = Assert.Single(delegationResult);
+            Assert.False(delegated.Changed);
+
+            // The delegated resource points at the originating assignment resource.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Include(d => d.DelegationResources)
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id
+                        && d.To.ToId == TestEntities.PersonPaula.Id
+                        && d.From.FromId == TestEntities.OrganizationNordisAS.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(delegation);
+                var delegationResource = Assert.Single(delegation.DelegationResources);
+                Assert.Equal(TestData.MattilsynetBakeryService.Id, delegationResource.ResourceId);
+
+                var assignmentResource = await db.AssignmentResources
+                    .FirstOrDefaultAsync(ar => ar.Id == delegationResource.AssignmentResourceId, TestContext.Current.CancellationToken);
+                Assert.NotNull(assignmentResource);
+                Assert.Equal(TestData.MattilsynetBakeryService.Id, assignmentResource.ResourceId);
+            });
+
+            // Read back from the client side.
+            var getFromClient = await client.GetAsync($"{Route}/clients/resources?party={TestEntities.OrganizationVerdiqAS.Id}&client={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            var fromClientPayload = await getFromClient.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var fromClientResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.AgentResourcesDto>>(fromClientPayload);
+
+            var paulaAccess = fromClientResult.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
+            Assert.NotNull(paulaAccess);
+            var paulaResource = paulaAccess.Access.SelectMany(a => a.Resources).FirstOrDefault(r => r.Id == TestData.MattilsynetBakeryService.Id);
+            Assert.NotNull(paulaResource);
+
+            // Read back from the agent side.
+            var getToAgent = await client.GetAsync($"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS.Id}&agent={TestEntities.PersonPaula.Id}", TestContext.Current.CancellationToken);
+            var toAgentPayload = await getToAgent.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var toAgentResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientResourcesDto>>(toAgentPayload);
+
+            var nordisAccess = toAgentResult.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS);
+            Assert.NotNull(nordisAccess);
+            var nordisResource = nordisAccess.Access.SelectMany(a => a.Resources).FirstOrDefault(r => r.Id == TestData.MattilsynetBakeryService.Id);
+            Assert.NotNull(nordisResource);
+
+            static async Task<List<ContractsV2.ResourceDelegationDto>> Delegate(HttpClient client)
+            {
+                var response = await client.PostAsJsonAsync(
+                    $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
+                    new ContractsV2.ResourceDelegationBatchInputDto()
+                    {
+                        Values = [
+                            new()
+                            {
+                                Role = RoleConstants.Accountant.Entity.Code,
+                                Resources = [TestData.MattilsynetBakeryService.Id]
+                            }
+                        ]
+                    },
+                    TestContext.Current.CancellationToken
+                );
+
+                var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                return JsonSerializer.Deserialize<List<ContractsV2.ResourceDelegationDto>>(data);
+            }
+        }
+
+        [Fact]
+        public async Task DelegateResource_WithResourceNotReceivedAsSingleResource_Returns400WithUserNotAuthorized()
+        {
+            var client = CreateClient();
+
+            // Sirius is not delegated to Verdiq as a single resource, so it cannot be delegated onward.
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
+                new ContractsV2.ResourceDelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Resources = [TestData.SiriusSkattemelding.Id]
+                        }
+                    ]
+                },
+                TestContext.Current.CancellationToken
+            );
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data, SerializerOptions);
+            Assert.Single(problem.Errors);
+            Assert.All(problem.Errors, error =>
+            {
+                Assert.Equal(ValidationErrors.UserNotAuthorized.ErrorCode, error.ErrorCode);
+            });
+
+            // Nothing was persisted.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegationResources = await db.DelegationResources
+                    .Where(r => r.ResourceId == TestData.SiriusSkattemelding.Id)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                Assert.Empty(delegationResources);
+            });
+        }
+
+        [Fact]
+        public async Task DelegateResource_WithNonExistentResource_Returns400WithResourceNotExists()
+        {
+            var client = CreateClient();
+
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}",
+                new ContractsV2.ResourceDelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Resources = [Guid.CreateVersion7()]
+                        }
+                    ]
+                },
+                TestContext.Current.CancellationToken
+            );
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var problem = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(data, SerializerOptions);
+            Assert.Single(problem.Errors);
+            Assert.All(problem.Errors, error =>
+            {
+                Assert.Equal(ValidationErrors.ResourceNotExists.ErrorCode, error.ErrorCode);
+            });
+        }
+    }
+
+    #endregion
+
+    #region DELETE accessmanagement/api/v2/enduser/clientdelegations/agents/resources
+
+    /// <summary>
+    /// <see cref="ClientDelegationController.DeleteAgentResource(Guid, Guid, Guid, ContractsV2.ResourceDelegationBatchInputDto, CancellationToken)"/>
+    /// </summary>
+    [IntegrationTest]
+    public class DeleteAgentResource : IClassFixture<ApiFixture>
+    {
+        public DeleteAgentResource(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<DeleteAgentResource>(db =>
+            {
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromVerdiqToPaula = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var agentFromVerdiqToOrjan = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonOrjan,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentResourceAccountant = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                // Paula has only the resource delegated, so removing it must delete the delegation.
+                var delegationToPaula = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToPaula.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationResourceToPaula = new DelegationResource()
+                {
+                    DelegationId = delegationToPaula.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
+                // Orjan has both a package and the resource, so removing the resource keeps the delegation.
+                var rolePackage = db.RolePackages.FirstOrDefault(r => r.RoleId == RoleConstants.Accountant && r.PackageId == PackageConstants.AccountantWithSigningRights);
+                var delegationToOrjan = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromNordisToVerdiq.Id,
+                    ToId = agentFromVerdiqToOrjan.Id,
+                    FacilitatorId = TestEntities.OrganizationVerdiqAS.Id,
+                };
+
+                var delegationPackageToOrjan = new DelegationPackage()
+                {
+                    DelegationId = delegationToOrjan.Id,
+                    RolePackageId = rolePackage.Id,
+                    PackageId = PackageConstants.AccountantWithSigningRights,
+                };
+
+                var delegationResourceToOrjan = new DelegationResource()
+                {
+                    DelegationId = delegationToOrjan.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    AssignmentResourceId = assignmentResourceAccountant.Id,
+                };
+
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(agentFromVerdiqToPaula);
+                db.Assignments.Add(agentFromVerdiqToOrjan);
+                db.AssignmentResources.Add(assignmentResourceAccountant);
+                db.Delegations.Add(delegationToPaula);
+                db.Delegations.Add(delegationToOrjan);
+                db.DelegationResources.Add(delegationResourceToPaula);
+                db.DelegationPackages.Add(delegationPackageToOrjan);
+                db.DelegationResources.Add(delegationResourceToOrjan);
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE}"));
+            });
+
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task DeleteResource_WhenLastAccessOnDelegation_Returns200WithRemovedDelegation()
+        {
+            var client = CreateClient();
+
+            var deleteResult = await DeleteResource(client, TestEntities.PersonPaula.Id);
+
+            var deleted = Assert.Single(deleteResult);
+            Assert.True(deleted.Changed);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, deleted.ResourceId);
+
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonPaula.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+                Assert.Null(delegation);
+
+                var delegationResource = await db.DelegationResources
+                    .Where(r => r.ResourceId == TestData.MattilsynetBakeryService.Id && r.Delegation.To.ToId == TestEntities.PersonPaula.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+                Assert.Null(delegationResource);
+            });
+
+            // Second removal is a no-op.
+            deleteResult = await DeleteResource(client, TestEntities.PersonPaula.Id);
+            deleted = Assert.Single(deleteResult);
+            Assert.False(deleted.Changed);
+        }
+
+        [Fact]
+        public async Task DeleteResource_WithRemainingPackage_Returns200WithKeptDelegation()
+        {
+            var client = CreateClient();
+
+            var deleteResult = await DeleteResource(client, TestEntities.PersonOrjan.Id);
+
+            var deleted = Assert.Single(deleteResult);
+            Assert.True(deleted.Changed);
+
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegation = await db.Delegations
+                    .Include(d => d.DelegationPackages)
+                    .Include(d => d.DelegationResources)
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonOrjan.Id)
+                    .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+
+                Assert.NotNull(delegation);
+                Assert.Empty(delegation.DelegationResources);
+                Assert.NotEmpty(delegation.DelegationPackages);
+            });
+        }
+
+        private static async Task<List<ContractsV2.ResourceDelegationDto>> DeleteResource(HttpClient client, Guid agent)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"{Route}/agents/resources?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={agent}")
+            {
+                Content = JsonContent.Create(new ContractsV2.ResourceDelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Resources = [TestData.MattilsynetBakeryService.Id],
+                        }
+                    ]
+                })
+            };
+
+            var deleteResponse = await client.SendAsync(request, TestContext.Current.CancellationToken);
+            var deleteResponsePayload = await deleteResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+            return JsonSerializer.Deserialize<List<ContractsV2.ResourceDelegationDto>>(deleteResponsePayload);
         }
     }
     #endregion
