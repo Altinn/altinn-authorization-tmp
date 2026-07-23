@@ -1825,7 +1825,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 errorBuilder.Add(
                     ValidationErrors.InvalidRole,
                     $"/values[{input.RoleIdx}]/role",
-                    [new($"{input.InputRole}", "role do not exist.")]
+                    [new($"{input.InputRole}", "Role does not exist.")]
                 );
             }
         }
