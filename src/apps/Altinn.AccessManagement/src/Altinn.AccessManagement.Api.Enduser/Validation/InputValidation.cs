@@ -66,7 +66,7 @@ public class InputValidation(
         errorBuilder.Add(
             ValidationErrors.Required,
             [$"QUERY/{options.ToParameterName}", $"/{nameof(personInput.PersonIdentifier)}", $"/{nameof(personInput.LastName)}"],
-            [new("params", $"Invalid combination of params. Either 'QUERY/{options.ToParameterName}'  must be set or '/{nameof(personInput.PersonIdentifier)}' and '/{nameof(personInput.LastName)}'.")]
+            [new("params", $"Invalid combination of params. Either 'QUERY/{options.ToParameterName}' must be set or '/{nameof(personInput.PersonIdentifier)}' and '/{nameof(personInput.LastName)}'.")]
         );
         errorBuilder.TryBuild(out var problemInstance);
         return problemInstance;
