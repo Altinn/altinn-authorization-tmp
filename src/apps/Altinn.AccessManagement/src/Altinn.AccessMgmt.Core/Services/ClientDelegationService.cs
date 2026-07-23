@@ -1503,7 +1503,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             }
 
             // A delegation created in this batch has no persisted rows yet, so the lookup only runs
-            // for pre existing delegations, once per input value.
+            // for pre-existing delegations, once per input value.
             List<DelegationResource> existingDelegationResources = createdDelegations.ContainsKey(clientAssignment.Id)
                 ? []
                 : await db.DelegationResources
