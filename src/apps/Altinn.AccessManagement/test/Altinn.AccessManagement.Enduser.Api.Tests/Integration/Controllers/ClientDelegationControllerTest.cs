@@ -779,7 +779,8 @@ public class ClientDelegationControllerTest
             Assert.All(problem.Errors, error =>
             {
                 Assert.Equal(ValidationErrors.EntityNotExists.ErrorCode, error.ErrorCode);
-                Assert.Contains("$QUERY/to", error.Paths);
+                Assert.Contains("QUERY/to", error.Paths);
+                Assert.DoesNotContain("QUERY/agent", error.Paths);
             });
         }
 
