@@ -52,21 +52,5 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns>all delegations for a given Resource/Instance combination</returns>
         Task<List<AppsInstanceDelegationResponse>> GetInstanceDelegations(AppsInstanceGetRequest request, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Finds all active received delegations (not including maskinporten schema) from db, both directly delegated to the party or through key roles if the party is a person
-        /// </summary>
-        /// <param name="partyId">Party id of a user or organization</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-        /// <returns></returns>
-        Task<IEnumerable<DelegationChange>> GetReceivedDelegationFromRepository(int partyId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Finds all active offered delegations (not including maskinporten schema) from db, both directly delegated from the party or from it's main unit if the party is a subunit
-        /// </summary>
-        /// <param name="partyId">Party id of a user or organization</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-        /// <returns></returns>
-        Task<IEnumerable<DelegationChange>> GetOfferedDelegationsFromRepository(int partyId, CancellationToken cancellationToken = default);
     }
 }

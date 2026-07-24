@@ -209,52 +209,6 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<DelegationChange>> GetReceivedDelegationFromRepository(int partyId, CancellationToken cancellationToken = default)
-        {
-            var party = await _contextRetrievalService.GetPartyAsync(partyId, cancellationToken);
-
-            if (party?.PartyTypeName == PartyType.Person)
-            {
-                var user = await _profile.GetUser(new() { Ssn = party.SSN }, cancellationToken);
-
-                var keyRoles = await _contextRetrievalService.GetKeyRolePartyIds(user.UserId, cancellationToken);
-                return await _delegationRepository.GetAllDelegationChangesForAuthorizedParties(user.UserId.SingleToList(), keyRoles, cancellationToken);
-            }
-
-            if (party?.PartyTypeName == PartyType.Organisation)
-            {
-                return await _delegationRepository.GetAllDelegationChangesForAuthorizedParties(null, party.PartyId.SingleToList(), cancellationToken);
-            }
-
-            throw new ArgumentException($"failed to handle party with id '{partyId}'");
-        }
-
-        /// <inheritdoc/>
-        public async Task<IEnumerable<DelegationChange>> GetOfferedDelegationsFromRepository(int partyId, CancellationToken cancellationToken = default)
-        {
-            var party = await _contextRetrievalService.GetPartyAsync(partyId, cancellationToken);
-
-            if (party.PartyTypeName == PartyType.Person)
-            {
-                return await _delegationRepository.GetOfferedDelegations(partyId.SingleToList(), cancellationToken);
-            }
-
-            if (party.PartyTypeName == PartyType.Organisation)
-            {
-                var mainUnits = await _contextRetrievalService.GetMainUnits(party.PartyId.SingleToList(), cancellationToken);
-                var parties = party.PartyId.SingleToList();
-                if (mainUnits?.FirstOrDefault() is var mainUnit && mainUnit?.PartyId != null)
-                {
-                    parties.Add((int)mainUnit.PartyId);
-                }
-
-                return await _delegationRepository.GetOfferedDelegations(parties, cancellationToken);
-            }
-
-            throw new ArgumentException($"failed to handle party with id '{partyId}'");
-        }
-
-        /// <inheritdoc/>
         public async Task<DelegationChangeList> GetAllDelegations(DelegationChangeInput request, bool includeInstanceDelegations = false, CancellationToken cancellationToken = default)
         {
             DelegationChangeList result = new DelegationChangeList();

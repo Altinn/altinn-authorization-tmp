@@ -32,7 +32,7 @@ public class AccessMgmtApiFixture : ApiFixture
             services.AddSingleton<IPartiesClient, PartiesClientMock>();
             services.AddSingleton<IProfileClient, TestUtilsMocks.ProfileClientMock>();
             services.AddSingleton<IAltinnRolesClient, TestUtilsMocks.AltinnRolesClientMock>();
-            services.AddSingleton<IAltinn2RightsClient, Altinn2RightsClientDataMock>();
+            services.AddSingleton<IAltinn2RightsClient, TestUtilsMocks.Altinn2RightsClientMock>();
         });
     }
 }

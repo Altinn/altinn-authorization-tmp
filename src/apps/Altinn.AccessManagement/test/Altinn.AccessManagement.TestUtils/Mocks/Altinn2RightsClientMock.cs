@@ -16,15 +16,4 @@ public class Altinn2RightsClientMock : IAltinn2RightsClient
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
     }
 
-    /// <inheritdoc/>
-    public Task<DelegationCheckResponse> PostDelegationCheck(int authenticatedUserId, int reporteePartyId, string serviceCode, string serviceEditionCode)
-    {
-        return Task.FromResult(new DelegationCheckResponse());
-    }
-
-    /// <inheritdoc/>
-    public Task<DelegationActionResult> PostDelegation(int authenticatedUserId, int reporteePartyId, SblRightDelegationRequest delegationRequest)
-    {
-        return Task.FromResult(new DelegationActionResult());
-    }
 }
