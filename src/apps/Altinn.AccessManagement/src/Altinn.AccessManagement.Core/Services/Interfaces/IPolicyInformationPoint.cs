@@ -19,16 +19,6 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<List<Rule>> GetRulesAsync(List<string> resourceIds, List<int> offeredByPartyIds, List<int> coveredByPartyIds, List<int> coveredByUserIds, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets the all rights a user have for a given reportee and resource
-        /// </summary>
-        /// <param name="rightsQuery">The query model</param>
-        /// <param name="returnAllPolicyRights">Whether the response should return all possible rights for the resource, not just the rights the user have access to</param>
-        /// <param name="getDelegableRights">Whether the query is only rights the user is allowed to delegate to others</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-        /// <returns>A list of rights</returns>
-        Task<List<Right>> GetRights(RightsQuery rightsQuery, bool returnAllPolicyRights = false, bool getDelegableRights = false, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Gets the all rights an app have right to delegate
         /// </summary>
         /// <param name="rightsQuery">The query model</param>
