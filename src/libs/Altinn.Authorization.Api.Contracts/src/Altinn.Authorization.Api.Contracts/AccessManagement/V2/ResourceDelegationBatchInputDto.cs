@@ -25,9 +25,9 @@ public class ResourceDelegationBatchInputDto
         public string Role { get; set; }
 
         /// <summary>
-        /// Identifiers of the resources to delegate or remove.
+        /// Resource registry identifiers of the resources to delegate or remove.
         /// </summary>
         [JsonPropertyName("resources")]
-        public List<Guid> Resources { get; set; } = [];
+        public List<string> Resources { get; set; } = [];
     }
 }

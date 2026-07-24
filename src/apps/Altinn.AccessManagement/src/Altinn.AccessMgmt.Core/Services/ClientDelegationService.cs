@@ -240,7 +240,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                         var access = clientGroup
                             .Where(x => x.Role is not null)
                             .GroupBy(x => x.Role.Id)
-                            .Select(roleGroup => new ContractsV2.ClientDto.RoleAccess
+                            .Select(roleGroup => new ContractsV2.RoleAccess
                             {
                                 Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role),
                                 Packages = roleGroup
@@ -427,10 +427,11 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(Guid partyUuid, List<string>? roles, List<string>? packages, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(Guid partyUuid, List<string>? roles, List<string>? packages, List<string>? resources, CancellationToken cancellationToken = default)
     {
         roles ??= [];
         packages ??= [];
+        resources ??= [];
         var roleFilter = new List<Guid>();
         var packageFilter = new List<Guid>();
 
@@ -450,6 +451,15 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             }
         }
 
+        // Filter values are resource registry ids matched exactly against Resource.RefId.
+        List<Guid> resourceFilter = resources.Count > 0
+            ? await db.Resources
+                .AsNoTracking()
+                .Where(r => resources.Contains(r.RefId))
+                .Select(r => r.Id)
+                .ToListAsync(cancellationToken)
+            : [];
+
         if (roleFilter.Count == 0 && roles.Count > 0)
         {
             return new List<ContractsV2.ClientDto>();
@@ -460,10 +470,16 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             return new List<ContractsV2.ClientDto>();
         }
 
+        if (resourceFilter.Count == 0 && resources.Count > 0)
+        {
+            return new List<ContractsV2.ClientDto>();
+        }
+
         var clientAssignments = db.Assignments
             .AsNoTracking()
             .Where(a => a.ToId == partyUuid && !ExcludeClientRoles.Contains(a.RoleId))
-            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId));
+            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId))
+            .WhereIf(resourceFilter.Count > 0, a => db.AssignmentResources.Any(ar => ar.AssignmentId == a.Id && resourceFilter.Contains(ar.ResourceId)));
 
         var packageRows = await clientAssignments
             .GroupJoin(
@@ -520,7 +536,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ContractsV2.ClientDto()
             {
                 Client = DtoMapper.Convert(access.First().From),
-                Access = access.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.ClientDto.RoleAccess
+                Access = access.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.RoleAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
@@ -595,7 +611,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 .. resourceRows
                     .Where(r => r.AgentId == a.ToId)
                     .GroupBy(r => r.Role.Id)
-                    .Select(roleGroup => new ContractsV2.AgentDto.RoleAccess
+                    .Select(roleGroup => new ContractsV2.RoleAccess
                     {
                         Role = DtoMapper.ConvertCompactRole(roleGroup.First().Role),
                         Packages = [],
@@ -876,7 +892,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             {
                 Agent = DtoMapper.Convert(e.First().To),
                 AgentAddedAt = e.First().AgentAddedAt,
-                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.AgentPackagesDto.RoleAccess
+                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.PackageAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
@@ -904,7 +920,6 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 x.Delegation.To.To,
                 x.Delegation.From.Role,
                 x.DelegationResource.Resource,
-                AgentAddedAt = x.Delegation.To.Audit_ValidFrom,
             })
             .GroupBy(x => x.To.Id)
             .ToListAsync(cancellationToken);
@@ -914,8 +929,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ContractsV2.AgentResourcesDto()
             {
                 Agent = DtoMapper.Convert(e.First().To),
-                AgentAddedAt = e.First().AgentAddedAt,
-                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.AgentResourcesDto.RoleAccess
+                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.ResourceAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Resources = r.Select(r => DtoMapper.ConvertCompactResource(r.Resource)).DistinctBy(p => p.Id).ToList(),
@@ -989,7 +1003,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ContractsV2.ClientPackagesDto()
             {
                 Client = DtoMapper.Convert(e.First().From),
-                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.ClientPackagesDto.RoleAccess
+                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.PackageAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = r.Select(r => DtoMapper.ConvertCompactPackage(r.Package)).DistinctBy(p => p.Id).ToList(),
@@ -1026,7 +1040,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             new ContractsV2.ClientResourcesDto()
             {
                 Client = DtoMapper.Convert(e.First().From),
-                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.ClientResourcesDto.RoleAccess
+                Access = e.GroupBy(r => r.Role.Id).Select(r => new ContractsV2.ResourceAccess
                 {
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Resources = r.Select(r => DtoMapper.ConvertCompactResource(r.Resource)).DistinctBy(p => p.Id).ToList(),
@@ -1321,13 +1335,26 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errorBuilder = default;
+
+        // Input resources are resource registry ids matched exactly against Resource.RefId and
+        // resolved to internal resource ids in a single lookup.
+        var requestedRefIds = payload.Values.SelectMany(v => v.Resources).Distinct().ToList();
+        Dictionary<string, Guid> resourceIdsByRefId = requestedRefIds.Count > 0
+            ? await db.Resources
+                .AsNoTracking()
+                .Where(r => requestedRefIds.Contains(r.RefId))
+                .Select(r => new { r.RefId, r.Id })
+                .ToDictionaryAsync(r => r.RefId, r => r.Id, cancellationToken)
+            : new Dictionary<string, Guid>();
+
         var inputs = payload.Values
             .Select((r, idx) =>
             {
                 RoleConstants.TryGetByAll(r.Role, out var role);
-                var resources = r.Resources.Select((resourceId, resourceIdx) => new
+                var resources = r.Resources.Select((refId, resourceIdx) => new
                 {
-                    ResourceId = resourceId,
+                    InputResource = refId,
+                    ResourceId = refId is { } && resourceIdsByRefId.TryGetValue(refId, out var resourceId) ? resourceId : Guid.Empty,
                     ResourceIdx = resourceIdx,
                 });
 
@@ -1350,23 +1377,15 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     [new($"{input.InputRole}", "Role does not exist.")]
                 );
             }
-        }
 
-        var requestedResourceIds = inputs.SelectMany(i => i.Resources).Select(r => r.ResourceId).Distinct().ToList();
-        HashSet<Guid> existingResourceIds = requestedResourceIds.Count > 0
-            ? (await db.Resources.AsNoTracking().Where(r => requestedResourceIds.Contains(r.Id)).Select(r => r.Id).ToListAsync(cancellationToken)).ToHashSet()
-            : [];
-
-        foreach (var input in inputs)
-        {
             foreach (var inputResource in input.Resources)
             {
-                if (!existingResourceIds.Contains(inputResource.ResourceId))
+                if (inputResource.ResourceId == Guid.Empty)
                 {
                     errorBuilder.Add(
                         ValidationErrors.ResourceNotExists,
                         $"/values[{input.RoleIdx}]/resources[{inputResource.ResourceIdx}]",
-                        [new($"{inputResource.ResourceId}", "Resource does not exist.")]
+                        [new($"{inputResource.InputResource}", "Resource does not exist.")]
                     );
                 }
             }
@@ -1805,16 +1824,36 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errorBuilder = default;
+
+        // Input resources are resource registry ids matched exactly against Resource.RefId and
+        // resolved to internal resource ids in a single lookup.
+        var requestedRefIds = payload.Values.SelectMany(v => v.Resources).Distinct().ToList();
+        Dictionary<string, Guid> resourceIdsByRefId = requestedRefIds.Count > 0
+            ? await db.Resources
+                .AsNoTracking()
+                .Where(r => requestedRefIds.Contains(r.RefId))
+                .Select(r => new { r.RefId, r.Id })
+                .ToDictionaryAsync(r => r.RefId, r => r.Id, cancellationToken)
+            : new Dictionary<string, Guid>();
+
         var inputs = payload.Values
             .Select((r, idx) =>
             {
                 RoleConstants.TryGetByAll(r.Role, out var role);
+                var inputResources = r.Resources.Select((refId, resourceIdx) => new
+                {
+                    InputResource = refId,
+                    ResourceId = refId is { } && resourceIdsByRefId.TryGetValue(refId, out var resourceId) ? resourceId : Guid.Empty,
+                    ResourceIdx = resourceIdx,
+                }).ToList();
+
                 return new
                 {
                     RoleIdx = idx,
                     InputRole = r.Role,
                     Role = role,
-                    Resources = r.Resources.Distinct().ToList(),
+                    InputResources = inputResources,
+                    Resources = inputResources.Select(x => x.ResourceId).Distinct().ToList(),
                 };
             }).ToList();
 
@@ -1827,6 +1866,18 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     $"/values[{input.RoleIdx}]/role",
                     [new($"{input.InputRole}", "role do not exist.")]
                 );
+            }
+
+            foreach (var inputResource in input.InputResources)
+            {
+                if (inputResource.ResourceId == Guid.Empty)
+                {
+                    errorBuilder.Add(
+                        ValidationErrors.ResourceNotExists,
+                        $"/values[{input.RoleIdx}]/resources[{inputResource.ResourceIdx}]",
+                        [new($"{inputResource.InputResource}", "Resource does not exist.")]
+                    );
+                }
             }
         }
 
@@ -2062,12 +2113,13 @@ public interface IClientDelegationService
     /// <summary>
     /// Gets clients that have assigned roles to the party,
     /// including delegable packages and delegated resources.
-    /// Optional role filter can be applied.
+    /// Optional role, package and resource filters can be applied.
     /// </summary>
     Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(
         Guid partyUuid,
         List<string>? roles,
         List<string>? packages,
+        List<string>? resources,
         CancellationToken cancellationToken = default);
 
     /// <summary>

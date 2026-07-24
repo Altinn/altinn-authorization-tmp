@@ -405,7 +405,7 @@ public class ClientDelegationControllerTest
     #region GET accessmanagement/api/v2/enduser/clientdelegations/clients
 
     /// <summary>
-    /// <see cref="ClientDelegationController.GetClients(Guid, List{string}?, List{string}?, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// <see cref="ClientDelegationController.GetClients(Guid, List{string}?, List{string}?, List{string}?, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
     /// </summary>
     [IntegrationTest]
     public class GetClients : IClassFixture<ApiFixture>
@@ -436,6 +436,14 @@ public class ClientDelegationControllerTest
                     RoleId = RoleConstants.Agent,
                 };
 
+                // A second client without assignment resources, used to assert the resources filter.
+                var rightholderFromOkernToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationOkernBorettslag.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
                 var assignmentResourceForAccountant = new AssignmentResource()
                 {
                     AssignmentId = accountantFromNordisToVerdiq.Id,
@@ -447,10 +455,25 @@ public class ClientDelegationControllerTest
                 db.Assignments.Add(rightholderfromNordisToVerdiq);
                 db.Assignments.Add(accountantFromNordisToVerdiq);
                 db.Assignments.Add(agentFromPaulaToNordis);
+                db.Assignments.Add(rightholderFromOkernToVerdiq);
 
                 db.AssignmentPackages.Add(new()
                 {
                     AssignmentId = rightholderfromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Customs,
+                });
+
+                // The accountant assignment holds both a package and a resource, so a filtered
+                // client lists full access for the matching assignment.
+                db.AssignmentPackages.Add(new()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Customs,
+                });
+
+                db.AssignmentPackages.Add(new()
+                {
+                    AssignmentId = rightholderFromOkernToVerdiq.Id,
                     PackageId = PackageConstants.Customs,
                 });
 
@@ -561,6 +584,85 @@ public class ClientDelegationControllerTest
 
             Assert.Single(accountantAccess.Resources);
             Assert.Equal(TestData.MattilsynetBakeryService.Id, accountantAccess.Resources.FirstOrDefault()?.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithResourcesFilter_Returns200WithOnlyClientHoldingAssignmentResource()
+        {
+            var client = CreateClient();
+
+            // Both clients are listed without the filter.
+            var unfilteredResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, unfilteredResponse.StatusCode);
+            var unfilteredData = await unfilteredResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var unfilteredResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(unfilteredData);
+
+            Assert.Contains(unfilteredResult.Items, p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.Contains(unfilteredResult.Items, p => p.Client.Id == TestEntities.OrganizationOkernBorettslag.Id);
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&resources={TestData.MattilsynetBakeryService.RefId}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+
+            // The matching accountant assignment lists its full access, packages included.
+            var accountantAccess = Assert.Single(nordisClient.Access);
+            Assert.Equal(RoleConstants.Accountant.Id, accountantAccess.Role.Id);
+
+            var resource = Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
+
+            Assert.Contains(accountantAccess.Packages, p => p.Id == PackageConstants.Customs.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithUnknownResourcesFilter_Returns200WithEmptyResult()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&resources=unknown-resource-ref", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            Assert.Empty(result.Items);
+        }
+
+        [Fact]
+        public async Task ListClient_WithResourcesAndRolesFilter_Returns200WithClientsMatchingBothFilters()
+        {
+            var client = CreateClient();
+
+            // The accountant assignment holds the resource, so the combined filter matches.
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=regnskapsforer&resources={TestData.MattilsynetBakeryService.RefId}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+
+            var accountantAccess = Assert.Single(nordisClient.Access);
+            Assert.Equal(RoleConstants.Accountant.Id, accountantAccess.Role.Id);
+
+            var resource = Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
+
+            // No rightholder assignment holds the resource, so the combined filter matches nothing.
+            response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=rettighetshaver&resources={TestData.MattilsynetBakeryService.RefId}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            Assert.Empty(result.Items);
         }
     }
     #endregion
@@ -1572,7 +1674,6 @@ public class ClientDelegationControllerTest
 
             var paulaAgent = Assert.Single(result.Items);
             Assert.Equal(TestEntities.PersonPaula.Id, paulaAgent.Agent.Id);
-            Assert.NotEqual(default, paulaAgent.AgentAddedAt);
 
             var access = Assert.Single(paulaAgent.Access);
             Assert.Equal(RoleConstants.Accountant.Id, access.Role.Id);
@@ -1727,7 +1828,7 @@ public class ClientDelegationControllerTest
                             new()
                             {
                                 Role = RoleConstants.Accountant.Entity.Code,
-                                Resources = [TestData.MattilsynetBakeryService.Id]
+                                Resources = [TestData.MattilsynetBakeryService.RefId]
                             }
                         ]
                     },
@@ -1756,7 +1857,7 @@ public class ClientDelegationControllerTest
                         new()
                         {
                             Role = RoleConstants.Accountant.Entity.Code,
-                            Resources = [TestData.SiriusSkattemelding.Id]
+                            Resources = [TestData.SiriusSkattemelding.RefId]
                         }
                     ]
                 },
@@ -1797,12 +1898,12 @@ public class ClientDelegationControllerTest
                         new()
                         {
                             Role = RoleConstants.Accountant.Entity.Code,
-                            Resources = [TestData.MattilsynetBakeryService.Id, TestData.MattilsynetBakeryService.Id]
+                            Resources = [TestData.MattilsynetBakeryService.RefId, TestData.MattilsynetBakeryService.RefId]
                         },
                         new()
                         {
                             Role = RoleConstants.Accountant.Entity.Code,
-                            Resources = [TestData.MattilsynetBakeryService.Id]
+                            Resources = [TestData.MattilsynetBakeryService.RefId]
                         }
                     ]
                 },
@@ -1843,7 +1944,7 @@ public class ClientDelegationControllerTest
                         new()
                         {
                             Role = RoleConstants.Accountant.Entity.Code,
-                            Resources = [Guid.CreateVersion7()]
+                            Resources = ["unknown-resource-ref"]
                         }
                     ]
                 },
@@ -2037,7 +2138,7 @@ public class ClientDelegationControllerTest
                         new()
                         {
                             Role = RoleConstants.Accountant.Entity.Code,
-                            Resources = [TestData.MattilsynetBakeryService.Id],
+                            Resources = [TestData.MattilsynetBakeryService.RefId],
                         }
                     ]
                 })

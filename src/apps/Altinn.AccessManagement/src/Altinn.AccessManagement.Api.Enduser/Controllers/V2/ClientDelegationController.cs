@@ -175,10 +175,11 @@ public class ClientDelegationController(
         [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery(Name = "roles")] List<string>? roles,
         [FromQuery(Name = "packages")] List<string>? packages,
+        [FromQuery(Name = "resources")] List<string>? resources,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.GetClientsV2(party, roles, packages, cancellationToken);
+        var result = await clientDelegationService.GetClientsV2(party, roles, packages, resources, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
