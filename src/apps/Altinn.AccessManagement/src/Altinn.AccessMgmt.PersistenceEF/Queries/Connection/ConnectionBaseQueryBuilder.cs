@@ -48,7 +48,7 @@ internal class ConnectionBaseQueryBuilder
         return (viaSet, viaRoleSet, roleSet, roleSetExclude);
     }
 
-    internal IQueryable<ConnectionQueryBaseRecord> FromOthers(AppDbContext db, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter)
+    internal IQueryable<ConnectionQueryBaseRecord> FromOthers(AppDbContext db, ConnectionQueryFilter filter)
     {
         var toId = filter.ToIds.First();
         var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
@@ -191,27 +191,6 @@ internal class ConnectionBaseQueryBuilder
             ? a1.Concat(rolemap).Concat(delegations)
             : a1.Concat(rolemap);
 
-        var fromChildren = !doChildNesting ? a2 :
-        a2
-        .Join(
-            db.Entities,
-            c => c.FromId,
-            e => e.ParentId,
-            (c, e) => new ConnectionQueryBaseRecord
-            {
-                AssignmentId = c.AssignmentId,
-                DelegationId = c.DelegationId,
-                FromId = e.Id,
-                ToId = c.ToId,
-                RoleId = c.RoleId,
-                ViaId = c.FromId,
-                ViaRoleId = c.ViaRoleId,
-                Reason = ConnectionReason.Hierarchy,
-                IsKeyRoleAccess = c.IsKeyRoleAccess,
-                IsMainUnitAccess = true,
-                IsRoleMap = c.IsRoleMap,
-            });
-
         var innehaverConnections =
             from reviRegnConnection in a2
             join innehaverConnection in db.Assignments on reviRegnConnection.FromId equals innehaverConnection.FromId
@@ -237,13 +216,11 @@ internal class ConnectionBaseQueryBuilder
                 Reason = ConnectionReason.Hierarchy,
             };
 
-        var query = doChildNesting
-            ? filter.IncludeSubConnections ? a2.Concat(fromChildren).Concat(innehaverConnections) : a2.Concat(fromChildren)
-            : filter.IncludeSubConnections ? a2.Concat(innehaverConnections) : a2;
+        var query = filter.IncludeSubConnections ? a2.Concat(innehaverConnections) : a2;
 
         return
             query
-            .FromIdContains(fromSet, applyFromFilter)
+            .FromIdContains(fromSet)
             .ViaIdContains(viaSet)
             .ViaRoleIdContains(viaRoleSet)
             .RoleIdContains(roleSet)

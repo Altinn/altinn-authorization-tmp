@@ -23,9 +23,9 @@ internal static class ConnectionQueryExtensions
         return query.Where(t => ids.Contains(t.ToId));
     }
 
-    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid>? ids, bool applyFromFilter = true)
+    internal static IQueryable<ConnectionQueryBaseRecord> FromIdContains(this IQueryable<ConnectionQueryBaseRecord> query, HashSet<Guid>? ids)
     {
-        if (!applyFromFilter || ids is null || ids.Count == 0)
+        if (ids is null || ids.Count == 0)
         {
             return query;
         }
