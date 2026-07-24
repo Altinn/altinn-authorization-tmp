@@ -610,14 +610,19 @@ public class ClientDelegationControllerTest
             var nordisClient = Assert.Single(result.Items);
             Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
 
-            // The matching accountant assignment lists its full access, packages included.
-            var accountantAccess = Assert.Single(nordisClient.Access);
-            Assert.Equal(RoleConstants.Accountant.Id, accountantAccess.Role.Id);
+            // The whole client relationship is listed: the filter selects the client and trims the
+            // resource lists, while packages and the other role entries stay intact.
+            var accountantAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(accountantAccess);
 
             var resource = Assert.Single(accountantAccess.Resources);
             Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
 
             Assert.Contains(accountantAccess.Packages, p => p.Id == PackageConstants.Customs.Id);
+
+            var rightholderAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Rightholder);
+            Assert.NotNull(rightholderAccess);
+            Assert.Empty(rightholderAccess.Resources);
         }
 
         [Fact]
@@ -663,6 +668,32 @@ public class ClientDelegationControllerTest
             result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
 
             Assert.Empty(result.Items);
+        }
+
+        [Fact]
+        public async Task ListClient_WithPackagesFilter_Returns200WithOnlyClientHoldingPackage()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.AccountantSalary.Entity.Urn}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            // Only the client holding the package through its accountant role is selected. The
+            // package list is trimmed to the match while the resource list stays intact.
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+
+            var accountantAccess = Assert.Single(nordisClient.Access);
+            Assert.Equal(RoleConstants.Accountant.Id, accountantAccess.Role.Id);
+
+            var package = Assert.Single(accountantAccess.Packages);
+            Assert.Equal(PackageConstants.AccountantSalary.Id, package.Id);
+
+            var resource = Assert.Single(accountantAccess.Resources);
+            Assert.Equal(TestData.MattilsynetBakeryService.Id, resource.Id);
         }
     }
     #endregion

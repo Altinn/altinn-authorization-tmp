@@ -475,11 +475,13 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             return new List<ContractsV2.ClientDto>();
         }
 
+        // The roles filter is the primary filter and narrows the client assignments themselves. The
+        // packages and resources filters behave alike: each selects the clients that hold a match
+        // and trims its own access list, without affecting the other list.
         var clientAssignments = db.Assignments
             .AsNoTracking()
             .Where(a => a.ToId == partyUuid && !ExcludeClientRoles.Contains(a.RoleId))
-            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId))
-            .WhereIf(resourceFilter.Count > 0, a => db.AssignmentResources.Any(ar => ar.AssignmentId == a.Id && resourceFilter.Contains(ar.ResourceId)));
+            .WhereIf(roleFilter.Count > 0, r => roleFilter.Contains(r.RoleId));
 
         var packageRows = await clientAssignments
             .GroupJoin(
@@ -514,8 +516,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             .ToListAsync(cancellationToken);
 
         // Resources are fetched as their own row set to avoid a packages x resources product per
-        // assignment. The packages filter does not apply to resources: delegated single resources
-        // are tied to rightholder assignments and follow the role filter.
+        // assignment.
         var resourceRows = await clientAssignments
             .Join(
                 db.AssignmentResources,
@@ -523,12 +524,22 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 ar => ar.AssignmentId,
                 (a, ar) => new { a.From, a.Role, ar.Resource }
             )
+            .WhereIf(resourceFilter.Count > 0, x => resourceFilter.Contains(x.Resource.Id))
             .ToListAsync(cancellationToken);
+
+        // A client is included when it matches every active filter: a matching package somewhere in
+        // its assignments when the packages filter is set, and a matching delegated resource when
+        // the resources filter is set. The row sets are already trimmed to the matches, so the
+        // client sets fall out of them directly.
+        HashSet<Guid> packageClientIds = packageFilter.Count > 0 ? packageRows.Select(x => x.From.Id).ToHashSet() : null;
+        HashSet<Guid> resourceClientIds = resourceFilter.Count > 0 ? resourceRows.Select(x => x.From.Id).ToHashSet() : null;
 
         var query = packageRows
             .Select(x => new { x.From, x.Role, x.AssignmentPackage, x.RolePackage, x.RolePackageEntityVariantId, Resource = (Resource)null })
             .Concat(resourceRows.Select(x => new { x.From, x.Role, AssignmentPackage = (Package)null, RolePackage = (Package)null, RolePackageEntityVariantId = (Guid?)null, x.Resource }))
             .GroupBy(x => x.From.Id)
+            .Where(g => packageClientIds is null || packageClientIds.Contains(g.Key))
+            .Where(g => resourceClientIds is null || resourceClientIds.Contains(g.Key))
             .ToList();
 
         return query
