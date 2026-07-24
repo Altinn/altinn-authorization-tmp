@@ -1402,7 +1402,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/client",
-                [new($"{fromId}", "entity does not exist.")]
+                [new($"{fromId}", $"'{fromId}' is not a valid existing Client for '{partyId}'.")]
             );
         }
 
@@ -1431,7 +1431,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 errorBuilder.Add(
                     ValidationErrors.MissingAssignment,
                     $"$QUERY/agent",
-                    [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toId}' from '{partyId}'.")]
+                    [new(RoleConstants.Agent.Entity.Urn, $"The user '{toId}' is not a valid registered Agent for '{partyId}'.")]
                 );
             }
             else
@@ -1462,7 +1462,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.DisallowedEntityType,
                 "$QUERY/agent",
-                [new($"{to.Id}", $"system user '{to.Id}' is not created for client delegation.")]
+                [new($"{to.Id}", $"system user '{to.Id}' is not supported, client delegation only supports system users of the '{EntityVariantConstants.AgentSystem.Entity.Name}' variant.")]
             );
         }
 
@@ -1522,7 +1522,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             }
 
             // A delegation created in this batch has no persisted rows yet, so the lookup only runs
-            // for pre existing delegations, once per input value.
+            // for pre-existing delegations, once per input value.
             List<DelegationResource> existingDelegationResources = createdDelegations.ContainsKey(clientAssignment.Id)
                 ? []
                 : await db.DelegationResources
@@ -1864,7 +1864,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 errorBuilder.Add(
                     ValidationErrors.InvalidRole,
                     $"/values[{input.RoleIdx}]/role",
-                    [new($"{input.InputRole}", "role do not exist.")]
+                    [new($"{input.InputRole}", "Role does not exist.")]
                 );
             }
 
@@ -1896,7 +1896,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.EntityNotExists,
                 $"$QUERY/client",
-                [new($"{fromUuid}", "entity does not exist.")]
+                [new($"{fromUuid}", $"'{fromUuid}' is not a valid existing Client for '{partyUuid}'.")]
             );
         }
 
@@ -1917,7 +1917,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             errorBuilder.Add(
                 ValidationErrors.MissingAssignment,
                 $"$QUERY/agent",
-                [new(RoleConstants.Agent.Entity.Urn, $"Role is not assigned to '{toUuid}' from '{partyUuid}'.")]
+                [new(RoleConstants.Agent.Entity.Urn, $"The user '{toUuid}' is not a valid registered Agent for '{partyUuid}'.")]
             );
         }
 
