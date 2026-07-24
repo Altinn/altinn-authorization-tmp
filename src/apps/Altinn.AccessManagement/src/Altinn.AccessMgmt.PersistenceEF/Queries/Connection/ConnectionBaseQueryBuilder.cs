@@ -252,7 +252,7 @@ internal class ConnectionBaseQueryBuilder
 
     internal IQueryable<ConnectionQueryBaseRecord> ToOthers(AppDbContext db, ConnectionQueryFilter filter)
     {
-        /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
+        /* Scenario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
 
        Oppslag skal finne:
            - Direkte tilganger gitt til BDO AS fra Bakerhansen Bergen BEDR

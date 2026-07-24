@@ -25,7 +25,7 @@ public class ConnectionQuery(AppDbContext db)
     }
 
     /// <summary>
-    /// Checks if connection exists between to parties
+    /// Checks if connection exists between two parties
     /// Returns first result only (Assignment => Delegation => Hierarchy => KeyRole)
     ///  
     /// Note: Incomplete implementation. Missing support for combined reasons (e.g. Delegation + Hierarchy, KeyRole + Hierarchy or Innehaver of Enk through Revi/Regn).
@@ -34,23 +34,24 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     /// <param name="fromId">From identifier</param>
     /// <param name="toId">To identifier</param>
-    /// <returns></returns>
+    /// <returns>Tuple indicating if connection exists and the reason</returns>
     public async Task<(bool Result, ConnectionReason? Reason)> HasConnection(Guid fromId, Guid toId)
     {
         return await HasConnection(fromId, toId, [ConnectionReason.Assignment, ConnectionReason.Delegation, ConnectionReason.Hierarchy, ConnectionReason.KeyRole]);
     }
 
     /// <summary>
-    /// Checks if connection exists between to parties
+    /// Checks if connection exists between two parties
     /// Returns first result only (Assignment => Delegation => Hierarchy => KeyRole)
     /// 
     /// Note: Incomplete implementation. Missing support for combined reasons (e.g. Delegation + Hierarchy, KeyRole + Hierarchy or Innehaver of Enk through Revi/Regn).
     /// Current use-case is however limited to validating whether to allow the fromId to create an access request to the toId, where these connections might not be valid.
     /// But beware if considering use of this method for other purposes.
+    /// </summary>
     /// <param name="fromId">From identifier</param>
     /// <param name="toId">To identifier</param>
     /// <param name="reasons">Reasons to check</param>
-    /// </summary>
+    /// <returns>Tuple indicating if connection exists and the reason</returns>
     public async Task<(bool Result, ConnectionReason? Reason)> HasConnection(Guid fromId, Guid toId, ConnectionReason[] reasons)
     {
         if (reasons == null || reasons.Length == 0)
@@ -118,7 +119,7 @@ public class ConnectionQuery(AppDbContext db)
     }
 
     /// <summary>
-    /// Returns connections between to entities based on assignments and delegations
+    /// Returns connections between two entities based on assignments and delegations
     /// </summary>
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, CancellationToken ct = default)
     {
