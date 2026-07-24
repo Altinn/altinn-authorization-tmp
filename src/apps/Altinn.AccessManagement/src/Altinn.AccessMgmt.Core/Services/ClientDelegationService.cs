@@ -552,10 +552,12 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                     Role = DtoMapper.ConvertCompactRole(r.First().Role),
                     Packages = [
                         .. r.Where(p => p.AssignmentPackage is { } && p.AssignmentPackage.IsDelegable)
+                            .Where(p => packageFilter.Count == 0 || packageFilter.Contains(p.AssignmentPackage.Id))
                             .Select(p => DtoMapper.ConvertCompactPackage(p.AssignmentPackage))
                             .DistinctBy(p => p.Id),
                         .. r.Where(p => p.RolePackage is { } && p.RolePackage.IsDelegable)
                             .Where(p => p.RolePackageEntityVariantId == null || p.RolePackageEntityVariantId == p.From.VariantId)
+                            .Where(p => packageFilter.Count == 0 || packageFilter.Contains(p.RolePackage.Id))
                             .Select(p => DtoMapper.ConvertCompactPackage(p.RolePackage))
                             .DistinctBy(p => p.Id),
                     ],
