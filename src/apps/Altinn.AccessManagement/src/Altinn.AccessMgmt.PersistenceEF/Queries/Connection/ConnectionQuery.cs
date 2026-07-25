@@ -125,20 +125,15 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
-            bool delayChildNesting = true;
-            bool delayFromFilter = true;
-            if (direction == ConnectionQueryDirection.ToOthers || (filter.FromIds?.Count > 0 && filter.FromIds?.Count <= 20))
-            {
-                delayChildNesting = false;
-                delayFromFilter = false;
-            }
+            bool delayEnrichment = direction == ConnectionQueryDirection.FromOthers
+                && !(filter.FromIds?.Count > 0 && filter.FromIds?.Count <= 20);
 
             var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? _baseQueryBuilder.FromOthers(
                         db,
                         filter,
-                        filter.IncludeSubConnections && !delayChildNesting,
-                        !filter.IncludeSubConnections || !delayFromFilter)
+                        filter.IncludeSubConnections && !delayEnrichment,
+                        !filter.IncludeSubConnections || !delayEnrichment)
                 : _baseQueryBuilder.ToOthers(db, filter);
 
             var result = baseQuery.Select(ToDtoEmpty).ToList();
@@ -211,8 +206,7 @@ public class ConnectionQuery(AppDbContext db)
                 result = await enricher.EnrichAsync(
                     result,
                     filter,
-                    filter.IncludeSubConnections && delayChildNesting,
-                    filter.IncludeSubConnections && delayFromFilter,
+                    filter.IncludeSubConnections && delayEnrichment,
                     ct);
             }
 
