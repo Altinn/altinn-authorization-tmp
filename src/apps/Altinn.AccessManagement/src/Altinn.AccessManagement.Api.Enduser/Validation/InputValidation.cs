@@ -32,22 +32,30 @@ public class InputValidation(
                 errorBuilder.Add(ValidationErrors.EntityNotExists, "QUERY/to", [new($"to", $"Cannot find any parties with uuid '{toParty}'.")]);
             }
 
-            if (toEntity is { } && options.EntitiesToValidateForAnyConnections.Contains(toEntity.TypeId))
+            if (toEntity is { })
             {
-                var connections = await connectionQuery.GetConnectionsFromOthersAsync(
-                    new()
-                    {
-                        FromIds = [party],
-                        ToIds = [toEntity.Id],
-                    },
-                    cancellationToken);
-
-                if (connections.Count > 0)
+                if (options.EntitiesToValidateForAnyConnections.Contains(toEntity.TypeId))
                 {
-                    return toEntity;
+                    var connections = await connectionQuery.GetConnectionsFromOthersAsync(
+                        new()
+                        {
+                            FromIds = [party],
+                            ToIds = [toEntity.Id],
+                        },
+                        cancellationToken);
+
+                    if (connections.Count > 0)
+                    {
+                        return toEntity;
+                    }
+
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, "QUERY/to", [new($"to", $"Cannot find any parties with uuid '{toParty}'.")]);
                 }
 
-                errorBuilder.Add(ValidationErrors.EntityNotExists, "QUERY/to", [new($"to", $"Cannot find any parties with uuid '{toParty}'.")]);
+                if (options.AllowedToEntityTypes.Count > 0 && !options.AllowedToEntityTypes.Contains(toEntity.TypeId))
+                {
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, "QUERY/to", [new($"to", $"Cannot find any parties with uuid '{toParty}'.")]);
+                }
             }
 
             if (errorBuilder.TryBuild(out var problem))
