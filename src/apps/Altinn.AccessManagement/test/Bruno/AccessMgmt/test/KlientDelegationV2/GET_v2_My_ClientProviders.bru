@@ -1,0 +1,55 @@
+meta {
+  name: GET_v2_My_ClientProviders
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/my/clientproviders
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+
+  // The my endpoints act on behalf of the authenticated user, so the token is the
+  // agent rather than the facilitator.
+  var getTokenParameters = {
+    auth_userId: testdata.REGN_Organisasjon.REGN_Agent.userId,
+    auth_partyId: testdata.REGN_Organisasjon.REGN_Agent.partyId,
+    auth_partyUuid: testdata.REGN_Organisasjon.REGN_Agent.userUuid,
+    auth_ssn: testdata.REGN_Organisasjon.REGN_Agent.personidentity,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Agent sees the provider that assigned the agent role", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("data");
+
+    const providerUuid = enduser.org2_delegates_tilgangspakke.partyuuid.toLowerCase();
+    const entry = body.data.find(item =>
+      String(item.provider.id || "").toLowerCase() === providerUuid
+    );
+
+    expect(entry, "Provider not found in response").to.exist;
+    expect(entry).to.have.property("providerAddedAt");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

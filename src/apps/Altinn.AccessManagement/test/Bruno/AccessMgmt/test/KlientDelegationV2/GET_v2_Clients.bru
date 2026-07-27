@@ -1,0 +1,68 @@
+meta {
+  name: GET_v2_Clients
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
+    auth_partyId: enduser.org2_delegates_tilgangspakke.innehaver.partyid,
+    auth_partyUuid: enduser.org2_delegates_tilgangspakke.innehaver.partyuuid,
+    auth_ssn: enduser.org2_delegates_tilgangspakke.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("List clients in v2 returns the client with role access", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("data");
+
+    const clientUuid = enduser.org1_delegates_tilgangspakke.partyuuid.toLowerCase();
+    const entry = body.data.find(item =>
+      String(item.client.id || "").toLowerCase() === clientUuid
+    );
+
+    expect(entry, "Client not found in response").to.exist;
+    expect(String(entry.client.organizationIdentifier)).to.equal(
+      String(enduser.org1_delegates_tilgangspakke.orgno)
+    );
+
+    // v2 groups packages and resources per role on the combined listing.
+    expect(entry.access).to.be.an("array");
+    expect(entry.access.length).to.be.greaterThan(0);
+    expect(entry.access[0]).to.have.property("role");
+    expect(entry.access[0]).to.have.property("packages");
+    expect(entry.access[0]).to.have.property("resources");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

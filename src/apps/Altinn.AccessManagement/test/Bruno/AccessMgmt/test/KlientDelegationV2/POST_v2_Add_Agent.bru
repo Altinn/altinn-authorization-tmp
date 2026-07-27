@@ -1,0 +1,63 @@
+meta {
+  name: POST_v2_Add_Agent
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/agents?party={{party}}&agent={{agent}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  agent: {{agent}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("agent", testdata.REGN_Organisasjon.REGN_Agent.userUuid);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
+    auth_partyId: enduser.org2_delegates_tilgangspakke.innehaver.partyid,
+    auth_partyUuid: enduser.org2_delegates_tilgangspakke.innehaver.partyuuid,
+    auth_ssn: enduser.org2_delegates_tilgangspakke.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Add agent to the facilitator in v2", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("toId");
+
+    expect(String(body.toId).toLowerCase()).to.equal(
+      testdata.REGN_Organisasjon.REGN_Agent.userUuid.toLowerCase()
+    );
+
+    expect(String(body.fromId).toLowerCase()).to.equal(
+      enduser.org2_delegates_tilgangspakke.partyuuid.toLowerCase()
+    );
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,65 @@
+meta {
+  name: GET_v2_Client_AccessPackages
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients/accesspackages?party={{party}}&client={{client}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  client: {{client}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("client", enduser.org1_delegates_tilgangspakke.partyuuid);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
+    auth_partyId: enduser.org2_delegates_tilgangspakke.innehaver.partyid,
+    auth_partyUuid: enduser.org2_delegates_tilgangspakke.innehaver.partyuuid,
+    auth_ssn: enduser.org2_delegates_tilgangspakke.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Access packages delegated from the client are grouped by agent", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("data");
+
+    const agentUuid = testdata.REGN_Organisasjon.REGN_Agent.userUuid.toLowerCase();
+    const entry = body.data.find(item =>
+      String(item.agent.id || "").toLowerCase() === agentUuid
+    );
+
+    expect(entry, "Agent not found in delegated packages").to.exist;
+    expect(entry).to.have.property("agentAddedAt");
+
+    const packages = entry.access.flatMap(a => a.packages || []);
+    expect(packages.some(p => p.urn === "urn:altinn:accesspackage:skattegrunnlag"),
+      "Delegated package not found").to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,75 @@
+meta {
+  name: POST_v2_My_Delete_AccessPackage
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/my/clients/accesspackages/delete?provider={{provider}}&client={{client}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  provider: {{provider}}
+  client: {{client}}
+}
+
+body:json {
+  {
+    "values": [
+      {
+        "role": "rettighetshaver",
+        "packages": [
+          "urn:altinn:accesspackage:skattegrunnlag"
+        ]
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("provider", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("client", enduser.org1_delegates_tilgangspakke.partyuuid);
+
+  var getTokenParameters = {
+    auth_userId: testdata.REGN_Organisasjon.REGN_Agent.userId,
+    auth_partyId: testdata.REGN_Organisasjon.REGN_Agent.partyId,
+    auth_partyUuid: testdata.REGN_Organisasjon.REGN_Agent.userUuid,
+    auth_ssn: testdata.REGN_Organisasjon.REGN_Agent.personidentity,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Agent removes an access package delegated to them", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.be.an("array");
+    expect(body.length).to.be.greaterThan(0);
+
+    const item = body[0];
+
+    expect(item.changed).to.equal(true);
+    expect(String(item.toId).toLowerCase()).to.equal(
+      testdata.REGN_Organisasjon.REGN_Agent.userUuid.toLowerCase()
+    );
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,68 @@
+meta {
+  name: POST_v2_Redelegate_AccessPackage
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/agents/accesspackages?party={{party}}&client={{client}}&agent={{agent}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  client: {{client}}
+  agent: {{agent}}
+}
+
+body:json {
+  {
+    "values": [
+      {
+        "role": "rettighetshaver",
+        "packages": [
+          "urn:altinn:accesspackage:skattegrunnlag"
+        ]
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("client", enduser.org1_delegates_tilgangspakke.partyuuid);
+  bru.setVar("agent", testdata.REGN_Organisasjon.REGN_Agent.userUuid);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
+    auth_partyId: enduser.org2_delegates_tilgangspakke.innehaver.partyid,
+    auth_partyUuid: enduser.org2_delegates_tilgangspakke.innehaver.partyuuid,
+    auth_ssn: enduser.org2_delegates_tilgangspakke.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  test("Delegate the access package again so the provider side removal has something to remove", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.be.an("array");
+    expect(body[0].changed).to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

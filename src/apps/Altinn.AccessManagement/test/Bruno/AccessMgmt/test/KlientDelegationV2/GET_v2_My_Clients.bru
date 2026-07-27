@@ -1,0 +1,68 @@
+meta {
+  name: GET_v2_My_Clients
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/my/clients
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+
+  var getTokenParameters = {
+    auth_userId: testdata.REGN_Organisasjon.REGN_Agent.userId,
+    auth_partyId: testdata.REGN_Organisasjon.REGN_Agent.partyId,
+    auth_partyUuid: testdata.REGN_Organisasjon.REGN_Agent.userUuid,
+    auth_ssn: testdata.REGN_Organisasjon.REGN_Agent.personidentity,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Agent sees the client with both the delegated package and resource", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("data");
+
+    const providerUuid = enduser.org2_delegates_tilgangspakke.partyuuid.toLowerCase();
+    const providerEntry = body.data.find(item =>
+      String(item.provider.id || "").toLowerCase() === providerUuid
+    );
+
+    expect(providerEntry, "Provider not found in response").to.exist;
+
+    const clientUuid = enduser.org1_delegates_tilgangspakke.partyuuid.toLowerCase();
+    const clientEntry = providerEntry.clients.find(c =>
+      String(c.client.id || "").toLowerCase() === clientUuid
+    );
+
+    expect(clientEntry, "Client not found under provider").to.exist;
+
+    const packages = clientEntry.access.flatMap(a => a.packages || []);
+    expect(packages.some(p => p.urn === "urn:altinn:accesspackage:skattegrunnlag"),
+      "Delegated package not visible to the agent").to.equal(true);
+
+    const resources = clientEntry.access.flatMap(a => a.resources || []);
+    const delegatedResourceId = String(bru.getVar("delegatedResourceId") || "").toLowerCase();
+    expect(resources.some(r => String(r.id).toLowerCase() === delegatedResourceId),
+      "Delegated resource not visible to the agent").to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,65 @@
+meta {
+  name: GET_v2_Agent_AccessPackages
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/agents/accesspackages?party={{party}}&agent={{agent}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  agent: {{agent}}
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("agent", testdata.REGN_Organisasjon.REGN_Agent.userUuid);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
+    auth_partyId: enduser.org2_delegates_tilgangspakke.innehaver.partyid,
+    auth_partyUuid: enduser.org2_delegates_tilgangspakke.innehaver.partyuuid,
+    auth_ssn: enduser.org2_delegates_tilgangspakke.innehaver.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  test("Delegated access packages to agent are grouped by client", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("data");
+
+    const clientUuid = enduser.org1_delegates_tilgangspakke.partyuuid.toLowerCase();
+    const entry = body.data.find(item =>
+      String(item.client.id || "").toLowerCase() === clientUuid
+    );
+
+    expect(entry, "Client not found in delegated packages").to.exist;
+
+    const packages = entry.access.flatMap(a => a.packages || []);
+    expect(packages.some(p => p.urn === "urn:altinn:accesspackage:skattegrunnlag"),
+      "Delegated package not found").to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
