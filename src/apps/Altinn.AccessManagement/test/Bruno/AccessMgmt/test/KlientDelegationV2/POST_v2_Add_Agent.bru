@@ -5,14 +5,20 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/agents?party={{party}}&agent={{agent}}
-  body: none
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/agents?party={{party}}
+  body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  agent: {{agent}}
+}
+
+body:json {
+  {
+    "personidentifier": "{{agentPersonIdentifier}}",
+    "lastName": "{{agentLastName}}"
+  }
 }
 
 script:pre-request {
@@ -21,7 +27,8 @@ script:pre-request {
   const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
 
   bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
-  bru.setVar("agent", testdata.REGN_Organisasjon.REGN_Agent.userUuid);
+  bru.setVar("agentPersonIdentifier", testdata.REGN_Organisasjon.REGN_Agent.personidentity);
+  bru.setVar("agentLastName", testdata.REGN_Organisasjon.REGN_Agent.etternavn);
 
   var getTokenParameters = {
     auth_userId: enduser.org2_delegates_tilgangspakke.innehaver.userid,
