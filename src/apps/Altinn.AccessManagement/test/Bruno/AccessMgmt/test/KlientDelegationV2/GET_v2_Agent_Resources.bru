@@ -38,6 +38,7 @@ script:pre-request {
 }
 
 tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
 
   test("Delegated resources to agent are grouped by client", function() {
@@ -59,11 +60,15 @@ tests {
     const resources = entry.access.flatMap(a => a.resources || []);
     expect(resources.length).to.be.greaterThan(0);
 
-    // Resources come back as { id, value } where value is the display name, so the
-    // delegated resource is matched on the guid the delegate call returned.
-    const delegatedResourceId = String(bru.getVar("delegatedResourceId") || "").toLowerCase();
-    expect(resources.some(r => String(r.id).toLowerCase() === delegatedResourceId),
-      "Delegated resource not found").to.equal(true);
+    // Resources come back as { id, refId }, so the listing can be matched on the
+    // same resource registry id the delegation was sent with.
+    const resourceRefId = testdata.resources.clientDelgResourceId;
+    const delegated = resources.find(r => r.refId === resourceRefId);
+
+    expect(delegated, "Delegated resource not found by refId").to.exist;
+    expect(String(delegated.id).toLowerCase()).to.equal(
+      String(bru.getVar("delegatedResourceId") || "").toLowerCase()
+    );
   });
 }
 

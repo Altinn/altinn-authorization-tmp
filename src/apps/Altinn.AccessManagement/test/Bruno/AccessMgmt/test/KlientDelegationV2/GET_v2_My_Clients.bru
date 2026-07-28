@@ -29,6 +29,7 @@ script:pre-request {
 }
 
 tests {
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
   const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
 
   test("Agent sees the client with both the delegated package and resource", function() {
@@ -56,8 +57,9 @@ tests {
       "Delegated package not visible to the agent").to.equal(true);
 
     const resources = clientEntry.access.flatMap(a => a.resources || []);
-    const delegatedResourceId = String(bru.getVar("delegatedResourceId") || "").toLowerCase();
-    expect(resources.some(r => String(r.id).toLowerCase() === delegatedResourceId),
+    const resourceRefId = testdata.resources.clientDelgResourceId;
+
+    expect(resources.some(r => r.refId === resourceRefId),
       "Delegated resource not visible to the agent").to.equal(true);
   });
 }

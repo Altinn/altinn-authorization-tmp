@@ -53,9 +53,13 @@ tests {
     expect(entry, "Agent not found in delegated resources").to.exist;
 
     const resources = entry.access.flatMap(a => a.resources || []);
-    const delegatedResourceId = String(bru.getVar("delegatedResourceId") || "").toLowerCase();
-    expect(resources.some(r => String(r.id).toLowerCase() === delegatedResourceId),
-      "Delegated resource not found").to.equal(true);
+    const resourceRefId = testdata.resources.clientDelgResourceId;
+    const delegated = resources.find(r => r.refId === resourceRefId);
+
+    expect(delegated, "Delegated resource not found by refId").to.exist;
+    expect(String(delegated.id).toLowerCase()).to.equal(
+      String(bru.getVar("delegatedResourceId") || "").toLowerCase()
+    );
   });
 }
 
