@@ -76,6 +76,10 @@ public static partial class AccessManagementEnduserHost
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
+            // Endpoints without a version group (minimal endpoints) belong to the v1 document.
+            // Without this they land in every document, including v2.
+            options.DocInclusionPredicate((documentName, apiDescription) => (apiDescription.GroupName ?? "v1") == documentName);
+
             options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
                 Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
