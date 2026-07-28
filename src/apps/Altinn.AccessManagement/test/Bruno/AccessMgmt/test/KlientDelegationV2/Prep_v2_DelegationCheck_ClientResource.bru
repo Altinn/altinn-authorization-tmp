@@ -1,0 +1,69 @@
+meta {
+  name: Prep_v2_DelegationCheck_ClientResource
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/delegationcheck?party={{client}}&resource={{resourceRefId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{client}}
+  resource: {{resourceRefId}}
+}
+
+headers {
+  Accept: application/json
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  // Only resources the facilitator received as a single resource delegation can be
+  // delegated onward, so the client has to delegate the service to the facilitator
+  // first. This request collects the right keys that delegation needs.
+  bru.setVar("client", enduser.org1_delegates_tilgangspakke.partyuuid);
+  bru.setVar("resourceRefId", testdata.resources.clientDelgResourceId);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org1_delegates_tilgangspakke.dagligleder.userid,
+    auth_partyId: enduser.org1_delegates_tilgangspakke.dagligleder.partyid,
+    auth_partyUuid: enduser.org1_delegates_tilgangspakke.dagligleder.partyuuid,
+    auth_ssn: enduser.org1_delegates_tilgangspakke.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  test("Client can delegate the resource onward", function() {
+    const body = res.getBody();
+
+    expect(res.status).to.equal(200);
+    expect(body).to.have.property("rights");
+
+    // AddResource matches each submitted key against a delegable right on this
+    // check, so anything with result false is unusable here.
+    const keys = body.rights.filter(r => r.result).map(r => r.right.key);
+
+    expect(keys.length,
+      "Client holds no delegable rights on the resource, so the client delegation flow cannot be seeded")
+      .to.be.greaterThan(0);
+
+    bru.setVar("directRightKeys", JSON.stringify(keys));
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

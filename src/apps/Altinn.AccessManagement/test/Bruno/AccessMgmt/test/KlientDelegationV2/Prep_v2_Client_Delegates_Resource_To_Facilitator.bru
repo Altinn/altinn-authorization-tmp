@@ -1,0 +1,67 @@
+meta {
+  name: Prep_v2_Client_Delegates_Resource_To_Facilitator
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/resources/rights?party={{client}}&to={{party}}&resource={{resourceRefId}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  party: {{client}}
+  to: {{party}}
+  resource: {{resourceRefId}}
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "DirectRightKeys": {{directRightKeys}}
+  }
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./testdata/sharedtestdata.js`);
+  const testdata = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const enduser = require(`./testdata/enduser/${bru.getEnvVar("tokenEnv")}.js`);
+
+  // party is the delegating client, to is the facilitator receiving the resource.
+  // This writes the AssignmentResource on a rettighetshaver assignment, which is
+  // what makes the resource delegable onward to an agent.
+  bru.setVar("client", enduser.org1_delegates_tilgangspakke.partyuuid);
+  bru.setVar("party", enduser.org2_delegates_tilgangspakke.partyuuid);
+  bru.setVar("resourceRefId", testdata.resources.clientDelgResourceId);
+
+  var getTokenParameters = {
+    auth_userId: enduser.org1_delegates_tilgangspakke.dagligleder.userid,
+    auth_partyId: enduser.org1_delegates_tilgangspakke.dagligleder.partyid,
+    auth_partyUuid: enduser.org1_delegates_tilgangspakke.dagligleder.partyuuid,
+    auth_ssn: enduser.org1_delegates_tilgangspakke.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+
+  const testTokenGenerator = require(`./TestToolsTokenGenerator.js`);
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
+}
+
+tests {
+  test("Client delegates the single resource to the facilitator", function() {
+    // 201 on a fresh delegation. Re-running is harmless, the policy write is
+    // upserted, so treat an existing delegation as success too.
+    expect([201, 200]).to.include(res.status);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
