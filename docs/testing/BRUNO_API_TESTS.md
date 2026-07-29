@@ -62,8 +62,10 @@ The reference is `test/EnduserAPI/ClientDelegationsV2/` (v2 client delegation):
   how the APIs compose.
 - Personas map to testdata entries, and each step mints its own token through a suite
   `helpers.js` (`loginAs(persona, scopes?)`), so a scenario can switch between the
-  facilitator, the client, and the agent per step. Negative steps assert the full problem
-  body: status, `code`, `validationErrors[].code`, and the parameter the error points at.
+  facilitator, the client, and the agent per step. Validation negatives (400) assert the
+  full problem body: status, `code`, `validationErrors[].code`, and the parameter the
+  error points at. Authorization negatives (401/403) assert the status only, since those
+  responses carry no problem body.
 
 ## Using them as a spec for C# tests
 
