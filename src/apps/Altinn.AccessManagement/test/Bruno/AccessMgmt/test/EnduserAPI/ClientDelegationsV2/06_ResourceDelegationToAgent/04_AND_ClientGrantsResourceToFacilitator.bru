@@ -1,7 +1,7 @@
 meta {
-  name: 03_AND_ClientGrantsResourceToFacilitator
+  name: 04_AND_ClientGrantsResourceToFacilitator
   type: http
-  seq: 3
+  seq: 4
 }
 
 post {
@@ -18,13 +18,14 @@ params:query {
 
 body:json {
   {
-    "DirectRightKeys": ["urn:altinn:resource:{{resource}}:urn:oasis:names:tc:xacml:1.0:action:action-id:read"]
+    "DirectRightKeys": ["{{cdv2_resourceReadRightKey}}"]
   }
 }
 
 docs {
   AND the client grants the facilitator the read right on the single resource
-  through the v1 connections API. Expects 201.
+  through the v1 connections API, using the right key captured from the
+  delegation check. Expects 201.
 }
 
 script:pre-request {
@@ -33,7 +34,7 @@ script:pre-request {
 
   bru.setVar("clientB", td.REGN_Organisasjon.REGN_Org_Clients.client_B.partyUuid);
   bru.setVar("party", td.REGN_Organisasjon.partyUuid);
-  bru.setVar("resource", td.resources.clientDelgResourceId);
+  bru.setVar("resource", td.clientDelegationV2.singleResource);
 
   await loginAs(td.REGN_Organisasjon.REGN_Org_Clients.client_B.dagligleder);
 }

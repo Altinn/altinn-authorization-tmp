@@ -1,7 +1,7 @@
 meta {
-  name: 04_AND_NoAgentRegistered
+  name: 18_CLEANUP_AgentIsRemoved
   type: http
-  seq: 4
+  seq: 18
 }
 
 delete {
@@ -17,10 +17,8 @@ params:query {
 }
 
 docs {
-  AND the facilitator has no agent registration for the agent person.
-
-  Reset step: removes any leftover agent assignment from earlier runs, including
-  delegations hanging on it. The delete is idempotent and returns 204 either way.
+  CLEANUP the agent registration is removed, including any remaining delegations,
+  so the scenario leaves no state behind. Expects 204.
 }
 
 script:pre-request {
@@ -34,7 +32,7 @@ script:pre-request {
 }
 
 tests {
-  test("AND the facilitator has no registered agent, the reset delete returns 204", function() {
+  test("CLEANUP the agent registration is removed with 204", function() {
     expect(res.status).to.equal(204);
   });
 }

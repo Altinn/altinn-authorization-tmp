@@ -76,6 +76,8 @@
     },
     // Fixtures for the v2 client delegation scenarios in test/EnduserAPI/ClientDelegationsV2.
     clientDelegationV2: {
+      // Single resource whose policy lets a dagligleder delegate it onwards.
+      singleResource: "tilgangspakke_delegering_ressurs",
       packages: {
         regnskapsforerLonn: "urn:altinn:accesspackage:regnskapsforer-lonn",
         regnskapsforerMedSignering: "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet",

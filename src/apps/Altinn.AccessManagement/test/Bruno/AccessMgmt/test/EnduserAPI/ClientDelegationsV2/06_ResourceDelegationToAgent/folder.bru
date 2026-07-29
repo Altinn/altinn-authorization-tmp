@@ -8,7 +8,8 @@ docs {
 
     Given no rightholder relation exists between the client and the facilitator
     And the client adds the facilitator as rightholder
-    And the client grants the facilitator a single resource
+    And the client checks which rights on the single resource it can delegate
+    And the client grants the facilitator the single resource
     And the facilitator has a registered agent
     When the resource is delegated to the agent for the client
     Then the agent resource list shows the client
