@@ -1741,7 +1741,13 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             var existingDelegationPackages = await db.DelegationPackages.AsTracking().Where(t => t.DelegationId == delegation.Id).ToListAsync(cancellationToken);
             foreach (var pkgId in pkgIds)
             {
-                var rolePackageId = rolePackages.FirstOrDefault(r => r.PackageId == pkgId)?.Id;
+                // A package can have several RolePackage rows scoped to different entity variants.
+                // The row is selected with the same variant filter as the delegate path so the
+                // resolved id matches the RolePackageId stored on the delegation package.
+                var rolePackageId = rolePackages
+                    .Where(r => r.PackageId == pkgId && (r.EntityVariantId == null || r.EntityVariantId == entities[fromUuid].VariantId))
+                    .OrderBy(r => r.EntityVariantId != null)
+                    .FirstOrDefault()?.Id;
                 var assignmentPackageId = assignmentPackages.FirstOrDefault(t => t.PackageId == pkgId)?.Id;
 
                 var toRemove = existingDelegationPackages.FirstOrDefault(
