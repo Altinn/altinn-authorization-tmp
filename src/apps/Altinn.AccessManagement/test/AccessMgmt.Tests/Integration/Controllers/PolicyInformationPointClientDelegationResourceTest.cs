@@ -236,9 +236,16 @@ public class PolicyInformationPointClientDelegationResourceTest
 
         var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(_options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
-        Assert.Contains(result, d =>
+        var delegation = Assert.Single(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
             d.BlobStoragePolicyPath == ResourcePolicyPath);
+
+        // Verify from/to mapping is populated for PDP consumption
+        Assert.Equal(OrgMainUnitPartyId, delegation.OfferedByPartyId);
+        Assert.Equal(OrgMainUnitId, delegation.FromUuid);
+        Assert.Equal(PersonRecipientId, delegation.ToUuid);
+        Assert.Equal(RecipientUserId, delegation.CoveredByUserId);
+        Assert.Null(delegation.CoveredByPartyId);
     }
 
     /// <summary>
@@ -264,9 +271,15 @@ public class PolicyInformationPointClientDelegationResourceTest
 
         var result = await response.Content.ReadFromJsonAsync<List<DelegationChangeExternal>>(_options, TestContext.Current.CancellationToken);
         Assert.NotNull(result);
-        Assert.Contains(result, d =>
+        var delegation = Assert.Single(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
             d.BlobStoragePolicyPath == ResourcePolicyPath);
+
+        // Verify system user gets ToUuid/ToUuidType populated
+        Assert.Equal(OrgMainUnitPartyId, delegation.OfferedByPartyId);
+        Assert.Equal(SystemUserRecipientId, delegation.ToUuid);
+        Assert.Null(delegation.CoveredByUserId);
+        Assert.Null(delegation.CoveredByPartyId);
     }
 
     /// <summary>

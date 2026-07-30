@@ -469,8 +469,10 @@ namespace Altinn.AccessManagement.Core.Services
                 .AsNoTracking()
                 .Include(dr => dr.Delegation)
                     .ThenInclude(d => d.From)
+                        .ThenInclude(a => a.From)
                 .Include(dr => dr.Delegation)
                     .ThenInclude(d => d.To)
+                        .ThenInclude(a => a.To)
                 .Include(dr => dr.AssignmentResource)
                 .Include(dr => dr.Resource)
                 .Where(dr => offeringEntityIds.Contains(dr.Delegation.From.FromId))
@@ -479,13 +481,56 @@ namespace Altinn.AccessManagement.Core.Services
                 .ToListAsync(cancellationToken);
 
             // Map to DelegationChange objects
-            return clientDelegationResults.Select(dr => new DelegationChange
+            return clientDelegationResults.Select(dr =>
             {
-                ResourceId = dr.Resource.RefId,
-                DelegationChangeType = DelegationChangeType.Grant,
-                BlobStoragePolicyPath = dr.AssignmentResource.PolicyPath,
-                BlobStorageVersionId = dr.AssignmentResource.PolicyVersion,
+                var fromEntity = dr.Delegation.From.From;
+                var toEntity = dr.Delegation.To.To;
+                var toUuidType = MapEntityTypeToUuidType(toEntity.TypeId);
+
+                var result = new DelegationChange
+                {
+                    ResourceId = dr.Resource.RefId,
+                    DelegationChangeType = DelegationChangeType.Grant,
+                    BlobStoragePolicyPath = dr.AssignmentResource.PolicyPath,
+                    BlobStorageVersionId = dr.AssignmentResource.PolicyVersion,
+                    OfferedByPartyId = fromEntity.PartyId ?? 0,
+                    FromUuid = fromEntity.Id,
+                    FromUuidType = MapEntityTypeToUuidType(fromEntity.TypeId),
+                    ToUuid = toEntity.Id,
+                    ToUuidType = toUuidType,
+                };
+
+                if (toUuidType == UuidType.Person)
+                {
+                    result.CoveredByUserId = toEntity.UserId;
+                }
+                else if (toUuidType == UuidType.Organization)
+                {
+                    result.CoveredByPartyId = toEntity.PartyId;
+                }
+
+                return result;
             }).ToList();
+        }
+
+        private static UuidType MapEntityTypeToUuidType(Guid entityTypeId)
+        {
+            if (entityTypeId == EntityTypeConstants.Person)
+            {
+                return UuidType.Person;
+            }
+
+            if (entityTypeId == EntityTypeConstants.Organization)
+            {
+                return UuidType.Organization;
+            }
+
+            if (entityTypeId == EntityTypeConstants.SystemUser)
+            {
+                return UuidType.SystemUser;
+            }
+
+            return UuidType.NotSpecified;
         }
 
         private static List<Rule> GetRulesFromPolicyAndDelegationChange(ICollection<XacmlRule> xacmlRules, DelegationChange delegationChange)
