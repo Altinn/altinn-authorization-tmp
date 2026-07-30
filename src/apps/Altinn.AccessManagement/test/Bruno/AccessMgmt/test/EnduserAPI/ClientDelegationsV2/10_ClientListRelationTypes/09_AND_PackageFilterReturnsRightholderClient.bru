@@ -45,4 +45,12 @@ tests {
     expect(data.some(item => item.client.id.toLowerCase() === clientB)).to.be.true;
     expect(data.some(item => item.client.id.toLowerCase() === clientA)).to.be.false;
   });
+
+  test("AND every returned client holds the filtered package", function() {
+    const packageUrn = td.clientDelegationV2.packages.skattegrunnlag;
+    res.getBody().data.forEach(item => {
+      const urns = item.access.flatMap(a => a.packages.map(p => p.urn));
+      expect(urns, `expected ${item.client.name} to hold ${packageUrn}`).to.include(packageUrn);
+    });
+  });
 }
