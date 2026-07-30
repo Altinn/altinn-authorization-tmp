@@ -1719,9 +1719,6 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 continue;
             }
 
-            var rolePackages = await db.RolePackages.AsNoTracking().Where(t => t.RoleId == input.Role.Id && pkgIds.Contains(t.PackageId)).ToListAsync(cancellationToken);
-            var assignmentPackages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == clientAssignment.Id && pkgIds.Contains(t.PackageId)).ToListAsync(cancellationToken);
-
             var delegation = await db.Delegations.AsNoTracking().FirstOrDefaultAsync(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == partyUuid, cancellationToken);
             if (delegation is null)
             {
@@ -1741,21 +1738,11 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
             var existingDelegationPackages = await db.DelegationPackages.AsTracking().Where(t => t.DelegationId == delegation.Id).ToListAsync(cancellationToken);
             foreach (var pkgId in pkgIds)
             {
-                // A package can have several RolePackage rows scoped to different entity variants.
-                // The row is selected with the same variant filter as the delegate path so the
-                // resolved id matches the RolePackageId stored on the delegation package.
-                var rolePackageId = rolePackages
-                    .Where(r => r.PackageId == pkgId && (r.EntityVariantId == null || r.EntityVariantId == entities[fromUuid].VariantId))
-                    .OrderBy(r => r.EntityVariantId != null)
-                    .FirstOrDefault()?.Id;
-                var assignmentPackageId = assignmentPackages.FirstOrDefault(t => t.PackageId == pkgId)?.Id;
-
-                var toRemove = existingDelegationPackages.FirstOrDefault(
-                    t =>
-                    t.DelegationId == delegation.Id &&
-                    t.PackageId == pkgId &&
-                    t.RolePackageId == rolePackageId &&
-                    t.AssignmentPackageId == assignmentPackageId);
+                // (DelegationId, PackageId) is unique and the delegation is resolved from the
+                // caller's client assignment, agent assignment and facilitator for this role,
+                // so the package id alone identifies the row to remove regardless of which
+                // RolePackage or AssignmentPackage row backed the delegation.
+                var toRemove = existingDelegationPackages.FirstOrDefault(t => t.PackageId == pkgId);
 
                 if (toRemove is { })
                 {
