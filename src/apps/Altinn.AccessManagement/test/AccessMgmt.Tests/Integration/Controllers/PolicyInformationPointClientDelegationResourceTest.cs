@@ -41,12 +41,10 @@ public class PolicyInformationPointClientDelegationResourceTest
     private static readonly Guid AssignOrgToClientId = Guid.Parse("0196b000-0002-7001-8001-000000000020");
     private static readonly Guid AssignClientToRecipientId = Guid.Parse("0196b000-0002-7001-8001-000000000021");
     private static readonly Guid AssignClientToSystemUserId = Guid.Parse("0196b000-0002-7001-8001-000000000022");
-    private static readonly Guid AssignOrgToClientForAppId = Guid.Parse("0196b000-0002-7001-8001-000000000023");
-    private static readonly Guid AssignClientToRecipientForAppId = Guid.Parse("0196b000-0002-7001-8001-000000000024");
 
     // Policy paths for assertion
     private const string ResourcePolicyPath = "nav_sykepenger_dialog/50900020/client_delegated/delegationpolicy.xml";
-    private const string SystemUserPolicyPath = "nav_sykepenger_dialog/50900020/client_delegated_su/delegationpolicy.xml";
+
     private const string AppPolicyPath = "app_skd_sirius-skattemelding-v1/50900020/client_delegated/delegationpolicy.xml";
 
     public PolicyInformationPointClientDelegationResourceTest(AccessMgmtApiFixture fixture)
@@ -170,15 +168,6 @@ public class PolicyInformationPointClientDelegationResourceTest
                 RoleId = RoleConstants.Agent,
             };
 
-            var assignmentResourceSu = new AssignmentResource()
-            {
-                AssignmentId = AssignOrgToClientId,
-                ResourceId = TestData.NavSykepengerDialog.Id,
-                PolicyPath = SystemUserPolicyPath,
-                PolicyVersion = "2024-06-02T00:00:00.0000000Z",
-                DelegationChangeId = 99000021,
-            };
-
             var delegationToSystemUser = new Delegation()
             {
                 FromId = AssignOrgToClientId,
@@ -190,52 +179,32 @@ public class PolicyInformationPointClientDelegationResourceTest
             {
                 DelegationId = delegationToSystemUser.Id,
                 ResourceId = TestData.NavSykepengerDialog.Id,
-                AssignmentResourceId = assignmentResourceSu.Id,
+                AssignmentResourceId = assignmentResource.Id,
             };
 
             // === Scenario 3: AltinnAppId resource delegation from MainUnit via client to Person ===
-            var assignOrgToClientForApp = new Assignment()
-            {
-                Id = AssignOrgToClientForAppId,
-                FromId = OrgMainUnitId,
-                ToId = ClientProviderId,
-                RoleId = RoleConstants.Rightholder,
-            };
-            var assignClientToRecipientForApp = new Assignment()
-            {
-                Id = AssignClientToRecipientForAppId,
-                FromId = ClientProviderId,
-                ToId = PersonRecipientId,
-                RoleId = RoleConstants.Agent,
-            };
-
+            // Reuses assignOrgToClient and assignClientToRecipient assignments, and the delegation between them.
+            // Only adds a different resource (SiriusSkattemelding) to the same assignment and delegation.
             var assignmentResourceApp = new AssignmentResource()
             {
-                AssignmentId = AssignOrgToClientForAppId,
+                AssignmentId = AssignOrgToClientId,
                 ResourceId = TestData.SiriusSkattemelding.Id,
                 PolicyPath = AppPolicyPath,
                 PolicyVersion = "2024-07-01T00:00:00.0000000Z",
                 DelegationChangeId = 99000022,
             };
 
-            var delegationForApp = new Delegation()
-            {
-                FromId = AssignOrgToClientForAppId,
-                ToId = AssignClientToRecipientForAppId,
-                FacilitatorId = ClientProviderId,
-            };
-
             var delegationResourceApp = new DelegationResource()
             {
-                DelegationId = delegationForApp.Id,
+                DelegationId = delegation.Id,
                 ResourceId = TestData.SiriusSkattemelding.Id,
                 AssignmentResourceId = assignmentResourceApp.Id,
             };
 
             // Persist all
-            db.Assignments.AddRange(assignOrgToClient, assignClientToRecipient, assignClientToSystemUser, assignOrgToClientForApp, assignClientToRecipientForApp);
-            db.AssignmentResources.AddRange(assignmentResource, assignmentResourceSu, assignmentResourceApp);
-            db.Delegations.AddRange(delegation, delegationToSystemUser, delegationForApp);
+            db.Assignments.AddRange(assignOrgToClient, assignClientToRecipient, assignClientToSystemUser);
+            db.AssignmentResources.AddRange(assignmentResource, assignmentResourceApp);
+            db.Delegations.AddRange(delegation, delegationToSystemUser);
             db.DelegationResources.AddRange(delegationResource, delegationResourceSu, delegationResourceApp);
 
             db.SaveChanges();
@@ -297,7 +266,7 @@ public class PolicyInformationPointClientDelegationResourceTest
         Assert.NotNull(result);
         Assert.Contains(result, d =>
             d.ResourceId == "nav_sykepenger_dialog" &&
-            d.BlobStoragePolicyPath == SystemUserPolicyPath);
+            d.BlobStoragePolicyPath == ResourcePolicyPath);
     }
 
     /// <summary>
