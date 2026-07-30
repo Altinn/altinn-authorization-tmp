@@ -388,7 +388,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             // 4. Client-delegated resources (v2)
-            if (await _featureManager.IsEnabledAsync("AccessManagement.Pip.IncludeClientDelegatedResources"))
+            if (await _featureManager.IsEnabledAsync("AccessManagement.Pip.IncludeClientDelegatedResources", cancellationToken))
             {
                 var clientDelegations = await GetClientDelegatedResources(subjectUserId, subjectUuid, subjectUuidType, from, resourceId, resourceMatchType, cancellationToken);
                 delegations.AddRange(clientDelegations);

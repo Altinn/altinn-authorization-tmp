@@ -17,7 +17,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers;
 /// </summary>
 [IntegrationTest]
 [Collection(PolicyInformationPointDbCollection.Name)]
-public class PolicyInformationPointClientDelegationsTest
+public class PolicyInformationPointClientDelegationResourceTest
 {
     private readonly HttpClient _client;
     private readonly JsonSerializerOptions _options = new() { PropertyNameCaseInsensitive = true };
@@ -49,12 +49,12 @@ public class PolicyInformationPointClientDelegationsTest
     private const string SystemUserPolicyPath = "nav_sykepenger_dialog/50900020/client_delegated_su/delegationpolicy.xml";
     private const string AppPolicyPath = "app_skd_sirius-skattemelding-v1/50900020/client_delegated/delegationpolicy.xml";
 
-    public PolicyInformationPointClientDelegationsTest(AccessMgmtApiFixture fixture)
+    public PolicyInformationPointClientDelegationResourceTest(AccessMgmtApiFixture fixture)
     {
         fixture.WithAppsettings(builder => builder.AddJsonFile("appsettings.test.json", optional: false));
         fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.IncludeClientDelegatedResourcesInPip);
 
-        fixture.EnsureSeedOnce<PolicyInformationPointClientDelegationsTest>(db =>
+        fixture.EnsureSeedOnce<PolicyInformationPointClientDelegationResourceTest>(db =>
         {
             // Entities
             db.Entities.AddRange(
