@@ -786,7 +786,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
     }
 
     [Fact]
-    public async Task GetConnectionsFromOthers_IncludeDelegationFalse_DoesNotReturnDelegationResources()
+    public async Task GetConnectionsFromOthers_IncludeDelegationFalse_DoesNotReturnDelegationConnections()
     {
         var personId = TestDataSet.GetEntity("Gunnar").Id;
 
