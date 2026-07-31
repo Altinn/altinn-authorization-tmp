@@ -182,6 +182,15 @@ public class ConnectionQuery(AppDbContext db)
                             result = await resourceLoader.LoadResourcesByKeyAsync(result, rightholderAssignmentIds, filter, ct);
                         }
                     }
+
+                    if (filter.IncludeDelegationResources && filter.IncludeDelegation)
+                    {
+                        var delegationIds = result.Where(r => r.DelegationId.HasValue).Select(r => (Guid)r.DelegationId!).Distinct().ToHashSet();
+                        if (delegationIds.Count > 0)
+                        {
+                            result = await resourceLoader.LoadDelegationResourcesByKeyAsync(result, delegationIds, filter, ct);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
