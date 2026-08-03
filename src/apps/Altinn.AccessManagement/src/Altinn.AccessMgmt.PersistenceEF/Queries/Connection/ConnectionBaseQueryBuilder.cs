@@ -93,7 +93,7 @@ internal class ConnectionBaseQueryBuilder
                     IsRoleMap = false,
                 });
 
-        var keyrole =
+        var keyroleNoIks =
             direct
                 .Join(
                     db.Roles,
@@ -101,16 +101,13 @@ internal class ConnectionBaseQueryBuilder
                     r => r.Id,
                     (d, r) => new { d, r }
                 )
-                .Where(x => x.r.IsKeyRole)
+                .Where(x => x.r.IsKeyRole && x.r.Id != RoleConstants.ParticipantSharedResponsibility.Id)
                 .Join(
                     db.Assignments,
                     x => x.d.FromId,
                     a2 => a2.ToId,
                     (x, a2) => new { x, a2 }
                 )
-                .Where(z => 
-                    !(z.a2.From.VariantId == EntityVariantConstants.IKS.Id && z.a2.RoleId == RoleConstants.ParticipantSharedResponsibility.Id) &&
-                    !(z.a2.To.VariantId == EntityVariantConstants.IKS.Id && z.x.d.RoleId == RoleConstants.ParticipantSharedResponsibility.Id))
                 .Select(z => new ConnectionQueryBaseRecord
                 {
                     AssignmentId = z.a2.Id,
@@ -125,6 +122,35 @@ internal class ConnectionBaseQueryBuilder
                     IsMainUnitAccess = false,
                     IsRoleMap = false,
                 });
+
+        var keyrolePotentialIks =
+            direct
+                .Where(x => x.RoleId == RoleConstants.ParticipantSharedResponsibility.Id)
+                .Join(
+                    db.Assignments,
+                    x => x.FromId,
+                    a2 => a2.ToId,
+                    (x, a2) => new { x, a2 }
+                )
+                .Where(z =>
+                    !(z.a2.From.VariantId == EntityVariantConstants.IKS.Id && z.a2.RoleId == RoleConstants.ParticipantSharedResponsibility.Id) &&
+                    !(z.a2.To.VariantId == EntityVariantConstants.IKS.Id))
+                .Select(z => new ConnectionQueryBaseRecord
+                {
+                    AssignmentId = z.a2.Id,
+                    DelegationId = null,
+                    FromId = z.a2.FromId,
+                    ToId = z.x.ToId,
+                    RoleId = z.a2.RoleId,
+                    ViaId = z.x.FromId,
+                    ViaRoleId = z.x.RoleId,
+                    Reason = ConnectionReason.KeyRole,
+                    IsKeyRoleAccess = true,
+                    IsMainUnitAccess = false,
+                    IsRoleMap = false,
+                });
+
+        var keyrole = keyroleNoIks.Concat(keyrolePotentialIks);
 
         var a1 = filter.IncludeKeyRole
             ? direct.Concat(keyrole)
