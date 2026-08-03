@@ -486,7 +486,8 @@ namespace Altinn.AccessManagement.Core.Services
             return clientDelegationResults.Select(dr =>
             {
                 var fromEntity = dr.Delegation.From.From;
-                var viaParty = dr.Delegation.Facilitator;
+                var viaParty = dr.Delegation.Facilitator
+                    ?? throw new InvalidOperationException($"Delegation {dr.DelegationId} is missing its Facilitator entity. FacilitatorId is required.");
 
                 return new DelegationChange
                 {
@@ -497,8 +498,8 @@ namespace Altinn.AccessManagement.Core.Services
                     OfferedByPartyId = fromEntity.PartyId ?? 0,
                     FromUuid = fromEntity.Id,
                     FromUuidType = MapEntityTypeToUuidType(fromEntity.TypeId),
-                    CoveredByPartyId = viaParty?.PartyId,
-                    ToUuid = viaParty?.Id,
+                    CoveredByPartyId = viaParty.PartyId,
+                    ToUuid = viaParty.Id,
                     ToUuidType = UuidType.Organization,
                 };
             }).ToList();
