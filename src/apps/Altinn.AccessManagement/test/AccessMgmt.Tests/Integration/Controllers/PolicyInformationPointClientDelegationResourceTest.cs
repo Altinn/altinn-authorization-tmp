@@ -240,12 +240,12 @@ public class PolicyInformationPointClientDelegationResourceTest
             d.ResourceId == "nav_sykepenger_dialog" &&
             d.BlobStoragePolicyPath == ResourcePolicyPath);
 
-        // Verify from/to mapping is populated for PDP consumption
+        // Verify from/to mapping: viaParty org is the covered-by party (same pattern as keyrole delegations)
         Assert.Equal(OrgMainUnitPartyId, delegation.OfferedByPartyId);
         Assert.Equal(OrgMainUnitId, delegation.FromUuid);
-        Assert.Equal(PersonRecipientId, delegation.ToUuid);
-        Assert.Equal(RecipientUserId, delegation.CoveredByUserId);
-        Assert.Null(delegation.CoveredByPartyId);
+        Assert.Equal(ClientProviderId, delegation.ToUuid);
+        Assert.Null(delegation.CoveredByUserId);
+        Assert.Equal(50900023, delegation.CoveredByPartyId);
     }
 
     /// <summary>
@@ -275,11 +275,11 @@ public class PolicyInformationPointClientDelegationResourceTest
             d.ResourceId == "nav_sykepenger_dialog" &&
             d.BlobStoragePolicyPath == ResourcePolicyPath);
 
-        // Verify system user gets ToUuid/ToUuidType populated
+        // Verify viaParty org is the covered-by party (same for system user recipients)
         Assert.Equal(OrgMainUnitPartyId, delegation.OfferedByPartyId);
-        Assert.Equal(SystemUserRecipientId, delegation.ToUuid);
+        Assert.Equal(ClientProviderId, delegation.ToUuid);
         Assert.Null(delegation.CoveredByUserId);
-        Assert.Null(delegation.CoveredByPartyId);
+        Assert.Equal(50900023, delegation.CoveredByPartyId);
     }
 
     /// <summary>
