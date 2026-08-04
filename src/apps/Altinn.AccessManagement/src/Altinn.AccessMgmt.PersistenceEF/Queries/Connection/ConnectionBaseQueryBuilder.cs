@@ -126,25 +126,34 @@ internal class ConnectionBaseQueryBuilder
 
         var keyrolePotentialIks =
             direct
-                .Where(x => x.RoleId == RoleConstants.ParticipantSharedResponsibility.Id)
+                .Join(
+                    db.Roles,
+                    d => d.RoleId,
+                    r => r.Id,
+                    (d, r) => new { d, r }
+                )
+                .Where(x => x.r.IsKeyRole)
                 .Join(
                     db.Assignments,
-                    x => x.FromId,
+                    x => x.d.FromId,
                     a2 => a2.ToId,
                     (x, a2) => new { x, a2 }
                 )
                 .Where(z =>
+                    z.a2.RoleId == RoleConstants.ParticipantSharedResponsibility.Id ||
+                    z.x.d.RoleId == RoleConstants.ParticipantSharedResponsibility.Id)
+                .Where(z =>
                     !(z.a2.From.VariantId == EntityVariantConstants.IKS.Id && z.a2.RoleId == RoleConstants.ParticipantSharedResponsibility.Id) &&
-                    !(z.a2.To.VariantId == EntityVariantConstants.IKS.Id && z.x.RoleId == RoleConstants.ParticipantSharedResponsibility.Id))
+                    !(z.a2.To.VariantId == EntityVariantConstants.IKS.Id && z.x.d.RoleId == RoleConstants.ParticipantSharedResponsibility.Id))
                 .Select(z => new ConnectionQueryBaseRecord
                 {
                     AssignmentId = z.a2.Id,
                     DelegationId = null,
                     FromId = z.a2.FromId,
-                    ToId = z.x.ToId,
+                    ToId = z.x.d.ToId,
                     RoleId = z.a2.RoleId,
-                    ViaId = z.x.FromId,
-                    ViaRoleId = z.x.RoleId,
+                    ViaId = z.x.d.FromId,
+                    ViaRoleId = z.x.d.RoleId,
                     Reason = ConnectionReason.KeyRole,
                     IsKeyRoleAccess = true,
                     IsMainUnitAccess = false,
