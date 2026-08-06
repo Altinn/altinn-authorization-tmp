@@ -54,6 +54,8 @@ namespace Altinn.Platform.Authorization.Controllers
 
         private readonly SortedDictionary<string, AuthInfo> _appInstanceInfo = new();
 
+        private const string XForwardedForHeaderName = "X-Forwarded-For";
+
         private static JsonSerializerOptions jsonSerializerOptions = new()
         {
             PropertyNameCaseInsensitive = true,
@@ -189,6 +191,7 @@ namespace Altinn.Platform.Authorization.Controllers
             try
             {
                 XacmlJsonRequestRoot jsonRequest = authorizationRequest.ToInternal();
+                ApplyXForwardedForHeader(jsonRequest.Request, Request.Headers);
                 XacmlJsonResponse xacmlResponse = await Authorize(jsonRequest.Request, true, cancellationToken);
                 return xacmlResponse.ToExternal();
             }
@@ -337,10 +340,25 @@ namespace Altinn.Platform.Authorization.Controllers
         private async Task<ActionResult> AuthorizeJsonRequest(XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
             XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, jsonSerializerOptions);
+            ApplyXForwardedForHeader(jsonRequest.Request, Request.Headers);
 
             XacmlJsonResponse jsonResponse = await Authorize(jsonRequest.Request, cancellationToken: cancellationToken);
 
             return Ok(jsonResponse);
+        }
+
+        /// <summary>
+        /// Stamps the request with the X-Forwarded-For header value taken verbatim from this
+        /// service's own incoming request headers, overwriting anything already present so a
+        /// caller-supplied body value can never take effect.
+        /// </summary>
+        /// <param name="request">The decision request to stamp.</param>
+        /// <param name="headers">The headers of the incoming HTTP request.</param>
+        internal static void ApplyXForwardedForHeader(XacmlJsonRequest request, IHeaderDictionary headers)
+        {
+            request.XForwardedForHeader = headers != null && headers.ContainsKey(XForwardedForHeaderName)
+                ? headers[XForwardedForHeaderName].ToString()
+                : null;
         }
 
         private ActionResult CreateResponse(XacmlContextResponse xacmlContextResponse)
