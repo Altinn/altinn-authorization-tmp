@@ -1,0 +1,54 @@
+meta {
+  name: 03_WHEN_AMainUnitDelegatesToASubunit
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAccessPackages=true&includeResources=true&includeInstances=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  includeAccessPackages: true
+  includeResources: true
+  includeInstances: true
+}
+
+docs {
+  WHEN main unit A has delegated to subunit C, the daily leader of subunit C's main unit
+  sees main unit A. A key role on a main unit carries down to the unit's subunits, so the
+  access delegated to the subunit reaches the key role holder.
+
+  The deployed API does not return main unit A for that caller at all.
+}
+
+script:pre-request {
+  const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { loginAs } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  await loginAs(testdata.authParties_hovedenhetC.dagligleder);
+}
+
+tests {
+  const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { findParty } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  const delegator = testdata.authParties_hovedenhetA;
+
+  test("WHEN a main unit delegates to a subunit, the request returns 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("THEN the receiving subunit's key role holder sees the delegating main unit", function() {
+    const party = findParty(res.getBody().data, delegator.partyuuid);
+    expect(party, `expected ${delegator.name} in the party list`).to.not.be.undefined;
+  });
+
+  test("THEN the delegating main unit carries the delegated access", function() {
+    const party = findParty(res.getBody().data, delegator.partyuuid);
+    expect(party, `expected ${delegator.name} in the party list`).to.not.be.undefined;
+    expect(party.authorizedAccessPackages).to.not.be.empty;
+  });
+}

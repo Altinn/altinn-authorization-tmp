@@ -1,0 +1,51 @@
+meta {
+  name: 10_WHEN_InactivePartiesAreExcluded
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeInactiveParties=false
+  body: none
+  auth: inherit
+}
+
+params:query {
+  includeInactiveParties: false
+}
+
+docs {
+  WHEN inactive parties are excluded, no party marked as deleted is returned.
+
+  The deployed API returns the deleted parties anyway. The service resolves the parameter
+  but never applies it to the query, so this step fails until the filter is implemented.
+}
+
+script:pre-request {
+  const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { loginAs } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  await loginAs(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder);
+}
+
+tests {
+  const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { flatten, findParty, partyUuids } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  const deletedClient = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess;
+
+  test("WHEN inactive parties are excluded, the request returns 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("THEN no party is marked as deleted", function() {
+    const deleted = flatten(res.getBody().data).filter(party => party.isDeleted).map(party => party.partyUuid);
+    expect(deleted.length, `deleted parties were returned: ${deleted.join(", ")}`).to.equal(0);
+  });
+
+  test("THEN the deleted client is not part of the result", function() {
+    expect(findParty(res.getBody().data, deletedClient.partyUuid), `the deleted client ${deletedClient.name} should be filtered out`).to.be.undefined;
+  });
+
+  bru.setVar("inactivePartiesFalsePartyUuids", JSON.stringify(partyUuids(res.getBody().data).sort()));
+}

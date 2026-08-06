@@ -1,0 +1,23 @@
+meta {
+  name: 03_KeyRoleAndSubPartyFilters
+  seq: 3
+}
+
+docs {
+  Scenario: The three include filters in their true, false and auto settings
+
+    Given the daily leader lists authorized parties with key role parties included
+    Then the firm's clients are part of the result
+    When key role parties are excluded
+    Then only the parties the user reaches personally are left
+    And auto follows the user's own profile setting
+    When subunits are excluded
+    Then no party carries subunits
+    When inactive parties are excluded
+    Then no deleted party is returned
+
+  `includeSubParties` and `includeInactiveParties` are read by the service and resolved
+  from the user profile when set to auto, but the resolved value is never applied to the
+  query. The false steps assert the documented behaviour and fail against the deployed
+  API for that reason.
+}

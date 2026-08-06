@@ -1,0 +1,58 @@
+meta {
+  name: 07_WHEN_ASubunitDelegatesToASubunit
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeAccessPackages=true&includeResources=true&includeInstances=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  includeAccessPackages: true
+  includeResources: true
+  includeInstances: true
+}
+
+docs {
+  WHEN subunit D has delegated to subunit C, the daily leader of subunit C's main unit
+  sees subunit D nested under D's own main unit, which is returned as a hierarchy element
+  with no access.
+
+  The deployed API does not return that hierarchy for the caller at all, for the same
+  reason as the main unit to subunit step: access delegated to a subunit does not reach
+  the key role holders of the subunit's main unit.
+}
+
+script:pre-request {
+  const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { loginAs } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  await loginAs(testdata.authParties_hovedenhetC.dagligleder);
+}
+
+tests {
+  const testdata = require(`./testdata/auth-parties-testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { findParty } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  const delegatorMainUnit = testdata.authParties_hovedenhetD;
+  const delegator = delegatorMainUnit.authParties_underenhetD;
+
+  test("WHEN a subunit delegates to a subunit, the request returns 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("THEN the delegating subunit's main unit is returned as a hierarchy element", function() {
+    const party = res.getBody().data.find(item => item.partyUuid.toLowerCase() === delegatorMainUnit.partyuuid.toLowerCase());
+    expect(party, `expected ${delegatorMainUnit.name} as a hierarchy carrier`).to.not.be.undefined;
+    expect(party.onlyHierarchyElementWithNoAccess).to.be.true;
+  });
+
+  test("THEN the delegating subunit is nested under it with the delegated access", function() {
+    const subunit = findParty(res.getBody().data, delegator.partyuuid);
+    expect(subunit, `expected ${delegator.name} in the party list`).to.not.be.undefined;
+    expect(subunit.authorizedAccessPackages).to.not.be.empty;
+  });
+}

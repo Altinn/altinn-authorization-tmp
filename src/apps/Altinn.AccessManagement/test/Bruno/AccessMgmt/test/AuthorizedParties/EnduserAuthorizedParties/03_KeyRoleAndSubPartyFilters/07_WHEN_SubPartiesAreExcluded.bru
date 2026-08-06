@@ -1,0 +1,54 @@
+meta {
+  name: 07_WHEN_SubPartiesAreExcluded
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/authorizedparties?includeSubParties=false
+  body: none
+  auth: inherit
+}
+
+params:query {
+  includeSubParties: false
+}
+
+docs {
+  WHEN subunits are excluded, no party carries subunits and only the main units the
+  caller has access to are returned.
+
+  The deployed API returns the subunits anyway. The service resolves the parameter but
+  never applies it to the query, so this step fails until the filter is implemented.
+}
+
+script:pre-request {
+  const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { loginAs } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  await loginAs(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder);
+}
+
+tests {
+  const testdata = require(`./test/AuthorizedParties/testdata/${bru.getEnvVar("tokenEnv")}.js`);
+  const { findParty, partyUuids } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
+
+  const firm = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER;
+
+  test("WHEN subunits are excluded, the request returns 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("THEN no party carries subunits", function() {
+    const withSubunits = res.getBody().data
+      .filter(party => party.subunits.length > 0)
+      .map(party => party.partyUuid);
+    expect(withSubunits.length, `subunits were returned for: ${withSubunits.join(", ")}`).to.equal(0);
+  });
+
+  test("THEN the client's subunit is not part of the result", function() {
+    expect(findParty(res.getBody().data, firm.client_USENSUELL_UVIRKSOM_TIGER.subunit.partyUuid), "the client subunit should be filtered out").to.be.undefined;
+  });
+
+  bru.setVar("subPartiesFalsePartyUuids", JSON.stringify(partyUuids(res.getBody().data).sort()));
+}
