@@ -41,14 +41,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly ILogger<ConsentService> _logger;
         private readonly IConsentDelegationCheckService _consentDelegationCheckService;
 
-        // histograms for sub-step durations (seconds)
-        private readonly Histogram<double>? _getA2Histogram;
-        private readonly Histogram<double>? _insertA3Histogram;
-        private readonly Histogram<double>? _updateA2Histogram;
-
-        // overall per-consent end-to-end duration (seconds)
-        private readonly Histogram<double>? _consentOverallHistogram;
-
         private const string ResourceParam = "Resource";
 
         public ConsentService(
