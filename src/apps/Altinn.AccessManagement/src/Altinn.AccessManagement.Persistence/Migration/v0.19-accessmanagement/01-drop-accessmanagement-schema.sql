@@ -17,7 +17,7 @@ DROP FUNCTION IF EXISTS delegation.select_active_resourceregistrydelegationchang
 DROP FUNCTION IF EXISTS delegation.select_active_resourceregistrydelegationchanges(int[], int[], text[], text[]);
 
 -- Foreign Key: must go before the schema it references
-ALTER TABLE delegation.resourceregistrydelegationchanges
+ALTER TABLE IF EXISTS delegation.resourceregistrydelegationchanges
 DROP CONSTRAINT IF EXISTS resourceregistrydelegationchanges_resourceid_fk;
 
 -- Schema: accessmanagement
