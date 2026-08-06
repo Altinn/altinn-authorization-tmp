@@ -114,6 +114,18 @@ namespace Altinn.Common.PEP.Helpers
         }
 
         /// <summary>
+        /// Create a new <see cref="XacmlJsonRequestRoot"/> to represent a decision request, without access to the incoming request headers.
+        /// </summary>
+        /// <param name="context">The current <see cref="AuthorizationHandlerContext"/></param>
+        /// <param name="requirement">The access requirements</param>
+        /// <param name="routeData">The route data from a request.</param>
+        /// <returns>A decision request</returns>
+        public static XacmlJsonRequestRoot CreateDecisionRequest(AuthorizationHandlerContext context, AppAccessRequirement requirement, RouteData routeData)
+        {
+            return CreateDecisionRequest(context, requirement, routeData, null);
+        }
+
+        /// <summary>
         /// Create a new <see cref="XacmlJsonRequestRoot"/> to represent a decision request.
         /// </summary>
         /// <param name="context">The current <see cref="AuthorizationHandlerContext"/></param>
