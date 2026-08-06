@@ -108,9 +108,10 @@ function lower(values) {
 }
 
 // True when the deletion date is inside the window where a deleted party still grants access.
+// The cutoff is snapped to midnight UTC so the result is stable for a whole day.
 function isInsideRetentionWindow(deletedDate, retentionYears) {
-  const cutoff = new Date();
-  cutoff.setUTCFullYear(cutoff.getUTCFullYear() - retentionYears);
+  const now = new Date();
+  const cutoff = new Date(Date.UTC(now.getUTCFullYear() - retentionYears, now.getUTCMonth(), now.getUTCDate()));
   return new Date(`${deletedDate}T00:00:00Z`) > cutoff;
 }
 
