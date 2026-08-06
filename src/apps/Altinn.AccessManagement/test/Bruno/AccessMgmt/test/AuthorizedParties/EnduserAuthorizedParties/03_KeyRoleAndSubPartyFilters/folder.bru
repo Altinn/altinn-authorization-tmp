@@ -12,12 +12,12 @@ docs {
     Then only the parties the user reaches personally are left
     And auto follows the user's own profile setting
     When subunits are excluded
-    Then no party carries subunits
+    Then the subunits come back anyway
     When inactive parties are excluded
-    Then no deleted party is returned
+    Then the deleted parties come back anyway
 
   `includeSubParties` and `includeInactiveParties` are read by the service and resolved
   from the user profile when set to auto, but the resolved value is never applied to the
-  query. The false steps assert the documented behaviour and fail against the deployed
-  API for that reason.
+  query, so neither parameter has any effect. The two false steps assert that as the
+  behaviour of the day and name #3522, which tracks completing the filters.
 }

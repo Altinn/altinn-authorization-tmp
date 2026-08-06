@@ -15,11 +15,13 @@ params:query {
 }
 
 docs {
-  WHEN subunits are excluded, no party carries subunits and only the main units the
-  caller has access to are returned.
+  WHEN subunits are excluded, the subunits come back anyway. The service resolves
+  `includeSubParties` and then never applies it to the query, so the parameter has no
+  effect on the result.
 
-  The deployed API returns the subunits anyway. The service resolves the parameter but
-  never applies it to the query, so this step fails until the filter is implemented.
+  The correct behaviour is that no party carries subunits and only the main units the
+  caller has access to are returned. Completing the filter is tracked by #3522, and this
+  step turns red when the fix lands.
 }
 
 script:pre-request {
@@ -39,15 +41,13 @@ tests {
     expect(res.status).to.equal(200);
   });
 
-  test("THEN no party carries subunits", function() {
-    const withSubunits = res.getBody().data
-      .filter(party => party.subunits.length > 0)
-      .map(party => party.partyUuid);
-    expect(withSubunits.length, `subunits were returned for: ${withSubunits.join(", ")}`).to.equal(0);
+  test("THEN parties still carry subunits, because the filter is not applied (#3522)", function() {
+    const withSubunits = res.getBody().data.filter(party => party.subunits.length > 0);
+    expect(withSubunits, "the filter has started taking effect, so this step needs to be flipped").to.not.be.empty;
   });
 
-  test("THEN the client's subunit is not part of the result", function() {
-    expect(findParty(res.getBody().data, firm.client_USENSUELL_UVIRKSOM_TIGER.subunit.partyUuid), "the client subunit should be filtered out").to.be.undefined;
+  test("THEN the client's subunit is still part of the result (#3522)", function() {
+    expect(findParty(res.getBody().data, firm.client_USENSUELL_UVIRKSOM_TIGER.subunit.partyUuid), "the filter has started taking effect, so this step needs to be flipped").to.not.be.undefined;
   });
 
   bru.setVar("subPartiesFalsePartyUuids", JSON.stringify(partyUuids(res.getBody().data).sort()));

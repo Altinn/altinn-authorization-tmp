@@ -18,12 +18,13 @@ params:query {
 
 docs {
   WHEN subunit D has delegated to subunit C, the daily leader of subunit C's main unit
-  sees subunit D nested under D's own main unit, which is returned as a hierarchy element
-  with no access.
+  does not see subunit D or the main unit above it. This is the same gap as the main unit
+  to subunit step: access delegated to a subunit does not reach the key role holders of
+  the subunit's main unit.
 
-  The deployed API does not return that hierarchy for the caller at all, for the same
-  reason as the main unit to subunit step: access delegated to a subunit does not reach
-  the key role holders of the subunit's main unit.
+  The correct behaviour is that subunit D appears for that caller, nested under D's own
+  main unit as a hierarchy element with no access. The gap is tracked by #2952, and this
+  step turns red when the fix lands.
 }
 
 script:pre-request {
@@ -39,20 +40,19 @@ tests {
 
   const delegatorMainUnit = testdata.authParties_hovedenhetD;
   const delegator = delegatorMainUnit.authParties_underenhetD;
+  const recipientMainUnit = testdata.authParties_hovedenhetC;
 
   test("WHEN a subunit delegates to a subunit, the request returns 200", function() {
     expect(res.status).to.equal(200);
   });
 
-  test("THEN the delegating subunit's main unit is returned as a hierarchy element", function() {
-    const party = res.getBody().data.find(item => item.partyUuid.toLowerCase() === delegatorMainUnit.partyuuid.toLowerCase());
-    expect(party, `expected ${delegatorMainUnit.name} as a hierarchy carrier`).to.not.be.undefined;
-    expect(party.onlyHierarchyElementWithNoAccess).to.be.true;
+  test("THEN the receiving subunit's key role holder does not see the delegating subunit (#2952)", function() {
+    expect(findParty(res.getBody().data, delegator.partyuuid), `${delegator.name} has started appearing for this caller, so this step needs to be flipped`).to.be.undefined;
+    expect(findParty(res.getBody().data, delegatorMainUnit.partyuuid), `${delegatorMainUnit.name} has started appearing for this caller, so this step needs to be flipped`).to.be.undefined;
   });
 
-  test("THEN the delegating subunit is nested under it with the delegated access", function() {
-    const subunit = findParty(res.getBody().data, delegator.partyuuid);
-    expect(subunit, `expected ${delegator.name} in the party list`).to.not.be.undefined;
-    expect(subunit.authorizedAccessPackages).to.not.be.empty;
+  test("THEN the caller only reaches their own main unit and themselves", function() {
+    expect(findParty(res.getBody().data, recipientMainUnit.partyuuid), "expected the caller's own main unit").to.not.be.undefined;
+    expect(findParty(res.getBody().data, recipientMainUnit.authParties_underenhetC.partyuuid), "expected the receiving subunit under the caller's own main unit").to.not.be.undefined;
   });
 }

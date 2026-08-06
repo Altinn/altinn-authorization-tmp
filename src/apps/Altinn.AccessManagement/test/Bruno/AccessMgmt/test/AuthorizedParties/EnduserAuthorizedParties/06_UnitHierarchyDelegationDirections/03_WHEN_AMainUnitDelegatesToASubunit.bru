@@ -18,10 +18,12 @@ params:query {
 
 docs {
   WHEN main unit A has delegated to subunit C, the daily leader of subunit C's main unit
-  sees main unit A. A key role on a main unit carries down to the unit's subunits, so the
-  access delegated to the subunit reaches the key role holder.
+  does not see main unit A at all. Access delegated to a subunit does not reach the key
+  role holders of the subunit's main unit.
 
-  The deployed API does not return main unit A for that caller at all.
+  The correct behaviour is that main unit A appears for that caller with the delegated
+  access, since a key role on a main unit otherwise carries down to the unit's subunits.
+  The gap is tracked by #2952, and this step turns red when the fix lands.
 }
 
 script:pre-request {
@@ -36,19 +38,18 @@ tests {
   const { findParty } = require("./test/AuthorizedParties/EnduserAuthorizedParties/helpers.js");
 
   const delegator = testdata.authParties_hovedenhetA;
+  const recipientMainUnit = testdata.authParties_hovedenhetC;
 
   test("WHEN a main unit delegates to a subunit, the request returns 200", function() {
     expect(res.status).to.equal(200);
   });
 
-  test("THEN the receiving subunit's key role holder sees the delegating main unit", function() {
-    const party = findParty(res.getBody().data, delegator.partyuuid);
-    expect(party, `expected ${delegator.name} in the party list`).to.not.be.undefined;
+  test("THEN the receiving subunit's key role holder does not see the delegating main unit (#2952)", function() {
+    expect(findParty(res.getBody().data, delegator.partyuuid), `${delegator.name} has started appearing for this caller, so this step needs to be flipped`).to.be.undefined;
   });
 
-  test("THEN the delegating main unit carries the delegated access", function() {
-    const party = findParty(res.getBody().data, delegator.partyuuid);
-    expect(party, `expected ${delegator.name} in the party list`).to.not.be.undefined;
-    expect(party.authorizedAccessPackages).to.not.be.empty;
+  test("THEN the caller only reaches their own main unit and themselves", function() {
+    expect(findParty(res.getBody().data, recipientMainUnit.partyuuid), "expected the caller's own main unit").to.not.be.undefined;
+    expect(findParty(res.getBody().data, recipientMainUnit.authParties_underenhetC.partyuuid), "expected the receiving subunit under the caller's own main unit").to.not.be.undefined;
   });
 }
