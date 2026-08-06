@@ -57,7 +57,7 @@ public class AccessListAuthorizationControllerTest : IClassFixture<Authorization
     /// no action filter on either side, so the only discriminating fact between the two tests is access list membership.
     /// </summary>
     [Fact]
-    public async Task AuthorizeInternal_NoAccessListMembership_Returns200WithNotAuthorized()
+    public async Task AccessList_Authorization_NotAuthorized_WithoutAccessListMembership()
     {
         string testCase = "Deny_NotAccessListMember";
         AccessListAuthorizationResponse expected = GetExpectedResponse(testCase);
