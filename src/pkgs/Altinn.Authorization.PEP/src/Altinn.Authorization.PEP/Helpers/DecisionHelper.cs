@@ -32,6 +32,7 @@ namespace Altinn.Common.PEP.Helpers
         private const string OrganizationHeaderTrigger = "organization";
         private const string PersonHeader = "Altinn-Party-SocialSecurityNumber";
         private const string OrganizationNumberHeader = "Altinn-Party-OrganizationNumber";
+        private const string XForwardedForHeaderName = "X-Forwarded-For";
         private const string PolicyObligationMinAuthnLevel = "urn:altinn:minimum-authenticationlevel";
         private const string PolicyObligationMinAuthnLevelOrg = "urn:altinn:minimum-authenticationlevel-org";
 
@@ -118,13 +119,15 @@ namespace Altinn.Common.PEP.Helpers
         /// <param name="context">The current <see cref="AuthorizationHandlerContext"/></param>
         /// <param name="requirement">The access requirements</param>
         /// <param name="routeData">The route data from a request.</param>
+        /// <param name="headers">The headers from the incoming request.</param>
         /// <returns>A decision request</returns>
-        public static XacmlJsonRequestRoot CreateDecisionRequest(AuthorizationHandlerContext context, AppAccessRequirement requirement, RouteData routeData)
+        public static XacmlJsonRequestRoot CreateDecisionRequest(AuthorizationHandlerContext context, AppAccessRequirement requirement, RouteData routeData, IHeaderDictionary headers)
         {
             XacmlJsonRequest request = new XacmlJsonRequest();
             request.AccessSubject = new List<XacmlJsonCategory>();
             request.Action = new List<XacmlJsonCategory>();
             request.Resource = new List<XacmlJsonCategory>();
+            request.XForwardedForHeader = GetXForwardedForHeaderValue(headers);
 
             string instanceGuid = routeData.Values[ParamInstanceGuid] as string;
             string app = routeData.Values[ParamApp] as string;
@@ -160,6 +163,7 @@ namespace Altinn.Common.PEP.Helpers
             request.AccessSubject = new List<XacmlJsonCategory>();
             request.Action = new List<XacmlJsonCategory>();
             request.Resource = new List<XacmlJsonCategory>();
+            request.XForwardedForHeader = GetXForwardedForHeaderValue(headers);
 
             string party = routeData.Values[ParamParty] as string;
 
@@ -697,6 +701,21 @@ namespace Altinn.Common.PEP.Helpers
             if (int.TryParse(party, out var partyId))
             {
                 return partyId;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads the raw X-Forwarded-For header value from the given headers, verbatim.
+        /// </summary>
+        /// <param name="headers">The headers from the incoming request.</param>
+        /// <returns>The header value exactly as received, or null if the header is not present.</returns>
+        private static string GetXForwardedForHeaderValue(IHeaderDictionary headers)
+        {
+            if (headers != null && headers.ContainsKey(XForwardedForHeaderName))
+            {
+                return headers[XForwardedForHeaderName].ToString();
             }
 
             return null;
