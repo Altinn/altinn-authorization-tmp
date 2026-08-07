@@ -186,7 +186,7 @@ namespace Altinn.Authorization.PEP.Tests
         [Fact]
         public async Task HandleRequirementAsync_XForwardedForHeaderPresent_Succeeds()
         {
-            // Arrange 
+            // Arrange
             AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
             string ipaddress = "18.203.138.153";
             _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext(ipaddress));
@@ -202,14 +202,56 @@ namespace Altinn.Authorization.PEP.Tests
             Assert.False(context.HasFailed);
 
             XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
+            Assert.Equal(ipaddress, request.Request.XForwardedForHeader);
+        }
 
-            // Known gap: even with an X-Forwarded-For header present, the PEP does not
-            // copy it onto the decision request. The AppAccessRequirement overload of
-            // DecisionHelper.CreateDecisionRequest is not even passed the headers, so
-            // XForwardedForHeader is never set and the PDP never sees the client IP.
-            // This pins current behaviour; switch to Assert.Equal(ipaddress, ...) once
-            // IP forwarding is implemented.
+        /// <summary>
+        /// Test case: Send request without an x-forwarded-for header
+        /// Expected: XForwardedForHeader property in request stays null
+        /// </summary>
+        [Fact]
+        public async Task HandleRequirementAsync_NoXForwardedForHeader_SendsNullHeader()
+        {
+            // Arrange
+            AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
+            _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext());
+            XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
+            _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
+
+            // Act
+            await _aah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
             Assert.Null(request.Request.XForwardedForHeader);
+        }
+
+        /// <summary>
+        /// Test case: Send request with a multi-hop x-forwarded-for header
+        /// Expected: XForwardedForHeader property receives the full chain unmodified
+        /// </summary>
+        [Fact]
+        public async Task HandleRequirementAsync_MultiHopXForwardedForHeaderPresent_ForwardsHeaderVerbatim()
+        {
+            // Arrange
+            AuthorizationHandlerContext context = CreateAuthorizationHandlerContext();
+            string forwardedForChain = "203.0.113.7, 70.41.3.18, 150.172.238.178";
+            _httpContextAccessorMock.Setup(h => h.HttpContext).Returns(CreateHttpContext(forwardedForChain));
+            XacmlJsonResponse response = CreateResponse(XacmlContextDecision.Permit.ToString());
+            _pdpMock.Setup(a => a.GetDecisionForRequest(It.IsAny<XacmlJsonRequestRoot>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response));
+
+            // Act
+            await _aah.HandleAsync(context);
+
+            // Assert
+            Assert.True(context.HasSucceeded);
+            Assert.False(context.HasFailed);
+
+            XacmlJsonRequestRoot request = Assert.IsType<XacmlJsonRequestRoot>(Assert.Single(_pdpMock.Invocations).Arguments[0]);
+            Assert.Equal(forwardedForChain, request.Request.XForwardedForHeader);
         }
 
         /// <summary>
