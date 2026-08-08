@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.73.0"
+      version = "4.81.0"
     }
     static = {
       source  = "tiwood/static"
@@ -323,24 +323,6 @@ module "appsettings" {
       value       = false
     },
     {
-      name        = "AccessMgmt.Core.Services.IncludeSingleRightsImportedAssignments"
-      description = "Ignores single rights."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessMgmt.Enduser.Controller.ClientDelegation"
-      description = "Specifies Client Delegation should be enabled in enduser API."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"
-      description = "(EF) Specifies if the AuthorizedParty service re-write to run on mainly EF-services should be used in dependency injection. Will need recycle of pods to take effect."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
       name        = "AccessMgmt.Core.HostedServices.RegisterSync"
       description = "(EF) Specifies if the resource register data should streamed from resource register service to access management database."
       label       = "${lower(var.environment)}-access-management"
@@ -511,6 +493,18 @@ module "appsettings" {
     {
       name        = "AccessManagement.Altinn2CacheInvalidation.Disable"
       description = "Setting this flag to true disables SblBridge calls for invalidating cache in Altinn 2."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Pip.IncludeClientDelegatedResources"
+      description = "Specifies if v2 client-delegated resources should be included in PIP GetAllDelegationChanges response."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.ConnectionQuery.IncludeClientDelegationResources"
+      description = "Specifies if client-delegated resources should be included in ConnectionQuery and AuthorizedParties response."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

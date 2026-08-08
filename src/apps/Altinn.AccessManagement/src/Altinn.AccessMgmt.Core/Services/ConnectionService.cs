@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Net.Http.Headers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Enums.ResourceRegistry;
 using Altinn.AccessManagement.Core.Errors;
@@ -46,7 +44,6 @@ public partial class ConnectionService(
     ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor,
     IOptions<CoreAppsettings> appsettings,
-    IAltinn2RightsClient altinn2Client,
     IAMPartyService partyService,
     IContextRetrievalService contextRetrievalService,
     IAccessListsAuthorizationClient accessListsAuthorizationClient,
@@ -90,11 +87,9 @@ public partial class ConnectionService(
                 IncludeInstances = includeInstances,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
-                ExcludeRoleIds = includeAgentConnections ? null : [RoleConstants.Agent.Id],
-                OnlyUniqueResults = false
+                ExcludeRoleIds = includeAgentConnections ? null : [RoleConstants.Agent.Id]
             },
             direction,
-            true,
             cancellationToken
         );
 
@@ -144,50 +139,55 @@ public partial class ConnectionService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        if (from.PartyId.HasValue && to.PartyId.HasValue)
-        {
-            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
-        }
-
         return DtoMapper.Convert(assignment);
     }
 
     /// <inheritdoc />
-    public async Task<ValidationProblemInstance> CheckAssignmentForConnectedRefernces(Guid assignmentId, CancellationToken cancellationToken = default)
+    public async Task<ValidationProblemInstance> CheckAssignmentForConnectedReferences(Assignment assignment, List<Assignment> a2Assignments = null, CancellationToken cancellationToken = default)
     {
         // WARNING! The list of connected entities to check for active connections must be in sync with the connections that are actually deleted in the cascade delete in the database,
         // otherwise we might end up deleting data that was not evaluted for cascading delete. Idealy this would have been only one method but given the problem returned is difrent from
         // that used in AssignmentService we need to duplicate the checks here, as it is already published and would be a breaking change.
         // Changes here must also be done in AssignmentService.CheckCascadingAssignmentRevoke(Guid assignmentId, CancellationToken cancellationToken).
-        var assignedPackages = await dbContext.AssignmentPackages
-            .AsNoTracking()
-            .Where(p => p.AssignmentId == assignmentId)
-            .ToListAsync(cancellationToken);
+        IEnumerable<AssignmentPackage> assignedPackages = null;
+        IEnumerable<AssignmentResource> resources = null;
+        IEnumerable<AssignmentInstance> instances = null;
+        IEnumerable<PersistenceEF.Models.Delegation> delegationsFrom = null;
+        IEnumerable<PersistenceEF.Models.Delegation> delegationsTo = null;
 
-        var resources = await dbContext.AssignmentResources
-            .AsNoTracking()
-            .Where(p => p.AssignmentId == assignmentId)
-            .ToListAsync(cancellationToken);
+        if (assignment is { })
+        {
+            assignedPackages = await dbContext.AssignmentPackages
+                .AsNoTracking()
+                .Where(p => p.AssignmentId == assignment.Id)
+                .ToListAsync(cancellationToken);
 
-        var instances = await dbContext.AssignmentInstances
-            .AsNoTracking()
-            .Where(p => p.AssignmentId == assignmentId)
-            .ToListAsync(cancellationToken);
+            resources = await dbContext.AssignmentResources
+                .AsNoTracking()
+                .Where(p => p.AssignmentId == assignment.Id)
+                .ToListAsync(cancellationToken);
 
-        var delegationsFrom = await dbContext.Delegations
-            .AsNoTracking()
-            .Where(p => p.FromId == assignmentId)
-            .ToListAsync(cancellationToken);
+            instances = await dbContext.AssignmentInstances
+                .AsNoTracking()
+                .Where(p => p.AssignmentId == assignment.Id)
+                .ToListAsync(cancellationToken);
 
-        var delegationsTo = await dbContext.Delegations
-            .AsNoTracking()
-            .Where(p => p.ToId == assignmentId)
-            .ToListAsync(cancellationToken);
+            delegationsFrom = await dbContext.Delegations
+                .AsNoTracking()
+                .Where(p => p.FromId == assignment.Id)
+                .ToListAsync(cancellationToken);
+
+            delegationsTo = await dbContext.Delegations
+                .AsNoTracking()
+                .Where(p => p.ToId == assignment.Id)
+                .ToListAsync(cancellationToken);
+        }
 
         var problem = ValidationComposer.Validate(
             AssignmentPackageValidation.HasAssignedPackages(assignedPackages),
             AssignmentResourceValidation.HasAssignedResources(resources),
             AssignmentInstanceValidation.HasAssignedInstances(instances),
+            AssignmentA2RoleValidation.HasAssignedA2Roles(a2Assignments),
             DelegationValidation.HasDelegationsAssigned(delegationsFrom),
             DelegationValidation.HasDelegationsAssigned(delegationsTo)
         );
@@ -212,14 +212,17 @@ public partial class ConnectionService(
             .Where(e => e.RoleId == RoleConstants.Rightholder)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (existingAssignment is null)
-        {
-            return null;
-        }
+        var a2Assignments = await dbContext.Assignments
+            .AsTracking()
+            .Include(e => e.Role)
+            .Where(e => e.FromId == fromId)
+            .Where(e => e.ToId == toId)
+            .Where(e => e.Role.ProviderId == ProviderConstants.Altinn2.Id)
+            .ToListAsync(cancellationToken);
 
         if (!cascade)
         {
-            problem = await CheckAssignmentForConnectedRefernces(existingAssignment.Id, cancellationToken);
+            problem = await CheckAssignmentForConnectedReferences(existingAssignment, a2Assignments, cancellationToken);
 
             if (problem is { })
             {
@@ -227,32 +230,30 @@ public partial class ConnectionService(
             }
         }
 
-        if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.Altinn2RoleRevoke))
+        bool accessToBeDeleted = false;
+        if (existingAssignment is { })
         {
-            var a2Assignments = await dbContext.Assignments
-                .AsTracking()
-                .Where(e => e.FromId == fromId)
-                .Where(e => e.ToId == toId)
-                .Where(e => e.Role.ProviderId == ProviderConstants.Altinn2.Id)
-                .ToListAsync(cancellationToken);
-
-            dbContext.RemoveRange(a2Assignments);
+            dbContext.Remove(existingAssignment);
+            accessToBeDeleted = true;
         }
 
-        dbContext.Remove(existingAssignment);
-        await RightholderRemovedNotification.Upsert(
-            dbContext,
-            fromId,
-            toId,
-            appsettings?.Value?.Notifications?.RightholderRemovedNotifyInSeconds ?? RightholderRemovedNotification.DefaultNotifyInSeconds,
-            cancellationToken
-        );
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        if (from.PartyId.HasValue && to.PartyId.HasValue)
+        if (a2Assignments.Count > 0)
         {
-            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
+            dbContext.RemoveRange(a2Assignments);
+            accessToBeDeleted = true;
+        }
+
+        if (accessToBeDeleted)
+        {
+            await RightholderRemovedNotification.Upsert(
+                dbContext,
+                fromId,
+                toId,
+                appsettings?.Value?.Notifications?.RightholderRemovedNotifyInSeconds ?? RightholderRemovedNotification.DefaultNotifyInSeconds,
+                cancellationToken
+            );
+
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         return null;
@@ -295,7 +296,6 @@ public partial class ConnectionService(
                 IncludeDelegation = false,
             },
             direction,
-            true,
             cancellationToken
         );
 
@@ -339,7 +339,6 @@ public partial class ConnectionService(
                 IncludeDelegation = false,
             },
             direction,
-            true,
             cancellationToken
         );
 
@@ -511,11 +510,9 @@ public partial class ConnectionService(
             IncludePackages = true,
             IncludeResources = false,
             EnrichPackageResources = false,
-            ExcludeDeleted = false,
-            OnlyUniqueResults = false
+            ExcludeDeleted = false
         },
         direction,
-        true,
         cancellationToken
         );
 
@@ -693,11 +690,6 @@ public partial class ConnectionService(
         );
 
         await dbContext.SaveChangesAsync(cancellationToken);
-
-        if (from.PartyId.HasValue && to.PartyId.HasValue)
-        {
-            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
-        }
 
         return DtoMapper.Convert(newAssignmentPackage);
     }
@@ -893,7 +885,7 @@ public partial class ConnectionService(
             ExcludeDeleted = false
         };
 
-        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
+        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);
         return connections.Where(c => c.AssignmentId.HasValue).GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
@@ -1004,7 +996,7 @@ public partial class ConnectionService(
         }
 
         ResourceAccessListMode accessListMode = resourceMetadata.AccessListMode;
-        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable || (allowMaskinportenSchema && isMaskinPortenSchemaResource);
+        bool isResourceDelegable = ignoreDelegableFlag || resourceMetadata.Delegable;
 
         // Decompose policy into resource/tasks
         List<Models.Right> rights = DelegationCheckHelper.DecomposePolicy(policy, resource);
@@ -1119,7 +1111,6 @@ public partial class ConnectionService(
                 EnrichEntities = false,
             },
             ConnectionQueryDirection.FromOthers,
-            true,
             cancellationToken
         );
         return connectionsToFromParty.Any(c => c.RoleId == RoleConstants.MainAdministratorA2.Id || c.Packages.Any(p => p.Id == PackageConstants.MainAdministrator.Id));
@@ -2525,7 +2516,7 @@ public partial class ConnectionService
                 RoleIds = [role.Id]
             };
 
-            var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
+            var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);
 
             if (connections.Count == 0)
             {

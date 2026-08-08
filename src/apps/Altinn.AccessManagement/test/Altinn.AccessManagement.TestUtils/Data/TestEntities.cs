@@ -1,7 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Azure.Storage.Blobs.Models;
-using Moq;
 
 namespace Altinn.AccessManagement.TestUtils.Data;
 
@@ -119,6 +117,28 @@ public static class TestEntities
             UserId = null,
             Username = null,
             VariantId = EntityVariantConstants.BRL,
+        }
+    };
+
+    public static ConstantDefinition<Entity> OrganizationSolsidenSameie { get; } = new("f0d3bd4c-24c9-4a37-9a2e-1b5cc9be80d1")
+    {
+        Entity = new()
+        {
+            DateOfBirth = null,
+            DateOfDeath = null,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "Solsiden Sameie ESEK",
+            OrganizationIdentifier = "815493002",
+            Parent = null,
+            ParentId = null,
+            PartyId = 50068513,
+            PersonIdentifier = null,
+            RefId = "815493002",
+            TypeId = EntityTypeConstants.Organization,
+            UserId = null,
+            Username = null,
+            VariantId = EntityVariantConstants.ESEK,
         }
     };
 
