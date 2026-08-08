@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,13 @@ internal class ConnectionEntityEnricher(AppDbContext db)
     /// <summary>
     /// Enriches the given records with entity, role, and child-nesting data.
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> EnrichAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, bool doChildNesting, bool applyFromFilter, CancellationToken ct)
+    public async Task<List<ConnectionQueryExtendedRecord>> EnrichAsync(List<ConnectionQueryExtendedRecord> allKeys, ConnectionQueryFilter filter, bool delayedEnrichment, CancellationToken ct)
     {
         var entityDict = await FetchEntitiesAsync(allKeys, ct);
-        var childrenDict = doChildNesting ? await FetchChildrenAsync(entityDict, filter, applyFromFilter, ct) : [];
+        var childrenDict = delayedEnrichment ? await FetchChildrenAsync(entityDict, filter, delayedEnrichment, ct) : [];
         var rolesDict = await FetchRolesAsync(ct);
 
-        return ApplyEnrichment(allKeys, entityDict, childrenDict, rolesDict, doChildNesting, applyFromFilter, filter);
+        return ApplyEnrichment(allKeys, entityDict, childrenDict, rolesDict, delayedEnrichment, filter);
     }
 
     /// <summary>
@@ -84,31 +85,28 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             .AsNoTracking()
             .ToListAsync(ct);
 
-        Dictionary<Guid, Entity> entityDict = [];
-        foreach (var entity in entities)
-        {
-            entityDict.Add(entity.Id, entity);
-        }
-
-        return entityDict;
+        return entities.ToDictionary(e => e.Id);
     }
 
     /// <summary>
     /// Loads child entities for hierarchy nesting.
     /// </summary>
-    private async Task<Dictionary<Guid, List<Entity>>> FetchChildrenAsync(Dictionary<Guid, Entity> entityDict, ConnectionQueryFilter filter, bool applyFromFilter, CancellationToken ct)
+    private async Task<Dictionary<Guid, List<Entity>>> FetchChildrenAsync(Dictionary<Guid, Entity> entityDict, ConnectionQueryFilter filter, bool delayedEnrichment, CancellationToken ct)
     {
+        var parentIds = entityDict.Keys.ToList();
+        var fromIdSet = delayedEnrichment && filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
+
         var allChildren = await db
             .Entities
             .AsNoTracking()
-            .Where(e => e.ParentId != null && entityDict.Keys.Contains((Guid)e.ParentId))
+            .Where(e => e.ParentId != null && parentIds.Contains((Guid)e.ParentId))
+            .WhereIf(fromIdSet != null, e => fromIdSet!.Contains(e.Id))
             .Select(e => new Entity()
             {
                 Id = e.Id,
                 Name = e.Name,
                 OrganizationIdentifier = e.OrganizationIdentifier,
                 ParentId = e.ParentId,
-                Parent = entityDict[(Guid)e.ParentId],
                 PersonIdentifier = e.PersonIdentifier,
                 DateOfBirth = e.DateOfBirth,
                 DateOfDeath = e.DateOfDeath,
@@ -124,21 +122,26 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             .AsNoTracking()
             .ToListAsync(ct);
 
-        if (applyFromFilter && filter.FromIds != null && filter.FromIds.Count > 0)
+        // Assign Parent in-memory from the already-loaded entity dictionary
+        foreach (var child in allChildren)
         {
-            allChildren = allChildren.Where(c => filter.FromIds.Contains(c.Id)).ToList();
+            if (child.ParentId != null && entityDict.TryGetValue((Guid)child.ParentId, out var parent))
+            {
+                child.Parent = parent;
+            }
         }
 
         Dictionary<Guid, List<Entity>> childrenDict = [];
         foreach (var child in allChildren)
         {
-            if (!childrenDict.ContainsKey((Guid)child.ParentId))
+            if (!childrenDict.TryGetValue((Guid)child.ParentId!, out var list))
             {
-                childrenDict.Add((Guid)child.ParentId, [child]);
+                list = [child];
+                childrenDict.Add((Guid)child.ParentId!, list);
             }
             else
             {
-                childrenDict[(Guid)child.ParentId].Add(child);
+                list.Add(child);
             }
         }
 
@@ -151,20 +154,16 @@ internal class ConnectionEntityEnricher(AppDbContext db)
     private async Task<Dictionary<Guid, Role>> FetchRolesAsync(CancellationToken ct)
     {
         var roles = await db.Roles.Include(r => r.Provider).ThenInclude(p => p.Type).AsNoTracking().ToListAsync(ct);
-        Dictionary<Guid, Role> rolesDict = [];
-        foreach (var role in roles)
-        {
-            rolesDict.Add(role.Id, role);
-        }
-
-        return rolesDict;
+        return roles.ToDictionary(r => r.Id);
     }
 
     /// <summary>
     /// Attaches entities/roles to records, and expands children.
     /// </summary>
-    private static List<ConnectionQueryExtendedRecord> ApplyEnrichment(List<ConnectionQueryExtendedRecord> allKeys, Dictionary<Guid, Entity> entityDict, Dictionary<Guid, List<Entity>> childrenDict, Dictionary<Guid, Role> rolesDict, bool doChildNesting, bool applyFromFilter, ConnectionQueryFilter filter)
+    private static List<ConnectionQueryExtendedRecord> ApplyEnrichment(List<ConnectionQueryExtendedRecord> allKeys, Dictionary<Guid, Entity> entityDict, Dictionary<Guid, List<Entity>> childrenDict, Dictionary<Guid, Role> rolesDict, bool delayedEnrichment, ConnectionQueryFilter filter)
     {
+        var fromIdSet = delayedEnrichment && filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
+
         List<ConnectionQueryExtendedRecord> keysWithChildren = [];
         foreach (var c in allKeys)
         {
@@ -175,7 +174,7 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             c.ViaRole = c.ViaRoleId != null && c.ViaRoleId != Guid.Empty ? rolesDict[(Guid)c.ViaRoleId] : null;
             keysWithChildren.Add(c);
 
-            if (doChildNesting && c.Reason != ConnectionReason.Hierarchy && childrenDict.TryGetValue(c.From.Id, out List<Entity> childrenForKey))
+            if (delayedEnrichment && c.Reason != ConnectionReason.Hierarchy && childrenDict.TryGetValue(c.From.Id, out List<Entity> childrenForKey))
             {
                 foreach (var child in childrenForKey)
                 {
@@ -206,9 +205,9 @@ internal class ConnectionEntityEnricher(AppDbContext db)
             }
         }
 
-        if (applyFromFilter && filter.FromIds != null && filter.FromIds.Count > 0)
+        if (fromIdSet != null)
         {
-            keysWithChildren = keysWithChildren.Where(c => filter.FromIds.Contains(c.FromId)).ToList();
+            keysWithChildren = keysWithChildren.Where(c => fromIdSet.Contains(c.FromId)).ToList();
         }
 
         return keysWithChildren;
