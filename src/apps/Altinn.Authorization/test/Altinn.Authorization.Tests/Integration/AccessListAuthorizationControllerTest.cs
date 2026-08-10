@@ -59,7 +59,7 @@ public class AccessListAuthorizationControllerTest : IClassFixture<Authorization
     [Fact]
     public async Task AccessList_Authorization_NotAuthorized_WithoutAccessListMembership()
     {
-        string testCase = "Deny_NotAccessListMember";
+        string testCase = "NotAuthorized_NotAccessListMember";
         AccessListAuthorizationResponse expected = GetExpectedResponse(testCase);
 
         // Act
