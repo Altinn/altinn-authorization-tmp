@@ -25,10 +25,10 @@ public partial class ConnectionsControllerTest
     /// Seed Data:
     /// - ResourceType "Test"
     /// - Resource "Skattemelding" (app_skd_skattemelding) and "MVA-melding" (app_skd_mva-melding)
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures -> Mille Hundefrisør (Rightholder)
     /// - AssignmentResource linking both resources to the assignment above
-    /// - A dedicated client delegation chain on its own parties: Solvang Kaffebar AS (client) → Nordbo Regnskap AS
-    ///   (facilitator, Accountant) → Selma Nordbo (agent, Agent), with the Mattilsynet bakery resource delegated
+    /// - A dedicated client delegation chain on its own parties: Solvang Kaffebar AS (client) -> Nordbo Regnskap AS
+    ///   (facilitator, Accountant) -> Selma Nordbo (agent, Agent), with the Mattilsynet bakery resource delegated
     ///   to the agent through an AssignmentResource on the client-side assignment
     /// </para>
     /// <para>

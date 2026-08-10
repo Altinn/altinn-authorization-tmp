@@ -1021,7 +1021,7 @@ public partial class ConnectionService(
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
 
         // Fetch resource rights
-        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, includeClientDelegations: false, cancellationToken);
 
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources);
 
@@ -1085,7 +1085,7 @@ public partial class ConnectionService(
         bool isMainAdminForFrom = await IsMainAdmin(party, authenticatedUserUuid, cancellationToken);
 
         var roles = await RoleDelegationCheck(party, authenticatedUserUuid, isMainAdminForFrom, cancellationToken);
-        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, cancellationToken);
+        var resources = await GetResourceRights(party, authenticatedUserUuid, resourceDto.Id, null, includeClientDelegations: false, cancellationToken);
         var instances = await GetInstanceRights(party, authenticatedUserUuid, resourceDto.Id, instanceId, RoleConstants.Rightholder, cancellationToken);
 
         ProcessTheAccessToTheRightKeys(rights, packages.Value, roles.Value, resources, instances);
@@ -2015,6 +2015,7 @@ public partial class ConnectionService
            toId: toId,
            resourceId: resourceId,
            roleId: RoleConstants.Rightholder,
+           includeClientDelegations: true,
            cancellationToken: cancellationToken
            );
 
@@ -2029,6 +2030,7 @@ public partial class ConnectionService
             toId: partyId,
             resourceId: resourceId,
             roleId: RoleConstants.Rightholder,
+            includeClientDelegations: true,
             cancellationToken: cancellationToken
             );
 
@@ -2065,7 +2067,7 @@ public partial class ConnectionService
         return result.FirstOrDefault();
     }
 
-    private async Task<List<ResourceRightDto>> GetResourceRights(Guid? fromId, Guid? toId, Guid? resourceId, Guid? roleId, CancellationToken cancellationToken = default)
+    internal async Task<List<ResourceRightDto>> GetResourceRights(Guid? fromId, Guid? toId, Guid? resourceId, Guid? roleId, bool includeClientDelegations, CancellationToken cancellationToken = default)
     {
         if (!fromId.HasValue && !toId.HasValue)
         {
@@ -2201,28 +2203,32 @@ public partial class ConnectionService
 
         var res = await query.ToListAsync();
 
-        // Client delegation. The roleId filter is deliberately not applied here: delegation rows carry the
-        // client assignment's role (Accountant, BusinessManager, ...), never Rightholder, which is what the
-        // callers pass in.
-        var clientDelegation = await dbContext.DelegationResources.AsNoTracking()
-            .WhereIf(fromId.HasValue, t => t.Delegation.From.FromId == fromId.Value)
-            .WhereIf(toId.HasValue, t => t.Delegation.To.ToId == toId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .Select(t => new AssignmentResourceQueryResult()
-            {
-                Resource = t.Resource,
-                From = t.Delegation.From.From,
-                To = t.Delegation.To.To,
-                Role = t.Delegation.From.Role,
-                Via = t.Delegation.Facilitator,
-                ViaRole = t.Delegation.To.Role,
-                PolicyPath = t.AssignmentResource.PolicyPath,
-                PolicyVersion = t.AssignmentResource.PolicyVersion,
-                Reason = AccessReasonFlag.ClientDelegation
-            })
-            .ToListAsync(cancellationToken);
+        // Client delegation. Only the read endpoints ask for these rows: holding a resource through a client
+        // delegation must not confer authority to delegate it onward, so the delegation check callers leave
+        // them out. The roleId filter is not applied to the branch because delegation rows carry the client
+        // assignment's role (Accountant, BusinessManager, ...) rather than the role the read endpoints filter on.
+        if (includeClientDelegations)
+        {
+            var clientDelegation = await dbContext.DelegationResources.AsNoTracking()
+                .WhereIf(fromId.HasValue, t => t.Delegation.From.FromId == fromId.Value)
+                .WhereIf(toId.HasValue, t => t.Delegation.To.ToId == toId.Value)
+                .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+                .Select(t => new AssignmentResourceQueryResult()
+                {
+                    Resource = t.Resource,
+                    From = t.Delegation.From.From,
+                    To = t.Delegation.To.To,
+                    Role = t.Delegation.From.Role,
+                    Via = t.Delegation.Facilitator,
+                    ViaRole = t.Delegation.To.Role,
+                    PolicyPath = t.AssignmentResource.PolicyPath,
+                    PolicyVersion = t.AssignmentResource.PolicyVersion,
+                    Reason = AccessReasonFlag.ClientDelegation
+                })
+                .ToListAsync(cancellationToken);
 
-        res.AddRange(clientDelegation);
+            res.AddRange(clientDelegation);
+        }
 
         #endregion
 
@@ -2230,12 +2236,11 @@ public partial class ConnectionService
 
         foreach (var resource in res.Select(t => t.Resource).DistinctBy(t => t.Id))
         {
-            var internalResource = res.First().Resource;
-            var rightKeys = await contextRetrievalService.GetResourcePolicyV2(internalResource.RefId, cancellationToken: cancellationToken);
+            var rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource.RefId, cancellationToken: cancellationToken);
 
             var resourceRight = new ResourceRightDto()
             {
-                Resource = DtoMapper.Convert(internalResource),
+                Resource = DtoMapper.Convert(resource),
                 Rights = new List<RightPermission>()
             };
 
@@ -2246,7 +2251,7 @@ public partial class ConnectionService
 
             var policyRights = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, resource.RefId));
 
-            foreach (var assignmentResource in res)
+            foreach (var assignmentResource in res.Where(t => t.Resource.Id == resource.Id))
             {
                 var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentResource.PolicyPath, assignmentResource.PolicyVersion, cancellationToken);
                 var availableRights = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, assignmentResource.Resource.RefId));
@@ -2271,6 +2276,12 @@ public partial class ConnectionService
                             Permissions = new List<PermissionDto>(),
                         };
                         resourceRight.Rights.Add(right);
+                    }
+                    else
+                    {
+                        // A right key can be held through several paths at once. Keep every contributing reason
+                        // so callers see all of them, not only the one that happened to be resolved first.
+                        right.Reason = right.Reason | assignmentResource.Reason;
                     }
 
                     if (!right.Permissions.Any(p =>
@@ -2393,12 +2404,11 @@ public partial class ConnectionService
 
         foreach (var resource in res.Select(t => t.Resource).DistinctBy(t => t.Id))
         {
-            var internalResource = res.First().Resource;
-            var rightKeys = await contextRetrievalService.GetResourcePolicyV2(internalResource.RefId, cancellationToken: cancellationToken);
+            var rightKeys = await contextRetrievalService.GetResourcePolicyV2(resource.RefId, cancellationToken: cancellationToken);
 
             var instanceRight = new InstanceRightDto()
             {
-                Resource = DtoMapper.Convert(internalResource),
+                Resource = DtoMapper.Convert(resource),
                 Instance = !string.IsNullOrEmpty(instanceId)
                     ? new InstanceDto { RefId = instanceId }
                     : null,
@@ -2412,7 +2422,7 @@ public partial class ConnectionService
 
             var policyRights = resourcePolicy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, resource.RefId));
 
-            foreach (var assignmentInstance in res)
+            foreach (var assignmentInstance in res.Where(t => t.Resource.Id == resource.Id))
             {
                 var policy = await policyRetrievalPoint.GetPolicyVersionAsync(assignmentInstance.PolicyPath, assignmentInstance.PolicyVersion, cancellationToken);
                 var availableRights = policy.Rules.SelectMany(t => DelegationCheckHelper.CalculateRightKeys(t, assignmentInstance.Resource.RefId));

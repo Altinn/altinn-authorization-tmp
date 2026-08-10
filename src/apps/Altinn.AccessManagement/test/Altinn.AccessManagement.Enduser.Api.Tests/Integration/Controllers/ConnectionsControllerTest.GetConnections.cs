@@ -21,12 +21,12 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Nordis AS → Verdiq AS: Rightholder and Accountant assignments
-    /// - Verdiq AS → Paula and Ørjan: Agent assignments
-    /// - Nordis AS → Paula: Agent assignment
-    /// - AssignmentPackage linking Nordis→Verdiq Rightholder to DocumentBasedSupervision
-    /// - A dedicated client delegation chain on its own parties: Bekkelia Regnskapsklient AS (client) → Fjordheim
-    ///   Regnskap AS (facilitator, Accountant) → Kasper Bekk (agent, Agent), with the Mattilsynet bakery resource
+    /// - Nordis AS -> Verdiq AS: Rightholder and Accountant assignments
+    /// - Verdiq AS -> Paula and Ørjan: Agent assignments
+    /// - Nordis AS -> Paula: Agent assignment
+    /// - AssignmentPackage linking Nordis->Verdiq Rightholder to DocumentBasedSupervision
+    /// - A dedicated client delegation chain on its own parties: Bekkelia Regnskapsklient AS (client) -> Fjordheim
+    ///   Regnskap AS (facilitator, Accountant) -> Kasper Bekk (agent, Agent), with the Mattilsynet bakery resource
     ///   delegated to the agent through an AssignmentResource on the client-side assignment
     /// </para>
     /// <para>

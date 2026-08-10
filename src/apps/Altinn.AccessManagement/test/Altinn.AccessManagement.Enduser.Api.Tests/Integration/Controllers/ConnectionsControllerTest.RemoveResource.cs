@@ -34,9 +34,9 @@ public partial class ConnectionsControllerTest
     /// <remarks>
     /// <para>
     /// Seed Data:
-    /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
+    /// - Assignment: Dumbo Adventures -> Mille Hundefrisør (Rightholder)
     /// - Two dedicated client delegation chains on their own parties, one used for the revocation guard and one used
-    ///   for the cascade check, each shaped client → facilitator (Accountant) → agent (Agent) with the Mattilsynet
+    ///   for the cascade check, each shaped client -> facilitator (Accountant) -> agent (Agent) with the Mattilsynet
     ///   bakery resource delegated to the agent
     /// </para>
     /// <para>
@@ -296,7 +296,7 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
-        /// Thea (MD of Mille Hundefrisør) removes all resource rights for nav_sykepenger_sykmelding from the Dumbo → Mille connection,
+        /// Thea (MD of Mille Hundefrisør) removes all resource rights for nav_sykepenger_sykmelding from the Dumbo -> Mille connection,
         /// acting as receiver (from-others direction). Expects 204 NoContent.
         /// </summary>
         [Fact]
