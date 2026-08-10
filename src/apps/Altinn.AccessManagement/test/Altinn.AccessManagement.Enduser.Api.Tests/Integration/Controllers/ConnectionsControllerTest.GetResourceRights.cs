@@ -30,6 +30,9 @@ public partial class ConnectionsControllerTest
     /// - Resource "Skattemelding" (app_skd_skattemelding)
     /// - Assignment: Dumbo Adventures → Mille Hundefrisør (Rightholder)
     /// - AssignmentResource linking Skattemelding to the assignment above
+    /// - A dedicated client delegation chain on its own parties: Bryggen Bokhandel AS (client) → Havly Regnskap AS
+    ///   (facilitator, Accountant) → Iver Havly (agent, Agent), where Skattemelding is delegated to the agent and
+    ///   the rights are held in the policy of the client-side AssignmentResource
     /// </para>
     /// <para>
     /// Actors:
@@ -45,6 +48,10 @@ public partial class ConnectionsControllerTest
     [IntegrationTest]
     public class GetResourceRights : IClassFixture<ApiFixture>
     {
+        private static readonly Guid ClientDelegationClient = Guid.Parse("0196b110-0000-7000-8000-000000000001");
+        private static readonly Guid ClientDelegationFacilitator = Guid.Parse("0196b110-0000-7000-8000-000000000002");
+        private static readonly Guid ClientDelegationAgent = Guid.Parse("0196b110-0000-7000-8000-000000000003");
+
         public GetResourceRights(ApiFixture fixture)
         {
             Fixture = fixture;
@@ -69,6 +76,84 @@ public partial class ConnectionsControllerTest
                     AssignmentId = rightholderFromDumboToMille.Id,
                     ResourceId = TestData.SiriusSkattemelding.Id,
                     PolicyPath = "sirius-skattemelding-v1/50083510/p50155461/delegationpolicy.xml"
+                });
+
+                db.SaveChanges();
+
+                db.Entities.AddRange(
+                    new Entity()
+                    {
+                        Id = ClientDelegationClient,
+                        Name = "Bryggen Bokhandel AS",
+                        TypeId = EntityTypeConstants.Organization,
+                        VariantId = EntityVariantConstants.AS,
+                        OrganizationIdentifier = "399950021",
+                        RefId = "399950021",
+                        PartyId = 50950021,
+                    },
+                    new Entity()
+                    {
+                        Id = ClientDelegationFacilitator,
+                        Name = "Havly Regnskap AS",
+                        TypeId = EntityTypeConstants.Organization,
+                        VariantId = EntityVariantConstants.AS,
+                        OrganizationIdentifier = "399950022",
+                        RefId = "399950022",
+                        PartyId = 50950022,
+                    },
+                    new Entity()
+                    {
+                        Id = ClientDelegationAgent,
+                        Name = "Iver Havly",
+                        TypeId = EntityTypeConstants.Person,
+                        VariantId = EntityVariantConstants.Person,
+                        PersonIdentifier = "19019099933",
+                        RefId = "19019099933",
+                        PartyId = 50950023,
+                        UserId = 50950023,
+                        DateOfBirth = new DateOnly(1990, 1, 19),
+                    });
+
+                db.SaveChanges();
+
+                var accountantFromClientToFacilitator = new Assignment()
+                {
+                    FromId = ClientDelegationClient,
+                    ToId = ClientDelegationFacilitator,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                var agentFromFacilitatorToIver = new Assignment()
+                {
+                    FromId = ClientDelegationFacilitator,
+                    ToId = ClientDelegationAgent,
+                    RoleId = RoleConstants.Agent,
+                };
+
+                var assignmentResourceForClient = new AssignmentResource()
+                {
+                    AssignmentId = accountantFromClientToFacilitator.Id,
+                    ResourceId = TestData.SiriusSkattemelding.Id,
+                    PolicyPath = "sirius-skattemelding-v1/50083510/p50155461/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                };
+
+                var delegationToIver = new AccessMgmt.PersistenceEF.Models.Delegation()
+                {
+                    FromId = accountantFromClientToFacilitator.Id,
+                    ToId = agentFromFacilitatorToIver.Id,
+                    FacilitatorId = ClientDelegationFacilitator,
+                };
+
+                db.Assignments.Add(accountantFromClientToFacilitator);
+                db.Assignments.Add(agentFromFacilitatorToIver);
+                db.AssignmentResources.Add(assignmentResourceForClient);
+                db.Delegations.Add(delegationToIver);
+                db.DelegationResources.Add(new DelegationResource()
+                {
+                    DelegationId = delegationToIver.Id,
+                    ResourceId = TestData.SiriusSkattemelding.Id,
+                    AssignmentResourceId = assignmentResourceForClient.Id,
                 });
 
                 db.SaveChanges();
@@ -286,6 +371,41 @@ public partial class ConnectionsControllerTest
             }
 
             Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
+        }
+
+        /// <summary>
+        /// Bryggen Bokhandel queries the rights its agent Iver holds on Skattemelding. Iver holds them only through
+        /// the client delegation, so the rights are resolved from the policy of the client-side AssignmentResource
+        /// and reported as indirect with the ClientDelegation reason.
+        /// </summary>
+        [Fact]
+        public async Task GetResourceRights_ForClientDelegatedResource_Returns200WithIndirectRightsWithClientDelegationReason()
+        {
+            HttpClient client = CreateClient(ClientDelegationClient, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
+
+            HttpResponseMessage response = await client.GetAsync(
+                $"{Route}/resources/rights?party={ClientDelegationClient}&from={ClientDelegationClient}&to={ClientDelegationAgent}&resource=app_skd_sirius-skattemelding-v1",
+                TestContext.Current.CancellationToken);
+
+            ExternalResourceRightDto resourceRightsDto = await response.Content.ReadFromJsonAsync<ExternalResourceRightDto>(TestContext.Current.CancellationToken);
+
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}.");
+            Assert.NotNull(resourceRightsDto);
+            Assert.Equal("app_skd_sirius-skattemelding-v1", resourceRightsDto.Resource.RefId);
+            Assert.Empty(resourceRightsDto.DirectRights);
+            Assert.NotEmpty(resourceRightsDto.IndirectRights);
+
+            foreach (var right in resourceRightsDto.IndirectRights)
+            {
+                Assert.True(right.Reason.Flag.Equals(AccessReasonFlag.ClientDelegation), $"Expected ClientDelegation but got {right.Reason.Flag}.");
+                PermissionDto permission = Assert.Single(right.Permissions);
+                Assert.Equal(ClientDelegationClient, permission.From.Id);
+                Assert.Equal(ClientDelegationAgent, permission.To.Id);
+                Assert.Equal(RoleConstants.Accountant.Id, permission.Role.Id);
+                Assert.Equal(ClientDelegationFacilitator, permission.Via.Id);
+                Assert.Equal(RoleConstants.Agent.Id, permission.ViaRole.Id);
+                Assert.True(permission.Reason.Flag.Equals(AccessReasonFlag.ClientDelegation), $"Expected ClientDelegation but got {permission.Reason.Flag}.");
+            }
         }
 
         /// <summary>

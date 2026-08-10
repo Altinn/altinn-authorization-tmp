@@ -82,6 +82,7 @@ public partial class ConnectionService(
                 IncludeKeyRole = true,
                 IncludeMainUnitConnections = true,
                 IncludeDelegation = includeClientDelegations,
+                IncludeDelegationResources = includeClientDelegations,
                 IncludePackages = includeAccessPackages,
                 IncludeResources = includeResources,
                 IncludeInstances = includeInstances,
@@ -283,7 +284,6 @@ public partial class ConnectionService(
         var resources = await connectionQuery.GetConnectionsAsync(
             new ConnectionQueryFilter()
             {
-                RoleIds = [RoleConstants.Rightholder.Id],
                 ResourceIds = resourceId.HasValue ? [resourceId.Value] : null,
                 FromIds = from != null ? [from.Id] : null,
                 ToIds = to != null ? [to.Id] : null,
@@ -293,7 +293,8 @@ public partial class ConnectionService(
                 IncludeSubConnections = true,
                 IncludePackages = false,
                 EnrichPackageResources = false,
-                IncludeDelegation = false,
+                IncludeDelegation = true,
+                IncludeDelegationResources = true,
             },
             direction,
             cancellationToken
@@ -437,7 +438,7 @@ public partial class ConnectionService(
 
         if (assignment is null)
         {
-            return null;
+            return await ValidateResourceNotHeldViaClientDelegation(fromId, toId, resourceId, cancellationToken);
         }
 
         problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
@@ -454,7 +455,7 @@ public partial class ConnectionService(
 
         if (existingAssignmentResources is null)
         {
-            return null;
+            return await ValidateResourceNotHeldViaClientDelegation(fromId, toId, resourceId, cancellationToken);
         }
 
         var newVersion = await singleRightsService.ClearPolicyRules(existingAssignmentResources.PolicyPath, existingAssignmentResources.PolicyVersion, cancellationToken);
@@ -473,6 +474,17 @@ public partial class ConnectionService(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;
+    }
+
+    private async Task<ValidationProblemInstance> ValidateResourceNotHeldViaClientDelegation(Guid fromId, Guid toId, Guid resourceId, CancellationToken cancellationToken)
+    {
+        var hasClientDelegatedResource = await dbContext.DelegationResources
+            .AsNoTracking()
+            .AnyAsync(dr => dr.Delegation.From.FromId == fromId && dr.Delegation.To.ToId == toId && dr.ResourceId == resourceId, cancellationToken);
+
+        return ValidationComposer.Validate(
+            ResourceValidation.ResourceNotRevocableViaClientDelegation(hasClientDelegatedResource)
+        );
     }
     #endregion
 
@@ -2188,6 +2200,29 @@ public partial class ConnectionService
             .Union(keyRoleSubUnit);
 
         var res = await query.ToListAsync();
+
+        // Client delegation. The roleId filter is deliberately not applied here: delegation rows carry the
+        // client assignment's role (Accountant, BusinessManager, ...), never Rightholder, which is what the
+        // callers pass in.
+        var clientDelegation = await dbContext.DelegationResources.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.Delegation.From.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.Delegation.To.ToId == toId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .Select(t => new AssignmentResourceQueryResult()
+            {
+                Resource = t.Resource,
+                From = t.Delegation.From.From,
+                To = t.Delegation.To.To,
+                Role = t.Delegation.From.Role,
+                Via = t.Delegation.Facilitator,
+                ViaRole = t.Delegation.To.Role,
+                PolicyPath = t.AssignmentResource.PolicyPath,
+                PolicyVersion = t.AssignmentResource.PolicyVersion,
+                Reason = AccessReasonFlag.ClientDelegation
+            })
+            .ToListAsync(cancellationToken);
+
+        res.AddRange(clientDelegation);
 
         #endregion
 
