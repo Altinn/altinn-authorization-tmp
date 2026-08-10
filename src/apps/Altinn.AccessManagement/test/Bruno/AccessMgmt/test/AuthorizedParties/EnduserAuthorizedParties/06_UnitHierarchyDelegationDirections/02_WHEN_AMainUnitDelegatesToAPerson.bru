@@ -18,7 +18,7 @@ params:query {
 
 docs {
   WHEN main unit A has delegated to a person, that person sees main unit A with the
-  delegated access, and A's subunit inherits the packages and resources.
+  delegated access, and the access the person received extends to A's subunit for packages and resources.
 }
 
 script:pre-request {
@@ -46,7 +46,7 @@ tests {
     expect(party.authorizedAccessPackages).to.not.be.empty;
   });
 
-  test("THEN the delegating unit's subunit inherits the packages and resources", function() {
+  test("THEN the received access extends to the delegating unit's subunit for packages and resources", function() {
     const party = findParty(res.getBody().data, delegator.partyuuid);
     const subunit = party.subunits.find(item => item.partyUuid.toLowerCase() === delegator.authParties_underenhetA.partyuuid.toLowerCase());
     expect(subunit, `expected ${delegator.authParties_underenhetA.name} nested under the main unit`).to.not.be.undefined;

@@ -18,7 +18,7 @@ params:query {
 
 docs {
   WHEN main unit A has delegated to main unit B, the daily leader of B sees main unit A
-  with the delegated access, and A's subunit inherits it.
+  with the delegated access, and the access B received extends to A's subunit.
 }
 
 script:pre-request {
@@ -46,7 +46,7 @@ tests {
     expect(party.authorizedAccessPackages).to.not.be.empty;
   });
 
-  test("THEN the delegating unit's subunit inherits the same access", function() {
+  test("THEN the access B received extends to the delegating unit's subunit", function() {
     const party = findParty(res.getBody().data, delegator.partyuuid);
     const subunit = party.subunits.find(item => item.partyUuid.toLowerCase() === delegator.authParties_underenhetA.partyuuid.toLowerCase());
     expect(subunit, `expected ${delegator.authParties_underenhetA.name} nested under the main unit`).to.not.be.undefined;
