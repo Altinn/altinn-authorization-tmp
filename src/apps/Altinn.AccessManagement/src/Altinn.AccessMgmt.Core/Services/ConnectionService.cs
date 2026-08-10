@@ -2201,7 +2201,7 @@ public partial class ConnectionService
             .Union(keyRoleResult)
             .Union(keyRoleSubUnit);
 
-        var res = await query.ToListAsync();
+        var res = await query.ToListAsync(cancellationToken);
 
         // Client delegation. Only the read endpoints ask for these rows: holding a resource through a client
         // delegation must not confer authority to delegate it onward, so the delegation check callers leave

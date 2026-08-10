@@ -119,7 +119,7 @@ public static class ResourceValidation
 
         return (ref ValidationErrorBuilder errors) =>
         {
-            errors.Add(ValidationErrors.ResourceNotRevocableViaClientDelegation, $"QUERY/{paramName}", [new("resource", "Resources delegated through a client delegation cannot be revoked on this endpoint. Use the client delegation API to revoke them.")]);
+            errors.Add(ValidationErrors.ResourceNotRevocableViaClientDelegation, $"QUERY/{paramName}", [new(paramName, "Resources delegated through a client delegation cannot be revoked on this endpoint. Use the client delegation API to revoke them.")]);
         };
     };
 

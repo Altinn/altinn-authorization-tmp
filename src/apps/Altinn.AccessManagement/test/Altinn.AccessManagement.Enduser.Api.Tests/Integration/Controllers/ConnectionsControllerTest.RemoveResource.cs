@@ -331,8 +331,10 @@ public partial class ConnectionsControllerTest
             string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.True(response.StatusCode == HttpStatusCode.BadRequest, $"Expected BadRequest but got {response.StatusCode}. Response body: {responseContent}");
 
-            AltinnProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(responseContent);
-            JsonElement errors = (JsonElement)problemDetails.Extensions.FirstOrDefault(e => e.Key == "validationErrors").Value;
+            AltinnProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(responseContent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            Assert.NotNull(problemDetails);
+            Assert.True(problemDetails.Extensions.TryGetValue("validationErrors", out object errorsValue), $"Expected validationErrors in the problem details. Response body: {responseContent}");
+            JsonElement errors = Assert.IsType<JsonElement>(errorsValue);
 
             Assert.Equal("AM.VLD-00035", errors[0].GetProperty("code").GetString());
 
