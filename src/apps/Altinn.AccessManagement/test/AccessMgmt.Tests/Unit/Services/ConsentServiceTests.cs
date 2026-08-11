@@ -34,7 +34,6 @@ public class ConsentServiceTests
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IOptions<GeneralSettings>> _generalSettingsMock;
     private readonly Mock<IConsentDelegationCheckService> _consentDelegationCheckServiceMock;
-    private readonly Mock<IMeterFactory> _meterFactoryMock;
 
     public ConsentServiceTests()
     {
@@ -46,7 +45,6 @@ public class ConsentServiceTests
         _profileClientMock = new Mock<IProfileClient>();
         _timeProvider = TimeProvider.System;
         _generalSettingsMock = new Mock<IOptions<GeneralSettings>>();
-        _meterFactoryMock = new Mock<IMeterFactory>();
         _consentDelegationCheckServiceMock = new Mock<IConsentDelegationCheckService>();
 
         _generalSettingsMock.Setup(x => x.Value).Returns(new GeneralSettings { Hostname = "localhost" });
@@ -383,7 +381,6 @@ public class ConsentServiceTests
             _profileClientMock.Object,
             _timeProvider,
             _generalSettingsMock.Object,
-            _meterFactoryMock.Object,
             _consentDelegationCheckServiceMock.Object);
     }
 

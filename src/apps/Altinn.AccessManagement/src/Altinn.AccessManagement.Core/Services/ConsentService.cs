@@ -53,7 +53,6 @@ namespace Altinn.AccessManagement.Core.Services
             IProfileClient profileClient,
             TimeProvider timeProvider,
             IOptions<GeneralSettings> generalSettings,
-            IMeterFactory meterFactory,
             IConsentDelegationCheckService consentDelegationCheckService)
         {
             _db = db;
