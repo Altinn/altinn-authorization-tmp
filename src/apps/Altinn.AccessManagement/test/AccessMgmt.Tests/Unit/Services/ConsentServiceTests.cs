@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Errors;
@@ -30,7 +29,6 @@ public class ConsentServiceTests
     private readonly Mock<IResourceRegistryClient> _resourceRegistryClientMock;
     private readonly Mock<IAMPartyService> _amPartyServiceMock;
     private readonly Mock<IMemoryCache> _memoryCacheMock;
-    private readonly Mock<IProfileClient> _profileClientMock;
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IOptions<GeneralSettings>> _generalSettingsMock;
     private readonly Mock<IConsentDelegationCheckService> _consentDelegationCheckServiceMock;
@@ -42,7 +40,6 @@ public class ConsentServiceTests
         _resourceRegistryClientMock = new Mock<IResourceRegistryClient>();
         _amPartyServiceMock = new Mock<IAMPartyService>();
         _memoryCacheMock = new Mock<IMemoryCache>();
-        _profileClientMock = new Mock<IProfileClient>();
         _timeProvider = TimeProvider.System;
         _generalSettingsMock = new Mock<IOptions<GeneralSettings>>();
         _consentDelegationCheckServiceMock = new Mock<IConsentDelegationCheckService>();
@@ -378,7 +375,6 @@ public class ConsentServiceTests
             _resourceRegistryClientMock.Object,
             _amPartyServiceMock.Object,
             _memoryCacheMock.Object,
-            _profileClientMock.Object,
             _timeProvider,
             _generalSettingsMock.Object,
             _consentDelegationCheckServiceMock.Object);

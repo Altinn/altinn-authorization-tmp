@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Text;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
@@ -50,7 +49,6 @@ namespace Altinn.AccessManagement.Core.Services
             IResourceRegistryClient resourceRegistryClient,
             IAMPartyService ampartyService,
             IMemoryCache memoryCache,
-            IProfileClient profileClient,
             TimeProvider timeProvider,
             IOptions<GeneralSettings> generalSettings,
             IConsentDelegationCheckService consentDelegationCheckService)
