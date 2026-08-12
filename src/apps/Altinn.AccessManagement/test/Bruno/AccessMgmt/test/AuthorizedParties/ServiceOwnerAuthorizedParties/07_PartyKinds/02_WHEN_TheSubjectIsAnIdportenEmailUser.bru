@@ -30,6 +30,11 @@ body:json {
 docs {
   WHEN the subject is an ID-porten user registered by email address, the only party returned is
   the user's own, carrying the email identifier as its identity.
+
+  The lookup is by user id because the endpoint has no email based subject form. The supported
+  forms are person by national identity number, uuid or user name, enterprise user by user name
+  or uuid, organisation by number or uuid, party id, user id and system user uuid. The email
+  address is asserted on the returned party instead.
 }
 
 script:pre-request {

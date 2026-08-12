@@ -33,9 +33,9 @@ body:json {
 }
 
 docs {
-  WHEN the subject's list is filtered on a client main unit, only that main unit is returned,
-  with its own subunit nested under it. The service owner endpoint takes the party filter in
-  the request body, not as a query parameter.
+  WHEN the subject's list is filtered on a client main unit, only that main unit is returned.
+  Its subunits are not pulled in, since the filter is on the party and not on the hierarchy.
+  The service owner endpoint takes the party filter in the request body, not as a query parameter.
 }
 
 script:pre-request {
