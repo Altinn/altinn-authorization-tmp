@@ -29,6 +29,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Assignment).ThenInclude(a => a.By)
+            .Include(r => r.LastUpdatedBy)
             .Include(r => r.Resource)
             .FirstOrDefaultAsync(t => t.Id == requestId, ct);
 
@@ -42,6 +43,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Assignment).ThenInclude(a => a.By)
+            .Include(r => r.LastUpdatedBy)
             .Include(r => r.Package)
             .FirstOrDefaultAsync(t => t.Id == requestId, ct);
 
@@ -498,6 +500,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Assignment).ThenInclude(a => a.By)
+            .Include(r => r.LastUpdatedBy)
             .Include(r => r.Resource)
             .ToListAsync(cancellationToken: ct);
     }
@@ -511,6 +514,7 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             .Include(r => r.Assignment).ThenInclude(a => a.To)
             .Include(r => r.Assignment).ThenInclude(a => a.Role)
             .Include(r => r.Assignment).ThenInclude(a => a.By)
+            .Include(r => r.LastUpdatedBy)
             .Include(r => r.Package)
             .ToListAsync(cancellationToken: ct);
     }
