@@ -2205,8 +2205,8 @@ public partial class ConnectionService
             });
 
         // EF cannot translate a set operation over projections that mix entity references and null
-        // constants in the Via/ViaRole members, so the branches run as separate queries. The Reason
-        // flag is distinct per branch, so the union never removed duplicates across branches anyway.
+        // constants in the Via/ViaRole members, so the branches run as separate queries. Duplicates
+        // across branches cannot occur since each branch sets a distinct Reason flag.
         var res = await direct.ToListAsync(cancellationToken);
         res.AddRange(await childResult.ToListAsync(cancellationToken));
         res.AddRange(await keyRoleResult.Union(keyRoleSubUnit).ToListAsync(cancellationToken));
@@ -2460,6 +2460,12 @@ public partial class ConnectionService
                             Permissions = new List<PermissionDto>(),
                         };
                         instanceRight.Rights.Add(right);
+                    }
+                    else
+                    {
+                        // A right key can be held through several paths at once. Keep every contributing reason
+                        // so callers see all of them, not only the one that happened to be resolved first.
+                        right.Reason = right.Reason | assignmentInstance.Reason;
                     }
 
                     if (!right.Permissions.Any(p =>
