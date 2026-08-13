@@ -77,7 +77,7 @@ public partial class ConnectionsControllerTest
                 {
                     AssignmentId = rightholderFromKaosToMille.Id,
                     ResourceId = TestData.SiriusSkattemelding.Id,
-                    InstanceId = "urn:altinn:instance-id:50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+                    InstanceId = SiriusInstanceId,
                     PolicyPath = "sirius-skattemelding-v1/50315678/p5049963/delegationpolicy.xml",
                     PolicyVersion = "1.0",
                 });
@@ -85,7 +85,7 @@ public partial class ConnectionsControllerTest
                 {
                     AssignmentId = rightholderFromKaosToThea.Id,
                     ResourceId = TestData.SiriusSkattemelding.Id,
-                    InstanceId = "urn:altinn:instance-id:50315678/b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+                    InstanceId = SiriusInstanceId,
                     PolicyPath = "sirius-skattemelding-v1/50315678/p5049963/delegationpolicy.xml",
                     PolicyVersion = "1.0",
                 });

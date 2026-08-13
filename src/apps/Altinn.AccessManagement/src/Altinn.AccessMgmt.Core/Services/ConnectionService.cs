@@ -2205,8 +2205,9 @@ public partial class ConnectionService
             });
 
         // EF cannot translate a set operation over projections that mix entity references and null
-        // constants in the Via/ViaRole members, so the branches run as separate queries. Duplicates
-        // across branches cannot occur since each branch sets a distinct Reason flag.
+        // constants in the Via/ViaRole members, so the branches run as separate queries. The same
+        // right can surface from several branches, but each branch stamps a distinct Reason flag,
+        // so the rows are never identical and duplicate elimination has nothing to remove.
         var res = await direct.ToListAsync(cancellationToken);
         res.AddRange(await childResult.ToListAsync(cancellationToken));
         res.AddRange(await keyRoleResult.Union(keyRoleSubUnit).ToListAsync(cancellationToken));
