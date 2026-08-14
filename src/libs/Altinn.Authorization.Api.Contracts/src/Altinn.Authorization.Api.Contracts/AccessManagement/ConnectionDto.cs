@@ -11,6 +11,13 @@ public class ConnectionDto
     public CompactEntityDto Party { get; set; } = new();
 
     /// <summary>
+    /// The role this party holds in the party of the parent connection, which is why the
+    /// access is inherited. Only set on sub-connections, and only when the relation carries
+    /// a role (key role or client delegation); a plain main-unit hierarchy leaves it null.
+    /// </summary>
+    public CompactRoleDto ViaRole { get; set; }
+
+    /// <summary>
     /// Role accesses for the given party
     /// </summary>
     public List<CompactRoleDto> Roles { get; set; } = new();

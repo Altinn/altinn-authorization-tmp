@@ -63,6 +63,7 @@ public class DtoMapperConnectionQueryTest
         Role role,
         ConnectionReason reason = ConnectionReason.Assignment,
         Guid? viaId = null,
+        Role? viaRole = null,
         List<ConnectionQueryPackage>? packages = null,
         List<ConnectionQueryResource>? resources = null,
         List<ConnectionQueryInstance>? instances = null) =>
@@ -73,10 +74,12 @@ public class DtoMapperConnectionQueryTest
             RoleId = role.Id,
             AssignmentId = Guid.NewGuid(),
             ViaId = viaId,
+            ViaRoleId = viaRole?.Id,
             Reason = reason,
             From = from,
             To = to,
             Role = role,
+            ViaRole = viaRole,
             Packages = packages ?? [],
             Resources = resources ?? [],
             Instances = instances ?? [],
@@ -192,6 +195,34 @@ public class DtoMapperConnectionQueryTest
 
         result.Should().ContainSingle();
         result[0].Connections.Should().ContainSingle(c => c.Party!.Id == sub.Id);
+    }
+
+    [Fact]
+    public void ConvertToOthers_KeyRoleSubConnection_ExposesViaRole()
+    {
+        // The scenario from the issue: the caller lists who has access to their own party.
+        // "Regnskapshelten" holds the access; "Janne" shows up beneath it because she is
+        // daglig leder there. ViaRole is what lets the GUI say why Janne is in the list.
+        var caller = MakeEntity("Caller");
+        var regnskapshelten = MakeEntity("Regnskapshelten");
+        var janne = MakeEntity("Janne Dagl");
+        var regn = MakeRole("regn");
+        var dagl = MakeRole("dagl");
+
+        var direct = MakeRecord(caller, regnskapshelten, regn, ConnectionReason.Assignment);
+        var keyRole = MakeRecord(caller, janne, regn, ConnectionReason.KeyRole, viaId: regnskapshelten.Id, viaRole: dagl);
+
+        var result = DtoMapper.ConvertToOthers([direct, keyRole]);
+
+        var parent = result.Should().ContainSingle().Subject;
+        parent.Party!.Id.Should().Be(regnskapshelten.Id);
+        parent.ViaRole.Should().BeNull("via role belongs on sub-connections, not on the party holding the access");
+
+        var sub = parent.Connections.Should().ContainSingle().Subject;
+        sub.Party!.Id.Should().Be(janne.Id);
+        sub.ViaRole.Should().NotBeNull();
+        sub.ViaRole!.Id.Should().Be(dagl.Id);
+        sub.ViaRole.Code.Should().Be("dagl");
     }
 
     [Fact]
@@ -402,6 +433,39 @@ public class DtoMapperConnectionQueryTest
         dtoB.Instances.Should().ContainSingle(i => i.InstanceId == "inst-b");
     }
 
+    [Fact]
+    public void ConvertSubConnectionsToOthers_WithoutViaRole_LeavesViaRoleNull()
+    {
+        var from = MakeEntity("From");
+        var to = MakeEntity("To");
+        var rec = MakeRecord(from, to, MakeRole());
+
+        var result = DtoMapper.ConvertSubConnectionsToOthers([rec]);
+
+        result.Should().ContainSingle();
+        result[0].ViaRole.Should().BeNull();
+    }
+
+    [Fact]
+    public void ConvertSubConnectionsToOthers_ViaRoleOnLaterRecord_StillMapped()
+    {
+        // The same party can reach the parent through several records — a main-unit
+        // hierarchy record carries no via role. Taking the group's first record blindly
+        // would drop the role that the key-role record does carry.
+        var from = MakeEntity("From");
+        var to = MakeEntity("To");
+        var role = MakeRole("regn");
+        var dagl = MakeRole("dagl");
+        var withoutViaRole = MakeRecord(from, to, role, ConnectionReason.Hierarchy);
+        var withViaRole = MakeRecord(from, to, role, ConnectionReason.KeyRole, viaId: from.Id, viaRole: dagl);
+
+        var result = DtoMapper.ConvertSubConnectionsToOthers([withoutViaRole, withViaRole]);
+
+        result.Should().ContainSingle();
+        result[0].ViaRole.Should().NotBeNull();
+        result[0].ViaRole!.Id.Should().Be(dagl.Id);
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // ConvertSubConnectionsFromOthers
     // ══════════════════════════════════════════════════════════════════════════
@@ -449,6 +513,36 @@ public class DtoMapperConnectionQueryTest
         var dtoB = result.Single(c => c.Party!.Id == fromB.Id);
         dtoA.Instances.Should().ContainSingle(i => i.InstanceId == "inst-a");
         dtoB.Instances.Should().ContainSingle(i => i.InstanceId == "inst-b");
+    }
+
+    [Fact]
+    public void ConvertSubConnectionsFromOthers_ExposesViaRole()
+    {
+        var from = MakeEntity("From");
+        var to = MakeEntity("To");
+        var via = MakeEntity("Via");
+        var innehaver = MakeRole("innh");
+        var rec = MakeRecord(from, to, MakeRole("regn"), ConnectionReason.Hierarchy, viaId: via.Id, viaRole: innehaver);
+
+        var result = DtoMapper.ConvertSubConnectionsFromOthers([rec]);
+
+        result.Should().ContainSingle();
+        result[0].ViaRole.Should().NotBeNull();
+        result[0].ViaRole!.Id.Should().Be(innehaver.Id);
+        result[0].ViaRole.Code.Should().Be("innh");
+    }
+
+    [Fact]
+    public void ConvertSubConnectionsFromOthers_WithoutViaRole_LeavesViaRoleNull()
+    {
+        var from = MakeEntity("From");
+        var to = MakeEntity("To");
+        var rec = MakeRecord(from, to, MakeRole(), ConnectionReason.Hierarchy);
+
+        var result = DtoMapper.ConvertSubConnectionsFromOthers([rec]);
+
+        result.Should().ContainSingle();
+        result[0].ViaRole.Should().BeNull();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
