@@ -429,13 +429,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
@@ -462,13 +462,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
@@ -496,13 +496,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
@@ -572,13 +572,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
@@ -651,13 +651,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var package = await db.Packages.AsNoTracking().SingleAsync(t => t.Id == packageId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to remove package from assignment");
         }
 
         // Check if user has access to the package
-        if (await HasPackage(assignment.Id, user.Id, package.Id, cancellationToken))
+        if (!await HasPackage(assignment.FromId, user.Id, package.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have package '{package.Name}' for '{assignment.FromId}'");
         }
@@ -678,13 +678,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to remove resource from assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
@@ -705,13 +705,13 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
 
         // Check if user has AccessManager (Tilgangsstyrer) role
-        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
             throw new UnauthorizedAccessException("User does not have permission to remove instance from assignment");
         }
 
         // Check if user has access to the resource
-        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        if (!await HasResource(assignment.FromId, user.Id, resource.Id, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User '{user.Name}' does not have resource '{resource.Name}' for '{assignment.FromId}'");
         }
