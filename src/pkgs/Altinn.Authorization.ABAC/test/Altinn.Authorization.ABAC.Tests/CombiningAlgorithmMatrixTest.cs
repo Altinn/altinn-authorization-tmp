@@ -188,7 +188,7 @@ public class CombiningAlgorithmMatrixTest
         yield return Row("NotApplicable,Permit", Permit);
         yield return Row("Deny", Deny);
         yield return Row("NotApplicable", Deny);
-        yield return Row("NotApplicableByTarget", Deny, TargetFilteredRuleSkip("C.6", Deny));
+        yield return Row("NotApplicableByTarget", Deny);
         yield return Row("NotApplicable,Deny", Deny);
         yield return Row("IndeterminateD", Deny);
         yield return Row("IndeterminateP", Deny);
@@ -219,7 +219,7 @@ public class CombiningAlgorithmMatrixTest
         yield return Row("NotApplicable,Permit", Permit);
         yield return Row("Deny", Deny);
         yield return Row("NotApplicable", Permit);
-        yield return Row("NotApplicableByTarget", Permit, TargetFilteredRuleSkip("C.7", Permit));
+        yield return Row("NotApplicableByTarget", Permit);
         yield return Row("Deny,Permit", Deny);
         yield return Row("Permit,Deny", Deny);
         yield return Row("NotApplicable,Deny", Deny);
@@ -293,6 +293,12 @@ public class CombiningAlgorithmMatrixTest
     public void Authorize_OnlyOneApplicableAsRuleCombiningAlgorithm_ReturnsIndeterminate()
     {
         Decide(XacmlConstants.CombiningAlgorithms.PolicyOnlyOneApplicable, "Deny,Permit").Decision.Should().Be(Indeterminate);
+    }
+
+    [Fact]
+    public void Authorize_OnlyOneApplicableAsRuleCombiningAlgorithm_NoRuleReachedByTarget_ReturnsIndeterminate()
+    {
+        Decide(XacmlConstants.CombiningAlgorithms.PolicyOnlyOneApplicable, "NotApplicableByTarget").Decision.Should().Be(Indeterminate);
     }
 
     public static IEnumerable<TheoryDataRow<string, XacmlContextDecision>> OnlyOneApplicablePolicySetMatrix()
@@ -403,13 +409,6 @@ public class CombiningAlgorithmMatrixTest
         XacmlConstants.CombiningAlgorithms.RulePermittUnlessDeny,
         XacmlConstants.CombiningAlgorithms.PolicyPermitUnlessDeny,
     ];
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Skip reasons
-    ////////////////////////////////////////////////////////////////////////////////
-
-    private static string TargetFilteredRuleSkip(string specSection, XacmlContextDecision specDecision) =>
-        $"#3898: a rule the request does not reach through its resource or action target is filtered out before rule combining, so a policy left with no rules answers NotApplicable whatever the combining algorithm. XACML 3.0 {specSection} requires {specDecision}, because a rule excluded by its own target is a NotApplicable child of the algorithm, not an absent one. Un-skip when target-filtered rules take part in combining.";
 
     ////////////////////////////////////////////////////////////////////////////////
     // Harness: builds a minimal XACML 3.0 policy with one rule per token and runs it

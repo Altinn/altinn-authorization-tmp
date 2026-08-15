@@ -33,20 +33,10 @@ namespace Altinn.Authorization.ABAC
                 return new XacmlContextResponse(contextResult);
             }
 
-            if (matchingRules == null || matchingRules.Count == 0)
-            {
-                contextResult = new XacmlContextResult(XacmlContextDecision.NotApplicable)
-                {
-                    Status = new XacmlContextStatus(XacmlContextStatusCode.Success),
-                };
-
-                return new XacmlContextResponse(contextResult);
-            }
-
-            List<RuleDecision> ruleDecisions = new List<RuleDecision>(matchingRules.Count);
+            List<RuleDecision> ruleDecisions = new List<RuleDecision>(matchingRules?.Count ?? 0);
             bool processingError = false;
 
-            foreach (XacmlRule rule in matchingRules)
+            foreach (XacmlRule rule in matchingRules ?? Array.Empty<XacmlRule>())
             {
                 RuleDecision decision;
 
@@ -101,8 +91,10 @@ namespace Altinn.Authorization.ABAC
             };
             this.AddObligations(policy, contextResult);
 
-            // An Indeterminate result reports no evaluated request attributes.
-            if (!indeterminate)
+            // The result echoes request attributes only when rules were evaluated and reached a
+            // decision. A policy the request reaches no rule of, and an Indeterminate that stems
+            // from an evaluation error, both report none.
+            if (!indeterminate && ruleDecisions.Count > 0)
             {
                 this.AddRequestAttributes(decisionRequest, contextResult);
             }

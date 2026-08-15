@@ -12,10 +12,18 @@ namespace Altinn.Authorization.ABAC
     /// first-applicable.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The ordered variants share a decision table with their unordered counterparts. Ordering
     /// constrains how obligations and advice are collected, not the decision. Each table is
     /// also reachable through the matching policy-combining URN, because policies generated for
     /// delegation name a policy-combining algorithm in the RuleCombiningAlgId attribute.
+    /// </para>
+    /// <para>
+    /// A policy whose rules are all excluded by their own target combines an empty list of
+    /// children. Every table states that case for itself: deny-overrides, permit-overrides and
+    /// first-applicable answer NotApplicable, deny-unless-permit answers Deny, permit-unless-deny
+    /// answers Permit, and an identifier that names no table answers Indeterminate.
+    /// </para>
     /// </remarks>
     internal static class RuleCombiner
     {
@@ -109,12 +117,18 @@ namespace Altinn.Authorization.ABAC
             || decision == RuleDecision.IndeterminateDenyPermit;
 
         /// <summary>
-        /// XACML 3.0 C.2 deny-overrides and C.3 ordered-deny-overrides.
+        /// XACML 3.0 C.2 deny-overrides and C.3 ordered-deny-overrides. No children means
+        /// NotApplicable.
         /// </summary>
         /// <param name="ruleDecisions">The decisions of the rules of the policy, in policy order.</param>
         /// <returns>The combined decision.</returns>
         private static RuleDecision DenyOverrides(IReadOnlyList<RuleDecision> ruleDecisions)
         {
+            if (ruleDecisions.Count == 0)
+            {
+                return RuleDecision.NotApplicable;
+            }
+
             bool atLeastOneErrorDeny = false;
             bool atLeastOneErrorPermit = false;
             bool atLeastOneErrorDenyPermit = false;
@@ -167,12 +181,18 @@ namespace Altinn.Authorization.ABAC
         }
 
         /// <summary>
-        /// XACML 3.0 C.4 permit-overrides and C.5 ordered-permit-overrides.
+        /// XACML 3.0 C.4 permit-overrides and C.5 ordered-permit-overrides. No children means
+        /// NotApplicable.
         /// </summary>
         /// <param name="ruleDecisions">The decisions of the rules of the policy, in policy order.</param>
         /// <returns>The combined decision.</returns>
         private static RuleDecision PermitOverrides(IReadOnlyList<RuleDecision> ruleDecisions)
         {
+            if (ruleDecisions.Count == 0)
+            {
+                return RuleDecision.NotApplicable;
+            }
+
             bool atLeastOneErrorDeny = false;
             bool atLeastOneErrorPermit = false;
             bool atLeastOneErrorDenyPermit = false;
@@ -225,13 +245,19 @@ namespace Altinn.Authorization.ABAC
         }
 
         /// <summary>
-        /// XACML 3.0 C.6 deny-unless-permit. Permit when a rule permits, otherwise Deny.
-        /// The algorithm never yields NotApplicable or Indeterminate.
+        /// XACML 3.0 C.6 deny-unless-permit. Permit when a rule permits, otherwise Deny, and so
+        /// Deny when there are no children. The algorithm never yields NotApplicable or
+        /// Indeterminate.
         /// </summary>
         /// <param name="ruleDecisions">The decisions of the rules of the policy, in policy order.</param>
         /// <returns>The combined decision.</returns>
         private static RuleDecision DenyUnlessPermit(IReadOnlyList<RuleDecision> ruleDecisions)
         {
+            if (ruleDecisions.Count == 0)
+            {
+                return RuleDecision.Deny;
+            }
+
             foreach (RuleDecision decision in ruleDecisions)
             {
                 if (decision == RuleDecision.Permit)
@@ -244,13 +270,19 @@ namespace Altinn.Authorization.ABAC
         }
 
         /// <summary>
-        /// XACML 3.0 C.7 permit-unless-deny. Deny when a rule denies, otherwise Permit.
-        /// The algorithm never yields NotApplicable or Indeterminate.
+        /// XACML 3.0 C.7 permit-unless-deny. Deny when a rule denies, otherwise Permit, and so
+        /// Permit when there are no children. The algorithm never yields NotApplicable or
+        /// Indeterminate.
         /// </summary>
         /// <param name="ruleDecisions">The decisions of the rules of the policy, in policy order.</param>
         /// <returns>The combined decision.</returns>
         private static RuleDecision PermitUnlessDeny(IReadOnlyList<RuleDecision> ruleDecisions)
         {
+            if (ruleDecisions.Count == 0)
+            {
+                return RuleDecision.Permit;
+            }
+
             foreach (RuleDecision decision in ruleDecisions)
             {
                 if (decision == RuleDecision.Deny)
@@ -264,12 +296,18 @@ namespace Altinn.Authorization.ABAC
 
         /// <summary>
         /// XACML 3.0 C.8 first-applicable. The first rule that reaches Permit, Deny or an error
-        /// decides; a policy whose rules are all NotApplicable is NotApplicable.
+        /// decides; a policy whose rules are all NotApplicable, or that has no children at all,
+        /// is NotApplicable.
         /// </summary>
         /// <param name="ruleDecisions">The decisions of the rules of the policy, in policy order.</param>
         /// <returns>The combined decision.</returns>
         private static RuleDecision FirstApplicable(IReadOnlyList<RuleDecision> ruleDecisions)
         {
+            if (ruleDecisions.Count == 0)
+            {
+                return RuleDecision.NotApplicable;
+            }
+
             foreach (RuleDecision decision in ruleDecisions)
             {
                 if (decision != RuleDecision.NotApplicable)
