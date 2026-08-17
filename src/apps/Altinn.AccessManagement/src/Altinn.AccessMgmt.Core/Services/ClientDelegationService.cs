@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Appsettings;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -425,7 +426,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     }
 
     /// <inheritdoc/>
-    public async Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(Guid partyUuid, List<string>? roles, List<string>? packages, List<string>? resources, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(Guid partyUuid, List<string>? roles, List<string>? packages, List<string>? resources, PackageMatch packageMatch, CancellationToken cancellationToken = default)
     {
         roles ??= [];
         packages ??= [];
@@ -528,8 +529,16 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         // A client is included when it matches every active filter: a matching package somewhere in
         // its assignments when the packages filter is set, and a matching delegated resource when
         // the resources filter is set. The row sets are already trimmed to the matches, so the
-        // client sets fall out of them directly.
-        HashSet<Guid> packageClientIds = packageFilter.Count > 0 ? packageRows.Select(x => x.From.Id).ToHashSet() : null;
+        // client sets fall out of them directly. In all mode the client also has to cover every
+        // filter package, counting role packages and directly delegated packages as one set across
+        // all of its assignments.
+        HashSet<Guid> packageClientIds = packageFilter.Count > 0
+            ? packageRows
+                .GroupBy(x => x.From.Id)
+                .Where(g => packageMatch == PackageMatch.Any || packageFilter.All(p => g.Any(row => HoldsPackage(row.AssignmentPackage, row.RolePackage, row.RolePackageEntityVariantId, row.From.VariantId, p))))
+                .Select(g => g.Key)
+                .ToHashSet()
+            : null;
         HashSet<Guid> resourceClientIds = resourceFilter.Count > 0 ? resourceRows.Select(x => x.From.Id).ToHashSet() : null;
 
         var query = packageRows
@@ -565,6 +574,15 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
                 }).ToList(),
             }).ToList();
     }
+
+    /// <summary>
+    /// Tells whether a single client access row gives the client the package <paramref name="packageId"/>.
+    /// Mirrors the row level packages filter: a role package only counts when its entity variant
+    /// scope covers the client.
+    /// </summary>
+    private static bool HoldsPackage(Package assignmentPackage, Package rolePackage, Guid? rolePackageEntityVariantId, Guid clientVariantId, Guid packageId)
+        => (assignmentPackage is { } && assignmentPackage.Id == packageId)
+        || (rolePackage is { } && rolePackage.Id == packageId && (rolePackageEntityVariantId is null || rolePackageEntityVariantId == clientVariantId));
 
     /// <inheritdoc/>
     public async Task<Result<List<AgentDto>>> GetAgents(Guid partyUuid, CancellationToken cancellationToken = default)
@@ -2133,12 +2151,15 @@ public interface IClientDelegationService
     /// Gets clients that have assigned roles to the party,
     /// including delegable packages and delegated resources.
     /// Optional role, package and resource filters can be applied.
+    /// <paramref name="packageMatch"/> decides whether a client has to hold any or every package
+    /// in <paramref name="packages"/>.
     /// </summary>
     Task<Result<List<ContractsV2.ClientDto>>> GetClientsV2(
         Guid partyUuid,
         List<string>? roles,
         List<string>? packages,
         List<string>? resources,
+        PackageMatch packageMatch,
         CancellationToken cancellationToken = default);
 
     /// <summary>

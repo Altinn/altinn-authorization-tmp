@@ -404,7 +404,7 @@ public class ClientDelegationControllerTest
     #region GET accessmanagement/api/v2/enduser/clientdelegations/clients
 
     /// <summary>
-    /// <see cref="ClientDelegationController.GetClients(Guid, List{string}?, List{string}?, List{string}?, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
+    /// <see cref="ClientDelegationController.GetClients(Guid, List{string}?, List{string}?, List{string}?, string?, AccessManagement.Api.Enduser.Models.PagingInput, CancellationToken)"/>
     /// </summary>
     [IntegrationTest]
     public class GetClients : IClassFixture<ApiFixture>
@@ -774,6 +774,97 @@ public class ClientDelegationControllerTest
             Assert.Equal(RoleConstants.BusinessManager.Id, businessManagerAccess.Role.Id);
             var businessManagerPackage = Assert.Single(businessManagerAccess.Packages);
             Assert.Equal(PackageConstants.BusinessManagerRealEstate.Id, businessManagerPackage.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAll_Returns200WithOnlyClientHoldingEveryFilterPackage()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.AccountantSalary.Entity.Urn}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=all", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            // The accountant client covers the filter through both ways in: the salary package
+            // comes from the accountant role, the customs package from a direct delegation. The
+            // BRL client only holds the customs package and is left out.
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+
+            var accountantAccess = nordisClient.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Accountant);
+            Assert.NotNull(accountantAccess);
+            Assert.Contains(accountantAccess.Packages, p => p.Id == PackageConstants.AccountantSalary.Id);
+            Assert.Contains(accountantAccess.Packages, p => p.Id == PackageConstants.Customs.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAny_Returns200WithSameClientsAsWithoutPackageMatch()
+        {
+            var client = CreateClient();
+
+            var packagesFilter = $"packages={PackageConstants.AccountantSalary.Entity.Urn}&packages={PackageConstants.Customs.Entity.Urn}";
+
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{packagesFilter}&packageMatch=any", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
+            var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var anyResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(anyData);
+
+            Assert.Contains(anyResult.Items, c => c.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.Contains(anyResult.Items, c => c.Client.Id == TestEntities.OrganizationOkernBorettslag.Id);
+
+            var defaultResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{packagesFilter}", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, defaultResponse.StatusCode);
+            var defaultData = await defaultResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var defaultResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(defaultData);
+
+            Assert.Equal(
+                defaultResult.Items.Select(c => c.Client.Id).Order(),
+                anyResult.Items.Select(c => c.Client.Id).Order());
+        }
+
+        [Fact]
+        public async Task ListClient_WithSinglePackageFilterAndPackageMatchAll_Returns200WithSameClientsAsAnyMode()
+        {
+            var client = CreateClient();
+
+            var allResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=all", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, allResponse.StatusCode);
+            var allData = await allResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var allResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(allData);
+
+            Assert.Contains(allResult.Items, c => c.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.Contains(allResult.Items, c => c.Client.Id == TestEntities.OrganizationOkernBorettslag.Id);
+
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=any", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
+            var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var anyResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(anyData);
+
+            Assert.Equal(
+                anyResult.Items.Select(c => c.Client.Id).Order(),
+                allResult.Items.Select(c => c.Client.Id).Order());
+        }
+
+        [Fact]
+        public async Task ListClient_WithUnknownPackageMatchValue_Returns400WithInvalidPackageMatchError()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=sometimes", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Contains("packageMatch", data);
+            Assert.Contains("'any', 'all'", data);
+            Assert.Contains("AM.VLD-00007", data);
+            Assert.Contains("STD-00000", data);
         }
     }
     #endregion
