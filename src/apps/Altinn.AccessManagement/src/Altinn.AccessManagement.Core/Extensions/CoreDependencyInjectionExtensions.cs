@@ -35,6 +35,7 @@ public static class CoreDependencyInjectionExtensions
         builder.Services.AddTransient<PartyAttributeResolver>();
         builder.Services.AddTransient<UserAttributeResolver>();
         builder.Services.AddTransient<IConsent, ConsentService>();
+        builder.Services.AddTransient<IIdPortenAuthorizationService, IdPortenAuthorizationService>();
         builder.Services.AddTransient<IAMPartyService, AMPartyService>();
 
         builder.Services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPoint>();
@@ -49,7 +50,6 @@ public static class CoreDependencyInjectionExtensions
         builder.Services.AddScoped<ISingleRightsService, SingleRightsService>();
         builder.Services.AddScoped<IMaskinportenDelegationLookupService, MaskinportenDelegationLookupService>();
         builder.Services.AddSingleton<IUserProfileLookupService, UserProfileLookupService>();
-        builder.Services.AddScoped<IAltinn2RightsService, Altinn2RightsService>();
         builder.Services.AddTransient<IAppsInstanceDelegationService, AppsInstanceDelegationService>();
     }
 }

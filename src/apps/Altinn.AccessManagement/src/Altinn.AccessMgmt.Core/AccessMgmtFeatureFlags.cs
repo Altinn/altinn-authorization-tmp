@@ -6,11 +6,6 @@
 public static class AccessMgmtFeatureFlags
 {
     /// <summary>
-    /// Feature flag for enabling consent migration from Altinn 2 to Altinn 3. This flag controls whether the hosted service responsible for migrating consents is active.
-    /// </summary>
-    public const string HostedServicesConsentMigration = "AccessMgmt.Core.HostedServices.ConsentMigration";
-
-    /// <summary>
     /// Specifies if the register data should be streamed from register service to access management database
     /// </summary>
     public const string HostedServicesRegisterSync = $"AccessMgmt.Core.HostedServices.RegisterSync";
@@ -122,4 +117,14 @@ public static class AccessMgmtFeatureFlags
     /// this flag should be enabled before the decommissioning date and remain enabled until the endpoint is removed from the codebase.
     /// </remarks>
     public const string DisableAltinn2CacheInvalidation = "AccessManagement.Altinn2CacheInvalidation.Disable";
+
+    /// <summary>
+    /// Feature flag for including v2 client-delegated resources in PIP GetAllDelegationChanges response.
+    /// </summary>
+    public const string IncludeClientDelegatedResourcesInPip = "AccessManagement.Pip.IncludeClientDelegatedResources";
+
+    /// <summary>
+    /// Feature flag for including client-delegated resources in ConnectionQuery and AuthorizedParties response.
+    /// </summary>
+    public const string IncludeClientDelegationResourcesInConnectionQuery = "AccessManagement.ConnectionQuery.IncludeClientDelegationResources";
 }
