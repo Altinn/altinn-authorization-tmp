@@ -473,6 +473,109 @@ namespace Altinn.Authorization.Tests.Integration
             AssertionUtil.AssertEqual(expected, contextResponse);
         }
 
+        /// <summary>
+        /// Scenario where the subject holds role DAGL for a reportee that is a member of an access list for the
+        /// access list protected resource. Should give Permit result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_AccessListMember_ReturnsPermit()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "ResourceRegistry_AccessListMember_Permit";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
+        /// Scenario where the subject holds the same role DAGL, but for a reportee that is a member of no access list
+        /// for the access list protected resource. Access list membership is the only fact that differs from
+        /// <see cref="PDPExternal_Decision_AccessListMember_ReturnsPermit"/>. Should give Deny result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_AccessListNonMember_ReturnsDeny()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "ResourceRegistry_AccessListNonMember_Deny";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
+        /// Scenario where the subject holds no role, but has received a delegation of the resource from a reportee
+        /// that is a member of an access list for the access list protected resource. Should give Permit result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_AccessListMemberWithUserDelegation_ReturnsPermit()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "ResourceRegistry_AccessListMemberWithUserDelegation_Permit";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
+        /// Scenario where the subject has received the same delegation of the resource, but from a reportee that is a
+        /// member of no access list for the access list protected resource. Access list membership is the only fact
+        /// that differs from <see cref="PDPExternal_Decision_AccessListMemberWithUserDelegation_ReturnsPermit"/>.
+        /// Should give Deny result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_AccessListNonMemberWithUserDelegation_ReturnsDeny()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "ResourceRegistry_AccessListNonMemberWithUserDelegation_Deny";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
+        /// Scenario where a systemuser has received a delegation of the access list protected resource from a reportee
+        /// that is a member of an access list for that resource. Should give Permit result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_AccessListSystemUserWithResourceDelegation_ReturnsPermit()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "ResourceRegistry_AccessListSystemUserWithResourceDelegation_Permit";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(_client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
         private HttpClient GetTestClient(IEventsQueueClient eventLog = null, IFeatureManager featureManager = null, TimeProvider timeProviderMock = null)
         {
             HttpClient client = _fixture.WithWebHostBuilder(builder =>
