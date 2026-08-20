@@ -16,4 +16,9 @@ public class RequestAssignmentPackage : BaseRequestAssignmentPackage
     /// The package associated with this request
     /// </summary>
     public Package Package { get; set; }
+
+    /// <summary>
+    /// The party that last changed the request
+    /// </summary>
+    public Entity LastUpdatedBy { get; set; }
 }

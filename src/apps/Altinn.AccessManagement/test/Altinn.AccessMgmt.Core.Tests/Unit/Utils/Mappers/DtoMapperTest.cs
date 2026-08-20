@@ -723,7 +723,7 @@ public class DtoMapperTest
         dto.From!.Id.Should().Be(from.Id);
         dto.To!.Id.Should().Be(to.Id);
         dto.By!.Id.Should().Be(by.Id);
-        dto.LastUpdatedBy.Should().Be(changedBy);
+        dto.LastUpdatedBy!.Id.Should().Be(changedBy);
         dto.Package!.Id.Should().Be(request.PackageId);
     }
 
@@ -750,7 +750,7 @@ public class DtoMapperTest
         dto.Status.Should().Be(RequestStatus.Approved);
         dto.Resource!.Id.Should().Be(request.ResourceId);
         dto.By!.Id.Should().Be(by.Id);
-        dto.LastUpdatedBy.Should().Be(changedBy);
+        dto.LastUpdatedBy!.Id.Should().Be(changedBy);
     }
 
     // ── RequestMapper — ConvertToPartyEntityDto ────────────────────────────────
