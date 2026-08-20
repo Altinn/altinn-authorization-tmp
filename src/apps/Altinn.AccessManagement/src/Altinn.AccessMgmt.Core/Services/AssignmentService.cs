@@ -464,7 +464,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         // Check if user has AccessManager (Tilgangsstyrer) role
         if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
-            throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
+            throw new UnauthorizedAccessException("User does not have permission to add instance to assignment");
         }
 
         // Check if user has access to the resource
@@ -574,7 +574,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         // Check if user has AccessManager (Tilgangsstyrer) role
         if (!await HasRole(assignment.FromId, user.Id, RoleConstants.AccessManager, cancellationToken))
         {
-            throw new UnauthorizedAccessException("User does not have permission to add resource to assignment");
+            throw new UnauthorizedAccessException("User does not have permission to add instance to assignment");
         }
 
         // Check if user has access to the resource
