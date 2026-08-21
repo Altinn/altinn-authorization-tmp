@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.ProblemDetails;
 
@@ -30,7 +31,7 @@ public class InputValidation(
             if (toEntity is null)
             {
                 errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
-            }
+            }            
 
             if (toEntity is { } && options.EntitiesToValidateForAnyConnections.Contains(toEntity.TypeId))
             {
@@ -120,10 +121,19 @@ public class InputValidation(
                     var entity = await entityService.GetEntity(value, cancellationToken);
                     if (entity is { })
                     {
-                        return entity;
+                        if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath is not null)
+                        {
+                            errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "person was found in profile register, but marked as deceased in AM.")]);
+                        }
+                        else
+                        {
+                            return entity;
+                        }
                     }
-
-                    errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "person was found in profile register, but not in AM.")]);
+                    else
+                    {
+                        errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "person was found in profile register, but not in AM.")]);
+                    }
                 }
                 else
                 {

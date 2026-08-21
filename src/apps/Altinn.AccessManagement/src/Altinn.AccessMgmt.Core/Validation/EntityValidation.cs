@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 
 namespace Altinn.AccessMgmt.Core.Validation;
 
@@ -50,6 +51,11 @@ public static class EntityValidation
     {
         if (party is { })
         {
+            if (party.TypeId == EntityTypeConstants.Person && party.DateOfDeath is not null)
+            {
+                return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.EntityNotExists, $"QUERY/{paramName}");
+            }
+
             return null;
         }
 
