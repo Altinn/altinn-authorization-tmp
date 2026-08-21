@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IBankruptcyDelegationService, BankruptcyDelegationService>();
         services.AddScoped<IMaskinportenSupplierService, MaskinportenSupplierService>();
         services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<IPackageService, PackageService>();
