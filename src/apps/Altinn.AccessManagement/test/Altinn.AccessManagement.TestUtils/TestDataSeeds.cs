@@ -53,7 +53,8 @@ public static class TestDataSeeds
             TestEntities.MainUnitKarlstad,
             TestEntities.SubunitKarlstad,
             TestEntities.OrganizationOrsta,
-            TestEntities.PersonKasper
+            TestEntities.PersonKasper,
+            TestEntities.PersonMargit
         ]);
         #endregion
 
