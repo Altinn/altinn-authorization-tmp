@@ -49,12 +49,13 @@ public class InputValidation(
                         return toEntity;
                     }
 
-                errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
-            }
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
+                }
 
-            if (options.AllowedToEntityTypes.Count > 0 && !options.AllowedToEntityTypes.Contains(toEntity.TypeId))
-            {
-                errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
+                if (options.AllowedToEntityTypes.Count > 0 && !options.AllowedToEntityTypes.Contains(toEntity.TypeId))
+                {
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
+                }
             }
 
             if (errorBuilder.TryBuild(out var problem))
