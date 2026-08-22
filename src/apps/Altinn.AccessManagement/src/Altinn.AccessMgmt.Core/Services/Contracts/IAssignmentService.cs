@@ -150,8 +150,13 @@ public interface IAssignmentService
     /// <summary>
     /// Fetches Client assignments.
     /// </summary>
+    /// <param name="toId">The facilitator the clients are connected to</param>
+    /// <param name="roles">The role codes to filter the client assignments by</param>
+    /// <param name="packages">The package identifiers to filter the clients by</param>
+    /// <param name="packageMatch">Whether a client has to hold any or every package in <paramref name="packages"/></param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns></returns>
-    Task<IEnumerable<SystemuserClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SystemuserClientDto>> GetClients(Guid toId, string[] roles, string[] packages, PackageMatch packageMatch, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetches all assignment packages or role packages for a given assignments.

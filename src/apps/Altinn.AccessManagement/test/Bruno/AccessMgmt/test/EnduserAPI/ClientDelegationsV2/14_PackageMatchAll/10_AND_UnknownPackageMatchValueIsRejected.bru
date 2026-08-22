@@ -1,0 +1,48 @@
+meta {
+  name: 10_AND_UnknownPackageMatchValueIsRejected
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}&packages={{grantedPackage}}&packageMatch=sometimes
+  body: none
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  packages: {{grantedPackage}}
+  packageMatch: sometimes
+}
+
+docs {
+  AND a packageMatch value outside any and all is rejected.
+
+  Expects 400 with error code STD-00000 and validation error AM.VLD-00007 whose
+  paths point at the packageMatch parameter.
+}
+
+script:pre-request {
+  const td = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
+  const { loginAs } = require("./test/EnduserAPI/ClientDelegationsV2/helpers.js");
+
+  bru.setVar("party", td.REGN_Organisasjon.partyUuid);
+  bru.setVar("grantedPackage", td.clientDelegationV2.packages.skattegrunnlag);
+
+  await loginAs(td.REGN_Organisasjon.dagligleder);
+}
+
+tests {
+  test("AND an unknown packageMatch value returns 400", function() {
+    expect(res.status).to.equal(400);
+  });
+
+  test("THEN validation error AM.VLD-00007 points at the packageMatch parameter", function() {
+    const body = res.getBody();
+    expect(body.code).to.equal("STD-00000");
+    const err = body.validationErrors.find(e => e.code === "AM.VLD-00007");
+    expect(err, "expected validation error AM.VLD-00007").to.not.be.undefined;
+    expect(JSON.stringify(err.paths)).to.include("packageMatch");
+  });
+}

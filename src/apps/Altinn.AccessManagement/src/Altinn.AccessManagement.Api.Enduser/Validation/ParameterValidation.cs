@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -171,6 +172,22 @@ internal static class ParameterValidation
         // Invalid format - return error
         return (ref ValidationErrorBuilder errors) =>
             errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/instance", [new("instance", ValidationErrorMessageTexts.InvalidInstanceUrnFormat)]);
+    };
+
+    /// <summary>
+    /// packageMatch must be one of the values accepted by <see cref="PackageMatchValues"/>, or absent.
+    /// </summary>
+    /// <param name="value">Raw query parameter value.</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression PackageMatchMode(string value) => () =>
+    {
+        if (PackageMatchValues.TryParse(value, PackageMatch.Any, out _))
+        {
+            return null;
+        }
+
+        return (ref ValidationErrorBuilder errors) =>
+            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/packageMatch", [new("packageMatch", ValidationErrorMessageTexts.InvalidPackageMatchValue)]);
     };
 
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
