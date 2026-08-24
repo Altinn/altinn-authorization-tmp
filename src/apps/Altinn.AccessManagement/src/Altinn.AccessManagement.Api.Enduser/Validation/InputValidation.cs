@@ -31,24 +31,6 @@ public class InputValidation(
             if (toEntity is null)
             {
                 errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
-            }            
-
-            if (toEntity is { } && options.EntitiesToValidateForAnyConnections.Contains(toEntity.TypeId))
-            {
-                var connections = await connectionQuery.GetConnectionsFromOthersAsync(
-                    new()
-                    {
-                        FromIds = [party],
-                        ToIds = [toEntity.Id],
-                    },
-                    cancellationToken);
-
-                if (connections.Count > 0)
-                {
-                    return toEntity;
-                }
-
-                errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
             }
 
             if (errorBuilder.TryBuild(out var problem))
@@ -56,7 +38,36 @@ public class InputValidation(
                 return problem;
             }
 
-            return toEntity;
+            if (toEntity is { })
+            {
+                if (options.EntitiesToValidateForAnyConnections.Contains(toEntity.TypeId))
+                {
+                    var connections = await connectionQuery.GetConnectionsFromOthersAsync(
+                    new()
+                    {
+                        FromIds = [party],
+                        ToIds = [toEntity.Id],
+                    },
+                    cancellationToken);
+
+                    if (connections.Count == 0)
+                    {
+                        errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
+                    }                    
+                }
+
+                if (toEntity.TypeId == EntityTypeConstants.Person.Entity.Id && toEntity.DateOfDeath is not null)
+                {
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, "person was found, but marked as deceased.")]);
+                }
+
+                if (errorBuilder.TryBuild(out var validationError))
+                {
+                    return validationError;
+                }
+
+                return toEntity;
+            }            
         }
 
         if (personInput is { })
