@@ -143,11 +143,13 @@ public partial class DtoMapper : IDtoMapper
             return new ConnectionDto()
             {
                 Party = Convert(connection.From),
-
-                // A party can reach the same parent through several records, and only some of
-                // them carry a via role (a main-unit hierarchy record has none). Pick the first
-                // record that actually has one so a role-less record does not mask it.
-                ViaRole = ConvertCompactRole(c.FirstOrDefault(t => t.ViaRole is not null)?.ViaRole),
+                ViaRoles = res
+                    .Where(t => t.FromId == connection.FromId)
+                    .Select(t => ConvertCompactRole(t.ViaRole))
+                    .Where(vr => vr is not null)
+                    .DistinctBy(t => t.Id)
+                    .OrderBy(t => t.Code, StringComparer.Ordinal)
+                    .ToList(),
                 Roles = res
                     .Where(t => t.AssignmentId.HasValue && t.FromId == connection.FromId)
                     .Select(t => ConvertCompactRole(t.Role))
@@ -193,11 +195,13 @@ public partial class DtoMapper : IDtoMapper
             return new ConnectionDto()
             {
                 Party = Convert(connection.To),
-
-                // A party can reach the same parent through several records, and only some of
-                // them carry a via role (a main-unit hierarchy record has none). Pick the first
-                // record that actually has one so a role-less record does not mask it.
-                ViaRole = ConvertCompactRole(c.FirstOrDefault(t => t.ViaRole is not null)?.ViaRole),
+                ViaRoles = res
+                    .Where(t => t.ToId == connection.ToId)
+                    .Select(t => ConvertCompactRole(t.ViaRole))
+                    .Where(vr => vr is not null)
+                    .DistinctBy(t => t.Id)
+                    .OrderBy(t => t.Code, StringComparer.Ordinal)
+                    .ToList(),
                 Roles = res
                     .Where(t => t.AssignmentId.HasValue && t.ToId == connection.ToId && t.Role != null)
                     .Select(t => ConvertCompactRole(t.Role))
