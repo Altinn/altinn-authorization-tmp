@@ -20,6 +20,8 @@ A metric consists of the following properties:
   </dd>
   <dt>Tags</dt>
   <dd>A set of tags a given meter has. A tag is used to be able to partition points on a metric. All tags <strong>should</strong> be contained in the <a href="#tags">Tags</a> table below.</dd>
+  <dt>Long-term storage</dt>
+  <dd>Whether or not the metric is exported to long-term storage (and not just application insights).</dd>
 </dl>
 
 ## Tags
@@ -49,13 +51,9 @@ A metric consists of the following properties:
 
 ## Applications
 
-Bellow is a list of applications that publishes metrics, and what those metrics are called/contain.
+Below is a list of applications that publishes metrics, and what those metrics are called/contain.
 
 ### Altinn Authorization
-
-The following meters are currently published to long-term storage:
-
-<ul></ul>
 
 <table>
   <thead>
@@ -65,6 +63,7 @@ The following meters are currently published to long-term storage:
       <th>Description</th>
       <th>Type</th>
       <th>Tags</th>
+      <th>Long-term storage</th>
     </tr>
   </thead>
   <tbody>
@@ -80,16 +79,13 @@ The following meters are currently published to long-term storage:
           <li><code>pdp.api.kind</code></li>
         </ul>
       </td>
+      <td>❌</td>
     </tr>
   </tbody>
 </table>
 
 
 ### Altinn Register
-
-The following meters are currently published to long-term storage:
-
-<ul></ul>
 
 <table>
   <thead>
@@ -99,6 +95,7 @@ The following meters are currently published to long-term storage:
       <th>Description</th>
       <th>Type</th>
       <th>Tags</th>
+      <th>Long-term storage</th>
     </tr>
   </thead>
   <tbody>
@@ -108,6 +105,7 @@ The following meters are currently published to long-term storage:
       <td>The number of online updates from CCR.</td>
       <td>counter</td>
       <td></td>
+      <td>❌</td>
     </tr>
   </tbody>
 </table>
