@@ -753,13 +753,13 @@ public class DtoMapperTest
         dto.LastUpdatedBy!.Id.Should().Be(changedBy);
     }
 
-    // ── RequestMapper — ConvertToPartyEntityDto ────────────────────────────────
+    // ── RequestMapper — ConvertToIdentifiedParty ────────────────────────────────
     [Fact]
-    public void ConvertToPartyEntityDto_MapsKnownTypeAndVariant()
+    public void ConvertToIdentifiedParty_MapsKnownTypeAndVariant()
     {
         var entity = MakeEntity("Test Org");
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDto(entity);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToIdentifiedParty(entity);
 
         dto.Id.Should().Be(entity.Id);
         dto.Name.Should().Be("Test Org");
@@ -769,7 +769,7 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void ConvertToPartyEntityDto_UnknownTypeAndVariant_NullTypeAndVariant()
+    public void ConvertToIdentifiedParty_UnknownTypeAndVariant_NullTypeAndVariant()
     {
         var entity = new Entity
         {
@@ -779,19 +779,19 @@ public class DtoMapperTest
             VariantId = Guid.NewGuid(), // not in constants
         };
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDto(entity);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToIdentifiedParty(entity);
 
         dto.Type.Should().BeNull();
         dto.Variant.Should().BeNull();
     }
 
-    // ── RequestMapper — ConvertToPartyEntityDtoOrStub ──────────────────────────
+    // ── RequestMapper — ConvertToIdentifiedPartyOrStub ──────────────────────────
     [Fact]
-    public void ConvertToPartyEntityDtoOrStub_EntityProvided_DelegatesToFullConversion()
+    public void ConvertToIdentifiedPartyOrStub_EntityProvided_DelegatesToFullConversion()
     {
         var entity = MakeEntity("Real Entity");
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity, fallbackId: Guid.NewGuid());
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToIdentifiedPartyOrStub(entity, fallbackId: Guid.NewGuid());
 
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(entity.Id);
@@ -800,11 +800,11 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void ConvertToPartyEntityDtoOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
+    public void ConvertToIdentifiedPartyOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
     {
         var fallbackId = Guid.NewGuid();
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity: null, fallbackId);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToIdentifiedPartyOrStub(entity: null, fallbackId);
 
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(fallbackId);
@@ -813,9 +813,52 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void ConvertToPartyEntityDtoOrStub_NullEntity_NullFallback_ReturnsNull()
+    public void ConvertToIdentifiedPartyOrStub_NullEntity_NullFallback_ReturnsNull()
     {
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyEntityDtoOrStub(entity: null, fallbackId: null);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToIdentifiedPartyOrStub(entity: null, fallbackId: null);
+
+        dto.Should().BeNull();
+    }
+
+    // ── RequestMapper — ConvertToNamedPartyOrStub ───────────────────────────────
+
+    /// <summary>
+    /// LastUpdatedBy names the access manager who handled a request. The design in #3884 says
+    /// the requester must not be able to identify that individual, so this mapping must never
+    /// carry the identifiers that ConvertToIdentifiedParty does.
+    /// </summary>
+    [Fact]
+    public void ConvertToNamedPartyOrStub_OmitsIdentifiers()
+    {
+        var entity = MakeEntity("Selma Blikklag Johansen");
+        entity.PersonIdentifier = "12345678901";
+
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity, fallbackId: null);
+
+        dto.Should().NotBeNull();
+        dto!.Id.Should().Be(entity.Id);
+        dto.Name.Should().Be("Selma Blikklag Johansen");
+        dto.PersonIdentifier.Should().BeNull();
+        dto.OrganizationIdentifier.Should().BeNull();
+    }
+
+    [Fact]
+    public void ConvertToNamedPartyOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
+    {
+        var fallbackId = Guid.NewGuid();
+
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity: null, fallbackId);
+
+        dto.Should().NotBeNull();
+        dto!.Id.Should().Be(fallbackId);
+        dto.Name.Should().BeNull();
+        dto.PersonIdentifier.Should().BeNull();
+    }
+
+    [Fact]
+    public void ConvertToNamedPartyOrStub_NullEntity_NullFallback_ReturnsNull()
+    {
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity: null, fallbackId: null);
 
         dto.Should().BeNull();
     }

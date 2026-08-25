@@ -18,7 +18,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Altinn:AuditVersion", 3)
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -3237,9 +3237,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_requestassignmentpackage_assignmentid");
 
-                    b.HasIndex("Audit_ChangedBy")
-                        .HasDatabaseName("ix_requestassignmentpackage_audit_changedby");
-
                     b.HasIndex("PackageId")
                         .HasDatabaseName("ix_requestassignmentpackage_packageid");
 
@@ -3297,9 +3294,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 
                     b.HasIndex("AssignmentId")
                         .HasDatabaseName("ix_requestassignmentresource_assignmentid");
-
-                    b.HasIndex("Audit_ChangedBy")
-                        .HasDatabaseName("ix_requestassignmentresource_audit_changedby");
 
                     b.HasIndex("ResourceId")
                         .HasDatabaseName("ix_requestassignmentresource_resourceid");
@@ -4252,12 +4246,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_requestassignmentpackage_requestassignment_assignmentid");
 
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "LastUpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("Audit_ChangedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("fk_requestassignmentpackage_entity_audit_changedby");
-
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Package", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
@@ -4266,8 +4254,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_requestassignmentpackage_package_packageid");
 
                     b.Navigation("Assignment");
-
-                    b.Navigation("LastUpdatedBy");
 
                     b.Navigation("Package");
                 });
@@ -4281,12 +4267,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_requestassignmentresource_requestassignment_assignmentid");
 
-                    b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Entity", "LastUpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("Audit_ChangedBy")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("fk_requestassignmentresource_entity_audit_changedby");
-
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Resource", "Resource")
                         .WithMany()
                         .HasForeignKey("ResourceId")
@@ -4295,8 +4275,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasConstraintName("fk_requestassignmentresource_resource_resourceid");
 
                     b.Navigation("Assignment");
-
-                    b.Navigation("LastUpdatedBy");
 
                     b.Navigation("Resource");
                 });
