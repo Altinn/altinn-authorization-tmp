@@ -1,8 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.Json;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
@@ -210,6 +211,12 @@ public static class DbSetExtensions
 
         UpsertOutbox(dbset, refId, handler, addValueFactory, updateValueFactory, message);
     }
+
+    /// <summary>
+    /// Returns true if the exception was caused by a unique constraint violation on the outbox message refid index.
+    /// </summary>
+    public static bool IsOutboxUniqueConstraintViolation(this DbUpdateException ex)
+        => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "uq_outboxmessage_refid_pending" };
 
     private static void UpsertOutbox<T>(
         DbSet<OutboxMessage> dbset,
