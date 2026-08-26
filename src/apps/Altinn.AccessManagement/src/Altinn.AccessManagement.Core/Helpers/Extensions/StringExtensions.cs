@@ -43,9 +43,9 @@ namespace Altinn.AccessManagement.Core.Helpers.Extensions
         /// <returns>The input without carriage return and line feed characters</returns>
         public static string AsLogValue(this string input)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input is null)
             {
-                return input;
+                return null;
             }
 
             return input
