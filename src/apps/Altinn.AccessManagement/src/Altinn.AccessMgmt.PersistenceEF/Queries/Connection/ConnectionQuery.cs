@@ -193,7 +193,7 @@ public class ConnectionQuery(AppDbContext db)
 
                         // Remove connections where no resources were found if filtering on specific resources.
                         // Must run after the delegation resource merge; only resources on the record itself count.
-                        if (filter.ResourceIds != null)
+                        if (filter.ResourceIds is { Count: > 0 })
                         {
                             result.RemoveAll(t => t.Resources.Count == 0);
                         }

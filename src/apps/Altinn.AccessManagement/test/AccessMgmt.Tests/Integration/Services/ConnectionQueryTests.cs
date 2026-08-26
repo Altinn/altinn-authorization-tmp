@@ -982,9 +982,10 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         var dbResult = await _query.GetConnectionsFromOthersAsync(filter, TestContext.Current.CancellationToken);
 
         // The delegation connection carries the resource and survives; connections without it are removed
-        var delegationConnections = dbResult.Where(r => r.DelegationId.HasValue).ToList();
+        var delegationConnections = dbResult.Where(r => r.Reason == ConnectionReason.Delegation).ToList();
         Assert.NotEmpty(delegationConnections);
-        Assert.All(dbResult, c => Assert.Contains(c.Resources, r => r.Id == TestDataSet.DelegationTestResourceId));
+        Assert.All(dbResult, c => Assert.NotEmpty(c.Resources));
+        Assert.All(dbResult.SelectMany(c => c.Resources), r => Assert.Equal(TestDataSet.DelegationTestResourceId, r.Id));
     }
 
     #endregion
