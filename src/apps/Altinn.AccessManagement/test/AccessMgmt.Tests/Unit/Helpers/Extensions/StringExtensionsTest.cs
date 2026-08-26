@@ -14,7 +14,7 @@ namespace Altinn.AccessManagement.Tests.Unit.Helpers.Extensions;
 [UnitTest]
 public class StringExtensionsTest
 {
-    // ── AsFileName ────────────────────────────────────────────────────────────
+    // AsFileName
     [Fact]
     public void AsFileName_CleanInput_ReturnsUnchanged()
     {
@@ -40,7 +40,7 @@ public class StringExtensionsTest
         Assert.Equal("   ", "   ".AsFileName());
     }
 
-    // ── AsLogValue ────────────────────────────────────────────────────────────
+    // AsLogValue
     [Fact]
     public void AsLogValue_CleanInput_ReturnsUnchanged()
     {
@@ -69,7 +69,7 @@ public class StringExtensionsTest
         Assert.Equal(string.Empty, string.Empty.AsLogValue());
     }
 
-    // ── IsSimilarTo ───────────────────────────────────────────────────────────
+    // IsSimilarTo
     [Fact]
     public void IsSimilarTo_SameFirstFourChars_ReturnsTrue()
     {
@@ -95,7 +95,7 @@ public class StringExtensionsTest
         Assert.True(((string)null).IsSimilarTo(null));
     }
 
-    // ── RemoveDiacritics ──────────────────────────────────────────────────────
+    // RemoveDiacritics
     [Fact]
     public void RemoveDiacritics_StripsAccents()
     {
