@@ -140,7 +140,7 @@ namespace Altinn.AccessManagement.Integration.Clients
         {
             try
             {
-                string endpointUrl = $"v2/resource/{resource}/policy/rights";
+                string endpointUrl = $"v2/resource/{Uri.EscapeDataString(resource)}/policy/rights";
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpointUrl);
                 request.Headers.Add(TranslationConstants.AcceptLanguageHeader, languageCode);
 

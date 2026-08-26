@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -124,11 +125,11 @@ namespace Altinn.AccessManagement.Core.Services
         {
             if (logAsError)
             {
-                _logger.LogError("Could not acquire blob lease lock on delegation policy at path: {PolicyPath}", policyPath);
+                _logger.LogError("Could not acquire blob lease lock on delegation policy at path: {PolicyPath}", policyPath.AsLogValue());
             }
             else
             {
-                _logger.LogInformation("Could not acquire blob lease lock on delegation policy at path: {PolicyPath}", policyPath);
+                _logger.LogInformation("Could not acquire blob lease lock on delegation policy at path: {PolicyPath}", policyPath.AsLogValue());
             }
         }
 
@@ -390,7 +391,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 string resourceId = rights[0].ResourceId;
                 string instanceId = rights[0].InstanceId;
-                _logger.LogError(e, "One or more rules could not be processed when writing policy files ResourceId: {ResourceId}, InstanceId: {InstanceId}", resourceId, instanceId);
+                _logger.LogError(e, "One or more rules could not be processed when writing policy files ResourceId: {ResourceId}, InstanceId: {InstanceId}", resourceId.AsLogValue(), instanceId.AsLogValue());
             }
 
             foreach (InstanceRight rules in rights)
