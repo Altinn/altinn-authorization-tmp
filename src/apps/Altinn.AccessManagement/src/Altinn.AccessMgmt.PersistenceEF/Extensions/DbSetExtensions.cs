@@ -229,6 +229,32 @@ public static class DbSetExtensions
     public static bool IsOutboxUniqueConstraintViolation(this DbUpdateException ex)
         => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "uq_outboxmessage_refid_pending" };
 
+    /// <summary>
+    /// Saves all changes and, if a concurrent request already committed an outbox message with the same
+    /// refId, detaches the conflicting Added entry and retries the upsert against the now-committed row.
+    /// </summary>
+    public static async Task<int> SaveChangesWithOutboxRetry(
+        this DbContext db,
+        Func<Task> reUpsert,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.IsOutboxUniqueConstraintViolation())
+        {
+            foreach (var entry in db.ChangeTracker.Entries<OutboxMessage>()
+                .Where(e => e.State == EntityState.Added).ToList())
+            {
+                entry.State = EntityState.Detached;
+            }
+
+            await reUpsert();
+            return await db.SaveChangesAsync(ct);
+        }
+    }
+
     private static void UpsertOutbox<T>(
         DbSet<OutboxMessage> dbset,
         string refId,

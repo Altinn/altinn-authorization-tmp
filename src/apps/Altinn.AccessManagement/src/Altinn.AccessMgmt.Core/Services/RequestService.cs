@@ -218,29 +218,9 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             };
             db.RequestAssignmentResources.Add(request);
             await UpsertOutboxMessage(ct);
-
-            try
+            if (await db.SaveChangesWithOutboxRetry(() => UpsertOutboxMessage(ct), ct) == 0)
             {
-                var res = await db.SaveChangesAsync(ct);
-                if (res == 0)
-                {
-                    return Problems.RequestCreationFailed;
-                }
-            }
-            catch (DbUpdateException ex) when (ex.IsOutboxUniqueConstraintViolation())
-            {
-                foreach (var entry in db.ChangeTracker.Entries<OutboxMessage>().Where(e => e.State == EntityState.Added).ToList())
-                {
-                    entry.State = EntityState.Detached;
-                }
-
-                await UpsertOutboxMessage(ct);
-
-                var res = await db.SaveChangesAsync(ct);
-                if (res == 0)
-                {
-                    return Problems.RequestCreationFailed;
-                }
+                return Problems.RequestCreationFailed;
             }
         }
 
@@ -283,29 +263,9 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             };
             db.RequestAssignmentPackages.Add(request);
             await UpsertOutboxMessage(ct);
-
-            try
+            if (await db.SaveChangesWithOutboxRetry(() => UpsertOutboxMessage(ct), ct) == 0)
             {
-                var res = await db.SaveChangesAsync(ct);
-                if (res == 0)
-                {
-                    return Problems.RequestCreationFailed;
-                }
-            }
-            catch (DbUpdateException ex) when (ex.IsOutboxUniqueConstraintViolation())
-            {
-                foreach (var entry in db.ChangeTracker.Entries<OutboxMessage>().Where(e => e.State == EntityState.Added).ToList())
-                {
-                    entry.State = EntityState.Detached;
-                }
-
-                await UpsertOutboxMessage(ct);
-
-                var res = await db.SaveChangesAsync(ct);
-                if (res == 0)
-                {
-                    return Problems.RequestCreationFailed;
-                }
+                return Problems.RequestCreationFailed;
             }
         }
 
@@ -444,33 +404,12 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
 
         if (status == RequestStatus.Approved || status == RequestStatus.Rejected)
         {
-            // ToId: organization / person that request approves / declines request.
-            // FromId: organization / person that request access.
             await UpsertOutboxMessage(status, request, ct);
         }
 
-        try
+        if (await db.SaveChangesWithOutboxRetry(() => UpsertOutboxMessage(status, request, ct), ct) == 0)
         {
-            var res = await db.SaveChangesAsync(ct);
-            if (res == 0)
-            {
-                errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentPackages));
-            }
-        }
-        catch (DbUpdateException ex) when (ex.IsOutboxUniqueConstraintViolation() && (status == RequestStatus.Approved || status == RequestStatus.Rejected))
-        {
-            foreach (var entry in db.ChangeTracker.Entries<OutboxMessage>().Where(e => e.State == EntityState.Added).ToList())
-            {
-                entry.State = EntityState.Detached;
-            }
-
-            await UpsertOutboxMessage(status, request, ct);
-
-            var res = await db.SaveChangesAsync(ct);
-            if (res == 0)
-            {
-                errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentPackages));
-            }
+            errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentPackages));
         }
 
         if (errorBuilder.TryBuild(out var problems))
@@ -528,28 +467,9 @@ public class RequestService(AppDbContext db, IOptions<CoreAppsettings> appsettin
             await UpsertOutboxMessage(status, request, ct);
         }
 
-        try
+        if (await db.SaveChangesWithOutboxRetry(() => UpsertOutboxMessage(status, request, ct), ct) == 0)
         {
-            var res = await db.SaveChangesAsync(ct);
-            if (res == 0)
-            {
-                errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentResources));
-            }
-        }
-        catch (DbUpdateException ex) when (ex.IsOutboxUniqueConstraintViolation() && (status == RequestStatus.Approved || status == RequestStatus.Rejected))
-        {
-            foreach (var entry in db.ChangeTracker.Entries<OutboxMessage>().Where(e => e.State == EntityState.Added).ToList())
-            {
-                entry.State = EntityState.Detached;
-            }
-
-            await UpsertOutboxMessage(status, request, ct);
-
-            var res = await db.SaveChangesAsync(ct);
-            if (res == 0)
-            {
-                errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentResources));
-            }
+            errorBuilder.Add(ValidationErrors.DbNoRowsAffected, nameof(db.RequestAssignmentResources));
         }
 
         if (errorBuilder.TryBuild(out var problems))
