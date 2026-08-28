@@ -60,7 +60,8 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<XacmlPolicy> GetPolicyInternalAsync(string policyPath, string version = "", CancellationToken cancellationToken = default)
         {
-            if (!_memoryCache.TryGetValue(policyPath + version, out XacmlPolicy policy))
+            string cacheKey = policyPath + version;
+            if (!_memoryCache.TryGetValue(cacheKey, out XacmlPolicy policy))
             {
                 Stream policyBlob = string.IsNullOrEmpty(version) ?
                     await _policyFactory.Create(policyPath).GetPolicyAsync(cancellationToken) :
@@ -70,19 +71,19 @@ namespace Altinn.AccessManagement.Core.Services
                     policy = (policyBlob.Length > 0) ? PolicyHelper.ParsePolicy(policyBlob) : null;
                 }
 
-                PutXacmlPolicyInCache(policyPath, policy);
+                PutXacmlPolicyInCache(cacheKey, policy);
             }
 
             return policy;
         }
 
-        private void PutXacmlPolicyInCache(string policyPath, XacmlPolicy policy)
+        private void PutXacmlPolicyInCache(string cacheKey, XacmlPolicy policy)
         {
             var cacheEntryOptions = new MemoryCacheEntryOptions()
                .SetPriority(CacheItemPriority.High)
                .SetAbsoluteExpiration(new TimeSpan(0, _cacheConfig.PolicyCacheTimeout, 0));
 
-            _memoryCache.Set(policyPath, policy, cacheEntryOptions);
+            _memoryCache.Set(cacheKey, policy, cacheEntryOptions);
         }
     }
 }
