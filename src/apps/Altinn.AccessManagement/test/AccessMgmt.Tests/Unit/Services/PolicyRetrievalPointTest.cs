@@ -116,6 +116,21 @@ public class PolicyRetrievalPointTest
         _policyRepository.Verify(r => r.GetPolicyVersionAsync("v9", It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task GetPolicyVersionAsync_DocumentFailsToParse_IsNotCachedAndIsReadAgain()
+    {
+        _policyRepository
+            .Setup(r => r.GetPolicyVersionAsync("v8", It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult<Stream>(new MemoryStream(Encoding.UTF8.GetBytes("<not-a-policy>"))));
+
+        Func<Task> first = () => _sut.GetPolicyVersionAsync(PolicyPath, "v8", TestContext.Current.CancellationToken);
+        Func<Task> second = () => _sut.GetPolicyVersionAsync(PolicyPath, "v8", TestContext.Current.CancellationToken);
+
+        await first.Should().ThrowAsync<Exception>();
+        await second.Should().ThrowAsync<Exception>();
+        _policyRepository.Verify(r => r.GetPolicyVersionAsync("v8", It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
     private static Stream PolicyStream(string id) =>
         new MemoryStream(Encoding.UTF8.GetBytes($"""
             <?xml version="1.0" encoding="utf-8"?>

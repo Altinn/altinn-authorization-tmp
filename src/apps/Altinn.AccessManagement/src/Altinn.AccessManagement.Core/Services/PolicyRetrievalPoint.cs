@@ -86,9 +86,12 @@ namespace Altinn.AccessManagement.Core.Services
                 policyDocument = buffer.ToArray();
             }
 
+            // Parse before caching, so a document that fails to parse is never cached and the next
+            // read fetches a fresh copy.
+            XacmlPolicy policy = ParsePolicyDocument(policyDocument);
             PutPolicyDocumentInCache(cacheKey, policyDocument);
 
-            return ParsePolicyDocument(policyDocument);
+            return policy;
         }
 
         // The cache holds the policy document rather than the parsed policy: callers mutate the XacmlPolicy they get
