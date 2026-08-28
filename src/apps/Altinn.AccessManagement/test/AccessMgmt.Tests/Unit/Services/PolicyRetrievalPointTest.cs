@@ -43,7 +43,7 @@ public class PolicyRetrievalPointTest
         XacmlPolicy second = await _sut.GetPolicyAsync(ResourceId, TestContext.Current.CancellationToken);
 
         first.PolicyId.ToString().Should().Be("urn:altinn:policyid:current");
-        second.Should().BeSameAs(first);
+        second.PolicyId.ToString().Should().Be("urn:altinn:policyid:current");
         _policyRepository.Verify(r => r.GetPolicyAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -58,7 +58,7 @@ public class PolicyRetrievalPointTest
         XacmlPolicy second = await _sut.GetPolicyVersionAsync(PolicyPath, "v1", TestContext.Current.CancellationToken);
 
         first.PolicyId.ToString().Should().Be("urn:altinn:policyid:v1");
-        second.Should().BeSameAs(first);
+        second.PolicyId.ToString().Should().Be("urn:altinn:policyid:v1");
         _policyRepository.Verify(r => r.GetPolicyVersionAsync("v1", It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -78,9 +78,42 @@ public class PolicyRetrievalPointTest
 
         v1.PolicyId.ToString().Should().Be("urn:altinn:policyid:v1");
         v2.PolicyId.ToString().Should().Be("urn:altinn:policyid:v2");
-        v1Again.Should().BeSameAs(v1);
+        v1Again.PolicyId.ToString().Should().Be("urn:altinn:policyid:v1");
         _policyRepository.Verify(r => r.GetPolicyVersionAsync("v1", It.IsAny<CancellationToken>()), Times.Once);
         _policyRepository.Verify(r => r.GetPolicyVersionAsync("v2", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetPolicyVersionAsync_CallerClearedRulesOnPreviousResult_ReturnsPolicyWithOriginalRules()
+    {
+        _policyRepository
+            .Setup(r => r.GetPolicyVersionAsync("v1", It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(PolicyStream("v1")));
+
+        XacmlPolicy first = await _sut.GetPolicyVersionAsync(PolicyPath, "v1", TestContext.Current.CancellationToken);
+        first.Rules.Should().ContainSingle();
+        first.Rules.Clear();
+
+        XacmlPolicy second = await _sut.GetPolicyVersionAsync(PolicyPath, "v1", TestContext.Current.CancellationToken);
+
+        second.Should().NotBeSameAs(first);
+        second.Rules.Should().ContainSingle().Which.RuleId.Should().Be("urn:altinn:ruleid:v1");
+        _policyRepository.Verify(r => r.GetPolicyVersionAsync("v1", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetPolicyVersionAsync_VersionMissingThenRequestedAgain_ReturnsNullAndReadsRepositoryAgain()
+    {
+        _policyRepository
+            .Setup(r => r.GetPolicyVersionAsync("v9", It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult<Stream>(new MemoryStream()));
+
+        XacmlPolicy first = await _sut.GetPolicyVersionAsync(PolicyPath, "v9", TestContext.Current.CancellationToken);
+        XacmlPolicy second = await _sut.GetPolicyVersionAsync(PolicyPath, "v9", TestContext.Current.CancellationToken);
+
+        first.Should().BeNull();
+        second.Should().BeNull();
+        _policyRepository.Verify(r => r.GetPolicyVersionAsync("v9", It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     private static Stream PolicyStream(string id) =>
