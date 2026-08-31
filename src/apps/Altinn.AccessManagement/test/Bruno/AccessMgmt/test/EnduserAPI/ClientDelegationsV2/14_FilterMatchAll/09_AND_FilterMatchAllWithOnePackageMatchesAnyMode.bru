@@ -1,24 +1,24 @@
 meta {
-  name: 07_WHEN_ClientListIsFilteredByTwoPackages
+  name: 09_AND_FilterMatchAllWithOnePackageMatchesAnyMode
   type: http
-  seq: 7
+  seq: 9
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}&packages={{rolePackage}}&packages={{grantedPackage}}
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}&packages={{grantedPackage}}&match=all
   body: none
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  packages: {{rolePackage}}
   packages: {{grantedPackage}}
+  match: all
 }
 
 docs {
-  WHEN the client list is filtered by two packages without a packageMatch value,
-  THEN both clients are returned: each holds at least one of them.
+  AND with a single package in the filter, match=all selects the same
+  clients as the any mode: both clients hold the granted package.
 }
 
 script:pre-request {
@@ -26,7 +26,6 @@ script:pre-request {
   const { loginAs } = require("./test/EnduserAPI/ClientDelegationsV2/helpers.js");
 
   bru.setVar("party", td.REGN_Organisasjon.partyUuid);
-  bru.setVar("rolePackage", td.clientDelegationV2.packages.regnskapsforerLonn);
   bru.setVar("grantedPackage", td.clientDelegationV2.packages.skattegrunnlag);
 
   await loginAs(td.REGN_Organisasjon.dagligleder);
@@ -35,11 +34,11 @@ script:pre-request {
 tests {
   const td = require(`./testdata/klient-delegation/${bru.getEnvVar("tokenEnv")}.js`);
 
-  test("WHEN the two package filtered client list request returns 200", function() {
+  test("AND the single package all mode request returns 200", function() {
     expect(res.status).to.equal(200);
   });
 
-  test("THEN both clients are returned in the default any mode", function() {
+  test("AND both clients holding the package are returned", function() {
     const data = res.getBody().data;
     const clientA = td.REGN_Organisasjon.REGN_Org_Clients.client_A.partyUuid.toLowerCase();
     const clientB = td.REGN_Organisasjon.REGN_Org_Clients.client_B.partyUuid.toLowerCase();

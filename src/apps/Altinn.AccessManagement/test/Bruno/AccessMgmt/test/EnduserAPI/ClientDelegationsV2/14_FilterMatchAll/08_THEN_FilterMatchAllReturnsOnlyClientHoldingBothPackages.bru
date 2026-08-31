@@ -1,11 +1,11 @@
 meta {
-  name: 08_THEN_PackageMatchAllReturnsOnlyClientHoldingBothPackages
+  name: 08_THEN_FilterMatchAllReturnsOnlyClientHoldingBothPackages
   type: http
   seq: 8
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}&packages={{rolePackage}}&packages={{grantedPackage}}&packageMatch=all
+  url: {{baseUrl}}/accessmanagement/api/v2/enduser/clientdelegations/clients?party={{party}}&packages={{rolePackage}}&packages={{grantedPackage}}&match=all
   body: none
   auth: inherit
 }
@@ -14,11 +14,11 @@ params:query {
   party: {{party}}
   packages: {{rolePackage}}
   packages: {{grantedPackage}}
-  packageMatch: all
+  match: all
 }
 
 docs {
-  THEN the same filter with packageMatch=all returns only the CCR client. It covers
+  THEN the same filter with match=all returns only the CCR client. It covers
   both packages across both ways in: the lonn package through the regnskapsforer
   role and the skattegrunnlag package through the grant on its rightholder relation.
   The rightholder client holds only the granted package and drops out.

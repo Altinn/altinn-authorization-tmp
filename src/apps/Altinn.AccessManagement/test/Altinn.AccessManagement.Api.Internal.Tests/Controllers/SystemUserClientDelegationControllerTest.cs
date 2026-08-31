@@ -105,11 +105,11 @@ public class SystemUserClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAll_Returns200WithOnlyClientHoldingEveryFilterPackage()
+        public async Task ListClient_WithMultiplePackagesFilterAndFilterMatchAll_Returns200WithOnlyClientHoldingEveryFilterPackage()
         {
             var client = CreateClient();
 
-            var clients = await GetClientList(client, $"&packages={AccountantSalaryFilter}&packages={CustomsFilter}&packageMatch=all");
+            var clients = await GetClientList(client, $"&packages={AccountantSalaryFilter}&packages={CustomsFilter}&match=all");
 
             // The accountant client covers the filter through both ways in: the salary package
             // comes from the accountant role, the customs package from a delegation on the
@@ -126,7 +126,7 @@ public class SystemUserClientDelegationControllerTest
             Assert.NotNull(rightholderAccess);
             Assert.Contains(CustomsFilter, rightholderAccess.Packages);
 
-            // All is what this endpoint does without a packageMatch value.
+            // All is what this endpoint does without a match value.
             var defaultClients = await GetClientList(client, $"&packages={AccountantSalaryFilter}&packages={CustomsFilter}");
 
             Assert.Equal(
@@ -135,27 +135,27 @@ public class SystemUserClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAny_Returns200WithClientsHoldingAnyFilterPackage()
+        public async Task ListClient_WithMultiplePackagesFilterAndFilterMatchAny_Returns200WithClientsHoldingAnyFilterPackage()
         {
             var client = CreateClient();
 
-            var clients = await GetClientList(client, $"&packages={AccountantSalaryFilter}&packages={CustomsFilter}&packageMatch=any");
+            var clients = await GetClientList(client, $"&packages={AccountantSalaryFilter}&packages={CustomsFilter}&match=any");
 
             Assert.Contains(clients, c => c.Party.Id == TestEntities.OrganizationNordisAS.Id);
             Assert.Contains(clients, c => c.Party.Id == TestEntities.OrganizationOkernBorettslag.Id);
         }
 
         [Fact]
-        public async Task ListClient_WithSinglePackageFilterAndPackageMatchAll_Returns200WithSameClientsAsAnyMode()
+        public async Task ListClient_WithSinglePackageFilterAndFilterMatchAll_Returns200WithSameClientsAsAnyMode()
         {
             var client = CreateClient();
 
-            var allModeClients = await GetClientList(client, $"&packages={CustomsFilter}&packageMatch=all");
+            var allModeClients = await GetClientList(client, $"&packages={CustomsFilter}&match=all");
 
             Assert.Contains(allModeClients, c => c.Party.Id == TestEntities.OrganizationNordisAS.Id);
             Assert.Contains(allModeClients, c => c.Party.Id == TestEntities.OrganizationOkernBorettslag.Id);
 
-            var anyModeClients = await GetClientList(client, $"&packages={CustomsFilter}&packageMatch=any");
+            var anyModeClients = await GetClientList(client, $"&packages={CustomsFilter}&match=any");
 
             Assert.Equal(
                 anyModeClients.Select(c => c.Party.Id).Order(),
@@ -163,16 +163,42 @@ public class SystemUserClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithUnknownPackageMatchValue_Returns400WithInvalidPackageMatchMessage()
+        public async Task ListClient_WithMultipleRolesFilterAndFilterMatchAll_Returns200WithOnlyClientHoldingEveryFilterRole()
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={CustomsFilter}&packageMatch=sometimes", TestContext.Current.CancellationToken);
+            var clients = await GetClientList(client, $"&roles={RoleConstants.Accountant.Entity.Code}&roles={RoleConstants.Rightholder.Entity.Code}&match=all");
+
+            // Nordis carries both an accountant and a rightholder relation, the BRL client does not.
+            var nordisClient = Assert.Single(clients);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Party.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithNoRolesFilterAndFilterMatchAll_Returns200WithClientsHoldingAnyValidClientRole()
+        {
+            var client = CreateClient();
+
+            // The endpoint fills the roles filter with every valid client role when the caller sets
+            // none. That default is a narrowing of the query, not a filter the client is matched
+            // against, so all mode must not require a client to hold every one of them.
+            var clients = await GetClientList(client, "&match=all");
+
+            Assert.Contains(clients, c => c.Party.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.Contains(clients, c => c.Party.Id == TestEntities.OrganizationOkernBorettslag.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithUnknownMatchValue_Returns400WithInvalidMatchMessage()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={CustomsFilter}&match=sometimes", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.Contains("packageMatch", data);
+            Assert.Contains("match", data);
             Assert.Contains("any, all", data);
         }
     }

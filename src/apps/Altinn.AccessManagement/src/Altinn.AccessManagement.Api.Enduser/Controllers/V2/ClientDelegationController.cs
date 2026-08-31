@@ -222,19 +222,19 @@ public class ClientDelegationController(
         [FromQuery(Name = "roles")] List<string>? roles,
         [FromQuery(Name = "packages")] List<string>? packages,
         [FromQuery(Name = "resources")] List<string>? resources,
-        [FromQuery(Name = "packageMatch")] string? packageMatch,
+        [FromQuery(Name = "match")] string? match,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var validationErrors = ValidationComposer.Validate(ParameterValidation.PackageMatchMode(packageMatch));
+        var validationErrors = ValidationComposer.Validate(ParameterValidation.FilterMatchMode(match));
         if (validationErrors is { })
         {
             return validationErrors.ToActionResult();
         }
 
-        PackageMatchValues.TryParse(packageMatch, PackageMatch.Any, out var packageMatchMode);
+        FilterMatchValues.TryParse(match, FilterMatch.Any, out var filterMatch);
 
-        var result = await clientDelegationService.GetClientsV2(party, roles, packages, resources, packageMatchMode, cancellationToken);
+        var result = await clientDelegationService.GetClientsV2(party, roles, packages, resources, filterMatch, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

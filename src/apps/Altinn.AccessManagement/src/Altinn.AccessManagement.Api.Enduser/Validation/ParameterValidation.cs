@@ -175,19 +175,19 @@ internal static class ParameterValidation
     };
 
     /// <summary>
-    /// packageMatch must be one of the values accepted by <see cref="PackageMatchValues"/>, or absent.
+    /// match must be one of the values accepted by <see cref="FilterMatchValues"/>, or absent.
     /// </summary>
     /// <param name="value">Raw query parameter value.</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression PackageMatchMode(string value) => () =>
+    internal static RuleExpression FilterMatchMode(string value) => () =>
     {
-        if (PackageMatchValues.TryParse(value, PackageMatch.Any, out _))
+        if (FilterMatchValues.TryParse(value, FilterMatch.Any, out _))
         {
             return null;
         }
 
         return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/packageMatch", [new("packageMatch", ValidationErrorMessageTexts.InvalidPackageMatchValue)]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, "$QUERY/match", [new("match", ValidationErrorMessageTexts.InvalidFilterMatchValue)]);
     };
 
     private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>

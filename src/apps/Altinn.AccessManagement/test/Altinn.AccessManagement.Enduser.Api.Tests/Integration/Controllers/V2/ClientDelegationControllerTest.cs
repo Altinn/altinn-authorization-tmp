@@ -777,11 +777,11 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAll_Returns200WithOnlyClientHoldingEveryFilterPackage()
+        public async Task ListClient_WithMultiplePackagesFilterAndFilterMatchAll_Returns200WithOnlyClientHoldingEveryFilterPackage()
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.AccountantSalary.Entity.Urn}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=all", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.AccountantSalary.Entity.Urn}&packages={PackageConstants.Customs.Entity.Urn}&match=all", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -800,13 +800,13 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithMultiplePackagesFilterAndPackageMatchAny_Returns200WithSameClientsAsWithoutPackageMatch()
+        public async Task ListClient_WithMultiplePackagesFilterAndFilterMatchAny_Returns200WithSameClientsAsWithoutMatch()
         {
             var client = CreateClient();
 
             var packagesFilter = $"packages={PackageConstants.AccountantSalary.Entity.Urn}&packages={PackageConstants.Customs.Entity.Urn}";
 
-            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{packagesFilter}&packageMatch=any", TestContext.Current.CancellationToken);
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{packagesFilter}&match=any", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
             var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -827,11 +827,11 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithSinglePackageFilterAndPackageMatchAll_Returns200WithSameClientsAsAnyMode()
+        public async Task ListClient_WithSinglePackageFilterAndFilterMatchAll_Returns200WithSameClientsAsAnyMode()
         {
             var client = CreateClient();
 
-            var allResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=all", TestContext.Current.CancellationToken);
+            var allResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&match=all", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, allResponse.StatusCode);
             var allData = await allResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -840,7 +840,7 @@ public class ClientDelegationControllerTest
             Assert.Contains(allResult.Items, c => c.Client.Id == TestEntities.OrganizationNordisAS.Id);
             Assert.Contains(allResult.Items, c => c.Client.Id == TestEntities.OrganizationOkernBorettslag.Id);
 
-            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=any", TestContext.Current.CancellationToken);
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&match=any", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
             var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -852,16 +852,88 @@ public class ClientDelegationControllerTest
         }
 
         [Fact]
-        public async Task ListClient_WithUnknownPackageMatchValue_Returns400WithInvalidPackageMatchError()
+        public async Task ListClient_WithMultipleRolesFilterAndFilterMatchAll_Returns200WithOnlyClientHoldingEveryFilterRole()
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&packageMatch=sometimes", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&roles=regnskapsforer&roles=rettighetshaver&match=all", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(data);
+
+            // Nordis carries both an accountant and a rightholder assignment, so it covers the
+            // filter. The BRL client only has the business manager role and is left out.
+            var nordisClient = Assert.Single(result.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+            Assert.Contains(nordisClient.Access, a => a.Role.Id == RoleConstants.Accountant);
+            Assert.Contains(nordisClient.Access, a => a.Role.Id == RoleConstants.Rightholder);
+        }
+
+        [Fact]
+        public async Task ListClient_WithRolesNoClientHoldsTogetherAndFilterMatchAll_Returns200WithEmptyResult()
+        {
+            var client = CreateClient();
+
+            var rolesFilter = "roles=regnskapsforer&roles=forretningsforer";
+
+            var allResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{rolesFilter}&match=all", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, allResponse.StatusCode);
+            var allData = await allResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var allResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(allData);
+
+            // One client holds each role, neither holds both.
+            Assert.Empty(allResult.Items);
+
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{rolesFilter}&match=any", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
+            var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var anyResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(anyData);
+
+            Assert.Contains(anyResult.Items, c => c.Client.Id == TestEntities.OrganizationNordisAS.Id);
+            Assert.Contains(anyResult.Items, c => c.Client.Id == TestEntities.OrganizationOkernBorettslag.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithMultipleResourcesFilterAndFilterMatchAll_Returns200WithOnlyClientHoldingEveryFilterResource()
+        {
+            var client = CreateClient();
+
+            var resourcesFilter = $"resources={TestData.MattilsynetBakeryService.RefId}&resources={TestData.SiriusSkattemelding.RefId}";
+
+            var allResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{resourcesFilter}&match=all", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, allResponse.StatusCode);
+            var allData = await allResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var allResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(allData);
+
+            // Only the bakery service is delegated on the client relationships, so no client covers
+            // both filter resources.
+            Assert.Empty(allResult.Items);
+
+            var anyResponse = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&{resourcesFilter}&match=any", TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, anyResponse.StatusCode);
+            var anyData = await anyResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var anyResult = JsonSerializer.Deserialize<PaginatedResult<ContractsV2.ClientDto>>(anyData);
+
+            var nordisClient = Assert.Single(anyResult.Items);
+            Assert.Equal(TestEntities.OrganizationNordisAS.Id, nordisClient.Client.Id);
+        }
+
+        [Fact]
+        public async Task ListClient_WithUnknownMatchValue_Returns400WithInvalidMatchError()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}&packages={PackageConstants.Customs.Entity.Urn}&match=sometimes", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-            Assert.Contains("packageMatch", data);
+            Assert.Contains("match", data);
             Assert.Contains("'any', 'all'", data);
             Assert.Contains("AM.VLD-00007", data);
             Assert.Contains("STD-00000", data);
