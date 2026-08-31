@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Appsettings;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
-    public class BankruptcyDelegationService(AppDbContext db, IOptions<CoreAppsettings> appsettings) : IBankruptcyDelegationService
+    public class BankruptcyDelegationService(AppDbContext db, IConnectionService ConnectionService) : IBankruptcyDelegationService
     {
         private async Task<List<Assignment>> GetBankruptcyEstateAssignmentsForParty(Guid party, CancellationToken cancellationToken = default)
         {
@@ -39,6 +40,7 @@ namespace Altinn.AccessMgmt.Core.Services
         private static ValidationProblemInstance ValidateWriteOpInput(Entity from, Entity to, ConnectionOptions options) =>
             ConnectionWriteValidation.ValidateWriteOpInput(from, to, options);
 
+        /// <inheritdoc />
         public async Task<Result<List<BankruptcyEstateAssignmentsDto>>> GetBankruptcyEstateForParty(Guid party, CancellationToken cancellationToken = default)
         {
             var assignments = await GetBankruptcyEstateAssignmentsForParty(party, cancellationToken);
@@ -96,6 +98,7 @@ namespace Altinn.AccessMgmt.Core.Services
                     }).ToList();
         }
 
+        /// <inheritdoc />
         public async Task<Result<List<BankruptcyEstateAssignmentsDto>>> GetBankruptcyEstateAssignmentsForEstate(Guid party, Guid estate, CancellationToken cancellationToken = default)
         {
             var assignments = await GetBankruptcyEstateAssignmentsForParty(party, cancellationToken);
@@ -192,6 +195,7 @@ namespace Altinn.AccessMgmt.Core.Services
                     }).ToList();            
         }
 
+        /// <inheritdoc />
         public async Task<Result<int>> RevokeBankruptcyEstatePackagesFromUser(Guid party, Guid user, Guid estate, List<string> packageCodes, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
         {
             var options = new ConnectionOptions(configureConnections);
@@ -234,6 +238,7 @@ namespace Altinn.AccessMgmt.Core.Services
             return removedCount;
         }
 
+        /// <inheritdoc />
         public async Task<bool> CheckBankruptcyEstateConnection(Guid party, Guid estate, CancellationToken cancellationToken = default)
         {
             var estateAssignments = await db.Assignments
@@ -247,6 +252,40 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             return false;
+        }
+
+        /// <inheritdoc />
+        public async Task<Result<bool>> AddCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+        {
+            var result = await ConnectionService.AddRightholder(estate, creditor, configureConnections, cancellationToken);
+            if (result.IsProblem)
+            {
+                return result.Problem;
+            }
+
+            var assignmentId = result.Value.Id;
+
+            var existingAssignmentPackage = await db.AssignmentPackages
+                    .AsNoTracking()
+                    .Where(ap => ap.AssignmentId == assignmentId && ap.PackageId == PackageConstants.BankruptcyEstateReadAccess.Entity.Id)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingAssignmentPackage is null)
+            {
+                var newAssignmentPackage = new AssignmentPackage
+                {
+                    AssignmentId = assignmentId,
+                    PackageId = PackageConstants.BankruptcyEstateReadAccess.Entity.Id
+                };
+
+                db.AssignmentPackages.Add(newAssignmentPackage);
+                db.SaveChanges();
+                return true;
+            }
+            else
+            {
+                return false;
+            }            
         }
     }
 
@@ -313,5 +352,37 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains true if the estate is connected to the party, or a problem detail if an error occurs.</returns>
         Task<bool> CheckBankruptcyEstateConnection(Guid party, Guid estate, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Adds a rettighetshaver assignment and adds the package BankruptcyEstateReadAccess to the assignment for a specific bankruptcy estate.
+        /// </summary>
+        /// <param name="party">The party identifier.</param>
+        /// <param name="creditor">The user identifier.</param>
+        /// <param name="estate">The bankruptcy estate identifier.</param>
+        /// <param name="configureConnections">Optional action to configure connection options.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A problem details if some error occurs. true if read access is added and false if it alredy exists</returns>
+        Task<Result<bool>> AddCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Revokes the package BankruptcyEstateReadAccess from the assignment between the creditor and the bankruptcy estate if the rettighetshaver assignment holds no more content the assignment is also removed..
+        /// </summary>
+        /// <param name="party">The party identifier.</param>
+        /// <param name="creditor">The user identifier.</param>
+        /// <param name="estate">The bankruptcy estate identifier.</param>
+        /// <param name="configureConnections">Optional action to configure connection options.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A problem details if some error occurs. true if read access is revoked and false if it alredy was revoked</returns>
+        Task<Result<bool>> RevokeCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the list of creditors for a specific bankruptcy estate.
+        /// </summary>
+        /// <param name="party">The party identifier.</param>
+        /// <param name="estate">The bankruptcy estate identifier.</param>
+        /// <param name="configureConnections">Optional action to configure connection options.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A problem details if some error occurs. List of creditors if successful.</returns>
+        Task<Result<bool>> GetCreditors(Guid party, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
     }
 }

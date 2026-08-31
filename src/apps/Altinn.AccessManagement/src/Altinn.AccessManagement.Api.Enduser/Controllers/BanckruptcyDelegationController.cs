@@ -109,11 +109,59 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             }
 
             return Ok(PaginatedResult.Create(result.Value, null));
-        }        
+        }
 
         #endregion
 
         #region Add methods
+
+        [HttpPost("estates/creditors")]
+        [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE)]
+        [Authorize(Policy = AuthzConstants.POLICY_BANKRUPTCYDELEGATION_WRITE)]
+        [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> AddCreditor(
+            [FromQuery(Name = "party")][Required] Guid party,
+            [FromQuery(Name = "creditor")] Guid? creditor,
+            [FromQuery(Name = "estate")][Required] Guid bankruptcyestate,
+            [FromBody] PersonInput? person,
+            CancellationToken cancellationToken = default)
+        {
+            // Check that party has the bankruptcyestate as an active bankruptcyestate
+            var hasConnection = await bankruptcyDelegationService.CheckBankruptcyEstateConnection(party, bankruptcyestate, cancellationToken);
+
+            if (!hasConnection)
+            {
+                return Forbid();
+            }
+
+            var entity = await inputValidation.SanitizeToInput(
+            party,
+            creditor,
+            person,
+            options =>
+            {
+                options.AllowedToEntityTypes = [EntityTypeConstants.Person, EntityTypeConstants.Organization];
+            },
+            cancellationToken);
+
+            if (entity.IsProblem)
+            {
+                return entity.Problem.ToActionResult();
+            }
+
+            var result = await bankruptcyDelegationService.AddCreditor(party, bankruptcyestate, entity.Value.Id, ConfigureConnections, cancellationToken);
+            if (result.IsProblem)
+            {
+                return result.Problem.ToActionResult();
+            }
+
+            return NoContent();
+        }
 
         [HttpPost("users")]
         [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE)]
