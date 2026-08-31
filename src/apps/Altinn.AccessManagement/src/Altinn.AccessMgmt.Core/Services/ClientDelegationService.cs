@@ -532,13 +532,16 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
         // client sets fall out of them directly. In all mode the client also has to cover every
         // filter package, counting role packages and directly delegated packages as one set across
         // all of its assignments.
-        HashSet<Guid> packageClientIds = packageFilter.Count > 0
-            ? packageRows
+        HashSet<Guid> packageClientIds = packageFilter.Count switch
+        {
+            0 => null,
+            _ when packageMatch == PackageMatch.Any => packageRows.Select(x => x.From.Id).ToHashSet(),
+            _ => packageRows
                 .GroupBy(x => x.From.Id)
-                .Where(g => packageMatch == PackageMatch.Any || packageFilter.All(p => g.Any(row => HoldsPackage(row.AssignmentPackage, row.RolePackage, row.RolePackageEntityVariantId, row.From.VariantId, p))))
+                .Where(g => packageFilter.All(p => g.Any(row => HoldsPackage(row.AssignmentPackage, row.RolePackage, row.RolePackageEntityVariantId, row.From.VariantId, p))))
                 .Select(g => g.Key)
                 .ToHashSet()
-            : null;
+        };
         HashSet<Guid> resourceClientIds = resourceFilter.Count > 0 ? resourceRows.Select(x => x.From.Id).ToHashSet() : null;
 
         var query = packageRows
@@ -580,7 +583,7 @@ public class ClientDelegationService(AppDbContext db, IOptions<CoreAppsettings> 
     /// Mirrors the row level packages filter: a role package only counts when its entity variant
     /// scope covers the client.
     /// </summary>
-    private static bool HoldsPackage(Package assignmentPackage, Package rolePackage, Guid? rolePackageEntityVariantId, Guid clientVariantId, Guid packageId)
+    private static bool HoldsPackage(Package? assignmentPackage, Package? rolePackage, Guid? rolePackageEntityVariantId, Guid clientVariantId, Guid packageId)
         => (assignmentPackage is { } && assignmentPackage.Id == packageId)
         || (rolePackage is { } && rolePackage.Id == packageId && (rolePackageEntityVariantId is null || rolePackageEntityVariantId == clientVariantId));
 
