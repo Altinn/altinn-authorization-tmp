@@ -67,6 +67,12 @@ namespace Altinn.Authorization.Tests.Util
         public const int DelegationUserId = 20990011;
 
         /// <summary>
+        /// User id holding no role for either reportee and having received no delegation from either of them,
+        /// so the decision on <see cref="ResourceId"/> never reaches the access list lookup.
+        /// </summary>
+        public const int UnauthorizedUserId = 20990012;
+
+        /// <summary>
         /// System user having received a delegation of the read action on <see cref="ResourceId"/>
         /// from <see cref="MemberPartyId"/>.
         /// </summary>
