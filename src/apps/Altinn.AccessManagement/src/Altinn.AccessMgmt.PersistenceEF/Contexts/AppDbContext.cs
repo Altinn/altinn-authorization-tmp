@@ -84,6 +84,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<RightImportProgress> RightImportProgress => Set<RightImportProgress>();
 
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+
+    public DbSet<ActivityLogBackfillProgress> ActivityLogBackfillProgress => Set<ActivityLogBackfillProgress>();
+
     #endregion
 
     #region Audit
@@ -233,6 +237,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<A2ClientRole>(new A2ClientRoleConfiguration());
         modelBuilder.ApplyConfiguration<RightImportProgress>(new RightImportProgressConfiguration());
         modelBuilder.ApplyConfiguration<InstanceSourceType>(new InstanceSourceTypeConfiguration());
+        modelBuilder.ApplyConfiguration<ActivityLog>(new ActivityLogConfiguration());
+        modelBuilder.ApplyConfiguration<ActivityLogBackfillProgress>(new ActivityLogBackfillProgressConfiguration());
     }
 
     #region Extensions
