@@ -879,7 +879,7 @@ public class ClientDelegationControllerTest
             Assert.Single(result.Errors);
             Assert.Equal("AM.VLD-00034", result.Errors.First().ErrorCode.ToString());
             string extendedinfo = result.Errors.First().Extensions["personInput"]?.ToString();
-            Assert.Equal("person was found in profile register, but marked as deceased in AM.", extendedinfo);
+            Assert.Equal("Person not available for delegation (deceased).", extendedinfo);
         }
     }
 

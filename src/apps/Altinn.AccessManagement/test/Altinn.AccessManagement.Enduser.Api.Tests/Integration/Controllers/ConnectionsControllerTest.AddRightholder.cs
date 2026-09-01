@@ -139,10 +139,10 @@ public partial class ConnectionsControllerTest
 
         /// <summary>
         /// Han Solo adds Padmé Amidala as rightholder via PersonInput body (SSN + last name "Amidala").
-        /// The mock UserProfileLookupService resolves Padme by SSN; expects Forbidden as this person is dead.
+        /// The mock UserProfileLookupService resolves Padme by SSN; expects BadRequest as this person is dead.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsManagingDirectorForPersonViaPersonInput_ReturnsBadRequest()
+        public async Task AddRightholder_AsManagingDirectorForDeadPersonViaPersonInput_ReturnsBadRequest()
         {
             HttpClient client = CreateClient(TestData.HanSolo.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -160,7 +160,7 @@ public partial class ConnectionsControllerTest
             Assert.Single(result.Errors);
             Assert.Equal("AM.VLD-00034", result.Errors.First().ErrorCode.ToString());
             string extendedinfo = result.Errors.First().Extensions["personInput"]?.ToString();
-            Assert.Equal("person was found in profile register, but marked as deceased in AM.", extendedinfo);
+            Assert.Equal("Person not available for delegation (deceased).", extendedinfo);
         }
 
         /// <summary>

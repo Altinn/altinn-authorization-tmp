@@ -58,7 +58,7 @@ public class InputValidation(
 
                 if (toEntity.TypeId == EntityTypeConstants.Person.Entity.Id && toEntity.DateOfDeath is not null)
                 {
-                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, "person was found, but marked as deceased.")]);
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, "Person not available for delegation (deceased).")]);
                 }
 
                 if (errorBuilder.TryBuild(out var validationError))
@@ -134,7 +134,7 @@ public class InputValidation(
                     {
                         if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath is not null)
                         {
-                            errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "person was found in profile register, but marked as deceased in AM.")]);
+                            errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "Person not available for delegation (deceased).")]);
                         }
                         else
                         {
