@@ -21,18 +21,18 @@
 
     <MudGrid>
 
-        @* Entity pickers *@
+        @* Entity filters *@
         <MudItem xs="12" sm="6" md="3">
-            <EntityPicker Label="Fra" @bind-Value="_fromId" />
+            <EntityLookupField Label="Fra" @bind-Value="_fromId" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <EntityPicker Label="Til" @bind-Value="_toId" />
+            <EntityLookupField Label="Til" @bind-Value="_toId" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <EntityPicker Label="Via (fasilitator)" @bind-Value="_viaId" />
+            <EntityLookupField Label="Via (fasilitator)" @bind-Value="_viaId" />
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
-            <EntityPicker Label="Utført av" @bind-Value="_byId" />
+            <EntityLookupField Label="Utført av" @bind-Value="_byId" />
         </MudItem>
 
         @* Time range *@
