@@ -127,4 +127,9 @@ public static class AccessMgmtFeatureFlags
     /// Feature flag for including client-delegated resources in ConnectionQuery and AuthorizedParties response.
     /// </summary>
     public const string IncludeClientDelegationResourcesInConnectionQuery = "AccessManagement.ConnectionQuery.IncludeClientDelegationResources";
+
+    /// <summary>
+    /// Enables the activity log endpoint in the enduser API.
+    /// </summary>
+    public const string EnableEnduserActivityLogApi = "AccessManagement.Enduser.ActivityLogApi";
 }

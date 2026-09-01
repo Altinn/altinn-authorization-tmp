@@ -7,7 +7,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 /// Represents a filter for querying activity log entries. Every collection is optional; a set
 /// collection narrows the result to entries matching any of its values.
 /// </summary>
-public sealed class ActivityLogQueryFilter
+public sealed record ActivityLogQueryFilter
 {
     /// <summary>
     /// Gets the collection of party identifiers that must be involved in the entry as from,
