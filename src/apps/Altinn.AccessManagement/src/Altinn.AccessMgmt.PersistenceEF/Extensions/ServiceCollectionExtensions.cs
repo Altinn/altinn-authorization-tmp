@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Base;
+using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -37,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddMemoryCache(); // Add memory cache for translation service
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
+        services.AddScoped<ActivityLogQuery>();
         services.AddScoped<AppDbContextFactory>();
         services.AddScoped(sp => sp.GetRequiredService<AppDbContextFactory>().CreateDbContext());
 
