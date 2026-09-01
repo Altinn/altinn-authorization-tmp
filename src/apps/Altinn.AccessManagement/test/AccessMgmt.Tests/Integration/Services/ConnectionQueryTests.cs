@@ -346,7 +346,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         Assert.True(result);
         Assert.Equal(ConnectionReason.KeyRole, reason);
     }
-    
+
     [Fact]
     public async Task KeyRole_ToOthers_IksWithDeltakerDeltAnsvar_IsNotIncluded()
     {
