@@ -38,7 +38,7 @@
 
         try
         {
-            return await SearchService.SearchAsync(EnvState.Current, text.Trim(), includeDeleted: true, MaxSuggestions, ct);
+            return await SearchService.SearchAsync(EnvState.Current, text.Trim(), includeDeleted: true, kind: null, MaxSuggestions, ct);
         }
         catch
         {
