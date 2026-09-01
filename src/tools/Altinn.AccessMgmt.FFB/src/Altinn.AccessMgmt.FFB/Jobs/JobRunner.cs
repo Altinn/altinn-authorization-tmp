@@ -42,6 +42,15 @@ public interface IJobRunner
     JobRun StartAssignmentInstanceCleanup(string environment, AssignmentInstanceCleanupOptions opts);
 
     /// <summary>
+    /// Backfills dbo.activitylog from the live and history tables in throttled batches.
+    /// Idempotent and resumable; progress is tracked in dbo.activitylogbackfillprogress.
+    /// </summary>
+    JobRun StartActivityLogBackfill(string environment, ActivityLogBackfillOptions opts);
+
+    /// <summary>Ensures monthly partitions exist ahead of time for dbo.activitylog.</summary>
+    JobRun StartActivityLogPartitions(string environment, ActivityLogPartitionOptions opts);
+
+    /// <summary>
     /// Requests cooperative cancellation of the given run.
     /// Returns false if the run is not found or is already in a terminal state.
     /// </summary>
@@ -234,6 +243,32 @@ public sealed class JobRunner(
         {
             var repo = CreateAccRepo(environment);
             await AssignmentInstanceCleanupJob.RunAsync(repo, run, opts, ct);
+        });
+
+        return run;
+    }
+
+    public JobRun StartActivityLogBackfill(string environment, ActivityLogBackfillOptions opts)
+    {
+        var run = CreateRun($"{ActivityLogBackfillJob.JobName}:{opts.Source}", environment);
+
+        FireAndForget(run, async ct =>
+        {
+            var repo = CreateAccRepo(environment);
+            await ActivityLogBackfillJob.RunAsync(repo, run, opts, ct);
+        });
+
+        return run;
+    }
+
+    public JobRun StartActivityLogPartitions(string environment, ActivityLogPartitionOptions opts)
+    {
+        var run = CreateRun(ActivityLogPartitionJob.JobName, environment);
+
+        FireAndForget(run, async ct =>
+        {
+            var repo = CreateAccRepo(environment);
+            await ActivityLogPartitionJob.RunAsync(repo, run, opts, ct);
         });
 
         return run;
