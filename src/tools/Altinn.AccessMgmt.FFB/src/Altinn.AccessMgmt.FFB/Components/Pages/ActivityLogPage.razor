@@ -1,0 +1,380 @@
+@page "/tools/activitylog"
+@using Altinn.AccessMgmt.PersistenceEF.Constants
+@using Altinn.AccessMgmt.PersistenceEF.Queries
+@using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog
+@using Altinn.Authorization.Api.Contracts.AccessManagement.Request
+@using PersistedActivityLog = Altinn.AccessMgmt.PersistenceEF.Models.ActivityLog
+@inherits EnvironmentPageBase
+@inject ActivityLogPageService PageService
+
+<PageTitle>Aktivitetslogg</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Aktivitetslogg</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Bla og filtrer i <code>dbo.activitylog</code> — hendelser for assignments, delegeringer og
+    forespørsler, skrevet av databasetriggere. Nyeste først; alle filtre kan kombineres.
+</MudText>
+
+@* ── Filter ────────────────────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-4">
+    <MudText Typo="Typo.h6" Class="mb-4">Filter</MudText>
+
+    <MudGrid>
+
+        @* Entity pickers *@
+        <MudItem xs="12" sm="6" md="3">
+            <EntityPicker Label="Fra" @bind-Value="_fromId" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <EntityPicker Label="Til" @bind-Value="_toId" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <EntityPicker Label="Via (fasilitator)" @bind-Value="_viaId" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <EntityPicker Label="Utført av" @bind-Value="_byId" />
+        </MudItem>
+
+        @* Time range *@
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="Fra dato" @bind-Date="_afterDate" Variant="Variant.Outlined" Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="Til dato" @bind-Date="_beforeDate" Variant="Variant.Outlined" Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudNumericField T="int" @bind-Value="_pageSize" Label="Sidestørrelse" Variant="Variant.Outlined" Min="10" Max="5000" />
+        </MudItem>
+
+        @* Type *@
+        <MudItem xs="12">
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="4" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 80px;">Type</MudText>
+                @foreach (var value in Enum.GetValues<ActivityLogType>())
+                {
+                    var v = value;
+                    <MudCheckBox @bind-Value="_types[v]" Label="@v.ToString()" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        @* Subtype *@
+        <MudItem xs="12">
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="4" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 80px;">Subtype</MudText>
+                @foreach (var value in Enum.GetValues<ActivityLogSubtype>())
+                {
+                    var v = value;
+                    <MudCheckBox @bind-Value="_subtypes[v]" Label="@v.ToString()" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        @* Trigger *@
+        <MudItem xs="12">
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="4" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 80px;">Hendelse</MudText>
+                @foreach (var value in Enum.GetValues<ActivityLogTrigger>())
+                {
+                    var v = value;
+                    <MudCheckBox @bind-Value="_triggers[v]" Label="@v.ToString()" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        @* Request status *@
+        <MudItem xs="12">
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="4" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 80px;">Status</MudText>
+                @foreach (var value in Enum.GetValues<RequestStatus>().Where(s => s != RequestStatus.None))
+                {
+                    var v = value;
+                    <MudCheckBox @bind-Value="_statuses[v]" Label="@v.ToString()" Color="Color.Primary" Dense="true" />
+                }
+            </MudStack>
+        </MudItem>
+
+        @* Run *@
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Search"
+                       Disabled="@(!HasFilter || Loading)"
+                       OnClick="RunQuery">
+                Hent hendelser
+            </MudButton>
+            @if (!HasFilter)
+            {
+                <MudText Typo="Typo.caption" Class="ml-3 mud-text-secondary">
+                    Velg minst én part, «Utført av» eller et datointervall.
+                </MudText>
+            }
+        </MudItem>
+
+    </MudGrid>
+</MudPaper>
+
+@* ── Status ────────────────────────────────────────────────────────────────── *@
+@if (Loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@Error</MudAlert>
+}
+
+@* ── Results ───────────────────────────────────────────────────────────────── *@
+@if (_items is not null)
+{
+    <MudText Typo="Typo.body2" Class="mb-2 mud-text-secondary">
+        @_items.Count hendelser@(_cursor is not null ? " — flere tilgjengelig" : string.Empty)
+    </MudText>
+
+    <MudDataGrid T="PersistedActivityLog"
+                 Items="_items"
+                 Dense="true"
+                 Hover="true"
+                 Striped="true"
+                 FixedHeader="true"
+                 Height="620px"
+                 SortMode="SortMode.None">
+        <Columns>
+
+            <HierarchyColumn T="PersistedActivityLog" />
+
+            <TemplateColumn Title="Når">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@context.Item.When.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Hendelse">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="@TriggerColor(context.Item.Trigger)">
+                        @context.Item.Trigger
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Type">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="@TypeColor(context.Item.Type)" Variant="Variant.Outlined">
+                        @context.Item.Type@(context.Item.Subtype is not null ? $"/{context.Item.Subtype}" : string.Empty)
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Fra">
+                <CellTemplate>
+                    @if (context.Item.FromId is not null)
+                    {
+                        <MudLink Href="@($"/entity/{context.Item.FromId}")" Typo="Typo.body2">
+                            @(context.Item.FromName ?? context.Item.FromId.ToString())
+                        </MudLink>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Til">
+                <CellTemplate>
+                    @if (context.Item.ToId is not null)
+                    {
+                        <MudLink Href="@($"/entity/{context.Item.ToId}")" Typo="Typo.body2">
+                            @(context.Item.ToName ?? context.Item.ToId.ToString())
+                        </MudLink>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Via">
+                <CellTemplate>
+                    @if (context.Item.ViaId is not null)
+                    {
+                        <MudText Typo="Typo.body2">@(context.Item.ViaName ?? context.Item.ViaId.ToString())</MudText>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Rolle">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@context.Item.RoleName</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Objekt">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@ObjectLabel(context.Item)</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Status">
+                <CellTemplate>
+                    @if (context.Item.Status is not null)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
+                            @context.Item.Status
+                        </MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Utført av">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@(context.Item.ByName ?? context.Item.ById?.ToString())</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+        </Columns>
+
+        <ChildRowContent>
+            <MudPaper Elevation="0" Class="pa-3 mud-background-gray">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        Kilde: @SourceLabel(context.Item.SourceId) — Operasjon: @context.Item.OperationId
+                    </MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                        ItemId: @context.Item.ItemId@(context.Item.ParentId is not null ? $" — ParentId: {context.Item.ParentId}" : string.Empty)
+                    </MudText>
+                    @if (context.Item.ViaRoleName is not null)
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            Via-rolle: @context.Item.ViaRoleName
+                        </MudText>
+                    }
+                    @if (context.Item.Details is not null)
+                    {
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            Detaljer: <code>@context.Item.Details</code>
+                        </MudText>
+                    }
+                </MudStack>
+            </MudPaper>
+        </ChildRowContent>
+
+    </MudDataGrid>
+
+    @if (_cursor is not null)
+    {
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   Class="mt-3"
+                   StartIcon="@Icons.Material.Filled.ExpandMore"
+                   Disabled="@Loading"
+                   OnClick="LoadMore">
+            Hent flere
+        </MudButton>
+    }
+}
+
+@code {
+    // ── Filter state ──────────────────────────────────────────────────────────
+
+    private Guid? _fromId;
+    private Guid? _toId;
+    private Guid? _viaId;
+    private Guid? _byId;
+    private DateTime? _afterDate;
+    private DateTime? _beforeDate;
+    private int _pageSize = 200;
+
+    private readonly Dictionary<ActivityLogType, bool> _types =
+        Enum.GetValues<ActivityLogType>().ToDictionary(v => v, _ => false);
+
+    private readonly Dictionary<ActivityLogSubtype, bool> _subtypes =
+        Enum.GetValues<ActivityLogSubtype>().ToDictionary(v => v, _ => false);
+
+    private readonly Dictionary<ActivityLogTrigger, bool> _triggers =
+        Enum.GetValues<ActivityLogTrigger>().ToDictionary(v => v, _ => false);
+
+    private readonly Dictionary<RequestStatus, bool> _statuses =
+        Enum.GetValues<RequestStatus>().Where(s => s != RequestStatus.None).ToDictionary(v => v, _ => false);
+
+    // ── Data ──────────────────────────────────────────────────────────────────
+
+    private List<PersistedActivityLog>? _items;
+    private ActivityLogQueryCursor? _cursor;
+
+    protected override Task OnEnvironmentChangedAsync()
+    {
+        _items = null;
+        _cursor = null;
+        Error = null;
+        return Task.CompletedTask;
+    }
+
+    // ── Query ─────────────────────────────────────────────────────────────────
+
+    private bool HasFilter =>
+        _fromId.HasValue || _toId.HasValue || _viaId.HasValue || _byId.HasValue ||
+        _afterDate.HasValue || _beforeDate.HasValue;
+
+    private async Task RunQuery()
+    {
+        _items = null;
+        _cursor = null;
+        await FetchPage();
+    }
+
+    private Task LoadMore() => FetchPage();
+
+    private Task FetchPage() => RunAsync(async ct =>
+    {
+        var page = await PageService.QueryAsync(EnvState.Current, BuildFilter(), _pageSize, _cursor, ct);
+
+        _items = [.. _items ?? [], .. page.Items];
+        _cursor = page.Next;
+    });
+
+    private ActivityLogQueryFilter BuildFilter() => new()
+    {
+        FromIds = _fromId.HasValue ? [_fromId.Value] : null,
+        ToIds = _toId.HasValue ? [_toId.Value] : null,
+        ViaIds = _viaId.HasValue ? [_viaId.Value] : null,
+        ByIds = _byId.HasValue ? [_byId.Value] : null,
+        Types = Checked(_types),
+        Subtypes = Checked(_subtypes),
+        Triggers = Checked(_triggers),
+        Statuses = Checked(_statuses),
+        After = _afterDate is not null ? new DateTimeOffset(_afterDate.Value.Date, TimeSpan.Zero) : null,
+        Before = _beforeDate is not null ? new DateTimeOffset(_beforeDate.Value.Date.AddDays(1), TimeSpan.Zero) : null,
+    };
+
+    private static IReadOnlyCollection<T>? Checked<T>(Dictionary<T, bool> values)
+        where T : notnull
+    {
+        var selected = values.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+        return selected.Count > 0 ? selected : null;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static string ObjectLabel(PersistedActivityLog item) =>
+        item.PackageName
+        ?? item.ResourceName
+        ?? item.InstanceId
+        ?? (item.PackageId?.ToString() ?? item.ResourceId?.ToString())
+        ?? string.Empty;
+
+    private static string SourceLabel(Guid? sourceId) =>
+        sourceId.HasValue && SystemEntityConstants.TryGetById(sourceId.Value, out var definition)
+            ? definition.Entity.Name
+            : sourceId?.ToString() ?? "ukjent";
+
+    private static Color TriggerColor(ActivityLogTrigger trigger) => trigger switch
+    {
+        ActivityLogTrigger.Created => Color.Success,
+        ActivityLogTrigger.Updated => Color.Warning,
+        ActivityLogTrigger.Deleted => Color.Error,
+        _ => Color.Default
+    };
+
+    private static Color TypeColor(ActivityLogType type) => type switch
+    {
+        ActivityLogType.Assignment => Color.Primary,
+        ActivityLogType.Delegation => Color.Info,
+        ActivityLogType.Request => Color.Secondary,
+        _ => Color.Default
+    };
+}

@@ -43,6 +43,8 @@ public static class NavRegistry
             "Finn og rydd opp foreldreløse resource-rader basert på et RefId-prefix.", NavGroup.Tool),
         new("/tools/grant-check", Icons.Material.Filled.Key, "Grant Check",
             "Sjekker at DB-rollene har riktige privilegier på alle tabellene i modellen. Kjører GRANT for manglende.", NavGroup.Tool),
+        new("/tools/activitylog", Icons.Material.Filled.EventNote, "Aktivitetslogg",
+            "Bla og filtrer i dbo.activitylog — hendelser for assignments, delegeringer og forespørsler.", NavGroup.Tool),
 
         // ── Jobber ────────────────────────────────────────────────────────────
         new("/jobs/runs", Icons.Material.Filled.PlayCircle, "Kjøringer",
