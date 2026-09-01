@@ -346,7 +346,7 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
         Assert.True(result);
         Assert.Equal(ConnectionReason.KeyRole, reason);
     }
-
+    
     [Fact]
     public async Task KeyRole_ToOthers_IksWithDeltakerDeltAnsvar_IsNotIncluded()
     {
@@ -363,7 +363,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
 
         Assert.DoesNotContain(dbResult, r =>
             r.ToId == personId &&
-            r.RoleId == RoleConstants.ParticipantSharedResponsibility.Id &&
             r.Reason == ConnectionReason.KeyRole);
     }
 
@@ -383,7 +382,6 @@ public class ConnectionQueryTests : IClassFixture<EfDatabaseFixture>, IAsyncLife
 
         Assert.DoesNotContain(dbResult, r =>
             r.ToId == orgId &&
-            r.RoleId == RoleConstants.Auditor.Id &&
             r.Reason == ConnectionReason.KeyRole);  
     }
 
