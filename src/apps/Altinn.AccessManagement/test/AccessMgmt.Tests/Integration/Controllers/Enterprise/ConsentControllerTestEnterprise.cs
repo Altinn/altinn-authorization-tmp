@@ -771,11 +771,12 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         /// <summary>
-        /// Regression test for issue #3528. A consent request with a HandledBy party should be retrievable
-        /// by the HandledBy party itself (not only the To party). Previously this returned 403.
+        /// Test get consent request that has a HandledBy party, authenticated as the HandledBy party.
+        /// Expect the consent request in response.
         /// </summary>
+        /// <returns></returns>
         [Fact]
-        public async Task CreateConsentRequestHandledByParty_GetAsHandledByParty_Valid()
+        public async Task CreateConsentRequestHandledByParty_GetAsHandledByParty_Returns200WithConsentRequest()
         {
             SetupMockPartyRepository();
 
@@ -821,8 +822,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"), TestContext.Current.CancellationToken);
-            string location = response.Headers.Location.ToString();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            string location = response.Headers.Location.ToString();
 
             // Retrieve the request authenticated as the HandledBy party itself (810418192).
             token = PrincipalUtil.GetOrgToken(null, "810418192", "altinn:consentrequests.read", "810418192");
@@ -839,11 +840,12 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
         }
 
         /// <summary>
-        /// Regression test for issue #3528. An organization that is neither the To party nor the HandledBy
-        /// party of a consent request must not be able to retrieve it. Expects 403 Forbidden.
+        /// Test get consent request that has a HandledBy party, authenticated as an organization that is
+        /// neither the To party nor the HandledBy party. Expect forbidden.
         /// </summary>
+        /// <returns></returns>
         [Fact]
-        public async Task CreateConsentRequestHandledByParty_GetAsUnrelatedParty_Forbidden()
+        public async Task CreateConsentRequestHandledByParty_GetAsUnrelatedParty_Returns403()
         {
             SetupMockPartyRepository();
 
@@ -889,8 +891,8 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"), TestContext.Current.CancellationToken);
-            string location = response.Headers.Location.ToString();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            string location = response.Headers.Location.ToString();
 
             // Retrieve the request authenticated as an unrelated org (910459880) that is neither To nor HandledBy.
             token = PrincipalUtil.GetOrgToken(null, "910459880", "altinn:consentrequests.read", "810418192");

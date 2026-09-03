@@ -603,7 +603,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                                         INNER JOIN consent.consentrequest cr
                                         ON ce.consentrequestid = cr.consentrequestid
                                         WHERE
-                                        cr.topartyuuid = @partyUuid
+                                        (cr.topartyuuid = @partyUuid OR cr.handledbypartyuuid = @partyUuid)
                                         AND ce.eventtype <> 'created'
                                         AND ce.consenteventid < @uuid7SafetyBound
                                         AND (@consentRequestId IS NULL OR ce.consentrequestid = @consentRequestId)
