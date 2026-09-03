@@ -86,7 +86,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:role:rettighetshaver
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> rettighetshaver
-    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for virksomheten
+    /// - <c>Description:</c> Gir mulighet til å motta delegerte fullmakter for en aktør
     /// </remarks>
     public static ConstantDefinition<Role> Rightholder { get; } = new ConstantDefinition<Role>("42cae370-2dc1-4fdc-9c67-c2f4b0f0f829")
     {
@@ -94,7 +94,7 @@ public static class RoleConstants
         {
             Name = "Rettighetshaver",
             Code = "rettighetshaver",
-            Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten",
+            Description = "Gir mulighet til å motta delegerte fullmakter for en aktør",
             Urn = "urn:altinn:role:rettighetshaver",
             IsKeyRole = false,
             IsAssignable = true,
@@ -104,12 +104,46 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rightholder"),
-            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for the business")
+            KeyValuePair.Create("Description", "Allows receiving delegated authorizations for an actor")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rettshavar"),
-            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for verksemda")
+            KeyValuePair.Create("Description", "Gjev høve til å motta delegerte fullmakter for ein aktør")
         ),
+    };
+
+    /// <summary>
+    /// Represents the 'Appstyrt Rettighetshaver' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> aefe8391-3f21-4641-8d96-06ba04c67cfd
+    /// - <c>URN:</c> urn:altinn:role:appstyrt-rettighetshaver
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Code:</c> appstyrt-rettighetshaver
+    /// - <c>Description:</c> Forhold som all app-styrt delegering av tilganger knyttes til
+    /// </remarks>
+    public static ConstantDefinition<Role> AppControlledRightholder { get; } = new ConstantDefinition<Role>("aefe8391-3f21-4641-8d96-06ba04c67cfd")
+    {
+        Entity = new()
+        {
+            Name = "Appstyrt Rettighetshaver",
+            Code = "appstyrt-rettighetshaver",
+            Description = "Forhold som all app-styrt delegering av tilganger knyttes til",
+            Urn = "urn:altinn:role:appstyrt-rettighetshaver",
+            IsKeyRole = false,
+            IsAssignable = true,
+            IsAvailableForServiceOwners = false,
+            EntityTypeId = EntityTypeConstants.Organization, // Technically this will be used for both persons and organizations which we currently don't have a way to express in the model, but since the main use case is for organizations we will set it to that for now
+            ProviderId = ProviderConstants.Altinn3,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "App-Controlled Rightholder"),
+            KeyValuePair.Create("Description", "Relationship to which all app-controlled rights are linked")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Appstyrt Rettighetshaver"),
+            KeyValuePair.Create("Description", "Forhold som all app-styrt delegering av tilganger knyttes til")
+        )
     };
 
     /// <summary>
@@ -917,7 +951,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:bestyrende-reder
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> bestyrende-reder
-    /// - <c>Description:</c> Bestyrende reder
+    /// - <c>Description:</c> Fysisk eller juridisk person som står for daglig drift og administrasjon av skip på vegne av eierne i et partrederi
     /// </remarks>
     public static ConstantDefinition<Role> ManagingShipowner { get; } = new ConstantDefinition<Role>("8f0cf433-954e-4680-a25d-a3cf9ffdf149")
     {
@@ -925,7 +959,7 @@ public static class RoleConstants
         {
             Name = "Bestyrende reder",
             Code = "bestyrende-reder",
-            Description = "Bestyrende reder",
+            Description = "Fysisk eller juridisk person som står for daglig drift og administrasjon av skip på vegne av eierne i et partrederi",
             Urn = "urn:altinn:external-role:ccr:bestyrende-reder",
             IsKeyRole = true,
             IsAssignable = false,
@@ -937,11 +971,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Managing Shipowner"),
-            KeyValuePair.Create("Description", "Managing Shipowner")
+            KeyValuePair.Create("Description", "An individual or legal person responsible for the day-to-day operation and administration of vessels on behalf of the owners in a ship co-ownership arrangement")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bestyrande reder"),
-            KeyValuePair.Create("Description", "Bestyrande reder")
+            KeyValuePair.Create("Description", "Fysisk eller juridisk person som står for dagleg drift og administrasjon av skip på vegne av eigarane i eit partrederi")
         ),
     };
 
@@ -983,7 +1017,7 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Bobestyrer' role.
+    /// Represents the 'Bostyrer' role.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 2cacfb35-2346-4a8d-95f6-b6fa4206881c
@@ -996,7 +1030,7 @@ public static class RoleConstants
     {
         Entity = new()
         {
-            Name = "Bobestyrer",
+            Name = "Bostyrer",
             Code = "bostyrer",
             Description = "Bestyrer av et konkursbo eller dødsbo som er under offentlig skiftebehandling",
             Urn = "urn:altinn:external-role:ccr:bostyrer",
@@ -1013,7 +1047,7 @@ public static class RoleConstants
             KeyValuePair.Create("Description", "Administrator of a bankruptcy or probate estate under public administration")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Bobestyrar"),
+            KeyValuePair.Create("Name", "Bostyrar"),
             KeyValuePair.Create("Description", "Bestyrar av eit konkursbo eller dødsbo som er under offentleg skiftehandtering")
         ),
     };
@@ -1063,7 +1097,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:revisor
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> revisor
-    /// - <c>Description:</c> Revisor
+    /// - <c>Description:</c> Revisor får tildelt nødvendige fullmakter for å kontrollere og godkjenne virksomhetens regnskap.
     /// </remarks>
     public static ConstantDefinition<Role> Auditor { get; } = new ConstantDefinition<Role>("f76b997a-9bd8-4f7b-899f-fcd85d35669f")
     {
@@ -1071,7 +1105,7 @@ public static class RoleConstants
         {
             Name = "Revisor",
             Code = "revisor",
-            Description = "Revisor",
+            Description = "Revisor får tildelt nødvendige fullmakter for å kontrollere og godkjenne virksomhetens regnskap.",
             Urn = "urn:altinn:external-role:ccr:revisor",
             IsKeyRole = false,
             IsAssignable = false,
@@ -1083,11 +1117,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Auditor"),
-            KeyValuePair.Create("Description", "Auditor")
+            KeyValuePair.Create("Description", "An auditor is granted the necessary authority to examine and approve the business's accounts.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Revisor"),
-            KeyValuePair.Create("Description", "Revisor")
+            KeyValuePair.Create("Description", "Revisor får tildelt naudsynte fullmakter for å kontrollere og godkjenne rekneskapen til verksemda.")
         ),
     };
 
@@ -1099,7 +1133,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:forretningsforer
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> forretningsforer
-    /// - <c>Description:</c> Forretningsfører
+    /// - <c>Description:</c> Forretningsfører fra Enhetsregisteret får tildelt nødvendige fullmakter for å ta seg av den daglige økonomiske og administrative driften for en annen virksomhet, et boligselskap eller en organisasjon.
     /// </remarks>
     public static ConstantDefinition<Role> BusinessManager { get; } = new ConstantDefinition<Role>("348b2f47-47ee-4084-abf8-68aa54c2b27f")
     {
@@ -1107,7 +1141,7 @@ public static class RoleConstants
         {
             Name = "Forretningsfører",
             Code = "forretningsforer",
-            Description = "Forretningsfører",
+            Description = "Forretningsfører fra Enhetsregisteret får tildelt nødvendige fullmakter for å ta seg av den daglige økonomiske og administrative driften for en annen virksomhet, et boligselskap eller en organisasjon.",
             Urn = "urn:altinn:external-role:ccr:forretningsforer",
             IsKeyRole = false,
             IsAssignable = false,
@@ -1119,11 +1153,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Business Manager"),
-            KeyValuePair.Create("Description", "Business Manager")
+            KeyValuePair.Create("Description", "A business manager registered with the Central Coordinating Register for Legal Entities (Enhetsregisteret) is granted the necessary authority to handle the day-to-day financial and administrative operations of another business, a housing cooperative, or an organization.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Forretningsførar"),
-            KeyValuePair.Create("Description", "Forretningsførar")
+            KeyValuePair.Create("Description", "Forretningsførar frå Einingsregisteret får tildelt naudsynte fullmakter for å ta seg av den daglege økonomiske og administrative drifta for ei anna verksemd, eit bustadselskap eller ein organisasjon.")
         ),
     };
 
@@ -1135,7 +1169,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:komplementar
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> komplementar
-    /// - <c>Description:</c> Komplementar
+    /// - <c>Description:</c> Fysisk eller juridisk person som er deltager i et kommandittselskap
     /// </remarks>
     public static ConstantDefinition<Role> GeneralPartner { get; } = new ConstantDefinition<Role>("cfcf75af-9902-41f7-ab47-b77ba60bcae5")
     {
@@ -1143,7 +1177,7 @@ public static class RoleConstants
         {
             Name = "Komplementar",
             Code = "komplementar",
-            Description = "Komplementar",
+            Description = "Fysisk eller juridisk person som er deltager i et kommandittselskap",
             Urn = "urn:altinn:external-role:ccr:komplementar",
             IsKeyRole = true,
             IsAssignable = false,
@@ -1155,11 +1189,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "General Partner"),
-            KeyValuePair.Create("Description", "General Partner")
+            KeyValuePair.Create("Description", "An individual or legal person who is a partner in a limited partnership")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Komplementar"),
-            KeyValuePair.Create("Description", "Komplementar")
+            KeyValuePair.Create("Description", "Fysisk eller juridisk person som er deltakar i eit kommandittselskap")
         ),
     };
 
@@ -1171,7 +1205,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:konkursdebitor
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> konkursdebitor
-    /// - <c>Description:</c> Konkursdebitor
+    /// - <c>Description:</c> Person eller virksomhet som har gått konkurs
     /// </remarks>
     public static ConstantDefinition<Role> BankruptDebtor { get; } = new ConstantDefinition<Role>("50cc3f41-4dde-4417-8c04-eea428f169dd")
     {
@@ -1179,7 +1213,7 @@ public static class RoleConstants
         {
             Name = "Konkursdebitor",
             Code = "konkursdebitor",
-            Description = "Konkursdebitor",
+            Description = "Person eller virksomhet som har gått konkurs",
             Urn = "urn:altinn:external-role:ccr:konkursdebitor",
             IsKeyRole = false,
             IsAssignable = false,
@@ -1192,11 +1226,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bankrupt Debtor"),
-            KeyValuePair.Create("Description", "Bankrupt Debtor")
+            KeyValuePair.Create("Description", "A person or business that has gone bankrupt")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Konkursdebitor"),
-            KeyValuePair.Create("Description", "Konkursdebitor")
+            KeyValuePair.Create("Description", "Person eller verksemd som har gått konkurs")
         ),
     };
 
@@ -1282,7 +1316,7 @@ public static class RoleConstants
     /// - <c>URN:</c> urn:altinn:external-role:ccr:regnskapsforer
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> regnskapsforer
-    /// - <c>Description:</c> Regnskapsfører
+    /// - <c>Description:</c> Regnskapsfører får tildelt nødvendige fullmakter for å holde oversikt over inntekter, utgifter, gjeld og eiendeler i virksomheten.
     /// </remarks>
     public static ConstantDefinition<Role> Accountant { get; } = new ConstantDefinition<Role>("46e27685-b3ba-423e-8b42-faab54de5817")
     {
@@ -1290,7 +1324,7 @@ public static class RoleConstants
         {
             Name = "Regnskapsfører",
             Code = "regnskapsforer",
-            Description = "Regnskapsfører",
+            Description = "Regnskapsfører får tildelt nødvendige fullmakter for å holde oversikt over inntekter, utgifter, gjeld og eiendeler i virksomheten.",
             Urn = "urn:altinn:external-role:ccr:regnskapsforer",
             IsKeyRole = false,
             IsAssignable = false,
@@ -1302,23 +1336,23 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Accountant"),
-            KeyValuePair.Create("Description", "Accountant")
+            KeyValuePair.Create("Description", "An accountant is granted the necessary authority to keep track of the business's income, expenses, liabilities, and assets.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Reknskapsførar"),
-            KeyValuePair.Create("Description", "Reknskapsførar")
+            KeyValuePair.Create("Description", "Rekneskapsførar får tildelt naudsynte fullmakter for å halde oversikt over inntekter, utgifter, gjeld og eigedelar i verksemda.")
         ),
     };
 
     /// <summary>
-    /// Represents the 'Er regnskapsforeradresse for' role.
+    /// Represents the 'Er regnskapsføreradresse for' role.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 17cb6a9e-5d27-4a8e-9647-f3a53c7a09c6
     /// - <c>URN:</c> urn:altinn:external-role:ccr:regnskapsforeradressat
     /// - <c>Provider:</c> CentralCoordinatingRegister
     /// - <c>Code:</c> regnskapsforeradressat
-    /// - <c>Description:</c> Er regnskapsforeradresse for
+    /// - <c>Description:</c> Er regnskapsføreradresse for
     /// </remarks>
     public static ConstantDefinition<Role> IsAccountingAddressFor { get; } = new ConstantDefinition<Role>("17cb6a9e-5d27-4a8e-9647-f3a53c7a09c6")
     {
@@ -1326,9 +1360,9 @@ public static class RoleConstants
         {
             EntityTypeId = EntityTypeConstants.Organization,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
-            Name = "Er regnskapsforeradresse for",
+            Name = "Er regnskapsføreradresse for",
             Code = "regnskapsforeradressat",
-            Description = "Er regnskapsforeradresse for",
+            Description = "Er regnskapsføreradresse for",
             Urn = "urn:altinn:external-role:ccr:regnskapsforeradressat",
             IsKeyRole = false,
             IsAssignable = false,
@@ -4649,72 +4683,6 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'ECKEYROLE' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> e0684f66-a46e-4706-a754-8889b532509c
-    /// - <c>URN:</c> urn:altinn:rolecode:ECKEYROLE
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> ECKEYROLE
-    /// - <c>Description:</c> Nøkkelrolle for virksomhetsertifikatbrukere
-    /// </remarks>
-    public static ConstantDefinition<Role> Eckeyrole { get; } = new ConstantDefinition<Role>("e0684f66-a46e-4706-a754-8889b532509c")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "ECKEYROLE",
-            Code = "eckeyrole",
-            Description = "Nøkkelrolle for virksomhetsertifikatbrukere",
-            Urn = "urn:altinn:rolecode:eckeyrole",
-            IsKeyRole = true,
-            IsAvailableForServiceOwners = false,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ECKEYROLE"),
-            KeyValuePair.Create("Description", "Key role for enterprise users")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "ECKEYROLE"),
-            KeyValuePair.Create("Description", "Nøkkelrolle for virksomhetsertifikatbrukere")
-        )
-    };
-
-    /// <summary>
-    /// Represents the 'Eksplisitt tjenestedelegering' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 1225bc46-4b03-4b63-b6e8-58926b29a97b
-    /// - <c>URN:</c> urn:altinn:rolecode:EKTJ
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> EKTJ
-    /// - <c>Description:</c> Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis
-    /// </remarks>
-    public static ConstantDefinition<Role> ExplicitServiceDelegation { get; } = new ConstantDefinition<Role>("1225bc46-4b03-4b63-b6e8-58926b29a97b")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Eksplisitt tjenestedelegering",
-            Code = "ektj",
-            Description = "Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis",
-            Urn = "urn:altinn:rolecode:ektj",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = true,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Explicit service delegation"),
-            KeyValuePair.Create("Description", "Non-delegable role for services to be delegated as single rights")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Eksplisitt tenestedelegering"),
-            KeyValuePair.Create("Description", "Ikkje-delegerbar rolle for tenester som kun skal delegerast enkeltvis")
-        )
-    };
-
-    /// <summary>
     /// Represents the 'Hovedadministrator' role.
     /// </summary>
     /// <remarks>
@@ -5045,39 +5013,6 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the 'Taushetsbelagt post fra kommunen' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 1a15b75c-2387-4278-ba3a-7eb1cffe1653
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS01
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> SENS01
-    /// - <c>Description:</c> Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang
-    /// </remarks>
-    public static ConstantDefinition<Role> ConfidentialCorrespondenceFromTheMunicipality { get; } = new ConstantDefinition<Role>("1a15b75c-2387-4278-ba3a-7eb1cffe1653")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Taushetsbelagt post fra kommunen",
-            Code = "sens01",
-            Description = "Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang",
-            Urn = "urn:altinn:rolecode:sens01",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = true,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Confidential correspondence from the municipality"),
-            KeyValuePair.Create("Description", "This role provides access to services with confidential information from the municipality")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Taushetslagd post frå kommunen"),
-            KeyValuePair.Create("Description", "Rolla gir tilgang til tenester med taushetsalgd informasjon frå kommunen.")
-        )
-    };
-
-    /// <summary>
     /// Represents the 'Signerer av Samordnet registermelding' role.
     /// </summary>
     /// <remarks>
@@ -5272,39 +5207,6 @@ public static class RoleConstants
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Energi, miljø og klima"),
             KeyValuePair.Create("Description", "Tilgang til tenester relatert til energi, miljø og klima. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir")
-        ),
-    };
-
-    /// <summary>
-    /// Represents the 'Hovedrolle for sensitive tjeneste' role.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> 478f710a-4af1-412d-9c67-de976fd0b229
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS
-    /// - <c>Provider:</c> Altinn2
-    /// - <c>Code:</c> SENS
-    /// - <c>Description:</c> Hovedrolle for sensitive tjeneste
-    /// </remarks>
-    public static ConstantDefinition<Role> MainroleForSensitiveServices { get; } = new ConstantDefinition<Role>("478f710a-4af1-412d-9c67-de976fd0b229")
-    {
-        Entity = new()
-        {
-            EntityTypeId = EntityTypeConstants.Organization,
-            ProviderId = ProviderConstants.Altinn2,
-            Name = "Hovedrolle for sensitive tjeneste",
-            Code = "sens",
-            Description = "Hovedrolle for sensitive tjeneste",
-            Urn = "urn:altinn:rolecode:sens",
-            IsKeyRole = false,
-            IsAvailableForServiceOwners = false,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Hovedrolle for sensitive tjeneste"),
-            KeyValuePair.Create("Description", "Hovedrolle for sensitive tjeneste")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Hovudrolle for sensitive tenester"),
-            KeyValuePair.Create("Description", "Hovudrolle for sensitive teneste")
         ),
     };
 

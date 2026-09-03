@@ -9,9 +9,9 @@ namespace Altinn.Authorization.ABAC.Tests;
 /// Engine-level tests for <see cref="PolicyDecisionPoint"/>. Each test drives a
 /// crafted minimal XACML 3.0 policy + request through
 /// <see cref="PolicyDecisionPoint.Authorize"/>, exercising the parser, the Xacml
-/// object model, attribute matching, the deny-overrides rule-combining algorithm,
-/// and the missing-required-attribute path together — the breadth the indirect
-/// conformance suite covers, but localized and without a web host.
+/// object model, attribute matching, the rule-combining algorithms, and the
+/// missing-required-attribute path together: the breadth the indirect conformance
+/// suite covers, but localized and without a web host.
 /// </summary>
 [UnitTest]
 public class PolicyDecisionPointTest
@@ -56,6 +56,36 @@ public class PolicyDecisionPointTest
         XacmlContextResult result = Decide(Policy("Permit", DenyOverrides), Request(subject: "other-user"));
         result.Decision.Should().Be(XacmlContextDecision.NotApplicable);
     }
+
+    // first-applicable means the first matching rule decides, so a matching Deny
+    // placed first yields Deny.
+    [Fact]
+    public void Authorize_FirstApplicable_DenyRuleFirst_ReturnsDeny()
+    {
+        XacmlContextResult result = Decide(TwoRulePolicy("Deny", "Permit", FirstApplicable), Request());
+        result.Decision.Should().Be(XacmlContextDecision.Deny);
+    }
+
+    private static readonly string FirstApplicable = XacmlConstants.CombiningAlgorithms.RuleFirstApplicable;
+
+    private static string TwoRulePolicy(string firstEffect, string secondEffect, string combiningAlg) => $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Policy xmlns=""{Ns}"" PolicyId=""urn:test:policy"" Version=""1.0"" RuleCombiningAlgId=""{combiningAlg}"">
+  <Target />
+  <Rule RuleId=""urn:test:rule1"" Effect=""{firstEffect}"">
+    <Target>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:resource:resource-id", "urn:oasis:names:tc:xacml:3.0:attribute-category:resource", "resource1")}</AllOf></AnyOf>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:action:action-id", "urn:oasis:names:tc:xacml:3.0:attribute-category:action", "read")}</AllOf></AnyOf>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:subject:subject-id", "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject", "user1")}</AllOf></AnyOf>
+    </Target>
+  </Rule>
+  <Rule RuleId=""urn:test:rule2"" Effect=""{secondEffect}"">
+    <Target>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:resource:resource-id", "urn:oasis:names:tc:xacml:3.0:attribute-category:resource", "resource1")}</AllOf></AnyOf>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:action:action-id", "urn:oasis:names:tc:xacml:3.0:attribute-category:action", "read")}</AllOf></AnyOf>
+      <AnyOf><AllOf>{Match("urn:oasis:names:tc:xacml:1.0:subject:subject-id", "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject", "user1")}</AllOf></AnyOf>
+    </Target>
+  </Rule>
+</Policy>";
 
     private static XacmlContextResult Decide(string policyXml, string requestXml)
     {

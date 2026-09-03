@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -63,7 +62,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with the SalarySpecialCategory package.
         /// </summary>
         [Fact]
-        public async Task GetPackages_AsMalinForDumboToThea_WithToOthersScope_ReturnsOkWithPackage()
+        public async Task GetPackages_AsManagingDirectorToRightholder_WithToOthersScope_ReturnsOkWithPackage()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -94,7 +93,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with the same SalarySpecialCategory package.
         /// </summary>
         [Fact]
-        public async Task GetPackages_AsTheaFromDumbo_WithFromOthersScope_ReturnsOkWithPackage()
+        public async Task GetPackages_AsRightholderFromOrganization_WithFromOthersScope_ReturnsOkWithPackage()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -116,7 +115,7 @@ public partial class ConnectionsControllerTest
         /// No packages are assigned to this connection, so the list should be empty.
         /// </summary>
         [Fact]
-        public async Task GetPackages_AsMalinForDumboToMille_WithToOthersScope_ReturnsOkEmpty()
+        public async Task GetPackages_AsManagingDirectorToOrganization_WithToOthersScope_ReturnsOkEmpty()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -137,7 +136,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetPackages_AsTheaFromDumbo_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
+        public async Task GetPackages_AsRightholderFromOrganization_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -153,7 +152,7 @@ public partial class ConnectionsControllerTest
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetPackages_AsMalinForDumboToThea_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
+        public async Task GetPackages_AsManagingDirectorToRightholder_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 

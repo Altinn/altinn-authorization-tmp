@@ -1,0 +1,213 @@
+@page "/role/{Id:guid}"
+@inherits EnvironmentPageBase
+@inject RoleDetailsService DataService
+
+<PageTitle>Role – @(_data?.Role.Name ?? Id.ToString())</PageTitle>
+
+@if (Loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error">@Error</MudAlert>
+}
+else if (_data is null)
+{
+    <MudAlert Severity="Severity.Error">Role not found: @Id</MudAlert>
+}
+else
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-1">
+        <BackButton />
+        <MudText Typo="Typo.h4">@_data.Role.Name</MudText>
+        @if (_data.Role.IsKeyRole)
+        {
+            <MudChip T="string" Color="Color.Warning" Size="Size.Small">Key role</MudChip>
+        }
+    </MudStack>
+    <MudText Typo="Typo.body2" Class="mb-6 mud-text-secondary">@_data.Role.Description</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <SummaryCard>
+                <SummaryRow Label="Id" Monospace="true">@_data.Role.Id</SummaryRow>
+                <SummaryRow Label="Name">@_data.Role.Name</SummaryRow>
+                <SummaryRow Label="Code" Monospace="true">@(_data.Role.Code ?? "–")</SummaryRow>
+                <SummaryRow Label="LegacyCode" Monospace="true">@(_data.Role.LegacyCode ?? "–")</SummaryRow>
+                <SummaryRow Label="URN" Monospace="true">@(_data.Role.Urn ?? "–")</SummaryRow>
+                <SummaryRow Label="LegacyUrn" Monospace="true">@(_data.Role.LegacyUrn ?? "–")</SummaryRow>
+                <SummaryRow Label="EntityType">
+                    @if (_data.Role.EntityTypeId.HasValue)
+                    {
+                        <MudLink Href="@($"/entity-type/{_data.Role.EntityTypeId}")">
+                            @(_data.Role.EntityType?.Name ?? _data.Role.EntityTypeId.ToString())
+                        </MudLink>
+                    }
+                    else
+                    {
+                        <span>–</span>
+                    }
+                </SummaryRow>
+                <SummaryRow Label="Provider">
+                    <MudLink Href="@($"/provider/{_data.Role.ProviderId}")">@(_data.Role.Provider?.Name ?? _data.Role.ProviderId.ToString())</MudLink>
+                </SummaryRow>
+            </SummaryCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <SummaryCard Title="Flags">
+                <SummaryRow Label="IsKeyRole">
+                    <MudIcon Icon="@(_data.Role.IsKeyRole ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)" Color="@(_data.Role.IsKeyRole ? Color.Success : Color.Error)" Size="Size.Small" />
+                </SummaryRow>
+                <SummaryRow Label="IsAssignable">
+                    <MudIcon Icon="@(_data.Role.IsAssignable ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)" Color="@(_data.Role.IsAssignable ? Color.Success : Color.Error)" Size="Size.Small" />
+                </SummaryRow>
+                <SummaryRow Label="IsAvailableForServiceOwners">
+                    <MudIcon Icon="@(_data.Role.IsAvailableForServiceOwners ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)" Color="@(_data.Role.IsAvailableForServiceOwners ? Color.Success : Color.Error)" Size="Size.Small" />
+                </SummaryRow>
+            </SummaryCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-8 mb-3">Automatic grants</MudText>
+    <MudTabs Elevation="1" Rounded="false" ApplyEffectsToContainer="true">
+
+        <MudTabPanel Text="@($"Resources ({_data.Resources.Count})")"
+                     Icon="@Icons.Material.Filled.Api">
+            <MudTable Items="_data.Resources" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Resource</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>RefId</MudTh>
+                    <MudTh>Provider</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Resource">
+                        <MudLink Href="@($"/resource/{context.ResourceId}")">@(context.Resource?.Name ?? context.ResourceId.ToString())</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudText Typo="Typo.body2">@(context.Resource?.Type?.Name ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="RefId">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Resource?.RefId ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Provider">
+                        <MudLink Href="@($"/provider/{context.Resource?.ProviderId}")">@(context.Resource?.Provider?.Name ?? "–")</MudLink>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No automatic resources for this role.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@($"Packages ({_data.Packages.Count})")"
+                     Icon="@Icons.Material.Filled.Inventory2">
+            <MudTable Items="_data.Packages" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Package</MudTh>
+                    <MudTh>URN</MudTh>
+                    <MudTh>EntityVariant</MudTh>
+                    <MudTh>HasAccess</MudTh>
+                    <MudTh>CanAssign</MudTh>
+                    <MudTh>CanDelegate</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Package">
+                        <MudLink Href="@($"/package/{context.PackageId}")">
+                            @(context.Package?.Name ?? context.PackageId.ToString())
+                        </MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Package?.Urn ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="EntityVariant">
+                        @if (context.EntityVariantId.HasValue)
+                        {
+                            <MudLink Href="@($"/entity-variant/{context.EntityVariantId}")">
+                                @(context.EntityVariant?.Name ?? context.EntityVariantId.ToString())
+                            </MudLink>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">All</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="HasAccess">
+                        <MudIcon Icon="@(context.HasAccess ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.HasAccess ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="CanAssign">
+                        <MudIcon Icon="@(context.CanAssign ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.CanAssign ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="CanDelegate">
+                        <MudIcon Icon="@(context.CanDelegate ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.CanDelegate ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No automatic packages for this role.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@($"Role maps ({_data.RoleMapsHas.Count + _data.RoleMapsGet.Count})")"
+                     Icon="@Icons.Material.Filled.AccountTree">
+            <MudText Typo="Typo.subtitle2" Class="pa-3 mud-text-secondary">Holding this role also grants:</MudText>
+            <MudTable Items="_data.RoleMapsHas" Hover="true" Dense="true" Class="pa-0 mb-4">
+                <HeaderContent>
+                    <MudTh>Gets role</MudTh>
+                    <MudTh>URN</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Gets role">
+                        <MudLink Href="@($"/role/{context.GetRoleId}")">
+                            @(context.GetRole?.Name ?? context.GetRoleId.ToString())
+                        </MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.GetRole?.Urn ?? "–")</MudText>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No outgoing role maps.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+            <MudText Typo="Typo.subtitle2" Class="pa-3 mud-text-secondary">This role is implied by holding:</MudText>
+            <MudTable Items="_data.RoleMapsGet" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Has role</MudTh>
+                    <MudTh>URN</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Has role">
+                        <MudLink Href="@($"/role/{context.HasRoleId}")">
+                            @(context.HasRole?.Name ?? context.HasRoleId.ToString())
+                        </MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.HasRole?.Urn ?? "–")</MudText>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No incoming role maps.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+    </MudTabs>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private RoleDetailsData? _data;
+
+    protected override Task OnParametersSetAsync() => RunAsync(LoadAsync);
+
+    protected override Task OnEnvironmentChangedAsync() => RunAsync(LoadAsync);
+
+    private async Task LoadAsync(CancellationToken ct) => _data = await DataService.GetAsync(EnvState.Current, Id, ct);
+}

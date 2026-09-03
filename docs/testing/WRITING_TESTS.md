@@ -2,7 +2,7 @@
 
 Short, opinionated guide. For naming, see
 [TEST_NAMING_CONVENTION.md](TEST_NAMING_CONVENTION.md). For assertions, see
-[FLUENT_ASSERTIONS_GUIDELINES.md](FLUENT_ASSERTIONS_GUIDELINES.md).
+[AWESOME_ASSERTIONS_GUIDELINES.md](AWESOME_ASSERTIONS_GUIDELINES.md).
 
 ## Pick the right test type
 
@@ -27,7 +27,7 @@ Every test class must carry a category marker:
 - `[UnitTest]` — pure/fast, no fixture.
 - `[IntegrationTest]` — uses `ApiFixture` / a database / the real pipeline.
 
-The markers (`src/testing/TestCategories.cs`) emit a `Category` trait that CI
+The markers (`eng/testing/TestCategories.cs`) emit a `Category` trait that CI
 uses to run unit and integration as separate lanes, so an **untagged test runs
 in neither lane**. Put the marker on the test class (and on each nested test
 class, where that pattern is used).
@@ -152,5 +152,20 @@ failed.
 - No `DateTime.Now` in assertions — inject an `IClock` or freeze the time.
 - Avoid background work that outlives the test.
 - No `Thread.Sleep` — use `TaskCompletionSource` or polling with a timeout.
+- No dependency on a live external endpoint. A test that calls out to a real
+  service (e.g. a resource-registry lookup) is flaky by construction and must
+  mock the boundary instead.
+
+### Flaky / environment-dependent tests
+
+We track known-flaky and environment-dependent tests as GitHub issues, not as a
+list in this repo (an in-repo register goes stale faster than it is read). When
+you hit one:
+
+- If it is genuinely environmental (needs Azurite, a live endpoint, a real
+  container runtime), gate it with a clear `Skip` reason naming the dependency,
+  and link the tracking issue.
+- Otherwise treat the flake as a bug: file an issue, and fix the determinism
+  problem rather than retrying or widening tolerances.
 
 ## Next: [COVERAGE.md](COVERAGE.md)

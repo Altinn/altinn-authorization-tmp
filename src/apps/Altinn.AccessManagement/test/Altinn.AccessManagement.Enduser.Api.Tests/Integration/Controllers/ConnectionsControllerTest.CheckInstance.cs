@@ -2,14 +2,12 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -70,7 +68,7 @@ public partial class ConnectionsControllerTest
         /// instantiate, read, write, confirm across workflow stages).
         /// </summary>
         [Fact]
-        public async Task CheckInstance_AsMalinForDumbo_SiriusSkattemelding_ReturnsOkWithDelegatableRights()
+        public async Task CheckInstance_AsManagingDirector_SiriusSkattemelding_ReturnsOkWithDelegatableRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -113,7 +111,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with delegatable rights (fewer than SiriusSkattemelding since the resource has fewer actions).
         /// </summary>
         [Fact]
-        public async Task CheckInstance_AsMalinForDumbo_MattilsynetBakery_ReturnsOkWithDelegatableRights()
+        public async Task CheckInstance_AsManagingDirector_MattilsynetBakery_ReturnsOkWithDelegatableRights()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

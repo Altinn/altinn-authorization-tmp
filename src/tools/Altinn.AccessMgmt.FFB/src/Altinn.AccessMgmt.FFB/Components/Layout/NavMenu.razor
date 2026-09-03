@@ -1,0 +1,18 @@
+<MudNavMenu Class="pa-2">
+    <MudText Typo="Typo.overline" Class="px-4 mt-2 mb-1 mud-text-secondary">Navigasjon</MudText>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Hjem
+    </MudNavLink>
+
+    <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1 mud-text-secondary">Verktøy</MudText>
+    @foreach (var entry in NavRegistry.All.Where(e => e.Group == NavGroup.Tool))
+    {
+        <MudNavLink Href="@entry.Href" Match="NavLinkMatch.Prefix" Icon="@entry.Icon">@entry.Title</MudNavLink>
+    }
+
+    <MudText Typo="Typo.overline" Class="px-4 mt-4 mb-1 mud-text-secondary">Jobber</MudText>
+    @foreach (var entry in NavRegistry.All.Where(e => e.Group == NavGroup.Job))
+    {
+        <MudNavLink Href="@entry.Href" Match="NavLinkMatch.Prefix" Icon="@entry.Icon">@entry.Title</MudNavLink>
+    }
+</MudNavMenu>

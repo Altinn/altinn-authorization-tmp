@@ -1,0 +1,159 @@
+@page "/entity-type/{Id:guid}"
+@inherits EnvironmentPageBase
+@inject EntityTypeDetailsService DataService
+
+<PageTitle>EntityType – @(_data?.EntityType.Name ?? Id.ToString())</PageTitle>
+
+@if (Loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error">@Error</MudAlert>
+}
+else if (_data is null)
+{
+    <MudAlert Severity="Severity.Error">EntityType not found: @Id</MudAlert>
+}
+else
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
+        <BackButton />
+        <MudText Typo="Typo.h4">@_data.EntityType.Name</MudText>
+    </MudStack>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <SummaryCard>
+                <SummaryRow Label="Id" Monospace="true">@_data.EntityType.Id</SummaryRow>
+                <SummaryRow Label="Name">@_data.EntityType.Name</SummaryRow>
+                <SummaryRow Label="Provider">
+                    <MudLink Href="@($"/provider/{_data.EntityType.ProviderId}")">
+                        @(_data.EntityType.Provider?.Name ?? _data.EntityType.ProviderId.ToString())
+                    </MudLink>
+                </SummaryRow>
+            </SummaryCard>
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-8 mb-3">Variants &amp; Roles</MudText>
+    <MudTabs Elevation="1" Rounded="false" ApplyEffectsToContainer="true">
+
+        <MudTabPanel Text="@($"Variants ({_data.Variants.Count})")"
+                     Icon="@Icons.Material.Filled.Category">
+            <MudTable Items="_data.Variants" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">
+                        <MudLink Href="@($"/entity-variant/{context.Id}")">@context.Name</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="Description">
+                        <MudText Typo="Typo.body2">@(context.Description ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                       Size="Size.Small"
+                                       Href="@($"/entity-variant/{context.Id}")" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No variants for this entity type.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@($"Roles for this type ({_data.Roles.Count})")"
+                     Icon="@Icons.Material.Filled.Badge">
+            <MudTable Items="_data.Roles" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Role</MudTh>
+                    <MudTh>URN</MudTh>
+                    <MudTh>IsKeyRole</MudTh>
+                    <MudTh>IsAssignable</MudTh>
+                    <MudTh>Provider</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Role">
+                        <MudLink Href="@($"/role/{context.Id}")">@context.Name</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Urn ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="IsKeyRole">
+                        <MudIcon Icon="@(context.IsKeyRole ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.IsKeyRole ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="IsAssignable">
+                        <MudIcon Icon="@(context.IsAssignable ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.IsAssignable ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="Provider">
+                        <MudLink Href="@($"/provider/{context.ProviderId}")">
+                            @(context.Provider?.Name ?? context.ProviderId.ToString())
+                        </MudLink>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No roles scoped to this entity type.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@($"Variant-specific roles ({_data.VariantRoles.Count})")"
+                     Icon="@Icons.Material.Filled.Tune">
+            <MudTable Items="_data.VariantRoles" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Variant</MudTh>
+                    <MudTh>Role</MudTh>
+                    <MudTh>URN</MudTh>
+                    <MudTh>IsKeyRole</MudTh>
+                    <MudTh>IsAssignable</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Variant">
+                        <MudLink Href="@($"/entity-variant/{context.VariantId}")">
+                            @(context.Variant?.Name ?? context.VariantId.ToString())
+                        </MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="Role">
+                        <MudLink Href="@($"/role/{context.RoleId}")">
+                            @(context.Role?.Name ?? context.RoleId.ToString())
+                        </MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Role?.Urn ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="IsKeyRole">
+                        <MudIcon Icon="@(context.Role?.IsKeyRole == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.Role?.IsKeyRole == true ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                    <MudTd DataLabel="IsAssignable">
+                        <MudIcon Icon="@(context.Role?.IsAssignable == true ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                                 Color="@(context.Role?.IsAssignable == true ? Color.Success : Color.Error)" Size="Size.Small" />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No variant-specific roles for this entity type.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+    </MudTabs>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private EntityTypeDetailsData? _data;
+
+    protected override Task OnParametersSetAsync() => RunAsync(LoadAsync);
+
+    protected override Task OnEnvironmentChangedAsync() => RunAsync(LoadAsync);
+
+    private async Task LoadAsync(CancellationToken ct) => _data = await DataService.GetAsync(EnvState.Current, Id, ct);
+}

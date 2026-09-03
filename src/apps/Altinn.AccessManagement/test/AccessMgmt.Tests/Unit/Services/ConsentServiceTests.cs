@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Errors;
@@ -10,11 +9,12 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using ContractsOrganizationNumber = Altinn.Authorization.Api.Contracts.Register.OrganizationNumber;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using ContractsOrganizationNumber = Altinn.Authorization.Api.Contracts.Register.OrganizationNumber;
+using ContractsPersonIdentifier = Altinn.Authorization.Api.Contracts.Register.PersonIdentifier;
 
 namespace Altinn.AccessManagement.Tests.Unit.Services;
 
@@ -26,334 +26,26 @@ public class ConsentServiceTests
 {
     private readonly Mock<ILogger<ConsentService>> _loggerMock;
     private readonly Mock<IConsentRepository> _consentRepositoryMock;
-    private readonly Mock<IAltinn2ConsentClient> _altinn2ConsentClientMock;
     private readonly Mock<IResourceRegistryClient> _resourceRegistryClientMock;
     private readonly Mock<IAMPartyService> _amPartyServiceMock;
     private readonly Mock<IMemoryCache> _memoryCacheMock;
-    private readonly Mock<IProfileClient> _profileClientMock;
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IOptions<GeneralSettings>> _generalSettingsMock;
     private readonly Mock<IConsentDelegationCheckService> _consentDelegationCheckServiceMock;
-    private readonly Mock<IMeterFactory> _meterFactoryMock;
 
     public ConsentServiceTests()
     {
         _loggerMock = new Mock<ILogger<ConsentService>>();
         _consentRepositoryMock = new Mock<IConsentRepository>();
-        _altinn2ConsentClientMock = new Mock<IAltinn2ConsentClient>();
         _resourceRegistryClientMock = new Mock<IResourceRegistryClient>();
         _amPartyServiceMock = new Mock<IAMPartyService>();
         _memoryCacheMock = new Mock<IMemoryCache>();
-        _profileClientMock = new Mock<IProfileClient>();
         _timeProvider = TimeProvider.System;
         _generalSettingsMock = new Mock<IOptions<GeneralSettings>>();
-        _meterFactoryMock = new Mock<IMeterFactory>();
         _consentDelegationCheckServiceMock = new Mock<IConsentDelegationCheckService>();
-
-        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
-        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
 
         _generalSettingsMock.Setup(x => x.Value).Returns(new GeneralSettings { Hostname = "localhost" });
         SetupMemoryCache();
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_DuplicateFound_SetsMigrateStatusTo1()
-    {
-        // Arrange
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-        var existingRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        // Simulate duplicate: CreateRequest returns null
-        _consentRepositoryMock
-            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ConsentRequestDetails)null);
-
-        // GetRequest returns existing consent with matching parties (duplicate scenario)
-        _consentRepositoryMock
-            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingRequestDetails);
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsProblem);
-        Assert.NotNull(result.Value);
-
-        // Verify migration status was set to 1 (success) for duplicate
-        _altinn2ConsentClientMock.Verify(
-            x => x.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), 1, It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_InvalidResource_SetsMigrateStatusTo2()
-    {
-        // Arrange
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        // Make resource validation fail (return null for resource)
-        _resourceRegistryClientMock
-            .Setup(x => x.GetResource(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ServiceResource)null);
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsProblem || result.Value == null);
-
-        // Verify migration status was set to 2 (failure) for validation error
-        _altinn2ConsentClientMock.Verify(
-            x => x.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), 2, It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_Success_SetsMigrateStatusTo1()
-    {
-        // Arrange
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-        var createdRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        // Successful creation
-        _consentRepositoryMock
-            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        _consentRepositoryMock
-            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsProblem);
-        Assert.NotNull(result.Value);
-
-        // Verify migration status was set to 1 (success)
-        _altinn2ConsentClientMock.Verify(
-            x => x.UpdateAltinn2ConsentMigrateStatus(consentRequestId.ToString(), 1, It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_Success_RecordsAllHistograms()
-    {
-        // Arrange: real Meter + listener to capture histogram recordings
-        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
-
-        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
-
-        using var collector = new MeasurementCollector(meter, new[]
-        {
-            "consent_migration_get_a2_duration_seconds",
-            "consent_migration_insert_a3_duration_seconds",
-            "consent_migration_update_a2_duration_seconds"
-        });
-
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-        var createdRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        _consentRepositoryMock
-            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        _consentRepositoryMock
-            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        await collector.WaitForMeasurementsAsync(
-            TestContext.Current.CancellationToken,
-            "consent_migration_get_a2_duration_seconds",
-            "consent_migration_insert_a3_duration_seconds",
-            "consent_migration_update_a2_duration_seconds");
-
-        // Assert
-        Assert.False(result.IsProblem);
-        Assert.NotNull(result.Value);
-
-        Assert.True(collector.GetMeasurements("consent_migration_get_a2_duration_seconds").Any());
-        Assert.True(collector.GetMeasurements("consent_migration_insert_a3_duration_seconds").Any());
-        Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_Duplicate_RecordsGetHistogram()
-    {
-        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
-        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
-
-        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_get_a2_duration_seconds" });
-
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-        var existingRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        _consentRepositoryMock
-            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ConsentRequestDetails)null);
-
-        _consentRepositoryMock
-            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingRequestDetails);
-
-        var service = CreateService();
-
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        await collector.WaitForMeasurementsAsync(
-            TestContext.Current.CancellationToken,
-            "consent_migration_get_a2_duration_seconds");
-
-        Assert.False(result.IsProblem);
-        Assert.NotNull(result.Value);
-        Assert.True(collector.GetMeasurements("consent_migration_get_a2_duration_seconds").Any());
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_ValidationFailure_RecordsUpdateHistogram()
-    {
-        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
-        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
-
-        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_update_a2_duration_seconds" });
-
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        // Make resource validation fail (return null for resource)
-        _resourceRegistryClientMock
-            .Setup(x => x.GetResource(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ServiceResource)null);
-
-        var service = CreateService();
-
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        await collector.WaitForMeasurementsAsync(
-            TestContext.Current.CancellationToken,
-            "consent_migration_update_a2_duration_seconds");
-
-        Assert.True(result.IsProblem || result.Value == null);
-        Assert.True(collector.GetMeasurements("consent_migration_update_a2_duration_seconds").Any());
-    }
-
-    [Fact]
-    public async Task GetAndStoreAltinn2Consent_Success_RecordsOverallHistogram()
-    {
-        // Arrange: real Meter + listener to capture overall histogram recording
-        var meter = new Meter("Altinn.AccessManagement.ConsentMigration.Test");
-        _meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
-
-        using var collector = new MeasurementCollector(meter, new[] { "consent_migration_overall_duration_seconds" });
-
-        var consentRequestId = Guid.NewGuid();
-        var fromPartyUuid = Guid.NewGuid();
-        var toPartyUuid = Guid.NewGuid();
-
-        var altinn2ConsentRequest = CreateAltinn2ConsentRequest(consentRequestId, fromPartyUuid, toPartyUuid);
-        var createdRequestDetails = CreateConsentRequestDetails(consentRequestId, fromPartyUuid, toPartyUuid);
-
-        _altinn2ConsentClientMock
-            .Setup(x => x.GetAltinn2Consent(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(altinn2ConsentRequest);
-
-        SetupValidationMocks(fromPartyUuid, toPartyUuid);
-
-        _consentRepositoryMock
-            .Setup(x => x.CreateRequest(It.IsAny<ConsentRequest>(), It.IsAny<ConsentPartyUrn>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        _consentRepositoryMock
-            .Setup(x => x.GetRequest(consentRequestId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdRequestDetails);
-
-        var service = CreateService();
-
-        // Act
-        var result = await service.GetAndStoreAltinn2Consent(consentRequestId, CancellationToken.None);
-
-        await collector.WaitForMeasurementsAsync(
-            TestContext.Current.CancellationToken,
-            "consent_migration_overall_duration_seconds");
-
-        // Assert
-        Assert.False(result.IsProblem);
-        Assert.NotNull(result.Value);
-
-        Assert.True(collector.GetMeasurements("consent_migration_overall_duration_seconds").Any());
     }
 
     // =======================================================================
@@ -370,7 +62,7 @@ public class ConsentServiceTests
     // sets up the behaviour it actually exercises.
     //
     // Test naming follows MethodUnderTest_Scenario_ExpectedResult; assertions
-    // use FluentAssertions (`.Should()`).
+    // use AwesomeAssertions (`.Should()`).
     // =======================================================================
     [Fact]
     public async Task GetConsentStatusChangesForParty_RepositoryReturnsList_ReturnsValueUnchanged()
@@ -489,43 +181,161 @@ public class ConsentServiceTests
         result.Problem.StatusCode.Should().Be(Problems.ConsentNotFound.StatusCode);
     }
 
-    // -----------------------------------------------------------------------
-    // TODO — additional cases the developer should add to fully cover
-    // GetConsentStatusChangesForParty. Each one follows the
-    // arrange-mock / act / verify shape used above.
-    //
-    // 4. GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo
-    //    Mirror of test #2 but for a `ConsentPartyUrn.PersonId`. Mock
-    //    `_amPartyServiceMock.Setup(s => s.GetByPersonNo(personIdentifier, …))`
-    //    instead of `GetByOrgNo`. Confirms the other branch of
-    //    `MapFromExternalIdenity`.
-    //
-    // 5. GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList
-    //    Stub the repo to return `new List<ConsentStatusChange>()`. Assert
-    //    `IsProblem == false` and `Value` is an empty (not null) collection.
-    //    Important because the controller materialises this into a paginated
-    //    response with no `next` link.
-    //
-    // 6. GetConsentStatusChangesForParty_PassesContinuationTokenAndPageSizeVerbatim
-    //    [Theory] with InlineData rows for representative tokens (null, "",
-    //    a base64 cursor) and page sizes (1, 100, 1000). Assert that
-    //    `_consentRepositoryMock.Verify(...)` saw the exact values. The
-    //    page-size clamping lives in the *repository*, not the service, so
-    //    the service must not mutate these arguments.
-    //
-    // 7. GetConsentStatusChangesForParty_CancellationTokenForwarded
-    //    Pass a `CancellationTokenSource.Token` and verify the repository
-    //    received the same token via `It.Is<CancellationToken>(t => t == ct)`.
-    //    Catches "default-token" regressions where someone drops the
-    //    parameter on the way through.
-    //
-    // 8. (Edge) GetConsentStatusChangesForParty_AmPartyServiceReturnsNull_NullReferenceTodayBugReport
-    //    If `GetByOrgNo` returns null, `MapFromExternalIdenity` returns null
-    //    and the service immediately calls `.IsPartyUuid(...)` on it — that
-    //    is a NullReferenceException today. Decide whether to (a) write a
-    //    failing test that pins the bug for a follow-up fix, or (b) skip
-    //    until the service is hardened. Talk to the team before adding it.
-    //
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_PersonIdReceiver_ResolvesViaGetByPersonNo()
+    {
+        // Mirror of the OrganizationId test for the other branch of MapFromExternalIdenity: a PersonId
+        // receiver must be resolved to an internal partyUuid via GetByPersonNo before the repository call.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+        var resolvedPartyUuid = Guid.NewGuid();
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MinimalParty { PartyUuid = resolvedPartyUuid, Name = "Test Person" });
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(resolvedPartyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 50, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        _amPartyServiceMock.Verify(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()), Times.Once);
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(resolvedPartyUuid, query, 50, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentEventsForParty_OrganizationIdReceiverNotFound_ReturnsInvalidOrganizationIdentifierProblem()
+    {
+        // Arrange — external OrganizationId that the register can't resolve.
+        // GetByOrgNo returns null, so MapFromExternalIdenity returns null, and
+        // the service surfaces InvalidOrganizationIdentifier rather than
+        // dereferencing the null urn.
+        var orgNumber = ContractsOrganizationNumber.Parse("810419512");
+        var receiver = ConsentPartyUrn.OrganizationId.Create(orgNumber);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByOrgNo(orgNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidOrganizationIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidOrganizationIdentifier.StatusCode);
+
+        // The repository must never be reached when the receiver can't be resolved.
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConsentEventsForParty_PersonIdReceiverNotFound_ReturnsInvalidPersonIdentifierProblem()
+    {
+        // Arrange — external PersonId that the register can't resolve.
+        // GetByPersonNo returns null → InvalidPersonIdentifier.
+        var personIdentifier = ContractsPersonIdentifier.Parse("01025161013");
+        var receiver = ConsentPartyUrn.PersonId.Create(personIdentifier);
+
+        _amPartyServiceMock
+            .Setup(s => s.GetByPersonNo(personIdentifier, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MinimalParty)null);
+
+        var service = CreateService();
+        var query = new ConsentEventsQuery(null, null, null, null, null);
+
+        // Act
+        var result = await service.GetConsentEventsForParty(receiver, query, pageSize: 100, CancellationToken.None);
+
+        // Assert
+        result.IsProblem.Should().BeTrue();
+        result.Problem.ErrorCode.Should().Be(Problems.InvalidPersonIdentifier.ErrorCode);
+        result.Problem.StatusCode.Should().Be(Problems.InvalidPersonIdentifier.StatusCode);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(It.IsAny<Guid>(), It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_RepositoryReturnsEmptyList_ReturnsOkWithEmptyList()
+    {
+        // The controller materialises this into a paginated response with no next link, so an empty
+        // (not null) collection matters.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        var result = await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, CancellationToken.None);
+
+        result.IsProblem.Should().BeFalse();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1000)]
+    public async Task GetConsentStatusChangesForParty_PassesQueryAndPageSizeVerbatim(int pageSize)
+    {
+        // Page-size clamping lives in the repository, so the service must forward the query object and
+        // the page size unchanged for every valid page size.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        var query = new ConsentEventsQuery(null, null, null, null, new Guid("cd12b899-0795-4a3c-a65f-f8de792ff382"));
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, query, pageSize, CancellationToken.None);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, query, pageSize, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConsentStatusChangesForParty_CancellationTokenForwarded()
+    {
+        // Catches "default-token" regressions where the parameter is dropped on the way through.
+        var partyUuid = Guid.NewGuid();
+        var receiver = ConsentPartyUrn.PartyUuid.Create(partyUuid);
+        using var cts = new CancellationTokenSource();
+
+        _consentRepositoryMock
+            .Setup(r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConsentStatusChange>());
+
+        var service = CreateService();
+
+        await service.GetConsentEventsForParty(receiver, new ConsentEventsQuery(null, null, null, null, null), pageSize: 100, cts.Token);
+
+        _consentRepositoryMock.Verify(
+            r => r.GetConsentEventsForParty(partyUuid, It.IsAny<ConsentEventsQuery>(), It.IsAny<int>(), It.Is<CancellationToken>(t => t == cts.Token)),
+            Times.Once);
+    }
+
     // -----------------------------------------------------------------------
     // Where the *other* tests for this feature live:
     //
@@ -562,125 +372,12 @@ public class ConsentServiceTests
             null, // AppDbContext not needed for these tests
             _loggerMock.Object,
             _consentRepositoryMock.Object,
-            _altinn2ConsentClientMock.Object,
             _resourceRegistryClientMock.Object,
             _amPartyServiceMock.Object,
             _memoryCacheMock.Object,
-            _profileClientMock.Object,
             _timeProvider,
             _generalSettingsMock.Object,
-            _meterFactoryMock.Object,
             _consentDelegationCheckServiceMock.Object);
-    }
-
-    private Altinn2ConsentRequest CreateAltinn2ConsentRequest(Guid id, Guid fromPartyUuid, Guid toPartyUuid)
-    {
-        return new Altinn2ConsentRequest
-        {
-            ConsentGuid = id,
-            OfferedByPartyUUID = fromPartyUuid,
-            CoveredByPartyUUID = toPartyUuid,
-            ValidTo = DateTimeOffset.UtcNow.AddDays(30),
-            ConsentRequestStatus = "Created",
-            CreatedTime = DateTimeOffset.UtcNow,
-            RequestResources = new List<AuthorizationRequestResourceBE>
-            {
-                new AuthorizationRequestResourceBE
-                {
-                    ServiceCode = "test",
-                    ServiceEditionCode = 1,
-                    ServiceEditionVersionID = 1,
-                    Operations = new List<string> { "read" }
-                }
-            },
-            ConsentHistoryEvents = new List<Altinn2ConsentRequestEvent>(),
-            RedirectUrl = "https://redirect.url",
-            TemplateId = "test-template"
-        };
-    }
-
-    private ConsentRequestDetails CreateConsentRequestDetails(Guid id, Guid fromPartyUuid, Guid toPartyUuid)
-    {
-        return new ConsentRequestDetails
-        {
-            Id = id,
-            From = ConsentPartyUrn.PartyUuid.Create(fromPartyUuid),
-            To = ConsentPartyUrn.PartyUuid.Create(toPartyUuid),
-            ValidTo = DateTimeOffset.UtcNow.AddDays(30),
-            Consented = DateTimeOffset.UtcNow,
-            RedirectUrl = "https://redirect.url",
-            ConsentRights = new List<ConsentRight>
-            {
-                new ConsentRight
-                {
-                    Action = new List<string> { "read" },
-                    Resource = new List<ConsentResourceAttribute>
-                    {
-                        new ConsentResourceAttribute
-                        {
-                            Type = "urn:altinn:resource",
-                            Value = "test-resource"
-                        }
-                    }
-                }
-            },
-            ConsentRequestEvents = new List<ConsentRequestEvent>()
-        };
-    }
-
-    private void SetupValidationMocks(Guid fromPartyUuid, Guid toPartyUuid)
-    {
-        // Mock party lookups with required PersonId or OrganizationId
-        _amPartyServiceMock
-            .Setup(x => x.GetByUid(fromPartyUuid, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MinimalParty
-            {
-                PartyUuid = fromPartyUuid,
-                Name = "FromParty",
-                PersonId = "01025161013" // Add PersonId for external identity mapping
-            });
-
-        _amPartyServiceMock
-            .Setup(x => x.GetByUid(toPartyUuid, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MinimalParty
-            {
-                PartyUuid = toPartyUuid,
-                Name = "ToParty",
-                OrganizationId = "810419512" // Add OrganizationId for external identity mapping
-            });
-
-        // Mock resource registry for validation
-        _resourceRegistryClientMock
-            .Setup(x => x.GetResources(It.IsAny<CancellationToken>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<ServiceResource>
-            {
-            new ServiceResource
-            {
-                Identifier = "test-resource",
-                ResourceType = ResourceType.Consent,
-                ConsentTemplate = "test-template",
-                VersionId = 1
-            }
-            });
-
-        _resourceRegistryClientMock
-            .Setup(x => x.GetResource(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ServiceResource
-            {
-                Identifier = "test-resource",
-                ResourceType = ResourceType.Consent,
-                ConsentTemplate = "test-template",
-                VersionId = 1
-            });
-
-        _resourceRegistryClientMock
-            .Setup(x => x.GetConsentTemplate(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ConsentTemplate
-            {
-                Id = "test-template",
-                Version = 1,
-                Texts = new ConsentTemplateTexts()
-            });
     }
 
     private void SetupMemoryCache()
@@ -698,77 +395,5 @@ public class ConsentServiceTests
         _memoryCacheMock
             .Setup(x => x.CreateEntry(It.IsAny<object>()))
             .Returns(mockCacheEntry.Object);
-    }
-
-    // Simple Meter listener to capture histogram measurements
-    private sealed class MeasurementCollector : IDisposable
-    {
-        private readonly MeterListener _listener;
-        private readonly ConcurrentDictionary<string, ConcurrentBag<double>> _measurements = new();
-
-        public MeasurementCollector(Meter meter, IEnumerable<string> instrumentNames)
-        {
-            foreach (var name in instrumentNames)
-            {
-                _measurements[name] = new ConcurrentBag<double>();
-            }
-
-            _listener = new MeterListener
-            {
-                InstrumentPublished = (instr, listener) =>
-                {
-                    if (instr.Meter.Name == meter.Name && _measurements.ContainsKey(instr.Name))
-                    {
-                        listener.EnableMeasurementEvents(instr);
-                    }
-                }
-            };
-
-            _listener.SetMeasurementEventCallback<double>((inst, measurement, tags, state) =>
-            {
-                if (_measurements.ContainsKey(inst.Name))
-                {
-                    _measurements[inst.Name].Add(measurement);
-                }
-            });
-
-            _listener.Start();
-        }
-
-        public IReadOnlyCollection<double> GetMeasurements(string instrumentName)
-        {
-            if (_measurements.TryGetValue(instrumentName, out var bag))
-            {
-                return bag.ToArray();
-            }
-
-            return Array.Empty<double>();
-        }
-
-        private bool HasMeasurements(string instrumentName) =>
-            _measurements.TryGetValue(instrumentName, out var bag) && !bag.IsEmpty;
-
-        /// <summary>
-        /// Polls until every named instrument has at least one measurement, or the
-        /// timeout elapses (then throws). Replaces a fixed <c>Task.Delay</c> "let the
-        /// listener catch up" wait: returns as soon as the metrics are observed and
-        /// fails loudly — instead of silently — if they never arrive.
-        /// </summary>
-        public async Task WaitForMeasurementsAsync(CancellationToken cancellationToken, params string[] instrumentNames)
-        {
-            var deadline = Environment.TickCount64 + 5000;
-            while (instrumentNames.Any(name => !HasMeasurements(name)))
-            {
-                if (Environment.TickCount64 >= deadline)
-                {
-                    var missing = string.Join(", ", instrumentNames.Where(name => !HasMeasurements(name)));
-                    throw new TimeoutException($"No measurements for instrument(s) [{missing}] within 5000 ms.");
-                }
-
-                await Task.Delay(10, cancellationToken);
-            }
-        }
-
-        public void Dispose() => _listener.Dispose();
     }
 }

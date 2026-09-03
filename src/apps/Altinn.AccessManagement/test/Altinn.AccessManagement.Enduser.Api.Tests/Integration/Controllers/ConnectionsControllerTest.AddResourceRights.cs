@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Xml;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -12,7 +11,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ABAC.Constants;
@@ -44,7 +42,6 @@ public partial class ConnectionsControllerTest
     /// Mocks:
     /// - <see cref="ResourceRegistryClientMock"/> for resource registry policy lookups
     /// - <see cref="PolicyRetrievalPointMock"/> for XACML policy evaluation
-    /// - <see cref="Altinn2RightsClientMock"/> to prevent real HTTP calls to Altinn 2 SBL Bridge
     /// </para>
     /// <para>
     /// Actors:
@@ -122,7 +119,7 @@ public partial class ConnectionsControllerTest
         /// Uses valid right keys obtained from delegation check. Expects 201 Created.
         /// </summary>
         [Fact]
-        public async Task AddResourceRights_AsMalinForDumboToMille_WithValidRightKeys_Returns201WithDelegatedResourceRights()
+        public async Task AddResourceRights_AsManagingDirectorToOrganization_WithValidRightKeys_Returns201WithDelegatedResourceRights()
         {
             List<string> rightKeys = await GetDelegatableRightKeys("app_skd_sirius-skattemelding-v1");
             Assert.NotEmpty(rightKeys);

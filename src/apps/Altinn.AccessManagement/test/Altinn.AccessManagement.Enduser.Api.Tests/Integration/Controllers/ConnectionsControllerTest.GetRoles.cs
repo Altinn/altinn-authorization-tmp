@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -65,7 +64,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with ManagingDirector (DAGL) role and correct permission structure.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsMalinForDumboToMalin_WithToOthersScope_ReturnsOkWithDaglRole()
+        public async Task GetRoles_AsManagingDirectorToSelf_WithToOthersScope_ReturnsOkWithDaglRole()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -97,7 +96,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with Rightholder role.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsMalinForDumboToThea_WithToOthersScope_ReturnsOkWithRightholderRole()
+        public async Task GetRoles_AsManagingDirectorToRightholder_WithToOthersScope_ReturnsOkWithRightholderRole()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -121,7 +120,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with Rightholder role.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsTheaFromDumbo_WithFromOthersScope_ReturnsOkWithRightholderRole()
+        public async Task GetRoles_AsRightholderFromOrganization_WithFromOthersScope_ReturnsOkWithRightholderRole()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 
@@ -143,7 +142,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with Rightholder role.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsJinxForKaosToJosephine_WithToOthersScope_ReturnsOkWithRightholderRole()
+        public async Task GetRoles_AsManagingDirectorToInheritedRightholder_WithToOthersScope_ReturnsOkWithRightholderRole()
         {
             HttpClient client = CreateClient(TestData.JinxArcane.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -237,13 +236,13 @@ public partial class ConnectionsControllerTest
             Assert.NotNull(result);
 
             HashSet<Guid> toIds = [];
-foreach (var role in result.Items)
-{
-    foreach (var permission in role.Permissions)
-    {
-        toIds.Add(permission.To.Id);
-    }
-}
+            foreach (var role in result.Items)
+            {
+                foreach (var permission in role.Permissions)
+                {
+                    toIds.Add(permission.To.Id);
+                }
+            }
 
             Assert.NotEmpty(toIds);
             Assert.Equal(4, toIds.Count);
@@ -258,7 +257,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsTheaFromDumbo_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
+        public async Task GetRoles_AsRightholderFromOrganization_WithToOthersScope_Returns403ForToOthersScopeOnFromOthersDirection()
         {
             HttpClient client = CreateClient(TestData.Thea.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_READ);
 
@@ -274,7 +273,7 @@ foreach (var role in result.Items)
         /// Expects 403 Forbidden.
         /// </summary>
         [Fact]
-        public async Task GetRoles_AsMalinForDumboToMalin_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
+        public async Task GetRoles_AsManagingDirectorToSelf_WithFromOthersScope_Returns403ForFromOthersScopeOnToOthersDirection()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_FROMOTHERS_READ);
 

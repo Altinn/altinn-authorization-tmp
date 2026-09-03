@@ -1,0 +1,162 @@
+@page "/"
+
+<PageTitle>Hjem – Access Management</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">FFB — Access Management Toolbox</MudText>
+<MudText Typo="Typo.body1" Class="mb-8 mud-text-secondary">
+    Intern administrasjonsverktøy for Altinn 3 Access Management-teamet.
+    Kjøres lokalt ved siden av API-et via <code>dotnet run --project *.AppHost</code>.
+    Aktiv database velges i nedtrekksmenyen øverst til høyre.
+</MudText>
+
+<MudGrid Spacing="4">
+
+    @* ── Verktøy + Jobber ─────────────────────────────────────────────────────── *@
+    <MudItem xs="12" md="6">
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudText Typo="Typo.overline" Class="mud-text-secondary">Verktøy</MudText>
+            <MudDivider Class="my-2" />
+            <MudStack Spacing="3">
+                @foreach (var entry in NavRegistry.All.Where(e => e.Group == NavGroup.Tool))
+                {
+                    @ToolRow(entry)
+                }
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="pa-4">
+            <MudText Typo="Typo.overline" Class="mud-text-secondary">Bakgrunnsjobber</MudText>
+            <MudDivider Class="my-2" />
+            <MudStack Spacing="3">
+                @foreach (var entry in NavRegistry.All.Where(e => e.Group == NavGroup.Job))
+                {
+                    @ToolRow(entry)
+                }
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    @* ── Utviklerguide ────────────────────────────────────────────────────────── *@
+    <MudItem xs="12" md="6">
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudText Typo="Typo.overline" Class="mud-text-secondary">Legge til et nytt verktøy</MudText>
+            <MudDivider Class="my-2" />
+            <MudText Typo="Typo.body2" Class="mb-3 mud-text-secondary">
+                Et verktøy er en tynn Blazor-side som kaller en tjeneste. All DB-logikk
+                ligger i tjenesten; siden holder kun UI-state.
+            </MudText>
+            <ol class="ffb-guide">
+                <li>
+                    Opprett tjenesten <code>Services/Tools/MinSideService.cs</code> med signaturen
+                    <code>RunAsync(string environment, ..., CancellationToken ct = default)</code>.
+                    Den registreres automatisk i DI.
+                </li>
+                <li>
+                    Opprett <code>Components/Pages/Tools/MinSide.razor</code> med
+                    <code>@@inherits EnvironmentPageBase</code> og kjør arbeid via
+                    <code>RunAsync(...)</code> — basen gir <code>Loading</code>/<code>Error</code>
+                    og miljøbytte-håndtering (overstyr <code>OnEnvironmentChangedAsync</code>).
+                </li>
+                <li>
+                    Legg til én oppføring i <code>Components/Layout/NavRegistry.cs</code> —
+                    siden dukker opp både i menyen og her på Hjem.
+                </li>
+            </ol>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Fullstendig oppskrift med kodeeksempler: <code>README.md</code> i prosjektrota.
+            </MudText>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudText Typo="Typo.overline" Class="mud-text-secondary">Legge til en ny bakgrunnsjobb</MudText>
+            <MudDivider Class="my-2" />
+            <MudText Typo="Typo.body2" Class="mb-3 mud-text-secondary">
+                Jobber kjøres på bakgrunnstråder med live logg-output. Bruk <code>DuoRepo</code>
+                for Dapper-spørringer mot AccessMgmt og/eller Register.
+            </MudText>
+            <ol class="ffb-guide">
+                <li>
+                    Opprett <code>Jobs/MinNyJob.cs</code> — statisk klasse med
+                    <code>JobName</code>-konstant, <code>RunAsync(DuoRepo, JobRun, opts, ct)</code>
+                    og options-record i samme fil.
+                </li>
+                <li>
+                    Legg til <code>StartMinNy(...)</code> i <code>IJobRunner</code>
+                    og implementer i <code>JobRunner.cs</code> via <code>FireAndForget</code>.
+                </li>
+                <li>
+                    Opprett <code>Components/Pages/Jobs/MinNyJob.razor</code> etter mønsteret
+                    fra <code>AssignmentSync.razor</code>: <code>&lt;EnvironmentMultiSelect&gt;</code>,
+                    <code>&lt;JobRunList&gt;</code> (kall <code>Refresh()</code> etter start) og
+                    <code>Confirm.ShowAsync</code> før destruktive steg.
+                </li>
+                <li>Legg til én oppføring i <code>NavRegistry.cs</code>.</li>
+                <li>
+                    <em>Valgfritt — planlegging:</em> krever <code>JobTypes</code>-konstant,
+                    <code>ScheduledMinNyOptions</code> + property på <code>JobScheduleEntry</code>,
+                    og <code>case</code> + mapper i <code>JobSchedulerService.FireSchedule</code>.
+                </li>
+            </ol>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                Fullstendig oppskrift, inkludert kjørenavn-grammatikken som
+                <code>JobRunList</code> matcher på: <code>README.md</code> i prosjektrota.
+            </MudText>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="pa-4">
+            <MudText Typo="Typo.overline" Class="mud-text-secondary">Konfigurasjon</MudText>
+            <MudDivider Class="my-2" />
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.body2">
+                    <strong>Miljøer</strong> — legg til connection strings under
+                    <code>Environments[].AccessMgmt</code> og <code>.Register</code> i
+                    <code>appsettings.json</code>. Ukonfigurerte miljøer vises som grå i UI.
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    <strong>Planlagte jobber</strong> — konfigureres under
+                    <code>JobSchedules.Schedules</code>. Bruk «Generer konfig»-knappen
+                    på jobb-siden for å lage et ferdig JSON-snippet.
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    <strong>Telegram-varsler</strong> — konfigureres under
+                    <code>Notifications.BotToken</code> og <code>.ChatId</code>.
+                    Sendes ved jobstart, fullføring og feil.
+                </MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+</MudGrid>
+
+<style>
+    .ffb-guide {
+        padding-left: 1.2rem;
+        margin: 0;
+    }
+    .ffb-guide li {
+        font-size: 0.875rem;
+        margin-bottom: 0.8rem;
+        line-height: 1.6;
+    }
+    .ffb-pre {
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        margin: 0.35rem 0 0;
+        font-size: 0.76rem;
+        font-family: monospace;
+        overflow-x: auto;
+        white-space: pre;
+    }
+</style>
+
+@code {
+    private RenderFragment ToolRow(NavEntry entry) =>
+        @<MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+            <MudIcon Icon="@entry.Icon" Size="Size.Small" Class="mt-1 mud-text-secondary" />
+            <div>
+                <MudLink Href="@entry.Href" Typo="Typo.body2">@entry.Title</MudLink>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">@entry.Description</MudText>
+            </div>
+        </MudStack>;
+}

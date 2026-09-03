@@ -1,0 +1,228 @@
+@page "/tools/constants-check"
+@inherits EnvironmentPageBase
+@inject ConstantsCheckService ConstantsService
+
+<PageTitle>Constants Check</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Constants Check</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Sammenligner hardkodede konstanter i kode mot faktisk innhold i databasen.
+    Avvik indikerer at databasen er ute av sync med kodebasen.
+</MudText>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3" Class="mb-6">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.PlayArrow"
+               Disabled="Loading"
+               OnClick="RunChecks">
+        @(Loading ? "Sjekker..." : "Kjør sjekk")
+    </MudButton>
+    <MudText Typo="Typo.caption" Class="mud-text-secondary">Miljø: @EnvState.Current</MudText>
+</MudStack>
+
+@if (Loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@Error</MudAlert>
+}
+
+@{
+    var totalOk = _results.Count(r => r.IsOk);
+    var totalFail = _results.Count - totalOk;
+}
+
+@if (_results.Count > 0)
+{
+    <MudStack Row="true" Spacing="2" Class="mb-6" AlignItems="AlignItems.Center">
+        <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@totalOk ok</MudChip>
+        @if (totalFail > 0)
+        {
+            <MudChip T="string" Color="Color.Error" Icon="@Icons.Material.Filled.Error">@totalFail med avvik</MudChip>
+        }
+        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+            Miljø: @EnvState.Current · @_checkedAt?.ToString("HH:mm:ss")
+        </MudText>
+    </MudStack>
+
+    @foreach (var result in _results)
+    {
+        <MudPaper Elevation="1" Class="mb-4">
+            <MudExpansionPanel @bind-Expanded="result.Expanded" Dense="true">
+                <TitleContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        @if (result.IsOk)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Small" />
+                        }
+                        <MudText Typo="Typo.subtitle1">@result.Name</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@result.Table</MudText>
+                        <MudSpacer />
+                        <MudText Typo="Typo.body2">@result.ConstantsCount konstanter · @result.DbCount i DB</MudText>
+                        @if (result.Missing.Count > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Error">@result.Missing.Count mangler i DB</MudChip>
+                        }
+                        @if (result.Mismatches.Count > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning">@result.Mismatches.Count felt-avvik</MudChip>
+                        }
+                        @if (result.Extra.Count > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small"
+                                     Color="@(result.AllowDeleteExtra ? Color.Warning : Color.Info)">
+                                @result.Extra.Count kun i DB@(result.AllowDeleteExtra ? "" : " (append-only)")
+                            </MudChip>
+                        }
+                    </MudStack>
+                </TitleContent>
+                <ChildContent>
+                    @if (result.IsOk)
+                    {
+                        <MudText Class="pa-4 mud-text-secondary">
+                            Alle @result.ConstantsCount konstanter finnes i DB med korrekte felt.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <div class="pa-4">
+                            @if (result.Missing.Count > 0)
+                            {
+                                <MudText Typo="Typo.subtitle2" Color="Color.Error" Class="mb-2">
+                                    Mangler i DB (finnes i kode, ikke i DB):
+                                </MudText>
+                                @foreach (var issue in result.Missing)
+                                {
+                                    @IssueRow(issue, Icons.Material.Filled.Remove, Color.Error, "Insert")
+                                }
+                                <div class="mb-3" />
+                            }
+                            @if (result.Mismatches.Count > 0)
+                            {
+                                <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2">
+                                    Felt-avvik (ID finnes, men verdier er ulike):
+                                </MudText>
+                                @foreach (var issue in result.Mismatches)
+                                {
+                                    @IssueRow(issue, Icons.Material.Filled.ChangeCircle, Color.Warning, "Update")
+                                }
+                                <div class="mb-3" />
+                            }
+                            @if (result.Extra.Count > 0)
+                            {
+                                @if (result.AllowDeleteExtra)
+                                {
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Warning" Class="mb-2">
+                                        Kun i DB — ikke definert i kode (kan slettes):
+                                    </MudText>
+                                    @foreach (var issue in result.Extra)
+                                    {
+                                        @IssueRow(issue, Icons.Material.Filled.DeleteOutline, Color.Warning, "Slett")
+                                    }
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Info" Class="mb-2">
+                                        Kun i DB — ikke definert i kode
+                                        <MudTooltip Text="Tabellen inneholder data fra miljøet i tillegg til konstanter. Sletting er deaktivert for å unngå utilsiktet tap av miljødata.">
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.Info" Class="ml-1">append-only</MudChip>
+                                        </MudTooltip>
+                                    </MudText>
+                                    @foreach (var issue in result.Extra)
+                                    {
+                                        @IssueRow(issue, Icons.Material.Filled.Add, Color.Info, "Slett")
+                                    }
+                                }
+                            }
+                        </div>
+                    }
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudPaper>
+    }
+}
+
+@code {
+    private DateTimeOffset? _checkedAt;
+    private List<CheckResult> _results = [];
+
+    private RenderFragment IssueRow(FixableIssue issue, string icon, Color iconColor, string actionLabel) =>
+        @<div class="mb-2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@icon" Size="Size.Small" Color="@iconColor" />
+                <MudText Typo="Typo.body2" Class="mono" Style="flex:1">@issue.Description</MudText>
+                @if (issue.IsFixed)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success"
+                             Icon="@Icons.Material.Filled.Check">Fikset</MudChip>
+                }
+                else if (issue.Error is not null)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error"
+                             Icon="@Icons.Material.Filled.Error">Feil</MudChip>
+                }
+                else if (issue.Fix is not null)
+                {
+                    <MudButton Size="Size.Small"
+                               Variant="Variant.Outlined"
+                               Color="@iconColor"
+                               Disabled="@issue.IsFixing"
+                               OnClick="@(() => ExecuteFix(issue))">
+                        @(issue.IsFixing ? "..." : actionLabel)
+                    </MudButton>
+                }
+            </MudStack>
+            @if (issue.Error is not null)
+            {
+                <div style="margin:4px 0 0 24px;padding:8px 10px;background:rgba(211,47,47,0.08);border-left:3px solid var(--mud-palette-error);border-radius:0 4px 4px 0">
+                    <MudText Typo="Typo.caption" Color="Color.Error"
+                             Class="mono" Style="white-space:pre-wrap;word-break:break-all;user-select:text">@issue.Error</MudText>
+                </div>
+            }
+        </div>;
+
+    private async Task RunChecks() => await RunAsync(async ct =>
+    {
+        _results = [];
+        _results = [.. await ConstantsService.RunAllChecksAsync(EnvState.Current, ct)];
+        _checkedAt = DateTimeOffset.Now;
+    });
+
+    private async Task ExecuteFix(FixableIssue issue)
+    {
+        issue.IsFixing = true;
+        StateHasChanged();
+        try
+        {
+            await ConstantsService.ExecuteFixAsync(EnvState.Current, issue);
+            issue.IsFixed = true;
+            issue.Error = null;
+        }
+        catch (Exception ex)
+        {
+            issue.Error = ErrorText.Flatten(ex);
+        }
+        finally
+        {
+            issue.IsFixing = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override Task OnEnvironmentChangedAsync()
+    {
+        // Results (and their fix delegates) belong to the previous environment.
+        _results = [];
+        _checkedAt = null;
+        Error = null;
+        return Task.CompletedTask;
+    }
+}

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Altinn.Authorization.ABAC.Xacml;
+﻿using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Authorization.Tests.Fixtures;
 using Altinn.Authorization.Tests.Util;
@@ -13,7 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
 using Moq;
-using Xunit;
 
 namespace Altinn.Authorization.Tests.Integration
 {
@@ -28,9 +23,15 @@ namespace Altinn.Authorization.Tests.Integration
         public AltinnApps_DecisionTests(AuthorizationApiFixture fixture)
         {
             _fixture = fixture;
-            _client = fixture.BuildClient();
             SetupFeatureMock(true);
             SetupDateTimeMock();
+
+            // Build the shared client through the same configured path the
+            // per-test clients use, so the AuditLog feature flag set above is
+            // actually honoured. Building via BuildClient() left _client on the
+            // host default feature manager, so flag-dependent assertions could
+            // pass for the wrong reason.
+            _client = GetTestClient(featureManager: featureManageMock.Object);
         }
 
         [Fact]

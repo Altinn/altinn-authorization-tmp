@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Altinn.AccessManagement.TestUtils.Fixtures;
+﻿using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -7,7 +6,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +19,7 @@ using Microsoft.Extensions.Options;
 namespace Altinn.AccessManagement.Tests.Integration.Services;
 
 [IntegrationTest]
-public class RequestServiceTests : IClassFixture<EfDatabaseFixture>
+public class RequestServiceTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 {
     private static readonly AuditValues TestAudit = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
 
@@ -49,11 +47,14 @@ public class RequestServiceTests : IClassFixture<EfDatabaseFixture>
         Name = "RequestTestResourceType",
     };
 
+    private readonly EfDatabaseFixture _fixture;
     private readonly AppDbContext _db;
     private readonly RequestService _requestService;
 
     public RequestServiceTests(EfDatabaseFixture fixture)
     {
+        _fixture = fixture;
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(fixture.Db.Admin.ToString())
             .Options;
@@ -73,24 +74,21 @@ public class RequestServiceTests : IClassFixture<EfDatabaseFixture>
 
         var sp = collection.Services.BuildServiceProvider();
 
-        SeedSharedData(_db).GetAwaiter().GetResult();
-
         _requestService = new RequestService(_db, sp.GetRequiredService<IOptions<CoreAppsettings>>());
     }
+
+    /// <inheritdoc />
+    public async ValueTask InitializeAsync() => await _fixture.EnsureSeedOnceAsync(() => SeedSharedData(_db));
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     private static async Task SeedSharedData(AppDbContext db)
     {
         db.Entities.AddRange(OrgFrom, PersonTo);
         db.ResourceTypes.Add(TestResourceType);
 
-        try
-        {
-            await db.SaveChangesAsync(TestAudit);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(TestAudit);
 
         db.ChangeTracker.Clear();
     }

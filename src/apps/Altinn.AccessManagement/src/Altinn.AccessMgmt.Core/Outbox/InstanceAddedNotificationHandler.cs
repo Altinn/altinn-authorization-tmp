@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.Core.Extensions;
@@ -42,6 +42,20 @@ public class InstanceAddedNotificationHandler(
         if (!instances.Any())
         {
             db.OutboxMessageLogs.Add(message, $"Lists of instances are empty. Access was most likely added and immediately removed.");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (to.TypeId != EntityTypeConstants.Person && to.TypeId != EntityTypeConstants.Organization)
+        {
+            db.OutboxMessageLogs.Add(message, $"to entity type must be of type <Person | Organization>, not {to.Name}");
+            await db.SaveChangesAsync(cancellationToken);
+            return OutboxStatus.Completed;
+        }
+
+        if (from.TypeId != EntityTypeConstants.Person && from.TypeId != EntityTypeConstants.Organization)
+        {
+            db.OutboxMessageLogs.Add(message, $"from entity type must be of type <Person | Organization>, not {from.Name}");
             await db.SaveChangesAsync(cancellationToken);
             return OutboxStatus.Completed;
         }
@@ -187,7 +201,7 @@ public class InstanceAddedNotificationHandler(
             };
         }
 
-        throw new InvalidOperationException("to entity type must be of type <Person | Organization>");
+        throw new UnreachableException();
     }
 
     private static string MailContent(Entity from, Entity to, IEnumerable<Instance> instances)
@@ -207,7 +221,11 @@ public class InstanceAddedNotificationHandler(
                 access.Append($"<ul>");
                 foreach (var instanceId in instance.InstanceIds)
                 {
-                    access.Append($"<li>{instanceId}</li>");
+                    var instanceSuffix = instanceId
+                        .Split("-")
+                        .Last();
+
+                    access.Append($"<li>ID: {instanceSuffix}</li>");
                 }
 
                 access.Append($"</ul>");

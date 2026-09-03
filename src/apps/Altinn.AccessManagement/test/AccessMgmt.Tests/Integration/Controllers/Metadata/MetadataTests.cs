@@ -11,19 +11,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Altinn.AccessManagement.Tests.Integration.Controllers.Metadata;
 
 [IntegrationTest]
-public class MetadataTests : IClassFixture<EfDatabaseFixture>
+public class MetadataTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 {
+    private readonly EfDatabaseFixture _fixture;
     private readonly AppDbContext _db;
     private readonly ITranslationService _translationService;
 
     public MetadataTests(EfDatabaseFixture fixture)
     {
+        _fixture = fixture;
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(fixture.Db.Admin.ToString())
             .Options;
@@ -33,9 +35,13 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
         // Create a real translation service for tests
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         _translationService = new TranslationService(_db, memoryCache, NullLogger<TranslationService>.Instance);
-
-        SeedTestData(_db).Wait();
     }
+
+    /// <inheritdoc />
+    public async ValueTask InitializeAsync() => await _fixture.EnsureSeedOnceAsync(() => SeedTestData(_db));
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     public List<Resource> Resources { get; set; } = new List<Resource>();
 
@@ -91,7 +97,7 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
 
         foreach (var packageResource in packageResources)
         {
-            if (db.PackageResources.AsNoTracking().Count(t => t.Id == packageResource.Id) == 0)
+            if (!db.PackageResources.AsNoTracking().Any(t => t.PackageId == packageResource.PackageId && t.ResourceId == packageResource.ResourceId))
             {
                 db.PackageResources.Add(packageResource);
             }
@@ -102,14 +108,7 @@ public class MetadataTests : IClassFixture<EfDatabaseFixture>
             db.RolePackages.Add(new RolePackage() { RoleId = RoleConstants.ManagingDirector.Id, PackageId = PackageConstants.Catering.Id });
         }
 
-        try
-        {
-            await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await db.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest));
     }
 
     #region Positive Variant Role Package

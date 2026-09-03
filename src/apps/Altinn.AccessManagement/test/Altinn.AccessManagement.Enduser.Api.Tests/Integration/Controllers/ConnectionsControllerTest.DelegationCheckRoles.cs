@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
@@ -52,7 +51,7 @@ public partial class ConnectionsControllerTest
         /// Expects OK with role check results.
         /// </summary>
         [Fact]
-        public async Task DelegationCheckRoles_AsMalinForDumbo_ReturnsOkWithResults()
+        public async Task DelegationCheckRoles_AsManagingDirector_ReturnsOkWithResults()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

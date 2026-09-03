@@ -1,10 +1,9 @@
-﻿
-using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessManagement.Tests.Unit.Models
 {
     [UnitTest]
-    [Collection("Models Test")]
+    [Collection(ModelsCollection.Name)]
     public class DelegationModelTest
     {
         [Fact]

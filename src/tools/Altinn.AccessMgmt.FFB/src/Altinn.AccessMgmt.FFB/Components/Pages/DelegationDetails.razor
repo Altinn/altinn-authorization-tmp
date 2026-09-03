@@ -1,0 +1,232 @@
+@page "/delegation/{Id:guid}"
+@inherits EnvironmentPageBase
+@inject DelegationDetailsService DataService
+@inject NavigationManager Nav
+
+<PageTitle>Delegation – @Id</PageTitle>
+
+@if (Loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error">@Error</MudAlert>
+}
+else if (_data is null)
+{
+    <MudAlert Severity="Severity.Error">Delegation not found: @Id</MudAlert>
+}
+else
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-6">
+        <BackButton FallbackHref="@(_data.Delegation.From is not null ? $"/entity/{_data.Delegation.From.ToId}" : "/entity-search")" />
+        <MudText Typo="Typo.h4">Delegation</MudText>
+        <MudChip T="string" Color="Color.Primary" Size="Size.Small">@(ChainRole?.Name ?? "–")</MudChip>
+    </MudStack>
+
+    @* Delegation chain: OriginalGranter → Delegator → Recipient *@
+    <MudPaper Elevation="1" Class="pa-4 mb-6">
+        <MudText Typo="Typo.overline" Class="mud-text-secondary mb-2">Delegation chain</MudText>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Wrap="Wrap.Wrap">
+            <MudChip T="string" Color="Color.Default" Size="Size.Medium"
+                     OnClick="@(() => Nav.NavigateTo($"/entity/{_data.Delegation.From?.FromId}"))">
+                @(OriginalGranter?.Name ?? _data.Delegation.From?.FromId.ToString())
+            </MudChip>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Color="Color.Default" />
+            <MudTooltip Text="Delegator">
+                <MudChip T="string" Color="Color.Primary" Size="Size.Medium"
+                         OnClick="@(() => Nav.NavigateTo($"/entity/{_data.Delegation.From?.ToId}"))">
+                    @(Delegator?.Name ?? _data.Delegation.From?.ToId.ToString())
+                </MudChip>
+            </MudTooltip>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Color="Color.Default" />
+            <MudChip T="string" Color="Color.Secondary" Size="Size.Medium"
+                     OnClick="@(() => Nav.NavigateTo($"/entity/{_data.Delegation.To?.ToId}"))">
+                @(Recipient?.Name ?? _data.Delegation.To?.ToId.ToString())
+            </MudChip>
+        </MudStack>
+    </MudPaper>
+
+    <MudGrid>
+        @* ── From assignment ── *@
+        <MudItem xs="12" md="6">
+            <SummaryCard Title="From Assignment">
+                <HeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                   Size="Size.Small"
+                                   Href="@($"/assignment/{_data.Delegation.FromId}")"
+                                   aria-label="Open assignment" />
+                </HeaderActions>
+                <ChildContent>
+                    <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.FromId</SummaryRow>
+                    <SummaryRow Label="Role">
+                        <MudLink Href="@($"/role/{_data.Delegation.From?.RoleId}")">@(_data.Delegation.From?.Role?.Name ?? _data.Delegation.From?.RoleId.ToString())</MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.From?.Role?.Urn ?? "–")</SummaryRow>
+                    <SummaryRow Label="From (granter)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.From?.FromId}")">
+                            @(OriginalGranter?.Name ?? _data.Delegation.From?.FromId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="To (delegator)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.From?.ToId}")">
+                            @(Delegator?.Name ?? _data.Delegation.From?.ToId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                </ChildContent>
+            </SummaryCard>
+        </MudItem>
+
+        @* ── To assignment ── *@
+        <MudItem xs="12" md="6">
+            <SummaryCard Title="To Assignment">
+                <HeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.OpenInNew"
+                                   Size="Size.Small"
+                                   Href="@($"/assignment/{_data.Delegation.ToId}")"
+                                   aria-label="Open assignment" />
+                </HeaderActions>
+                <ChildContent>
+                    <SummaryRow Label="AssignmentId" Monospace="true">@_data.Delegation.ToId</SummaryRow>
+                    <SummaryRow Label="Role">
+                        <MudLink Href="@($"/role/{_data.Delegation.To?.RoleId}")">@(_data.Delegation.To?.Role?.Name ?? _data.Delegation.To?.RoleId.ToString())</MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="Role URN" Monospace="true">@(_data.Delegation.To?.Role?.Urn ?? "–")</SummaryRow>
+                    <SummaryRow Label="From (delegator)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.To?.FromId}")">
+                            @(Delegator?.Name ?? _data.Delegation.To?.FromId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                    <SummaryRow Label="To (recipient)">
+                        <MudLink Href="@($"/entity/{_data.Delegation.To?.ToId}")">
+                            @(Recipient?.Name ?? _data.Delegation.To?.ToId.ToString())
+                        </MudLink>
+                    </SummaryRow>
+                </ChildContent>
+            </SummaryCard>
+        </MudItem>
+
+        @* ── Meta ── *@
+        <MudItem xs="12" md="6">
+            <SummaryCard Title="Audit">
+                <SummaryRow Label="DelegationId" Monospace="true">@_data.Delegation.Id</SummaryRow>
+                <SummaryRow Label="Facilitator">
+                    @if (_data.Delegation.FacilitatorId != Guid.Empty)
+                    {
+                        <MudLink Href="@($"/entity/{_data.Delegation.FacilitatorId}")">
+                            @(_data.Delegation.Facilitator?.Name ?? _data.Delegation.FacilitatorId.ToString())
+                        </MudLink>
+                    }
+                    else
+                    {
+                        <span>–</span>
+                    }
+                </SummaryRow>
+                <SummaryRow Label="ValidFrom">@_data.Delegation.Audit_ValidFrom.ToString("u")</SummaryRow>
+                <SummaryRow Label="ChangedBy" Monospace="true">@(_data.Delegation.Audit_ChangedBy?.ToString() ?? "–")</SummaryRow>
+                <SummaryRow Label="ChangeOperation" Monospace="true">@(_data.Delegation.Audit_ChangeOperation ?? "–")</SummaryRow>
+            </SummaryCard>
+        </MudItem>
+    </MudGrid>
+
+    @* ── Resources & Packages ── *@
+    <MudText Typo="Typo.h5" Class="mt-8 mb-3">Resources &amp; Packages</MudText>
+    <MudTabs Elevation="1" Rounded="false" ApplyEffectsToContainer="true">
+
+        <MudTabPanel Text="@($"Resources ({_data.Resources.Count})")"
+                     Icon="@Icons.Material.Filled.Api">
+            <MudTable Items="_data.Resources" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Resource</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>RefId</MudTh>
+                    <MudTh>Provider</MudTh>
+                    <MudTh>Since</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Resource">
+                        <MudLink Href="@($"/resource/{context.ResourceId}")">@(context.Resource?.Name ?? context.ResourceId.ToString())</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudText Typo="Typo.body2">@(context.Resource?.Type?.Name ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="RefId">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Resource?.RefId ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Provider">
+                        <MudLink Href="@($"/provider/{context.Resource?.ProviderId}")">@(context.Resource?.Provider?.Name ?? "–")</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="Since">
+                        <MudText Typo="Typo.body2">@context.Audit_ValidFrom.ToString("yyyy-MM-dd")</MudText>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No resources on this delegation.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@($"Packages ({_data.Packages.Count})")"
+                     Icon="@Icons.Material.Filled.Inventory2">
+            <MudTable Items="_data.Packages" Hover="true" Dense="true" Class="pa-0">
+                <HeaderContent>
+                    <MudTh>Package</MudTh>
+                    <MudTh>URN</MudTh>
+                    <MudTh>Area</MudTh>
+                    <MudTh>Provider</MudTh>
+                    <MudTh>From AssignmentPackage</MudTh>
+                    <MudTh>Since</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Package">
+                        <MudLink Href="@($"/package/{context.PackageId}")">@(context.Package?.Name ?? context.PackageId.ToString())</MudLink>
+                    </MudTd>
+                    <MudTd DataLabel="URN">
+                        <MudText Typo="Typo.caption" Class="mono">@(context.Package?.Urn ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Area">
+                        <MudText Typo="Typo.body2">@(context.Package?.Area?.Name ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Provider">
+                        <MudText Typo="Typo.body2">@(context.Package?.Provider?.Name ?? "–")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="From AssignmentPackage">
+                        @if (context.AssignmentPackageId.HasValue)
+                        {
+                            <MudText Typo="Typo.caption" Class="mono">@context.AssignmentPackageId</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">–</MudText>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Since">
+                        <MudText Typo="Typo.body2">@context.Audit_ValidFrom.ToString("yyyy-MM-dd")</MudText>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Class="pa-4 mud-text-secondary">No packages on this delegation.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudTabPanel>
+
+    </MudTabs>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private DelegationDetailsData? _data;
+
+    private Entity? OriginalGranter => _data?.Delegation.From?.From;
+    private Entity? Delegator => _data?.Delegation.From?.To;
+    private Entity? Recipient => _data?.Delegation.To?.To;
+    private Role? ChainRole => _data?.Delegation.From?.Role ?? _data?.Delegation.To?.Role;
+
+    protected override Task OnParametersSetAsync() => RunAsync(LoadAsync);
+
+    protected override Task OnEnvironmentChangedAsync() => RunAsync(LoadAsync);
+
+    private async Task LoadAsync(CancellationToken ct) => _data = await DataService.GetAsync(EnvState.Current, Id, ct);
+}

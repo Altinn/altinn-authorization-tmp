@@ -1,0 +1,112 @@
+@page "/jobs/entity-sync"
+@inject IJobRunner JobRunner
+@inject IDialogService DialogService
+
+<PageTitle>Entity Sync</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Entity Sync</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Sammenligner entities mellom AccessMgmt og Register (to-pass diff med 60s pause).
+    Genererer INSERT/DELETE SQL for stabile avvik.
+</MudText>
+
+@* ── Start panel ──────────────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-6">
+    <MudText Typo="Typo.h6" Class="mb-3">Start ny kjøring</MudText>
+
+    <div class="mb-4">
+        <EnvironmentMultiSelect @bind-Selection="_selected" Label="Kjør på miljø:" />
+    </div>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.PlayArrow"
+               Disabled="@(!AnySelected)"
+               OnClick="StartJobs">
+        Start
+    </MudButton>
+    <MudButton Variant="Variant.Outlined"
+               Class="ml-2"
+               StartIcon="@Icons.Material.Filled.Schedule"
+               Disabled="@(!AnySelected)"
+               OnClick="OpenScheduleDialog">
+        Generer konfig
+    </MudButton>
+</MudPaper>
+
+@* ── Runs ─────────────────────────────────────────────────────────────────── *@
+<JobRunList @ref="_runList" JobName="@EntitySyncJob.JobName">
+    <ExtraActions Context="run">
+        @if (run.Status == JobStatus.Completed &&
+             run.SqlOutput.Any(s => s.StartsWith("UPDATE register.party")) &&
+             run.JobName == EntitySyncJob.JobName)
+        {
+            var resyncCount = run.SqlOutput.Count(s => s.StartsWith("UPDATE register.party"));
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Warning"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Sync"
+                       OnClick="@(() => ConfirmAndExecute(run))">
+                Resync i Register (@resyncCount stk)
+            </MudButton>
+        }
+    </ExtraActions>
+</JobRunList>
+
+@code {
+    private Dictionary<string, bool> _selected = new();
+    private JobRunList _runList = default!;
+
+    private void StartJobs()
+    {
+        foreach (var (env, selected) in _selected)
+        {
+            if (!selected) continue;
+            JobRunner.StartEntitySync(env);
+        }
+
+        _runList.Refresh();
+    }
+
+    private async Task ConfirmAndExecute(JobRun previewRun)
+    {
+        var count = previewRun.SqlOutput.Count(s => s.StartsWith("UPDATE register.party"));
+        var confirmed = await Confirm.ShowAsync(
+            DialogService,
+            "Bekreft resync",
+            $"Dette vil kjøre {count} UPDATE-statement(s) mot Register-databasen i {previewRun.Environment}. Register vil re-emitte events for de berørte partiene.",
+            $"Kjør {count} resync",
+            Color.Warning);
+
+        if (confirmed)
+        {
+            JobRunner.StartEntitySyncExecute(previewRun.Id, previewRun.Environment);
+            _runList.Refresh();
+        }
+    }
+
+    private bool AnySelected => _selected.Values.Any(v => v);
+
+    private async Task OpenScheduleDialog()
+    {
+        var entries = _selected
+            .Where(kv => kv.Value)
+            .Select(kv => new JobScheduleEntry
+            {
+                Id = $"entity-sync-{kv.Key.ToLowerInvariant()}",
+                JobType = JobTypes.EntitySync,
+                Environment = kv.Key,
+                Cron = "0 3 * * *",
+                Enabled = true,
+            })
+            .ToList();
+
+        var parameters = new DialogParameters<ScheduleConfigDialog>
+        {
+            { x => x.Entries, entries },
+        };
+
+        await DialogService.ShowAsync<ScheduleConfigDialog>("Generer plan-konfig", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+    }
+}

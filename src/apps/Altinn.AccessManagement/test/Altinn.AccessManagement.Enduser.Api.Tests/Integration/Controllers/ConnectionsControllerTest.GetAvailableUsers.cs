@@ -7,7 +7,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessMgmt.Core;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessManagement.Enduser.Api.Tests.Integration.Controllers;
@@ -76,7 +75,7 @@ public partial class ConnectionsControllerTest
         /// Tests that available users for Dumbo Adventures includes Thea when authenticated as Malin Emilie (managing director).
         /// </summary>
         [Fact]
-        public async Task GetAvailableUsers_AsMalinForDumbo_ContainsThea()
+        public async Task GetAvailableUsers_AsManagingDirector_ContainsRightholder()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 

@@ -1,0 +1,164 @@
+@page "/jobs/history-cleanup"
+@inject IJobRunner JobRunner
+@inject IDialogService DialogService
+
+<PageTitle>History Cleanup</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">History Cleanup</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Leser <code>dbo_history</code>-tabeller og finner overflødige versjoner: påfølgende rader der
+    alle datafelter er identiske slås sammen (eldste <code>validFrom</code>, nyeste <code>validTo</code>).
+    Rader med null varighet (<code>validFrom = validTo</code>) slettes direkte.
+</MudText>
+
+@* ── Start panel ──────────────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-6">
+    <MudText Typo="Typo.h6" Class="mb-3">Start ny kjøring</MudText>
+
+    <MudGrid>
+        <MudItem xs="12">
+            <EnvironmentMultiSelect @bind-Selection="_selected" Label="Kjør på miljø:" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Tabeller:</MudText>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+                @foreach (var key in HistoryCleanupJob.KnownTables.Keys)
+                {
+                    var k = key;
+                    var cfg = HistoryCleanupJob.KnownTables[k];
+                    <MudCheckBox @bind-Value="_selectedTables[k]"
+                                 Color="Color.Primary">
+                        @k
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary ml-1">(@cfg.TableName)</MudText>
+                    </MudCheckBox>
+                }
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudCheckBox @bind-Value="_executeImmediately"
+                         Color="Color.Error"
+                         Label="Kjør SQL umiddelbart (uten forhåndsvisning)" />
+        </MudItem>
+
+        @if (_executeImmediately)
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Warning" Dense="true">
+                    DELETE- og UPDATE-statements vil kjøres uten bekreftelsesdialog.
+                </MudAlert>
+            </MudItem>
+        }
+
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled"
+                       Color="@(_executeImmediately ? Color.Error : Color.Primary)"
+                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                       Disabled="@(!AnySelected)"
+                       OnClick="StartJobs">
+                @(_executeImmediately ? "Start og kjør SQL" : "Start (generer SQL)")
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Class="ml-2"
+                       StartIcon="@Icons.Material.Filled.Schedule"
+                       Disabled="@(!AnySelected)"
+                       OnClick="OpenScheduleDialog">
+                Generer konfig
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@* ── Runs ─────────────────────────────────────────────────────────────────── *@
+<JobRunList @ref="_runList" JobName="@HistoryCleanupJob.JobName">
+    <ExtraActions Context="run">
+        @if (run.Status == JobStatus.Completed &&
+             run.SqlOutput.Count > 0 &&
+             run.JobName == HistoryCleanupJob.JobName)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Error"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Edit"
+                       OnClick="@(() => ConfirmAndExecute(run))">
+                Kjør SQL (@run.SqlOutput.Count statements)
+            </MudButton>
+        }
+    </ExtraActions>
+</JobRunList>
+
+@code {
+    private Dictionary<string, bool> _selected = new();
+    private readonly Dictionary<string, bool> _selectedTables =
+        HistoryCleanupJob.KnownTables.Keys.ToDictionary(k => k, _ => true);
+    private bool _executeImmediately;
+    private JobRunList _runList = default!;
+
+    private bool AnySelected => _selected.Values.Any(v => v) && _selectedTables.Values.Any(v => v);
+
+    private void StartJobs()
+    {
+        var selectedEnvs = _selected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+        var selectedTables = _selectedTables.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+
+        foreach (var env in selectedEnvs)
+        {
+            foreach (var tableKey in selectedTables)
+            {
+                var opts = new HistoryCleanupOptions(Table: tableKey, Execute: _executeImmediately);
+                JobRunner.StartHistoryCleanup(env, opts);
+            }
+        }
+
+        _runList.Refresh();
+    }
+
+    private async Task ConfirmAndExecute(JobRun previewRun)
+    {
+        var count = previewRun.SqlOutput.Count;
+        var confirmed = await Confirm.ShowAsync(
+            DialogService,
+            "Bekreft kjøring",
+            $"Dette vil kjøre {count} SQL-statements (DELETE/UPDATE) mot {previewRun.Environment}. Kan ikke angres.",
+            $"Kjør {count} statements");
+
+        if (confirmed)
+        {
+            JobRunner.StartHistoryExecute(previewRun.Id, previewRun.Environment);
+            _runList.Refresh();
+        }
+    }
+
+    private async Task OpenScheduleDialog()
+    {
+        var selectedEnvs = _selected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+        var selectedTables = _selectedTables.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+
+        var entries = (
+            from env in selectedEnvs
+            from tableKey in selectedTables
+            select new JobScheduleEntry
+            {
+                Id = $"history-{env.ToLowerInvariant()}-{tableKey.ToLowerInvariant()}",
+                JobType = JobTypes.HistoryCleanup,
+                Environment = env,
+                Cron = "0 3 * * *",
+                Enabled = true,
+                HistoryOptions = new ScheduledHistoryOptions
+                {
+                    Table = tableKey,
+                    Execute = _executeImmediately,
+                },
+            }
+        ).ToList();
+
+        var parameters = new DialogParameters<ScheduleConfigDialog>
+        {
+            { x => x.Entries, entries },
+        };
+
+        await DialogService.ShowAsync<ScheduleConfigDialog>("Generer plan-konfig", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+    }
+}

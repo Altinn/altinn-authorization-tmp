@@ -1,0 +1,340 @@
+@page "/tools/outbox"
+@inherits EnvironmentPageBase
+@using Altinn.AccessMgmt.PersistenceEF.Models.Base
+@inject OutboxService OutboxService
+@inject NavigationManager Nav
+@inject IDialogService DialogService
+
+<PageTitle>Outbox</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Outbox</MudText>
+<MudText Typo="Typo.body1" Class="mb-6 mud-text-secondary">
+    Viser <code>dbo.outboxmessage</code>. Klikk på en rad for å se detaljer og logger.
+</MudText>
+
+@* ── Filter ────────────────────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-4">
+    <MudGrid>
+
+        <MudItem xs="12" sm="5">
+            <MudDatePicker @bind-Date="_from"
+                           Label="Fra (CreatedAt)"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudDatePicker @bind-Date="_to"
+                           Label="Til (CreatedAt)"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense" />
+        </MudItem>
+
+        <MudItem xs="12" sm="2">
+            <MudSelect T="string?"
+                       Value="_handler"
+                       ValueChanged="OnHandlerChanged"
+                       Label="Handler"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Clearable="true">
+                <MudSelectItem T="string?" Value="@((string?)null)">Alle</MudSelectItem>
+                @foreach (var h in OutboxHandlerRegistry.KnownHandlers)
+                {
+                    var hv = h;
+                    <MudSelectItem T="string?" Value="@hv">@hv</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        @* ── Per-handler data model + filters ──────────────────────────────── *@
+        @if (_handler is not null)
+        {
+            @if (OutboxHandlerRegistry.Schemas.TryGetValue(_handler, out var schema))
+            {
+                <MudItem xs="12">
+                    <MudExpansionPanel Text="Datamodell (JSON)">
+                        <ChildContent>
+                            <pre style="font-size:.78rem;margin:0;white-space:pre-wrap;word-break:break-all">@schema</pre>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudItem>
+            }
+
+            @if (OutboxHandlerRegistry.FilterFields.TryGetValue(_handler, out var fields))
+            {
+                @foreach (var (label, jsonKey) in fields)
+                {
+                    var key = jsonKey;
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string"
+                                      Value="@(_dataFilters.GetValueOrDefault(key, string.Empty))"
+                                      ValueChanged="@((string v) => _dataFilters[key] = v)"
+                                      Label="@label"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Clearable="true"
+                                      Placeholder="GUID…"
+                                      Immediate="true" />
+                    </MudItem>
+                }
+            }
+        }
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.body2" Class="mb-1 mud-text-secondary">Status</MudText>
+            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2">
+                @foreach (var s in AllStatuses)
+                {
+                    var status = s;
+                    <MudCheckBox @bind-Value="_selectedStatuses[status]"
+                                 Color="@StatusColor(status)"
+                                 Dense="true">
+                        <MudChip T="string" Size="Size.Small" Color="@StatusColor(status)">@status</MudChip>
+                    </MudCheckBox>
+                }
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Search"
+                       Disabled="Loading"
+                       OnClick="Load">
+                Hent meldinger
+            </MudButton>
+            <MudButton Variant="Variant.Text"
+                       Class="ml-2"
+                       OnClick="SelectAllStatuses">
+                Velg alle statuser
+            </MudButton>
+        </MudItem>
+
+    </MudGrid>
+</MudPaper>
+
+@* ── Status ────────────────────────────────────────────────────────────────── *@
+@if (Loading || _resetting)
+{
+    <MudProgressLinear Color="@(_resetting ? Color.Warning : Color.Primary)" Indeterminate="true" Class="mb-4" />
+}
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@Error</MudAlert>
+}
+@if (_resetMessage is not null)
+{
+    <MudAlert Severity="Severity.Success" Class="mb-4">@_resetMessage</MudAlert>
+}
+
+@* ── Results ───────────────────────────────────────────────────────────────── *@
+@if (_results is not null)
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-2">
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+            @_results.Count meldinger
+            @if (_results.Count == MaxRows)
+            {
+                <span> (begrenset til @MaxRows — innsnevre filteret)</span>
+            }
+        </MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Warning"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.RestartAlt"
+                   Disabled="_resetting || Loading"
+                   OnClick="ConfirmReset">
+            Tilbakestill til pending
+        </MudButton>
+    </MudStack>
+
+    <MudDataGrid T="OutboxMessage"
+                 Items="_results"
+                 Dense="true"
+                 Hover="true"
+                 Striped="true"
+                 FixedHeader="true"
+                 Height="600px"
+                 SortMode="SortMode.Multiple"
+                 RowClick="@(args => Nav.NavigateTo($"/tools/outbox/{args.Item.Id}"))">
+        <Columns>
+
+            <TemplateColumn Title="ID" SortBy="@(x => x.Id)">
+                <CellTemplate>
+                    <MudText Typo="Typo.caption" Class="mono">
+                        @context.Item.Id.ToString()[..8]…
+                    </MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Handler" SortBy="@(x => x.Handler ?? string.Empty)">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@(context.Item.Handler ?? "–")</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Status" SortBy="@(x => x.Status.ToString())">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Item.Status)">
+                        @context.Item.Status
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Forsøk" SortBy="@(x => x.Attempt)">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">@context.Item.Attempt / @context.Item.Retries</MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="RefId" SortBy="@(x => x.RefId ?? string.Empty)">
+                <CellTemplate>
+                    <MudText Typo="Typo.caption" Class="mono">
+                        @(context.Item.RefId ?? "–")
+                    </MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Opprettet" SortBy="@(x => x.CreatedAt)">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2">
+                        @context.Item.CreatedAt.ToLocalTime().ToString("dd.MM HH:mm:ss")
+                    </MudText>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Fullført" SortBy="@(x => x.CompletedAt ?? DateTime.MinValue)">
+                <CellTemplate>
+                    @if (context.Item.CompletedAt.HasValue)
+                    {
+                        <MudText Typo="Typo.body2">
+                            @context.Item.CompletedAt.Value.ToLocalTime().ToString("dd.MM HH:mm:ss")
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">–</MudText>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+        </Columns>
+    </MudDataGrid>
+}
+
+@code {
+    private const int MaxRows = 500;
+
+    private static readonly OutboxStatus[] AllStatuses = Enum.GetValues<OutboxStatus>();
+
+    // ── Filter state ──────────────────────────────────────────────────────────
+
+    private DateTime? _from = DateTime.Today.AddDays(-1);
+    private DateTime? _to = DateTime.Today.AddDays(1);
+    private string? _handler;
+    private readonly Dictionary<string, string> _dataFilters = new();
+    private readonly Dictionary<OutboxStatus, bool> _selectedStatuses =
+        Enum.GetValues<OutboxStatus>().ToDictionary(s => s, _ => true);
+
+    // ── Data ──────────────────────────────────────────────────────────────────
+
+    private List<OutboxMessage>? _results;
+    private bool _resetting;
+    private string? _resetMessage;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+    protected override Task OnInitializedAsync() => Load();
+
+    protected override Task OnEnvironmentChangedAsync()
+    {
+        // Results belong to the previous environment.
+        _results = null;
+        _resetMessage = null;
+        Error = null;
+        return Task.CompletedTask;
+    }
+
+    private void OnHandlerChanged(string? value)
+    {
+        _handler = value;
+        _dataFilters.Clear();
+    }
+
+    // ── Query ─────────────────────────────────────────────────────────────────
+
+    private async Task Load()
+    {
+        _resetMessage = null;
+
+        await RunAsync(async ct =>
+            _results = await OutboxService.SearchAsync(
+                EnvState.Current, _from, _to, _handler, ActiveStatuses(), _dataFilters, MaxRows, ct));
+    }
+
+    private async Task ConfirmReset()
+    {
+        var confirmed = await Confirm.ShowAsync(
+            DialogService,
+            "Tilbakestill til pending",
+            $"Sett Status = Pending og Retries = 0 for alle {_results!.Count} meldinger i gjeldende resultat?",
+            "Tilbakestill",
+            Color.Warning);
+
+        if (confirmed)
+        {
+            await ResetStatus();
+        }
+    }
+
+    private async Task ResetStatus()
+    {
+        Error = null;
+        _resetMessage = null;
+        _resetting = true;
+        StateHasChanged();
+
+        try
+        {
+            var count = await OutboxService.ResetToPendingAsync(
+                EnvState.Current, _from, _to, _handler, ActiveStatuses(), _dataFilters);
+
+            await Load();
+            _resetMessage = $"{count} melding(er) tilbakestilt til Pending.";
+        }
+        catch (Exception ex)
+        {
+            Error = $"Feil ved tilbakestilling: {ErrorText.Flatten(ex)}";
+        }
+        finally
+        {
+            _resetting = false;
+        }
+    }
+
+    private void SelectAllStatuses()
+    {
+        foreach (var s in AllStatuses)
+        {
+            _selectedStatuses[s] = true;
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private List<OutboxStatus> ActiveStatuses() =>
+        _selectedStatuses
+            .Where(kv => kv.Value)
+            .Select(kv => kv.Key)
+            .ToList();
+
+    private static Color StatusColor(OutboxStatus status) => status switch
+    {
+        OutboxStatus.Completed  => Color.Success,
+        OutboxStatus.Processing => Color.Info,
+        OutboxStatus.Pending    => Color.Default,
+        OutboxStatus.Failed     => Color.Error,
+        _                       => Color.Warning   // NoHandler, TimedOut, Interrupted
+    };
+}

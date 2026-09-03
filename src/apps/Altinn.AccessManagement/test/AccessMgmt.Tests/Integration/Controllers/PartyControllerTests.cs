@@ -2,11 +2,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.AccessManagement.TestUtils.Fixtures;
-using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.PersistenceEF;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.Party;
 using Altinn.Authorization.ProblemDetails;
@@ -37,7 +34,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
             {
                 services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                 services.RemoveAll<IPublicSigningKeyProvider>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IPublicSigningKeyProvider, PublicSigningKeyProviderMock>();
             });
 
             _client = fixture.CreateClient(new() { AllowAutoRedirect = false });
@@ -205,6 +202,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
         {
             var partyUuid = Guid.NewGuid();
             int partyUserId = 1000041;
+            string emailIdentifier = "test@example.com";
 
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
             {
@@ -215,6 +213,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                     EntityVariantType = EntityVariantConstants.SI_EMAIL.Entity.Name,
                     DisplayName = "Self Identified Epost User",
                     PartyId = partyUserId,
+                    EmailIdentifier = emailIdentifier,
                     UserId = partyUserId
                 }),
                 Headers =
@@ -237,6 +236,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 Assert.Null(entity.RefId);
                 Assert.Equal(partyUserId, entity.PartyId);
                 Assert.Equal(partyUserId, entity.UserId);
+                Assert.Equal(emailIdentifier, entity.EmailIdentifier);
             });
         }
 
@@ -277,6 +277,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers
                 Assert.Null(entity.RefId);
                 Assert.Equal(partyUserId, entity.PartyId);
                 Assert.Equal(partyUserId, entity.UserId);
+                Assert.Null(entity.EmailIdentifier);
             });
         }
     }

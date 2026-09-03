@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -10,7 +9,6 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.Extensions.DependencyInjection;
@@ -88,7 +86,7 @@ public partial class ConnectionsControllerTest
         /// - Package is gone after removal
         /// </summary>
         [Fact]
-        public async Task RemovePackages_AsJinxByPackageId_ReturnsNoContentAndRemovesPackage()
+        public async Task RemovePackages_AsManagingDirectorByPackageId_ReturnsNoContentAndRemovesPackage()
         {
             Guid packageId = PackageConstants.AccountingAndEconomicReporting.Id;
             await AddPackage(packageId);
@@ -112,7 +110,7 @@ public partial class ConnectionsControllerTest
         /// Expects 204 NoContent.
         /// </summary>
         [Fact]
-        public async Task RemovePackages_AsJosephineByPackageUrn_FromOthersDirection_Returns204NoContent()
+        public async Task RemovePackages_AsRightholderByPackageUrn_FromOthersDirection_Returns204NoContent()
         {
             Guid packageId = PackageConstants.Customs.Id;
             await AddPackage(packageId);

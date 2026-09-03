@@ -4,16 +4,13 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Api.Enduser.Models;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
-using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -30,7 +27,6 @@ public partial class ConnectionsControllerTest
     /// <para>
     /// Mocks:
     /// - <see cref="UserProfileLookupServiceMock"/> for PersonInput-based user lookup by SSN and last name
-    /// - <see cref="Altinn2RightsClientMock"/> to prevent real HTTP calls to Altinn 2 SBL Bridge
     /// </para>
     /// <para>
     /// Actors:
@@ -78,7 +74,7 @@ public partial class ConnectionsControllerTest
         /// Persons require an existing connection; expects 400 BadRequest with EntityNotExists validation error.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithJosephine_ReturnsProblem()
+        public async Task AddRightholder_AsManagingDirectorForUnconnectedPerson_ReturnsProblem()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -100,7 +96,7 @@ public partial class ConnectionsControllerTest
         /// Organizations do not require an existing connection; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithMilleHundefrisor_Returns200WithAssignment()
+        public async Task AddRightholder_AsManagingDirectorForOrganization_Returns200WithAssignment()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -122,7 +118,7 @@ public partial class ConnectionsControllerTest
         /// The mock UserProfileLookupService resolves Bodil by SSN; expects OK with AssignmentDto.
         /// </summary>
         [Fact]
-        public async Task AddRightholder_AsMalinForDumboWithBodilViaPersonInput_Returns200WithAssignment()
+        public async Task AddRightholder_AsManagingDirectorForPersonViaPersonInput_Returns200WithAssignment()
         {
             HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
 
@@ -139,6 +135,32 @@ public partial class ConnectionsControllerTest
             Assert.Equal(TestData.DumboAdventures.Id, result.FromId);
             Assert.Equal(TestData.BodilFarmor.Id, result.ToId);
             Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
+        }
+
+        /// <summary>
+        /// Han Solo adds Padmé Amidala as rightholder via PersonInput body (SSN + last name "Amidala").
+        /// The mock UserProfileLookupService resolves Padme by SSN; expects BadRequest as this person is dead.
+        /// </summary>
+        [Fact]
+        public async Task AddRightholder_AsManagingDirectorForDeadPersonViaPersonInput_ReturnsBadRequest()
+        {
+            HttpClient client = CreateClient(TestData.HanSolo.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            PersonInput personInput = new() { PersonIdentifier = TestData.PadmeAmidala.Entity.PersonIdentifier, LastName = "Amidala" };
+            StringContent content = new(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.HanSoloEnterprise.Id}", content, TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest, $"Expected BadRequest but got {response.StatusCode}. Response body: {responseContent}");
+            AltinnValidationProblemDetails result = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.Single(result.Errors);
+            Assert.Equal("AM.VLD-00034", result.Errors.First().ErrorCode.ToString());
+            string extendedinfo = result.Errors.First().Extensions["personInput"]?.ToString();
+            Assert.Equal("Person not available for delegation (deceased).", extendedinfo);
         }
 
         /// <summary>
