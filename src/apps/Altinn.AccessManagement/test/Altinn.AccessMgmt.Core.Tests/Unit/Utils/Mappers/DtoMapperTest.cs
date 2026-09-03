@@ -828,7 +828,7 @@ public class DtoMapperTest
     /// carry the identifiers that ConvertToIdentifiedParty does.
     /// </summary>
     [Fact]
-    public void ConvertToNamedPartyOrStub_OmitsIdentifiers()
+    public void ConvertToNamedPartyOrStub_MapsIdAndName()
     {
         var entity = MakeEntity("Selma Blikklag Johansen");
         entity.PersonIdentifier = "12345678901";
@@ -838,8 +838,17 @@ public class DtoMapperTest
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(entity.Id);
         dto.Name.Should().Be("Selma Blikklag Johansen");
-        dto.PersonIdentifier.Should().BeNull();
-        dto.OrganizationIdentifier.Should().BeNull();
+    }
+
+    /// <summary>
+    /// The guarantee above now rests on the shape of PartyReferenceDto, so keep that shape closed.
+    /// </summary>
+    [Fact]
+    public void PartyReferenceDto_ExposesOnlyIdAndName()
+    {
+        typeof(PartyReferenceDto).GetProperties()
+            .Select(p => p.Name)
+            .Should().BeEquivalentTo("Id", "Name");
     }
 
     [Fact]
@@ -852,7 +861,6 @@ public class DtoMapperTest
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(fallbackId);
         dto.Name.Should().BeNull();
-        dto.PersonIdentifier.Should().BeNull();
     }
 
     [Fact]

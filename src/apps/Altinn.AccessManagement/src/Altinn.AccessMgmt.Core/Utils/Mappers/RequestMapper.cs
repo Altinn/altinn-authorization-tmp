@@ -76,17 +76,17 @@ public partial class DtoMapper : IDtoMapper
     }
 
     /// <summary>
-    /// Maps a party the caller may see named but must not be able to identify: id and name only.
-    /// Used for LastUpdatedBy, because the design in #3884 states that whoever sent a request
-    /// must not learn which individual in the receiving organisation is its access manager.
+    /// Maps a party the caller may see named but must not be able to identify. Used for
+    /// LastUpdatedBy, because the design in #3884 states that whoever sent a request must not
+    /// learn which individual in the receiving organisation is its access manager.
     /// </summary>
-    public static PartyEntityDto? ConvertToNamedPartyOrStub(Entity? entity, Guid? fallbackId)
+    public static PartyReferenceDto? ConvertToNamedPartyOrStub(Entity? entity, Guid? fallbackId)
     {
         if (entity is not null)
         {
-            return new PartyEntityDto { Id = entity.Id, Name = entity.Name };
+            return new PartyReferenceDto { Id = entity.Id, Name = entity.Name };
         }
 
-        return fallbackId is { } id ? new PartyEntityDto { Id = id } : null;
+        return fallbackId is { } id ? new PartyReferenceDto { Id = id } : null;
     }
 }
