@@ -10,10 +10,11 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
-    public class BankruptcyDelegationService(AppDbContext db, IConnectionService ConnectionService) : IBankruptcyDelegationService
+    public class BankruptcyDelegationService(AppDbContext db, IConnectionService connectionService, IAssignmentService assignmentService) : IBankruptcyDelegationService
     {
         private async Task<List<Assignment>> GetBankruptcyEstateAssignmentsForParty(Guid party, CancellationToken cancellationToken = default)
         {
@@ -255,9 +256,9 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Result<bool>> AddCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+        public async Task<Result<bool>> AddCreditor(Guid party, Guid estate, Guid creditor, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
         {
-            var result = await ConnectionService.AddRightholder(estate, creditor, configureConnections, cancellationToken);
+            var result = await connectionService.AddRightholder(estate, creditor, configureConnections, cancellationToken);
             if (result.IsProblem)
             {
                 return result.Problem;
@@ -287,6 +288,62 @@ namespace Altinn.AccessMgmt.Core.Services
                 return false;
             }            
         }
+
+        /// <inheritdoc />
+        public async Task<Result<bool>> RevokeCreditor(Guid party, Guid estate, Guid creditor, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+        {
+            var options = new ConnectionOptions(configureConnections);
+            (Entity from, Entity to) = await GetFromAndToEntities(estate, creditor, cancellationToken);
+            var problem = ValidateWriteOpInput(from, to, options);
+            if (problem is { })
+            {
+                return problem;
+            }
+
+            var existingAssignment = await db.Assignments
+                .AsNoTracking()
+                .Where(e => e.FromId == from.Id)
+                .Where(e => e.ToId == to.Id)
+                .Where(e => e.RoleId == RoleConstants.Rightholder)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingAssignment is null)
+            {
+                return false;
+            }
+
+            var assignmentPackagesToRemove = await db.AssignmentPackages
+                .AsNoTracking()
+                .Where(ap => ap.AssignmentId == existingAssignment.Id && ap.PackageId == PackageConstants.BankruptcyEstateReadAccess.Id)
+                .ToListAsync(cancellationToken);
+
+            db.AssignmentPackages.RemoveRange(assignmentPackagesToRemove);
+            int removedCount = await db.SaveChangesAsync(cancellationToken);
+
+            var result = await assignmentService.DeleteAssignment(existingAssignment.Id, false, null, cancellationToken);
+            
+            return removedCount > 0;
+        }
+
+        /// <inheritdoc />
+        public async Task<Result<List<CompactEntityDto>>> GetCreditors(Guid party, Guid estate, CancellationToken cancellationToken = default)
+        {
+            var estateAssignments = await db.Assignments
+                .AsNoTracking()
+                .Include(a => a.To)
+                .Join(db.AssignmentPackages, a => a.Id, ap => ap.AssignmentId, (a, ap) => new { Assignment = a, AssignmentPackage = ap })
+                .Where(a => a.Assignment.FromId == estate && a.Assignment.RoleId == RoleConstants.Rightholder && a.AssignmentPackage.PackageId == PackageConstants.BankruptcyEstateReadAccess.Id)
+                .ToListAsync(cancellationToken);
+
+            List<CompactEntityDto> creditors = new List<CompactEntityDto>();
+
+            foreach (var access in estateAssignments)
+            {
+                creditors.Add(DtoMapper.Convert(access.Assignment.To));
+            }
+            
+            return creditors;
+        }
     }
 
     /// <summary>
@@ -296,6 +353,8 @@ namespace Altinn.AccessMgmt.Core.Services
     {
         /// <summary>
         /// Gets the bankruptcy estate assignments for a given party.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
@@ -313,6 +372,8 @@ namespace Altinn.AccessMgmt.Core.Services
 
         /// <summary>
         /// Gets the bankruptcy estate assignments for a given estate.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
         /// <param name="estate">The estate identifier.</param>
@@ -322,6 +383,8 @@ namespace Altinn.AccessMgmt.Core.Services
 
         /// <summary>
         /// Adds packageCodes to a user for a specific bankruptcy estate.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
         /// <param name="user">The user identifier.</param>
@@ -334,6 +397,8 @@ namespace Altinn.AccessMgmt.Core.Services
 
         /// <summary>
         /// Revokes packageCodes from a user for a specific bankruptcy estate.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
         /// <param name="user">The user identifier.</param>
@@ -355,34 +420,39 @@ namespace Altinn.AccessMgmt.Core.Services
 
         /// <summary>
         /// Adds a rettighetshaver assignment and adds the package BankruptcyEstateReadAccess to the assignment for a specific bankruptcy estate.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
-        /// <param name="creditor">The user identifier.</param>
         /// <param name="estate">The bankruptcy estate identifier.</param>
+        /// <param name="creditor">The user identifier.</param>
         /// <param name="configureConnections">Optional action to configure connection options.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A problem details if some error occurs. true if read access is added and false if it alredy exists</returns>
-        Task<Result<bool>> AddCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+        Task<Result<bool>> AddCreditor(Guid party, Guid estate, Guid creditor, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Revokes the package BankruptcyEstateReadAccess from the assignment between the creditor and the bankruptcy estate if the rettighetshaver assignment holds no more content the assignment is also removed..
+        /// Revokes the package BankruptcyEstateReadAccess from the assignment between the creditor and the bankruptcy estate if the rettighetshaver assignment holds no more content the assignment is also removed.
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
-        /// <param name="creditor">The user identifier.</param>
         /// <param name="estate">The bankruptcy estate identifier.</param>
+        /// <param name="creditor">The user identifier.</param>
         /// <param name="configureConnections">Optional action to configure connection options.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A problem details if some error occurs. true if read access is revoked and false if it alredy was revoked</returns>
-        Task<Result<bool>> RevokeCreditor(Guid party, Guid creditor, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+        Task<Result<bool>> RevokeCreditor(Guid party, Guid estate, Guid creditor, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets the list of creditors for a specific bankruptcy estate.
+        /// Gets the list of creditors for a specific bankruptcy estate. 
+        /// 
+        /// It is the callers responsibility to check if the party has access to the estate before calling this method.
         /// </summary>
         /// <param name="party">The party identifier.</param>
         /// <param name="estate">The bankruptcy estate identifier.</param>
-        /// <param name="configureConnections">Optional action to configure connection options.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A problem details if some error occurs. List of creditors if successful.</returns>
-        Task<Result<bool>> GetCreditors(Guid party, Guid estate, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+        Task<Result<List<CompactEntityDto>>> GetCreditors(Guid party, Guid estate, CancellationToken cancellationToken = default);
     }
 }
