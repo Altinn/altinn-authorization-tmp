@@ -43,12 +43,15 @@
         },
       },
     },
+    // HYBELKANIN INNSIKTSFULL, alive in the register. The previous agent, GRANITT KREATIV,
+    // is registered as deceased (2020-12-22), so agent registration rejects him.
     REGN_Agent: {
-      etternavn: "GRANITT",
-      personidentity: "08919574934",
-      userId: 1465828,
-      partyId: 50441038,
-      userUuid: "01f7a70d-2619-4c50-8ff4-efd7ae6c8960",
+      name: "INNSIKTSFULL HYBELKANIN",
+      etternavn: "HYBELKANIN",
+      personidentity: "14906198453",
+      userId: 1490338,
+      partyId: 50951114,
+      userUuid: "0791979b-b0ee-4b50-bd23-16a964da925c",
     },
   },
   REVI_Organisasjon: {
