@@ -50,6 +50,12 @@ public interface IJobRunner
     /// <summary>Read-only analysis of what a backfill run would insert, per source and trigger.</summary>
     JobRun StartActivityLogAnalyze(string environment, string source);
 
+    /// <summary>Manually installs the activity log schema (test environments only, no EF bookkeeping).</summary>
+    JobRun StartActivityLogSchemaInstall(string environment);
+
+    /// <summary>Rolls back a manually installed activity log schema (refuses EF-managed environments).</summary>
+    JobRun StartActivityLogSchemaRollback(string environment);
+
     /// <summary>Ensures monthly partitions exist ahead of time for dbo.activitylog.</summary>
     JobRun StartActivityLogPartitions(string environment, ActivityLogPartitionOptions opts);
 
@@ -272,6 +278,32 @@ public sealed class JobRunner(
         {
             var repo = CreateAccRepo(environment);
             await ActivityLogBackfillJob.AnalyzeAsync(repo, run, source, ct);
+        });
+
+        return run;
+    }
+
+    public JobRun StartActivityLogSchemaInstall(string environment)
+    {
+        var run = CreateRun($"{ActivityLogSchemaJob.JobName}:install", environment);
+
+        FireAndForget(run, async ct =>
+        {
+            var repo = CreateAccRepo(environment);
+            await ActivityLogSchemaJob.InstallAsync(repo, run, ct);
+        });
+
+        return run;
+    }
+
+    public JobRun StartActivityLogSchemaRollback(string environment)
+    {
+        var run = CreateRun($"{ActivityLogSchemaJob.JobName}:rollback", environment);
+
+        FireAndForget(run, async ct =>
+        {
+            var repo = CreateAccRepo(environment);
+            await ActivityLogSchemaJob.RollbackAsync(repo, run, ct);
         });
 
         return run;

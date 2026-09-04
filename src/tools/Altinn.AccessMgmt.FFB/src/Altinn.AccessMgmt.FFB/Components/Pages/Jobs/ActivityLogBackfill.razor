@@ -67,6 +67,33 @@
     </MudGrid>
 </MudPaper>
 
+@* ── Manual schema panel ──────────────────────────────────────────────────── *@
+<MudPaper Elevation="1" Class="pa-4 mb-6">
+    <MudText Typo="Typo.h6" Class="mb-3">Manuell skjemainstallasjon (test)</MudText>
+    <MudText Typo="Typo.body2" Class="mb-3 mud-text-secondary">
+        Kjører SQL-en fra ActivityLog-migrasjonen manuelt — uten å røre <code>__EFMigrationsHistory</code> —
+        for å teste triggere, analyse og backfill i miljøer som ikke har migreringen ennå. Begge
+        operasjonene nekter å kjøre i miljøer der EF alt har migrert. Rull tilbake før den ekte
+        migreringen kjøres der.
+    </MudText>
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Build"
+               Disabled="@(!AnySelected)"
+               OnClick="StartSchemaInstall">
+        Installer skjema
+    </MudButton>
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Error"
+               Class="ml-2"
+               StartIcon="@Icons.Material.Filled.DeleteForever"
+               Disabled="@(!AnySelected)"
+               OnClick="ConfirmSchemaRollback">
+        Rull tilbake skjema
+    </MudButton>
+</MudPaper>
+
 @* ── Partition panel ──────────────────────────────────────────────────────── *@
 <MudPaper Elevation="1" Class="pa-4 mb-6">
     <MudText Typo="Typo.h6" Class="mb-3">Partisjonsvedlikehold</MudText>
@@ -93,6 +120,7 @@
 
 @* ── Runs ─────────────────────────────────────────────────────────────────── *@
 <JobRunList @ref="_backfillRuns" JobName="@ActivityLogBackfillJob.JobName" MatchByPrefix="true" />
+<JobRunList @ref="_schemaRuns" JobName="@ActivityLogSchemaJob.JobName" MatchByPrefix="true" />
 <JobRunList @ref="_partitionRuns" JobName="@ActivityLogPartitionJob.JobName" />
 
 @code {
@@ -103,6 +131,7 @@
     private int _maxBatches = 0;
     private int _monthsAhead = 24;
     private JobRunList _backfillRuns = default!;
+    private JobRunList _schemaRuns = default!;
     private JobRunList _partitionRuns = default!;
 
     private bool AnySelected => _selected.Values.Any(v => v);
@@ -127,6 +156,37 @@
         }
 
         _backfillRuns.Refresh();
+    }
+
+    private void StartSchemaInstall()
+    {
+        foreach (var env in _selected.Where(kv => kv.Value).Select(kv => kv.Key))
+        {
+            JobRunner.StartActivityLogSchemaInstall(env);
+        }
+
+        _schemaRuns.Refresh();
+    }
+
+    private async Task ConfirmSchemaRollback()
+    {
+        var environments = _selected.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
+
+        var confirmed = await Confirm.ShowAsync(
+            DialogService,
+            "Rull tilbake aktivitetslogg-skjema",
+            $"Dette sletter dbo.activitylog med ALT innhold, alle triggere og støttefunksjoner i: {string.Join(", ", environments)}. Fortsette?",
+            "Rull tilbake");
+
+        if (confirmed)
+        {
+            foreach (var env in environments)
+            {
+                JobRunner.StartActivityLogSchemaRollback(env);
+            }
+
+            _schemaRuns.Refresh();
+        }
     }
 
     private void StartPartitions()

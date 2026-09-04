@@ -124,22 +124,39 @@ public static class ActivityLogBackfillJob
         await using var conn = repo.CreateAccConnection();
         await conn.OpenAsync(ct);
 
-        var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? Cursor, DateTime? CompletedAt)>(new CommandDefinition(
-            "SELECT cutoff, \"cursor\", completedat FROM dbo.activitylogbackfillprogress WHERE source = @source;",
-            new { source },
-            cancellationToken: ct));
+        var hasProgressTable = await conn.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT to_regclass('dbo.activitylogbackfillprogress') IS NOT NULL;", cancellationToken: ct));
+        var hasLogTable = await conn.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT to_regclass('dbo.activitylog') IS NOT NULL;", cancellationToken: ct));
 
-        if (progress == default)
+        DateTime cutoff;
+        string cutoffNote;
+
+        if (hasProgressTable)
         {
-            run.AddLog($"[{source}] no progress row found — was the ActivityLog migration applied?", isError: true);
-            return 0;
+            var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? Cursor, DateTime? CompletedAt)>(new CommandDefinition(
+                "SELECT cutoff, \"cursor\", completedat FROM dbo.activitylogbackfillprogress WHERE source = @source;",
+                new { source },
+                cancellationToken: ct));
+
+            if (progress == default)
+            {
+                run.AddLog($"[{source}] no progress row found — was the ActivityLog migration applied?", isError: true);
+                return 0;
+            }
+
+            cutoff = progress.Cutoff;
+            cutoffNote = progress.CompletedAt is not null ? $"; marked completed {progress.CompletedAt:u}" : string.Empty;
+        }
+        else
+        {
+            cutoff = DateTime.UtcNow;
+            cutoffNote = "; schema not installed — counting everything up to now";
         }
 
-        var completedNote = progress.CompletedAt is not null ? $"; marked completed {progress.CompletedAt:u}" : string.Empty;
-
         var perTrigger = (await conn.QueryAsync<(int Trigger, long Count)>(new CommandDefinition(
-            AnalyzeSql(source),
-            new { cutoff = progress.Cutoff },
+            AnalyzeSql(source, includeAntiJoin: hasLogTable),
+            new { cutoff },
             commandTimeout: 0,
             cancellationToken: ct))).ToDictionary(t => t.Trigger, t => t.Count);
 
@@ -148,7 +165,7 @@ public static class ActivityLogBackfillJob
         var deleted = perTrigger.GetValueOrDefault(3);
         var total = created + updated + deleted;
 
-        run.AddLog($"[{source}] {total:N0} events would be inserted — Created {created:N0}, Updated {updated:N0}, Deleted {deleted:N0} (cutoff {progress.Cutoff:u}{completedNote}).");
+        run.AddLog($"[{source}] {total:N0} events would be inserted — Created {created:N0}, Updated {updated:N0}, Deleted {deleted:N0} (cutoff {cutoff:u}{cutoffNote}).");
         return total;
     }
 
@@ -270,15 +287,53 @@ public static class ActivityLogBackfillJob
 
     /// <summary>
     /// Builds the read-only count statement for one source table: the same version chain,
-    /// event branches, cutoff and anti-join as <see cref="StageSql"/>, but grouped per trigger
-    /// and without the temp table and name resolution — so the counts match exactly what a
-    /// backfill run would insert.
+    /// cutoff and event conditions as <see cref="StageSql"/>, grouped per trigger. It references
+    /// none of the activitylog helper functions, so it also runs in environments where the
+    /// ActivityLog migration has not been applied; the anti-join against existing entries is
+    /// included only when dbo.activitylog exists.
     /// </summary>
-    public static string AnalyzeSql(string source)
+    public static string AnalyzeSql(string source, bool includeAntiJoin = true)
     {
-        var (table, dataColumns, leadColumns, eventBranches) = Parts(source);
-        return Analyze(table, dataColumns, leadColumns, eventBranches);
+        var (table, dataColumns, leadColumns, _) = Parts(source);
+        var updatedCondition = UpdatedCondition(source);
+
+        var updatedBranch = updatedCondition is null ? string.Empty : $"""
+
+                UNION ALL
+                SELECT 2 AS ev_trigger, c.audit_validto AS ev_when, c.id AS itemid FROM chain c WHERE c.verno < c.vercount AND ({updatedCondition})
+            """;
+
+        var antiJoin = includeAntiJoin ? """
+
+              AND NOT EXISTS (
+                  SELECT 1 FROM dbo.activitylog al
+                  WHERE al.itemid = e.itemid AND al."trigger" = e.ev_trigger AND al."when" = e.ev_when)
+            """ : string.Empty;
+
+        return $"""
+            {VersionChain(table, dataColumns, leadColumns)},
+            events AS (
+                SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when, c.id AS itemid FROM chain c WHERE c.verno = 1{updatedBranch}
+                UNION ALL
+                SELECT 3 AS ev_trigger, c.audit_validto AS ev_when, c.id AS itemid FROM chain c WHERE c.verno = c.vercount AND NOT c.is_live
+            )
+            SELECT e.ev_trigger AS trigger, count(*) AS count
+            FROM events e
+            WHERE e.ev_when < @cutoff{antiJoin}
+            GROUP BY e.ev_trigger;
+            """;
     }
+
+    /// <summary>
+    /// The per-source condition that makes a version transition an Updated event — must mirror
+    /// the Updated branch WHERE clauses in <see cref="Parts"/>.
+    /// </summary>
+    private static string UpdatedCondition(string source) => source switch
+    {
+        "assignmentinstance" => "c.next_assignmentid IS DISTINCT FROM c.assignmentid",
+        "requestassignmentpackage" or "requestassignmentresource" => "c.next_status IS DISTINCT FROM c.status",
+        _ => null,
+    };
 
     private static (string Table, string DataColumns, string LeadColumns, string EventBranches) Parts(string source) => source switch
     {
@@ -633,20 +688,6 @@ public static class ActivityLogBackfillJob
             FROM versions v
             WINDOW w AS (PARTITION BY id ORDER BY audit_validfrom, audit_validto NULLS LAST, is_live)
         )
-        """;
-
-    private static string Analyze(string table, string dataColumns, string leadColumns, string eventBranches) => $"""
-        {VersionChain(table, dataColumns, leadColumns)},
-        events AS (
-        {eventBranches}
-        )
-        SELECT e.ev_trigger AS trigger, count(*) AS count
-        FROM events e
-        WHERE e.ev_when < @cutoff
-          AND NOT EXISTS (
-              SELECT 1 FROM dbo.activitylog al
-              WHERE al.itemid = e.itemid AND al."trigger" = e.ev_trigger AND al."when" = e.ev_when)
-        GROUP BY e.ev_trigger;
         """;
 
     private static string Stage(string table, string dataColumns, string leadColumns, string eventBranches) => $"""
