@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core.Audit;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -24,6 +25,11 @@ public class SystemUserClientDelegationController(
         , IDelegationService delegationService
     ) : ControllerBase
 {
+    /// <summary>
+    /// The filters on this endpoint select the clients matching every requested value.
+    /// </summary>
+    private const FilterMatch DefaultFilterMatch = FilterMatch.All;
+
     private readonly string[] validClientRoles = [
         RoleConstants.Accountant.Entity.Code,
         RoleConstants.Auditor.Entity.Code,
@@ -39,14 +45,21 @@ public class SystemUserClientDelegationController(
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="roles"> The list of role codes to filter the connections by</param>
     /// <param name="packages"> The list of package identifiers to filter the connections by</param>
+    /// <param name="match">Whether a client has to match any or every value in the filters given. Valid values are 'any' and 'all'</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>List of Clients<seealso cref="SystemuserClientDto"/></returns>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<IEnumerable<SystemuserClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<SystemuserClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, [FromQuery] string match = null, CancellationToken cancellationToken = default)
     {
-        if (roles != null && roles.Length > 0)
+        if (!FilterMatchValues.TryParse(match, DefaultFilterMatch, out var filterMatch))
+        {
+            return BadRequest($"Invalid match filter: '{match}'. Valid values are: '{string.Join(", ", FilterMatchValues.Valid)}'");
+        }
+
+        var rolesFromCaller = roles != null && roles.Length > 0;
+        if (rolesFromCaller)
         {
             var invalidRoles = roles.Where(role => !validClientRoles.Contains(role));
             if (invalidRoles.Any())
@@ -64,7 +77,7 @@ public class SystemUserClientDelegationController(
             packages = [];
         }
 
-        var clients = await assignmentService.GetClients(party, roles, packages, cancellationToken);
+        var clients = await assignmentService.GetClients(party, roles, packages, filterMatch, rolesFromCaller, cancellationToken);
 
         return Ok(clients);
     }

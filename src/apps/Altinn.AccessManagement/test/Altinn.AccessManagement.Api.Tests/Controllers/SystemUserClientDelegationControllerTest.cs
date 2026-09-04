@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Api.Internal.Controllers;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -53,7 +54,7 @@ public class SystemUserClientDelegationControllerTest
     public async Task GetClients_ValidRoles_Returns200WithClients()
     {
         var assignmentSvc = new Mock<IAssignmentService>();
-        assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<FilterMatch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync([]);
 
         var result = await CreateSut(assignmentSvc: assignmentSvc.Object)
@@ -66,7 +67,7 @@ public class SystemUserClientDelegationControllerTest
     public async Task GetClients_NoRolesUsesDefaults_Returns200WithDefaultRoleClients()
     {
         var assignmentSvc = new Mock<IAssignmentService>();
-        assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        assignmentSvc.Setup(s => s.GetClients(Party, It.IsAny<string[]>(), It.IsAny<string[]>(), It.IsAny<FilterMatch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync([]);
 
         var result = await CreateSut(assignmentSvc: assignmentSvc.Object).GetClients(Party, cancellationToken: TestContext.Current.CancellationToken);
