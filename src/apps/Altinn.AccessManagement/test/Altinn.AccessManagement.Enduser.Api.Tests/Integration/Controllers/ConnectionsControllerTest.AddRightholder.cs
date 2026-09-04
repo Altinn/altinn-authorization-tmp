@@ -164,6 +164,31 @@ public partial class ConnectionsControllerTest
         }
 
         /// <summary>
+        /// Malin adds Oddvar as rightholder via PersonInput body. Oddvar is alive, but his register record
+        /// carries DateOnly.MinValue as date of death, the placeholder Altinn 2 imports use for "not dead".
+        /// Expects OK with AssignmentDto.
+        /// </summary>
+        [Fact]
+        public async Task AddRightholder_AsManagingDirectorForPersonWithPlaceholderDateOfDeathViaPersonInput_Returns200WithAssignment()
+        {
+            HttpClient client = CreateClient(TestData.MalinEmilie.Id, AuthzConstants.SCOPE_ENDUSER_CONNECTIONS_TOOTHERS_WRITE);
+
+            PersonInput personInput = new() { PersonIdentifier = TestEntities.PersonOddvar.Entity.PersonIdentifier, LastName = "BØRSTAD" };
+            StringContent content = new(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await client.PostAsync($"{Route}?party={TestData.DumboAdventures.Id}", content, TestContext.Current.CancellationToken);
+
+            string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {responseContent}");
+            AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.NotNull(result);
+            Assert.Equal(TestData.DumboAdventures.Id, result.FromId);
+            Assert.Equal(TestEntities.PersonOddvar.Id, result.ToId);
+            Assert.Equal(RoleConstants.Rightholder.Id, result.RoleId);
+        }
+
+        /// <summary>
         /// Malin uses from-others read scope on an endpoint that requires to-others write scope.
         /// Expects 403 Forbidden.
         /// </summary>

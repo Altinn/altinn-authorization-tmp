@@ -881,6 +881,48 @@ public class ClientDelegationControllerTest
             string extendedinfo = result.Errors.First().Extensions["personInput"]?.ToString();
             Assert.Equal("Person not available for delegation (deceased).", extendedinfo);
         }
+
+        /// <summary>
+        /// Oddvar is alive, but his register record carries DateOnly.MinValue as date of death, the
+        /// placeholder Altinn 2 imports use for "not dead". Registering him as agent must succeed.
+        /// </summary>
+        [Fact]
+        public async Task AddAgent_PermittedEntityTypePerson_Returns200WhenDateOfDeathIsPlaceholder()
+        {
+            var client = CreateClient();
+
+            PersonInput personInput = new() { PersonIdentifier = TestEntities.PersonOddvar.Entity.PersonIdentifier, LastName = "BØRSTAD" };
+            StringContent content = new(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}", content, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {data}");
+
+            AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+            Assert.Equal(TestEntities.OrganizationVerdiqAS.Id, result.FromId);
+            Assert.Equal(TestEntities.PersonOddvar.Id, result.ToId);
+            Assert.Equal(RoleConstants.Agent.Id, result.RoleId);
+        }
+
+        /// <summary>
+        /// Same placeholder date of death, but the agent is given by uuid instead of person number.
+        /// </summary>
+        [Fact]
+        public async Task AddAgent_PermittedEntityTypePerson_Returns200WhenDateOfDeathIsPlaceholderAndToIsUuid()
+        {
+            var client = CreateClient();
+
+            var response = await client.PostAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS}&to={TestEntities.PersonOddvar}", null, TestContext.Current.CancellationToken);
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"Expected OK but got {response.StatusCode}. Response body: {data}");
+
+            AssignmentDto result = JsonSerializer.Deserialize<AssignmentDto>(data, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.NotNull(result);
+            Assert.Equal(TestEntities.PersonOddvar.Id, result.ToId);
+        }
     }
 
     #endregion

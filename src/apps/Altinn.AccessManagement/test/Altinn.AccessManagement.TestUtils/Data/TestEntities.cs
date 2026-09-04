@@ -296,6 +296,32 @@ public static class TestEntities
         }
     };
 
+    /// <summary>
+    /// Living person whose register record carries <see cref="DateOnly.MinValue"/> as date of death.
+    /// Persons imported from Altinn 2 can look like this, and they must still be delegable.
+    /// </summary>
+    public static ConstantDefinition<Entity> PersonOddvar { get; } = new("3b1c2d9e-6f4a-4b8c-9d0e-1f2a3b4c5d6e")
+    {
+        Entity = new()
+        {
+            DateOfBirth = new(1962, 5, 17),
+            DateOfDeath = DateOnly.MinValue,
+            DeletedAt = null,
+            IsDeleted = false,
+            Name = "ODDVAR BØRSTAD",
+            OrganizationIdentifier = null,
+            Parent = null,
+            ParentId = null,
+            PartyId = 51000002,
+            PersonIdentifier = "17056212345",
+            RefId = "17056212345",
+            TypeId = EntityTypeConstants.Person,
+            UserId = 51000002,
+            Username = null,
+            VariantId = EntityVariantConstants.Person,
+        }
+    };
+
     #endregion
 
     #region Systemusers

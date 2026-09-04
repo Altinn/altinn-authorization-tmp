@@ -6,7 +6,7 @@ using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.ProblemDetails;
 
@@ -56,7 +56,7 @@ public class InputValidation(
                     }                    
                 }
 
-                if (toEntity.TypeId == EntityTypeConstants.Person.Entity.Id && toEntity.DateOfDeath is not null)
+                if (toEntity.IsDeceasedPerson())
                 {
                     errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, "Person not available for delegation (deceased).")]);
                 }
@@ -132,7 +132,7 @@ public class InputValidation(
                     var entity = await entityService.GetEntity(value, cancellationToken);
                     if (entity is { })
                     {
-                        if (entity.TypeId == EntityTypeConstants.Person && entity.DateOfDeath is not null)
+                        if (entity.IsDeceasedPerson())
                         {
                             errorBuilder.Add(ValidationErrors.InvalidExternalIdentifiers, [$"/{nameof(person.PersonIdentifier)}", $"/{nameof(person.LastName)}"], [new("personInput", "Person not available for delegation (deceased).")]);
                         }

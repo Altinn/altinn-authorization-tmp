@@ -50,6 +50,7 @@ public class UserProfileLookupServiceMock : IUserProfileLookupService
         AddIfPerson(lookup, TestData.BodilFarmor);
         AddIfPerson(lookup, TestData.PadmeAmidala);
         AddIfPerson(lookup, TestEntities.PersonMargit);
+        AddIfPerson(lookup, TestEntities.PersonOddvar);
         return lookup;
     }
 
