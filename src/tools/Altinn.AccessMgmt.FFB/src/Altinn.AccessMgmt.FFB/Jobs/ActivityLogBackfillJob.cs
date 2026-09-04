@@ -89,6 +89,69 @@ public static class ActivityLogBackfillJob
         run.AddLog("Backfill run finished.");
     }
 
+    /// <summary>
+    /// Read-only dry run: counts what a backfill run would insert per source and trigger,
+    /// using the exact same version-chain semantics, cutoff and anti-join as the real job.
+    /// Writes nothing — no staging table, no progress updates.
+    /// </summary>
+    public static async Task AnalyzeAsync(DuoRepo repo, JobRun run, string source, CancellationToken ct)
+    {
+        var sources = string.Equals(source, "all", StringComparison.OrdinalIgnoreCase)
+            ? Sources
+            : Sources.Where(s => string.Equals(s, source, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (sources.Count == 0)
+        {
+            run.AddLog($"Unknown source '{source}'. Valid: all, {string.Join(", ", Sources)}", isError: true);
+            return;
+        }
+
+        run.AddLog($"Activity log backfill analysis — sources: {string.Join(", ", sources)}. Counts what a backfill run would insert; nothing is written.");
+
+        long grandTotal = 0;
+
+        foreach (var s in sources)
+        {
+            ct.ThrowIfCancellationRequested();
+            grandTotal += await AnalyzeSourceAsync(repo, run, s, ct);
+        }
+
+        run.AddLog($"Analysis finished — {grandTotal:N0} events would be inserted in total.");
+    }
+
+    private static async Task<long> AnalyzeSourceAsync(DuoRepo repo, JobRun run, string source, CancellationToken ct)
+    {
+        await using var conn = repo.CreateAccConnection();
+        await conn.OpenAsync(ct);
+
+        var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? Cursor, DateTime? CompletedAt)>(new CommandDefinition(
+            "SELECT cutoff, \"cursor\", completedat FROM dbo.activitylogbackfillprogress WHERE source = @source;",
+            new { source },
+            cancellationToken: ct));
+
+        if (progress == default)
+        {
+            run.AddLog($"[{source}] no progress row found — was the ActivityLog migration applied?", isError: true);
+            return 0;
+        }
+
+        var completedNote = progress.CompletedAt is not null ? $"; marked completed {progress.CompletedAt:u}" : string.Empty;
+
+        var perTrigger = (await conn.QueryAsync<(int Trigger, long Count)>(new CommandDefinition(
+            AnalyzeSql(source),
+            new { cutoff = progress.Cutoff },
+            commandTimeout: 0,
+            cancellationToken: ct))).ToDictionary(t => t.Trigger, t => t.Count);
+
+        var created = perTrigger.GetValueOrDefault(1);
+        var updated = perTrigger.GetValueOrDefault(2);
+        var deleted = perTrigger.GetValueOrDefault(3);
+        var total = created + updated + deleted;
+
+        run.AddLog($"[{source}] {total:N0} events would be inserted — Created {created:N0}, Updated {updated:N0}, Deleted {deleted:N0} (cutoff {progress.Cutoff:u}{completedNote}).");
+        return total;
+    }
+
     private static async Task<int> BackfillSourceAsync(DuoRepo repo, JobRun run, string source, int batchSize, int delayMs, int budget, CancellationToken ct)
     {
         await using var conn = repo.CreateAccConnection();
@@ -199,13 +262,31 @@ public static class ActivityLogBackfillJob
     /// Builds the CREATE TEMP TABLE statement that stages every backfill event for one source
     /// table. The event branches mirror the trigger mappings in ActivityLogTriggerScripts.
     /// </summary>
-    public static string StageSql(string source) => source switch
+    public static string StageSql(string source)
     {
-        "assignment" => Stage(
-            table: "assignment",
-            dataColumns: "id, fromid, toid, roleid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        var (table, dataColumns, leadColumns, eventBranches) = Parts(source);
+        return Stage(table, dataColumns, leadColumns, eventBranches);
+    }
+
+    /// <summary>
+    /// Builds the read-only count statement for one source table: the same version chain,
+    /// event branches, cutoff and anti-join as <see cref="StageSql"/>, but grouped per trigger
+    /// and without the temp table and name resolution — so the counts match exactly what a
+    /// backfill run would insert.
+    /// </summary>
+    public static string AnalyzeSql(string source)
+    {
+        var (table, dataColumns, leadColumns, eventBranches) = Parts(source);
+        return Analyze(table, dataColumns, leadColumns, eventBranches);
+    }
+
+    private static (string Table, string DataColumns, string LeadColumns, string EventBranches) Parts(string source) => source switch
+    {
+        "assignment" => (
+            Table: "assignment",
+            DataColumns: "id, fromid, toid, roleid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        1 AS type, NULL::int AS subtype, NULL::int AS status,
@@ -225,11 +306,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "assignmentpackage" => Stage(
-            table: "assignmentpackage",
-            dataColumns: "id, assignmentid, packageid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "assignmentpackage" => (
+            Table: "assignmentpackage",
+            DataColumns: "id, assignmentid, packageid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        1 AS type, 1 AS subtype, NULL::int AS status,
@@ -251,11 +332,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "assignmentresource" => Stage(
-            table: "assignmentresource",
-            dataColumns: "id, assignmentid, resourceid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "assignmentresource" => (
+            Table: "assignmentresource",
+            DataColumns: "id, assignmentid, resourceid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        1 AS type, 2 AS subtype, NULL::int AS status,
@@ -277,17 +358,17 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "assignmentinstance" => Stage(
-            table: "assignmentinstance",
-            dataColumns: "id, assignmentid, resourceid, instanceid",
-            leadColumns: """
+        "assignmentinstance" => (
+            Table: "assignmentinstance",
+            DataColumns: "id, assignmentid, resourceid, instanceid",
+            LeadColumns: """
                 ,
                        lead(assignmentid) OVER w AS next_assignmentid,
                        lead(audit_changedby) OVER w AS next_changedby,
                        lead(audit_changedbysystem) OVER w AS next_changedbysystem,
                        lead(audit_changeoperation) OVER w AS next_changeoperation
                 """,
-            eventBranches: """
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        1 AS type, 3 AS subtype, NULL::int AS status,
@@ -320,11 +401,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "delegation" => Stage(
-            table: "delegation",
-            dataColumns: "id, fromid, toid, facilitatorid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "delegation" => (
+            Table: "delegation",
+            DataColumns: "id, fromid, toid, facilitatorid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        2 AS type, NULL::int AS subtype, NULL::int AS status,
@@ -348,11 +429,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "delegationpackage" => Stage(
-            table: "delegationpackage",
-            dataColumns: "id, delegationid, packageid, rolepackageid, assignmentpackageid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "delegationpackage" => (
+            Table: "delegationpackage",
+            DataColumns: "id, delegationid, packageid, rolepackageid, assignmentpackageid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        2 AS type, 1 AS subtype, NULL::int AS status,
@@ -380,11 +461,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "delegationresource" => Stage(
-            table: "delegationresource",
-            dataColumns: "id, delegationid, resourceid, assignmentresourceid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "delegationresource" => (
+            Table: "delegationresource",
+            DataColumns: "id, delegationid, resourceid, assignmentresourceid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        2 AS type, 2 AS subtype, NULL::int AS status,
@@ -412,11 +493,11 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "requestassignment" => Stage(
-            table: "requestassignment",
-            dataColumns: "id, fromid, toid, roleid, byid AS requestedbyid",
-            leadColumns: string.Empty,
-            eventBranches: """
+        "requestassignment" => (
+            Table: "requestassignment",
+            DataColumns: "id, fromid, toid, roleid, byid AS requestedbyid",
+            LeadColumns: string.Empty,
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        3 AS type, NULL::int AS subtype, NULL::int AS status,
@@ -438,17 +519,17 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "requestassignmentpackage" => Stage(
-            table: "requestassignmentpackage",
-            dataColumns: "id, assignmentid, packageid, status",
-            leadColumns: """
+        "requestassignmentpackage" => (
+            Table: "requestassignmentpackage",
+            DataColumns: "id, assignmentid, packageid, status",
+            LeadColumns: """
                 ,
                        lead(status) OVER w AS next_status,
                        lead(audit_changedby) OVER w AS next_changedby,
                        lead(audit_changedbysystem) OVER w AS next_changedbysystem,
                        lead(audit_changeoperation) OVER w AS next_changeoperation
                 """,
-            eventBranches: """
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        3 AS type, 1 AS subtype, c.status AS status,
@@ -483,17 +564,17 @@ public static class ActivityLogBackfillJob
                 WHERE c.verno = c.vercount AND NOT c.is_live
                 """),
 
-        "requestassignmentresource" => Stage(
-            table: "requestassignmentresource",
-            dataColumns: "id, assignmentid, resourceid, action, status",
-            leadColumns: """
+        "requestassignmentresource" => (
+            Table: "requestassignmentresource",
+            DataColumns: "id, assignmentid, resourceid, action, status",
+            LeadColumns: """
                 ,
                        lead(status) OVER w AS next_status,
                        lead(audit_changedby) OVER w AS next_changedby,
                        lead(audit_changedbysystem) OVER w AS next_changedbysystem,
                        lead(audit_changeoperation) OVER w AS next_changeoperation
                 """,
-            eventBranches: """
+            EventBranches: """
                 SELECT 1 AS ev_trigger, c.audit_validfrom AS ev_when,
                        c.audit_changedby AS byid, c.audit_changedbysystem AS sourceid, c.audit_changeoperation AS operationid,
                        3 AS type, 2 AS subtype, c.status AS status,
@@ -531,8 +612,7 @@ public static class ActivityLogBackfillJob
         _ => throw new ArgumentException($"Unknown activity log backfill source '{source}'.", nameof(source)),
     };
 
-    private static string Stage(string table, string dataColumns, string leadColumns, string eventBranches) => $"""
-        CREATE TEMP TABLE alstage AS
+    private static string VersionChain(string table, string dataColumns, string leadColumns) => $"""
         WITH versions AS (
             SELECT {dataColumns}, audit_validfrom, NULL::timestamptz AS audit_validto,
                    audit_changedby, audit_changedbysystem, audit_changeoperation,
@@ -552,7 +632,26 @@ public static class ActivityLogBackfillJob
                    count(*) OVER (PARTITION BY id) AS vercount{leadColumns}
             FROM versions v
             WINDOW w AS (PARTITION BY id ORDER BY audit_validfrom, audit_validto NULLS LAST, is_live)
-        ),
+        )
+        """;
+
+    private static string Analyze(string table, string dataColumns, string leadColumns, string eventBranches) => $"""
+        {VersionChain(table, dataColumns, leadColumns)},
+        events AS (
+        {eventBranches}
+        )
+        SELECT e.ev_trigger AS trigger, count(*) AS count
+        FROM events e
+        WHERE e.ev_when < @cutoff
+          AND NOT EXISTS (
+              SELECT 1 FROM dbo.activitylog al
+              WHERE al.itemid = e.itemid AND al."trigger" = e.ev_trigger AND al."when" = e.ev_when)
+        GROUP BY e.ev_trigger;
+        """;
+
+    private static string Stage(string table, string dataColumns, string leadColumns, string eventBranches) => $"""
+        CREATE TEMP TABLE alstage AS
+        {VersionChain(table, dataColumns, leadColumns)},
         events AS (
         {eventBranches}
         )

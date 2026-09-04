@@ -47,6 +47,9 @@ public interface IJobRunner
     /// </summary>
     JobRun StartActivityLogBackfill(string environment, ActivityLogBackfillOptions opts);
 
+    /// <summary>Read-only analysis of what a backfill run would insert, per source and trigger.</summary>
+    JobRun StartActivityLogAnalyze(string environment, string source);
+
     /// <summary>Ensures monthly partitions exist ahead of time for dbo.activitylog.</summary>
     JobRun StartActivityLogPartitions(string environment, ActivityLogPartitionOptions opts);
 
@@ -256,6 +259,19 @@ public sealed class JobRunner(
         {
             var repo = CreateAccRepo(environment);
             await ActivityLogBackfillJob.RunAsync(repo, run, opts, ct);
+        });
+
+        return run;
+    }
+
+    public JobRun StartActivityLogAnalyze(string environment, string source)
+    {
+        var run = CreateRun($"{ActivityLogBackfillJob.JobName}:analyze:{source}", environment);
+
+        FireAndForget(run, async ct =>
+        {
+            var repo = CreateAccRepo(environment);
+            await ActivityLogBackfillJob.AnalyzeAsync(repo, run, source, ct);
         });
 
         return run;
