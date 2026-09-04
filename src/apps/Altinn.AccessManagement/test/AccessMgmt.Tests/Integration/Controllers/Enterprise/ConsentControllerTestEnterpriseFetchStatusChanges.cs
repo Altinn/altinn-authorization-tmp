@@ -298,9 +298,12 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
             PaginatedResult<ConsentStatusChangeDto> result = JsonSerializer.Deserialize<PaginatedResult<ConsentStatusChangeDto>>(
                 await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
-            ConsentStatusChangeDto statusChange = Assert.Single(result.Items);
-            Assert.Equal(consentRequestId, statusChange.ConsentRequestId);
-            Assert.Equal("accepted", statusChange.EventType, ignoreCase: true);
+            Assert.Equal(2, result.Items.Count()); // created + accepted
+            Assert.All(result.Items, item => Assert.Equal(consentRequestId, item.ConsentRequestId));
+
+            var eventTypes = result.Items.Select(i => i.EventType).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            Assert.Contains("created", eventTypes);
+            Assert.Contains("accepted", eventTypes);
         }
 
         /// <summary>
@@ -886,7 +889,7 @@ namespace Altinn.AccessManagement.Tests.Integration.Controllers.Enterprise
 
         /// <summary>
         /// Creates a consent request with <paramref name="handledByOrgNumber"/> as the HandledBy party and
-        /// accepts it as the From party, so the request has one non-created event to fetch.
+        /// accepts it as the From party, so the request has a created and an accepted event to fetch.
         /// </summary>
         /// <param name="toOrgNumber">Organization number of the To party</param>
         /// <param name="handledByOrgNumber">Organization number of the supplier that becomes HandledBy</param>

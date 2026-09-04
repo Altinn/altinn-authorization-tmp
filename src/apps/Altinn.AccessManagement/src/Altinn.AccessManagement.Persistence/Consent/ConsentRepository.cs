@@ -621,7 +621,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             const string consentChangesQuery = @"WITH reqs AS MATERIALIZED (
                                             SELECT consentrequestid
                                             FROM consent.consentrequest
-                                            WHERE topartyuuid = @partyUuid
+                                            WHERE topartyuuid = @partyUuid OR handledbypartyuuid = @partyUuid
                                         )
                                         SELECT
                                         ce.consentrequestid,
@@ -631,8 +631,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                                         FROM consent.consentevent ce
                                         JOIN reqs ON reqs.consentrequestid = ce.consentrequestid
                                         WHERE
-                                        (cr.topartyuuid = @partyUuid OR cr.handledbypartyuuid = @partyUuid)                                        
-                                        AND ce.consenteventid < @uuid7SafetyBound
+                                        ce.consenteventid < @uuid7SafetyBound
                                         AND (@consentRequestId IS NULL OR ce.consentrequestid = @consentRequestId)
                                         AND (@eventTypes      IS NULL OR ce.eventtype = ANY(@eventTypes::consent.event_type[]))
                                         AND (@createdAfter     IS NULL OR ce.created >= @createdAfter)
