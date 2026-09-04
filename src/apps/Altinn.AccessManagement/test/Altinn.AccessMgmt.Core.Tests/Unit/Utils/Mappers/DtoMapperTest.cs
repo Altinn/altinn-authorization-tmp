@@ -820,7 +820,7 @@ public class DtoMapperTest
         dto.Should().BeNull();
     }
 
-    // ── RequestMapper — ConvertToNamedPartyOrStub ───────────────────────────────
+    // ── RequestMapper — ConvertToPartyReferenceOrStub ───────────────────────
 
     /// <summary>
     /// LastUpdatedBy names the access manager who handled a request. The design in #3884 says
@@ -828,12 +828,12 @@ public class DtoMapperTest
     /// carry the identifiers that ConvertToIdentifiedParty does.
     /// </summary>
     [Fact]
-    public void ConvertToNamedPartyOrStub_MapsIdAndName()
+    public void ConvertToPartyReferenceOrStub_MapsIdAndName()
     {
         var entity = MakeEntity("Selma Blikklag Johansen");
         entity.PersonIdentifier = "12345678901";
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity, fallbackId: null);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyReferenceOrStub(entity, fallbackId: null);
 
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(entity.Id);
@@ -852,11 +852,11 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void ConvertToNamedPartyOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
+    public void ConvertToPartyReferenceOrStub_NullEntity_WithFallback_ReturnsStubWithFallbackId()
     {
         var fallbackId = Guid.NewGuid();
 
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity: null, fallbackId);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyReferenceOrStub(entity: null, fallbackId);
 
         dto.Should().NotBeNull();
         dto!.Id.Should().Be(fallbackId);
@@ -864,9 +864,9 @@ public class DtoMapperTest
     }
 
     [Fact]
-    public void ConvertToNamedPartyOrStub_NullEntity_NullFallback_ReturnsNull()
+    public void ConvertToPartyReferenceOrStub_NullEntity_NullFallback_ReturnsNull()
     {
-        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToNamedPartyOrStub(entity: null, fallbackId: null);
+        var dto = Altinn.AccessMgmt.Core.Utils.DtoMapper.ConvertToPartyReferenceOrStub(entity: null, fallbackId: null);
 
         dto.Should().BeNull();
     }

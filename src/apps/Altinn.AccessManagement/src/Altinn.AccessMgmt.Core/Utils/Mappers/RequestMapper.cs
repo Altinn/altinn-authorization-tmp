@@ -18,7 +18,7 @@ public partial class DtoMapper : IDtoMapper
             Id = request.Id,
             Type = "package",
             LastUpdated = request.Audit_ValidFrom,
-            LastUpdatedBy = ConvertToNamedPartyOrStub(request.LastUpdatedBy, request.Audit_ChangedBy),
+            LastUpdatedBy = ConvertToPartyReferenceOrStub(request.LastUpdatedBy, request.Audit_ChangedBy),
             From = ConvertToIdentifiedParty(request.Assignment.From),
             To = ConvertToIdentifiedParty(request.Assignment.To),
             By = ConvertToIdentifiedPartyOrStub(request.Assignment.By, request.Assignment.ById),
@@ -34,7 +34,7 @@ public partial class DtoMapper : IDtoMapper
             Id = request.Id,
             Type = "resource",
             LastUpdated = request.Audit_ValidFrom,
-            LastUpdatedBy = ConvertToNamedPartyOrStub(request.LastUpdatedBy, request.Audit_ChangedBy),
+            LastUpdatedBy = ConvertToPartyReferenceOrStub(request.LastUpdatedBy, request.Audit_ChangedBy),
             From = ConvertToIdentifiedParty(request.Assignment.From),
             To = ConvertToIdentifiedParty(request.Assignment.To),
             By = ConvertToIdentifiedPartyOrStub(request.Assignment.By, request.Assignment.ById),
@@ -46,7 +46,7 @@ public partial class DtoMapper : IDtoMapper
     /// <summary>
     /// Maps a party the caller is entitled to identify, including its organisation number or
     /// national identity number. Only use this where the caller is itself a party to what the
-    /// DTO describes; for anyone else use <see cref="ConvertToNamedPartyOrStub"/>.
+    /// DTO describes; for anyone else use <see cref="ConvertToPartyReferenceOrStub"/>.
     /// </summary>
     public static PartyEntityDto ConvertToIdentifiedParty(Entity entity)
     {
@@ -80,7 +80,7 @@ public partial class DtoMapper : IDtoMapper
     /// LastUpdatedBy, because the design in #3884 states that whoever sent a request must not
     /// learn which individual in the receiving organisation is its access manager.
     /// </summary>
-    public static PartyReferenceDto? ConvertToNamedPartyOrStub(Entity? entity, Guid? fallbackId)
+    public static PartyReferenceDto? ConvertToPartyReferenceOrStub(Entity? entity, Guid? fallbackId)
     {
         if (entity is not null)
         {
