@@ -16,6 +16,12 @@ public sealed record ActivityLogQueryFilter
     public IReadOnlyCollection<Guid> InvolvedIds { get; init; }
 
     /// <summary>
+    /// Gets the collection of party identifiers that must appear in the entry as from, to,
+    /// via or the acting entity (by).
+    /// </summary>
+    public IReadOnlyCollection<Guid> AnyPartyIds { get; init; }
+
+    /// <summary>
     /// Gets the collection of main record types.
     /// </summary>
     public IReadOnlyCollection<ActivityLogType> Types { get; init; }
@@ -110,6 +116,7 @@ public sealed record ActivityLogQueryFilter
     /// </summary>
     public bool HasAny =>
         InvolvedIds?.Count > 0 ||
+        AnyPartyIds?.Count > 0 ||
         FromIds?.Count > 0 ||
         ToIds?.Count > 0 ||
         ViaIds?.Count > 0 ||

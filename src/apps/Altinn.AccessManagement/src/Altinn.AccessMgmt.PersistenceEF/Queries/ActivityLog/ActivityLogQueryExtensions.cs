@@ -25,6 +25,26 @@ internal static class ActivityLogQueryExtensions
             (t.ViaId.HasValue && ids.Contains(t.ViaId.Value)));
     }
 
+    internal static IQueryable<ActivityLog> AnyPartyIdContains(this IQueryable<ActivityLog> query, HashSet<Guid> ids)
+    {
+        if (ids is null || ids.Count == 0)
+        {
+            return query;
+        }
+
+        if (ids.Count == 1)
+        {
+            var id = ids.First();
+            return query.Where(t => t.FromId == id || t.ToId == id || t.ViaId == id || t.ById == id);
+        }
+
+        return query.Where(t =>
+            (t.FromId.HasValue && ids.Contains(t.FromId.Value)) ||
+            (t.ToId.HasValue && ids.Contains(t.ToId.Value)) ||
+            (t.ViaId.HasValue && ids.Contains(t.ViaId.Value)) ||
+            (t.ById.HasValue && ids.Contains(t.ById.Value)));
+    }
+
     internal static IQueryable<ActivityLog> TypeContains(this IQueryable<ActivityLog> query, HashSet<ActivityLogType> values)
     {
         if (values is null || values.Count == 0)

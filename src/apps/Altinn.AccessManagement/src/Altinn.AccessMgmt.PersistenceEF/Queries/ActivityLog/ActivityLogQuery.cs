@@ -50,6 +50,7 @@ public sealed class ActivityLogQuery(AppDbContext db)
     {
         return db.ActivityLogs
             .InvolvedIdContains(ToSet(filter.InvolvedIds))
+            .AnyPartyIdContains(ToSet(filter.AnyPartyIds))
             .TypeContains(ToSet(filter.Types))
             .SubtypeContains(ToSet(filter.Subtypes))
             .TriggerContains(ToSet(filter.Triggers))

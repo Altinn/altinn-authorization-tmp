@@ -19,6 +19,24 @@
 
 @* ── Filter bar ────────────────────────────────────────────────────────────── *@
 <MudPaper Elevation="1" Class="pa-3 mb-4">
+    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="4" AlignItems="AlignItems.Center">
+        <div style="min-width: 320px;">
+            <EntityLookupField Label="Party" Value="_partyId" ValueChanged="OnPartyChanged" />
+        </div>
+        <MudRadioGroup T="PartyDirection" Value="_direction" ValueChanged="OnDirectionChanged">
+            <MudRadio T="PartyDirection" Value="PartyDirection.From" Dense="true">Gitt til andre</MudRadio>
+            <MudRadio T="PartyDirection" Value="PartyDirection.To" Dense="true">Mottatt av andre</MudRadio>
+            <MudRadio T="PartyDirection" Value="PartyDirection.Via" Dense="true">Fasilitert</MudRadio>
+            <MudRadio T="PartyDirection" Value="PartyDirection.By" Dense="true">Utført av</MudRadio>
+            <MudRadio T="PartyDirection" Value="PartyDirection.All" Dense="true">Alt</MudRadio>
+        </MudRadioGroup>
+    </MudStack>
+    <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mb-2">
+        Party ankrer loggen: retningen styrer hvilken side parten må stå på i hver hendelse.
+        Filtrene under snevrer inn videre.
+    </MudText>
+    <MudDivider Class="mb-3" />
+
     <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" AlignItems="AlignItems.Center">
 
         @foreach (var dim in _active)
@@ -89,6 +107,8 @@
                                OnClick="@(() => _editing = null)" />
             </MudStack>
 
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@DimensionHint(editing)</MudText>
+
             @switch (editing)
             {
                 case FilterDim.From:
@@ -135,11 +155,15 @@
                     break;
 
                 case FilterDim.Trigger:
-                    @EnumCheckboxes(_triggers)
-                    break;
-
-                case FilterDim.Status:
-                    @EnumCheckboxes(_statuses)
+                    <MudStack Spacing="1">
+                        @EnumCheckboxes(_triggers)
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary mt-2">
+                            Forespørselsstatus (kun Request-hendelser)
+                        </MudText>
+                        <div class="pl-4">
+                            @EnumCheckboxes(_statuses)
+                        </div>
+                    </MudStack>
                     break;
 
                 case FilterDim.Source:
@@ -280,132 +304,33 @@
 @* ── Results ───────────────────────────────────────────────────────────────── *@
 @if (_items is not null)
 {
-    <MudText Typo="Typo.body2" Class="mb-2 mud-text-secondary">
-        @(_hasMore ? $"Mer enn {_items.Count} hendelser" : $"{_items.Count} hendelser")
-    </MudText>
+    <MudStack Row="true" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Spacing="3" Class="mb-2">
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+            @(_hasMore ? $"Mer enn {_items.Count} hendelser" : $"{_items.Count} hendelser")
+        </MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Class="mud-text-secondary">Gruppering</MudText>
+        <MudRadioGroup T="GroupMode" Value="_grouping" ValueChanged="@(m => _grouping = m)">
+            <MudRadio T="GroupMode" Value="GroupMode.None" Dense="true">Ingen</MudRadio>
+            <MudRadio T="GroupMode" Value="GroupMode.Operation" Dense="true">Operasjon</MudRadio>
+            <MudRadio T="GroupMode" Value="GroupMode.Parent" Dense="true">Parent</MudRadio>
+        </MudRadioGroup>
+    </MudStack>
 
-    <MudDataGrid T="PersistedActivityLog"
-                 Items="_items"
-                 Dense="true"
-                 Hover="true"
-                 Striped="true"
-                 FixedHeader="true"
-                 Height="620px"
-                 SortMode="SortMode.None">
-        <Columns>
-
-            <HierarchyColumn T="PersistedActivityLog" />
-
-            <TemplateColumn Title="Når">
-                <CellTemplate>
-                    <MudText Typo="Typo.body2">@context.Item.When.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudText>
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Hendelse">
-                <CellTemplate>
-                    <MudChip T="string" Size="Size.Small" Color="@TriggerColor(context.Item.Trigger)">
-                        @context.Item.Trigger
-                    </MudChip>
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Type">
-                <CellTemplate>
-                    <MudChip T="string" Size="Size.Small" Color="@TypeColor(context.Item.Type)" Variant="Variant.Outlined">
-                        @context.Item.Type@(context.Item.Subtype is not null ? $"/{context.Item.Subtype}" : string.Empty)
-                    </MudChip>
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Fra">
-                <CellTemplate>
-                    @if (context.Item.FromId is not null)
-                    {
-                        <MudLink Href="@($"/entity/{context.Item.FromId}")" Typo="Typo.body2">
-                            @(context.Item.FromName ?? context.Item.FromId.ToString())
-                        </MudLink>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Til">
-                <CellTemplate>
-                    @if (context.Item.ToId is not null)
-                    {
-                        <MudLink Href="@($"/entity/{context.Item.ToId}")" Typo="Typo.body2">
-                            @(context.Item.ToName ?? context.Item.ToId.ToString())
-                        </MudLink>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Via">
-                <CellTemplate>
-                    @if (context.Item.ViaId is not null)
-                    {
-                        <MudText Typo="Typo.body2">@(context.Item.ViaName ?? context.Item.ViaId.ToString())</MudText>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Rolle">
-                <CellTemplate>
-                    <MudText Typo="Typo.body2">@context.Item.RoleName</MudText>
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Objekt">
-                <CellTemplate>
-                    <MudText Typo="Typo.body2">@ObjectLabel(context.Item)</MudText>
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Status">
-                <CellTemplate>
-                    @if (context.Item.Status is not null)
-                    {
-                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
-                            @context.Item.Status
-                        </MudChip>
-                    }
-                </CellTemplate>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Utført av">
-                <CellTemplate>
-                    <MudText Typo="Typo.body2">@(context.Item.ByName ?? context.Item.ById?.ToString())</MudText>
-                </CellTemplate>
-            </TemplateColumn>
-
-        </Columns>
-
-        <ChildRowContent>
-            <MudPaper Elevation="0" Class="pa-3 mud-background-gray">
-                <MudStack Spacing="1">
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                        Kilde: @SourceLabel(context.Item.SourceId) — Operasjon: @context.Item.OperationId
-                    </MudText>
-                    <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                        ItemId: @context.Item.ItemId@(context.Item.ParentId is not null ? $" — ParentId: {context.Item.ParentId}" : string.Empty)
-                    </MudText>
-                    @if (context.Item.ViaRoleName is not null)
-                    {
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            Via-rolle: @context.Item.ViaRoleName
-                        </MudText>
-                    }
-                    @if (context.Item.Details is not null)
-                    {
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
-                            Detaljer: <code>@context.Item.Details</code>
-                        </MudText>
-                    }
-                </MudStack>
+    @if (_grouping != GroupMode.None)
+    {
+        @foreach (var group in GroupedItems())
+        {
+            <MudPaper Elevation="1" Class="mb-3">
+                <MudText Typo="Typo.subtitle2" Class="pa-3 pb-1">@group.Header</MudText>
+                @ResultsGrid(group.Items, false)
             </MudPaper>
-        </ChildRowContent>
-
-    </MudDataGrid>
+        }
+    }
+    else
+    {
+        @ResultsGrid(_items, true)
+    }
 
     @if (_hasMore)
     {
@@ -433,7 +358,6 @@
         Type,
         Subtype,
         Trigger,
-        Status,
         Source,
         Role,
         Package,
@@ -448,7 +372,7 @@
     [
         [FilterDim.From, FilterDim.To, FilterDim.Via, FilterDim.By],
         [FilterDim.Date],
-        [FilterDim.Type, FilterDim.Subtype, FilterDim.Trigger, FilterDim.Status, FilterDim.Source],
+        [FilterDim.Type, FilterDim.Subtype, FilterDim.Trigger, FilterDim.Source],
         [FilterDim.Role, FilterDim.Package, FilterDim.Resource, FilterDim.Instance],
         [FilterDim.Operation, FilterDim.Item, FilterDim.Parent],
     ];
@@ -463,7 +387,6 @@
         FilterDim.Type => "Type",
         FilterDim.Subtype => "Subtype",
         FilterDim.Trigger => "Hendelse",
-        FilterDim.Status => "Status",
         FilterDim.Source => "Kilde",
         FilterDim.Role => "Rolle",
         FilterDim.Package => "Pakke",
@@ -482,7 +405,6 @@
         FilterDim.Type => "typer",
         FilterDim.Subtype => "subtyper",
         FilterDim.Trigger => "hendelser",
-        FilterDim.Status => "statuser",
         FilterDim.Source => "kilder",
         FilterDim.Role => "roller",
         FilterDim.Package => "pakker",
@@ -494,10 +416,84 @@
         _ => "valgt",
     };
 
+    private static string DimensionHint(FilterDim dim) => dim switch
+    {
+        FilterDim.From => "Parten tilgangen er gitt fra (avgiver).",
+        FilterDim.To => "Parten tilgangen er gitt til (rettighetshaver/mottaker).",
+        FilterDim.Via => "Fasilitatoren delegeringen går via (f.eks. regnskapsfører).",
+        FilterDim.By => "Entiteten som utførte endringen — person, systembruker eller internt system.",
+        FilterDim.Date => "Avgrenser på hendelsestidspunktet (fra og med / til og med valgt dag).",
+        FilterDim.Type => "Hovedtypen hendelsen gjelder.",
+        FilterDim.Subtype => "Undertype på tvers av hovedtypene — Package matcher f.eks. både Assignment-, Delegation- og RequestPackage.",
+        FilterDim.Trigger => "Hva som skjedde. Status settes på Request-hendelser: initialstatus ved Created, ny status ved Updated, siste status ved Deleted.",
+        FilterDim.Source => "Systemet/kanalen endringen kom gjennom.",
+        FilterDim.Role => "Hendelser der tilgangen gjelder valgt(e) rolle(r).",
+        FilterDim.Package => "Hendelser som gjelder valgt(e) tilgangspakke(r).",
+        FilterDim.Resource => "Hendelser som gjelder valgt(e) ressurs(er).",
+        FilterDim.Instance => "Instans-URN, f.eks. urn:altinn:instance-id:… .",
+        FilterDim.Operation => "Alle hendelser skrevet av samme operasjon (trace-id) — én brukerhandling.",
+        FilterDim.Item => "Rad-id-en til det berørte objektet (teknisk).",
+        FilterDim.Parent => "Hovedradens id, f.eks. AssignmentId for en pakkehendelse.",
+        _ => string.Empty,
+    };
+
     // ── Filter state ──────────────────────────────────────────────────────────
 
     private readonly List<FilterDim> _active = [];
     private FilterDim? _editing;
+
+    // ── Party anchor ──────────────────────────────────────────────────────────
+
+    private enum PartyDirection
+    {
+        All,
+        From,
+        To,
+        Via,
+        By,
+    }
+
+    private Guid? _partyId;
+    private PartyDirection _direction = PartyDirection.All;
+
+    private void OnPartyChanged(Guid? value)
+    {
+        _partyId = value;
+        if (value is { } id)
+        {
+            _ = ResolveEntityNameAsync(id);
+        }
+
+        PurgeAnchoredDimension();
+        ScheduleQuery();
+    }
+
+    private void OnDirectionChanged(PartyDirection value)
+    {
+        _direction = value;
+        PurgeAnchoredDimension();
+        ScheduleQuery();
+    }
+
+    private void PurgeAnchoredDimension()
+    {
+        if (_partyId.HasValue && AnchoredDim() is { } dim && _active.Contains(dim))
+        {
+            RemoveDimension(dim);
+        }
+    }
+
+    private FilterDim? AnchoredDim() => _direction switch
+    {
+        PartyDirection.From => FilterDim.From,
+        PartyDirection.To => FilterDim.To,
+        PartyDirection.Via => FilterDim.Via,
+        PartyDirection.By => FilterDim.By,
+        _ => null,
+    };
+
+    private IReadOnlyCollection<Guid>? AnchoredOrList(FilterDim dim, PartyDirection direction) =>
+        _partyId is { } party && _direction == direction ? [party] : ListOrNull(dim);
 
     private readonly Dictionary<FilterDim, List<Guid>> _guidValues = [];
     private readonly Dictionary<FilterDim, List<string>> _textValues = [];
@@ -545,7 +541,8 @@
 
     // ── Chip bar ──────────────────────────────────────────────────────────────
 
-    private bool Available(FilterDim dim) => !_active.Contains(dim);
+    private bool Available(FilterDim dim) =>
+        !_active.Contains(dim) && !(_partyId.HasValue && dim == AnchoredDim());
 
     private void AddDimension(FilterDim dim)
     {
@@ -596,8 +593,6 @@
                 break;
             case FilterDim.Trigger:
                 ResetEnum(_triggers);
-                break;
-            case FilterDim.Status:
                 ResetEnum(_statuses);
                 break;
             case FilterDim.Instance:
@@ -656,9 +651,30 @@
             case FilterDim.Subtype:
                 return EnumChipLabel(dim, _subtypes);
             case FilterDim.Trigger:
-                return EnumChipLabel(dim, _triggers);
-            case FilterDim.Status:
-                return EnumChipLabel(dim, _statuses);
+            {
+                var triggers = _triggers.Where(kv => kv.Value).Select(kv => kv.Key.ToString()).ToList();
+                var statuses = _statuses.Where(kv => kv.Value).Select(kv => kv.Key.ToString()).ToList();
+                var parts = new List<string>();
+                if (triggers.Count == 1)
+                {
+                    parts.Add(triggers[0]);
+                }
+                else if (triggers.Count > 1)
+                {
+                    parts.Add($"{triggers.Count} hendelser");
+                }
+
+                if (statuses.Count == 1)
+                {
+                    parts.Add(statuses[0]);
+                }
+                else if (statuses.Count > 1)
+                {
+                    parts.Add($"{statuses.Count} statuser");
+                }
+
+                return parts.Count > 0 ? string.Join(" · ", parts) : DimensionLabel(dim);
+            }
             case FilterDim.Instance:
             case FilterDim.Operation:
                 var texts = TextValues(dim);
@@ -921,6 +937,7 @@
     // ── Query ─────────────────────────────────────────────────────────────────
 
     private bool HasFilter =>
+        _partyId.HasValue ||
         GuidValues(FilterDim.From).Count > 0 ||
         GuidValues(FilterDim.To).Count > 0 ||
         GuidValues(FilterDim.Via).Count > 0 ||
@@ -990,10 +1007,11 @@
 
     private ActivityLogQueryFilter BuildFilter() => new()
     {
-        FromIds = ListOrNull(FilterDim.From),
-        ToIds = ListOrNull(FilterDim.To),
-        ViaIds = ListOrNull(FilterDim.Via),
-        ByIds = ListOrNull(FilterDim.By),
+        AnyPartyIds = _partyId is { } party && _direction == PartyDirection.All ? [party] : null,
+        FromIds = AnchoredOrList(FilterDim.From, PartyDirection.From),
+        ToIds = AnchoredOrList(FilterDim.To, PartyDirection.To),
+        ViaIds = AnchoredOrList(FilterDim.Via, PartyDirection.Via),
+        ByIds = AnchoredOrList(FilterDim.By, PartyDirection.By),
         SourceIds = ListOrNull(FilterDim.Source),
         RoleIds = ListOrNull(FilterDim.Role),
         PackageIds = ListOrNull(FilterDim.Package),
@@ -1028,6 +1046,218 @@
         var selected = values.Where(kv => kv.Value).Select(kv => kv.Key).ToList();
         return selected.Count > 0 ? selected : null;
     }
+
+    // ── Grouping and results ──────────────────────────────────────────────────
+
+    private enum GroupMode
+    {
+        None,
+        Operation,
+        Parent,
+    }
+
+    private GroupMode _grouping;
+
+    private IEnumerable<(string Header, List<PersistedActivityLog> Items)> GroupedItems()
+    {
+        if (_items is null)
+        {
+            yield break;
+        }
+
+        var groups = _grouping == GroupMode.Operation
+            ? _items.GroupBy(t => t.OperationId ?? t.ItemId.ToString())
+            : _items.GroupBy(t => (t.ParentId ?? t.ItemId).ToString());
+
+        foreach (var group in groups.OrderByDescending(g => g.Max(t => t.When)))
+        {
+            var items = group.OrderByDescending(t => t.When).ThenByDescending(t => t.Id).ToList();
+            var header = _grouping == GroupMode.Operation
+                ? $"Operasjon {Shorten(group.Key)} — {items.Count} hendelser — {items[0].When.ToLocalTime():yyyy-MM-dd HH:mm}"
+                : ParentHeader(group.Key, items);
+            yield return (header, items);
+        }
+    }
+
+    private static string ParentHeader(string key, List<PersistedActivityLog> items)
+    {
+        var main = items.FirstOrDefault(t => t.ParentId is null) ?? items[0];
+        var parties = main.FromName is not null || main.ToName is not null
+            ? $"{main.FromName ?? "?"} → {main.ToName ?? "?"} — "
+            : string.Empty;
+        return $"{main.Type} — {parties}{items.Count} hendelser ({key[..8]})";
+    }
+
+    private void FilterOnOperation(string operationId)
+    {
+        if (!_active.Contains(FilterDim.Operation))
+        {
+            _active.Add(FilterDim.Operation);
+        }
+
+        var list = TextValues(FilterDim.Operation);
+        if (!list.Contains(operationId))
+        {
+            list.Add(operationId);
+            ScheduleQuery();
+        }
+    }
+
+    private void FilterOnParent(Guid parentId)
+    {
+        if (!_active.Contains(FilterDim.Parent))
+        {
+            _active.Add(FilterDim.Parent);
+        }
+
+        var list = GuidValues(FilterDim.Parent);
+        if (!list.Contains(parentId))
+        {
+            list.Add(parentId);
+            ScheduleQuery();
+        }
+    }
+
+    private RenderFragment ResultsGrid(IReadOnlyList<PersistedActivityLog> items, bool fixedHeight) => __builder =>
+    {
+        <MudDataGrid T="PersistedActivityLog"
+                     Items="items"
+                     Dense="true"
+                     Hover="true"
+                     Striped="true"
+                     FixedHeader="@fixedHeight"
+                     Height="@(fixedHeight ? "620px" : null)"
+                     SortMode="SortMode.None">
+            <Columns>
+
+                <HierarchyColumn T="PersistedActivityLog" />
+
+                <TemplateColumn Title="Når">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.When.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Hendelse">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@TriggerColor(context.Item.Trigger)">
+                            @context.Item.Trigger
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Type">
+                    <CellTemplate>
+                        <MudChip T="string" Size="Size.Small" Color="@TypeColor(context.Item.Type)" Variant="Variant.Outlined">
+                            @context.Item.Type@(context.Item.Subtype is not null ? $"/{context.Item.Subtype}" : string.Empty)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Fra">
+                    <CellTemplate>
+                        @if (context.Item.FromId is not null)
+                        {
+                            <MudLink Href="@($"/entity/{context.Item.FromId}")" Typo="Typo.body2">
+                                @(context.Item.FromName ?? context.Item.FromId.ToString())
+                            </MudLink>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Til">
+                    <CellTemplate>
+                        @if (context.Item.ToId is not null)
+                        {
+                            <MudLink Href="@($"/entity/{context.Item.ToId}")" Typo="Typo.body2">
+                                @(context.Item.ToName ?? context.Item.ToId.ToString())
+                            </MudLink>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Via">
+                    <CellTemplate>
+                        @if (context.Item.ViaId is not null)
+                        {
+                            <MudText Typo="Typo.body2">@(context.Item.ViaName ?? context.Item.ViaId.ToString())</MudText>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Rolle">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.RoleName</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Objekt">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@ObjectLabel(context.Item)</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Status">
+                    <CellTemplate>
+                        @if (context.Item.Status is not null)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">
+                                @context.Item.Status
+                            </MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Utført av">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@(context.Item.ByName ?? context.Item.ById?.ToString())</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+
+            </Columns>
+
+            <ChildRowContent>
+                <MudPaper Elevation="0" Class="pa-3 mud-background-gray">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            Kilde: @SourceLabel(context.Item.SourceId) — Operasjon:
+                            @if (context.Item.OperationId is not null)
+                            {
+                                <MudLink Typo="Typo.caption"
+                                         OnClick="@(() => FilterOnOperation(context.Item.OperationId))">
+                                    @context.Item.OperationId
+                                </MudLink>
+                            }
+                        </MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                            ItemId: @context.Item.ItemId
+                            @if (context.Item.ParentId is not null)
+                            {
+                                <text> — ParentId: </text>
+                                <MudLink Typo="Typo.caption"
+                                         OnClick="@(() => FilterOnParent(context.Item.ParentId.Value))">
+                                    @context.Item.ParentId
+                                </MudLink>
+                            }
+                        </MudText>
+                        @if (context.Item.ViaRoleName is not null)
+                        {
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                Via-rolle: @context.Item.ViaRoleName
+                            </MudText>
+                        }
+                        @if (context.Item.Details is not null)
+                        {
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                                Detaljer: <code>@context.Item.Details</code>
+                            </MudText>
+                        }
+                    </MudStack>
+                </MudPaper>
+            </ChildRowContent>
+
+        </MudDataGrid>
+    };
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
