@@ -320,16 +320,22 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var all = await _query.GetAsync(filter, 100, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(11, all.Items.Count);
-        Assert.Null(all.Next);
+        Assert.False(all.HasMore);
         Assert.All(all.Items, t => Assert.True(t.FromId == from.Id || t.ToId == from.Id || t.ViaId == from.Id));
 
         var page1 = await _query.GetAsync(filter, 4, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(4, page1.Items.Count);
-        Assert.NotNull(page1.Next);
+        Assert.True(page1.HasMore);
 
-        var page2 = await _query.GetAsync(filter, 100, page1.Next, TestContext.Current.CancellationToken);
-        Assert.Equal(7, page2.Items.Count);
+        var page2 = await _query.GetAsync(filter, 4, 1, TestContext.Current.CancellationToken);
+        Assert.Equal(4, page2.Items.Count);
+        Assert.True(page2.HasMore);
         Assert.Empty(page1.Items.Select(t => t.Id).Intersect(page2.Items.Select(t => t.Id)));
+
+        var page3 = await _query.GetAsync(filter, 4, 2, TestContext.Current.CancellationToken);
+        Assert.Equal(3, page3.Items.Count);
+        Assert.False(page3.HasMore);
+        Assert.Empty(page3.Items.Select(t => t.Id).Intersect(page1.Items.Concat(page2.Items).Select(t => t.Id)));
 
         var deletesOnly = await _query.GetAsync(
             filter with { Triggers = [ActivityLogTrigger.Deleted], Subtypes = [ActivityLogSubtype.Package] },

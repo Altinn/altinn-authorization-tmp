@@ -4,7 +4,6 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
@@ -25,11 +24,16 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [FeatureGate(AccessMgmtFeatureFlags.EnableEnduserActivityLogApi)]
 public class ActivityLogController(IActivityLogService activityLogService) : ControllerBase
 {
+    private const int DefaultPageSize = 100;
+
     private const int MaxPageSize = 1000;
 
     /// <summary>
     /// Get activity log entries involving the specified party, newest first. All filter
-    /// parameters accept multiple values; paging follows the token in the next-link.
+    /// parameters accept multiple values. The optional direction anchors the party on the
+    /// from (given), to (received) or via (facilitator) side; without it any involvement
+    /// matches. Paging is page-based via pageSize and pageNo; without them the first
+    /// 100 entries are returned.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_ACTIVITYLOG_READ)]
@@ -40,6 +44,7 @@ public class ActivityLogController(IActivityLogService activityLogService) : Con
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetActivityLog(
         [Required][FromQuery(Name = "party")] Guid party,
+        [FromQuery(Name = "direction")] ActivityLogDirection? direction = null,
         [FromQuery(Name = "type")] List<ActivityLogType> type = null,
         [FromQuery(Name = "subtype")] List<ActivityLogSubtype> subtype = null,
         [FromQuery(Name = "trigger")] List<ActivityLogTrigger> trigger = null,
@@ -58,20 +63,13 @@ public class ActivityLogController(IActivityLogService activityLogService) : Con
         [FromQuery(Name = "parentId")] List<Guid> parentId = null,
         [FromQuery(Name = "after")] DateTimeOffset? after = null,
         [FromQuery(Name = "before")] DateTimeOffset? before = null,
-        [FromQuery(Name = "pageSize")] int pageSize = 100,
-        [FromQuery(Name = "token")] string token = null,
+        [FromQuery(Name = "pageSize")] int? pageSize = null,
+        [FromQuery(Name = "pageNo")] int? pageNo = null,
         CancellationToken cancellationToken = default)
     {
         if (party == Guid.Empty)
         {
             ModelState.AddModelError("party", "party must be a non-empty guid.");
-            return ValidationProblem(ModelState);
-        }
-
-        ActivityLogQueryCursor cursor = null;
-        if (!string.IsNullOrEmpty(token) && !ActivityLogTokens.TryDecode(token, out cursor))
-        {
-            ModelState.AddModelError("token", "Invalid continuation token.");
             return ValidationProblem(ModelState);
         }
 
@@ -97,25 +95,25 @@ public class ActivityLogController(IActivityLogService activityLogService) : Con
             Before = before,
         };
 
+        var size = Math.Clamp(pageSize ?? DefaultPageSize, 1, MaxPageSize);
+        var page = Math.Max(pageNo ?? 0, 0);
+
         var result = await activityLogService.GetActivityLog(
             party,
+            direction,
             filter,
-            Math.Clamp(pageSize, 1, MaxPageSize),
-            cursor,
+            size,
+            page,
             cancellationToken);
 
-        return Ok(PaginatedResult.Create(result.Items, NextLink(result.NextToken)));
+        return Ok(PaginatedResult.Create(result.Items, result.HasMore ? NextLink(size, page + 1) : null));
     }
 
-    private string NextLink(string nextToken)
+    private string NextLink(int pageSize, int nextPageNo)
     {
-        if (nextToken is null)
-        {
-            return null;
-        }
-
         var query = QueryHelpers.ParseQuery(Request.QueryString.Value);
-        query["token"] = nextToken;
+        query["pageSize"] = pageSize.ToString();
+        query["pageNo"] = nextPageNo.ToString();
         return UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, Request.Path, QueryString.Create(query));
     }
 }

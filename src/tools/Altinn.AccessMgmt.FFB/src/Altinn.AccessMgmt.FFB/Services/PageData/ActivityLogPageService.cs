@@ -12,12 +12,12 @@ public sealed class ActivityLogPageService(IEnvironmentDbContextFactory dbFactor
         string environment,
         ActivityLogQueryFilter filter,
         int pageSize,
-        ActivityLogQueryCursor? cursor,
+        int pageNumber,
         CancellationToken ct = default)
     {
         using var db = dbFactory.CreateContext(environment);
         var query = new ActivityLogQuery(db);
 
-        return await query.GetAsync(filter, pageSize, cursor, ct);
+        return await query.GetAsync(filter, pageSize, pageNumber, ct);
     }
 }

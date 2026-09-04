@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 
 /// <summary>
-/// Queries <c>dbo.activitylog</c> with multi-value filtering and keyset pagination
+/// Queries <c>dbo.activitylog</c> with multi-value filtering and page-based pagination
 /// ordered by <c>("when", id)</c> descending.
 /// </summary>
 public sealed class ActivityLogQuery(AppDbContext db)
@@ -16,45 +16,34 @@ public sealed class ActivityLogQuery(AppDbContext db)
     /// </summary>
     /// <param name="filter">The filter; at least one narrowing parameter must be set.</param>
     /// <param name="pageSize">Maximum number of entries to return.</param>
-    /// <param name="cursor">Position of the last entry of the previous page, or <see langword="null"/> for the first page.</param>
+    /// <param name="pageNumber">Zero-based page number.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public async Task<ActivityLogQueryPage> GetAsync(
         ActivityLogQueryFilter filter,
         int pageSize,
-        ActivityLogQueryCursor cursor = null,
+        int pageNumber = 0,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(pageNumber);
         filter.Validate();
 
-        var query = BuildQuery(filter);
-
-        if (cursor is not null)
-        {
-            var cursorWhen = cursor.When;
-            var cursorId = cursor.Id;
-            query = query.Where(t => EF.Functions.LessThan(
-                ValueTuple.Create(t.When, t.Id),
-                ValueTuple.Create(cursorWhen, cursorId)));
-        }
-
-        var items = await query
+        var items = await BuildQuery(filter)
             .OrderByDescending(t => t.When)
             .ThenByDescending(t => t.Id)
+            .Skip(pageNumber * pageSize)
             .Take(pageSize + 1)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        ActivityLogQueryCursor next = null;
-        if (items.Count > pageSize)
+        var hasMore = items.Count > pageSize;
+        if (hasMore)
         {
             items.RemoveAt(pageSize);
-            var last = items[^1];
-            next = new ActivityLogQueryCursor(last.When, last.Id);
         }
 
-        return new ActivityLogQueryPage(items, next);
+        return new ActivityLogQueryPage(items, hasMore);
     }
 
     private IQueryable<ActivityLog> BuildQuery(ActivityLogQueryFilter filter)
@@ -86,14 +75,9 @@ public sealed class ActivityLogQuery(AppDbContext db)
 }
 
 /// <summary>
-/// Keyset position of the last entry of a page, used to fetch the next page.
+/// One page of activity log entries.
 /// </summary>
-public sealed record ActivityLogQueryCursor(DateTimeOffset When, Guid Id);
-
-/// <summary>
-/// One page of activity log entries and the cursor for the next page.
-/// </summary>
-public sealed class ActivityLogQueryPage(IReadOnlyList<ActivityLog> items, ActivityLogQueryCursor next)
+public sealed class ActivityLogQueryPage(IReadOnlyList<ActivityLog> items, bool hasMore)
 {
     /// <summary>
     /// The entries, ordered newest first.
@@ -101,7 +85,7 @@ public sealed class ActivityLogQueryPage(IReadOnlyList<ActivityLog> items, Activ
     public IReadOnlyList<ActivityLog> Items { get; } = items;
 
     /// <summary>
-    /// Cursor for the next page, or <see langword="null"/> when there are no more entries.
+    /// Whether more entries exist beyond this page.
     /// </summary>
-    public ActivityLogQueryCursor Next { get; } = next;
+    public bool HasMore { get; } = hasMore;
 }

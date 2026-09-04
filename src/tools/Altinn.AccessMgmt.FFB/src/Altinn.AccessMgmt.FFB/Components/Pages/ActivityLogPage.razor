@@ -129,7 +129,7 @@
 @if (_items is not null)
 {
     <MudText Typo="Typo.body2" Class="mb-2 mud-text-secondary">
-        @_items.Count hendelser@(_cursor is not null ? " — flere tilgjengelig" : string.Empty)
+        @_items.Count hendelser@(_hasMore ? " — flere tilgjengelig" : string.Empty)
     </MudText>
 
     <MudDataGrid T="PersistedActivityLog"
@@ -255,7 +255,7 @@
 
     </MudDataGrid>
 
-    @if (_cursor is not null)
+    @if (_hasMore)
     {
         <MudButton Variant="Variant.Outlined"
                    Color="Color.Primary"
@@ -294,12 +294,14 @@
     // ── Data ──────────────────────────────────────────────────────────────────
 
     private List<PersistedActivityLog>? _items;
-    private ActivityLogQueryCursor? _cursor;
+    private int _pageNo;
+    private bool _hasMore;
 
     protected override Task OnEnvironmentChangedAsync()
     {
         _items = null;
-        _cursor = null;
+        _pageNo = 0;
+        _hasMore = false;
         Error = null;
         return Task.CompletedTask;
     }
@@ -313,18 +315,23 @@
     private async Task RunQuery()
     {
         _items = null;
-        _cursor = null;
+        _pageNo = 0;
+        _hasMore = false;
         await FetchPage();
     }
 
-    private Task LoadMore() => FetchPage();
+    private Task LoadMore()
+    {
+        _pageNo++;
+        return FetchPage();
+    }
 
     private Task FetchPage() => RunAsync(async ct =>
     {
-        var page = await PageService.QueryAsync(EnvState.Current, BuildFilter(), _pageSize, _cursor, ct);
+        var page = await PageService.QueryAsync(EnvState.Current, BuildFilter(), _pageSize, _pageNo, ct);
 
         _items = [.. _items ?? [], .. page.Items];
-        _cursor = page.Next;
+        _hasMore = page.HasMore;
     });
 
     private ActivityLogQueryFilter BuildFilter() => new()
