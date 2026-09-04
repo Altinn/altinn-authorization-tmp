@@ -61,6 +61,11 @@ public class InputValidation(
                     errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, "Person not available for delegation (deceased).")]);
                 }
 
+                if (options.AllowedToEntityTypes.Count > 0 && !options.AllowedToEntityTypes.Contains(toEntity.TypeId))
+                {
+                    errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
+                }
+
                 if (errorBuilder.TryBuild(out var validationError))
                 {
                     return validationError;
