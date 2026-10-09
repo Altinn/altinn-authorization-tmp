@@ -32,11 +32,9 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
   pushd .github/scripts
   pnpm install --frozen-lockfile
 
-# Run the script to update solution files
-# Run the script to update solution files
-@update-sln-files *ARGS: install-script-packages-frozen
-  #!{{shebang}}
-  node --import "./.github/scripts/node_modules/tsx/dist/esm/index.mjs" "./.github/scripts/update-sln-files.mts" -- {{ARGS}}
+# Update solution files with RepoCtl
+@update-sln-files *ARGS:
+  repoctl solutions update {{ARGS}}
 
 @dotnet-reference-trimmer:
   dotnet build -p:EnableReferenceTrimmer=true
