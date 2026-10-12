@@ -15,17 +15,35 @@ locals {
   ])
 }
 
+# module "appsettings" {
+#   source     = "../../modules/appsettings"
+#   hub_suffix = local.suffix
+# 
+#   feature_flags = [for key, value in local.feature_flags :
+#     {
+#       default     = value.default
+#       label       = value.label
+#       description = value.description
+#       name        = value.name
+#   }]
+# 
+#   providers = {
+#     azurerm.hub = azurerm
+#   }
+# }
+
 module "appsettings" {
   source     = "../../modules/appsettings"
   hub_suffix = local.suffix
 
-  feature_flags = [for key, value in local.feature_flags :
+  feature_flags = [
     {
-      default     = value.default
-      label       = value.label
-      description = value.description
-      name        = value.name
-  }]
+      default     = false
+      description = "test"
+      label       = "at22-access-management"
+      name        = "test"
+    }
+  ]
 
   providers = {
     azurerm.hub = azurerm
