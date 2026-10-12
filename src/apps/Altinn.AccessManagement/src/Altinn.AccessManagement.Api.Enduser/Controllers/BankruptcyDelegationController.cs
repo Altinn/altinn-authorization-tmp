@@ -145,7 +145,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         public async Task<IActionResult> RevokeBankruptcyEstateAdministrator(
             [FromQuery(Name = "party")][Required] Guid party,
             [FromQuery(Name = "user")][Required] Guid user,
-            [FromQuery(Name = "cascade")] bool cascade = false,
             CancellationToken cancellationToken = default)
         {
             var problem = await bankruptcyDelegationService.RevokeBankruptcyEstateAdministrator(party, user, ConfigureBankruptcyUserConnections, cancellationToken);
