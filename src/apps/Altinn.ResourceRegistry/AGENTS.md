@@ -7,8 +7,8 @@ The registry of resources and access lists that authorization decisions are made
 ## Commands
 
 ```bash
-dotnet build src/apps/Altinn.ResourceRegistry/Altinn.ResourceRegistry.sln
-dotnet test src/apps/Altinn.ResourceRegistry/Altinn.ResourceRegistry.sln
+dotnet build src/apps/Altinn.ResourceRegistry/Altinn.ResourceRegistry.slnx
+dotnet test src/apps/Altinn.ResourceRegistry/Altinn.ResourceRegistry.slnx
 dotnet run --project src/apps/Altinn.ResourceRegistry/src/Altinn.ResourceRegistry   # http://localhost:5100, opens Swagger
 ```
 
@@ -26,7 +26,6 @@ Four source projects: `Altinn.ResourceRegistry` (the host and its controllers fo
   - `TestCategoryGuard` is not compiled here, so nothing fails when a test has no category.
   - **The repository-wide unit lane does not exclude these tests.** `dotnet test -- --filter-trait "Category=Unit"` run from the root also runs this vertical's integration tests. That was verified: a PostgreSQL test here runs and passes under that filter.
 - **Its integration tests start a real database rather than skipping.** `DbFixture` builds and starts a PostgreSQL container through Testcontainers, with no skip path when no runtime is available. Elsewhere in the repository a missing runtime either skips or fails in fixture setup; here it will try to start a container.
-- There is no `Version.props`, and `conf.json` carries only a Sonar key, unlike the other app verticals.
 
 ## Test gotchas
 

@@ -5,9 +5,9 @@ The Policy Decision Point for Altinn 3. It answers authorization requests by eva
 ## Commands
 
 ```bash
-dotnet build src/apps/Altinn.Authorization/Altinn.Authorization.sln
-dotnet test src/apps/Altinn.Authorization/Altinn.Authorization.sln -- --filter-trait "Category=Unit"
-dotnet test src/apps/Altinn.Authorization/Altinn.Authorization.sln
+dotnet build src/apps/Altinn.Authorization/Altinn.Authorization.slnx
+dotnet test src/apps/Altinn.Authorization/Altinn.Authorization.slnx -- --filter-trait "Category=Unit"
+dotnet test src/apps/Altinn.Authorization/Altinn.Authorization.slnx
 dotnet run --project src/apps/Altinn.Authorization/src/Altinn.Authorization   # http://localhost:5050/authorization/api/v1
 ```
 
