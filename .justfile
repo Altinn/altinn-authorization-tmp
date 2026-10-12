@@ -19,19 +19,6 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 @default:
   just --choose
 
-# Install node packages required to run scripts - uses pnpm to install the packages
-[private]
-@install-script-packages:
-  #!{{shebang}}
-  pushd .github/scripts
-  pnpm install
-
-[private]
-@install-script-packages-frozen:
-  #!{{shebang}}
-  pushd .github/scripts
-  pnpm install --frozen-lockfile
-
 # Update solution files with RepoCtl
 @update-sln-files *ARGS:
   repoctl solutions update {{ARGS}}
@@ -39,10 +26,9 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 @dotnet-reference-trimmer:
   dotnet build -p:EnableReferenceTrimmer=true
 
-# Print all projects metadata
-@get-metadata: install-script-packages-frozen
-  #!{{shebang}}
-  node ./.github/scripts/get-metadata.mts
+# List vertical metadata with RepoCtl
+@get-metadata:
+  repoctl verticals list
 
 # Print DB username and password for Entra ID auth for Azure postgres Flex Servers
 db-cred:
