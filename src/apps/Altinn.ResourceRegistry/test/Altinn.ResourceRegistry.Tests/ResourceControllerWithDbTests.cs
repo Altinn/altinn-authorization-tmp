@@ -1,9 +1,11 @@
 using Altinn.Platform.Storage.Interface.Models;
 using Altinn.ResourceRegistry.Controllers;
 using Altinn.ResourceRegistry.Core;
+using Altinn.ResourceRegistry.Core.AccessLists;
 using Altinn.ResourceRegistry.Core.Constants;
 using Altinn.ResourceRegistry.Core.Enums;
 using Altinn.ResourceRegistry.Core.Models;
+using Altinn.ResourceRegistry.Core.Services.Interfaces;
 using Altinn.ResourceRegistry.Models;
 using Altinn.ResourceRegistry.Tests.Mocks;
 using Altinn.ResourceRegistry.Tests.Utils;
@@ -713,6 +715,75 @@ public class ResourceControllerWithDbTests(DbFixture dbFixture, WebApplicationFi
 
         // The recreated resource is live again, so creating it once more is still a conflict.
         Assert.Equal(HttpStatusCode.Conflict, (await PostResource(client, resource)).StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteResource_RemovesAccessListConnectionsAndPolicySubjects()
+    {
+        const string ResourceId = "deleted_with_access_list";
+        Guid party = Guid.NewGuid();
+
+        await Repository.CreateResource(CreateTestResource(ResourceId));
+        await Repository.SetResourceSubjects(CreateResourceSubjects($"urn:altinn:resource:{ResourceId}", ["urn:altinn:rolecode:r001"], "ttd"), logPolicyChange: true);
+        await ConnectAccessList("deleted-list", ResourceId, party);
+
+        await ResourceRegistry.Delete(ResourceId);
+
+        Assert.Empty(await AccessListsRepository.GetMembershipsForPartiesAndResources([party], [ResourceId], default));
+        Assert.Empty(await AccessListsRepository.GetAccessListsByResource(ResourceId));
+        Assert.Empty(await ActiveSubjects(ResourceId));
+    }
+
+    [Fact]
+    public async Task CreateResource_AfterDelete_DoesNotInheritAccessListsOrPolicySubjects()
+    {
+        var client = CreateClient();
+        string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        ServiceResource resource = CreateValidResource("recreated_without_leftovers");
+        string resourceId = resource.Identifier!;
+        Guid oldParty = Guid.NewGuid();
+        Guid newParty = Guid.NewGuid();
+
+        Assert.Equal(HttpStatusCode.Created, (await PostResource(client, resource)).StatusCode);
+
+        // Connected well before the deletion, so the test does not depend on the app and database clocks agreeing.
+        TimeProvider.Advance(TimeSpan.FromHours(-1));
+        await ConnectAccessList("old-list", resourceId, oldParty);
+        TimeProvider.Advance(TimeSpan.FromHours(2));
+
+        // Simulate a resource deleted before Delete cleaned up: the repository delete leaves the
+        // access list connection, and subjects from the old policy are still active.
+        await Repository.DeleteResource(resourceId);
+        await Repository.SetResourceSubjects(CreateResourceSubjects($"urn:altinn:resource:{resourceId}", ["urn:altinn:rolecode:r001"], "skd"));
+
+        // Set up for the new resource after the deletion, so it is kept.
+        await ConnectAccessList("new-list", resourceId, newParty);
+
+        Assert.Equal(HttpStatusCode.Created, (await PostResource(client, resource)).StatusCode);
+
+        Assert.Empty(await AccessListsRepository.GetMembershipsForPartiesAndResources([oldParty], [resourceId], default));
+        Assert.Single(await AccessListsRepository.GetMembershipsForPartiesAndResources([newParty], [resourceId], default));
+        Assert.Empty(await ActiveSubjects(resourceId));
+    }
+
+    private IAccessListsRepository AccessListsRepository => Services.GetRequiredService<IAccessListsRepository>();
+
+    private IResourceRegistry ResourceRegistry => Services.GetRequiredService<IResourceRegistry>();
+
+    private async Task ConnectAccessList(string identifier, string resourceId, Guid member)
+    {
+        IAccessListAggregate accessList = await AccessListsRepository.CreateAccessList("skd", identifier, identifier, identifier);
+        accessList.AddResourceConnection(resourceId, []);
+        accessList.AddMembers([member]);
+        await accessList.SaveChanges();
+    }
+
+    private async Task<IEnumerable<AttributeMatchV2>> ActiveSubjects(string resourceId)
+    {
+        List<ResourceSubjects> resourceSubjects = await Repository.FindSubjectsForResources([$"urn:altinn:resource:{resourceId}"]);
+        return resourceSubjects.SelectMany(r => r.Subjects ?? []);
     }
 
     private static ServiceResource CreateValidResource(string identifier)
