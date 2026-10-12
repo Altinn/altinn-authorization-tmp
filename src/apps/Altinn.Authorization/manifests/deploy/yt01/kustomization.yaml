@@ -6,7 +6,6 @@ resources:
 
 configMapGenerator:
   - name: environment
-    behavior: merge
     envs:
       - ./config/environment.env
 

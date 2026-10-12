@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Renders every kustomize overlay this repo publishes and checks that each syncroot
 # overlay selects the environment it is named for.
 #
