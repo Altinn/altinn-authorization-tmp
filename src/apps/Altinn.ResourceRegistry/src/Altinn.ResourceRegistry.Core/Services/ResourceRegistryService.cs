@@ -57,7 +57,7 @@ namespace Altinn.ResourceRegistry.Core.Services
             DateTimeOffset? deletedAt = await _repository.GetResourceDeletedAt(serviceResource.Identifier, cancellationToken);
             if (deletedAt.HasValue)
             {
-                await RemoveAccessListConnections(serviceResource.Identifier, deletedAt, cancellationToken);
+                await RemoveAccessListConnections(serviceResource.Identifier, deletedAt.Value, cancellationToken);
             }
 
             await _repository.CreateResource(serviceResource, cancellationToken);
@@ -79,18 +79,29 @@ namespace Altinn.ResourceRegistry.Core.Services
             }
 
             await _repository.DeleteResource(id, cancellationToken);
-            await RemoveAccessListConnections(id, connectedBefore: null, cancellationToken);
+
+            // Only remove connections made up to the deletion. The identifier can be created again
+            // before this runs; that removes the older connections itself, and connections made
+            // for the new resource must be kept.
+            DateTimeOffset? deletedAt = await _repository.GetResourceDeletedAt(id, cancellationToken);
+            if (deletedAt.HasValue)
+            {
+                await RemoveAccessListConnections(id, deletedAt.Value, cancellationToken);
+            }
         }
 
-        private async Task RemoveAccessListConnections(string resourceIdentifier, DateTimeOffset? connectedBefore, CancellationToken cancellationToken)
+        private async Task RemoveAccessListConnections(string resourceIdentifier, DateTimeOffset connectedBefore, CancellationToken cancellationToken)
         {
             // Go through each access list aggregate, so the removal is recorded as an event and
             // bumps the access list version like any other connection change.
             IReadOnlyList<AccessListInfo> accessLists = await _accessListsRepository.GetAccessListsByResource(resourceIdentifier, connectedBefore, cancellationToken);
             foreach (AccessListInfo accessList in accessLists)
             {
+                // Check again on the loaded list: the connection may have been replaced since the lookup.
                 IAccessListAggregate? aggregate = await _accessListsRepository.LoadAccessList(accessList.Id, cancellationToken);
-                if (aggregate is null || !aggregate.TryGetResourceConnections(resourceIdentifier, out _))
+                if (aggregate is null
+                    || !aggregate.TryGetResourceConnections(resourceIdentifier, out AccessListResourceConnection? connection)
+                    || connection.Created > connectedBefore)
                 {
                     continue;
                 }

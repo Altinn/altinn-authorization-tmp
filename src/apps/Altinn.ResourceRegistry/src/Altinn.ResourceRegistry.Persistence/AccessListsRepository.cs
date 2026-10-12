@@ -53,7 +53,7 @@ internal partial class AccessListsRepository
     /// <inheritdoc/>
     public Task<IReadOnlyList<AccessListInfo>> GetAccessListsByResource(
         string resourceIdentifier,
-        DateTimeOffset? connectedBefore = null,
+        DateTimeOffset connectedBefore,
         CancellationToken cancellationToken = default)
     => InTransaction(repo => repo.GetAccessListsByResource(resourceIdentifier, connectedBefore, cancellationToken), cancellationToken);
 

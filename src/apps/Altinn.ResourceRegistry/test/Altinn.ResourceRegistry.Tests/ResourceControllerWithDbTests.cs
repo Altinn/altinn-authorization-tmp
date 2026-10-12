@@ -5,6 +5,8 @@ using Altinn.ResourceRegistry.Core.AccessLists;
 using Altinn.ResourceRegistry.Core.Constants;
 using Altinn.ResourceRegistry.Core.Enums;
 using Altinn.ResourceRegistry.Core.Models;
+using Altinn.ResourceRegistry.Core.ServiceOwners;
+using Altinn.ResourceRegistry.Core.Services;
 using Altinn.ResourceRegistry.Core.Services.Interfaces;
 using Altinn.ResourceRegistry.Models;
 using Altinn.ResourceRegistry.Tests.Mocks;
@@ -12,6 +14,7 @@ using Altinn.ResourceRegistry.Tests.Utils;
 using Altinn.ResourceRegistry.TestUtils;
 using AngleSharp.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -730,7 +733,7 @@ public class ResourceControllerWithDbTests(DbFixture dbFixture, WebApplicationFi
         await ResourceRegistry.Delete(ResourceId);
 
         Assert.Empty(await AccessListsRepository.GetMembershipsForPartiesAndResources([party], [ResourceId], default));
-        Assert.Empty(await AccessListsRepository.GetAccessListsByResource(ResourceId));
+        Assert.Empty(await AccessListsRepository.GetAccessListsByResource(ResourceId, DateTimeOffset.UtcNow.AddYears(1)));
         Assert.Empty(await ActiveSubjects(ResourceId));
     }
 
@@ -766,6 +769,57 @@ public class ResourceControllerWithDbTests(DbFixture dbFixture, WebApplicationFi
         Assert.Empty(await AccessListsRepository.GetMembershipsForPartiesAndResources([oldParty], [resourceId], default));
         Assert.Single(await AccessListsRepository.GetMembershipsForPartiesAndResources([newParty], [resourceId], default));
         Assert.Empty(await ActiveSubjects(resourceId));
+    }
+
+    [Fact]
+    public async Task DeleteResource_RecreatedBeforeCleanup_KeepsNewAccessListConnection()
+    {
+        const string ResourceId = "recreated_during_delete";
+        Guid oldParty = Guid.NewGuid();
+        Guid newParty = Guid.NewGuid();
+
+        await Repository.CreateResource(CreateTestResource(ResourceId));
+
+        // Connected well before the deletion, so the test does not depend on the app and database clocks agreeing.
+        TimeProvider.Advance(TimeSpan.FromHours(-1));
+        await ConnectAccessList("race-old-list", ResourceId, oldParty);
+        TimeProvider.Advance(TimeSpan.FromHours(2));
+
+        // Recreate the resource and connect a list for it after the delete has committed,
+        // just before the delete looks up the connections to remove.
+        IAccessListsRepository accessLists = AccessListsRepository;
+        bool recreated = false;
+        var interleaved = new Mock<IAccessListsRepository>();
+        interleaved
+            .Setup(r => r.LoadAccessList(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns((Guid id, CancellationToken ct) => accessLists.LoadAccessList(id, ct));
+        interleaved
+            .Setup(r => r.GetAccessListsByResource(It.IsAny<string>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Returns(async (string resourceId, DateTimeOffset connectedBefore, CancellationToken ct) =>
+            {
+                if (!recreated)
+                {
+                    recreated = true;
+                    await ResourceRegistry.CreateResource(CreateTestResource(ResourceId), ct);
+                    await ConnectAccessList("race-new-list", ResourceId, newParty);
+                }
+
+                return await accessLists.GetAccessListsByResource(resourceId, connectedBefore, ct);
+            });
+
+        var service = new ResourceRegistryService(
+            Repository,
+            Services.GetRequiredService<IPolicyRepository>(),
+            Services.GetRequiredService<IApplications>(),
+            Services.GetRequiredService<IServiceOwnerService>(),
+            interleaved.Object);
+
+        await service.Delete(ResourceId);
+
+        Assert.True(recreated);
+        Assert.NotNull(await Repository.GetResource(ResourceId, null));
+        Assert.Empty(await accessLists.GetMembershipsForPartiesAndResources([oldParty], [ResourceId], default));
+        Assert.Single(await accessLists.GetMembershipsForPartiesAndResources([newParty], [ResourceId], default));
     }
 
     private IAccessListsRepository AccessListsRepository => Services.GetRequiredService<IAccessListsRepository>();

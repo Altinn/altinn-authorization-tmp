@@ -39,11 +39,11 @@ public interface IAccessListsRepository
     /// Get all access lists that are connected to a given resource.
     /// </summary>
     /// <param name="resourceIdentifier">The resource identifier.</param>
-    /// <param name="connectedBefore">Only include connections created at or before this time, if set.</param>
+    /// <param name="connectedBefore">Only include connections created at or before this time.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/>.</param>
     Task<IReadOnlyList<AccessListInfo>> GetAccessListsByResource(
         string resourceIdentifier,
-        DateTimeOffset? connectedBefore = null,
+        DateTimeOffset connectedBefore,
         CancellationToken cancellationToken = default);
 
     /// <summary>
