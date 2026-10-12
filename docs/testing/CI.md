@@ -77,11 +77,23 @@ than fail. A successful run with skipped tests does not verify integration behav
 
 Each vertical job uploads MSBuild binary logs from `binlog/*.binlog`, even on
 failure, with one-day retention. Package and tool jobs also upload NuGet
-packages with one-day retention. The workflow does not upload test-result logs
-or TRX reports separately.
+packages with one-day retention. TRX reports are uploaded as
+`test-results-<vertical slug>` artifacts with seven-day retention, including
+when tests fail. xUnit v3 uses `--report-xunit-trx` through
+`TestingPlatformCommandLineArguments`; xUnit v2 uses the VSTest TRX logger.
 
-For a test failure, inspect the job's `Test` step and download its binlog
-artifact when more detail is needed. Reproduce with the same vertical and
+The [Test Report workflow](../../.github/workflows/ci__post-test-report.yml) runs after
+CI and publishes a check per result artifact with test counts, failed test
+details, up to 50 source annotations, and an Actions summary. It runs from
+the default branch so fork PRs can receive checks without granting write
+permissions to their test jobs. The reporting workflow must be merged into
+the default branch before it starts running. Missing reports are allowed for
+verticals without tests or jobs that failed before testing.
+
+For a test failure, inspect the test report check or the job's `Test` step,
+which enables `TestingPlatformShowTestsFailure` to print individual errors.
+Download the TRX or binlog artifact when more detail is needed.
+Reproduce with the same vertical and
 Release configuration locally, with a container runtime available for integration tests.
 
 ## Related docs

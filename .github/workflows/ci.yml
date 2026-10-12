@@ -119,9 +119,19 @@ jobs:
           VERTICAL_DIR: ${{ matrix.path }}
       
       - name: Test
-        run: repoctl vertical test "$VERTICAL_ID" -c Release --no-build -p:TestingPlatformShowTestsFailure=true -bl:binlog/test.binlog
+        # MTP uses xUnit's built-in TRX reporter; VSTest uses the TRX logger.
+        run: repoctl vertical test "$VERTICAL_ID" -c Release --no-build -p:TestingPlatformShowTestsFailure=true -p:TestingPlatformCommandLineArguments=--report-xunit-trx --logger trx -bl:binlog/test.binlog
         env:
           VERTICAL_ID: ${{ matrix.id }}
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results-${{ matrix.slug }}
+          path: ${{ matrix.path }}/**/TestResults/*.trx
+          if-no-files-found: ignore
+          retention-days: 7
       
       - name: Pack
         if: matrix.type == 'pkg' || matrix.type == 'tool'
