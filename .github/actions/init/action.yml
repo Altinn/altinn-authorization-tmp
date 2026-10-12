@@ -9,6 +9,11 @@ inputs:
     default: "true"
     type: boolean
 
+  ref:
+    description: Branch, tag or SHA to check out. Omit to use the workflow event ref.
+    required: false
+    type: string
+
   fetch_depth:
     description: Git fetch depth. Use 1 to fetch only the latest commit, or 0 to fetch the entire history.
     default: 1
@@ -45,6 +50,7 @@ runs:
       if: ${{ inputs.checkout == 'true' || inputs.checkout == true }}
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
+        ref: ${{ inputs.ref }}
         fetch-depth: ${{ inputs.fetch_depth }}
 
     - name: Setup .NET
