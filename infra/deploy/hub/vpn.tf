@@ -208,7 +208,7 @@ resource "pkcs12_from_pem" "client_certs" {
 }
 
 resource "azurerm_storage_blob" "ca_pem_cert" {
-  name = "CaCert.pem"
+  name                 = "CaCert.pem"
   storage_container_id = azurerm_storage_container.certs.id
 
   access_tier    = "Cool"
@@ -228,7 +228,7 @@ resource "azurerm_storage_blob" "client_pem_cert" {
 }
 
 resource "azurerm_storage_blob" "client_key_cert" {
-  name                   = "${each.value}/${each.value}Key.pem"
+  name                 = "${each.value}/${each.value}Key.pem"
   storage_container_id = azurerm_storage_container.certs.id
 
   access_tier    = "Cool"
@@ -239,7 +239,7 @@ resource "azurerm_storage_blob" "client_key_cert" {
 }
 
 resource "azurerm_storage_blob" "client_pfx_cert" {
-  name                   = "${each.value}/${each.value}Cert.pfx"
+  name                 = "${each.value}/${each.value}Cert.pfx"
   storage_container_id = azurerm_storage_container.certs.id
 
   access_tier    = "Cool"
