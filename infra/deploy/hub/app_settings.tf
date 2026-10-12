@@ -14,42 +14,23 @@ locals {
   ])
 }
 
-# module "appsettings" {
-#   source     = "../../modules/appsettings"
-#   hub_suffix = local.suffix
-# 
-#   feature_flags = [for key, value in local.feature_flags :
-#     {
-#       default     = value.default
-#       label       = value.label
-#       description = value.description
-#       name        = value.name
-#   }]
-# 
-#   providers = {
-#     azurerm.hub = azurerm
-#   }
-# }
-
-
-
 module "appsettings" {
   source     = "../../modules/appsettings"
   hub_suffix = local.suffix
 
-  feature_flags = [
+  feature_flags = [for key, value in local.feature_flags :
     {
-      default     = false
-      description = "test"
-      label       = "at22-access-management"
-      name        = "test"
-    }
-  ]
+      default     = value.default
+      label       = value.label
+      description = value.description
+      name        = value.name
+  }]
 
   providers = {
     azurerm.hub = azurerm
   }
 }
+
 
 # id=https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2Ftest?label=at22-access-management
 import {
