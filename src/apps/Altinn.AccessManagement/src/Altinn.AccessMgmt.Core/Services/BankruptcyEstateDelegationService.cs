@@ -53,7 +53,7 @@ namespace Altinn.AccessMgmt.Core.Services
             var adminAssignments = await db.Assignments
                 .AsNoTracking()
                 .Include(a => a.To)
-                .Where(a => a.FromId == partyUuid && a.RoleId == RoleConstants.BankruptcyAdministrator)
+                .Where(a => a.FromId == partyUuid && a.RoleId == RoleConstants.BankruptcyEstateAdministrator)
                 .ToListAsync(cancellationToken);
 
             var adminUsers = adminAssignments.Select(a => DtoMapper.Convert(a.To)).ToList();
@@ -162,7 +162,7 @@ namespace Altinn.AccessMgmt.Core.Services
 
             var existingAssignment = await db.Assignments
                 .AsTracking()
-                .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyAdministrator)
+                .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator)
                 .FirstOrDefaultAsync(cancellationToken);
 
             var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
@@ -185,7 +185,11 @@ namespace Altinn.AccessMgmt.Core.Services
                 }
             }
 
-            db.Assignments.Remove(existingAssignment);
+            if (existingAssignment is not null)
+            {
+                db.Assignments.Remove(existingAssignment);
+            }
+
             await db.SaveChangesAsync(cancellationToken);
             return null;
         }
