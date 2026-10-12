@@ -279,10 +279,4 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidContinuationToken { get; }
     = _factory.Create(53, $"The continuation token is invalid.");
-
-    /// <summary>
-    /// The specified bankruptcy party does not have any related bankruptcy estates.
-    /// </summary>
-    public static ValidationErrorDescriptor InvalidBankruptcyEstateAdministrator { get; }
-    = _factory.Create(54, $"The specified party does not have any related bankruptcy estates.");
 }
