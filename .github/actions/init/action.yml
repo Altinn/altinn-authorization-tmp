@@ -5,7 +5,7 @@ description: Initialize a GitHub Actions job by checking out the repository and 
 # Note: Boolean inputs are passed as strings in composite actions.
 inputs:
   checkout:
-    description: Whether to check out the repository.
+    description: Whether to check out the repository. Checkout fails on pull_request_target events.
     default: "true"
     type: boolean
 
@@ -46,6 +46,13 @@ runs:
   using: composite
 
   steps:
+    - name: Reject checkout on pull_request_target
+      if: ${{ github.event_name == 'pull_request_target' && (inputs.checkout == 'true' || inputs.checkout == true) }}
+      shell: bash
+      run: |
+        echo "::error::Init cannot check out code on pull_request_target events. Set checkout to false or use a different workflow event."
+        exit 1
+
     - name: Checkout
       if: ${{ inputs.checkout == 'true' || inputs.checkout == true }}
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
