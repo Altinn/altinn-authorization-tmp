@@ -18,11 +18,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
     [ApiController]
-    [Route("accessmanagement/api/v1/enduser/bankruptcyestatedelegation")]
+    [Route("accessmanagement/api/v1/enduser/bankruptcyestate")]
     [Tags("Bankruptcy Estate Delegation")]
     public class BankruptcyDelegationController(
         IInputValidation inputValidation,
-        IBankruptcyDelegationService bankruptcyDelegationService) : ControllerBase
+        IBankruptcyEstateDelegationService bankruptcyDelegationService) : ControllerBase
     {
         private Action<ConnectionOptions> ConfigureBankruptcyUserConnections { get; } = options =>
         {

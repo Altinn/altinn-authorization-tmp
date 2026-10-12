@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class BankruptcyEstateDelegationService(
-        AppDbContext db) : IBankruptcyDelegationService
+        AppDbContext db) : IBankruptcyEstateDelegationService
     {
         private Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken) =>
            ConnectionWriteValidation.GetFromAndToEntitiesAsync(db, fromId, toId, cancellationToken);
@@ -194,7 +194,7 @@ namespace Altinn.AccessMgmt.Core.Services
     /// <summary>
     /// Service for managing bankruptcy estate delegations.
     /// </summary>
-    public interface IBankruptcyDelegationService
+    public interface IBankruptcyEstateDelegationService
     {
         /// <summary>
         /// Checks if a given party has any bankruptcy estates.
