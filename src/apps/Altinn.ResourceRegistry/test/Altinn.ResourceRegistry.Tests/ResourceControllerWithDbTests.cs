@@ -372,6 +372,32 @@ public class ResourceControllerWithDbTests(DbFixture dbFixture, WebApplicationFi
         Assert.Equal("changes_kept_res", changes.Items.First().ResourceId);
     }
 
+    [Fact]
+    public async Task GetResourceChanges_RecreatedResourceIsListedAfterPolicyUpload()
+    {
+        await Repository.CreateResource(CreateTestResource("changes_recreated_res"));
+        await Repository.SetResourceSubjects(CreateResourceSubjects("urn:altinn:resource:changes_recreated_res", ["urn:altinn:rolecode:r001"], "ttd"), logPolicyChange: true);
+        await Repository.DeleteResource("changes_recreated_res");
+
+        await Repository.CreateResource(CreateTestResource("changes_recreated_res"));
+
+        using var client = CreateClient();
+
+        // The policy was deleted with the resource, so the recreated resource has none yet.
+        HttpResponseMessage response = await client.GetAsync("resourceregistry/api/v1/resource/changes");
+        Paginated<ResourceChange>? changes = await response.Content.ReadFromJsonAsync<Paginated<ResourceChange>>();
+        Assert.NotNull(changes);
+        Assert.Empty(changes.Items);
+
+        await Repository.SetResourceSubjects(CreateResourceSubjects("urn:altinn:resource:changes_recreated_res", ["urn:altinn:rolecode:r001"], "ttd"), logPolicyChange: true);
+
+        response = await client.GetAsync("resourceregistry/api/v1/resource/changes");
+        changes = await response.Content.ReadFromJsonAsync<Paginated<ResourceChange>>();
+        Assert.NotNull(changes);
+        Assert.Single(changes.Items);
+        Assert.Equal("changes_recreated_res", changes.Items.First().ResourceId);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1001)]
@@ -657,6 +683,66 @@ public class ResourceControllerWithDbTests(DbFixture dbFixture, WebApplicationFi
         HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateResource_AfterDelete_Created()
+    {
+        var client = CreateClient();
+        string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        ServiceResource resource = CreateValidResource("recreated_after_delete");
+
+        Assert.Equal(HttpStatusCode.Created, (await PostResource(client, resource)).StatusCode);
+        ServiceResource? original = await Repository.GetResource(resource.Identifier!, null);
+        Assert.NotNull(original);
+
+        // Delete through the repository; the API refuses deletes in the integrationtest environment.
+        await Repository.DeleteResource(resource.Identifier!);
+        Assert.Null(await Repository.GetResource(resource.Identifier!, null));
+
+        resource.Title["en"] = "Recreated";
+
+        Assert.Equal(HttpStatusCode.Created, (await PostResource(client, resource)).StatusCode);
+
+        ServiceResource? recreated = await Repository.GetResource(resource.Identifier!, null);
+        Assert.NotNull(recreated);
+        Assert.Equal("Recreated", recreated.Title["en"]);
+        Assert.NotEqual(original.VersionId, recreated.VersionId);
+
+        // The recreated resource is live again, so creating it once more is still a conflict.
+        Assert.Equal(HttpStatusCode.Conflict, (await PostResource(client, resource)).StatusCode);
+    }
+
+    private static ServiceResource CreateValidResource(string identifier)
+    {
+        return new ServiceResource()
+        {
+            Identifier = identifier,
+            Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
+            Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
+            RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
+            Status = "Completed",
+            ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
+            HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
+            {
+                Organization = "974761076",
+                Orgcode = "skd",
+            },
+            ResourceType = ResourceType.GenericAccessResource,
+        };
+    }
+
+    private static Task<HttpResponseMessage> PostResource(HttpClient client, ServiceResource resource)
+    {
+        HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "resourceregistry/api/v1/Resource/")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
+        };
+
+        httpRequestMessage.Headers.Add("Accept", "application/json");
+        return client.SendAsync(httpRequestMessage);
     }
 
     [Fact]

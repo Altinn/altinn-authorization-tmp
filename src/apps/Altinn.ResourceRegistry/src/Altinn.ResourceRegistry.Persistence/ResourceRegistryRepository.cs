@@ -127,13 +127,37 @@ internal class ResourceRegistryRepository : IResourceRegistryRepository
 
         try
         {
-            await using (var cmd1 = new NpgsqlCommand(
+            // A deleted resource keeps its resource_identifier row (see DeleteResource), so reuse it
+            // when the identifier is created again. The policy was removed with the resource, so the
+            // revived row starts without one, like a new resource.
+            int revived;
+            await using (var revive = new NpgsqlCommand(
                 @"
-                INSERT INTO resourceregistry.resource_identifier(identifier, created)
-                VALUES (@identifier, now());",
+                UPDATE resourceregistry.resource_identifier
+                SET deleted = false,
+                    created = now(),
+                    policy_uploaded = false,
+                    global_change_id = resourceregistry.tx_nextval('resourceregistry.resource_change_id_seq'),
+                    last_changed = now()
+                WHERE identifier = @identifier
+                  AND deleted;",
                 conn,
                 tx))
             {
+                revive.Parameters.AddWithValue("identifier", NpgsqlDbType.Text, resource.Identifier);
+                revived = await revive.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            // Otherwise insert a new row. For a live resource this raises the unique violation that
+            // the caller reports as a conflict.
+            if (revived == 0)
+            {
+                await using var cmd1 = new NpgsqlCommand(
+                    @"
+                    INSERT INTO resourceregistry.resource_identifier(identifier, created)
+                    VALUES (@identifier, now());",
+                    conn,
+                    tx);
                 cmd1.Parameters.AddWithValue("identifier", NpgsqlDbType.Text, resource.Identifier);
                 await cmd1.ExecuteNonQueryAsync(cancellationToken);
             }
@@ -172,8 +196,8 @@ internal class ResourceRegistryRepository : IResourceRegistryRepository
                 }
             }
 
-            // The new resource_identifier row gets its global_change_id and last_changed from the
-            // column defaults (tx_nextval and now()).
+            // A new resource_identifier row gets its global_change_id and last_changed from the
+            // column defaults (tx_nextval and now()); a revived row got them in the update above.
             await tx.CommitAsync(cancellationToken);
             return serviceResource;
         }
