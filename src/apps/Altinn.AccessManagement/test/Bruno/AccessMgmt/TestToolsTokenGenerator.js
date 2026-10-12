@@ -56,8 +56,8 @@ async function getToken(getTokenParameters) {
 
   else if (tokenType == "SystemUser") {
     const tokenSystemUser = getTokenParameters.auth_systemUserId;
-    const tokenSystemUserOrg = getTokenParameters.auth_systemUserOrg;
     const tokenOrgNo = getTokenParameters.auth_orgNo;
+    const tokenSystemUserOrg = getTokenParameters.auth_systemUserOrg ?? tokenOrgNo;
     const tokenClientId = getTokenParameters.auth_clientId;
 
     tokenUrl = `${tokenBaseUrl}/api/Get${tokenType}Token?env=${tokenEnv}&scopes=${tokenScopes}&systemUserId=${tokenSystemUser}&systemUserOrg=${tokenSystemUserOrg}&orgNo=${tokenOrgNo}&clientId=${tokenClientId}&ttl=30`;

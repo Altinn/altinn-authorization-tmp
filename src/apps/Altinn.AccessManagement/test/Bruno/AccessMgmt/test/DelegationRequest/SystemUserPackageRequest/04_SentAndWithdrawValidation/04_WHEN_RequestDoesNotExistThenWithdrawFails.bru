@@ -15,7 +15,7 @@ params:query {
 }
 
 docs {
-  WHEN the request does not exist, or was not sent by the system user, withdrawing fails with 400 and validation error AM.VLD-00035 (Request do not exists).
+  WHEN the request id does not match any request, withdrawing fails with 400 and validation error AM.VLD-00035 (Request do not exists).
 }
 
 script:pre-request {
