@@ -23,7 +23,6 @@ provider "azurerm" {
   features {}
 }
 
-
 provider "azurerm" {
   alias           = "hub"
   subscription_id = var.hub_subscription_id
@@ -60,48 +59,6 @@ resource "static_data" "static" {
   }
 }
 
-data "azurerm_subnet" "postgres" {
-  name                 = "Postgres"
-  virtual_network_name = "vnetss${local.spoke_suffix}"
-  resource_group_name  = local.spoke_resource_group_name
-}
-
-data "azurerm_subnet" "default" {
-  name                 = "Default"
-  virtual_network_name = "vnetds${local.spoke_suffix}"
-  resource_group_name  = local.spoke_resource_group_name
-}
-
-data "azurerm_user_assigned_identity" "admin" {
-  name                = "mipgsqladmin${local.spoke_suffix}"
-  resource_group_name = local.spoke_resource_group_name
-}
-
-resource "azurerm_resource_group" "access_management" {
-  name     = "rg${local.suffix}"
-  location = "norwayeast"
-  tags     = merge({}, local.default_tags)
-}
-
-resource "azurerm_user_assigned_identity" "access_management" {
-  name                = "mi${local.suffix}"
-  location            = azurerm_resource_group.access_management.location
-  resource_group_name = azurerm_resource_group.access_management.name
-  tags                = merge({}, local.default_tags)
-}
-
-# resource "azurerm_federated_identity_credential" "aks_federation" {
-#   name                = "Aks"
-#   resource_group_name = azurerm_resource_group.access_management.name
-#   parent_id           = azurerm_user_assigned_identity.access_management.id
-
-#   audience = ["api://AzureADTokenExchange"]
-#   subject  = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
-#   issuer   = each.value.issuer_url
-
-#   for_each = { for federation in var.aks_federation : federation.issuer_url => federation }
-# }
-
 module "rbac_platform_app" {
   source       = "../../../../infra/modules/rbac"
   principal_id = each.value
@@ -116,75 +73,6 @@ module "rbac_platform_app" {
   }
 
   for_each = toset(var.platform_workflow_principal_ids)
-}
-
-module "key_vault" {
-  source              = "../../../../infra/modules/key_vault"
-  name                = "acm"
-  hub_suffix          = local.hub_suffix
-  hub_subscription_id = var.hub_subscription_id
-  resource_group_name = azurerm_resource_group.access_management.name
-  suffix              = local.spoke_suffix
-  subnet_id           = data.azurerm_subnet.default.id
-  key_vault_roles = concat([
-    {
-      operation_id         = "grant_pgsqlrv_administrator"
-      principal_id         = data.azurerm_user_assigned_identity.admin.principal_id
-      role_definition_name = "Key Vault Administrator"
-    },
-    {
-      operation_id         = "grant_deploy_app_administrator"
-      principal_id         = var.deploy_app_principal_id
-      role_definition_name = "Key Vault Administrator"
-    },
-    {
-      operation_id         = "grant_access_management_app_secret_user"
-      principal_id         = azurerm_user_assigned_identity.access_management.principal_id
-      role_definition_name = "Key Vault Secrets User"
-    }
-    ],
-    [
-      for principal_id in var.platform_workflow_principal_ids :
-      {
-        operation_id         = "grant_access_management_platform_app_secret_user_${principal_id}"
-        principal_id         = principal_id
-        role_definition_name = "Key Vault Secrets User"
-      }
-    ],
-    [
-      for user in var.db_admins_user_principal_ids :
-      {
-        operation_id         = "grant_access_management_platform_app_secret_user_${user.principal_id}"
-        principal_id         = user.principal_id
-        role_definition_name = "Key Vault Secrets User"
-      }
-  ])
-}
-
-module "rbac" {
-  source       = "../../../../infra/modules/rbac"
-  principal_id = azurerm_user_assigned_identity.access_management.principal_id
-  hub_suffix   = local.hub_suffix
-  spoke_suffix = local.spoke_suffix
-
-  use_app_configuration = true
-  use_lease             = true
-  use_masstransit       = true
-  providers = {
-    azurerm.hub = azurerm.hub
-  }
-}
-
-data "azurerm_key_vault_secret" "postgres_migration" {
-  key_vault_id = module.key_vault.id
-  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-migrator"
-  depends_on   = [null_resource.bootstrap_database]
-}
-
-data "azurerm_key_vault_secret" "postgres_app" {
-  key_vault_id = module.key_vault.id
-  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-app"
-  depends_on   = [null_resource.bootstrap_database]
 }
 
 module "appsettings" {
@@ -529,58 +417,5 @@ module "appsettings" {
   ]
   providers = {
     azurerm.hub = azurerm.hub
-  }
-}
-
-module "postgres_server" {
-  source              = "../../../../infra/modules/postgres"
-  suffix              = local.suffix
-  resource_group_name = azurerm_resource_group.access_management.name
-  location            = "norwayeast"
-
-  hub_suffix = local.hub_suffix
-
-  subnet_id        = data.azurerm_subnet.postgres.id
-  postgres_version = "16"
-  configurations = {
-    "azure.extensions" : "HSTORE"
-  }
-
-  storage_tier = var.db_storage_tier
-  compute_sku  = var.db_compute_sku
-
-  entraid_admins = concat([
-    {
-      principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
-      principal_name = data.azurerm_user_assigned_identity.admin.name
-      principal_type = "ServicePrincipal"
-    },
-  ], var.db_admins_user_principal_ids)
-
-  providers = {
-    azurerm.hub = azurerm.hub
-  }
-}
-
-resource "null_resource" "bootstrap_database" {
-  triggers = {
-    ts = timestamp()
-  }
-
-  depends_on = [module.postgres_server]
-  provisioner "local-exec" {
-    working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
-    command     = <<EOT
-      dotnet run -- db bootstrap ${local.conf_json_path} \
-        --max-pool-size=${var.db_max_pool_size} \
-        --tenant-id=${data.azurerm_client_config.current.tenant_id} \
-        --principal-name=${data.azurerm_user_assigned_identity.admin.name} \
-        --server-resource-group=${azurerm_resource_group.access_management.name} \
-        --server-subscription=${data.azurerm_client_config.current.subscription_id} \
-        --server-name=${module.postgres_server.name} \
-        --kv-resource-group=${azurerm_resource_group.access_management.name} \
-        --kv-subscription=${data.azurerm_client_config.current.subscription_id} \
-        --kv-name=${module.key_vault.name}
-  EOT
   }
 }
