@@ -44,9 +44,13 @@ it builds, then runs every test in the vertical in one go through
 runs `repoctl check`, the repository-wide check CI also runs: `dotnet format`,
 generated `.slnx` files and the release configuration.
 
-On Windows, `dotnet format` in `repo-check` flags every line ending when Git
-checks files out as CRLF (`core.autocrlf=true`), because `.editorconfig` asks
-for LF. CI on Linux is the authority for formatting.
+On Windows, files in the working tree can be CRLF even though
+`.gitattributes` asks for LF; `git ls-files --eol` shows them as `w/crlf`.
+`dotnet format` in `repo-check` then flags every line in them. With no
+uncommitted changes, `git rm -r -q --cached .` followed by `git reset -q --hard`
+checks everything out again as LF. A few whitespace findings in
+`Altinn.ResourceRegistry` remain on Windows, because its own `.editorconfig`
+sets no `end_of_line`; CI on Linux does not report them.
 
 `Altinn.ResourceRegistry` runs xUnit v2 without categories, so its unit tests
 are all of its tests and start PostgreSQL. Recipes need PowerShell 7.

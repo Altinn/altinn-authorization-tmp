@@ -110,7 +110,7 @@ dev-redis-cli:
 @check-full path: require-container-runtime require-repoctl (build path)
   repoctl vertical test {{quote(path)}} -c Release --no-build
 
-# On Windows with core.autocrlf=true, dotnet format flags every line ending here.
+# On Windows, CRLF files in the working tree fail its format step; see docs/testing/GETTING_STARTED.md.
 # The repository check CI runs: dotnet format, generated .slnx files, release config
 @repo-check: require-repoctl
   repoctl check
