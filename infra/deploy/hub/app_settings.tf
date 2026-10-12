@@ -16,9 +16,13 @@ locals {
 }
 
 module "appsettings" {
-  source        = "../../../../infra/modules/appsettings"
+  source        = "../../modules/appsettings"
   hub_suffix    = local.suffix
   feature_flags = local.feature_flags
+
+  providers = {
+    azurerm.hub = azurerm
+  }
 }
 
 import {
