@@ -1,15 +1,15 @@
 locals {
   environments = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
 
+
   feature_flags = flatten([
     for environment in local.environments : [
       for feature_flag in var.feature_flags : {
-        (feature_flag.app == null ? "${environment}-${feature_flag.name}" : environment) = {
-          default     = feature_flag.default
-          name        = feature_flag.name
-          label       = feature_flag.default
-          description = feature_flag.description
-        }
+        environment = environment
+        name        = feature_flag.name
+        default     = feature_flag.default
+        label       = environment
+        description = feature_flag.description
       }
     ]
   ])
