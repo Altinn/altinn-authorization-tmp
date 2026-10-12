@@ -1,4 +1,4 @@
-using Altinn.Authorization.ABAC.Xacml;
+﻿using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Authorization.Tests.MockServices;
 using Altinn.Authorization.Tests.Util;
@@ -572,7 +572,6 @@ namespace Altinn.Authorization.Tests.Integration
                      services.AddScoped<IContextHandler, ContextHandlerMock>();
                      services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                      services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepositoryMock>();
-                     services.AddSingleton<IRoles, RolesMock>();
                      services.AddSingleton<IPolicyRepository, PolicyRepositoryMock>();
                      services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
                  });
