@@ -23,7 +23,7 @@ module "appsettings" {
     {
       default     = value.default
       label       = value.label
-      description = value.label
+      description = value.description
       name        = value.name
   }]
 
