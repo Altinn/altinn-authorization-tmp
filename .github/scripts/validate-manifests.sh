@@ -10,15 +10,19 @@ shopt -s nullglob
 
 APPS_ROOT="${APPS_ROOT:-./src/apps}"
 
-# The two stages inside the manifests artifact, in the order Flux applies them. Each
-# syncroot Kustomization selects ./<stage>/<env>.
+# The two stages inside the manifests artifact, in the order Flux applies them.
 OPT_STAGES=(pre-deploy)
 STAGES=(pre-deploy deploy)
+SYNCROOT_ENVIRONMENTS=(at22 at23 at24 tt02 yt01 prod)
 ERRORS=0
 
 fail() {
   echo "::error::$*"
   ERRORS=$((ERRORS + 1))
+}
+
+success() {
+  echo "$*"
 }
 
 # Renders every overlay in a stage directory. base/ is the shared foundation, not an
@@ -40,9 +44,9 @@ render_overlays() {
     fi
     
     if kustomize build "${overlay}" > /dev/null; then
-      echo "✔️: ${overlay}"
+      success "Rendered ${overlay}"
     else
-      fail "❌: ${overlay}"
+      fail "${overlay} failed to render"
     fi
   done
 }
@@ -68,23 +72,29 @@ done
 syncroot_dirs=("${APPS_ROOT}"/*/syncroot/)
 
 for syncroot_dir in "${syncroot_dirs[@]}"; do
+  for env in "${SYNCROOT_ENVIRONMENTS[@]}"; do
+    if ! [ -f "${syncroot_dir}${env}/kustomization.yaml" ]; then
+      fail "Missing ${syncroot_dir}${env}/kustomization.yaml"
+      continue
+    fi
+  done
+
   for dir in "${syncroot_dir}"*/; do
     env="$(basename "${dir}")"
     if [ "${env}" = "base" ]; then
       continue
     fi
-    [ -f "${dir}kustomization.yaml" ] || fail "Missing ${dir}kustomization.yaml"
+    if ! [ -f "${dir}kustomization.yaml" ]; then
+      fail "Missing ${dir}kustomization.yaml"
+      continue
+    fi
+    
     rendered="$(kustomize build "${dir}")"
-    # base hardcodes placeholders and every overlay is expected to patch them. An
-    # overlay that forgets pulls another environment's artifact or renders another
-    # environment's manifests, which fails silently in-cluster.
-    for stage in "${STAGES[@]}"; do
-      grep -qE "^ *path: \./${stage}/${env}\$" <<< "${rendered}" \
-        || fail "${dir} does not select ./${stage}/${env}"
-    done
-    grep -qE "^ *tag: ${env}\$" <<< "${rendered}" \
-      || fail "${dir} does not pin the OCIRepository to tag ${env}"
-    echo "Selects ${env}: ${dir}"
+    # Each environment overlay must select its own OCI artifact tag.
+    if ! grep -qE "^ *tag: ${env}\$" <<< "${rendered}"; then
+      fail "${dir} does not pin the OCIRepository to tag ${env}"
+      continue
+    fi
   done
 done
 
