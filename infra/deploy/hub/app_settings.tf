@@ -7,7 +7,7 @@ locals {
       for feature_flag in var.feature_flags : {
         name        = feature_flag.name
         default     = feature_flag.default
-        label       = feature_flag.app == null ? environment : "${environment}-${app}"
+        label       = feature_flag.app == null ? environment : "${environment}-${feature_flag.app}"
         description = feature_flag.description
       }
     ]
