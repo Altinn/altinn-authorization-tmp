@@ -25,7 +25,7 @@ Four source projects: `Altinn.ResourceRegistry` (the host and its controllers fo
   - Its tests carry no `[UnitTest]` or `[IntegrationTest]` marker, because this island does not import `src/Directory.Build.targets`, which is where the markers are linked in. Setting `XUnitVersion` to `v3` here does nothing; xUnit 2 comes from this folder's own `Directory.Build.targets`.
   - `TestCategoryGuard` is not compiled here, so nothing fails when a test has no category.
   - **The repository-wide unit lane does not exclude these tests.** `dotnet test -- --filter-trait "Category=Unit"` run from the root also runs this vertical's integration tests. That was verified: a PostgreSQL test here runs and passes under that filter.
-- **Its integration tests start a real database rather than skipping.** `DbFixture` builds and starts a PostgreSQL container through Testcontainers, with no skip path when no runtime is available. Elsewhere in the repository a missing runtime either skips or fails in fixture setup; here it will try to start a container.
+- **Its integration tests start a real database rather than skipping.** `DbFixture` builds and starts a PostgreSQL container through Testcontainers, with no skip path when no runtime is available, so without one these tests fail when the container does not start.
 
 ## Test gotchas
 

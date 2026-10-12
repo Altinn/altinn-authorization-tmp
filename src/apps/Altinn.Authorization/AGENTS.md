@@ -34,7 +34,5 @@ _Nothing recorded yet._ This section is the reason the file exists, and it can o
 
 ## Test gotchas
 
-- **Two fixtures, opposite purposes.** `AuthorizationApiFixture` boots the host with `PostgreSQLSettings:EnableDBConnection=false` and mock repositories, so the host never runs migrations, even if `EnableDBConnection` is turned on in configuration. Both `appsettings.json` files already set it to `false`; the override is a guard. `AuthorizationDbFixture` is for tests that need a real database.
-- **`AuthorizationDbFixture` does not start a container per test class.** It uses the shared `PostgresTestEngine`: migrations are applied once into a template database, and each test class gets a fast `CREATE DATABASE ... WITH TEMPLATE` clone. Treat it as cheap, and do not add container management around it.
-- **Skipping without a container runtime is not automatic.** `PostgresTestEngine` records a `SkipReason` rather than throwing, and `AuthorizationDbFixture` exposes it so tests can call `Assert.SkipWhen(...)`. A test that needs the database and does not check it will fail rather than skip. Both fixtures are documented in [`docs/testing/FIXTURES.md`](../../../docs/testing/FIXTURES.md).
+- **No test here needs a container.** The PDP has no database of its own any more, and its database tests and `AuthorizationDbFixture` went with it in [#4311](https://github.com/Altinn/altinn-auth/pull/4311). Controller tests use `AuthorizationApiFixture`, which boots the host with mock services and is documented in [`docs/testing/FIXTURES.md`](../../../docs/testing/FIXTURES.md). The test project still references `Testcontainers.PostgreSql`, unused.
 - Tests are split into `Unit/` and `Integration/`, and every test needs `[UnitTest]` or `[IntegrationTest]` or the run fails.

@@ -26,7 +26,7 @@ pwsh eng/testing/run-coverage.ps1                      # coverage, installs dotn
 - **Branch per change, never commit to `main`.** Name it `type/<issue>_<slug>`.
 - **The PR title is a Conventional Commit with the issue number**, for example `fix(#4044): ...`. `main` is squash-only with linear history, and the release automation reads the squash title. A single-commit PR currently squashes under the *commit* title, so check the title in the merge dialog ([#4095](https://github.com/Altinn/altinn-auth/issues/4095)).
 - **CI runs `repoctl check`:** `dotnet format --verify-no-changes`, and the generated `.slnx` files and release configuration must be current (`just update-sln-files`).
-- **A green local `dotnet test` is not proof, and a red one is not always a defect.** Without a container runtime some integration tests skip and others fail in fixture setup, so which you get is per vertical. CI is the gate.
+- **A green local `dotnet test` is not proof, and a red one is not always a defect.** Without a container runtime, integration tests that need a database fail in setup. CI is the gate.
 - **Update affected documentation and agent guidance in the same PR.** Require ADRs only for significant architectural decisions or lasting trade-offs; see [the threshold](CONTRIBUTING.md#when-an-adr-is-required). Validate the [guidance contract](docs/adr/0002-tool-neutral-agent-contract.md) with `node .github/scripts/agents-docs-validate.mjs`.
 - **Issues: a type and one or more `area/*`** ([guide](CONTRIBUTING.md#issues-and-labels)).
 - **Issues, comments, docs and PR descriptions start with a TL;DR** of at most five bullets (bugs: what happened). Text drafted with a tool says so near the top, and says the reader is unspecified until a person confirms they have read it.
@@ -69,7 +69,7 @@ Do not "fix" these without understanding them.
 
 - **In an xUnit v3 vertical, every test needs a category.** Mark the class or method `[UnitTest]` or `[IntegrationTest]` from `Altinn.Authorization.Testing`. The unit lane selects by that trait, and `TestCategoryGuard`, linked into those test assemblies, fails the run on an uncategorised test. CI runs every test in a vertical in one go.
 - **Resource Registry is the exception.** It is an xUnit v2 island whose tests carry no category, so a repository-wide `dotnet test -- --filter-trait "Category=Unit"` also runs its integration tests, which start a real PostgreSQL. Run the unit lane per vertical, and that vertical through its own solution; [its `AGENTS.md`](src/apps/Altinn.ResourceRegistry/AGENTS.md) explains why.
-- **Without Docker or Podman**, Authorization's database tests skip when they check `SkipReason`, Access Management's fail in fixture setup, and Resource Registry's try to start a container.
+- **Without Docker or Podman**, Access Management's integration tests fail in fixture setup and Resource Registry's fail starting PostgreSQL. Authorization's need no container.
 - Start from [`docs/testing/README.md`](docs/testing/README.md) for fixtures, mocks and the naming convention.
 
 ## Known tech debt
