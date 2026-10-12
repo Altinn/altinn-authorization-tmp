@@ -7,7 +7,7 @@
 **TL;DR**
 
 - EF migrations, static data and the wait for the first import from Register run in a separate process started with `RunInitOnly=true`, before the app serves traffic.
-- The serving app never migrates. A normal start skips all of it.
+- A normal start does none of the EF work. It can still run the legacy Yuniql scripts; see Consequences.
 - A blocking lease, `access_management_init`, makes parallel init runs wait for each other, because parallel deploys to two clusters crash-looped without it.
 - **Gap:** the pull requests that moved init out of normal startup give no reason in writing. The team should add it.
 
@@ -23,7 +23,7 @@ In May 2026 the database migration failed in TT02 whenever deploys ran in parall
 
 ## Decision
 
-1. **Init is a separate run.** With `RunInitOnly=true`, `Program.cs` runs `Init()` and exits. `Init()` migrates the database, ingests static data (`StaticDataIngest.IngestAll`), and, when the Register import feature flag is on, waits until the first import from Register has completed ([#1548](https://github.com/Altinn/altinn-auth/pull/1548), 2025-10-21). A normal start does none of this. `RunIntegrationTests` also runs `Init()`, and then continues to serve.
+1. **Init is a separate run.** With `RunInitOnly=true`, `Program.cs` runs `Init()` and exits. `Init()` migrates the database, ingests static data (`StaticDataIngest.IngestAll`), and, when the Register import feature flag is on, waits until the first import from Register has completed ([#1548](https://github.com/Altinn/altinn-auth/pull/1548), 2025-10-21). A normal start does none of this EF work. `RunIntegrationTests` also runs `Init()`, and then continues to serve.
 2. **Init runs under a blocking lease.** `Init()` takes the lease `access_management_init` before it touches the database, so a second init run waits instead of migrating at the same time ([#3088](https://github.com/Altinn/altinn-auth/pull/3088), [#3152](https://github.com/Altinn/altinn-auth/pull/3152)). This reuses the lease mechanism the hosted services already used ([#3116](https://github.com/Altinn/altinn-auth/issues/3116)).
 
 ### Alternatives considered
@@ -34,6 +34,7 @@ In May 2026 the database migration failed in TT02 whenever deploys ran in parall
 ## Consequences
 
 - Every deployment must run the init before the app, or the app starts against a database that is missing schema or data. In this repository Flux runs a pre-deploy Job with `RunInitOnly=true` before the deployment (`manifests/pre-deploy/base/02-db-migration.yaml`; the deployment `dependsOn` it). Its manifests exist for at22 only; how the other environments start the init is not visible here.
+- **A serving start can still change the schema.** The legacy Yuniql scripts for `delegation` and `accessmanagement` ([ADR-0001](0001-ef-core-persistence.md)) run at any start where `PostgreSQLSettings:EnableDBConnection` is true, which it is in `appsettings.json`, independently of `RunInitOnly` (`ConfigurePostgreSqlConfiguration` in `AccessManagementHost.cs`). That lasts until the old schemas are removed. They run outside the `access_management_init` lease, relying on Yuniql's own lock (#3603).
 - Locally, a fresh database needs one run with `--RunInitOnly=true` before the normal `dotnet run`.
 - A stuck lease holds up a deploy. The alert #3086 asked for, when an init stays locked for 10 to 15 minutes, is still an unticked task in that closed issue.
 

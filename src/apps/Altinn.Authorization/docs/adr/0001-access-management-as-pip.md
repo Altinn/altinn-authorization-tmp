@@ -8,8 +8,7 @@
 
 - The PDP gets delegations, roles and access packages from Access Management's internal policy-information API. It does not read another service's database, and it does not write delegation data.
 - Responses are cached in the PDP for five minutes.
-- The PDP trusts Access Management's filtering, for example of which units a user holds a key role for.
-- Leftovers from the old model still sit in the code, switched off. Do not build on them.
+- The PDP trusts Access Management's filtering of which organisations a user may act for, through a key role or a client delegation.
 
 > Recorded after the fact for [#4079](https://github.com/Altinn/altinn-auth/issues/4079), from the sources under References and nothing else. Drafted with Claude (Opus 5.5). Human reader: not confirmed.
 
@@ -25,8 +24,8 @@ Altinn 2 was shut down on 2026-06-19. The PDP still looked up roles there, and [
 
 1. **Delegations come from Access Management's API.** The PDP calls `policyinformation/getdelegationchanges` through `AccessManagementWrapper`, not a database ([altinn-authorization#569](https://github.com/Altinn/altinn-authorization-archive/pull/569)). The delegation API that Authorization itself offered was removed in [#380](https://github.com/Altinn/altinn-auth/pull/380) (2025-02-25).
 2. **Responses are cached for five minutes.** The review of #569 asked to keep the five-minute cache the direct read had. The access-package lookup got the same cache after it put heavy load on the database for multi-requests ([#1836](https://github.com/Altinn/altinn-auth/issues/1836)).
-3. **Roles and access packages come from Access Management too**, through `policyinformation/roles-and-accesspackages` ([#3114](https://github.com/Altinn/altinn-auth/pull/3114), 2026-05-12), behind the feature flag `AccessManagementAsPipForRoles`. Of the two options in #2749, the lookup goes through Access Management.
-4. **The PDP trusts Access Management's answer.** A delegation returned with `coveredByPartyId` is taken to mean that the user holds a key role for that unit, without a separate lookup ([#3284](https://github.com/Altinn/altinn-auth/pull/3284)).
+3. **Roles and access packages come from Access Management too**, through `policyinformation/roles-and-accesspackages` ([#3114](https://github.com/Altinn/altinn-auth/pull/3114), 2026-05-12). Of the two options in #2749, the lookup goes through Access Management. The feature flag that guarded it, and the Altinn 2 role lookup behind it, were removed in [#4307](https://github.com/Altinn/altinn-auth/pull/4307) (2026-10-12).
+4. **The PDP trusts Access Management's answer.** A delegation returned with `coveredByPartyId` or an organisation `toUuid` is taken to mean that the user may act for that organisation, without a separate lookup. Access Management sets it for a unit the user holds a key role for ([#3284](https://github.com/Altinn/altinn-auth/pull/3284)), and for the via-party of a client delegation, which is the facilitator organisation and not a key-role unit.
 
 ### Alternatives considered
 
@@ -38,12 +37,13 @@ Altinn 2 was shut down on 2026-06-19. The PDP still looked up roles there, and [
 - Access Management is on the PDP's decision path. A slow or failing policy-information API affects every decision that depends on delegations, roles or packages, within what the cache absorbs. Reviewing #569, @jonkjetiloye pointed out that the PDP no longer controls when those database lookups happen.
 - A change to what Access Management's policy-information API returns is a change to authorization semantics. Treat it that way in review, in both verticals.
 - The delegation policies themselves are read from blob storage, at the path and version that Access Management returns with each delegation change.
-- **Leftovers, switched off:** a `delegation` schema with an EF migration and `DelegationMetadataRepository`, behind `PostgreSQLSettings:EnableDBConnection=false`, and the Altinn 2 `RolesClient`, behind the feature flag above. [#3851](https://github.com/Altinn/altinn-auth/issues/3851) proposes removing them. Whether the flag is on in each environment is not visible in this repository.
+- Access Management decides what `coveredByPartyId` means. A new way of acting for an organisation that reuses it is trusted by the PDP as it stands, so review it as a change to the PDP's trust boundary.
+- The old model is mostly gone: the PDP's `delegation` schema and repository were removed in [#4311](https://github.com/Altinn/altinn-auth/pull/4311), and the Altinn 2 role lookup for decisions in #4307. `PostgreSQLSettings` and `RolesClient`, which still serves `RolesController`, remain; [#3851](https://github.com/Altinn/altinn-auth/issues/3851) tracks the rest of the cleanup.
 
 ## References
 
 - Background: [altinn-authorization#23](https://github.com/Altinn/altinn-authorization-archive/issues/23), [altinn-access-management#80](https://github.com/Altinn/altinn-access-management-archive/issues/80).
 - Delegations: [altinn-access-management#146](https://github.com/Altinn/altinn-access-management-archive/issues/146), [altinn-authorization#497](https://github.com/Altinn/altinn-authorization-archive/issues/497), [altinn-authorization#569](https://github.com/Altinn/altinn-authorization-archive/pull/569), [#380](https://github.com/Altinn/altinn-auth/pull/380), [#1836](https://github.com/Altinn/altinn-auth/issues/1836).
-- Roles and key roles: [#2749](https://github.com/Altinn/altinn-auth/issues/2749), [#3114](https://github.com/Altinn/altinn-auth/pull/3114), [#3284](https://github.com/Altinn/altinn-auth/pull/3284). Cleanup: [#3851](https://github.com/Altinn/altinn-auth/issues/3851).
-- Code: `AuthorizeUsingDelegations` and `GetAllCachedDelegationChanges` in `src/Altinn.Authorization/Controllers/DecisionController.cs`; `src/Altinn.Authorization/Services/Implementation/AccessManagementWrapper.cs`; on the other side, `PolicyInformationPointController` in Access Management's `Api.Internal`.
+- Roles and key roles: [#2749](https://github.com/Altinn/altinn-auth/issues/2749), [#3114](https://github.com/Altinn/altinn-auth/pull/3114), [#3284](https://github.com/Altinn/altinn-auth/pull/3284), [#4307](https://github.com/Altinn/altinn-auth/pull/4307). Cleanup: [#4311](https://github.com/Altinn/altinn-auth/pull/4311), [#3851](https://github.com/Altinn/altinn-auth/issues/3851).
+- Code: `AuthorizeUsingDelegations` and `GetAllCachedDelegationChanges` in `src/Altinn.Authorization/Controllers/DecisionController.cs`; `src/Altinn.Authorization/Services/Implementation/AccessManagementWrapper.cs`; on the other side, `PolicyInformationPointController` in Access Management's `Api.Internal`, and the client-delegation mapping in `Altinn.AccessManagement.Core/Services/PolicyInformationPoint.cs`.
 - The repositories `altinn-authorization` and `altinn-access-management` are archived as `altinn-authorization-archive` and `altinn-access-management-archive`. Their code moved here without history.

@@ -9,7 +9,7 @@
 - New persistence code and schema changes go into `Altinn.AccessMgmt.PersistenceEF`: `AppDbContext` and EF Core migrations.
 - The team's own repository and migration framework was replaced and then deleted.
 - The older `Altinn.AccessManagement.Persistence` (raw Npgsql, Yuniql) is retired together with the old APIs, not converted. Only `consent` moved to EF.
-- Audit stays in database triggers, and migration SQL is written by hand inside EF migrations.
+- Audit stays in database triggers. Schema changes are EF migrations, with hand-written SQL only where EF falls short.
 - **Not decided:** which Core project new service code belongs in.
 
 > Recorded after the fact for [#4079](https://github.com/Altinn/altinn-auth/issues/4079), from the sources under References and nothing else. Drafted with Claude (Opus 5.5). Human reader: not confirmed.
@@ -27,8 +27,8 @@ In June 2025 the project wanted to stop developing the in-house solution for mig
 ## Decision
 
 1. **EF Core owns Access Management's model and migrations** in `Altinn.AccessMgmt.PersistenceEF`. The first part landed in [#968](https://github.com/Altinn/altinn-auth/pull/968) (2025-08-14), whose follow-up list ended with removing the in-house framework. That was done in [#3099](https://github.com/Altinn/altinn-auth/pull/3099) (2026-05-22).
-2. **Audit stays in database triggers**, and `UseEfAudit()` supplies who made the change. EF does not manage `CASCADE`, because #861 found it could not support that alongside the triggers.
-3. **Migration SQL is written by hand** and maintained in EF migrations (#861). `CustomMigrationsSqlGenerator` emits the audit-trigger DDL alongside each table operation, because EF Core has no public API for it (its own comment).
+2. **Audit stays in database triggers**, and `UseEfAudit()` supplies who made the change. In 2025, #861 expected that EF could not manage `CASCADE` alongside the triggers. That no longer holds everywhere: `AssignmentPackage` has audit enabled and a cascade delete configured in EF, added by the migration `20260205102541_AddCascadeDeleteForAssignmentPackageToDelegationPackage`. The sources do not record when or why that became acceptable.
+3. **Schema changes are EF migrations.** #861 expected the SQL to be written by hand. In practice most migrations use EF's own operations, and 10 of 47 also call `migrationBuilder.Sql` for what EF does not express. `CustomMigrationsSqlGenerator` adds the audit-trigger DDL to each table operation, because EF Core has no public API for it (its own comment).
 4. **The older schemas are retired, not converted.** When migrations moved off Yuniql ([#3602](https://github.com/Altinn/altinn-auth/issues/3602)), only `consent` moved to EF, as `ConsentSchema_Baseline` ([#3606](https://github.com/Altinn/altinn-auth/issues/3606)). `delegation` and `accessmanagement` are no longer in use and are removed together with the old APIs, so they stay on Yuniql until then. The end state is deleting `Altinn.AccessManagement.Persistence` ([#3654](https://github.com/Altinn/altinn-auth/issues/3654)).
 5. **Old schemas go before consent is rewritten.** Rewriting the consent repository onto EF ([#3433](https://github.com/Altinn/altinn-auth/issues/3433), [#3652](https://github.com/Altinn/altinn-auth/issues/3652)) waits on a team decision to clean up the old schemas first, so it is not written against a schema about to change (comment on #3652, 2026-08-15).
 
@@ -50,4 +50,4 @@ In June 2025 the project wanted to stop developing the in-house solution for mig
 - Direction and per-area analysis: [#861](https://github.com/Altinn/altinn-auth/issues/861).
 - Implementation: [#968](https://github.com/Altinn/altinn-auth/pull/968), [#3099](https://github.com/Altinn/altinn-auth/pull/3099).
 - Off Yuniql: [#3602](https://github.com/Altinn/altinn-auth/issues/3602), [#3606](https://github.com/Altinn/altinn-auth/issues/3606). Still open: [#3342](https://github.com/Altinn/altinn-auth/issues/3342), [#3433](https://github.com/Altinn/altinn-auth/issues/3433), [#3652](https://github.com/Altinn/altinn-auth/issues/3652), [#3654](https://github.com/Altinn/altinn-auth/issues/3654).
-- Code: `src/Altinn.AccessMgmt.PersistenceEF/Contexts/AppDbContext.cs`, `.../Extensions/CustomMigrationsSqlGenerator.cs`, `.../Migrations/20260623145805_ConsentSchema_Baseline.cs`; `UseEfAudit()` in `src/Altinn.AccessManagement/Program.cs`; `AddYuniqlMigrations` in `src/Altinn.AccessManagement.Persistence/Extensions/PersistenceDependencyInjectionExtensions.cs`.
+- Code: `src/Altinn.AccessMgmt.PersistenceEF/Contexts/AppDbContext.cs`, `.../Extensions/CustomMigrationsSqlGenerator.cs`, `.../Configurations/AssignmentPackageConfiguration.cs`, `.../Migrations/20260623145805_ConsentSchema_Baseline.cs`; `UseEfAudit()` in `src/Altinn.AccessManagement/Program.cs`; `AddYuniqlMigrations` in `src/Altinn.AccessManagement.Persistence/Extensions/PersistenceDependencyInjectionExtensions.cs`.
