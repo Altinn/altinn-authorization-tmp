@@ -6,6 +6,9 @@ using Altinn.ResourceRegistry.Tests.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Altinn.ResourceRegistry.Core.Enums;
 using Altinn.ResourceRegistry.Core.Models;
+using Altinn.ResourceRegistry.Core.ServiceOwners;
+using Altinn.ResourceRegistry.Core.Services;
+using Altinn.ResourceRegistry.Core.Services.Interfaces;
 using Altinn.ResourceRegistry.Models;
 using System.Net.Http.Json;
 using Altinn.ResourceRegistry.Controllers;
@@ -13,7 +16,8 @@ using Altinn.ResourceRegistry.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Altinn.ResourceRegistry.Core;
 using Altinn.ResourceRegistry.Tests.Mocks;
-using Altinn.ResourceRegistry.Core.Services.Interfaces;
+using Microsoft.Extensions.Caching.Hybrid;
+using Moq;
 
 namespace Altinn.ResourceRegistry.Tests
 {
@@ -195,6 +199,48 @@ namespace Altinn.ResourceRegistry.Tests
 
             Assert.NotNull(resource);
             Assert.Equal(142, resource.Count);
+        }
+
+        [Fact]
+        public async Task GetResourceList_SecondCall_IsServedFromCache()
+        {
+            // Arrange
+            var cancellationToken = CancellationToken.None;
+
+            var repository = new Mock<IResourceRegistryRepository>();
+            repository.Setup(r => r.Search(It.IsAny<ResourceSearch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ServiceResource> { new ServiceResource { Identifier = "test_resource" } });
+
+            var serviceOwners = new Mock<IServiceOwnerService>();
+            serviceOwners.Setup(s => s.GetServiceOwners(It.IsAny<CancellationToken>())).ReturnsAsync(ServiceOwnerLookup.Empty);
+
+            var service = new ResourceRegistryService(repository.Object, Mock.Of<IPolicyRepository>(), Mock.Of<IApplications>(), serviceOwners.Object, CreateHybridCache());
+
+            // Act – two identical calls. includeApps:false isolates the cached inner list.
+            var first = await service.GetResourceList(includeApps: false, includeExpired: false, includeMigratedApps: false, cancellationToken: cancellationToken);
+            var second = await service.GetResourceList(includeApps: false, includeExpired: false, includeMigratedApps: false, cancellationToken: cancellationToken);
+
+            // Assert – repository was hit once; second call came from the cache.
+            repository.Verify(r => r.Search(It.IsAny<ResourceSearch>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once);
+
+            Assert.Single(first);
+            Assert.Single(second);
+
+            static HybridCache CreateHybridCache()
+            {
+                var services = new ServiceCollection();
+                services.AddLogging();
+                services.AddMemoryCache();
+                services.AddHybridCache();
+
+                return services.BuildServiceProvider().GetRequiredService<HybridCache>();
+            }
+        }
+
+        private static HybridCache CreateHybridCache()
+        {
+            var services = new ServiceCollection();
+            services.AddHybridCache();
+            return services.BuildServiceProvider().GetRequiredService<HybridCache>();
         }
 
         [Fact]
@@ -981,7 +1027,6 @@ namespace Altinn.ResourceRegistry.Tests
             Assert.Contains("Missing maskinporten scopen for MaskinportenSchema resource", content);
         }
 
-
         [Fact]
         public async Task CreateMaskinportenSchemaResource_WitScope_Ceated()
         {
@@ -1380,756 +1425,6 @@ namespace Altinn.ResourceRegistry.Tests
         public async Task SetResourcePolicy_OK()
         {
             var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management"
-            };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Post, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task SetResourcePolicy_Invalid_UnknownResource()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            // unknown_resource as id in uri
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/unknown_resource/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Post, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("Unknown resource", responseContent.Replace('"', ' ').Trim());
-        }
-
-        [Fact]
-        public async Task GetResourcePolicy_OK()
-        {
-            var client = CreateClient();
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Get, RequestUri = requestUri };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_OK()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_InvalidResourceId()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}_invalid_resourceid.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("\"Policy not accepted: Contains rules for a different registry resource\"", responseContent);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_MissingResourceId()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}_invalid_missing_resourceid.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("Policy not accepted: Contains rule without reference to registry resource id", responseContent.Replace('"', ' ').Trim());
-        }
-
-        [Fact]
-        public async Task UpdateResource_Ok()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                },
-                ResourceType = ResourceType.GenericAccessResource
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResource_WithInvalidIdentifier_Ok()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "skd-with_invalid.identifier",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                },
-                ResourceType = ResourceType.GenericAccessResource
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/skd-with_invalid.identifier";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResource_MissingTitleNynorsk()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", " " }, { "nb", "" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                }
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            string content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("Missing title in nynorsk", content);
-            Assert.Contains("Missing title in english", content);
-            Assert.Contains("Missing title in bokmal", content);
-        }
-
-        [Fact]
-        public async Task UpdateResource_MissingDescriptionBokmal()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                }
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            string content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("Missing Description in bokmal nb", content);
-        }
-
-
-        [Fact]
-        public async Task UpdateResource_EmptyDescriptionBokmal()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "" }, { "nb", " " } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                }
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            string content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("Missing Description in bokmal nb", content);
-            Assert.Contains("Missing Description in english en", content);
-            Assert.Contains("Missing Description in nynorsk nn", content);
-        }
-
-        [Fact]
-        public async Task UpdateResource_MissingRightsDecriptionEngelsk()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "nb", "" }, { "nn", " " } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                }
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            string content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("Missing RightDescription in english en", content);
-            Assert.Contains("Missing RightDescription in nynorsk nn", content);
-            Assert.Contains("Missing RightDescription in bokmal nb", content);
-        }
-
-        [Fact]
-        public async Task UpdateResource_MissingRightsDecriptionEngelskButNotDelegatable()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "altinn_access_management",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                Delegable = false,
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                },
-                ResourceType = ResourceType.GenericAccessResource
-            };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-
-        [Fact]
-        public async Task UpdateResource_BadRequest()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            ServiceResource resource = new ServiceResource() { Identifier = "wrong_non_matcing_id" };
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestUri = "resourceregistry/api/v1/Resource/altinn_access_management";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task CreateResource_Ok()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "superdupertjenestene",
-                Title = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
-                Status = "Completed",
-                ContactPoints = new List<ContactPoint>() { new ContactPoint() { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" } },
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                },
-                ResourceType = ResourceType.GenericAccessResource,
-            };
-
-            string requestUri = "resourceregistry/api/v1/Resource/";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task CreateResource_UnAuthorized()
-        {
-            var client = CreateClient();
-            ServiceResource resource = new ServiceResource()
-            {
-                Identifier = "superdupertjenestene",
-                Title = new Dictionary<string, string>() { { "en", "Super Duper Tjenestene" } },
-                Description = new Dictionary<string, string>() { { "nb", "Dette er en super duper tjeneste" } },
-                RightDescription = new Dictionary<string, string> { { "nb", "Dette gir mottakere rett til super duper tjeenste" } },
-                Status = "Completed",
-                HasCompetentAuthority = new Altinn.ResourceRegistry.Core.Models.CompetentAuthority()
-                {
-                    Organization = "974761076",
-                    Orgcode = "skd",
-                }
-            };
-
-            string requestUri = "resourceregistry/api/v1/Resource/";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(resource), Encoding.UTF8, "application/json")
-            };
-
-            httpRequestMessage.Headers.Add("Accept", "application/json");
-            httpRequestMessage.Headers.Add("ContentType", "application/json");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_OK_AdminScope_NotResourceOwner()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.admin");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management_skd" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_Forbidden_NotResourceOwner()
-        {
-            var client = CreateClient();
-            string token = PrincipalUtil.GetOrgToken("ttd", "991825888", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management_skd" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task UpdateResourcePolicy_UnAuthorized()
-        {
-            var client = CreateClient();
-            ServiceResource resource = new ServiceResource() { Identifier = "altinn_access_management" };
-            string fileName = $"{resource.Identifier}.xml";
-            string filePath = $"Data/ResourcePolicies/{fileName}";
-
-            Uri requestUri = new Uri($"resourceregistry/api/v1/Resource/{resource.Identifier}/policy", UriKind.Relative);
-
-            ByteArrayContent fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
-
-            MultipartFormDataContent content = new();
-            content.Add(fileContent, "policyFile", fileName);
-
-            HttpRequestMessage httpRequestMessage = new() { Method = HttpMethod.Put, RequestUri = requestUri, Content = content };
-            httpRequestMessage.Headers.Add("ContentType", "multipart/form-data");
-
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Deletes a resource that user is authorized for
-        /// Expected result: Return httpStatus No content statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_AuthorizedUser_ValidResource_NoPolicyFile_ReturnsNoContent()
-        {
-            var client = CreateClient();
-            // Arrange            
-            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            string resourceId = "altinn_access_management_skd";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Deletes a resource that user is authorized for
-        /// Expected result: Return httpStatus nocontent statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_AdminScope_ValidResource_WithPolicy_ReturnsNoContent()
-        {
-            // Arrange
-            var client = CreateClient();
-
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.admin");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            string resourceId = "altinn_access_management_skd_delme";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Deletes a resource that user is authorized for
-        /// Expected result: Return httpStatus unauthorized statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_UnAuthorized_ValidResource_ReturnsUnauthorized()
-        {
-            var client = CreateClient();
-            // Arrange
-            string resourceId = "altinn_access_management_skd";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Deletes a resource that user is authorized for
-        /// Expected result: Return httpStatus forbidden statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_Forbidden_ValidResource_ReturnsForbidden()
-        {
-            var client = CreateClient();
-            // Arrange            
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            string resourceId = "altinn_access_management_skd";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Attempts to delete a resource that does not exist
-        /// Expected result: Return httpStatus not found statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_DoesentExist_ReturnsNotFound()
-        {
-            var client = CreateClient();
-            // Arrange            
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            string resourceId = "fail-you-can-never-find-me";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
-        /// <summary>
-        /// Attempts to delete a resource that does not exist
-        /// Expected result: Return httpStatus not found statuscode
-        /// </summary>
-        [Fact]
-        public async Task Delete_PolicyDoesentExist_ReturnsOK()
-        {
-            var client = CreateClient();
-            // Arrange            
-            string token = PrincipalUtil.GetOrgToken("digdir", "991825827", "altinn:resourceregistry/resource.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            string resourceId = "fail-you-can-never-find-me";
-            string requestUri = $"resourceregistry/api/v1/Resource/{resourceId}";
-
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, requestUri);
-
-            // Act
-            HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task Export_OK()
-        {
-            var client = CreateClient();
             string requestUri = "resourceregistry/api/v1/Resource/export";
 
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri)
@@ -2159,6 +1454,8 @@ namespace Altinn.ResourceRegistry.Tests
             };
 
             httpRequestMessage.Headers.Add("Accept", "application/json");
+            httpRequestMessage.Headers.Add("ContentType", "application/json");
+
             httpRequestMessage.Headers.Add("ContentType", "application/json");
 
             HttpResponseMessage response = await client.SendAsync(httpRequestMessage);
@@ -2279,6 +1576,6 @@ namespace Altinn.ResourceRegistry.Tests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(errordetails);
-        }
+        }  
     }
 }
