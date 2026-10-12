@@ -73,7 +73,7 @@ namespace Altinn.AccessMgmt.Core.Services
                 return problem;
             }
 
-            var adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyAdministrator).FirstOrDefaultAsync(cancellationToken);
+            var adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator).FirstOrDefaultAsync(cancellationToken);
             if (adminAssignment is null)
             {
                 adminAssignment = new Assignment
