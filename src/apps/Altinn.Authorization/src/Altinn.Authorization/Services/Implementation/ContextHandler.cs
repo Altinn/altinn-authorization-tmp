@@ -14,7 +14,6 @@ using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Platform.Storage.Interface.Models;
 using Altinn.ResourceRegistry.Models;
-using Authorization.Platform.Authorization.Models;
 using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
