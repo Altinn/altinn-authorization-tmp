@@ -18,7 +18,7 @@ dotnet test src/apps/Altinn.AccessManagement/test/Altinn.AccessManagement.Api.Te
 pwsh eng/testing/run-coverage.ps1                      # coverage, installs dotnet-coverage if missing
 ```
 
-`.justfile` holds the quality gates and local-development helpers. `just check <vertical>` builds and runs the unit lane, `just check-full` adds the integration lane as CI does, and `just dev` starts the containers. `just --list` shows the rest. Recipes need PowerShell 7.
+`.justfile` holds the quality gates and local-development helpers: `just check <vertical>` is the fast gate, `just check-full <vertical>` runs what CI runs. Recipes need PowerShell 7.
 
 ## Critical workflow rules
 
