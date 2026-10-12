@@ -500,11 +500,22 @@ namespace Altinn.ResourceRegistry.Core.Services
 
         private static readonly string[] ResourceListCacheKeys = { "ResourceList_False_False", "ResourceList_False_True", "ResourceList_True_False", "ResourceList_True_True" };
 
-        private async Task InvalidateResourceListCache(CancellationToken cancellationToken)
+        private async Task InvalidateResourceListCache(CancellationToken _)
         {
+            // Use an independent, bounded token for post-commit eviction.
+            using var evictionCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
             foreach (string key in ResourceListCacheKeys)
             {
-                await _hybridCache.RemoveAsync(key, cancellationToken);
+                try
+                {
+                    await _hybridCache.RemoveAsync(key, evictionCts.Token);
+                }
+                catch
+                {
+                    // Intentionally ignored:
+                    // cache lifetime is short and will self-heal on expiry.
+                }
             }
         }
     }
