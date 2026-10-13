@@ -84,12 +84,8 @@ namespace Altinn.AccessMgmt.Core.Services
                 db.Assignments.Add(adminAssignment);
             }
 
-            var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
-
-            foreach (var estate in estates)
-            {
-                await GrantEstateAccess(estate.Id, toUuid, cancellationToken);
-            }
+            var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
+            await GrantEstateAccess(estateIds, [toUuid], cancellationToken);
 
             await db.SaveChangesAsync(cancellationToken);
 
@@ -100,10 +96,7 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
         {
             var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-            foreach (var adminId in adminIds)
-            {
-                await GrantEstateAccess(estateId, adminId, cancellationToken);
-            }
+            await GrantEstateAccess([estateId], adminIds, cancellationToken);
 
             return await db.SaveChangesAsync(cancellationToken);
         }
@@ -112,12 +105,19 @@ namespace Altinn.AccessMgmt.Core.Services
         public async Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
         {
             var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-            foreach (var adminId in adminIds)
-            {
-                await RevokeEstateAccess(estateId, adminId, cancellationToken);
-            }
+            await RevokeEstateAccess([estateId], adminIds, cancellationToken);
 
             return await db.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task<List<Guid>> GetBankruptcyEstateIds(Guid party, CancellationToken cancellationToken)
+        {
+            return await db.Assignments
+                .AsNoTracking()
+                .Where(a => a.ToId == party && a.RoleId == RoleConstants.EstateAdministrator)
+                .Select(a => a.FromId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
         }
 
         private async Task<List<Guid>> GetBankruptcyEstateAdministratorIds(Guid estateAdministratorPartyId, CancellationToken cancellationToken)
@@ -131,74 +131,96 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <summary>
-        /// Adds the Rightholder assignment from the estate to the administrator, with the packages
-        /// MainAdministrator, BankruptcyEstateReadAccess and BankruptcyEstateWriteAccess, if missing.
+        /// Adds the Rightholder assignment from every estate to every administrator, with the packages
+        /// MainAdministrator, BankruptcyEstateReadAccess and BankruptcyEstateWriteAccess, where missing.
+        /// Existing assignments and packages are loaded in two queries regardless of the number of estates.
         /// Changes are added to the context and must be saved by the caller.
         /// </summary>
-        private async Task GrantEstateAccess(Guid estateId, Guid adminId, CancellationToken cancellationToken)
+        private async Task GrantEstateAccess(List<Guid> estateIds, List<Guid> adminIds, CancellationToken cancellationToken)
         {
-            var estateAssignment = await db.Assignments
+            if (estateIds.Count == 0 || adminIds.Count == 0)
+            {
+                return;
+            }
+
+            var existingAssignments = await db.Assignments
                 .AsNoTracking()
-                .Where(a => a.FromId == estateId && a.ToId == adminId && a.RoleId == RoleConstants.Rightholder)
-                .FirstOrDefaultAsync(cancellationToken);
+                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
+                .ToDictionaryAsync(a => (a.FromId, a.ToId), cancellationToken);
 
-            List<AssignmentPackage> estatePackages = null;
+            var existingAssignmentIds = existingAssignments.Values.Select(a => a.Id).ToList();
+            var existingPackages = (await db.AssignmentPackages
+                .AsNoTracking()
+                .Where(p => existingAssignmentIds.Contains(p.AssignmentId) && EstateAdministratorPackages.Contains(p.PackageId))
+                .Select(p => new { p.AssignmentId, p.PackageId })
+                .ToListAsync(cancellationToken))
+                .Select(p => (p.AssignmentId, p.PackageId))
+                .ToHashSet();
 
-            if (estateAssignment is null)
+            foreach (var estateId in estateIds)
             {
-                estateAssignment = new Assignment
+                foreach (var adminId in adminIds)
                 {
-                    FromId = estateId,
-                    ToId = adminId,
-                    RoleId = RoleConstants.Rightholder,
-                };
-
-                db.Assignments.Add(estateAssignment);
-            }
-            else
-            {
-                estatePackages = await db.AssignmentPackages
-                    .AsNoTracking()
-                    .Where(a => a.AssignmentId == estateAssignment.Id)
-                    .ToListAsync(cancellationToken);
-            }
-
-            foreach (var packageId in EstateAdministratorPackages)
-            {
-                if (estatePackages is null || !estatePackages.Any(p => p.PackageId == packageId))
-                {
-                    db.AssignmentPackages.Add(new AssignmentPackage
+                    if (!existingAssignments.TryGetValue((estateId, adminId), out var estateAssignment))
                     {
-                        AssignmentId = estateAssignment.Id,
-                        PackageId = packageId,
-                    });
+                        estateAssignment = new Assignment
+                        {
+                            FromId = estateId,
+                            ToId = adminId,
+                            RoleId = RoleConstants.Rightholder,
+                        };
+
+                        db.Assignments.Add(estateAssignment);
+                    }
+
+                    foreach (var packageId in EstateAdministratorPackages)
+                    {
+                        if (!existingPackages.Contains((estateAssignment.Id, packageId)))
+                        {
+                            db.AssignmentPackages.Add(new AssignmentPackage
+                            {
+                                AssignmentId = estateAssignment.Id,
+                                PackageId = packageId,
+                            });
+                        }
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Removes the Rightholder assignment from the estate to the administrator, including its packages.
+        /// Removes the Rightholder assignment from every estate to every administrator, including its packages.
+        /// Assignments and packages are loaded in two queries regardless of the number of estates.
         /// Changes are added to the context and must be saved by the caller.
         /// </summary>
-        private async Task RevokeEstateAccess(Guid estateId, Guid adminId, CancellationToken cancellationToken)
+        private async Task RevokeEstateAccess(List<Guid> estateIds, List<Guid> adminIds, CancellationToken cancellationToken)
         {
-            var estateAssignment = await db.Assignments
-                .AsTracking()
-                .Where(a => a.FromId == estateId && a.ToId == adminId && a.RoleId == RoleConstants.Rightholder)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (estateAssignment is not null)
+            if (estateIds.Count == 0 || adminIds.Count == 0)
             {
-                var estatePackages = await db.AssignmentPackages
-                    .AsTracking()
-                    .Where(a => a.AssignmentId == estateAssignment.Id)
-                    .ToListAsync(cancellationToken);
-                db.AssignmentPackages.RemoveRange(estatePackages);
-
-                // TODO: Open point in https://github.com/Altinn/altinn-auth/pull/4415: should we revoke the whole Rightholder
-                // assignment or only the three estate administrator packages? For now the whole assignment is removed,
-                // as it is better to remove it than to leave a user with access they should not have.
-                db.Assignments.Remove(estateAssignment);
+                return;
             }
+
+            var estateAssignments = await db.Assignments
+                .AsTracking()
+                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
+                .ToListAsync(cancellationToken);
+
+            if (estateAssignments.Count == 0)
+            {
+                return;
+            }
+
+            var estateAssignmentIds = estateAssignments.Select(a => a.Id).ToList();
+            var estatePackages = await db.AssignmentPackages
+                .AsTracking()
+                .Where(p => estateAssignmentIds.Contains(p.AssignmentId))
+                .ToListAsync(cancellationToken);
+            db.AssignmentPackages.RemoveRange(estatePackages);
+
+            // TODO: Open point in https://github.com/Altinn/altinn-auth/pull/4415: should we revoke the whole Rightholder
+            // assignment or only the three estate administrator packages? For now the whole assignment is removed,
+            // as it is better to remove it than to leave a user with access they should not have.
+            db.Assignments.RemoveRange(estateAssignments);
         }
 
         private static readonly Guid[] EstateAdministratorPackages =
@@ -226,11 +248,8 @@ namespace Altinn.AccessMgmt.Core.Services
 
             if (existingAssignment is not null)
             {
-                var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
-                foreach (var estate in estates)
-                {
-                    await RevokeEstateAccess(estate.Id, toUuid, cancellationToken);
-                }
+                var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
+                await RevokeEstateAccess(estateIds, [toUuid], cancellationToken);
 
                 db.Assignments.Remove(existingAssignment);
             }
