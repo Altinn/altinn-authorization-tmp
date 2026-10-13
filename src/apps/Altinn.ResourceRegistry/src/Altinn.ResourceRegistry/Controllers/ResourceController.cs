@@ -689,7 +689,11 @@ namespace Altinn.ResourceRegistry.Controllers
             }
             catch (ScopePrefixDataUnavailableException ex)
             {
-                _logger.LogError(ex, "Could not validate Maskinporten scope prefixes for resource {ResourceId}", serviceResource.Identifier);
+                string safeResourceIdentifier = (serviceResource.Identifier ?? string.Empty)
+                    .Replace("\r", string.Empty)
+                    .Replace("\n", string.Empty);
+
+                _logger.LogError(ex, "Could not validate Maskinporten scope prefixes for resource {ResourceId}", safeResourceIdentifier);
                 return Problems.ScopePrefixList_Unavailable.ToActionResult();
             }
 
