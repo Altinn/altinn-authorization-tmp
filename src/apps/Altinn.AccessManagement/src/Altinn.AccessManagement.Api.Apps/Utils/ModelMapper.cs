@@ -69,7 +69,7 @@ public static class ModelMapper
         };
     }
 
-    private static RightInternal ToCore(RightDto dto)
+    private static RightInternal ToCore(AppsInstanceRightDto dto)
     {
         return new RightInternal
         {

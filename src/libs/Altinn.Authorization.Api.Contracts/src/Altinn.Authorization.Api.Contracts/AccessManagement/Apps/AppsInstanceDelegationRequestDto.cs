@@ -25,5 +25,5 @@ public class AppsInstanceDelegationRequestDto
     /// Gets or sets the rights to delegate
     /// </summary>
     [Required]
-    public required IEnumerable<RightDto> Rights { get; set; }
+    public required IEnumerable<AppsInstanceRightDto> Rights { get; set; }
 }

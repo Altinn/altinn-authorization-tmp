@@ -10,7 +10,7 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 /// This model describes a single right
 /// </summary>
 [SwaggerExampleFromExampleProvider]
-public class RightDto : IExampleDataProvider<RightDto>
+public class AppsInstanceRightDto : IExampleDataProvider<AppsInstanceRightDto>
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -29,7 +29,7 @@ public class RightDto : IExampleDataProvider<RightDto>
     /// </summary>
     /// <param name="options">Options</param>
     /// <returns></returns>
-    public static IEnumerable<RightDto> GetExamples(ExampleDataOptions options)
+    public static IEnumerable<AppsInstanceRightDto> GetExamples(ExampleDataOptions options)
     {
         var json = """
             {
@@ -54,6 +54,6 @@ public class RightDto : IExampleDataProvider<RightDto>
               }
             }
             """;
-        yield return JsonSerializer.Deserialize<RightDto>(json, SerializerOptions);
+        yield return JsonSerializer.Deserialize<AppsInstanceRightDto>(json, SerializerOptions);
     }
 }
