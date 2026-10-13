@@ -35,8 +35,6 @@ namespace Altinn.AccessManagement.Mappers
             CreateMap<AttributeMatchExternal, AttributeMatch>();
             CreateMap<BaseAttribute, AttributeDto>();
             CreateMap<AttributeDto, BaseAttribute>();
-            CreateMap<PolicyAttributeMatch, PolicyAttributeMatchExternal>();
-            CreateMap<PolicyAttributeMatchExternal, PolicyAttributeMatch>();
 
             // Rights
             CreateMap<Detail, DetailExternal>();
@@ -51,7 +49,6 @@ namespace Altinn.AccessManagement.Mappers
                 .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
             CreateMap<AppsInstanceDelegationResponse, AppsInstanceDelegationResponseDto>();
             CreateMap<InstanceRightDelegationResult, RightDelegationResultDto>();
-            CreateMap<InstanceDelegationModeExternal, InstanceDelegationMode>();
             CreateMap<AppsInstanceRevokeResponse, AppsInstanceRevokeResponseDto>();
             CreateMap<InstanceRightRevokeResult, RightRevokeResultDto>();
             CreateMap<ResourceRightDelegationCheckResult, ResourceRightDelegationCheckResultDto>();
