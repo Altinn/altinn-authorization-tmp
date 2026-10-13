@@ -1,4 +1,5 @@
 ﻿name: "Terraform: Shared"
+run-name: "${{ inputs.environment }}"
 
 on:
   workflow_dispatch:
