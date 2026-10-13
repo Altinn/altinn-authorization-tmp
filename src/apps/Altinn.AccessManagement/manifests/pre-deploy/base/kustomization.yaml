@@ -8,7 +8,6 @@ resources:
 configMapGenerator:
   - name: environment
     envs:
-      - ./../../../common.env
       - ./config/environment.env
 
 generatorOptions:
