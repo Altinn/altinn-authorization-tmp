@@ -90,64 +90,125 @@ namespace Altinn.AccessMgmt.Core.Services
 
             foreach (var estate in estates)
             {
-                var estateAssignment = await db.Assignments
-                    .AsNoTracking()
-                    .Where(a => a.FromId == estate.Id && a.ToId == toUuid && a.RoleId == RoleConstants.Rightholder)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                List<AssignmentPackage> estatePackages = null;
-
-                if (estateAssignment is null)
-                {
-                    estateAssignment = new Assignment
-                    {
-                        FromId = estate.Id,
-                        ToId = toUuid,
-                        RoleId = RoleConstants.Rightholder,
-                    };
-
-                    db.Assignments.Add(estateAssignment);
-                }
-                else
-                {
-                    estatePackages = await db.AssignmentPackages
-                        .AsNoTracking()
-                        .Where(a => a.AssignmentId == estateAssignment.Id)
-                        .ToListAsync(cancellationToken);
-                }
-
-                if (estatePackages is null || !estatePackages.Any(p => p.PackageId == PackageConstants.MainAdministrator))
-                {
-                    db.AssignmentPackages.Add(new AssignmentPackage
-                    {
-                        AssignmentId = estateAssignment.Id,
-                        PackageId = PackageConstants.MainAdministrator,
-                    });
-                }
-
-                if (estatePackages is null || !estatePackages.Any(p => p.PackageId == PackageConstants.BankruptcyEstateReadAccess))
-                {
-                    db.AssignmentPackages.Add(new AssignmentPackage
-                    {
-                        AssignmentId = estateAssignment.Id,
-                        PackageId = PackageConstants.BankruptcyEstateReadAccess,
-                    });
-                }
-
-                if (estatePackages is null || !estatePackages.Any(p => p.PackageId == PackageConstants.BankruptcyEstateWriteAccess))
-                {
-                    db.AssignmentPackages.Add(new AssignmentPackage
-                    {
-                        AssignmentId = estateAssignment.Id,
-                        PackageId = PackageConstants.BankruptcyEstateWriteAccess,
-                    });
-                }                
+                await GrantEstateAccess(estate.Id, toUuid, cancellationToken);
             }
 
             await db.SaveChangesAsync(cancellationToken);
 
             return DtoMapper.Convert(adminAssignment);
         }
+
+        /// <inheritdoc />
+        public async Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
+        {
+            var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
+            foreach (var adminId in adminIds)
+            {
+                await GrantEstateAccess(estateId, adminId, cancellationToken);
+            }
+
+            return await db.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
+        {
+            var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
+            foreach (var adminId in adminIds)
+            {
+                await RevokeEstateAccess(estateId, adminId, cancellationToken);
+            }
+
+            return await db.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task<List<Guid>> GetBankruptcyEstateAdministratorIds(Guid estateAdministratorPartyId, CancellationToken cancellationToken)
+        {
+            return await db.Assignments
+                .AsNoTracking()
+                .Where(a => a.FromId == estateAdministratorPartyId && a.RoleId == RoleConstants.BankruptcyEstateAdministrator)
+                .Select(a => a.ToId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Adds the Rightholder assignment from the estate to the administrator, with the packages
+        /// MainAdministrator, BankruptcyEstateReadAccess and BankruptcyEstateWriteAccess, if missing.
+        /// Changes are added to the context and must be saved by the caller.
+        /// </summary>
+        private async Task GrantEstateAccess(Guid estateId, Guid adminId, CancellationToken cancellationToken)
+        {
+            var estateAssignment = await db.Assignments
+                .AsNoTracking()
+                .Where(a => a.FromId == estateId && a.ToId == adminId && a.RoleId == RoleConstants.Rightholder)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            List<AssignmentPackage> estatePackages = null;
+
+            if (estateAssignment is null)
+            {
+                estateAssignment = new Assignment
+                {
+                    FromId = estateId,
+                    ToId = adminId,
+                    RoleId = RoleConstants.Rightholder,
+                };
+
+                db.Assignments.Add(estateAssignment);
+            }
+            else
+            {
+                estatePackages = await db.AssignmentPackages
+                    .AsNoTracking()
+                    .Where(a => a.AssignmentId == estateAssignment.Id)
+                    .ToListAsync(cancellationToken);
+            }
+
+            foreach (var packageId in EstateAdministratorPackages)
+            {
+                if (estatePackages is null || !estatePackages.Any(p => p.PackageId == packageId))
+                {
+                    db.AssignmentPackages.Add(new AssignmentPackage
+                    {
+                        AssignmentId = estateAssignment.Id,
+                        PackageId = packageId,
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes the Rightholder assignment from the estate to the administrator, including its packages.
+        /// Changes are added to the context and must be saved by the caller.
+        /// </summary>
+        private async Task RevokeEstateAccess(Guid estateId, Guid adminId, CancellationToken cancellationToken)
+        {
+            var estateAssignment = await db.Assignments
+                .AsTracking()
+                .Where(a => a.FromId == estateId && a.ToId == adminId && a.RoleId == RoleConstants.Rightholder)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (estateAssignment is not null)
+            {
+                var estatePackages = await db.AssignmentPackages
+                    .AsTracking()
+                    .Where(a => a.AssignmentId == estateAssignment.Id)
+                    .ToListAsync(cancellationToken);
+                db.AssignmentPackages.RemoveRange(estatePackages);
+
+                // TODO: Open point in https://github.com/Altinn/altinn-auth/pull/4415: should we revoke the whole Rightholder
+                // assignment or only the three estate administrator packages? For now the whole assignment is removed,
+                // as it is better to remove it than to leave a user with access they should not have.
+                db.Assignments.Remove(estateAssignment);
+            }
+        }
+
+        private static readonly Guid[] EstateAdministratorPackages =
+        [
+            PackageConstants.MainAdministrator,
+            PackageConstants.BankruptcyEstateReadAccess,
+            PackageConstants.BankruptcyEstateWriteAccess,
+        ];
 
         /// <inheritdoc />
         public async Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
@@ -168,21 +229,7 @@ namespace Altinn.AccessMgmt.Core.Services
             var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
             foreach (var estate in estates)
             {
-                var estateAssignment = await db.Assignments
-                    .AsTracking()
-                    .Where(a => a.FromId == estate.Id && a.ToId == toUuid && a.RoleId == RoleConstants.Rightholder)
-                    .FirstOrDefaultAsync(cancellationToken);
-                if (estateAssignment is not null)
-                {
-                    var estatePackages = await db.AssignmentPackages
-                        .AsTracking()
-                        .Where(a => a.AssignmentId == estateAssignment.Id)
-                        .ToListAsync(cancellationToken);
-                    db.AssignmentPackages.RemoveRange(estatePackages);
-                    
-                    // TODO: Should we check if the assignment is used for other purposes before removing it? For now, we will remove it as better to remove it than to leave it and have a user with access they should not have.
-                    db.Assignments.Remove(estateAssignment);
-                }
+                await RevokeEstateAccess(estate.Id, toUuid, cancellationToken);
             }
 
             if (existingAssignment is not null)
@@ -242,6 +289,27 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <param name="configureConnections">An action to configure connection options.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A result containing the revoked assignment.</returns>
-        Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default);        
+        Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gives every bankruptcy estate administrator of the estate administrator party the Rightholder role
+        /// from the estate, with the estate administrator packages. Used by the ER import when an
+        /// EstateAdministrator role is added.
+        /// </summary>
+        /// <param name="estateId">The unique identifier of the estate (konkursbo).</param>
+        /// <param name="estateAdministratorPartyId">The unique identifier of the estate administrator party (bostyrer).</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>The number of changed rows.</returns>
+        Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Revokes the Rightholder role from the estate for every bankruptcy estate administrator of the
+        /// estate administrator party. Used by the ER import when an EstateAdministrator role is removed.
+        /// </summary>
+        /// <param name="estateId">The unique identifier of the estate (konkursbo).</param>
+        /// <param name="estateAdministratorPartyId">The unique identifier of the estate administrator party (bostyrer).</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>The number of changed rows.</returns>
+        Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default);
     }
 }

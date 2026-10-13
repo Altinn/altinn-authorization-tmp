@@ -12,6 +12,7 @@ using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
+using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -704,6 +705,108 @@ public class BankruptcyDelegationControllerTest
                     .Where(a => (a.FromId == EstateOne || a.FromId == EstateTwo) && a.ToId == user)
                     .ToListAsync(TestContext.Current.CancellationToken);
                 Assert.Empty(estateAssignments);
+            });
+        }
+    }
+
+    /// <summary>
+    /// Tests for the methods the ER import (<c>RoleSyncService</c>) calls when an <c>EstateAdministrator</c>
+    /// (bostyrer) role is added or removed on an estate.
+    /// </summary>
+    /// <remarks>
+    /// Seeds Bjarne as a second bostyrer on estate two, with Anne as his bankruptcy estate administrator.
+    /// </remarks>
+    [IntegrationTest]
+    public class ImportEstateAdministrator : IClassFixture<ApiFixture>
+    {
+        public ImportEstateAdministrator(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<ImportEstateAdministrator>(SeedBankruptcyEstates, db =>
+            {
+                db.Assignments.AddRange(
+                    new Assignment { FromId = EstateTwo, ToId = LawyerBjarne, RoleId = RoleConstants.EstateAdministrator },
+                    new Assignment { FromId = LawyerBjarne, ToId = AssistantAnne, RoleId = RoleConstants.BankruptcyEstateAdministrator });
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        /// <summary>
+        /// Bodil is registered as bostyrer on estate one. Expects her administrator to get a single rightholder
+        /// assignment from estate one with the three packages, also when the import runs twice.
+        /// </summary>
+        [Fact]
+        public async Task GrantEstateAccessToAdministrators_Twice_GivesAdministratorsEstatePackagesOnce()
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var service = new BankruptcyEstateDelegationService(db);
+                await service.GrantEstateAccessToAdministrators(EstateOne, LawyerBodil, TestContext.Current.CancellationToken);
+                await service.GrantEstateAccessToAdministrators(EstateOne, LawyerBodil, TestContext.Current.CancellationToken);
+            });
+
+            await AssertEstatePackages(EstateOne, ExistingAdmin);
+        }
+
+        /// <summary>
+        /// Bjarne is bostyrer on estate two. Expects the import to grant Anne access when the role is added,
+        /// and to remove the rightholder assignment when the role is removed.
+        /// </summary>
+        [Fact]
+        public async Task RevokeEstateAccessFromAdministrators_AfterGrant_RemovesRightholder()
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var service = new BankruptcyEstateDelegationService(db);
+                await service.GrantEstateAccessToAdministrators(EstateTwo, LawyerBjarne, TestContext.Current.CancellationToken);
+            });
+            await AssertEstatePackages(EstateTwo, AssistantAnne);
+
+            await Fixture.QueryDb(async db =>
+            {
+                var service = new BankruptcyEstateDelegationService(db);
+                await service.RevokeEstateAccessFromAdministrators(EstateTwo, LawyerBjarne, TestContext.Current.CancellationToken);
+            });
+
+            await Fixture.QueryDb(async db =>
+            {
+                var estateAssignments = await db.Assignments.AsNoTracking()
+                    .Where(a => a.FromId == EstateTwo && a.ToId == AssistantAnne)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+                Assert.Empty(estateAssignments);
+            });
+        }
+
+        /// <summary>
+        /// Ulrik has no bankruptcy estate administrators. Expects nothing to change.
+        /// </summary>
+        [Fact]
+        public async Task GrantEstateAccessToAdministrators_WithoutAdministrators_ChangesNothing()
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var service = new BankruptcyEstateDelegationService(db);
+                var changed = await service.GrantEstateAccessToAdministrators(EstateOne, UnconnectedUlrik, TestContext.Current.CancellationToken);
+                Assert.Equal(0, changed);
+            });
+        }
+
+        private async Task AssertEstatePackages(Guid estate, Guid user)
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var estateAssignments = await db.Assignments.AsNoTracking()
+                    .Where(a => a.FromId == estate && a.ToId == user && a.RoleId == RoleConstants.Rightholder)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+                var estateAssignment = Assert.Single(estateAssignments);
+
+                var packages = await db.AssignmentPackages.AsNoTracking()
+                    .Where(p => p.AssignmentId == estateAssignment.Id)
+                    .Select(p => p.PackageId)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+                Assert.Equal(EstatePackages.Order(), packages.Order());
             });
         }
     }
