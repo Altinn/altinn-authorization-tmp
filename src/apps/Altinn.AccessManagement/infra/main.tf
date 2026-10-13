@@ -47,7 +47,7 @@ locals {
     CreatedAt   = try(static_data.static.output.created_at, timestamp())
   }
 
-    feature_flags = [
+  feature_flags = [
     ## Notifications
     {
       name        = "AccessMgmt.Core.Outbox.RequestPendingNotify"
@@ -616,7 +616,7 @@ resource "null_resource" "bootstrap_database" {
 
 removed {
   from = module.appsettings.azurerm_app_configuration_feature.configuration
-  
+
   lifecycle {
     destroy = false
   }
