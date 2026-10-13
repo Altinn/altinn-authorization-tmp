@@ -28,13 +28,7 @@ module "appsettings" {
   source     = "../../modules/appsettings"
   hub_suffix = local.suffix
 
-  feature_flags = [for key, value in local.feature_flags :
-    {
-      default     = value.default
-      label       = value.label
-      description = value.description
-      name        = value.name
-  }]
+  feature_flags = local.feature_flags
 
   providers = {
     azurerm.hub = azurerm
