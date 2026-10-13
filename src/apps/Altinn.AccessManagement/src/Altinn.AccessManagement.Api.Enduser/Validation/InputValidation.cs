@@ -53,7 +53,7 @@ public class InputValidation(
                     if (connections.Count == 0)
                     {
                         errorBuilder.Add(ValidationErrors.EntityNotExists, $"QUERY/{options.ToParameterName}", [new(options.ToParameterName, $"Cannot find any parties with uuid '{toParty}'.")]);
-                    }                    
+                    }
                 }
 
                 if (toEntity.TypeId == EntityTypeConstants.Person.Entity.Id && toEntity.DateOfDeath is not null)
@@ -74,7 +74,7 @@ public class InputValidation(
                 }
 
                 return toEntity;
-            }            
+            }
         }
 
         if (personInput is { })
