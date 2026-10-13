@@ -67,7 +67,7 @@ dev-redis-cli:
   redis-cli -h localhost -p $port
 # ---------------------------------------------------------------------------
 # Quality gates (#4086), following .github/workflows/ci.yml. For each vertical
-# CI builds in Release and runs `repoctl vertical test`, which runs every test
+# CI builds in Release with -warnaserror and runs `repoctl vertical test`, which runs every test
 # in the vertical in one go, with no unit or integration lanes. The repository
 # as a whole is checked with `repoctl check`.
 #
@@ -84,7 +84,7 @@ dev-redis-cli:
 
 # Build everything, or one vertical
 @build path=".":
-  dotnet build {{quote(path)}} -c Release
+  dotnet build {{quote(path)}} -c Release -warnaserror
 
 # The unit tests of one vertical: fast, and no container runtime needed
 @test-unit path:
@@ -99,9 +99,10 @@ dev-redis-cli:
   if (-not (Get-Command {{container-tool}} -ErrorAction SilentlyContinue)) { Write-Host "{{container-tool}} is not installed. Integration tests need a container runtime."; exit 1 }; & {{container-tool}} info *> $null; if ($LASTEXITCODE -ne 0) { Write-Host "{{container-tool}} is installed but not reachable. Start it, or run 'just dev'."; exit 1 }
   if ($IsWindows -and -not $env:DOCKER_HOST -and -not (Test-Path '\\.\pipe\docker_engine')) { Write-Host "{{container-tool}} is running, but Testcontainers cannot reach it: DOCKER_HOST is not set and the docker_engine pipe does not exist. See docs/testing/GETTING_STARTED.md."; exit 1 }
 
-# Fail clearly when RepoCtl, which CI uses to test and check, is not installed
+# Fail clearly when RepoCtl is missing or older than the version CI pins in .github/actions/init/action.yml
 @require-repoctl:
   if (-not (Get-Command repoctl -ErrorAction SilentlyContinue)) { Write-Host "repoctl is not installed. Run: dotnet tool install --global Altinn.Authorization.RepoCtl.Cli"; exit 1 }
+  $want = (Select-String -Path .github/actions/init/action.yml -Pattern 'depName=Altinn.Authorization.RepoCtl.Cli' -Context 0,1).Context.PostContext[0] -replace '.*default:\s*"?([0-9.]+)"?.*', '$1'; $have = (repoctl --version) -replace '[^0-9.].*$', ''; if ([version]$have -lt [version]$want) { Write-Host "repoctl $have is older than $want, which CI uses. Run: dotnet tool update --global Altinn.Authorization.RepoCtl.Cli --version $want"; exit 1 }
 
 # The fast gate for a vertical: build and its unit tests. Not what CI runs.
 @check path: (build path) (test-unit path)

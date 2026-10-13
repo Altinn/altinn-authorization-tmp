@@ -37,18 +37,20 @@ other before it builds.
 just check src/apps/Altinn.Authorization
 ```
 
-Builds the vertical and runs its unit tests, with no container runtime needed.
+Builds the vertical with `-warnaserror`, as CI does, and runs its unit tests,
+with no container runtime needed.
 It is a fast early signal, not what CI runs. `just check-full <vertical>` is:
 it builds, then runs every test in the vertical in one go through
 `repoctl vertical test`, so it needs a container runtime. `just repo-check`
 runs `repoctl check`, the repository-wide check CI also runs: `dotnet format`,
 generated `.slnx` files and the release configuration.
 
-On Windows, files in the working tree can be CRLF even though
-`.gitattributes` asks for LF; `git ls-files --eol` shows them as `w/crlf`.
-`dotnet format` in `repo-check` then flags every line in them. With no
-uncommitted changes, `git rm -r -q --cached .` followed by `git reset -q --hard`
-checks everything out again as LF. A few whitespace findings in
+A working tree checked out before #4103 (2026-10-09) can still hold CRLF
+files, because Git applies the new `.gitattributes` only to files it writes
+again; `git ls-files --eol` shows them as `w/crlf`, and `dotnet format` in
+`repo-check` flags every line in them. A fresh clone or `git worktree add` is
+LF already. In an existing clone with no uncommitted changes,
+`git rm -r -q --cached .` followed by `git reset -q --hard` rewrites them. A few whitespace findings in
 `Altinn.ResourceRegistry` remain on Windows, because its own `.editorconfig`
 sets no `end_of_line`; CI on Linux does not report them.
 
