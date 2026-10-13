@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  at22:
+  terraform:
     name: ${{ inputs.app }} ${{inputs.environment }}
     secrets: inherit
     uses: ./.github/workflows/_cd-infra-template.yml
