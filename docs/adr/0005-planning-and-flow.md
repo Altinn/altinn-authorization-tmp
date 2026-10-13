@@ -11,7 +11,7 @@ Drafted with AI assistance (Claude) on 2026-10-13 as a proposal for the two team
 
 - The shared project board is the single source of truth for what is being worked on and where it stands. Work that is not on the board does not exist. Moving your own card is part of finishing the work.
 - ADR-0004 put priority, horizon and progress on the board. This ADR defines what they mean and how we use them: horizon answers *when*, priority answers *in which order within that*, milestone answers *which release*. `urgent` requires a date.
-- Five columns, each a handoff to a different person: Backlog → Ready → In progress → In review → Test → Done. Done means verified in AT by someone other than the author. Production follows the milestone, not the board.
+- Six columns, each a handoff to a different person: Backlog → Ready → In progress → In review → Test → Done. Done means verified in AT by someone other than the author. Production follows the milestone, not the board.
 - Two-week cycles shared by both teams from now: planning opens the cycle, review closes it, and weekly refinement fills Ready from the top of the prioritised view. Every discussion ends with one written line in the issue.
 - The Team field becomes Fokusområde on 1 January 2027, by a CODEOWNERS change as ADR-0004 foresees. Fokusområde is a set of `area/*` components, not a layer.
 
@@ -32,18 +32,18 @@ The next questions follow from it, and this ADR proposes answers so the two team
 
 We will use one flow, with one mechanism per question, built on ADR-0004.
 
-1. **The board is the truth.** All work is an issue on the shared project board. A developer moves their own card as the work moves; moving the card to Done is part of the Definition of Done. Status is read from the board and from the Friday review post.
+1. **The board is the truth.** All planned work is an issue on the shared project board. Work handled within the weekly vakt rotation is the one exception (6); it becomes an issue when it needs more than the vakt can do. A developer moves their own card as the work moves; moving the card to Done is part of the Definition of Done. Status is read from the board and from the Friday review post.
 
-2. **Status (columns)** answers *where the work is*. Each column is a handoff to a different person, so there are exactly as many columns as handoffs:
+2. **Status (columns)** answers *where the work is*. Each column is a state of the work; moving between them is a handoff to a different person.:
 
     | Column      | Meaning                                                                                  | Next person              |
     | ----------- | ---------------------------------------------------------------------------------------- | ------------------------ |
     | Backlog     | Known, not planned. May lack milestone, priority and acceptance criteria.                | Product owner, at triage |
-    | Ready       | Definition of Ready met (6). Anyone can pull it.                                         | A developer              |
+    | Ready       | Definition of Ready met (7). Anyone can pull it.                                         | A developer              |
     | In progress | Being built. Column limit: roughly the number of developers; personal rule: at most two. | The developer            |
     | In review   | Pull request open. Reviewed by someone other than the author.                            | A reviewer               |
     | Test        | Merged and deployed to AT. Verified by someone other than the author.                    | A tester or peer         |
-    | Done        | Definition of Done met (7).                                                              | Nobody                   |
+    | Done        | Definition of Done met (8).                                                              | Nobody                   |
 
     Production is not a column. A release is shipped when its milestone is closed.
 
@@ -54,7 +54,7 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 5. **Priority** answers *in which order within the horizon*, and is set by the product owner and adjusted at refinement: `urgent` = has a hard external date, stated in the issue; `high` = must be in the milestone; `normal` = should be; `low` = if there is time. An `urgent` issue without a date is `high`.
 
 6. **Milestone** answers *which release*. Milestones are named by year and month (`2026-12`), with a due date. Every issue in Ready or later has a milestone. Backlog issues may lack a milestone. Work handled by the vakt rotation is not on this board; see open question 6 for when it becomes an issue. 
-    - **Incidents.** An incident is an issue from the moment it is confirmed: kind/incident, priority urgent (the date is now), placed directly in In progress by the person on vakt, bypassing Ready. It gets the current milestone, or a patch milestone if it ships on its own (kind/deploy-patch). Column limits do not apply to it. When it is resolved, the fix follows the normal path from In review onward, and any follow-up work (root cause, hardening, missing monitoring) becomes ordinary issues in Backlog. It is mentioned in the Friday review even if it is closed, so the cycle’s record shows what displaced planned work.
+    - **Incidents.** An incident is an issue from the moment it is confirmed: kind/incident, priority urgent (the date is now), placed directly in In progress by the person on vakt, bypassing Ready. It gets the current milestone, or a patch milestone if it ships on its own. Column limits do not apply to it. When it is resolved, the fix follows the normal path from In review onward, and any follow-up work (root cause, hardening, missing monitoring) becomes ordinary issues in Backlog. It is mentioned in the Friday review even if it is closed, so the cycle’s record shows what displaced planned work.
 
 7. **Definition of Ready.** Milestone, at least one `area/*`, horizon, priority, an issue type, and acceptance criteria that a developer other than the author could test against. Small enough to finish within one cycle; if not, it is an Epic with sub-issues.
 
@@ -70,8 +70,8 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 
 10. **Discussions end in writing.** A discussion starts with the question to settle and a time limit. It ends with one line in the issue: *decided* (what), *parked* (until when), or *to clarify* (by whom). When the time limit runs out, the group decides whether to continue, park, or take it offline with two named people. Architectural or cross-component decisions become an ADR.
 
-11. **Goals.** Goals. Quarterly goals live in digdir/roadmap, as the roadmap issues the product owners already maintain: three to five per quarter, each with a single owner. Every Epic in this repository links to the roadmap issue it serves, and the roadmap issue links back to its Epics. Every planned issue here is a sub-issue of such an Epic, so “why does this matter” can be followed from any issue to its goal in two clicks. The roadmap issue holds the why and the expected result; the Epic holds the what.
-                                    |
+11. **Goals.** Quarterly goals live in digdir/roadmap, as the roadmap issues the product owners already maintain: three to five per quarter, each with a single owner. Every Epic in this repository links to the roadmap issue it serves, and the roadmap issue links back to its Epics. Every planned issue here is a sub-issue of such an Epic, so “why does this matter” can be followed from any issue to its goal in two clicks. The roadmap issue holds the why and the expected result; the Epic holds the what.
+                                    
 12. **Default view.** The team’s default view is Priority board, filtered on the current milestone. That view is the prioritised list the team pulls from; the Backlog column on the board shows what is not started, not what comes next.
 
 ### Alternatives considered
@@ -87,6 +87,7 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 - `urgent` requires a date in the issue; otherwise it is `high`.
 - Refinement has a fixed shape: triage first, then Definition of Ready, then stop. Open-ended discussion gets a timeboxed slot with a written outcome, or a separate meeting with two named people.
 - The Estimate field is hidden until someone asks for it. The Test column is added. The default view is the priority board filtered on the current milestone.
+- The board’s built-in workflow for merged pull requests sets Status to Test, not Done. An issue is closed when it is verified, and closing it moves the card to Done.
 - This ADR is reviewed after four cycles (mid-December) and again after the team becomes one (January). A change to column meanings, field semantics or cadence is a change to this ADR; a change to the fokusområde mapping is a change to CODEOWNERS.
 
 ## Open questions for the reviewers
