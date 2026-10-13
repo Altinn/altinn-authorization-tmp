@@ -34,7 +34,7 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 
 1. **The board is the truth.** All planned work is an issue on the shared project board. Work handled within the weekly vakt rotation is the one exception (6); it becomes an issue when it needs more than the vakt can do. A developer moves their own card as the work moves; moving the card to Done is part of the Definition of Done. Status is read from the board and from the Friday review post.
 
-2. **Status (columns)** answers *where the work is*. Each column is a state of the work; moving between them is a handoff to a different person.:
+2. **Status (columns)** answers *where the work is*. Each column is a state of the work; moving between them is a handoff to a different person:
 
     | Column      | Meaning                                                                                  | Next person              |
     | ----------- | ---------------------------------------------------------------------------------------- | ------------------------ |
