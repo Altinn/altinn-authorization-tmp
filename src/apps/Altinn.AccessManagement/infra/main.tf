@@ -47,7 +47,7 @@ locals {
     CreatedAt   = try(static_data.static.output.created_at, timestamp())
   }
 
-  feature_flags = [
+    feature_flags = [
     ## Notifications
     {
       name        = "AccessMgmt.Core.Outbox.RequestPendingNotify"
@@ -505,9 +505,10 @@ module "appsettings" {
   labels = {
     "${var.environment}-access-management" = {
       values = merge({
-        "Consent:EventsPageSize"                               = { value = tostring(var.configuration.consent.events_page_size) }
-        "Core:Request:NotifyRequestApprovedInSeconds"          = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) } # Deprecated
-        "Core:Request:NotifyRequestPendingInSeconds"           = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }  # Deprecated
+        "Consent:EventsPageSize"                      = { value = tostring(var.configuration.consent.events_page_size) }
+        "Core:Request:NotifyRequestApprovedInSeconds" = { value = tostring(var.configuration.core.request_notify_request_approved_in_seconds) } # Deprecated
+        "Core:Request:NotifyRequestPendingInSeconds"  = { value = tostring(var.configuration.core.request_notify_request_pending_in_seconds) }  # Deprecated
+
         "Core:Notifications:RequestReviewedNotifyInSeconds"    = { value = tostring(var.configuration.core.notifications.request_reviewed_notify_in_seconds) }
         "Core:Notifications:RequestPendingNotifyInSeconds"     = { value = tostring(var.configuration.core.notifications.request_pending_notify_in_seconds) }
         "Core:Notifications:RightholderAddedNotifyInSeconds"   = { value = tostring(var.configuration.core.notifications.rightholder_added_notify_in_seconds) }
@@ -531,6 +532,19 @@ module "appsettings" {
       })
     }
   }
+
+  key_vault_reference = [
+    {
+      key                 = "Database:Postgres:AppConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
+      label               = "${var.environment}-access-management"
+    },
+    {
+      key                 = "Database:Postgres:MigrationConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
+      label               = "${var.environment}-access-management"
+    }
+  ]
 
   providers = {
     azurerm.hub = azurerm.hub
@@ -602,7 +616,7 @@ resource "null_resource" "bootstrap_database" {
 
 removed {
   from = module.appsettings.azurerm_app_configuration_feature.configuration
-
+  
   lifecycle {
     destroy = false
   }
