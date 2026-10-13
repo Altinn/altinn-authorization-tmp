@@ -224,14 +224,14 @@ namespace Altinn.AccessMgmt.Core.Services
                 .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
-            foreach (var estate in estates)
-            {
-                await RevokeEstateAccess(estate.Id, toUuid, cancellationToken);
-            }
-
             if (existingAssignment is not null)
             {
+                var estates = await GetBankruptcyEstatesInternal(partyUuid, cancellationToken);
+                foreach (var estate in estates)
+                {
+                    await RevokeEstateAccess(estate.Id, toUuid, cancellationToken);
+                }
+
                 db.Assignments.Remove(existingAssignment);
             }
 
