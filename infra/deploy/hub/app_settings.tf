@@ -19,36 +19,6 @@ locals {
   migrate_feature_flags = flatten([
     for environment in local.environments : [
       [
-        {
-          name        = "AccessManagementUI.DisplayPopularSingleRightsServices"
-          description = "Whether or not to only display popular SingleRights services."
-          label       = "${environment}-access-management-ui"
-        },
-        {
-          name        = "AccessManagementUI.UseNewSingleRightsClientDelegation"
-          description = "Whether or not to use the new version of client delegation for single rights services."
-          label       = "${environment}-access-management-ui"
-        },
-        {
-          name        = "AccessManagementUI.ShowHandledRequests"
-          description = "Whether or not to show handled sent and received access package and resource requests."
-          label       = "${environment}-access-management-ui"
-        },
-        {
-          name        = "AccessManagementUI.ShowIdPortenAuthorizations"
-          description = "Whether or not to include ID-porten authorizations in active consents list."
-          label       = "${environment}-access-management-ui"
-        },
-        {
-          name        = "AccessManagementUI.EnableSkyra"
-          description = "Whether or not to load the Skyra survey SDK and ask for cookie consent."
-          label       = "${environment}-access-management-ui"
-        },
-        {
-          name        = "AccessManagementUI.EnableSingleRightsTabInPoaOverview"
-          description = "Whether or not to show single rights tab in powers of attorney overview."
-          label       = "${environment}-access-management-ui"
-        }
       ]
     ]
   ])
