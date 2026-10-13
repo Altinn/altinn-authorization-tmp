@@ -14,6 +14,7 @@ public static partial class StaticDataIngest
     /// </summary>
     public static readonly Guid[] ObsoletePackageIds =
     [
+        
         // Konkursbo administrator (urn:altinn:accesspackage:konkursbo-tilgangsstyrer), now modelled as the role
         // RoleConstants.BankruptcyEstateAdministrator.
         Guid.Parse("0195efb8-7c80-7e9c-95c1-48937e23960a"),
