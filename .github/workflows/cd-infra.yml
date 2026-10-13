@@ -1,4 +1,4 @@
-﻿name: "CD: Infra"
+﻿name: "Terraform: Shared"
 
 on:
   workflow_dispatch:

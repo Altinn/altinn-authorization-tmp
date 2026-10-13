@@ -91,6 +91,12 @@ vpn_routes = {
 
 feature_flags = [
   {
+    name        = "AccessManagementUI.EnableActivityLog"
+    description = "Whether or not to show menuitems and tabs for Activity Log."
+    app         = "access-management-ui"
+    default     = false
+  },
+  {
     name        = "AccessMgmt.Core.Outbox.RequestPendingNotify"
     description = "Specifies if notifications for pending access requests are enabled."
     app         = "access-management"
@@ -325,12 +331,12 @@ feature_flags = [
     app         = "access-management"
     default     = false
   },
-  # {
-  #   name        = "AccessMgmt.Controller.RequestAssignment.SystemUserRequests"
-  #   description = "Enables system users (from-party) to send access requests to organizations. Trial feature; endpoint access is granted by the altinn:accessmanagement/systemuser:requests.write Maskinporten scope."
-  #   app         = "access-management"
-  #   default     = false
-  # },
+  {
+    name        = "AccessMgmt.Controller.RequestAssignment.SystemUserRequests"
+    description = "Enables system users (from-party) to send access requests to organizations. Trial feature; endpoint access is granted by the altinn:accessmanagement/systemuser:requests.write Maskinporten scope."
+    app         = "access-management"
+    default     = false
+  },
   {
     name        = "AccessMgmt.Controller.ServiceOwner.ResourceDelegation"
     description = "Enables the resource delegation endpoints in the serviceowner connections API."
