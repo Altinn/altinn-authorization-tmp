@@ -782,8 +782,8 @@ public class BankruptcyDelegationControllerTest
             await Fixture.QueryDb(async db =>
             {
                 var service = new BankruptcyEstateDelegationService(db);
-                await service.GrantEstateAccessToAdministrators(EstateOne, LawyerBodil, TestContext.Current.CancellationToken);
-                await service.GrantEstateAccessToAdministrators(EstateOne, LawyerBodil, TestContext.Current.CancellationToken);
+                await service.GrantEstateAccessToAdministrators([(EstateOne, LawyerBodil)], TestContext.Current.CancellationToken);
+                await service.GrantEstateAccessToAdministrators([(EstateOne, LawyerBodil)], TestContext.Current.CancellationToken);
             });
 
             await AssertEstatePackages(EstateOne, ExistingAdmin);
@@ -799,14 +799,14 @@ public class BankruptcyDelegationControllerTest
             await Fixture.QueryDb(async db =>
             {
                 var service = new BankruptcyEstateDelegationService(db);
-                await service.GrantEstateAccessToAdministrators(EstateTwo, LawyerBjarne, TestContext.Current.CancellationToken);
+                await service.GrantEstateAccessToAdministrators([(EstateTwo, LawyerBjarne)], TestContext.Current.CancellationToken);
             });
             await AssertEstatePackages(EstateTwo, AssistantAnne);
 
             await Fixture.QueryDb(async db =>
             {
                 var service = new BankruptcyEstateDelegationService(db);
-                await service.RevokeEstateAccessFromAdministrators(EstateTwo, LawyerBjarne, TestContext.Current.CancellationToken);
+                await service.RevokeEstateAccessFromAdministrators([(EstateTwo, LawyerBjarne)], TestContext.Current.CancellationToken);
             });
 
             await Fixture.QueryDb(async db =>
@@ -819,6 +819,25 @@ public class BankruptcyDelegationControllerTest
         }
 
         /// <summary>
+        /// One import batch with several relations: Bjarne on estate one, Bodil on estate two, and a duplicate of
+        /// the first. Expects each relation's administrators to get access on its estate, once.
+        /// </summary>
+        [Fact]
+        public async Task GrantEstateAccessToAdministrators_Batch_GrantsEachRelation()
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var service = new BankruptcyEstateDelegationService(db);
+                await service.GrantEstateAccessToAdministrators(
+                    [(EstateOne, LawyerBjarne), (EstateTwo, LawyerBodil), (EstateOne, LawyerBjarne)],
+                    TestContext.Current.CancellationToken);
+            });
+
+            await AssertEstatePackages(EstateOne, AssistantAnne);
+            await AssertEstatePackages(EstateTwo, ExistingAdmin);
+        }
+
+        /// <summary>
         /// Ulrik has no bankruptcy estate administrators. Expects nothing to change.
         /// </summary>
         [Fact]
@@ -827,7 +846,7 @@ public class BankruptcyDelegationControllerTest
             await Fixture.QueryDb(async db =>
             {
                 var service = new BankruptcyEstateDelegationService(db);
-                var changed = await service.GrantEstateAccessToAdministrators(EstateOne, UnconnectedUlrik, TestContext.Current.CancellationToken);
+                var changed = await service.GrantEstateAccessToAdministrators([(EstateOne, UnconnectedUlrik)], TestContext.Current.CancellationToken);
                 Assert.Equal(0, changed);
             });
         }

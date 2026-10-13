@@ -305,37 +305,36 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
     /// <summary>
     /// Gives the bankruptcy estate administrators of each estate administrator party (bostyrer) the Rightholder
-    /// role and estate administrator packages on the estate (konkursbo).
+    /// role and estate administrator packages on the estate (konkursbo). The relations of one flush, which is at
+    /// most one register page, are handled as one batch with a single save.
     /// </summary>
     private async Task<int> GrantEstateAccessToAdministrators(List<(Guid EstateId, Guid EstateAdministratorPartyId)> relations, AuditValues options, CancellationToken cancellationToken)
     {
-        var result = 0;
-        foreach (var (estateId, estateAdministratorPartyId) in relations)
+        if (relations.Count == 0)
         {
-            // A short-lived scope per relation keeps the change tracker small and lets each save see the previous one.
-            using var scope = _serviceProvider.CreateEFScope(options);
-            var bankruptcyEstateService = scope.ServiceProvider.GetRequiredService<IBankruptcyEstateDelegationService>();
-            result += await bankruptcyEstateService.GrantEstateAccessToAdministrators(estateId, estateAdministratorPartyId, cancellationToken);
+            return 0;
         }
 
-        return result;
+        // A short-lived scope per batch keeps the change tracker from growing over the whole stream.
+        using var scope = _serviceProvider.CreateEFScope(options);
+        var bankruptcyEstateService = scope.ServiceProvider.GetRequiredService<IBankruptcyEstateDelegationService>();
+        return await bankruptcyEstateService.GrantEstateAccessToAdministrators(relations, cancellationToken);
     }
 
     /// <summary>
     /// Revokes the Rightholder role on the estate (konkursbo) from the bankruptcy estate administrators of each
-    /// estate administrator party (bostyrer).
+    /// estate administrator party (bostyrer), as one batch with a single save.
     /// </summary>
     private async Task<int> RevokeEstateAccessFromAdministrators(List<(Guid EstateId, Guid EstateAdministratorPartyId)> relations, AuditValues options, CancellationToken cancellationToken)
     {
-        var result = 0;
-        foreach (var (estateId, estateAdministratorPartyId) in relations)
+        if (relations.Count == 0)
         {
-            using var scope = _serviceProvider.CreateEFScope(options);
-            var bankruptcyEstateService = scope.ServiceProvider.GetRequiredService<IBankruptcyEstateDelegationService>();
-            result += await bankruptcyEstateService.RevokeEstateAccessFromAdministrators(estateId, estateAdministratorPartyId, cancellationToken);
+            return 0;
         }
 
-        return result;
+        using var scope = _serviceProvider.CreateEFScope(options);
+        var bankruptcyEstateService = scope.ServiceProvider.GetRequiredService<IBankruptcyEstateDelegationService>();
+        return await bankruptcyEstateService.RevokeEstateAccessFromAdministrators(relations, cancellationToken);
     }
 
     internal static bool IsEstateAdministrator(ExternalRoleAssignmentEvent item) =>

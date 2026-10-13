@@ -92,7 +92,7 @@ namespace Altinn.AccessMgmt.Core.Services
                     }
 
                     var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
-                    await GrantEstateAccess(estateIds, [toUuid], cancellationToken);
+                    await GrantEstateAccess(estateIds.Select(estateId => (estateId, toUuid)).ToList(), cancellationToken);
                 },
                 cancellationToken);
 
@@ -100,14 +100,15 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
+        public async Task<int> GrantEstateAccessToAdministrators(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken = default)
         {
+            if (estateAdministrators.Count == 0)
+            {
+                return 0;
+            }
+
             return await SaveWithRetryOnConflict(
-                async () =>
-                {
-                    var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-                    await GrantEstateAccess([estateId], adminIds, cancellationToken);
-                },
+                async () => await GrantEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken),
                 cancellationToken);
         }
 
@@ -142,15 +143,36 @@ namespace Altinn.AccessMgmt.Core.Services
             || ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation };
 
         /// <inheritdoc />
-        public async Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
+        public async Task<int> RevokeEstateAccessFromAdministrators(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken = default)
         {
+            if (estateAdministrators.Count == 0)
+            {
+                return 0;
+            }
+
             return await SaveWithRetryOnConflict(
-                async () =>
-                {
-                    var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-                    await RevokeEstateAccess([estateId], adminIds, cancellationToken);
-                },
+                async () => await RevokeEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken),
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Expands each (estate, estate administrator party) relation to one (estate, administrator) pair per
+        /// bankruptcy estate administrator of that party, loading the administrators of all parties in one query.
+        /// </summary>
+        private async Task<List<(Guid EstateId, Guid AdminId)>> GetEstateAdministratorPairs(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken)
+        {
+            var partyIds = estateAdministrators.Select(r => r.EstateAdministratorPartyId).Distinct().ToList();
+            var adminsByParty = (await db.Assignments
+                .AsNoTracking()
+                .Where(a => partyIds.Contains(a.FromId) && a.RoleId == RoleConstants.BankruptcyEstateAdministrator)
+                .Select(a => new { a.FromId, a.ToId })
+                .ToListAsync(cancellationToken))
+                .ToLookup(a => a.FromId, a => a.ToId);
+
+            return estateAdministrators
+                .SelectMany(r => adminsByParty[r.EstateAdministratorPartyId].Select(adminId => (r.EstateId, adminId)))
+                .Distinct()
+                .ToList();
         }
 
         private async Task<List<Guid>> GetBankruptcyEstateIds(Guid party, CancellationToken cancellationToken)
@@ -163,33 +185,40 @@ namespace Altinn.AccessMgmt.Core.Services
                 .ToListAsync(cancellationToken);
         }
 
-        private async Task<List<Guid>> GetBankruptcyEstateAdministratorIds(Guid estateAdministratorPartyId, CancellationToken cancellationToken)
+        /// <summary>
+        /// Loads the Rightholder assignments for the given (estate, administrator) pairs in one query. The query
+        /// matches on estate ids and administrator ids separately, so combinations outside the pairs are filtered
+        /// out in memory.
+        /// </summary>
+        private async Task<List<Assignment>> GetEstateAssignments(List<(Guid EstateId, Guid AdminId)> pairs, bool tracking, CancellationToken cancellationToken)
         {
-            return await db.Assignments
-                .AsNoTracking()
-                .Where(a => a.FromId == estateAdministratorPartyId && a.RoleId == RoleConstants.BankruptcyEstateAdministrator)
-                .Select(a => a.ToId)
-                .Distinct()
+            var estateIds = pairs.Select(p => p.EstateId).Distinct().ToList();
+            var adminIds = pairs.Select(p => p.AdminId).Distinct().ToList();
+            var pairSet = pairs.ToHashSet();
+
+            var query = tracking ? db.Assignments.AsTracking() : db.Assignments.AsNoTracking();
+            var assignments = await query
+                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
                 .ToListAsync(cancellationToken);
+
+            return assignments.Where(a => pairSet.Contains((a.FromId, a.ToId))).ToList();
         }
 
         /// <summary>
-        /// Adds the Rightholder assignment from every estate to every administrator, with the packages
+        /// Adds the Rightholder assignment from the estate to the administrator for every pair, with the packages
         /// MainAdministrator, BankruptcyEstateReadAccess and BankruptcyEstateWriteAccess, where missing.
-        /// Existing assignments and packages are loaded in two queries regardless of the number of estates.
+        /// Existing assignments and packages are loaded in two queries regardless of the number of pairs.
         /// Changes are added to the context and must be saved by the caller.
         /// </summary>
-        private async Task GrantEstateAccess(List<Guid> estateIds, List<Guid> adminIds, CancellationToken cancellationToken)
+        private async Task GrantEstateAccess(List<(Guid EstateId, Guid AdminId)> pairs, CancellationToken cancellationToken)
         {
-            if (estateIds.Count == 0 || adminIds.Count == 0)
+            if (pairs.Count == 0)
             {
                 return;
             }
 
-            var existingAssignments = await db.Assignments
-                .AsNoTracking()
-                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
-                .ToDictionaryAsync(a => (a.FromId, a.ToId), cancellationToken);
+            var existingAssignments = (await GetEstateAssignments(pairs, tracking: false, cancellationToken))
+                .ToDictionary(a => (a.FromId, a.ToId));
 
             var existingAssignmentIds = existingAssignments.Values.Select(a => a.Id).ToList();
             var existingPackages = (await db.AssignmentPackages
@@ -200,53 +229,47 @@ namespace Altinn.AccessMgmt.Core.Services
                 .Select(p => (p.AssignmentId, p.PackageId))
                 .ToHashSet();
 
-            foreach (var estateId in estateIds)
+            foreach (var (estateId, adminId) in pairs)
             {
-                foreach (var adminId in adminIds)
+                if (!existingAssignments.TryGetValue((estateId, adminId), out var estateAssignment))
                 {
-                    if (!existingAssignments.TryGetValue((estateId, adminId), out var estateAssignment))
+                    estateAssignment = new Assignment
                     {
-                        estateAssignment = new Assignment
-                        {
-                            FromId = estateId,
-                            ToId = adminId,
-                            RoleId = RoleConstants.Rightholder,
-                        };
+                        FromId = estateId,
+                        ToId = adminId,
+                        RoleId = RoleConstants.Rightholder,
+                    };
 
-                        db.Assignments.Add(estateAssignment);
-                    }
+                    db.Assignments.Add(estateAssignment);
+                }
 
-                    foreach (var packageId in EstateAdministratorPackages)
+                foreach (var packageId in EstateAdministratorPackages)
+                {
+                    if (!existingPackages.Contains((estateAssignment.Id, packageId)))
                     {
-                        if (!existingPackages.Contains((estateAssignment.Id, packageId)))
+                        db.AssignmentPackages.Add(new AssignmentPackage
                         {
-                            db.AssignmentPackages.Add(new AssignmentPackage
-                            {
-                                AssignmentId = estateAssignment.Id,
-                                PackageId = packageId,
-                            });
-                        }
+                            AssignmentId = estateAssignment.Id,
+                            PackageId = packageId,
+                        });
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Removes the Rightholder assignment from every estate to every administrator, including its packages.
-        /// Assignments and packages are loaded in two queries regardless of the number of estates.
+        /// Removes the Rightholder assignment from the estate to the administrator for every pair, including its
+        /// packages. Assignments and packages are loaded in two queries regardless of the number of pairs.
         /// Changes are added to the context and must be saved by the caller.
         /// </summary>
-        private async Task RevokeEstateAccess(List<Guid> estateIds, List<Guid> adminIds, CancellationToken cancellationToken)
+        private async Task RevokeEstateAccess(List<(Guid EstateId, Guid AdminId)> pairs, CancellationToken cancellationToken)
         {
-            if (estateIds.Count == 0 || adminIds.Count == 0)
+            if (pairs.Count == 0)
             {
                 return;
             }
 
-            var estateAssignments = await db.Assignments
-                .AsTracking()
-                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
-                .ToListAsync(cancellationToken);
+            var estateAssignments = await GetEstateAssignments(pairs, tracking: true, cancellationToken);
 
             if (estateAssignments.Count == 0)
             {
@@ -295,7 +318,7 @@ namespace Altinn.AccessMgmt.Core.Services
                     if (existingAssignment is not null)
                     {
                         var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
-                        await RevokeEstateAccess(estateIds, [toUuid], cancellationToken);
+                        await RevokeEstateAccess(estateIds.Select(estateId => (estateId, toUuid)).ToList(), cancellationToken);
 
                         db.Assignments.Remove(existingAssignment);
                     }
@@ -356,24 +379,24 @@ namespace Altinn.AccessMgmt.Core.Services
         Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gives every bankruptcy estate administrator of the estate administrator party the Rightholder role
-        /// from the estate, with the estate administrator packages. Used by the ER import when an
-        /// EstateAdministrator role is added.
+        /// For each (estate, estate administrator party) relation, gives every bankruptcy estate administrator of
+        /// the party the Rightholder role from the estate, with the estate administrator packages. Used by the ER
+        /// import when EstateAdministrator roles are added. The whole batch is read in a fixed number of queries
+        /// and saved once, so the caller decides the batch size.
         /// </summary>
-        /// <param name="estateId">The unique identifier of the estate (konkursbo).</param>
-        /// <param name="estateAdministratorPartyId">The unique identifier of the estate administrator party (bostyrer).</param>
+        /// <param name="estateAdministrators">The (estate (konkursbo), estate administrator party (bostyrer)) relations.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The number of changed rows.</returns>
-        Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default);
+        Task<int> GrantEstateAccessToAdministrators(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Revokes the Rightholder role from the estate for every bankruptcy estate administrator of the
-        /// estate administrator party. Used by the ER import when an EstateAdministrator role is removed.
+        /// For each (estate, estate administrator party) relation, revokes the Rightholder role from the estate for
+        /// every bankruptcy estate administrator of the party. Used by the ER import when EstateAdministrator roles
+        /// are removed. The whole batch is read in a fixed number of queries and saved once.
         /// </summary>
-        /// <param name="estateId">The unique identifier of the estate (konkursbo).</param>
-        /// <param name="estateAdministratorPartyId">The unique identifier of the estate administrator party (bostyrer).</param>
+        /// <param name="estateAdministrators">The (estate (konkursbo), estate administrator party (bostyrer)) relations.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The number of changed rows.</returns>
-        Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default);
+        Task<int> RevokeEstateAccessFromAdministrators(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken = default);
     }
 }
