@@ -133,7 +133,7 @@ feature_flags = {
     {
       name        = "AccessManagement.Enduser.MaskinportenActivityLogApi"
       description = "Activity log endpoints under enduser/maskinporten."
-    }
+    },
     {
       name        = "AccessMgmt.Core.Outbox.RequestPendingNotify"
       description = "Specifies if notifications for pending access requests are enabled."
