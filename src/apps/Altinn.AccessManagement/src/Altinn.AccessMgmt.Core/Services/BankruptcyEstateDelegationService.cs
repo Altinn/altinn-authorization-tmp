@@ -7,12 +7,15 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
     public class BankruptcyEstateDelegationService(
         AppDbContext db) : IBankruptcyEstateDelegationService
     {
+        private const int MaxSaveAttempts = 3;
+
         private Task<(Entity From, Entity To)> GetFromAndToEntities(Guid? fromId, Guid? toId, CancellationToken cancellationToken) =>
            ConnectionWriteValidation.GetFromAndToEntitiesAsync(db, fromId, toId, cancellationToken);
 
@@ -71,23 +74,27 @@ namespace Altinn.AccessMgmt.Core.Services
                 return problem;
             }
 
-            var adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator).FirstOrDefaultAsync(cancellationToken);
-            if (adminAssignment is null)
-            {
-                adminAssignment = new Assignment
+            Assignment adminAssignment = null;
+            await SaveWithRetryOnUniqueViolation(
+                async () =>
                 {
-                    FromId = partyUuid,
-                    ToId = toUuid,
-                    RoleId = RoleConstants.BankruptcyEstateAdministrator,
-                };
+                    adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator).FirstOrDefaultAsync(cancellationToken);
+                    if (adminAssignment is null)
+                    {
+                        adminAssignment = new Assignment
+                        {
+                            FromId = partyUuid,
+                            ToId = toUuid,
+                            RoleId = RoleConstants.BankruptcyEstateAdministrator,
+                        };
 
-                db.Assignments.Add(adminAssignment);
-            }
+                        db.Assignments.Add(adminAssignment);
+                    }
 
-            var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
-            await GrantEstateAccess(estateIds, [toUuid], cancellationToken);
-
-            await db.SaveChangesAsync(cancellationToken);
+                    var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
+                    await GrantEstateAccess(estateIds, [toUuid], cancellationToken);
+                },
+                cancellationToken);
 
             return DtoMapper.Convert(adminAssignment);
         }
@@ -95,10 +102,36 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <inheritdoc />
         public async Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
         {
-            var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-            await GrantEstateAccess([estateId], adminIds, cancellationToken);
+            return await SaveWithRetryOnUniqueViolation(
+                async () =>
+                {
+                    var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
+                    await GrantEstateAccess([estateId], adminIds, cancellationToken);
+                },
+                cancellationToken);
+        }
 
-            return await db.SaveChangesAsync(cancellationToken);
+        /// <summary>
+        /// Stages the changes and saves them. The staging reads existing rows and inserts the missing ones, which
+        /// races with a concurrent request doing the same: both can see a row as missing, and the unique index on
+        /// (FromId, ToId, RoleId) or (AssignmentId, PackageId) then rejects the second insert. On a unique violation
+        /// the pending changes are discarded and staged again, so the rows the other request committed are found
+        /// and reused instead of inserted.
+        /// </summary>
+        private async Task<int> SaveWithRetryOnUniqueViolation(Func<Task> stageChanges, CancellationToken cancellationToken)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                await stageChanges();
+                try
+                {
+                    return await db.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (attempt < MaxSaveAttempts && ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    db.ChangeTracker.Clear();
+                }
+            }
         }
 
         /// <inheritdoc />

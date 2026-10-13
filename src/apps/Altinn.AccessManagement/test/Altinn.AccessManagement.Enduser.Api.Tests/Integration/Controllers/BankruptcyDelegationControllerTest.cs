@@ -441,6 +441,26 @@ public class BankruptcyDelegationControllerTest
         }
 
         /// <summary>
+        /// Bodil adds Asle in several simultaneous requests. All must succeed, and Asle must end up with a single
+        /// administrator assignment and a single set of packages on each estate.
+        /// </summary>
+        [Fact]
+        public async Task AddAdministrator_Concurrently_AllSucceedWithoutDuplicates()
+        {
+            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
+
+            var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ =>
+                client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAsle}", null, TestContext.Current.CancellationToken)));
+
+            foreach (var response in responses)
+            {
+                await AssertStatus(HttpStatusCode.OK, response);
+            }
+
+            await AssertEstatePackages(AssistantAsle);
+        }
+
+        /// <summary>
         /// Bodil adds Bodil Farmor through the PersonInput body (SSN and last name), which needs no prior connection.
         /// </summary>
         [Fact]
