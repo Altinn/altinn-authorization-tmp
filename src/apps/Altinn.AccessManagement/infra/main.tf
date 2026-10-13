@@ -486,18 +486,6 @@ module "rbac" {
   }
 }
 
-data "azurerm_key_vault_secret" "postgres_migration" {
-  key_vault_id = module.key_vault.id
-  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-migrator"
-  depends_on   = [null_resource.bootstrap_database]
-}
-
-data "azurerm_key_vault_secret" "postgres_app" {
-  key_vault_id = module.key_vault.id
-  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-app"
-  depends_on   = [null_resource.bootstrap_database]
-}
-
 module "appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
@@ -532,19 +520,6 @@ module "appsettings" {
       })
     }
   }
-
-  key_vault_reference = [
-    {
-      key                 = "Database:Postgres:AppConnectionString"
-      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
-      label               = "${var.environment}-access-management"
-    },
-    {
-      key                 = "Database:Postgres:MigrationConnectionString"
-      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
-      label               = "${var.environment}-access-management"
-    }
-  ]
 
   providers = {
     azurerm.hub = azurerm.hub
