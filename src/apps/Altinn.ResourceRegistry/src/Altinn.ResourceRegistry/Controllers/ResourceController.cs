@@ -674,7 +674,11 @@ namespace Altinn.ResourceRegistry.Controllers
             // set it to ttd to avoid the check.
             if (IsTestServiceOwner(serviceResource) && AuthorizationUtil.HasAdminAccess(User))
             {
-                _logger.LogInformation("Skipping Maskinporten scope prefix validation for ttd resource {ResourceId}", serviceResource.Identifier);
+                string sanitizedResourceId = serviceResource.Identifier?
+                    .Replace("\r", string.Empty)
+                    .Replace("\n", string.Empty);
+
+                _logger.LogInformation("Skipping Maskinporten scope prefix validation for ttd resource {ResourceId}", sanitizedResourceId);
                 return null;
             }
 
