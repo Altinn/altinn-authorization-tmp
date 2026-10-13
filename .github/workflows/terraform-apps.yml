@@ -1,4 +1,4 @@
-﻿name: "Terraform: Apps"
+﻿name: "Terraform: App ${{ inputs.environment }} ${{ inputs.app }}"
 
 on:
   workflow_dispatch:
