@@ -34,5 +34,5 @@ _Nothing recorded yet._ This section is the reason the file exists, and it can o
 
 ## Test gotchas
 
-- **No test here needs a container.** The PDP has no database of its own any more, and its database tests and `AuthorizationDbFixture` went with it in [#4311](https://github.com/Altinn/altinn-auth/pull/4311). Controller tests use `AuthorizationApiFixture`, which boots the host with mock services and is documented in [`docs/testing/FIXTURES.md`](../../../docs/testing/FIXTURES.md). The test project still references `Testcontainers.PostgreSql`, unused.
+- **No test here needs a container runtime.** `AuthorizationApiFixture` boots the host with mock repositories and clients; [#4311](https://github.com/Altinn/altinn-auth/pull/4311) removed the PDP's database and the `AuthorizationDbFixture` that tested it. The fixture is documented in [`docs/testing/FIXTURES.md`](../../../docs/testing/FIXTURES.md).
 - Tests are split into `Unit/` and `Integration/`, and every test needs `[UnitTest]` or `[IntegrationTest]` or the run fails.
