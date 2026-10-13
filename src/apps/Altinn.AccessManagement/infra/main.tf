@@ -294,8 +294,7 @@ resource "null_resource" "bootstrap_database" {
 }
 
 removed {
-  from = module.appsettings
-  
+  from = module.appsettings.azurerm_app_configuration_feature.configuration
   lifecycle {
     destroy = false
   }
