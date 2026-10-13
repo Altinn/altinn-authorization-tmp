@@ -615,7 +615,8 @@ resource "null_resource" "bootstrap_database" {
 # }
 
 removed {
-  from = module.appsettings.azurerm_app_configuration_feature.configuration[*]
+  from = module.appsettings.azurerm_app_configuration_feature.configuration["AccessMgmt.Core.HostedServices.RegisterSync_at23-access-management"]
+  
   lifecycle {
     destroy = false
   }
