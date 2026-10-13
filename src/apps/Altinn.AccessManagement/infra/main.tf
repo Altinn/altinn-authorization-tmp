@@ -581,29 +581,6 @@ module "postgres_server" {
   }
 }
 
-resource "null_resource" "bootstrap_database" {
-  triggers = {
-    ts = timestamp()
-  }
-
-  depends_on = [module.postgres_server]
-  provisioner "local-exec" {
-    working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
-    command     = <<EOT
-      dotnet run -- db bootstrap ${local.conf_json_path} \
-        --max-pool-size=${var.db_max_pool_size} \
-        --tenant-id=${data.azurerm_client_config.current.tenant_id} \
-        --principal-name=${data.azurerm_user_assigned_identity.admin.name} \
-        --server-resource-group=${azurerm_resource_group.access_management.name} \
-        --server-subscription=${data.azurerm_client_config.current.subscription_id} \
-        --server-name=${module.postgres_server.name} \
-        --kv-resource-group=${azurerm_resource_group.access_management.name} \
-        --kv-subscription=${data.azurerm_client_config.current.subscription_id} \
-        --kv-name=${module.key_vault.name}
-  EOT
-  }
-}
-
 # removed {
 # 
 # 
