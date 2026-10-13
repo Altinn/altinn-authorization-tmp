@@ -15,7 +15,7 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Altinn.AccessManagement.Controllers;
+namespace Altinn.AccessManagement.Api.Apps.Controllers;
 
 /// <summary>
 /// Controller responsible for all instance delegation operations from Apps
