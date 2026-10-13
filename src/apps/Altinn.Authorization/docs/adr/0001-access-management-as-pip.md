@@ -38,7 +38,7 @@ Altinn 2 was shut down on 2026-06-19. The PDP still looked up roles there, and [
 - A change to what Access Management's policy-information API returns is a change to authorization semantics. Treat it that way in review, in both verticals.
 - The delegation policies themselves are read from blob storage, at the path and version that Access Management returns with each delegation change.
 - Access Management decides what `coveredByPartyId` means. A new way of acting for an organisation that reuses it is trusted by the PDP as it stands, so review it as a change to the PDP's trust boundary.
-- The old model is mostly gone: the PDP's `delegation` schema and repository were removed in [#4311](https://github.com/Altinn/altinn-auth/pull/4311), and the Altinn 2 role lookup for decisions in #4307. `PostgreSQLSettings` and `RolesClient`, which still serves `RolesController`, remain; [#3851](https://github.com/Altinn/altinn-auth/issues/3851) tracks the rest of the cleanup.
+- The old model is mostly gone: the PDP's `delegation` schema and repository were removed in [#4311](https://github.com/Altinn/altinn-auth/pull/4311), and the Altinn 2 role lookup for decisions in #4307. `RolesClient` remains: it still calls the SBL Bridge for `RolesController`, although Altinn 2 is shut down. [#3851](https://github.com/Altinn/altinn-auth/issues/3851) tracks the rest of the cleanup.
 
 ## References
 
