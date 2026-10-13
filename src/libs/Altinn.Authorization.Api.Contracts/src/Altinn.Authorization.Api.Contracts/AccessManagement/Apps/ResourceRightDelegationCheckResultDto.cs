@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Altinn.AccessManagement.Enums;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Urn.Json;
 
-namespace Altinn.AccessManagement.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 
 /// <summary>
 /// Response model describing the delegation status for a given single right, whether the authenticated user is able to delegate the right or not on behalf of the from part.

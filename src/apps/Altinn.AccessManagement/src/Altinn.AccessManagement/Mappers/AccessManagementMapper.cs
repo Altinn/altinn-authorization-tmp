@@ -5,6 +5,7 @@ using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Models;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Platform.Register.Models;
 
@@ -45,7 +46,7 @@ namespace Altinn.AccessManagement.Mappers
             CreateMap<AppsInstanceDelegationRequestDto, AppsInstanceDelegationRequest>()
                 .ForMember(dest => dest.From, act => act.MapFrom(src => src.From.Value))
                 .ForMember(dest => dest.To, act => act.MapFrom(src => src.To.Value));
-            CreateMap<Models.RightDto, RightInternal>()
+            CreateMap<Altinn.Authorization.Api.Contracts.AccessManagement.Apps.RightDto, RightInternal>()
                 .ForMember(dest => dest.Action, act => act.MapFrom(src => src.Action.Value));
             CreateMap<AppsInstanceDelegationResponse, AppsInstanceDelegationResponseDto>();
             CreateMap<InstanceRightDelegationResult, RightDelegationResultDto>();

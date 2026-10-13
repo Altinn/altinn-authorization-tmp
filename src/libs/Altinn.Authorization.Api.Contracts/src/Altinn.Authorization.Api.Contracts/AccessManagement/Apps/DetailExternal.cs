@@ -1,6 +1,6 @@
-﻿using Altinn.AccessManagement.Enums;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums;
 
-namespace Altinn.AccessManagement.Models
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps
 {
     /// <summary>
     /// This model describes a detail while providing a specific code for identifying a specific recurring detail and parameters needed for context and understanding.

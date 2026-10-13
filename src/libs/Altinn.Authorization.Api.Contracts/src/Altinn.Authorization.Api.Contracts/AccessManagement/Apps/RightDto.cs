@@ -1,17 +1,16 @@
 ﻿using System.Text.Json;
-using Altinn.AccessManagement.Enums;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Swashbuckle.Examples;
 using Altinn.Swashbuckle.Filters;
 using Altinn.Urn.Json;
 
-namespace Altinn.AccessManagement.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 
 /// <summary>
 /// This model describes a single right
 /// </summary>
 [SwaggerExampleFromExampleProvider]
-public class RightRevokeResultDto : IExampleDataProvider<RightRevokeResultDto>
+public class RightDto : IExampleDataProvider<RightDto>
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -26,16 +25,11 @@ public class RightRevokeResultDto : IExampleDataProvider<RightRevokeResultDto>
     public UrnJsonTypeValue<ActionUrn> Action { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the right was successfully delegated or not
-    /// </summary>
-    public RevokeStatusExternal Status { get; set; }
-
-    /// <summary>
     /// Example data provider for RightV2
     /// </summary>
     /// <param name="options">Options</param>
     /// <returns></returns>
-    public static IEnumerable<RightRevokeResultDto> GetExamples(ExampleDataOptions options)
+    public static IEnumerable<RightDto> GetExamples(ExampleDataOptions options)
     {
         var json = """
             {
@@ -43,6 +37,10 @@ public class RightRevokeResultDto : IExampleDataProvider<RightRevokeResultDto>
                 {
                   "type": "urn:altinn:resource",
                   "value": "app_ttd_apps-test"
+                },
+                {
+                  "type": "urn:altinn:resource:instance-id",
+                  "value": "0191579e-72bc-7977-af5d-f9e92af4393b"
                 },
                 {
                   "type": "urn:altinn:resource:task",
@@ -53,10 +51,9 @@ public class RightRevokeResultDto : IExampleDataProvider<RightRevokeResultDto>
               {
                 "type": "urn:oasis:names:tc:xacml:1.0:action:action-id",
                 "value": "read"
-              },
-              "status": "Revoked"
+              }
             }
             """;
-        yield return JsonSerializer.Deserialize<RightRevokeResultDto>(json, SerializerOptions);
+        yield return JsonSerializer.Deserialize<RightDto>(json, SerializerOptions);
     }
 }

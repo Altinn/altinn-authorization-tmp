@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Altinn.AccessManagement.Models
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps
 {
     /// <summary>
     /// This model describes a pair of AttributeId and AttributeValue for use in matching in XACML policies, for instance a resource, a user, a party or an action.

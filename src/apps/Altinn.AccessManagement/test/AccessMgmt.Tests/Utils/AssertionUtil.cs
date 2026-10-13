@@ -1,12 +1,14 @@
 ﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
-using Altinn.AccessManagement.Models;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Api.Contracts.Authorization.Register;
 using Altinn.Urn.Json;
 using Microsoft.AspNetCore.Mvc;
+using AccessPackageUrn = Altinn.Authorization.Api.Contracts.Authorization.AccessPackageUrn;
 
 namespace Altinn.AccessManagement.Tests.Utils
 {

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Altinn.AccessManagement.Enums;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums;
 
 /// <summary>
 /// Enum for different right delegation status responses

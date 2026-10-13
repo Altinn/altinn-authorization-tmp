@@ -1,16 +1,17 @@
 ﻿using System.Text.Json;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Swashbuckle.Examples;
 using Altinn.Swashbuckle.Filters;
 using Altinn.Urn.Json;
 
-namespace Altinn.AccessManagement.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 
 /// <summary>
 /// This model describes a single right
 /// </summary>
 [SwaggerExampleFromExampleProvider]
-public class RightDto : IExampleDataProvider<RightDto>
+public class RightDelegationResultDto : IExampleDataProvider<RightDelegationResultDto>
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -25,11 +26,16 @@ public class RightDto : IExampleDataProvider<RightDto>
     public UrnJsonTypeValue<ActionUrn> Action { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the right was successfully delegated or not
+    /// </summary>
+    public DelegationStatusExternal Status { get; set; }
+
+    /// <summary>
     /// Example data provider for RightV2
     /// </summary>
     /// <param name="options">Options</param>
     /// <returns></returns>
-    public static IEnumerable<RightDto> GetExamples(ExampleDataOptions options)
+    public static IEnumerable<RightDelegationResultDto> GetExamples(ExampleDataOptions options)
     {
         var json = """
             {
@@ -37,11 +43,7 @@ public class RightDto : IExampleDataProvider<RightDto>
                 {
                   "type": "urn:altinn:resource",
                   "value": "app_ttd_apps-test"
-                },
-                {
-                  "type": "urn:altinn:resource:instance-id",
-                  "value": "0191579e-72bc-7977-af5d-f9e92af4393b"
-                },
+                },                
                 {
                   "type": "urn:altinn:resource:task",
                   "value": "task_1"
@@ -51,9 +53,10 @@ public class RightDto : IExampleDataProvider<RightDto>
               {
                 "type": "urn:oasis:names:tc:xacml:1.0:action:action-id",
                 "value": "read"
-              }
+              },
+              "status": "Delegated"
             }
             """;
-        yield return JsonSerializer.Deserialize<RightDto>(json, SerializerOptions);
+        yield return JsonSerializer.Deserialize<RightDelegationResultDto>(json, SerializerOptions);
     }
 }

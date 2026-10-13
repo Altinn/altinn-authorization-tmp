@@ -2,7 +2,7 @@
 using Altinn.Authorization.Api.Contracts.Authorization.Register;
 using Altinn.Urn.Json;
 
-namespace Altinn.AccessManagement.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 
 /// <summary>
 /// Request model for performing revoke of access to a resource from Apps

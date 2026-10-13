@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Altinn.AccessManagement.Enums
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums
 {
     /// <summary>
     /// Fixed values for DetailCodes
