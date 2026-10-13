@@ -7,52 +7,15 @@ module "frontend_appsettings" {
   source     = "../../../../infra/modules/appsettings"
   hub_suffix = local.hub_suffix
 
-  feature_flags = [
-    {
-      name        = "AccessManagementUI.DisplayPopularSingleRightsServices"
-      description = "Whether or not to only display popular SingleRights services."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.UseNewSingleRightsClientDelegation"
-      description = "Whether or not to use the new version of client delegation for single rights services."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.ShowHandledRequests"
-      description = "Whether or not to show handled sent and received access package and resource requests."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.ShowIdPortenAuthorizations"
-      description = "Whether or not to include ID-porten authorizations in active consents list."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.EnableSkyra"
-      description = "Whether or not to load the Skyra survey SDK and ask for cookie consent."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.EnableSingleRightsTabInPoaOverview"
-      description = "Whether or not to show single rights tab in powers of attorney overview."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-    {
-      name        = "AccessManagementUI.EnableActivityLog"
-      description = "Whether or not to show menuitems and tabs for Activity Log."
-      label       = "${lower(var.environment)}-access-management-ui"
-      default     = false
-    },
-  ]
-
   providers = {
     azurerm.hub = azurerm.hub
+  }
+}
+
+removed {
+  from = module.frontend_appsettings.azurerm_app_configuration_feature.configuration
+
+  lifecycle {
+    destroy = false
   }
 }
