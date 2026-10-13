@@ -100,6 +100,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
 
   lifecycle {
     ignore_changes  = [zone, storage_mb, high_availability[0].standby_availability_zone]
+    prevent_destroy = true
   }
 
   tags = var.tags
