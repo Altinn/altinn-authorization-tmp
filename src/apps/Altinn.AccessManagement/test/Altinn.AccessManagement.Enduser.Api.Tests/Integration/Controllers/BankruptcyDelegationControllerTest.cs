@@ -600,8 +600,8 @@ public class BankruptcyDelegationControllerTest
             Fixture = fixture;
             Fixture.EnsureSeedOnce<RevokeAdministrator>(SeedBankruptcyEstates, db =>
             {
-                // Anne, Arne and Aud are full administrators: the role from Bodil plus packages on both estates.
-                foreach (var assistant in new[] { AssistantAnne, AssistantArne, AssistantAud })
+                // Anne, Arne, Asle and Aud are full administrators: the role from Bodil plus packages on both estates.
+                foreach (var assistant in new[] { AssistantAnne, AssistantArne, AssistantAsle, AssistantAud })
                 {
                     db.Assignments.Add(new Assignment { FromId = LawyerBodil, ToId = assistant, RoleId = RoleConstants.BankruptcyEstateAdministrator });
                     foreach (var estate in new[] { EstateOne, EstateTwo })
@@ -633,6 +633,25 @@ public class BankruptcyDelegationControllerTest
 
             await AssertStatus(HttpStatusCode.NoContent, response);
             await AssertAccessRemoved(AssistantAnne);
+        }
+
+        /// <summary>
+        /// Bodil revokes Asle in several simultaneous requests. All must return 204 and Asle's access must be removed.
+        /// </summary>
+        [Fact]
+        public async Task RevokeAdministrator_Concurrently_AllSucceed()
+        {
+            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
+
+            var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ =>
+                client.DeleteAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAsle}", TestContext.Current.CancellationToken)));
+
+            foreach (var response in responses)
+            {
+                await AssertStatus(HttpStatusCode.NoContent, response);
+            }
+
+            await AssertAccessRemoved(AssistantAsle);
         }
 
         /// <summary>

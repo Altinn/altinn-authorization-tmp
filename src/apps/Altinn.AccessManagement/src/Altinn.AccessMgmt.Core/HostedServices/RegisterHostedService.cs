@@ -53,7 +53,7 @@ public partial class RegisterHostedService(
         {
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSyncImport, cancellationToken))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_register_sync", cancellationToken);
                 if (lease is { })
                 {
                     var data = await lease.Get<RegisterLease>(cancellationToken);
@@ -101,7 +101,7 @@ public partial class RegisterHostedService(
             var cancellationToken = (CancellationToken)state;
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_resource_registry_sync", cancellationToken);
                 if (lease is null || cancellationToken.IsCancellationRequested)
                 {
                     return;
@@ -112,7 +112,7 @@ public partial class RegisterHostedService(
 
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSync))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_register_sync", cancellationToken);
 
                 if (lease is null || cancellationToken.IsCancellationRequested)
                 {

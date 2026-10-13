@@ -75,7 +75,7 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             Assignment adminAssignment = null;
-            await SaveWithRetryOnUniqueViolation(
+            await SaveWithRetryOnConflict(
                 async () =>
                 {
                     adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator).FirstOrDefaultAsync(cancellationToken);
@@ -102,7 +102,7 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <inheritdoc />
         public async Task<int> GrantEstateAccessToAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
         {
-            return await SaveWithRetryOnUniqueViolation(
+            return await SaveWithRetryOnConflict(
                 async () =>
                 {
                     var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
@@ -112,13 +112,16 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <summary>
-        /// Stages the changes and saves them. The staging reads existing rows and inserts the missing ones, which
-        /// races with a concurrent request doing the same: both can see a row as missing, and the unique index on
-        /// (FromId, ToId, RoleId) or (AssignmentId, PackageId) then rejects the second insert. On a unique violation
-        /// the pending changes are discarded and staged again, so the rows the other request committed are found
-        /// and reused instead of inserted.
+        /// Stages the changes and saves them. The staging reads the current rows and then inserts or deletes, which
+        /// races with concurrent requests for the same estates and administrators:
+        /// - two grants can both see a row as missing, and the unique index on (FromId, ToId, RoleId) or
+        ///   (AssignmentId, PackageId) rejects the second insert;
+        /// - two revokes can both delete the same row, and the second affects no rows;
+        /// - a grant can add a package to an assignment a revoke is deleting, and the foreign key rejects whichever
+        ///   is saved last.
+        /// On any of these the pending changes are discarded and staged again against the committed rows.
         /// </summary>
-        private async Task<int> SaveWithRetryOnUniqueViolation(Func<Task> stageChanges, CancellationToken cancellationToken)
+        private async Task<int> SaveWithRetryOnConflict(Func<Task> stageChanges, CancellationToken cancellationToken)
         {
             for (var attempt = 1; ; attempt++)
             {
@@ -127,20 +130,27 @@ namespace Altinn.AccessMgmt.Core.Services
                 {
                     return await db.SaveChangesAsync(cancellationToken);
                 }
-                catch (DbUpdateException ex) when (attempt < MaxSaveAttempts && ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                catch (DbUpdateException ex) when (attempt < MaxSaveAttempts && IsConcurrentWriteConflict(ex))
                 {
                     db.ChangeTracker.Clear();
                 }
             }
         }
 
+        private static bool IsConcurrentWriteConflict(DbUpdateException ex) =>
+            ex is DbUpdateConcurrencyException
+            || ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation };
+
         /// <inheritdoc />
         public async Task<int> RevokeEstateAccessFromAdministrators(Guid estateId, Guid estateAdministratorPartyId, CancellationToken cancellationToken = default)
         {
-            var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
-            await RevokeEstateAccess([estateId], adminIds, cancellationToken);
-
-            return await db.SaveChangesAsync(cancellationToken);
+            return await SaveWithRetryOnConflict(
+                async () =>
+                {
+                    var adminIds = await GetBankruptcyEstateAdministratorIds(estateAdministratorPartyId, cancellationToken);
+                    await RevokeEstateAccess([estateId], adminIds, cancellationToken);
+                },
+                cancellationToken);
         }
 
         private async Task<List<Guid>> GetBankruptcyEstateIds(Guid party, CancellationToken cancellationToken)
@@ -274,20 +284,24 @@ namespace Altinn.AccessMgmt.Core.Services
                 return problem;
             }
 
-            var existingAssignment = await db.Assignments
-                .AsTracking()
-                .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator)
-                .FirstOrDefaultAsync(cancellationToken);
+            await SaveWithRetryOnConflict(
+                async () =>
+                {
+                    var existingAssignment = await db.Assignments
+                        .AsTracking()
+                        .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator)
+                        .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingAssignment is not null)
-            {
-                var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
-                await RevokeEstateAccess(estateIds, [toUuid], cancellationToken);
+                    if (existingAssignment is not null)
+                    {
+                        var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
+                        await RevokeEstateAccess(estateIds, [toUuid], cancellationToken);
 
-                db.Assignments.Remove(existingAssignment);
-            }
+                        db.Assignments.Remove(existingAssignment);
+                    }
+                },
+                cancellationToken);
 
-            await db.SaveChangesAsync(cancellationToken);
             return null;
         }
     }
