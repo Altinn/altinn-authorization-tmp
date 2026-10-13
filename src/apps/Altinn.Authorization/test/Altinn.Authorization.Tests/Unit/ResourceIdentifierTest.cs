@@ -1,9 +1,9 @@
-﻿using Altinn.Authorization.Helpers;
+﻿using Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
 
 namespace Altinn.Authorization.Tests.Unit;
 
 [UnitTest]
-public class ServiceResourceHelperTest
+public class ResourceIdentifierTest
 {
     [Theory]
     [InlineData("abcd", true)]
@@ -17,9 +17,9 @@ public class ServiceResourceHelperTest
     [InlineData("ab cd", false)] // space not allowed
     [InlineData("ab.cd", false)] // dot not allowed
     [InlineData("abcd!", false)] // special char not allowed
-    public void ResourceIdentifierRegex_ValidatesCorrectly(string input, bool expected)
+    public void TryParse_ValidatesCorrectly(string input, bool expected)
     {
-        bool result = ServiceResourceHelper.ResourceIdentifierRegex().IsMatch(input);
+        bool result = ResourceIdentifier.TryParse(input, null, out _);
         Assert.Equal(expected, result);
     }
 }

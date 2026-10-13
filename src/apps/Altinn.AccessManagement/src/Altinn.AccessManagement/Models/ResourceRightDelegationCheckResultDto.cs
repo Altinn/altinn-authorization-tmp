@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Altinn.AccessManagement.Core.Models.Rights;
 using Altinn.AccessManagement.Enums;
+using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Urn.Json;
 
 namespace Altinn.AccessManagement.Models;

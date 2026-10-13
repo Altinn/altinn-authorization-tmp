@@ -6,14 +6,15 @@ using System.Text.Json.Serialization;
 using Altinn.Swashbuckle.Examples;
 using Altinn.Swashbuckle.Filters;
 
-namespace Altinn.AccessManagement.Core.Models.Rights;
+namespace Altinn.Authorization.Api.Contracts.Authorization;
 
 /// <summary>
 /// A xacml action string.
 /// </summary>
-[JsonConverter(typeof(ActionIdentifier.JsonConverter))]
+[JsonConverter(typeof(JsonConverter))]
 [SwaggerString]
-public class ActionIdentifier : ISpanParsable<ActionIdentifier>,
+public class ActionIdentifier
+    : ISpanParsable<ActionIdentifier>,
     ISpanFormattable,
     IExampleDataProvider<ActionIdentifier>
 {

@@ -2,7 +2,7 @@
 
 using Altinn.Urn;
 
-namespace Altinn.AccessManagement.Core.Models.Rights;
+namespace Altinn.Authorization.Api.Contracts.Authorization;
 
 /// <summary>
 /// A unique reference to an action in the form of an URN.

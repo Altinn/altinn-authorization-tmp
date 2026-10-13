@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Altinn.AccessManagement.Core.Models.Rights;
+using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Swashbuckle.Examples;
 using Altinn.Swashbuckle.Filters;
 using Altinn.Urn.Json;

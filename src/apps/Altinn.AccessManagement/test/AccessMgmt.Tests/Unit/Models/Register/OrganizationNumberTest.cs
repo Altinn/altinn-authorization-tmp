@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
-using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.Authorization.Api.Contracts.Authorization.Register;
 
 namespace Altinn.AccessManagement.Tests.Unit.Models.Register;
 
 /// <summary>
 /// Pure-logic tests for the <see cref="OrganizationNumber"/> in
-/// <c>Altinn.AccessManagement.Core.Models.Register</c>. Unlike the
+/// <c>Altinn.Authorization.Api.Contracts.Authorization.Register</c>. Unlike the
 /// checksum-validating type in <c>Altinn.Authorization.Api.Contracts.Register</c>,
 /// this one validates length + digits only (no mod-11), and exposes
 /// <see cref="OrganizationNumber.CreateUnchecked"/>.

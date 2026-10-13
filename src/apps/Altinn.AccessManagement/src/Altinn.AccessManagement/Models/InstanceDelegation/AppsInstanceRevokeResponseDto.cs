@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.Authorization.Api.Contracts.Authorization.Register;
 using Altinn.Urn.Json;
 
 namespace Altinn.AccessManagement.Models;

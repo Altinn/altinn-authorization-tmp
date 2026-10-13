@@ -2,7 +2,7 @@
 
 using Altinn.Urn;
 
-namespace Altinn.AccessManagement.Core.Models.ResourceRegistry;
+namespace Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
 
 /// <summary>
 /// A unique reference to a resource instance in the form of an URN.

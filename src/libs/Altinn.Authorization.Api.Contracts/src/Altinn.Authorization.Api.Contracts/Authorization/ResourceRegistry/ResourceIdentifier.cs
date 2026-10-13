@@ -4,17 +4,17 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Altinn.Authorization.Helpers;
+using System.Text.RegularExpressions;
 using Altinn.Swashbuckle.Examples;
 
-namespace Altinn.Authorization.Models.ResourceRegistry;
+namespace Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
 
 /// <summary>
 /// A valid resource identifier.
 /// </summary>
 [JsonConverter(typeof(JsonConverter))]
 [DebuggerDisplay("{_value}")]
-public sealed record ResourceIdentifier
+public sealed partial record ResourceIdentifier
     : ISpanParsable<ResourceIdentifier>,
     ISpanFormattable,
     IExampleDataProvider<ResourceIdentifier>
@@ -71,7 +71,7 @@ public sealed record ResourceIdentifier
 
     private static bool TryParse(ReadOnlySpan<char> s, string? original, [MaybeNullWhen(false)] out ResourceIdentifier result)
     {
-        if (!ServiceResourceHelper.ResourceIdentifierRegex().IsMatch(s))
+        if (!ResourceIdentifierRegex().IsMatch(s))
         {
             result = null;
             return false;
@@ -106,6 +106,9 @@ public sealed record ResourceIdentifier
         charsWritten = _value.Length;
         return true;
     }
+
+    [GeneratedRegex("^[a-z0-9_-]{4,}$")]
+    private static partial Regex ResourceIdentifierRegex();
 
     private sealed class JsonConverter : JsonConverter<ResourceIdentifier>
     {
