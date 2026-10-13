@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Models;
+﻿using Altinn.AccessManagement.Core.Helpers.Extensions;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Apps.Enums;
 using Altinn.Urn.Json;
@@ -63,7 +64,7 @@ public static class ModelMapper
             RightKey = result.RightKey,
             Resource = result.Resource?.Select(urn => (UrnJsonTypeValue)urn).ToList(),
             Action = result.Action,
-            Status = (DelegableStatusExternal)result.Status,
+            Status = result.Status.MapByNameOrValue<DelegableStatusExternal>(),
             Details = result.Details?.Select(ToDto).ToList(),
         };
     }
@@ -83,7 +84,7 @@ public static class ModelMapper
         {
             Resource = right.Resource,
             Action = right.Action,
-            Status = (DelegationStatusExternal)right.Status,
+            Status = right.Status.MapByNameOrValue<DelegationStatusExternal>(),
         };
     }
 
@@ -93,7 +94,7 @@ public static class ModelMapper
         {
             Resource = right.Resource,
             Action = right.Action,
-            Status = (RevokeStatusExternal)right.Status,
+            Status = right.Status.MapByNameOrValue<RevokeStatusExternal>(),
         };
     }
 
@@ -101,7 +102,7 @@ public static class ModelMapper
     {
         return new DetailExternal
         {
-            Code = (DetailCodeExternal)detail.Code,
+            Code = detail.Code.MapByNameOrValue<DetailCodeExternal>(),
             Description = detail.Description,
             Parameters = detail.Parameters?.ToDictionary(p => p.Key, p => p.Value?.Select(ToDto).ToList()),
         };
