@@ -34,4 +34,4 @@ jobs:
     with:
       environment: ${{inputs.environment }}
       tf_state: ${{ inputs.app }}.tfstate
-      working_dir: src/${{inputs.environment }}/infra
+      working_dir: src/${{inputs.app }}/infra
