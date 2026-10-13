@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 
@@ -65,6 +65,7 @@ public static class ActivityLogQueryMapper
         InstanceIds = parameters.Instance,
         ItemIds = parameters.ItemId,
         ParentIds = parameters.ParentId,
+
         // Npgsql only accepts offset-zero DateTimeOffset for timestamptz, so normalize
         // whatever offset the client sent.
         After = parameters.After?.ToUniversalTime(),

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.EntityFrameworkCore.Migrations;
 

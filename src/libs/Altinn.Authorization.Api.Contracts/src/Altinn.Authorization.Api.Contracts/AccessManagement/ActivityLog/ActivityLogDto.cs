@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;

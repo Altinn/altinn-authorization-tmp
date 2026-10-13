@@ -1,4 +1,4 @@
-namespace Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 
 /// <summary>
 /// One value occurring in the activity log for a filter field, as an (id, name) pair. The same

@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Api.Enduser.Controllers.Base;
+﻿using Altinn.AccessManagement.Api.Enduser.Controllers.Base;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services.Contracts;

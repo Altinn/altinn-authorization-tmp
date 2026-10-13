@@ -1,4 +1,4 @@
-using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 

@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.Core.Services.Contracts;
+﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Queries;

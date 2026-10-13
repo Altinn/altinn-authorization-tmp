@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 

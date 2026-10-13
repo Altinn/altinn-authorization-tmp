@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Utils;
+﻿using Altinn.AccessMgmt.PersistenceEF.Utils;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 

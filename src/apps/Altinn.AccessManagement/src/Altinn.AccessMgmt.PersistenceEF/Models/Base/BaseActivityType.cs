@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;

@@ -1,4 +1,4 @@
-namespace Altinn.AccessMgmt.PersistenceEF.Models;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <summary>
 /// Per-source-table progress marker for the one-off job that backfills <c>dbo.activitylog</c>

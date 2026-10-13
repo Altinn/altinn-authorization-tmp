@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Api.Enduser.Controllers.Base;
+﻿using Altinn.AccessManagement.Api.Enduser.Controllers.Base;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;

@@ -1,4 +1,4 @@
-namespace Altinn.AccessMgmt.PersistenceEF.Queries;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 
 /// <summary>
 /// One value occurring in the activity log for a filter field. Pairs are distinct on

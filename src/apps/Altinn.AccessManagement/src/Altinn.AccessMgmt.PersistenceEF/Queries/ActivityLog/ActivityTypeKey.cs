@@ -1,4 +1,4 @@
-using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
+﻿using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries;

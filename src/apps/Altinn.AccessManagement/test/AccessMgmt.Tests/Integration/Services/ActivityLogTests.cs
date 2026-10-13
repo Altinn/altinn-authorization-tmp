@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.TestUtils.Fixtures;
+﻿using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -59,7 +59,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         _db.Entities.AddRange(from, to);
         _db.Assignments.Add(assignment);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         return (from, to, assignment);
     }
@@ -79,7 +79,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var assignmentPackage = new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id };
         _db.AssignmentPackages.Add(assignmentPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         // Delete via raw SQL so the package is removed by the database's FK cascade, not by
         // EF's client-side cascade — the parent's history row then only exists because the
@@ -147,7 +147,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var assignmentPackage = new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id };
         _db.AssignmentPackages.Add(assignmentPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var created = await SingleEvent(assignmentPackage.Id, ActivityLogTrigger.Created);
         Assert.Equal(ActivityLogType.Assignment, created.Type);
@@ -159,7 +159,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         Assert.Equal(to.Name, created.ToName);
 
         _db.AssignmentPackages.Remove(assignmentPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var deleted = await SingleEvent(assignmentPackage.Id, ActivityLogTrigger.Deleted);
         Assert.Equal(package.Name, deleted.PackageName);
@@ -181,7 +181,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         _db.Entities.AddRange(client, facilitator, agent);
         _db.Assignments.AddRange(clientAssignment, agentAssignment);
         _db.Delegations.Add(delegation);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var entry = await SingleEvent(delegation.Id, ActivityLogTrigger.Created);
 
@@ -213,12 +213,12 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         _db.Assignments.AddRange(clientAssignment, agentAssignment);
         _db.Delegations.Add(delegation);
         _db.DelegationPackages.Add(delegationPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         // Deleting the facilitator cascades through both assignments, the delegation and its
         // package; the triggers must still resolve every name via the history fallback.
         _db.Entities.Remove(await _db.Entities.FirstAsync(e => e.Id == facilitator.Id, TestContext.Current.CancellationToken));
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var delegationDeleted = await SingleEvent(delegation.Id, ActivityLogTrigger.Deleted);
         Assert.Equal(client.Name, delegationDeleted.FromName);
@@ -246,7 +246,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         var requestPackage = new RequestAssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = request.Id, PackageId = package.Id, Status = RequestStatus.Pending };
         _db.RequestAssignments.Add(request);
         _db.RequestAssignmentPackages.Add(requestPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var created = await SingleEvent(requestPackage.Id, ActivityLogTrigger.Created);
         Assert.Equal(ActivityLogType.Request, created.Type);
@@ -256,7 +256,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var tracked = await _db.RequestAssignmentPackages.FirstAsync(t => t.Id == requestPackage.Id, TestContext.Current.CancellationToken);
         tracked.Status = RequestStatus.Approved;
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var updated = await SingleEvent(requestPackage.Id, ActivityLogTrigger.Updated);
         Assert.Equal(RequestStatus.Approved, updated.Status);
@@ -284,9 +284,9 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         _db.Set<ResourceType>().Add(resourceType);
         _db.Set<Resource>().Add(resource);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
         _db.AssignmentResources.Add(assignmentResource);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var created = await SingleEvent(assignmentResource.Id, ActivityLogTrigger.Created);
         Assert.Equal(ActivityLogSubtype.Resource, created.Subtype);
@@ -295,7 +295,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         var tracked = await _db.AssignmentResources.FirstAsync(t => t.Id == assignmentResource.Id, TestContext.Current.CancellationToken);
         tracked.PolicyPath = "activitylog/test/path";
         tracked.PolicyVersion = "2";
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var events = await _db.ActivityLogs.AsNoTracking()
             .Where(t => t.ItemId == assignmentResource.Id)
@@ -322,7 +322,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         };
         _db.Set<ResourceType>().Add(resourceType);
         _db.Set<Resource>().Add(resource);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var instance = new AssignmentInstance
         {
@@ -332,7 +332,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
             InstanceId = $"urn:altinn:instance-id:{Guid.NewGuid():N}",
         };
         _db.AssignmentInstances.Add(instance);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var created = await SingleEvent(instance.Id, ActivityLogTrigger.Created);
         Assert.Equal(ActivityLogSubtype.Instance, created.Subtype);
@@ -341,7 +341,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var tracked = await _db.AssignmentInstances.FirstAsync(t => t.Id == instance.Id, TestContext.Current.CancellationToken);
         tracked.AssignmentId = secondAssignment.Id;
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var updated = await SingleEvent(instance.Id, ActivityLogTrigger.Updated);
         Assert.Equal(secondAssignment.Id, updated.ParentId);
@@ -358,9 +358,9 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         {
             var assignmentPackage = new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id };
             _db.AssignmentPackages.Add(assignmentPackage);
-            await _db.SaveChangesAsync(Seeder);
+            await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
             _db.AssignmentPackages.Remove(assignmentPackage);
-            await _db.SaveChangesAsync(Seeder);
+            await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
         }
 
         var filter = new ActivityLogQueryFilter { InvolvedIds = [from.Id] };
@@ -413,9 +413,9 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var assignmentPackage = new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id };
         _db.AssignmentPackages.Add(assignmentPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
         _db.AssignmentPackages.Remove(assignmentPackage);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var filter = new ActivityLogQueryFilter { InvolvedIds = [from.Id] };
 
@@ -448,10 +448,10 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
 
         var renamed = await _db.Entities.FirstAsync(e => e.Id == to.Id, TestContext.Current.CancellationToken);
         renamed.Name = "Aktivitetslogg Omdøpt AS";
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         _db.AssignmentPackages.Add(new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id });
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var filter = new ActivityLogQueryFilter { InvolvedIds = [from.Id] };
 
@@ -494,7 +494,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         var (from, to, rightholderAssignment) = await SeedAssignment();
         var supplierAssignment = new Assignment { Id = Guid.CreateVersion7(), FromId = from.Id, ToId = to.Id, RoleId = RoleConstants.Supplier };
         _db.Assignments.Add(supplierAssignment);
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var service = new Altinn.AccessMgmt.Core.Services.ActivityLogService(_query);
 
@@ -536,7 +536,7 @@ public class ActivityLogTests : IClassFixture<EfDatabaseFixture>, IAsyncLifetime
         var package = await _db.Packages.AsNoTracking().OrderBy(p => p.Id).FirstAsync(TestContext.Current.CancellationToken);
 
         _db.AssignmentPackages.Add(new AssignmentPackage { Id = Guid.CreateVersion7(), AssignmentId = assignment.Id, PackageId = package.Id });
-        await _db.SaveChangesAsync(Seeder);
+        await _db.SaveChangesAsync(Seeder, TestContext.Current.CancellationToken);
 
         var filter = new ActivityLogQueryFilter { InvolvedIds = [from.Id] };
 

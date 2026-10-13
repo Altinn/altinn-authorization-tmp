@@ -1,11 +1,15 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.Authorization.Api.Contracts.AccessManagement.ActivityLog;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
+/// <summary>
+/// The activity log part of the mapper: log entries, filter values and catalog entries to
+/// their external contracts.
+/// </summary>
 public partial class DtoMapper : IDtoMapper
 {
     /// <summary>
