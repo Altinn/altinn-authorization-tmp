@@ -129,7 +129,7 @@ public static partial class StaticDataIngest
         var roleUTINN = RoleConstants.ReporterSender.Id;
         /*UTOMR*/
         var roleUTOMR = RoleConstants.EnergyEnvironmentAndClimate.Id;
-        
+
         var roleMaps = new List<RoleMap>()
         {
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleA0212 },

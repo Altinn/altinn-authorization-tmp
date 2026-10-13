@@ -203,7 +203,7 @@ public static class RoleConstants
             IsAssignable = true,
             IsAvailableForServiceOwners = false,
             EntityTypeId = EntityTypeConstants.Person,
-            ProviderId = ProviderConstants.Altinn3,            
+            ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bankruptcy estate administrator"),
