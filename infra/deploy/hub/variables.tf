@@ -60,12 +60,10 @@ variable "vpn_routes" {
 }
 
 variable "feature_flags" {
-  type = list(object(
+  type = map(list(object(
     {
-      app         = string
       name        = string
       description = string
-      default     = optional(bool, false)
     }
-  ))
+  )))
 }
