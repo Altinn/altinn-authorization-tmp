@@ -16,6 +16,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.Authorization;
 using Altinn.Authorization.Api.Contracts.Authorization.Register;
 using Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Urn;
 using Altinn.Urn.Json;
