@@ -1,5 +1,5 @@
 ﻿name: "Terraform: App"
-run-name: "Terraform: App ${{ inputs.environment }} ${{ inputs.app }}"
+run-name: "Terraform: App ${{ inputs.app }} ${{ inputs.environment }}"
 
 on:
   workflow_dispatch:
