@@ -570,7 +570,7 @@ public class BankruptcyDelegationControllerTest
     #region DELETE accessmanagement/api/v1/enduser/bankruptcyestate/administrators
 
     /// <summary>
-    /// <see cref="BankruptcyDelegationController.RevokeBankruptcyEstateAdministrator(Guid, Guid, bool, CancellationToken)"/>
+    /// <see cref="BankruptcyDelegationController.RevokeBankruptcyEstateAdministrator(Guid, Guid, CancellationToken)"/>
     /// </summary>
     [IntegrationTest]
     public class RevokeAdministrator : IClassFixture<ApiFixture>
