@@ -11,7 +11,7 @@ Drafted with AI assistance (Claude) on 2026-10-13 as a proposal for the two team
 
 - The shared project board is the single source of truth for what is being worked on and where it stands. Work that is not on the board does not exist. Moving your own card is part of finishing the work.
 - ADR-0004 put priority, horizon and progress on the board. This ADR defines what they mean and how we use them: horizon answers *when*, priority answers *in which order within that*, milestone answers *which target*. `urgent` requires a date.
-- Six columns, each a state of the work with a next responsible person: Backlog → Ready → In progress → In review → Test → Done. A pull request does not close its issue on merge. The issue stays open until it is verified in AT by someone other than the author; closing it then moves the card to Done. Production follows the weekly release routine, not the board and not the milestone.
+- Six columns, each a handoff to a different person: Backlog → Ready → In progress → In review → Test → Done. Done means verified in AT by someone other than the author. Production follows the weekly release routine, not the board and not the milestone.
 - Two-week cycles shared by both teams from now: planning opens the cycle, review closes it, and weekly refinement fills Ready from the top of the prioritised view. Every discussion ends with one written line in the issue.
 - The Team field becomes Fokusområde on 1 January 2027, by a CODEOWNERS change as ADR-0004 foresees. Fokusområde is a set of `area/*` components, not a layer.
 
@@ -32,7 +32,7 @@ The next questions follow from it, and this ADR proposes answers so the two team
 
 We will use one flow, with one mechanism per question, built on ADR-0004.
 
-1. **The board is the truth.** All planned work is an issue on the shared project board. Work handled within the weekly vakt rotation is the one exception (6); it becomes an issue when it needs more than the vakt can do. A developer moves their own card as the work moves, including to Test when the pull request is merged; the person who verifies in AT closes the issue, which moves the card to Done and completes the Definition of Done. Status is read from the board and from the Friday review post.
+1. **The board is the truth.** All planned work is an issue on the shared project board. Work handled within the weekly vakt rotation is the one exception (6); it becomes an issue when it needs more than the vakt can do. A developer moves their own card as the work moves; moving the card to Done is part of the Definition of Done. Status is read from the board and from the Friday review post.
 
 2. **Status (columns)** answers *where the work is*. Each column is a state of the work; moving between them is a handoff to a different person:
 
@@ -42,7 +42,7 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
     | Ready       | Definition of Ready met (7). Anyone can pull it.                                         | A developer              |
     | In progress | Being built. Column limit: roughly the number of developers; personal rule: at most two. | The developer            |
     | In review   | Pull request open. Reviewed by someone other than the author.                            | A reviewer               |
-    | Test        | Pull request merged and deployed to AT; the issue is still open. Verified by someone other than the author. | A tester or peer         |
+    | Test        | Merged and deployed to AT. Verified by someone other than the author.                    | A tester or peer         |
     | Done        | Definition of Done met (8).                                                              | Nobody                   |
 
     Production is not a column. Merging to main deploys to AT automatically; TT02 is deployed on Wednesdays and production on Tuesdays, and whatever is Done by then goes with that routine. A milestone does not gate deploys (6).
@@ -77,7 +77,6 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 ### Alternatives considered
 
 - **Keep Done as "in production".** Honest about outcomes, but cards wait for the weekly release, column limits lose meaning, and the Friday review cannot separate finished from shipped. Rejected: the deploy routine answers "shipped"; the board answers "finished".
-- **Let GitHub close the issue when the pull request merges.** Less to do by hand, and the usual GitHub default. But Done means verified in AT, and merge is not that: today the auto-close marks unverified work as closed, and costs two manual steps to undo (reopen, then close again after verification). Rejected: pull requests reference their issue without a closing keyword, and the issue is closed by the person who verifies it.
 - **No Test column; In review covers verification.** Fewer columns and closer to continuous-delivery practice. But verification in AT today is manual, done by a different person, and the people who verify need a queue to pull from. Rejected for now; the Test column is removed when end-to-end tests can run before merge (see open question 4).
 - **Priority only, no horizon.** Simpler. But without a time bucket everything that matters tends to become `urgent`, and the order inside "now" is lost. Rejected: both fields, with horizon set first.
 - **A separate team contract outside the repository.** Easier to write, but it is not reviewed, versioned or found like code. Rejected: this ADR is the team contract for planning and flow, and is revised like any other ADR.
@@ -88,7 +87,7 @@ We will use one flow, with one mechanism per question, built on ADR-0004.
 - `urgent` requires a date in the issue; otherwise it is `high`.
 - Refinement has a fixed shape: triage first, then Definition of Ready, then stop. Open-ended discussion gets a timeboxed slot with a written outcome, or a separate meeting with two named people.
 - The Estimate field is hidden until someone asks for it. The Test column is added. The default view is the priority board filtered on the current milestone.
-- We stop closing issues automatically on merge. A pull request references its issue with `Refs #123` or `Part of #123`, never a closing keyword (`Closes`, `Fixes`, `Resolves`), so GitHub does not close an issue that is not yet verified; today that auto-close shows "closed" for unverified work and costs two manual steps (reopen, then close again). When the pull request is merged and deployed to AT, the author moves the card to Test by hand; the board’s built-in *pull request merged* workflow only moves the pull request’s own item, not the issue, so no automation is relied on there. The person who verifies in AT closes the issue, and the board’s built-in *item closed* workflow moves the card to Done. Issue state and board therefore agree: closed means Done. This keeps the closed-to-Done automation in [#4088](https://github.com/Altinn/altinn-auth/issues/4088), and matches the rule in `AGENTS.md` that `Closes #` is used only when the pull request completes the issue, which under this flow it never does.
+- The board’s built-in workflow for merged pull requests sets Status to Test, not Done. An issue is closed when it is verified, and closing it moves the card to Done.
 - This ADR is reviewed after four cycles (mid-December) and again after the team becomes one (January). A change to column meanings, field semantics or cadence is a change to this ADR; a change to the fokusområde mapping is a change to CODEOWNERS.
 
 ## Open questions for the reviewers
