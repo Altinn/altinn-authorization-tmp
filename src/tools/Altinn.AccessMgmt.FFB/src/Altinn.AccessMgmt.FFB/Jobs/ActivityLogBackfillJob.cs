@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.FFB.Jobs.Models;
 using Dapper;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.FFB.Jobs;
 
@@ -23,9 +24,9 @@ public record ActivityLogBackfillOptions(string Source = "all", int BatchSize = 
 /// Created event, a history version whose successor changes a trigger-relevant value becomes an
 /// Updated event, and a final history version with no live row becomes a Deleted event — the
 /// same semantics as the database triggers. Each batch is one INSERT straight into
-/// dbo.activitylog, with names resolved as of each event's time through session-local as-of
-/// resolvers (see <c>AsOfResolverSql</c>), so backfilled rows carry event-time name snapshots
-/// like trigger-written rows. Batching by id keeps every chain whole, starts writing at once and
+/// dbo.activitylog, with names resolved as of each event's time through as-of lookup tables
+/// built once per run (see <c>NameLookupSql</c>), so backfilled rows carry event-time name
+/// snapshots like trigger-written rows. Batching by id keeps every chain whole, starts writing at once and
 /// keeps every transaction short. Only events strictly before the cutoff are inserted, and an
 /// anti-join on (itemid, trigger, when) skips events that already exist, so the job is
 /// idempotent and can be stopped and resumed freely; a resumed run walks from the first id again
@@ -77,6 +78,11 @@ public static class ActivityLogBackfillJob
         var budget = opts.MaxBatches <= 0 ? int.MaxValue : opts.MaxBatches;
         run.AddLog($"Activity log backfill — sources: {string.Join(", ", sources)}; batch size {batchSize}, delay {opts.DelayMs} ms, batch budget {(opts.MaxBatches <= 0 ? "unlimited" : opts.MaxBatches.ToString())}.");
 
+        // One connection for the whole run: the name lookups are session temp tables, built once
+        // and shared by every source. Npgsql discards them when the connection returns to the pool.
+        await using var conn = repo.CreateAccConnection();
+        await conn.OpenAsync(ct);
+
         foreach (var source in sources)
         {
             ct.ThrowIfCancellationRequested();
@@ -87,7 +93,7 @@ public static class ActivityLogBackfillJob
                 return;
             }
 
-            budget -= await BackfillSourceAsync(repo, run, source, batchSize, opts.DelayMs, budget, ct);
+            budget -= await BackfillSourceAsync(conn, run, source, batchSize, opts.DelayMs, budget, ct);
         }
 
         run.AddLog("Backfill run finished.");
@@ -173,11 +179,8 @@ public static class ActivityLogBackfillJob
         return total;
     }
 
-    private static async Task<int> BackfillSourceAsync(DuoRepo repo, JobRun run, string source, int batchSize, int delayMs, int budget, CancellationToken ct)
+    private static async Task<int> BackfillSourceAsync(NpgsqlConnection conn, JobRun run, string source, int batchSize, int delayMs, int budget, CancellationToken ct)
     {
-        await using var conn = repo.CreateAccConnection();
-        await conn.OpenAsync(ct);
-
         // Npgsql returns timestamptz as UTC DateTime; Dapper maps the positional tuple by column type.
         var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? Cursor, DateTime? CompletedAt)>(new CommandDefinition(
             "SELECT cutoff, \"cursor\", completedat FROM dbo.activitylogbackfillprogress WHERE source = @source;",
@@ -198,7 +201,7 @@ public static class ActivityLogBackfillJob
 
         run.AddLog($"[{source}] backfilling events before cutoff {progress.Cutoff:u}, {batchSize:N0} source ids per batch. Batches already written are skipped by the anti-join.");
 
-        await conn.ExecuteAsync(new CommandDefinition(AsOfResolverSql, cancellationToken: ct));
+        await EnsureNameLookupsAsync(conn, run, ct);
 
         var table = Parts(source).Table;
         var nextBoundSql = NextBoundSql(table);
@@ -282,9 +285,31 @@ public static class ActivityLogBackfillJob
         return batches;
     }
 
+    private static async Task EnsureNameLookupsAsync(NpgsqlConnection conn, JobRun run, CancellationToken ct)
+    {
+        var exists = await conn.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT to_regclass('pg_temp.al_entity_at') IS NOT NULL;", cancellationToken: ct));
+
+        if (exists)
+        {
+            return;
+        }
+
+        run.AddLog("Building the as-of name lookups (entity, role, package, resource)...");
+        var started = DateTime.UtcNow;
+
+        await conn.ExecuteAsync(new CommandDefinition(
+            NameLookupSql("al_role_at", "role") + NameLookupSql("al_package_at", "package") + NameLookupSql("al_resource_at", "resource")
+                + NameLookupSql("al_entity_at", "entity", ", typeid"),
+            commandTimeout: 0,
+            cancellationToken: ct));
+
+        run.AddLog($"Name lookups built in {DateTime.UtcNow - started:hh\\:mm\\:ss}.");
+    }
+
     private static readonly Guid MaxUuid = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
 
-    private static async Task MarkCompletedAsync(System.Data.Common.DbConnection conn, JobRun run, string source, long inserted, int batches, CancellationToken ct)
+    private static async Task MarkCompletedAsync(NpgsqlConnection conn, JobRun run, string source, long inserted, int batches, CancellationToken ct)
     {
         await conn.ExecuteAsync(new CommandDefinition(
             "UPDATE dbo.activitylogbackfillprogress SET \"cursor\" = cutoff, completedat = now() WHERE source = @source;",
@@ -751,92 +776,56 @@ public static class ActivityLogBackfillJob
             roleid, rolename, viaroleid, viarolename, packageid, packagename,
             resourceid, resourcename, instanceid, itemid, parentid, details)
         SELECT e.type, e.subtype, e.ev_trigger, e.status, e.ev_when,
-               e.byid, pg_temp.al_entity_name_at(e.byid, e.ev_when),
+               e.byid, b.name,
                e.sourceid, e.operationid,
-               e.fromid, f.o_name, f.o_type,
-               e.toid, t.o_name, t.o_type,
-               e.viaid, via.o_name, via.o_type,
-               e.roleid, pg_temp.al_role_name_at(e.roleid, e.ev_when),
-               e.viaroleid, pg_temp.al_role_name_at(e.viaroleid, e.ev_when),
-               e.packageid, pg_temp.al_package_name_at(e.packageid, e.ev_when),
-               e.resourceid, pg_temp.al_resource_name_at(e.resourceid, e.ev_when),
+               e.fromid, f.name, ft.name,
+               e.toid, t.name, tt.name,
+               e.viaid, via.name, viat.name,
+               e.roleid, r.name,
+               e.viaroleid, vr.name,
+               e.packageid, p.name,
+               e.resourceid, rs.name,
                e.instanceid, e.itemid, e.parentid, e.details
         FROM pending e
-        CROSS JOIN LATERAL pg_temp.al_entity_info_at(e.fromid, e.ev_when) f
-        CROSS JOIN LATERAL pg_temp.al_entity_info_at(e.toid, e.ev_when) t
-        CROSS JOIN LATERAL pg_temp.al_entity_info_at(e.viaid, e.ev_when) via;
+        {AsOf("al_entity_at", "b", "e.byid")}
+        {AsOf("al_entity_at", "f", "e.fromid")}
+        LEFT JOIN dbo.entitytype ft ON ft.id = f.typeid
+        {AsOf("al_entity_at", "t", "e.toid")}
+        LEFT JOIN dbo.entitytype tt ON tt.id = t.typeid
+        {AsOf("al_entity_at", "via", "e.viaid")}
+        LEFT JOIN dbo.entitytype viat ON viat.id = via.typeid
+        {AsOf("al_role_at", "r", "e.roleid")}
+        {AsOf("al_role_at", "vr", "e.viaroleid")}
+        {AsOf("al_package_at", "p", "e.packageid")}
+        {AsOf("al_resource_at", "rs", "e.resourceid")};
         """;
 
-    // Session-local as-of name resolvers for the backfill: the version with the greatest
-    // audit_validfrom at or before the event time wins (live row or its history twin); when
-    // every version starts after the event (rows written later, raw-SQL audit quirks), the
-    // earliest version is used. pg_temp on purpose: the dbo.activitylog_* resolvers stay
-    // timestamp-free because the triggers run inside the changing transaction, where the live
-    // row already is the event-time state.
-    private const string AsOfResolverSql = """
-        CREATE OR REPLACE FUNCTION pg_temp.al_entity_info_at(p_id uuid, p_at timestamptz, OUT o_name text, OUT o_type text)
-        LANGUAGE plpgsql STABLE AS $fn$
-        BEGIN
-            IF p_id IS NULL THEN
-                RETURN;
-            END IF;
+    private static string AsOf(string lookup, string alias, string idColumn) =>
+        $"LEFT JOIN {lookup} {alias} ON {alias}.id = {idColumn} AND e.ev_when >= {alias}.valid_from AND e.ev_when < {alias}.valid_to";
 
-            SELECT v.name, et.name INTO o_name, o_type
-            FROM (
-                SELECT e.name, e.typeid, e.audit_validfrom FROM dbo.entity e WHERE e.id = p_id
-                UNION ALL
-                SELECT h.name, h.typeid, h.audit_validfrom FROM dbo_history.auditentity h WHERE h.id = p_id
-            ) v
-            LEFT JOIN dbo.entitytype et ON et.id = v.typeid
-            ORDER BY (v.audit_validfrom <= p_at) DESC,
-                     CASE WHEN v.audit_validfrom <= p_at THEN v.audit_validfrom END DESC,
-                     v.audit_validfrom ASC
-            LIMIT 1;
-        END;
-        $fn$;
+    // As-of name lookups for the backfill: one row per version of each entity, role, package and
+    // resource (live row and its history twins), valid in [valid_from, valid_to). The version
+    // with the greatest audit_validfrom at or before the event time wins; the first version
+    // reaches back to -infinity, so when every version starts after the event (rows written
+    // later, raw-SQL audit quirks) the earliest one is used. Versions sharing an
+    // audit_validfrom get empty ranges except the last, ordered like the version chains. The
+    // ranges never overlap, so each join matches at most one row. Session temp tables on
+    // purpose: the dbo.activitylog_* resolvers stay timestamp-free because the triggers run
+    // inside the changing transaction, where the live row already is the event-time state.
+    private static string NameLookupSql(string name, string table, string extraColumns = "") => $"""
+        DROP TABLE IF EXISTS pg_temp.{name};
+        CREATE TEMP TABLE {name} AS
+        SELECT id, name{extraColumns},
+               CASE WHEN row_number() OVER w = 1 THEN '-infinity'::timestamptz ELSE audit_validfrom END AS valid_from,
+               coalesce(lead(audit_validfrom) OVER w, 'infinity'::timestamptz) AS valid_to
+        FROM (
+            SELECT id, name{extraColumns}, audit_validfrom, NULL::timestamptz AS audit_validto, true AS is_live FROM dbo.{table}
+            UNION ALL
+            SELECT id, name{extraColumns}, audit_validfrom, audit_validto, false FROM dbo_history.audit{table}
+        ) v
+        WINDOW w AS (PARTITION BY id ORDER BY audit_validfrom, audit_validto NULLS LAST, is_live);
+        CREATE INDEX ON {name} (id, valid_from);
+        ANALYZE {name};
 
-        CREATE OR REPLACE FUNCTION pg_temp.al_entity_name_at(p_id uuid, p_at timestamptz)
-        RETURNS text LANGUAGE sql STABLE STRICT AS $fn$
-            SELECT (pg_temp.al_entity_info_at(p_id, p_at)).o_name;
-        $fn$;
-
-        CREATE OR REPLACE FUNCTION pg_temp.al_role_name_at(p_id uuid, p_at timestamptz)
-        RETURNS text LANGUAGE sql STABLE STRICT AS $fn$
-            SELECT v.name FROM (
-                SELECT r.name, r.audit_validfrom FROM dbo.role r WHERE r.id = p_id
-                UNION ALL
-                SELECT h.name, h.audit_validfrom FROM dbo_history.auditrole h WHERE h.id = p_id
-            ) v
-            ORDER BY (v.audit_validfrom <= p_at) DESC,
-                     CASE WHEN v.audit_validfrom <= p_at THEN v.audit_validfrom END DESC,
-                     v.audit_validfrom ASC
-            LIMIT 1;
-        $fn$;
-
-        CREATE OR REPLACE FUNCTION pg_temp.al_package_name_at(p_id uuid, p_at timestamptz)
-        RETURNS text LANGUAGE sql STABLE STRICT AS $fn$
-            SELECT v.name FROM (
-                SELECT p.name, p.audit_validfrom FROM dbo.package p WHERE p.id = p_id
-                UNION ALL
-                SELECT h.name, h.audit_validfrom FROM dbo_history.auditpackage h WHERE h.id = p_id
-            ) v
-            ORDER BY (v.audit_validfrom <= p_at) DESC,
-                     CASE WHEN v.audit_validfrom <= p_at THEN v.audit_validfrom END DESC,
-                     v.audit_validfrom ASC
-            LIMIT 1;
-        $fn$;
-
-        CREATE OR REPLACE FUNCTION pg_temp.al_resource_name_at(p_id uuid, p_at timestamptz)
-        RETURNS text LANGUAGE sql STABLE STRICT AS $fn$
-            SELECT v.name FROM (
-                SELECT r.name, r.audit_validfrom FROM dbo.resource r WHERE r.id = p_id
-                UNION ALL
-                SELECT h.name, h.audit_validfrom FROM dbo_history.auditresource h WHERE h.id = p_id
-            ) v
-            ORDER BY (v.audit_validfrom <= p_at) DESC,
-                     CASE WHEN v.audit_validfrom <= p_at THEN v.audit_validfrom END DESC,
-                     v.audit_validfrom ASC
-            LIMIT 1;
-        $fn$;
         """;
 }
