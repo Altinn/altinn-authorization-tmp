@@ -37,7 +37,7 @@ data "azurerm_resource_group" "hub" {
   provider = azurerm.hub
 }
 
-resource "azurerm_app_configuration_feature" "feature_flag" {
+resource "azurerm_app_configuration_feature" "this" {
   configuration_store_id = local.configuration_store_id
   key                    = var.name
   name                   = var.name
