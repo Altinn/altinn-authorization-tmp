@@ -206,6 +206,11 @@
         public const string SCOPE_ENDUSER_REQUESTS_WRITE = "altinn:accessmanagement/enduser:requests.write";
 
         /// <summary>
+        /// Maskinporten scope giving a system user access to write operations on requests
+        /// </summary>
+        public const string SCOPE_ENDUSER_SYSTEMUSER_REQUESTS_WRITE = "altinn:accessmanagement/systemuser:requests.write";
+
+        /// <summary>
         /// Enduser scope giving access to read operations on maskinporten supplier assignments and delegated scopes
         /// </summary>
         public const string SCOPE_ENDUSER_MASKINPORTENSUPPLIERS_READ = "altinn:accessmanagement/enduser:maskinportensuppliers.read";
@@ -224,6 +229,22 @@
         /// Enduser scope giving access to write operations for managing maskinporten consumer connections and received scopes
         /// </summary>
         public const string SCOPE_ENDUSER_MASKINPORTENCONSUMERS_WRITE = "altinn:accessmanagement/enduser:maskinportenconsumers.write";
+
+        /// <summary>
+        /// Policy tag for authorizing enduser maskinporten activity log read access per
+        /// direction: the supplier read scope for direction=from, the consumer read scope for
+        /// direction=to, mirroring the neighboring suppliers/consumers endpoints.
+        /// </summary>
+        public const string POLICY_ENDUSER_MASKINPORTEN_BIDIRECTIONAL_READ = "POLICY_ENDUSER_MASKINPORTEN_BIDIRECTIONAL_READ";
+
+        /// <summary>
+        /// Policy tag for authorizing enduser connections activity log read access per
+        /// direction: the to-others read scope for direction=from (access given), the
+        /// from-others read scope for direction=to (access received), with the person
+        /// access-manager rule — the same model as the connections endpoints, keyed on the
+        /// activity log's direction parameter.
+        /// </summary>
+        public const string POLICY_ENDUSER_CONNECTIONS_ACTIVITYLOG_READ = "POLICY_ENDUSER_CONNECTIONS_ACTIVITYLOG_READ";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
