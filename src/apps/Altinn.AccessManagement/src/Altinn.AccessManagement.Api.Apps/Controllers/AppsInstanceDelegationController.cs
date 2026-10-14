@@ -202,9 +202,11 @@ public class AppsInstanceDelegationController : ControllerBase
     [Route("v1/app/delegationrevoke/resource/{resourceId}/instance/{instanceId}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(AppsInstanceDelegationResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppsInstanceRevokeResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppsInstanceRevokeResponseDto), StatusCodes.Status206PartialContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult?> Revoke([FromBody] AppsInstanceDelegationRequestDto appInstanceDelegationRequestDto, [FromRoute] string resourceId, [FromRoute] string instanceId, [FromHeader(Name = "PlatformAccessToken")] string token, CancellationToken cancellationToken = default)
     {
