@@ -29,9 +29,9 @@ public record ActivityLogBackfillOptions(string Source = "all", int BatchSize = 
 /// snapshots like trigger-written rows. Batching by id keeps every chain whole, starts writing at once and
 /// keeps every transaction short. Only events strictly before the cutoff are inserted, and an
 /// anti-join on (itemid, trigger, when) skips events that already exist, so the job is
-/// idempotent and can be stopped and resumed freely; a resumed run walks from the first id again
-/// and the anti-join skips what is already written. completedat in
-/// dbo.activitylogbackfillprogress marks a finished source.
+/// idempotent and can be stopped and resumed freely. After every batch the last id walked past
+/// is saved as lastid in dbo.activitylogbackfillprogress, where a resumed run continues, and
+/// completedat marks a finished source.
 ///
 /// Known limitation: Updated events are attributed to the successor version's audit_changedby.
 /// That is the actual updater for EF-written updates, but raw-SQL updaters (FFB reparenting,
@@ -181,9 +181,19 @@ public static class ActivityLogBackfillJob
 
     private static async Task<int> BackfillSourceAsync(NpgsqlConnection conn, JobRun run, string source, int batchSize, int delayMs, int budget, CancellationToken ct)
     {
+        // A schema installed manually before the lastid column existed lacks it; the run then
+        // starts from the first id every time and relies on the anti-join alone.
+        var hasLastId = await conn.ExecuteScalarAsync<bool>(new CommandDefinition(
+            """
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'dbo' AND table_name = 'activitylogbackfillprogress' AND column_name = 'lastid');
+            """,
+            cancellationToken: ct));
+
         // Npgsql returns timestamptz as UTC DateTime; Dapper maps the positional tuple by column type.
-        var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? Cursor, DateTime? CompletedAt)>(new CommandDefinition(
-            "SELECT cutoff, \"cursor\", completedat FROM dbo.activitylogbackfillprogress WHERE source = @source;",
+        var progress = await conn.QuerySingleOrDefaultAsync<(DateTime Cutoff, DateTime? CompletedAt, Guid? LastId)>(new CommandDefinition(
+            $"SELECT cutoff, completedat, {(hasLastId ? "lastid" : "NULL::uuid")} FROM dbo.activitylogbackfillprogress WHERE source = @source;",
             new { source },
             cancellationToken: ct));
 
@@ -199,7 +209,12 @@ public static class ActivityLogBackfillJob
             return 0;
         }
 
-        run.AddLog($"[{source}] backfilling events before cutoff {progress.Cutoff:u}, {batchSize:N0} source ids per batch. Batches already written are skipped by the anti-join.");
+        run.AddLog($"[{source}] backfilling events before cutoff {progress.Cutoff:u}, {batchSize:N0} source ids per batch, starting {(progress.LastId is null ? "from the first id" : $"after id {progress.LastId}")}.");
+
+        if (!hasLastId)
+        {
+            run.AddLog($"[{source}] dbo.activitylogbackfillprogress has no lastid column — the position is not saved, so the next run starts from the first id again.", isError: true);
+        }
 
         await EnsureNameLookupsAsync(conn, run, ct);
 
@@ -209,12 +224,12 @@ public static class ActivityLogBackfillJob
         var insertSql = InsertChunkSql(source);
 
         // The nil uuid is never a generated id, so starting strictly after it covers every row.
-        var after = Guid.Empty;
+        var after = progress.LastId ?? Guid.Empty;
         var inserted = 0L;
         var scanned = 0;
 
-        // Only batches that write count against the budget and get the pause: on a resumed run
-        // the batches already written are skipped at full speed instead of eating the budget.
+        // Only batches that write count against the budget and get the pause, so batches that
+        // turn out to be written already are skipped at full speed instead of eating the budget.
         var batches = 0;
 
         while (batches < budget)
@@ -264,6 +279,16 @@ public static class ActivityLogBackfillJob
             {
                 await MarkCompletedAsync(conn, run, source, inserted, batches, ct);
                 break;
+            }
+
+            // Saved after the insert has committed: a crash in between only repeats the batch,
+            // and the anti-join skips what it already wrote.
+            if (hasLastId)
+            {
+                await conn.ExecuteAsync(new CommandDefinition(
+                    "UPDATE dbo.activitylogbackfillprogress SET lastid = @after WHERE source = @source;",
+                    new { after, source },
+                    cancellationToken: ct));
             }
 
             if (scanned % 20 == 0)
