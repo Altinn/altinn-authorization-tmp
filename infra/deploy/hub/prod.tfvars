@@ -92,6 +92,10 @@ vpn_routes = {
 feature_flags = {
   "access-management-ui" = [
     {
+      name        = "AccessManagement.AuthorizedParties.SubAndInactivePartiesFilters",
+      description = "Specifies whether AuthorizedParties applies the includeSubParties and includeInactiveParties filters or retains the legacy behavior of treating both as true."
+    },
+    {
       name        = "AccessManagementUI.EnableActivityLog"
       description = "Whether or not to show menuitems and tabs for Activity Log."
     },
