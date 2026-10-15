@@ -72,6 +72,10 @@ done
 syncroot_dirs=("${APPS_ROOT}"/*/syncroot/)
 
 for syncroot_dir in "${syncroot_dirs[@]}"; do
+  app_dir="${syncroot_dir%syncroot/}"
+  # Parsed as YAML because conf.json starts with a BOM, which yq's JSON parser rejects.
+  deployed="$(yq -p yaml -o yaml '.dis.deploy // false' "${app_dir}conf.json")"
+
   for env in "${SYNCROOT_ENVIRONMENTS[@]}"; do
     if ! [ -f "${syncroot_dir}${env}/kustomization.yaml" ]; then
       fail "Missing ${syncroot_dir}${env}/kustomization.yaml"
@@ -95,6 +99,25 @@ for syncroot_dir in "${syncroot_dirs[@]}"; do
       fail "${dir} does not pin the OCIRepository to tag ${env}"
       continue
     fi
+
+    # kustomize skips a patch whose target matches nothing without an error, and the
+    # base Kustomizations point at ./fake, so check the rendered result: every Flux
+    # Kustomization must select this environment's overlay. Only a deployed app must
+    # also have that overlay; one that is not deployed yet may lack environments.
+    flux_paths="$(yq -N 'select(.apiVersion == "kustomize.toolkit.fluxcd.io/*" and .kind == "Kustomization") | .metadata.name + " " + .spec.path' <<< "${rendered}")"
+    if [ -z "${flux_paths}" ]; then
+      fail "${dir} renders no Flux Kustomization"
+      continue
+    fi
+
+    while read -r name path; do
+      overlay="${app_dir}manifests/${path#./}"
+      if [[ "${path}" != */"${env}" ]]; then
+        fail "${dir}: Kustomization ${name} has path ${path}, not an overlay for ${env}"
+      elif [ "${deployed}" = "true" ] && ! [ -f "${overlay}/kustomization.yaml" ]; then
+        fail "${dir}: Kustomization ${name} points at ${path}, but ${overlay}/kustomization.yaml does not exist"
+      fi
+    done <<< "${flux_paths}"
   done
 done
 
