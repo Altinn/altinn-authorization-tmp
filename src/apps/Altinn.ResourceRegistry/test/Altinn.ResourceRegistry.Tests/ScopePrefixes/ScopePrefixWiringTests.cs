@@ -36,7 +36,7 @@ public class ScopePrefixWiringTests(DbFixture dbFixture, WebApplicationFixture w
     protected override void ConfigureTestServices(IServiceCollection services)
     {
         // Replace only the network below the real typed client, so no request leaves the test
-        services.AddHttpClient<ISamarbeidsportalenClient, SamarbeidsportalenClient>()
+        services.AddHttpClient(nameof(ISamarbeidsportalenClient))
             .ConfigurePrimaryHttpMessageHandler(() => _handler);
 
         base.ConfigureTestServices(services);
