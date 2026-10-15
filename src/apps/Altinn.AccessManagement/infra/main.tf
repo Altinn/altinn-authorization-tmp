@@ -10,7 +10,7 @@ terraform {
     }
     time = {
       source  = "hashicorp/time"
-      version = "0.14.1"
+      version = "0.14.2"
     }
   }
 
@@ -473,6 +473,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Controller.RequestAssignment.SystemUserRequests"
+      description = "Enables system users (from-party) to send access requests to organizations. Trial feature; endpoint access is granted by the altinn:accessmanagement/systemuser:requests.write Maskinporten scope."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Controller.ServiceOwner.ResourceDelegation"
       description = "Enables the resource delegation endpoints in the serviceowner connections API."
       label       = "${lower(var.environment)}-access-management"
@@ -517,6 +523,24 @@ module "appsettings" {
     {
       name        = "AccessManagement.Subunit.AdosInheritance"
       description = "Specifies if ADOS administrative units should be treated as subunits that inherit mainunit access (equal to BEDR/AAFY) in ConnectionQuery and AuthorizedParties. Reversible; defaults to false."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Enduser.ConnectionsActivityLogApi"
+      description = "Activity log endpoints under enduser/connections."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Enduser.RequestActivityLogApi"
+      description = "Activity log endpoints under enduser/request."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.Enduser.MaskinportenActivityLogApi"
+      description = "Activity log endpoints under enduser/maskinporten."
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

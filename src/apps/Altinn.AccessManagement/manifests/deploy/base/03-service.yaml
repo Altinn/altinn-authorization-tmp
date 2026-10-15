@@ -1,14 +1,14 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: Service
 metadata:
   name: access-management
   labels:
     app.kubernetes.io/name: access-management
-    app.kubernetes.io/part-of: accessmanagement
+    app.kubernetes.io/part-of: access-management
 spec:
   selector:
     app.kubernetes.io/name: access-management
-    app.kubernetes.io/part-of: accessmanagement
+    app.kubernetes.io/part-of: access-management
   ports:
     - name: http
       port: 80

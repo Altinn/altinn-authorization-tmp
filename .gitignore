@@ -1,4 +1,4 @@
-﻿# Local .terraform directories
+# Local .terraform directories
 .terraform
 
 # .tfstate files
@@ -71,3 +71,5 @@ fixture-timing.txt
 .devenv/
 .direnv/
 devenv.lock
+
+tmp/
