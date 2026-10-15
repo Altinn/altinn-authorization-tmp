@@ -185,43 +185,6 @@ public class ResourceControllerScopePrefixTests(DbFixture dbFixture, WebApplicat
 
     [Theory]
     [MemberData(nameof(Methods))]
-    public async Task Admin_ttdResourceWithoutOrganizationNumber_IsNotChecked(string method)
-    {
-        _prefixApi.Fail();
-
-        var response = await SendAs(method, Token("digdir", Digdir, AdminScope), new CompetentAuthority { Orgcode = "ttd" }, "ttd:mps/test.read");
-
-        Assert.Equal(SuccessStatus(method), response.StatusCode);
-        Assert.Equal(0, _prefixApi.CallCount);
-    }
-
-    [Theory]
-    [MemberData(nameof(Methods))]
-    public async Task Admin_ttdResourceWithOrganizationNumber_IsNotChecked(string method)
-    {
-        _prefixApi.Fail();
-
-        // as created by the Bruno devtest requests: ttd with Digdir's org number and a ttd: scope nobody owns
-        var response = await SendAs(method, Token("digdir", Digdir, AdminScope), new CompetentAuthority { Organization = Digdir, Orgcode = "TTD" }, "ttd:mps/test.read");
-
-        Assert.Equal(SuccessStatus(method), response.StatusCode);
-        Assert.Equal(0, _prefixApi.CallCount);
-    }
-
-    [Theory]
-    [MemberData(nameof(Methods))]
-    public async Task ServiceOwner_SettingOrgcodeToTtd_IsStillChecked(string method)
-    {
-        GivenPrefixes();
-
-        // skd's own org number passes the write-access check, but ttd must not let it skip the prefix check
-        var response = await SendAs(method, Token("skd", Skatteetaten, WriteScope), new CompetentAuthority { Organization = Skatteetaten, Orgcode = "ttd" }, "altinn:scope");
-
-        await AssertInvalidPrefix(response, "altinn:scope");
-    }
-
-    [Theory]
-    [MemberData(nameof(Methods))]
     public async Task NoMaskinportenScopes_DoesNotCallPrefixApi(string method)
     {
         _prefixApi.Fail();
@@ -253,10 +216,7 @@ public class ResourceControllerScopePrefixTests(DbFixture dbFixture, WebApplicat
     private static string Token(string org, string orgNumber, string scope, string[]? prefixes = null)
         => PrincipalUtil.GetOrgToken(org, orgNumber, scope, prefixes);
 
-    private Task<HttpResponseMessage> Send(string method, string token, string ownerOrgNumber, params string[] scopes)
-        => SendAs(method, token, new CompetentAuthority { Organization = ownerOrgNumber, Orgcode = "skd" }, scopes);
-
-    private async Task<HttpResponseMessage> SendAs(string method, string token, CompetentAuthority owner, params string[] scopes)
+    private async Task<HttpResponseMessage> Send(string method, string token, string ownerOrgNumber, params string[] scopes)
     {
         string identifier = method == HttpMethod.Post.Method ? NewResource : ExistingResource;
         string requestUri = method == HttpMethod.Post.Method
@@ -274,7 +234,7 @@ public class ResourceControllerScopePrefixTests(DbFixture dbFixture, WebApplicat
             Description = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
             RightDescription = new Dictionary<string, string> { { "en", "English" }, { "nb", "Bokmal" }, { "nn", "Nynorsk" } },
             ContactPoints = [new ContactPoint { Category = "Support", ContactPage = "support.skd.no", Email = "support@skd.no", Telephone = "+4790012345" }],
-            HasCompetentAuthority = owner,
+            HasCompetentAuthority = new CompetentAuthority { Organization = ownerOrgNumber, Orgcode = "skd" },
             ResourceType = ResourceType.GenericAccessResource,
             ResourceReferences = scopes
                 .Select(scope => new ResourceReference

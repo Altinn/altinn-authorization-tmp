@@ -668,20 +668,6 @@ namespace Altinn.ResourceRegistry.Controllers
                     : Unauthorized(MaskinportenSchemaAuthorizer.CreateErrorResponseMissingPrefix(forbiddenScopes));
             }
 
-            // ttd (Testdepartementet) is Altinn's own test service owner. It has no organization number and
-            // no prefixes in Samarbeidsportalen, so its test resources cannot pass the check. Only skip it for
-            // admin callers: the org code comes from the request body, and a service owner could otherwise
-            // set it to ttd to avoid the check.
-            if (IsTestServiceOwner(serviceResource) && AuthorizationUtil.HasAdminAccess(User))
-            {
-                string sanitizedResourceId = serviceResource.Identifier?
-                    .Replace("\r", string.Empty)
-                    .Replace("\n", string.Empty);
-
-                _logger.LogInformation("Skipping Maskinporten scope prefix validation for ttd resource {ResourceId}", sanitizedResourceId);
-                return null;
-            }
-
             IReadOnlyList<string> unownedScopes;
             try
             {
@@ -701,9 +687,6 @@ namespace Altinn.ResourceRegistry.Controllers
                 ? null
                 : ValidationProblem(MaskinportenSchemaAuthorizer.CreateErrorResponseInvalidPrefix(unownedScopes));
         }
-
-        private static bool IsTestServiceOwner(ServiceResource serviceResource)
-            => string.Equals(serviceResource.HasCompetentAuthority?.Orgcode, "ttd", StringComparison.OrdinalIgnoreCase);
 
         private async Task<string> GetServiceOwnerOrgCode(ServiceResource serviceResource, CancellationToken cancellationToken)
         {
