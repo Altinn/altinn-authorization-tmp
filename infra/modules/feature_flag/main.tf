@@ -8,13 +8,12 @@ terraform {
 }
 
 locals {
-  configuration_store_id = "/subscriptions/${data.azurerm_client_config.hub.subscription_id}/resourceGroups/rg${var.hub_suffix}/providers/Microsoft.AppConfiguration/configurationStores/appconf${var.hub_suffix}"
   environments           = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
 }
 
-variable "hub_suffix" {
+variable "configuration_store_id" {
   type    = string
-  default = "altinnauth001"
+  description = "Azure App configuration store id."
 }
 
 variable "app" {
@@ -30,11 +29,6 @@ variable "name" {
 variable "description" {
   type    = string
   default = "feature flag description"
-}
-
-data "azurerm_resource_group" "hub" {
-  name     = "rg${var.hub_suffix}"
-  provider = azurerm.hub
 }
 
 resource "azurerm_app_configuration_feature" "this" {

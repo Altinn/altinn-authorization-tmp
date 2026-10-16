@@ -279,19 +279,29 @@ module "appsettings" {
 }
 
 module "access_management_feature_flags" {
-  source      = "../../modules/feature_flag"
-  app         = "access-management"
-  name        = each.value.name
-  description = each.value.description
+  source                 = "../../modules/feature_flag"
+  app                    = "access-management"
+  name                   = each.value.name
+  description            = each.value.description
+  configuration_store_id = azurerm_app_configuration.app_configuration.id
+
+  providers = {
+    azurerm.hub = azurerm
+  }
 
   for_each = { for flag in local.access_management_feature_flags : flag.name => flag }
 }
 
 module "access_management_ui_feature_flags" {
-  source      = "../../modules/feature_flag"
-  app         = "access-management-ui"
-  name        = each.value.name
-  description = each.value.description
+  source                 = "../../modules/feature_flag"
+  app                    = "access-management-ui"
+  name                   = each.value.name
+  description            = each.value.description
+  configuration_store_id = azurerm_app_configuration.app_configuration
+
+  providers = {
+    azurerm.hub = azurerm
+  }
 
   for_each = { for flag in local.access_management_feature_flags_ui : flag.name => flag }
 }
