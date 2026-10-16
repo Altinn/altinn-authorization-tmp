@@ -63,8 +63,6 @@ locals {
     "AccessManagementUI.EnableSkyra"                                  = { description = "Whether or not to load the Skyra survey SDK and ask for cookie consent." },
     "AccessManagementUI.EnableSingleRightsTabInPoaOverview"           = { description = "Whether or not to show single rights tab in powers of attorney overview." },
   }
-
-  environments = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
 }
 
 module "access_management_feature_flags" {
