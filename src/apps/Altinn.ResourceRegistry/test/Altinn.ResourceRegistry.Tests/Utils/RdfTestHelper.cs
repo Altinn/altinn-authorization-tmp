@@ -1,4 +1,4 @@
-using VDS.RDF;
+﻿using VDS.RDF;
 using VDS.RDF.Parsing;
 
 namespace Altinn.ResourceRegistry.Tests.Utils

@@ -1,4 +1,4 @@
-using Altinn.ResourceRegistry.Core.Enums;
+﻿using Altinn.ResourceRegistry.Core.Enums;
 using Altinn.ResourceRegistry.Core.Models;
 using Altinn.ResourceRegistry.Utils;
 using VDS.RDF;
