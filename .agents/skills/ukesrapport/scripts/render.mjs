@@ -69,7 +69,8 @@ function toHtml(text) {
 function inline(text) {
   return escape(text)
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+    // Only web links: report text comes partly from issue titles, so no javascript: and the like.
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/(^|[\s(])_([^_]+)_(?=$|[\s).,:;!?])/g, "$1<i>$2</i>");
 }

@@ -229,7 +229,7 @@ function openIssues(owner, name) {
 
   const issues = [];
   let after = null;
-  do {
+  for (;;) {
     const query = `query($owner: String!, $name: String!, $after: String) { repository(owner: $owner, name: $name) {
       issues(states: OPEN, first: 40, after: $after, orderBy: { field: CREATED_AT, direction: ASC }) {
         pageInfo { hasNextPage endCursor }
@@ -241,15 +241,15 @@ function openIssues(owner, name) {
     } catch (e) {
       if (projectsReadable && /project/i.test(e.message)) {
         projectsReadable = false;
-        continue;
+        continue; // the same page again, without project fields
       }
       throw e;
     }
     const page = data.repository.issues;
     issues.push(...page.nodes);
-    after = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
-  } while (after);
-  return issues;
+    if (!page.pageInfo.hasNextPage) return issues;
+    after = page.pageInfo.endCursor;
+  }
 }
 
 function gql(query, variables) {

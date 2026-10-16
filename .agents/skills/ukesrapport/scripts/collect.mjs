@@ -288,8 +288,15 @@ function collectParents(deliveries) {
 
 // --- releases ---
 
+// Releases come newest first, so pages are read until one ends before the period.
 function releases(name) {
-  const list = JSON.parse(gh(["api", `repos/${name}/releases?per_page=100`]));
+  const list = [];
+  for (let page = 1; ; page++) {
+    const batch = JSON.parse(gh(["api", `repos/${name}/releases?per_page=100&page=${page}`]));
+    list.push(...batch);
+    const oldest = batch.at(-1);
+    if (batch.length < 100 || new Date(oldest.published_at ?? oldest.created_at) < from) break;
+  }
   return list
     .filter((r) => !r.draft && r.published_at && new Date(r.published_at) >= from && new Date(r.published_at) <= to)
     .map((r) => ({ repo: name, name: clean(r.name || r.tag_name), tag: r.tag_name, url: r.html_url, publishedAt: r.published_at, prerelease: r.prerelease }));
