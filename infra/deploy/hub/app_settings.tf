@@ -67,17 +67,6 @@ locals {
   environments = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
 }
 
-module "appsettings" {
-  source     = "../../modules/appsettings"
-  hub_suffix = local.suffix
-
-  feature_flags = []
-
-  providers = {
-    azurerm.hub = azurerm
-  }
-}
-
 module "access_management_feature_flags" {
   source                 = "../../modules/feature_flag"
   app                    = "access-management"
