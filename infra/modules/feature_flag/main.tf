@@ -8,11 +8,11 @@ terraform {
 }
 
 locals {
-  environments           = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
+  environments = ["at22", "at23", "at24", "yt01", "tt02", "prod"]
 }
 
 variable "configuration_store_id" {
-  type    = string
+  type        = string
   description = "Azure App configuration store id."
 }
 
@@ -31,8 +31,10 @@ variable "description" {
   default = "feature flag description"
 }
 
-resource "azurerm_app_configuration_feature" "this" {
-  configuration_store_id = local.configuration_store_id
+resource "azurerm_app_configuration_feature" "flags" {
+  for_each = toset(local.environments)
+
+  configuration_store_id = var.configuration_store_id
   key                    = var.name
   name                   = var.name
   description            = var.description
@@ -43,6 +45,4 @@ resource "azurerm_app_configuration_feature" "this" {
   lifecycle {
     ignore_changes = [enabled]
   }
-
-  for_each = toset(local.environments)
 }
