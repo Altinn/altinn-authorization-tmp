@@ -81,7 +81,7 @@ module "appsettings" {
 module "access_management_feature_flags" {
   source                 = "../../modules/feature_flag"
   app                    = "access-management"
-  name                   = each.value.name
+  name                   = each.key
   description            = each.value.description
   configuration_store_id = azurerm_app_configuration.app_configuration.id
 
@@ -89,69 +89,61 @@ module "access_management_feature_flags" {
     azurerm.hub = azurerm
   }
 
-  for_each = { for flag in local.access_management_feature_flags : flag.name => flag }
+  for_each = local.access_management_feature_flags
 }
 
-module "access_management_ui_feature_flags" {
+module "access_management_feature_flags_ui" {
   source                 = "../../modules/feature_flag"
   app                    = "access-management-ui"
-  name                   = each.value.name
+  name                   = each.key
   description            = each.value.description
-  configuration_store_id = azurerm_app_configuration.app_configuration
+  configuration_store_id = azurerm_app_configuration.app_configuration.id
 
   providers = {
     azurerm.hub = azurerm
   }
 
-  for_each = { for flag in local.access_management_feature_flags_ui : flag.name => flag }
+  for_each = local.access_management_feature_flags_ui
 }
 
 
-# id=https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2Ftest?label=at22-access-management
-# import {
-#   for_each = toset(local.migrate_feature_flags)
-# 
-#   to = module.appsettings.azurerm_app_configuration_feature.configuration[
-#     "${each.value.name}_${each.value.label}"
-#   ]
-# 
-#   id = "https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2F${each.value.name}?label=${each.value.label}"
-# }
-
-import {
-  for_each = toset(flatten([for env in local.environments :
-    {
-      for flag in local.access_management_feature_flags_ui : "${env}-${flag.name}" =>
-      {
-        environment = env
-        name        = each.value.name
-        description = each.value.description
-      }
-    }
-  ]))
-
-  to = module.access_management_feature_flags_ui[each.value.name].azurerm_app_configuration_feature.flags[
-    "${each.value.environment}"
-  ]
-
-  id = "https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2F${each.value.name}?label=${each.key}"
+removed {
+  from = module.appsettings
+  lifecycle {
+    destroy = false
+  }
 }
 
 import {
-  for_each = toset(flatten([for env in local.environments :
-    {
-      for flag in local.access_management_feature_flags : "${env}-${flag.name}" =>
-      {
-        environment = env
-        name        = each.value.name
-        description = each.value.description
-      }
-    }
-  ]))
+  for_each = {
+    for pair in flatten([
+      for env in local.environments : [
+        for name in keys(local.access_management_feature_flags_ui) : {
+          key         = "${env}-${name}"
+          environment = env
+          name        = name
+        }
+      ]
+    ]) : pair.key => pair
+  }
 
-  to = module.access_management_feature_flags[each.value.name].azurerm_app_configuration_feature.flags[
-    "${each.value.environment}"
-  ]
+  to = module.access_management_feature_flags_ui[each.value.name].azurerm_app_configuration_feature.flags[each.value.environment]
+  id = "https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2F${each.value.name}?label=${each.value.environment}-access-management-ui"
+}
 
-  id = "https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2F${each.value.name}?label=${each.key}"
+import {
+  for_each = {
+    for pair in flatten([
+      for env in local.environments : [
+        for name in keys(local.access_management_feature_flags) : {
+          key         = "${env}-${name}"
+          environment = env
+          name        = name
+        }
+      ]
+    ]) : pair.key => pair
+  }
+
+  to = module.access_management_feature_flags[each.value.name].azurerm_app_configuration_feature.flags[each.value.environment]
+  id = "https://appconfaltinnauth001hub.azconfig.io/kv/.appconfig.featureflag%2F${each.value.name}?label=${each.value.environment}-access-management"
 }
