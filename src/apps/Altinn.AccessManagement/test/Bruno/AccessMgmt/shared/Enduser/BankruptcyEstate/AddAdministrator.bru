@@ -5,14 +5,13 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/bankruptcyestate/administrators?party={{party}}&user={{user}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/bankruptcyestate/administrators?party={{party}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  user: {{user}}
 }
 
 body:json {
@@ -29,7 +28,6 @@ script:pre-request {
   bru.setVar("requestName", "POST_BankruptcyEstate_AddUser");
   
   bru.setVar("party", testdata.BOSTYRER.partyUuid);
-  bru.setVar("user", testdata.user_LUN_ANALYSE_GÅSTOL.partyUuid);
   bru.setVar("toPerson", testdata.user_LUN_ANALYSE_GÅSTOL.pid);
   bru.setVar("toPersonlastName", testdata.user_LUN_ANALYSE_GÅSTOL.lastname);
   

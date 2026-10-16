@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.TestUtils;
 using Altinn.AccessManagement.TestUtils.Data;
@@ -57,6 +58,8 @@ public class BankruptcyDelegationControllerTest
     private static readonly Guid EstateOne = Guid.Parse("b0a7e5c1-0002-4000-8000-000000000001");
     private static readonly Guid EstateTwo = Guid.Parse("b0a7e5c1-0002-4000-8000-000000000002");
 
+    private const string UlrikUsername = "ulrikukjent";
+
     private static readonly Guid[] AssistantIds = [ExistingAdmin, AssistantAnne, AssistantArne, AssistantAstrid, AssistantAsle, AssistantAud];
 
     private static readonly Guid[] EstatePackages =
@@ -82,7 +85,7 @@ public class BankruptcyDelegationControllerTest
             Person(AssistantAstrid, "Astrid Assistent", "19017700006", 50970006, 20970006),
             Person(AssistantAsle, "Asle Assistent", "19017700007", 50970007, 20970007),
             Person(AssistantAud, "Aud Assistent", "19017700008", 50970008, 20970008),
-            Person(UnconnectedUlrik, "Ulrik Ukjent", "19017700009", 50970009, 20970009),
+            Person(UnconnectedUlrik, "Ulrik Ukjent", "19017700009", 50970009, 20970009, UlrikUsername),
             Estate(EstateOne, "Konkursbo Én", "399970001", 50970101),
             Estate(EstateTwo, "Konkursbo To", "399970002", 50970102));
 
@@ -99,8 +102,9 @@ public class BankruptcyDelegationControllerTest
         db.SaveChanges();
     }
 
-    private static Entity Person(Guid id, string name, string ssn, int partyId, int userId) => new()
+    private static Entity Person(Guid id, string name, string ssn, int partyId, int userId, string username = null) => new()
     {
+        Username = username,
         Id = id,
         Name = name,
         TypeId = EntityTypeConstants.Person,
@@ -147,7 +151,7 @@ public class BankruptcyDelegationControllerTest
         Assert.True(response.StatusCode == expected, $"Expected {expected} but got {response.StatusCode}. Response body: {body}");
     }
 
-    #region GET accessmanagement/api/v1/enduser/bankruptcyestate
+    #region GET accessmanagement/api/v1/enduser/bankruptcyestate/estates/any
 
     /// <summary>
     /// <see cref="BankruptcyDelegationController.HasBankruptcyEstates(Guid, CancellationToken)"/>
@@ -171,7 +175,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ);
 
-            var response = await client.GetAsync($"{Route}?party={LawyerBodil}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/estates/any?party={LawyerBodil}", TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
             Assert.True(await Deserialize<bool>(response));
@@ -185,7 +189,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBjarne, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ);
 
-            var response = await client.GetAsync($"{Route}?party={LawyerBjarne}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/estates/any?party={LawyerBjarne}", TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
             Assert.False(await Deserialize<bool>(response));
@@ -199,7 +203,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_PORTAL_ENDUSER);
 
-            var response = await client.GetAsync($"{Route}?party={LawyerBodil}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/estates/any?party={LawyerBodil}", TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
         }
@@ -212,7 +216,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var response = await client.GetAsync($"{Route}?party={LawyerBodil}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/estates/any?party={LawyerBodil}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -225,7 +229,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = Fixture.Server.CreateClient();
 
-            var response = await client.GetAsync($"{Route}?party={LawyerBodil}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/estates/any?party={LawyerBodil}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
@@ -361,10 +365,12 @@ public class BankruptcyDelegationControllerTest
     #region POST accessmanagement/api/v1/enduser/bankruptcyestate/administrators
 
     /// <summary>
-    /// <see cref="BankruptcyDelegationController.AddBankruptcyEstateAdministrator(Guid, Guid?, PersonInput?, CancellationToken)"/>
+    /// <see cref="BankruptcyDelegationController.AddBankruptcyEstateAdministrator(Guid, PersonInput?, CancellationToken)"/>
     /// </summary>
     /// <remarks>
-    /// Mocks <see cref="IUserProfileLookupService"/> with <see cref="UserProfileLookupServiceMock"/> for the PersonInput lookup.
+    /// The administrator is identified only through the PersonInput body (SSN or username, and last name).
+    /// Mocks <see cref="IUserProfileLookupService"/> with <see cref="EstatePersonLookupMock"/>, which knows the
+    /// persons seeded here and falls back to <see cref="UserProfileLookupServiceMock"/> for the shared test data.
     /// </remarks>
     [IntegrationTest]
     public class AddAdministrator : IClassFixture<ApiFixture>
@@ -374,7 +380,7 @@ public class BankruptcyDelegationControllerTest
             Fixture = fixture;
             Fixture.ConfigureServices(services =>
             {
-                services.AddSingleton<IUserProfileLookupService, UserProfileLookupServiceMock>();
+                services.AddSingleton<IUserProfileLookupService, EstatePersonLookupMock>();
             });
             Fixture.EnsureSeedOnce<AddAdministrator>(SeedBankruptcyEstates, db =>
             {
@@ -389,15 +395,15 @@ public class BankruptcyDelegationControllerTest
         public ApiFixture Fixture { get; }
 
         /// <summary>
-        /// Bodil makes Anne administrator. Expects the administrator role from Bodil to Anne, and a rightholder
-        /// assignment from each estate to Anne carrying the three bankruptcy estate packages.
+        /// Bodil makes Anne administrator by SSN and last name. Expects the administrator role from Bodil to Anne,
+        /// and a rightholder assignment from each estate to Anne carrying the three bankruptcy estate packages.
         /// </summary>
         [Fact]
-        public async Task AddAdministrator_ByUserUuid_Returns200AndDelegatesEstatePackages()
+        public async Task AddAdministrator_BySsn_Returns200AndDelegatesEstatePackages()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAnne}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700004", "Assistent"), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
             var result = await Deserialize<AssignmentDto>(response);
@@ -409,6 +415,24 @@ public class BankruptcyDelegationControllerTest
         }
 
         /// <summary>
+        /// Bodil makes Ulrik administrator by username and last name. Ulrik has no prior connection to Bodil, which
+        /// the PersonInput lookup does not require.
+        /// </summary>
+        [Fact]
+        public async Task AddAdministrator_ByUsername_Returns200AndDelegatesEstatePackages()
+        {
+            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
+
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody(UlrikUsername, "Ukjent"), TestContext.Current.CancellationToken);
+
+            await AssertStatus(HttpStatusCode.OK, response);
+            var result = await Deserialize<AssignmentDto>(response);
+            Assert.Equal(UnconnectedUlrik, result.ToId);
+
+            await AssertEstatePackages(UnconnectedUlrik);
+        }
+
+        /// <summary>
         /// Arne already has a rightholder assignment on estate one with the main administrator package.
         /// Expects the existing assignment to be reused and only the missing packages added.
         /// </summary>
@@ -417,7 +441,7 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantArne}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700005", "Assistent"), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
             await AssertEstatePackages(AssistantArne);
@@ -431,10 +455,10 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var first = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAstrid}", null, TestContext.Current.CancellationToken);
+            var first = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700006", "Assistent"), TestContext.Current.CancellationToken);
             await AssertStatus(HttpStatusCode.OK, first);
 
-            var second = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAstrid}", null, TestContext.Current.CancellationToken);
+            var second = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700006", "Assistent"), TestContext.Current.CancellationToken);
             await AssertStatus(HttpStatusCode.OK, second);
 
             await AssertEstatePackages(AssistantAstrid);
@@ -450,7 +474,7 @@ public class BankruptcyDelegationControllerTest
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
             var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ =>
-                client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAsle}", null, TestContext.Current.CancellationToken)));
+                client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700007", "Assistent"), TestContext.Current.CancellationToken)));
 
             foreach (var response in responses)
             {
@@ -461,16 +485,14 @@ public class BankruptcyDelegationControllerTest
         }
 
         /// <summary>
-        /// Bodil adds Bodil Farmor through the PersonInput body (SSN and last name), which needs no prior connection.
+        /// Bodil adds Bodil Farmor from the shared test data through the PersonInput body.
         /// </summary>
         [Fact]
         public async Task AddAdministrator_ByPersonInput_Returns200()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
-            var personInput = new PersonInput { PersonIdentifier = TestData.BodilFarmor.Entity.PersonIdentifier, LastName = "Farmor" };
-            var content = new StringContent(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", content, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody(TestData.BodilFarmor.Entity.PersonIdentifier, "Farmor"), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
             var result = await Deserialize<AssignmentDto>(response);
@@ -479,54 +501,70 @@ public class BankruptcyDelegationControllerTest
         }
 
         /// <summary>
-        /// Ulrik has no connection to Bodil, so he cannot be referenced by uuid; expects 400 on the "user" parameter.
+        /// The SSN is right but the last name is wrong; expects 400 and nothing written.
         /// </summary>
         [Fact]
-        public async Task AddAdministrator_ForUnconnectedPerson_Returns400()
+        public async Task AddAdministrator_WithWrongLastName_Returns400()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={UnconnectedUlrik}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700008", "Feilnavn"), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.BadRequest, response);
             var problem = await Deserialize<AltinnValidationProblemDetails>(response);
-            Assert.Contains(problem.Errors, e => e.ErrorCode == ValidationErrors.EntityNotExists.ErrorCode && e.Paths.Contains("QUERY/user"));
-            await AssertNoAdministratorRole(UnconnectedUlrik);
+            Assert.Contains(problem.Errors, e => e.ErrorCode == ValidationErrors.InvalidExternalIdentifiers.ErrorCode);
+            await AssertNoAdministratorRole(AssistantAud);
         }
 
         /// <summary>
-        /// A user that does not exist; expects 400.
+        /// An SSN nobody has; expects 400.
         /// </summary>
         [Fact]
-        public async Task AddAdministrator_ForUnknownUser_Returns400()
+        public async Task AddAdministrator_ForUnknownPerson_Returns400()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={Guid.NewGuid()}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017799999", "Ukjent"), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.BadRequest, response);
         }
 
         /// <summary>
-        /// The administrator must be a person. An organization passes input validation but is rejected by the
-        /// connection options; expects 400 and nothing written.
+        /// The administrator must be a person. An organization number does not resolve to a person profile;
+        /// expects 400 and nothing written.
         /// </summary>
         [Fact]
         public async Task AddAdministrator_ForOrganization_Returns400()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
+            var organization = TestEntities.OrganizationVerdiqAS.Entity;
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={TestEntities.OrganizationVerdiqAS.Id}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody(organization.OrganizationIdentifier, organization.Name), TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.BadRequest, response);
             await AssertNoAdministratorRole(TestEntities.OrganizationVerdiqAS.Id);
         }
 
         /// <summary>
-        /// Neither "user" nor a PersonInput body; expects 400.
+        /// The "user" query parameter is no longer accepted: a connected assistant given only by uuid is not
+        /// delegated to; expects 400 and nothing written.
         /// </summary>
         [Fact]
-        public async Task AddAdministrator_WithoutUserOrPersonInput_Returns400()
+        public async Task AddAdministrator_WithUserUuidOnly_Returns400()
+        {
+            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
+
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAud}", null, TestContext.Current.CancellationToken);
+
+            await AssertStatus(HttpStatusCode.BadRequest, response);
+            await AssertNoAdministratorRole(AssistantAud);
+        }
+
+        /// <summary>
+        /// No PersonInput body; expects 400.
+        /// </summary>
+        [Fact]
+        public async Task AddAdministrator_WithoutPersonInput_Returns400()
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
 
@@ -543,10 +581,16 @@ public class BankruptcyDelegationControllerTest
         {
             var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ);
 
-            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}&user={AssistantAud}", null, TestContext.Current.CancellationToken);
+            var response = await client.PostAsync($"{Route}/administrators?party={LawyerBodil}", PersonBody("19017700008", "Assistent"), TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
             await AssertNoAdministratorRole(AssistantAud);
+        }
+
+        private static StringContent PersonBody(string personIdentifier, string lastName)
+        {
+            var personInput = new PersonInput { PersonIdentifier = personIdentifier, LastName = lastName };
+            return new StringContent(JsonSerializer.Serialize(personInput), Encoding.UTF8, "application/json");
         }
 
         private async Task AssertEstatePackages(Guid user)
@@ -582,6 +626,42 @@ public class BankruptcyDelegationControllerTest
                     .AnyAsync(a => a.FromId == LawyerBodil && a.ToId == user && a.RoleId == RoleConstants.BankruptcyEstateAdministrator, TestContext.Current.CancellationToken);
                 Assert.False(exists);
             });
+        }
+    }
+
+    /// <summary>
+    /// Profile lookup for <see cref="AddAdministrator"/>: resolves the persons seeded by
+    /// <see cref="SeedBankruptcyEstates"/> by SSN or username and last name, and otherwise defers to
+    /// <see cref="UserProfileLookupServiceMock"/>.
+    /// </summary>
+    private sealed class EstatePersonLookupMock : IUserProfileLookupService
+    {
+        private static readonly (Guid Id, string Ssn, string Username, string LastName, int UserId)[] Persons =
+        [
+            (AssistantAnne, "19017700004", null, "Assistent", 20970004),
+            (AssistantArne, "19017700005", null, "Assistent", 20970005),
+            (AssistantAstrid, "19017700006", null, "Assistent", 20970006),
+            (AssistantAsle, "19017700007", null, "Assistent", 20970007),
+            (AssistantAud, "19017700008", null, "Assistent", 20970008),
+            (UnconnectedUlrik, "19017700009", UlrikUsername, "Ukjent", 20970009),
+        ];
+
+        private readonly UserProfileLookupServiceMock _fallback = new();
+
+        public Task<NewUserProfile> GetUserProfile(int authnUserId, UserProfileLookup lookupIdentifier, string lastName)
+        {
+            foreach (var person in Persons)
+            {
+                var identifierMatches = (lookupIdentifier.Ssn is { } ssn && ssn == person.Ssn)
+                    || (lookupIdentifier.Username is { } username && username == person.Username);
+
+                if (identifierMatches && person.LastName.Equals(lastName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Task.FromResult(new NewUserProfile { UserId = person.UserId, UserUuid = person.Id, UserName = person.Username });
+                }
+            }
+
+            return _fallback.GetUserProfile(authnUserId, lookupIdentifier, lastName);
         }
     }
 

@@ -4,7 +4,6 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.Core.Services;
@@ -36,12 +35,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
 
         private Action<SanitizeOptions> ConfigureInputValidationUser { get; } = options =>
         {
-            options.AllowedToEntityTypes = [EntityTypeConstants.Person, EntityTypeConstants.Organization];
+            options.AllowedToEntityTypes = [EntityTypeConstants.Person];
             options.EntitiesToValidateForAnyConnections = [EntityTypeConstants.Person];
             options.ToParameterName = "user";
         };
 
-        [HttpGet]
+        [HttpGet("estates/any")]
         [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ)]
         [Authorize(Policy = AuthzConstants.POLICY_BANKRUPTCYDELEGATION_READ)]
         [ProducesResponseType<bool>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -108,13 +107,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> AddBankruptcyEstateAdministrator(
             [FromQuery(Name = "party")][Required] Guid party,
-            [FromQuery(Name = "user")] Guid? user,
             [FromBody] PersonInput? person,
             CancellationToken cancellationToken = default)
         {
             var entity = await inputValidation.SanitizeToInput(
             party,
-            user,
+            null,
             person,
             ConfigureInputValidationUser,
             cancellationToken);
