@@ -30,7 +30,15 @@ Skriptet henter ikke ut forfattere og fjerner @-omtaler fra titler. Leser du mer
    - **Saker lukket uten PR i perioden ellers** er ofte levert tidligere og lukket nå etter test; de teller som leveranser. `earlierChanges` viser PR-ene som løste dem.
    - Er tittelen for teknisk eller uklar til å si hva det betyr, les issuet med `gh issue view` før du skriver. Ikke finn på effekter som ikke står der.
 
-3. **Skriv rapporten** etter malen under. Lever den i en `text`-kodeblokk i svaret, slik at den kan kopieres uten at formateringen tolkes, og si én linje om hva du var usikker på (områder du gjettet, saker du utelot som backlog-rydding).
+3. **Skriv rapporten** etter malen under, til en fil ved siden av JSON-filen, f.eks. `ukesrapport-2026-W42.md`.
+
+4. **Gjør den klar til innliming.** Slack og Teams viser ikke markdown som limes inn som ren tekst (`**fet**` blir stående med stjerner), men de beholder fet skrift, lenker og lister fra formatert tekst:
+
+   ```bash
+   node .agents/skills/ukesrapport/scripts/render.mjs <sti-til-rapporten.md>
+   ```
+
+   På Windows legger skriptet rapporten på utklippstavlen som formatert tekst, så den limes inn med Ctrl+V. Ellers åpner det en HTML-fil i nettleseren som brukeren kopierer fra (Ctrl+A, Ctrl+C). Si i svaret hvilken av delene som skjedde, vis rapporten, og si én linje om hva du var usikker på (områder du gjettet, saker du utelot som backlog-rydding).
 
 ## Mal
 
@@ -74,7 +82,7 @@ N oppgaver levert, M PR-er merget, K releaser. X eldre saker lukket ved rydding 
 Detaljer:
 
 - **Overskrift:** uke fra `period.isoWeek`, datoer fra `period.from` til `period.to`. Er `period.partial` true, skriv «hittil denne uka» etter datoene.
-- **Punkter:** start med hva som ble mulig eller rettet, ikke med verbet fra commit-meldingen. Oversett engelske PR-titler. Lenk til issue når det finnes, ellers til PR-en. Formatet er vanlig markdown (`**fet**`, `[tekst](url)`), som Teams viser direkte. Ber noen om Slack-format, bruk `*fet*` og `<url|tekst>`.
+- **Punkter:** start med hva som ble mulig eller rettet, ikke med verbet fra commit-meldingen. Oversett engelske PR-titler. Lenk til issue når det finnes, ellers til PR-en. Bruk bare `**fet**`, `_kursiv_`, `` `kode` ``, `[tekst](url)` og `- ` for punkter; det er det `render.mjs` gjør om til formatert tekst.
 - **Epics:** fra `parents` der `type` er `Epic`, eller `Feature` med flere leveranser i perioden. Skriv `subIssues.completed` av `subIssues.total`, og `deliveriesInPeriod` denne uka. Er `closedInPeriod` true, skriv at den er fullført. Maks fem, de med flest leveranser i perioden først.
 - **Releaser:** alt i `releases`. Releaser på samme dag fra samme repo kan slås sammen på én linje. Inntil `config.releases.deployTracked` er true, avslutt seksjonen med: «Hva som er i produksjon spores ikke ennå.»
 - **Tall:** antall leveranser du tok med, `stats.prsMerged`, antall releaser og `stats.likelyBacklogCleanup`. Bot-PR-er, avhengighetsoppdateringer og saker lukket som «not planned» eller duplikat er ikke med og nevnes ikke.
