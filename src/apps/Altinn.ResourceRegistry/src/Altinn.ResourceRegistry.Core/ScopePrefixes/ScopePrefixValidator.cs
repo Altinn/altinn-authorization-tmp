@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using Altinn.ResourceRegistry.Core.Configuration;
 using Altinn.ResourceRegistry.Core.Services;

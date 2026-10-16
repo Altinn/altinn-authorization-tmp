@@ -1,4 +1,4 @@
-using Altinn.ResourceRegistry.Core.Models;
+﻿using Altinn.ResourceRegistry.Core.Models;
 using Altinn.ResourceRegistry.Core.Services;
 
 namespace Altinn.ResourceRegistry.Tests.Mocks;

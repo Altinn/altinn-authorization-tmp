@@ -1,4 +1,4 @@
-namespace Altinn.ResourceRegistry.Core.Constants
+﻿namespace Altinn.ResourceRegistry.Core.Constants
 {
     /// <summary>
     /// Names of the feature flags used by the resource registry.

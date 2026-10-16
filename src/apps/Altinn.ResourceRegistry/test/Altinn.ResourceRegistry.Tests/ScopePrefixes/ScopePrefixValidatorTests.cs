@@ -1,4 +1,4 @@
-using Altinn.ResourceRegistry.Core.Configuration;
+﻿using Altinn.ResourceRegistry.Core.Configuration;
 using Altinn.ResourceRegistry.Core.Models;
 using Altinn.ResourceRegistry.Core.ScopePrefixes;
 using Altinn.ResourceRegistry.Core.Services;

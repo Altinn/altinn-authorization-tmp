@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Altinn.ResourceRegistry.Core.Configuration;
 using Altinn.ResourceRegistry.Core.Models;
 using Altinn.ResourceRegistry.Core.Services;
