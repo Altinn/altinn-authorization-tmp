@@ -271,7 +271,7 @@ module "appsettings" {
   source     = "../../modules/appsettings"
   hub_suffix = local.suffix
 
-  feature_flags = local.feature_flags
+  feature_flags = []
 
   providers = {
     azurerm.hub = azurerm
