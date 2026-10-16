@@ -360,9 +360,15 @@ public class ChangeRequestSystemUserService(
 
         DelegationCheckResult delegationCheckFinalResult = new(CanDelegate: false, RightResponses: [], errors: []);
 
-        // Check Single Rights to be added 
+        // Check Single Rights to be added
         if (systemUserChangeRequest.RequiredRights?.Count > 0)
         {
+            Result<bool> valRights = await systemUserService.ValidateRights(systemUserChangeRequest.RequiredRights, regSystem, cancellationToken);
+            if (valRights.IsProblem)
+            {
+                return valRights.Problem;
+            }
+
             delegationCheckFinalResult = await delegationHelper.UserDelegationCheckForReportee(partyUuid, regSystem.Id, systemUserChangeRequest.RequiredRights, false, cancellationToken);
             if (!delegationCheckFinalResult.CanDelegate || delegationCheckFinalResult.RightResponses is null)
             {
