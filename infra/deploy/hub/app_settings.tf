@@ -330,7 +330,7 @@ import {
     }
   ]))
 
-  to = module.access_management_feature_flags_ui.azurerm_app_configuration_feature.this[
+  to = module.access_management_feature_flags_ui.azurerm_app_configuration_feature.flags[
     "${each.value.environment}"
   ]
 
@@ -349,7 +349,7 @@ import {
     }
   ]))
 
-  to = module.access_management_feature_flags.azurerm_app_configuration_feature.this[
+  to = module.access_management_feature_flags.azurerm_app_configuration_feature.flags[
     "${each.value.environment}"
   ]
 
