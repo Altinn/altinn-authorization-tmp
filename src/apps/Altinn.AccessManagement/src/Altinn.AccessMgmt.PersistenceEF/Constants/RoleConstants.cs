@@ -186,9 +186,9 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> e8f2e3bc-41e8-4ea6-87d3-3308934d471d
-    /// - <c>URN:</c> urn:altinn:role:konkursbo-tilgangsstyrer
+    /// - <c>URN:</c> urn:altinn:role:innbygger-konkursbo-administrator
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Code:</c> konkursbo-tilgangsstyrer
+    /// - <c>Code:</c> innbygger-konkursbo-administrator
     /// - <c>Description:</c> Gir mulighet til å administrere alle konkursbo for en gitt bostyrer
     /// </remarks>
     public static ConstantDefinition<Role> BankruptcyEstateAdministrator { get; } = new ConstantDefinition<Role>("e8f2e3bc-41e8-4ea6-87d3-3308934d471d")
