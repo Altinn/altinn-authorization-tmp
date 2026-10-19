@@ -830,6 +830,18 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
     /// </summary>
     public async Task ClearAssignmentsInAfterLife(Guid deadPerson, AuditValues audit, CancellationToken cancellationToken)
     {
+        var currentTransaction = db.Database.CurrentTransaction is not null;
+        await using var transaction = currentTransaction ? null : await db.Database.BeginTransactionAsync(cancellationToken);
+
+        // Lock the parties the dead person administers bankruptcy estates for, before reading anything, so an ER import
+        // granting estate access through one of them either commits first, and its grants are removed below, or waits and
+        // then finds the administrator relationship gone. See BankruptcyEstateDelegationService.LockEstateAdministratorParties.
+        var estateAdministratorParties = await db.Assignments.AsNoTracking()
+           .Where(t => t.ToId == deadPerson && t.RoleId == RoleConstants.BankruptcyEstateAdministrator)
+           .Select(t => t.FromId)
+           .ToListAsync(cancellationToken);
+        await BankruptcyEstateDelegationService.LockEstateAdministratorParties(db, estateAdministratorParties, cancellationToken);
+
         // Find all assignments where toId or fromId is deadPerson, and the role is one of the rightHolder roles used for delegations in Altinn, or Altinn 2 roles migrated to Altinn 3.
         List<Assignment> assignmentsToRevoke = await db.Assignments.AsNoTracking()
              .Where(t => t.ToId == deadPerson || t.FromId == deadPerson)
@@ -857,7 +869,12 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery,
         db.Assignments.RemoveRange(assignmentsToRevoke);
         db.Assignments.RemoveRange(agentAssignments);
         db.Assignments.RemoveRange(bankruptcyEstateAdministratorAssignments);
-        db.SaveChanges(audit);
+        await db.SaveChangesAsync(audit, cancellationToken);
+
+        if (transaction is { })
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
     }
 
     /// <inheritdoc />

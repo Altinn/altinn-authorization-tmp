@@ -129,6 +129,7 @@ namespace Altinn.AccessMgmt.Core.Services
             await SaveWithRetryOnConflict(
                 async () =>
                 {
+                    await LockEstateAdministratorParties(db, [partyUuid], cancellationToken);
                     adminAssignment = await db.Assignments.AsNoTracking().Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator).FirstOrDefaultAsync(cancellationToken);
                     if (adminAssignment is null)
                     {
@@ -159,39 +160,75 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             return await SaveWithRetryOnConflict(
-                async () => await GrantEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken),
+                async () =>
+                {
+                    await LockEstateAdministratorParties(db, estateAdministrators.Select(r => r.EstateAdministratorPartyId), cancellationToken);
+                    await GrantEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken);
+                },
                 cancellationToken);
         }
 
         /// <summary>
-        /// Stages the changes and saves them. The staging reads the current rows and then inserts or deletes, which
-        /// races with concurrent requests for the same estates and administrators:
-        /// - two grants can both see a row as missing, and the unique index on (FromId, ToId, RoleId) or
-        ///   (AssignmentId, PackageId) rejects the second insert;
-        /// - two revokes can both delete the same row, and the second affects no rows;
-        /// - a grant can add a package to an assignment a revoke is deleting, and the foreign key rejects whichever
-        ///   is saved last.
-        /// On any of these the pending changes are discarded and staged again against the committed rows.
+        /// Stages the changes and saves them in one transaction. The staging must start with
+        /// <see cref="LockEstateAdministratorParties"/> for every estate administrator party (bostyrer) it touches.
+        /// Without that lock the staging reads the current rows and then inserts or deletes against a state another
+        /// request may already have changed. A grant could read an administrator relationship, a revoke could delete it,
+        /// and the grant could then insert estate access that nothing would ever revoke, without any constraint failing.
+        /// With the lock, operations on the same party run one after the other, and each reads what the previous one
+        /// committed.
+        /// Constraint failures can still happen against writers that do not take the lock, such as a concurrent
+        /// insert of the same assignment, and the import can deadlock with another batch. On any of these the
+        /// transaction is rolled back and the changes are staged again against the committed rows.
         /// </summary>
         private async Task<int> SaveWithRetryOnConflict(Func<Task> stageChanges, CancellationToken cancellationToken)
         {
             for (var attempt = 1; ; attempt++)
             {
-                await stageChanges();
+                await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
                 try
                 {
-                    return await db.SaveChangesAsync(cancellationToken);
+                    await stageChanges();
+                    var changed = await db.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                    return changed;
                 }
-                catch (DbUpdateException ex) when (attempt < MaxSaveAttempts && IsConcurrentWriteConflict(ex))
+                catch (Exception ex) when (attempt < MaxSaveAttempts && IsConcurrentWriteConflict(ex))
                 {
+                    await transaction.RollbackAsync(cancellationToken);
                     db.ChangeTracker.Clear();
                 }
             }
         }
 
-        private static bool IsConcurrentWriteConflict(DbUpdateException ex) =>
+        private static bool IsConcurrentWriteConflict(Exception ex) =>
             ex is DbUpdateConcurrencyException
-            || ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation };
+            || (ex as PostgresException ?? ex.InnerException as PostgresException) is
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.DeadlockDetected
+            };
+
+        /// <summary>
+        /// Locks the entity rows of the estate administrator parties (bostyrer) until the transaction ends. Every
+        /// operation that reads or changes a party's administrator relationships, or the estate access derived from
+        /// them, takes this lock first: adding and revoking administrators, the ER import granting and revoking estate
+        /// access, and the cleanup of dead persons. The lock is on the party and not on the administrator relationship,
+        /// because adding an administrator creates that relationship and has no row to lock until then.
+        /// FOR NO KEY UPDATE conflicts only with itself and with updates and deletes of the entity. It does not block the
+        /// foreign key checks of other inserts that reference the party. Rows are locked in id order, so two batches
+        /// over overlapping parties do not deadlock.
+        /// </summary>
+        internal static Task LockEstateAdministratorParties(AppDbContext db, IEnumerable<Guid> partyIds, CancellationToken cancellationToken)
+        {
+            var ids = partyIds.Distinct().Order().ToArray();
+            if (ids.Length == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return db.Database.ExecuteSqlAsync(
+                $"SELECT id FROM dbo.entity WHERE id = ANY({ids}) ORDER BY id FOR NO KEY UPDATE",
+                cancellationToken);
+        }
 
         /// <inheritdoc />
         public async Task<int> RevokeEstateAccessFromAdministrators(IReadOnlyCollection<(Guid EstateId, Guid EstateAdministratorPartyId)> estateAdministrators, CancellationToken cancellationToken = default)
@@ -202,7 +239,11 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             return await SaveWithRetryOnConflict(
-                async () => await RevokeEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken),
+                async () =>
+                {
+                    await LockEstateAdministratorParties(db, estateAdministrators.Select(r => r.EstateAdministratorPartyId), cancellationToken);
+                    await RevokeEstateAccess(await GetEstateAdministratorPairs(estateAdministrators, cancellationToken), cancellationToken);
+                },
                 cancellationToken);
         }
 
@@ -361,6 +402,7 @@ namespace Altinn.AccessMgmt.Core.Services
             await SaveWithRetryOnConflict(
                 async () =>
                 {
+                    await LockEstateAdministratorParties(db, [partyUuid], cancellationToken);
                     var existingAssignment = await db.Assignments
                         .AsTracking()
                         .Where(p => p.FromId == partyUuid && p.ToId == toUuid && p.RoleId == RoleConstants.BankruptcyEstateAdministrator)

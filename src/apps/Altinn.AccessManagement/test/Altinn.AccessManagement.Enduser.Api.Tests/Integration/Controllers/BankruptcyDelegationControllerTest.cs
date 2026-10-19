@@ -14,8 +14,11 @@ using Altinn.AccessManagement.TestUtils.Data;
 using Altinn.AccessManagement.TestUtils.Fixtures;
 using Altinn.AccessManagement.TestUtils.Mocks;
 using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -884,6 +887,176 @@ public class BankruptcyDelegationControllerTest
                     .ToListAsync(TestContext.Current.CancellationToken);
                 Assert.Equal(EstatePackages.Order(), packages.Order());
             });
+        }
+    }
+
+    /// <summary>
+    /// Regression tests for operations on the same estate administrator party (bostyrer) running at the same time.
+    /// Each test pauses a grant after it has read the administrator relationships and before it saves, runs an
+    /// operation that removes the relationship, and then lets the grant finish. Without the party lock the removal
+    /// completes during the pause and the grant then saves estate access for someone who is no longer an
+    /// administrator, which no later revoke can find.
+    /// </summary>
+    /// <remarks>
+    /// Anne, Arne and Astrid are administrators from Bodil without any estate access, as if the estates were new.
+    /// </remarks>
+    [IntegrationTest]
+    public class ConcurrentAdministratorChanges : IClassFixture<ApiFixture>
+    {
+        private static readonly TimeSpan BlockedFor = TimeSpan.FromSeconds(1);
+
+        private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
+
+        public ConcurrentAdministratorChanges(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<ConcurrentAdministratorChanges>(SeedBankruptcyEstates, db =>
+            {
+                foreach (var assistant in new[] { AssistantAnne, AssistantArne, AssistantAstrid })
+                {
+                    db.Assignments.Add(new Assignment { FromId = LawyerBodil, ToId = assistant, RoleId = RoleConstants.BankruptcyEstateAdministrator });
+                }
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        /// <summary>
+        /// The ER import grants Bodil's administrators access to estate one while Bodil revokes Anne. Expects Anne
+        /// to end with neither the administrator role nor access to the estate.
+        /// </summary>
+        [Fact]
+        public async Task ImportGrant_InterleavedWithRevoke_LeavesNoEstateAccess()
+        {
+            using var pause = new PauseBeforeSave();
+            var grant = InScope((db, _) => new BankruptcyEstateDelegationService(db).GrantEstateAccessToAdministrators([(EstateOne, LawyerBodil)], TestContext.Current.CancellationToken), pause);
+            await pause.Reached.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+
+            var revoke = InScope((db, _) => new BankruptcyEstateDelegationService(db).RevokeBankruptcyEstateAdministrator(LawyerBodil, AssistantAnne, ConfigureConnections, TestContext.Current.CancellationToken));
+
+            await AssertBlockedUntilResumed(revoke, pause, grant);
+            Assert.Null(await revoke);
+            await AssertNoAccess(AssistantAnne);
+        }
+
+        /// <summary>
+        /// Bodil adds Arne, who already is an administrator, while she revokes him in another request. Expects Arne to end
+        /// with neither the administrator role nor access to any estate.
+        /// </summary>
+        [Fact]
+        public async Task IdempotentAdd_InterleavedWithRevoke_LeavesNoEstateAccess()
+        {
+            using var pause = new PauseBeforeSave();
+            var add = InScope((db, _) => new BankruptcyEstateDelegationService(db).AddBankruptcyEstateAdministrator(LawyerBodil, AssistantArne, ConfigureConnections, TestContext.Current.CancellationToken), pause);
+            await pause.Reached.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+
+            var revoke = InScope((db, _) => new BankruptcyEstateDelegationService(db).RevokeBankruptcyEstateAdministrator(LawyerBodil, AssistantArne, ConfigureConnections, TestContext.Current.CancellationToken));
+
+            await AssertBlockedUntilResumed(revoke, pause, add);
+            Assert.False((await add).IsProblem);
+            Assert.Null(await revoke);
+            await AssertNoAccess(AssistantArne);
+        }
+
+        /// <summary>
+        /// The ER import grants Bodil's administrators access to estate two while the party sync clears the assignments
+        /// of Astrid, who has died. Expects Astrid to end with neither the administrator role nor access to the estate.
+        /// </summary>
+        [Fact]
+        public async Task ImportGrant_InterleavedWithDeadPersonCleanup_LeavesNoEstateAccess()
+        {
+            using var pause = new PauseBeforeSave();
+            var grant = InScope((db, _) => new BankruptcyEstateDelegationService(db).GrantEstateAccessToAdministrators([(EstateTwo, LawyerBodil)], TestContext.Current.CancellationToken), pause);
+            await pause.Reached.WaitAsync(Timeout, TestContext.Current.CancellationToken);
+
+            var cleanup = InScope(async (_, services) =>
+            {
+                await services.GetRequiredService<IAssignmentService>().ClearAssignmentsInAfterLife(AssistantAstrid, TestAudit, TestContext.Current.CancellationToken);
+                return true;
+            });
+
+            await AssertBlockedUntilResumed(cleanup, pause, grant);
+            await AssertNoAccess(AssistantAstrid);
+        }
+
+        private static readonly AuditValues TestAudit = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest);
+
+        private static void ConfigureConnections(ConnectionOptions options)
+        {
+            options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Person];
+            options.AllowedWriteToEntityTypes = [EntityTypeConstants.Person];
+            options.AllowedReadFromEntityTypes = [EntityTypeConstants.Person];
+            options.AllowedReadToEntityTypes = [EntityTypeConstants.Person];
+            options.FilterFromEntityTypes = [];
+            options.FilterToEntityTypes = [];
+        }
+
+        /// <summary>
+        /// Runs the operation on a thread of its own, with its own scope and therefore its own connection.
+        /// </summary>
+        private Task<T> InScope<T>(Func<AppDbContext, IServiceProvider, Task<T>> operation, PauseBeforeSave pause = null) =>
+            Task.Run(async () =>
+            {
+                using var scope = Fixture.Services.CreateEFScope(TestAudit);
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                pause?.Attach(db);
+                return await operation(db, scope.ServiceProvider);
+            });
+
+        /// <summary>
+        /// Asserts that the competing operation waits while the paused one holds the party lock, then resumes the
+        /// paused one and waits for both.
+        /// </summary>
+        private static async Task AssertBlockedUntilResumed(Task competing, PauseBeforeSave pause, Task paused)
+        {
+            await Task.WhenAny(competing, Task.Delay(BlockedFor, TestContext.Current.CancellationToken));
+            var completedDuringPause = competing.IsCompleted;
+
+            pause.Resume();
+            await Task.WhenAll(paused, competing).WaitAsync(Timeout, TestContext.Current.CancellationToken);
+
+            Assert.False(completedDuringPause, "The competing operation completed while the paused operation held the estate administrator party lock.");
+        }
+
+        private async Task AssertNoAccess(Guid user)
+        {
+            await Fixture.QueryDb(async db =>
+            {
+                var admin = await db.Assignments.AsNoTracking()
+                    .AnyAsync(a => a.FromId == LawyerBodil && a.ToId == user && a.RoleId == RoleConstants.BankruptcyEstateAdministrator, TestContext.Current.CancellationToken);
+                Assert.False(admin);
+
+                var estateAssignments = await db.Assignments.AsNoTracking()
+                    .Where(a => (a.FromId == EstateOne || a.FromId == EstateTwo) && a.ToId == user)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+                Assert.Empty(estateAssignments);
+            });
+        }
+
+        /// <summary>
+        /// Blocks the first save of a context, after the operation has staged its changes and before they are written,
+        /// until <see cref="Resume"/> is called. Later saves, such as a retry, are not blocked.
+        /// </summary>
+        private sealed class PauseBeforeSave : IDisposable
+        {
+            private readonly TaskCompletionSource _reached = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly ManualResetEventSlim _resume = new();
+
+            public Task Reached => _reached.Task;
+
+            public void Attach(DbContext db) => db.SavingChanges += (_, _) =>
+            {
+                if (_reached.TrySetResult())
+                {
+                    _resume.Wait(Timeout);
+                }
+            };
+
+            public void Resume() => _resume.Set();
+
+            public void Dispose() => _resume.Dispose();
         }
     }
 
