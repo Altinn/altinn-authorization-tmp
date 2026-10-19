@@ -41,6 +41,7 @@ The table says which fields each role sets, which moves on the board it makes, a
 | Scrum master | Nothing on the card | Nothing on the card | The three meetings: timebox, shape, and that each discussion ends with a written line. Posts the Friday review. |
 | Tech lead | Nothing on the card | Nothing on the card | Settles technical questions a discussion parks, and decides when a cross-component decision becomes an ADR. |
 | Fokusområde owner | Type and `area/*` at triage; acceptance criteria are complete before Ready | Nothing on the card | The components in the fokusområde; fallback for security alerts nobody has picked within a day; reviewer from the other area on cross-area issues. |
+| Designer | Research findings and the design in the issue before Ready, for changes users will see | Their own research and design cards: Ready → In progress → In review → Done | That a change users will see is tested with users before it is built, where the Epic calls for it; that it has a design to build and verify against; and that the built result matches it. |
 | Developer | Nothing beyond the issue text | Ready → In progress → In review; back to Ready with a handover note | Their own card: at most two in In progress, pull request opened, review requested. |
 | Tester | The verification result in the issue | Test → Done, or reopens the issue | That verification in AT is done by someone other than the author, against the acceptance criteria. |
 | Vakt | `kind/incident`, `urgent` and the current milestone on an incident | Incident straight to In progress | Vendor and client questions in Slack and support cases from the CRM, off the board; creates an issue when a case needs a code change or a release. |
@@ -134,6 +135,7 @@ A card can move to Ready when all of these hold:
 - milestone, horizon and priority are set;
 - it has an issue type and at least one `area/*`;
 - it has acceptance criteria that a developer other than the author could test against;
+- for a change users will see, the design is in the issue, and the user research the Epic called for is done;
 - it is small enough to finish within one cycle; if not, it is an Epic with sub-issues.
 
 ### 5. Definition of Done
@@ -190,12 +192,13 @@ The alternatives are the open questions at the end of this document. The worksho
 | **Cross-area issue** | One assignee from the primary area, a reviewer from the other. Two `area/*` labels, one owner. |
 | **Urgent request from outside** (management, a vendor, another team) | Enters Backlog with `urgent` *and* a date; the product owner decides what leaves the cycle to make room. Nothing is added without something coming out. |
 | **Spike or investigation** | Timeboxed issue whose acceptance criterion is a written answer in the issue, not code. The answer often becomes the acceptance criteria for the real issue. |
+| **User test, survey or other research** | A sub-issue of the Epic, timeboxed, with written findings as the acceptance criterion. In review means someone other than the author reads the findings. There is no pull request, so Test does not apply: the owner closes the issue when the findings are reviewed and moves the card to Done. The findings feed the design and acceptance criteria of the implementing issue. |
 | **Developer unavailable mid-issue** | Back to Ready with a handover note in the issue, or a named person takes over. Never left in In progress unassigned. |
 
 ## Open questions for the workshop
 
 1. **Column limits.** Is roughly one In progress card per developer the right limit, and do we hold it, or is a limit the board shows but nobody enforces?
-2. **Who sets what.** The proposal is in the roles table (1): product owner for horizon, priority and milestone; fokusområde owner for type and area; the developer for status. Is that the right split, and does it hold for issues that span both teams?
+2. **Who sets what.** The proposal is in the roles table (1): product owner for horizon, priority and milestone; fokusområde owner for type and area; the designer for the design before Ready; the developer for status. Is that the right split, and does it hold for issues that span both teams? Design and research work is proposed as cards on the same board, flowing through the same columns; is that how the designers want to work, and does verification of a user-facing change involve the designer? Which changes need user testing before they are built, and who decides that at triage?
 3. **Roadmap items without an expected result.** The team plans Epics against a roadmap item that states what should be true when it is done. An item without that stays in Backlog, however important it seems. Two things to confirm: that the rule is acceptable, and whether any item in the December milestone needs its expected result written before the first planning.
 4. **Where do we verify, and which columns follow review?** Two variants were proposed in review:
 
