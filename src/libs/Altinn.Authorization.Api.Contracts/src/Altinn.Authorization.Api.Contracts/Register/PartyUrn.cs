@@ -1,9 +1,8 @@
 ﻿#nullable enable
 
-using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Urn;
 
-namespace Altinn.Authorization.Api.Contracts.Authorization.Register;
+namespace Altinn.Authorization.Api.Contracts.Register;
 
 /// <summary>
 /// A unique reference to a party in the form of an URN.

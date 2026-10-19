@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace Altinn.Authorization.Api.Contracts.Authorization.Register;
+namespace Altinn.Authorization.Api.Contracts.Register;
 
 /// <summary>
 /// A set of identifiers for a party.

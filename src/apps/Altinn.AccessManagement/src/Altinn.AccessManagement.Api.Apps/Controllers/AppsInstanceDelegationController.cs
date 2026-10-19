@@ -10,7 +10,7 @@ using Altinn.AccessMgmt.Core.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
-using Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
+using Altinn.Authorization.Api.Contracts.ResourceRegistry;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

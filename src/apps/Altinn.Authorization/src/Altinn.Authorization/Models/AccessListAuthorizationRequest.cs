@@ -3,8 +3,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Altinn.Authorization.Api.Contracts.Authorization;
-using Altinn.Authorization.Api.Contracts.Authorization.Register;
-using Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
+using Altinn.Authorization.Api.Contracts.Register;
+using Altinn.Authorization.Api.Contracts.ResourceRegistry;
 using Altinn.Urn.Json;
 
 namespace Altinn.Platform.Authorization.Models;

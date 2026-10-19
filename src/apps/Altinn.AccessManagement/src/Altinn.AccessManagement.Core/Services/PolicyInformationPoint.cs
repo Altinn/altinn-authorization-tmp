@@ -16,7 +16,7 @@ using Altinn.Authorization.ABAC;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Api.Contracts.Authorization;
-using Altinn.Authorization.Api.Contracts.Authorization.Register;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Urn;
 using Altinn.Urn.Json;
 using Microsoft.EntityFrameworkCore;

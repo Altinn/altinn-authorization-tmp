@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Altinn.Swashbuckle.Examples;
 
-namespace Altinn.Authorization.Api.Contracts.Authorization.ResourceRegistry;
+namespace Altinn.Authorization.Api.Contracts.ResourceRegistry;
 
 /// <summary>
 /// A valid resource identifier.

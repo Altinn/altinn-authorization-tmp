@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Altinn.Authorization.Api.Contracts.Authorization.Register;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Urn.Json;
 
 namespace Altinn.Authorization.Api.Contracts.AccessManagement.Apps;
