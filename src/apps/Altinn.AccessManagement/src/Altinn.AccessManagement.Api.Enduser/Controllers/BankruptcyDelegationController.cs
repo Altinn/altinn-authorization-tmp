@@ -79,7 +79,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         [HttpGet("administrators")]
         [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ)]
         [Authorize(Policy = AuthzConstants.POLICY_BANKRUPTCYDELEGATION_READ)]
-        [ProducesResponseType<PaginatedResult<CompactEntityDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+        [ProducesResponseType<PaginatedResult<BankruptcyEstateAdministratorDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

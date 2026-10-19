@@ -49,17 +49,68 @@ namespace Altinn.AccessMgmt.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<Result<List<CompactEntityDto>>> GetBankruptcyEstateAdministrators(Guid partyUuid, CancellationToken cancellationToken = default)
+        public async Task<Result<List<BankruptcyEstateAdministratorDto>>> GetBankruptcyEstateAdministrators(Guid partyUuid, CancellationToken cancellationToken = default)
         {
             var adminAssignments = await db.Assignments
                 .AsNoTracking()
                 .Include(a => a.To)
+                .Include(a => a.Role)
                 .Where(a => a.FromId == partyUuid && a.RoleId == RoleConstants.BankruptcyEstateAdministrator)
                 .ToListAsync(cancellationToken);
 
-            var adminUsers = adminAssignments.Select(a => DtoMapper.Convert(a.To)).ToList();
+            if (adminAssignments.Count == 0)
+            {
+                return new List<BankruptcyEstateAdministratorDto>();
+            }
 
-            return adminUsers;
+            var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
+            var adminIds = adminAssignments.Select(a => a.ToId).Distinct().ToList();
+
+            // The Rightholder assignments from each estate of the party to each administrator, and the packages and
+            // resources the administrator holds through them.
+            var estateAssignments = await db.Assignments
+                .AsNoTracking()
+                .Include(a => a.From)
+                .Where(a => estateIds.Contains(a.FromId) && adminIds.Contains(a.ToId) && a.RoleId == RoleConstants.Rightholder)
+                .ToListAsync(cancellationToken);
+
+            var estateAssignmentIds = estateAssignments.Select(a => a.Id).ToList();
+
+            var packagesByAssignment = (await db.AssignmentPackages
+                .AsNoTracking()
+                .Include(p => p.Package)
+                .Where(p => estateAssignmentIds.Contains(p.AssignmentId))
+                .ToListAsync(cancellationToken))
+                .ToLookup(p => p.AssignmentId, p => p.Package);
+
+            var resourcesByAssignment = (await db.AssignmentResources
+                .AsNoTracking()
+                .Include(r => r.Resource)
+                .Where(r => estateAssignmentIds.Contains(r.AssignmentId))
+                .ToListAsync(cancellationToken))
+                .ToLookup(r => r.AssignmentId, r => r.Resource);
+
+            var accessByAdmin = estateAssignments
+                .Where(a => packagesByAssignment.Contains(a.Id) || resourcesByAssignment.Contains(a.Id))
+                .GroupBy(a => a.ToId)
+                .ToDictionary(
+                    admin => admin.Key,
+                    admin => admin
+                        .Select(a => new BankruptcyEstateAdministratorDto.AdminRoleAccessPackage
+                        {
+                            Estate = DtoMapper.Convert(a.From),
+                            Packages = packagesByAssignment[a.Id].Select(DtoMapper.ConvertCompactPackage).ToArray(),
+                            Resources = resourcesByAssignment[a.Id].Select(DtoMapper.ConvertCompactResource).ToList(),
+                        })
+                        .ToList());
+
+            return adminAssignments.Select(a => new BankruptcyEstateAdministratorDto
+            {
+                Administrator = DtoMapper.Convert(a.To),
+                AdminRole = DtoMapper.ConvertCompactRole(a.Role),
+                AdminAddedAt = a.Audit_ValidFrom,
+                EstateAccess = accessByAdmin.GetValueOrDefault(a.ToId, []),
+            }).ToList();
         }
 
         /// <inheritdoc />
@@ -356,7 +407,7 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <param name="partyUuid">The unique identifier of the party.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A result containing a list of bankruptcy estate administrators.</returns>
-        Task<Result<List<CompactEntityDto>>> GetBankruptcyEstateAdministrators(Guid partyUuid, CancellationToken cancellationToken = default);
+        Task<Result<List<BankruptcyEstateAdministratorDto>>> GetBankruptcyEstateAdministrators(Guid partyUuid, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds a bankruptcy estate administrator to a given party.
