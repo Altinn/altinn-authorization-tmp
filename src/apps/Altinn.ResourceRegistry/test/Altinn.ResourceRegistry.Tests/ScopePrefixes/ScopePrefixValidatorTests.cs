@@ -51,7 +51,7 @@ public class ScopePrefixValidatorTests
     }
 
     [Fact]
-    public async Task OwnedActivePrefixes_AreAccepted()
+    public async Task OwnedPrefixes_AreAccepted()
     {
         var result = await _target.GetUnownedScopes(Digdir, ["altinn:resourceregistry/resource.write", "digdir:test"]);
 
@@ -67,11 +67,12 @@ public class ScopePrefixValidatorTests
     }
 
     [Fact]
-    public async Task InactivePrefix_IsRejected()
+    public async Task InactivePrefix_IsStillOwned()
     {
+        // a deactivated prefix must not stop its owner from updating resources that use it
         var result = await _target.GetUnownedScopes(Digdir, ["difi:test"]);
 
-        Assert.Equal(["difi:test"], result);
+        Assert.Empty(result);
     }
 
     [Theory]
@@ -191,12 +192,12 @@ public class ScopePrefixValidatorTests
     }
 
     [Fact]
-    public async Task ListWithoutActivePrefixes_IsTreatedAsFailure()
+    public async Task ListWithoutPrefixes_IsTreatedAsFailure()
     {
-        _client.Respond([new() { Prefix = "difi", OwnerOrgNo = Digdir, Active = false }]);
+        _client.Respond([]);
 
         await Assert.ThrowsAsync<ScopePrefixDataUnavailableException>(
-            () => _target.GetUnownedScopes(Digdir, ["difi:test"]).AsTask());
+            () => _target.GetUnownedScopes(Digdir, ["altinn:test"]).AsTask());
     }
 
     [Fact]

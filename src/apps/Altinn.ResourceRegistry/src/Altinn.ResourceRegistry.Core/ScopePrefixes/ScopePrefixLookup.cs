@@ -5,7 +5,7 @@ using Altinn.ResourceRegistry.Core.Models;
 namespace Altinn.ResourceRegistry.Core.ScopePrefixes;
 
 /// <summary>
-/// An immutable snapshot of the active prefixes each organization owns.
+/// An immutable snapshot of the prefixes each organization owns.
 /// </summary>
 internal sealed class ScopePrefixLookup
 {
@@ -22,18 +22,19 @@ internal sealed class ScopePrefixLookup
     public static ScopePrefixLookup Empty { get; } = new(new Dictionary<string, string[]>(StringComparer.Ordinal));
 
     /// <summary>
-    /// The number of organizations that own at least one active prefix.
+    /// The number of organizations that own at least one prefix.
     /// </summary>
     public int OrganizationCount => _prefixesByOrganization.Count;
 
     /// <summary>
-    /// Builds a lookup from the records returned by the prefix API. Inactive records, and
-    /// records without a prefix or owner, are left out.
+    /// Builds a lookup from the records returned by the prefix API. Records without a prefix or
+    /// owner are left out. Inactive prefixes are kept: a service owner whose prefix has been
+    /// deactivated must still be able to update resources that already use it.
     /// </summary>
     public static ScopePrefixLookup Create(IEnumerable<MaskinportenScopePrefix> records)
     {
         var prefixesByOrganization = records
-            .Where(r => r.Active && !string.IsNullOrWhiteSpace(r.Prefix) && !string.IsNullOrWhiteSpace(r.OwnerOrgNo))
+            .Where(r => !string.IsNullOrWhiteSpace(r.Prefix) && !string.IsNullOrWhiteSpace(r.OwnerOrgNo))
             .GroupBy(r => r.OwnerOrgNo!, StringComparer.Ordinal)
             .ToDictionary(
                 g => g.Key,
@@ -44,7 +45,7 @@ internal sealed class ScopePrefixLookup
     }
 
     /// <summary>
-    /// Returns the active prefixes owned by an organization, or an empty list if it owns none.
+    /// Returns the prefixes owned by an organization, or an empty list if it owns none.
     /// </summary>
     public IReadOnlyList<string> GetPrefixes(string? organizationNumber)
     {

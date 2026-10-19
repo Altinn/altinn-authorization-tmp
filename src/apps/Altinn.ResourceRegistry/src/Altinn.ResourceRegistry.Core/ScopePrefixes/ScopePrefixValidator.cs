@@ -109,7 +109,7 @@ internal partial class ScopePrefixValidator
             // An empty list would reject every scope. Treat it as a failure and keep the old list.
             if (lookup.OrganizationCount == 0)
             {
-                throw new InvalidOperationException("The prefix list contained no active prefixes");
+                throw new InvalidOperationException("The prefix list contained no prefixes");
             }
 
             Log.FetchedPrefixList(_logger, _timeProvider.GetUtcNow() - fetchTime, records.Count, lookup.OrganizationCount);
@@ -141,7 +141,7 @@ internal partial class ScopePrefixValidator
         [LoggerMessage(1, LogLevel.Information, "Fetching Maskinporten scope prefix list")]
         public static partial void FetchingPrefixList(ILogger logger);
 
-        [LoggerMessage(2, LogLevel.Information, "Fetched Maskinporten scope prefix list in {Duration}: {RecordCount} records, {OrganizationCount} organizations with active prefixes")]
+        [LoggerMessage(2, LogLevel.Information, "Fetched Maskinporten scope prefix list in {Duration}: {RecordCount} records, {OrganizationCount} organizations with prefixes")]
         public static partial void FetchedPrefixList(ILogger logger, TimeSpan duration, int recordCount, int organizationCount);
 
         [LoggerMessage(3, LogLevel.Error, "Failed to fetch Maskinporten scope prefix list")]

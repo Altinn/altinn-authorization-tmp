@@ -45,7 +45,7 @@ namespace Altinn.ResourceRegistry.Core.Models
         public DateTimeOffset? LastUpdated { get; init; }
 
         /// <summary>
-        /// Whether the prefix is active. Only active prefixes give ownership.
+        /// Whether the prefix is active.
         /// </summary>
         [JsonPropertyName("active")]
         public bool Active { get; init; }

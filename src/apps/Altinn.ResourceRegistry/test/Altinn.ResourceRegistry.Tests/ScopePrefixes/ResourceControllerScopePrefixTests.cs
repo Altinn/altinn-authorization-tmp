@@ -126,13 +126,14 @@ public class ResourceControllerScopePrefixTests(DbFixture dbFixture, WebApplicat
 
     [Theory]
     [MemberData(nameof(Methods))]
-    public async Task InactivePrefix_Returns400(string method)
+    public async Task InactivePrefix_Succeeds(string method)
     {
         GivenPrefixes();
 
+        // skd still owns its deactivated prefix, so it can keep updating resources that use it
         var response = await Send(method, Token("skd", Skatteetaten, WriteScope), Skatteetaten, "skatteetaten:scope");
 
-        await AssertInvalidPrefix(response, "skatteetaten:scope");
+        Assert.Equal(SuccessStatus(method), response.StatusCode);
     }
 
     [Theory]

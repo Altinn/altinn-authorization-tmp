@@ -11,7 +11,7 @@ public interface IScopePrefixValidator
     /// <summary>
     /// Returns the scopes that are not under a prefix owned by <paramref name="organizationNumber"/>.
     /// A scope is covered by a prefix when it starts with the prefix followed by <c>:</c>.
-    /// Only active prefixes count, and an organization missing from the list owns no prefixes.
+    /// Inactive prefixes count as owned, and an organization missing from the list owns no prefixes.
     /// </summary>
     /// <param name="organizationNumber">Organization number of the resource owner (<c>HasCompetentAuthority.Organization</c>)</param>
     /// <param name="scopes">The Maskinporten scopes to check</param>
