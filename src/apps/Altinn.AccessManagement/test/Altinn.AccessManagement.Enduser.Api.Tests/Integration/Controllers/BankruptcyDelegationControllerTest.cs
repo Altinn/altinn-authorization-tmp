@@ -237,68 +237,6 @@ public class BankruptcyDelegationControllerTest
 
     #endregion
 
-    #region GET accessmanagement/api/v1/enduser/bankruptcyestate/estates
-
-    /// <summary>
-    /// <see cref="BankruptcyDelegationController.GetBankruptcyEstates(Guid, CancellationToken)"/>
-    /// </summary>
-    [IntegrationTest]
-    public class GetBankruptcyEstates : IClassFixture<ApiFixture>
-    {
-        public GetBankruptcyEstates(ApiFixture fixture)
-        {
-            Fixture = fixture;
-            Fixture.EnsureSeedOnce<GetBankruptcyEstates>(SeedBankruptcyEstates);
-        }
-
-        public ApiFixture Fixture { get; }
-
-        /// <summary>
-        /// Bodil gets both her estates back.
-        /// </summary>
-        [Fact]
-        public async Task GetBankruptcyEstates_ForLawyerWithEstates_ReturnsEstates()
-        {
-            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ);
-
-            var response = await client.GetAsync($"{Route}/estates?party={LawyerBodil}", TestContext.Current.CancellationToken);
-
-            await AssertStatus(HttpStatusCode.OK, response);
-            var result = await Deserialize<PaginatedResult<CompactEntityDto>>(response);
-            Assert.Equal([EstateOne, EstateTwo], result.Items.Select(e => e.Id).Order());
-        }
-
-        /// <summary>
-        /// Bjarne has no estates; expects an empty list.
-        /// </summary>
-        [Fact]
-        public async Task GetBankruptcyEstates_ForLawyerWithoutEstates_ReturnsEmpty()
-        {
-            var client = CreateClient(Fixture, LawyerBjarne, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ);
-
-            var response = await client.GetAsync($"{Route}/estates?party={LawyerBjarne}", TestContext.Current.CancellationToken);
-
-            await AssertStatus(HttpStatusCode.OK, response);
-            var result = await Deserialize<PaginatedResult<CompactEntityDto>>(response);
-            Assert.Empty(result.Items);
-        }
-
-        /// <summary>
-        /// The write scope alone does not grant read access; expects 403.
-        /// </summary>
-        [Fact]
-        public async Task GetBankruptcyEstates_WithWriteScopeOnly_Returns403()
-        {
-            var client = CreateClient(Fixture, LawyerBodil, AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_WRITE);
-
-            var response = await client.GetAsync($"{Route}/estates?party={LawyerBodil}", TestContext.Current.CancellationToken);
-
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-    }
-
-    #endregion
-
     #region GET accessmanagement/api/v1/enduser/bankruptcyestate/administrators
 
     /// <summary>
@@ -326,9 +264,9 @@ public class BankruptcyDelegationControllerTest
             var response = await client.GetAsync($"{Route}/administrators?party={LawyerBodil}", TestContext.Current.CancellationToken);
 
             await AssertStatus(HttpStatusCode.OK, response);
-            var result = await Deserialize<PaginatedResult<CompactEntityDto>>(response);
+            var result = await Deserialize<PaginatedResult<BankruptcyEstateAdministratorDto>>(response);
             var admin = Assert.Single(result.Items);
-            Assert.Equal(ExistingAdmin, admin.Id);
+            Assert.Equal(ExistingAdmin, admin.Administrator.Id);
         }
 
         /// <summary>

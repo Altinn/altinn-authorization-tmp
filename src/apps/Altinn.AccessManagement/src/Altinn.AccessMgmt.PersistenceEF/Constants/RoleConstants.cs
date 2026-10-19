@@ -196,9 +196,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Konkursbo administrator",
-            Code = "konkursbo-tilgangsstyrer",
-            Description = "Gir mulighet til å administrere alle konkursbo for en gitt bostyrer",
-            Urn = "urn:altinn:role:konkursbo-tilgangsstyrer",
+            Code = "innbygger-konkursbo-administrator",
+            Description = "Gir mulighet til å administrere alle nåværende og fremtidige konkursbo for bostyrer. Mottaker får automatisk Hovedadministrator, Konkursbo lese- og skrivetilgang.",
+            Urn = "urn:altinn:role:innbygger-konkursbo-administrator",
             IsKeyRole = false,
             IsAssignable = true,
             IsAvailableForServiceOwners = false,
@@ -207,11 +207,11 @@ public static class RoleConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bankruptcy estate administrator"),
-            KeyValuePair.Create("Description", "Provides the ability to administer all bankruptcy estates for a given trustee")
+            KeyValuePair.Create("Description", "Allows the trustee in bankruptcy to manage all current and future bankruptcy estates. The recipient is automatically granted Main Administrator and Bankruptcy Estate read and write access.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Konkursbo administrator"),
-            KeyValuePair.Create("Description", "Gir moglegheit til å administrere alle konkursbo for ein gitt bostyrar")
+            KeyValuePair.Create("Description", "Gir moglegheit til å administrere alle noverande og framtidige konkursbu for bustyrar. Mottakaren får automatisk Hovudadministrator, Konkursbu lese- og skrivetilgang.")
         ),
     };
 

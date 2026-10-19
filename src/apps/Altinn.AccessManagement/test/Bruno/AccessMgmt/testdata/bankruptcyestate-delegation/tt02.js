@@ -1,6 +1,6 @@
 module.exports = 
 {
-  "env": "at22",
+  "env": "tt02",
   "BOSTYRER": {
     "name": "VIRTUELL SKADE",
     "pid": "03835398993",

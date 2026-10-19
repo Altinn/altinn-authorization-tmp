@@ -56,26 +56,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             return Ok(result);
         }
 
-        [HttpGet("estates")]
-        [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ)]
-        [Authorize(Policy = AuthzConstants.POLICY_BANKRUPTCYDELEGATION_READ)]
-        [ProducesResponseType<PaginatedResult<CompactEntityDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetBankruptcyEstates(
-           [FromQuery(Name = "party")][Required] Guid party,
-           CancellationToken cancellationToken = default)
-        {
-            var result = await bankruptcyDelegationService.GetBankruptcyEstates(party, cancellationToken);
-            if (result.IsProblem)
-            {
-                return result.Problem.ToActionResult();
-            }
-
-            return Ok(PaginatedResult.Create(result.Value, null));
-        }
-
         [HttpGet("administrators")]
         [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_BANKRUPTCYDELEGATION_READ)]
         [Authorize(Policy = AuthzConstants.POLICY_BANKRUPTCYDELEGATION_READ)]
