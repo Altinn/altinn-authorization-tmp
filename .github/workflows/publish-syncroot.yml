@@ -1,5 +1,5 @@
 name: "Publish Syncroot"
-run-name: ${{ inputs.vertical }} ${{ inputs.environment }}
+run-name: Publish syncroot to ${{ inputs.vertical }} ${{ inputs.environment }}
 
 on:
   workflow_dispatch:
