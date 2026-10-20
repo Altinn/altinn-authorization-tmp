@@ -20,9 +20,9 @@ on:
           - at22
           - at23
           - at24
-          - tt02
           - yt01
-          - prod
+          # - tt02
+          # - prod
 
 permissions:
   contents: read
@@ -41,7 +41,7 @@ jobs:
       - name: Init
         uses: $/.github/actions/init
       - name: Extract app config
-        env:
+        env:VERTICAL_NAME
           VERTICAL: ${{ inputs.vertical }}
         run: |
           repoctl github export-vertical "app:$VERTICAL"
