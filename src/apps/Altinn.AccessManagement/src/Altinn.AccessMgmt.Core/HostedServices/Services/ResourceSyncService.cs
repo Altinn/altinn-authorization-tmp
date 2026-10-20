@@ -128,7 +128,7 @@ public partial class ResourceSyncService : IResourceSyncService
                 {
                     try
                     {
-                        var resource = useChangeFeed
+                        var resource = useChangeFeed && !updatedResource.ResourceUrn.StartsWith($"{ResourceUrnPrefix}app_", StringComparison.OrdinalIgnoreCase)
                             ? await FindSyncedResource(dbContext, updatedResource, cancellationToken)
                             : await UpsertResource(dbContext, updatedResource, cancellationToken);
                         if (resource is null)
