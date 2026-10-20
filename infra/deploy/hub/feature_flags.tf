@@ -51,6 +51,7 @@ locals {
     "AccessManagement.Pip.IncludeClientDelegatedResources"                   = { description = "Specifies if v2 client-delegated resources should be included in PIP GetAllDelegationChanges response." },
     "AccessManagement.ConnectionQuery.IncludeClientDelegationResources"      = { description = "Specifies if client-delegated resources should be included in ConnectionQuery and AuthorizedParties response." },
     "AccessManagement.Subunit.AdosInheritance"                               = { description = "Specifies if ADOS administrative units should be treated as subunits that inherit mainunit access (equal to BEDR/AAFY) in ConnectionQuery and AuthorizedParties. Reversible; defaults to false." },
+    "AccessMgmt.Core.HostedServices.ResourceRegistrySync.ChangeFeed"         = { description = "Specifies if the resource registry change feed should be processed by the hosted service before it imports the policy feed or do as it has done jump directly to processing the policy feed and just fetch the resource in the same go, this is missing updates to the resource registry that does not include policy changes." },
   }
 
   access_management_feature_flags_ui = {
