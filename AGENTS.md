@@ -25,7 +25,7 @@ pwsh eng/testing/run-coverage.ps1                      # coverage, installs dotn
 
 - **Branch per change, never commit to `main`.** Name it `type/<issue>_<slug>`.
 - **Commits and PR titles use Conventional Commits; scopes are encouraged**, e.g. `fix(authorized-parties): correct delegation lookup`. Scopes use lowercase kebab-case for components within a vertical, not verticals or issues. Omit scopes only without a particular component, e.g. `docs: document commit conventions`. Put issues in the body or trailers (`Refs: #4044`). Prefer `Resolves: #4044` in the PR description to close completed issues. See [conventions](CONTRIBUTING.md#branches-commits-and-pull-requests). `main` is squash-only: preserve all commit trailers ([#4095](https://github.com/Altinn/altinn-auth/issues/4095)).
-- **CI runs `repoctl check`:** `dotnet format --verify-no-changes`, and the generated `.slnx` files and release configuration must be current (`just update-sln-files`).
+- **CI runs `repoctl check`:** formatting, generated `.slnx` files and release configuration must be current (`just update-sln-files`). [Promotion](.github/actions/deploy-apps/README.md) serves CI and releases.
 - **A green local build or `dotnet test` is not proof, and a red one is not always a defect.** CI builds with `-warnaserror`, and without a container runtime, integration tests that need a database fail in setup. CI is the gate.
 - **Update affected documentation and agent guidance in the same PR.** Require ADRs only for significant architectural decisions or lasting trade-offs; see [the threshold](CONTRIBUTING.md#when-an-adr-is-required). Validate the [guidance contract](docs/adr/0002-tool-neutral-agent-contract.md) with `node .github/scripts/agents-docs-validate.mjs`.
 - **Issues: a type and one or more `area/*`** ([guide](CONTRIBUTING.md#issues-and-labels)).
@@ -54,6 +54,7 @@ Code sits in verticals. A vertical always has its own `.slnx`, `src/` and `conf.
 | `docs/ai` | The [data policy](docs/ai/data-policy.md) for AI tools, and the background for the working agreement |
 | `eng/testing` | Coverage scripts, thresholds, the test-category guard |
 | `infra` | Infrastructure as code |
+| `.agents/skills` | [Task skills](.agents/skills/README.md); `.claude/skills` points here |
 
 Before changing a vertical, read its `AGENTS.md`. Where there is none yet, as in Register today, start from its `README.md` if it has one.
 
@@ -64,6 +65,7 @@ Do not "fix" these without understanding them.
 - **`src/apps/Altinn.Register` is a placeholder**, a single `Program.cs`. The real Register arrives with [#4056](https://github.com/Altinn/altinn-auth/issues/4056). Do not build on it or wire anything to it.
 - **Imported verticals are deliberately islands** with their own `.editorconfig`, `Directory.Build.props`, `Directory.Packages.props` and `stylecop.json`. That let them be imported with their history intact. Do not merge them into the shared build files.
 - **Markdown is LF**, enforced by `.gitattributes`. Do not reformat line endings.
+- **Manifest `.env` files are read by Kustomize's `envs` generator.** Use `KEY=value` without spaces around `=` or quotes around values: Kustomize preserves those spaces and quotes literally. Feature flags use `true` or `false` without quotes; spaces and additional `=` characters inside values such as connection strings must be preserved.
 
 ## Test gotchas
 
