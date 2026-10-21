@@ -2,12 +2,12 @@
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Altinn.AccessMgmt.Core.Services
 {
@@ -178,34 +178,20 @@ namespace Altinn.AccessMgmt.Core.Services
         /// committed.
         /// Constraint failures can still happen against writers that do not take the lock, such as a concurrent
         /// insert of the same assignment, and the import can deadlock with another batch. On any of these the
-        /// transaction is rolled back and the changes are staged again against the committed rows.
+        /// transaction is rolled back when it is disposed uncommitted, and the changes are staged again against the
+        /// committed rows.
         /// </summary>
-        private async Task<int> SaveWithRetryOnConflict(Func<Task> stageChanges, CancellationToken cancellationToken)
-        {
-            for (var attempt = 1; ; attempt++)
-            {
-                await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-                try
+        private Task<int> SaveWithRetryOnConflict(Func<Task> stageChanges, CancellationToken cancellationToken) =>
+            db.RetryOnConcurrentWriteConflict(
+                async () =>
                 {
+                    await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
                     await stageChanges();
                     var changed = await db.SaveChangesAsync(cancellationToken);
                     await transaction.CommitAsync(cancellationToken);
                     return changed;
-                }
-                catch (Exception ex) when (attempt < MaxSaveAttempts && IsConcurrentWriteConflict(ex))
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    db.ChangeTracker.Clear();
-                }
-            }
-        }
-
-        private static bool IsConcurrentWriteConflict(Exception ex) =>
-            ex is DbUpdateConcurrencyException
-            || (ex as PostgresException ?? ex.InnerException as PostgresException) is
-            {
-                SqlState: PostgresErrorCodes.UniqueViolation or PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.DeadlockDetected
-            };
+                },
+                MaxSaveAttempts);
 
         /// <summary>
         /// Locks the entity rows of the estate administrator parties (bostyrer) until the transaction ends. Every

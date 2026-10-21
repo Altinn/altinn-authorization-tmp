@@ -1761,6 +1761,166 @@ public class ClientDelegationControllerTest
         }
     }
 
+    /// <summary>
+    /// Repeated entries in one batch and concurrent package and resource delegations for the same
+    /// client and agent must all land on one delegation row instead of failing on its unique index.
+    /// </summary>
+    [IntegrationTest]
+    public class DelegateToAgentWithRepeatedAndConcurrentRequests : IClassFixture<ApiFixture>
+    {
+        public DelegateToAgentWithRepeatedAndConcurrentRequests(ApiFixture fixture)
+        {
+            Fixture = fixture;
+            Fixture.EnsureSeedOnce<DelegateToAgentWithRepeatedAndConcurrentRequests>(db =>
+            {
+                var accountantFromNordisToVerdiq = new Assignment()
+                {
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
+                    RoleId = RoleConstants.Accountant,
+                };
+
+                db.Assignments.Add(accountantFromNordisToVerdiq);
+                db.Assignments.Add(new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonPaula,
+                    RoleId = RoleConstants.Agent,
+                });
+                db.Assignments.Add(new Assignment()
+                {
+                    FromId = TestEntities.OrganizationVerdiqAS.Id,
+                    ToId = TestEntities.PersonOrjan,
+                    RoleId = RoleConstants.Agent,
+                });
+
+                db.AssignmentPackages.Add(new()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    PackageId = PackageConstants.Customs.Id,
+                });
+
+                db.AssignmentResources.Add(new AssignmentResource()
+                {
+                    AssignmentId = accountantFromNordisToVerdiq.Id,
+                    ResourceId = TestData.MattilsynetBakeryService.Id,
+                    PolicyPath = "mattilsynet-baker-konditorvare/delegationpolicy.xml",
+                    PolicyVersion = "1.0",
+                });
+
+                db.SaveChanges();
+            });
+        }
+
+        public ApiFixture Fixture { get; }
+
+        private HttpClient CreateClient()
+        {
+            var client = Fixture.Server.CreateClient();
+            var token = TestTokenGenerator.CreateToken(new ClaimsIdentity("mock"), claims =>
+            {
+                claims.Add(new Claim(AltinnCoreClaimTypes.PartyUuid, TestEntities.PersonPaula.Id.ToString()));
+                claims.Add(new Claim("scope", $"{AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ} {AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE}"));
+            });
+
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            return client;
+        }
+
+        [Fact]
+        public async Task DelegateAccessPackage_WithRepeatedRoleAndPackageInPayload_Returns200WithSingleDelegationPackage()
+        {
+            var client = CreateClient();
+
+            var response = await client.PostAsJsonAsync(
+                $"{Route}/agents/accesspackages?party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonOrjan}",
+                new DelegationBatchInputDto()
+                {
+                    Values = [
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Packages = [PackageConstants.Customs.Entity.Urn, PackageConstants.Customs.Entity.Urn]
+                        },
+                        new()
+                        {
+                            Role = RoleConstants.Accountant.Entity.Code,
+                            Packages = [PackageConstants.Customs.Entity.Urn]
+                        }
+                    ]
+                },
+                TestContext.Current.CancellationToken
+            );
+
+            var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var result = JsonSerializer.Deserialize<List<DelegationDto>>(data);
+            Assert.Equal(3, result.Count);
+            Assert.Single(result, r => r.Changed);
+
+            // One delegation and one delegation package row despite the repeated entries.
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegations = await db.Delegations
+                    .Include(d => d.DelegationPackages)
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonOrjan.Id)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                var delegation = Assert.Single(delegations);
+                var delegationPackage = Assert.Single(delegation.DelegationPackages);
+                Assert.Equal(PackageConstants.Customs.Id, delegationPackage.PackageId);
+            });
+        }
+
+        [Fact]
+        public async Task DelegatePackageAndResource_Concurrently_Returns200ForAllWithSingleDelegation()
+        {
+            var client = CreateClient();
+            var query = $"party={TestEntities.OrganizationVerdiqAS}&client={TestEntities.OrganizationNordisAS}&agent={TestEntities.PersonPaula}";
+
+            // Several package and resource calls for a client and agent without a delegation yet, all at once.
+            // Each call is in its own request scope and races to create the same delegation row.
+            var requests = Enumerable.Range(0, 3).SelectMany(_ => new[]
+            {
+                client.PostAsJsonAsync(
+                    $"{Route}/agents/accesspackages?{query}",
+                    new DelegationBatchInputDto()
+                    {
+                        Values = [new() { Role = RoleConstants.Accountant.Entity.Code, Packages = [PackageConstants.Customs.Entity.Urn] }]
+                    },
+                    TestContext.Current.CancellationToken),
+                client.PostAsJsonAsync(
+                    $"{Route}/agents/resources?{query}",
+                    new ContractsV2.ResourceDelegationBatchInputDto()
+                    {
+                        Values = [new() { Role = RoleConstants.Accountant.Entity.Code, Resources = [TestData.MattilsynetBakeryService.RefId] }]
+                    },
+                    TestContext.Current.CancellationToken),
+            });
+
+            var responses = await Task.WhenAll(requests);
+            foreach (var response in responses)
+            {
+                var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+                Assert.True(response.StatusCode == HttpStatusCode.OK, $"{response.RequestMessage.RequestUri.AbsolutePath} returned {(int)response.StatusCode}: {data}");
+            }
+
+            await Fixture.QueryDb(static async db =>
+            {
+                var delegations = await db.Delegations
+                    .Include(d => d.DelegationPackages)
+                    .Include(d => d.DelegationResources)
+                    .Where(d => d.FacilitatorId == TestEntities.OrganizationVerdiqAS.Id && d.To.ToId == TestEntities.PersonPaula.Id)
+                    .ToListAsync(TestContext.Current.CancellationToken);
+
+                var delegation = Assert.Single(delegations);
+                Assert.Equal(PackageConstants.Customs.Id, Assert.Single(delegation.DelegationPackages).PackageId);
+                Assert.Equal(TestData.MattilsynetBakeryService.Id, Assert.Single(delegation.DelegationResources).ResourceId);
+            });
+        }
+    }
+
     #endregion
 
     #region POST accessmanagement/api/v2/enduser/clientdelegations/agents/accesspackages/delete
