@@ -37,7 +37,7 @@ spec:
             - name: RunInitOnly
               value: 'true'
             - name: K8S_CONTAINER_NAME
-              value: access-management-api
+              value: access-management
             - name: K8S_POD_NAME
               valueFrom:
                 fieldRef:
