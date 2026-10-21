@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Utils;
+﻿using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -126,7 +127,7 @@ namespace Altinn.AccessMgmt.Core.Services
             }
 
             Assignment adminAssignment = null;
-            await SaveWithRetryOnConflict(
+            if (await TrySaveWithRetryOnConflict(
                 async () =>
                 {
                     await LockEstateAdministratorParties(db, [partyUuid], cancellationToken);
@@ -146,7 +147,10 @@ namespace Altinn.AccessMgmt.Core.Services
                     var estateIds = await GetBankruptcyEstateIds(partyUuid, cancellationToken);
                     await GrantEstateAccess(estateIds.Select(estateId => (estateId, toUuid)).ToList(), cancellationToken);
                 },
-                cancellationToken);
+                cancellationToken) is { } conflict)
+            {
+                return conflict;
+            }
 
             return DtoMapper.Convert(adminAssignment);
         }
@@ -192,6 +196,23 @@ namespace Altinn.AccessMgmt.Core.Services
                     return changed;
                 },
                 MaxSaveAttempts);
+
+        /// <summary>
+        /// Same as <see cref="SaveWithRetryOnConflict"/>, for the API. If the conflict remains after the last attempt,
+        /// returns a 409 problem instead of throwing, so the caller can try again.
+        /// </summary>
+        private async Task<ProblemInstance?> TrySaveWithRetryOnConflict(Func<Task> stageChanges, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await SaveWithRetryOnConflict(stageChanges, cancellationToken);
+                return null;
+            }
+            catch (Exception ex) when (ex.IsConcurrentWriteConflict())
+            {
+                return Problems.ConcurrentPersistenceConflict;
+            }
+        }
 
         /// <summary>
         /// Locks the entity rows of the estate administrator parties (bostyrer) until the transaction ends. Every
@@ -375,7 +396,7 @@ namespace Altinn.AccessMgmt.Core.Services
         ];
 
         /// <inheritdoc />
-        public async Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
+        public async Task<ProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
         {
             var options = new ConnectionOptions(configureConnections);
             (Entity from, Entity to) = await GetFromAndToEntities(partyUuid, toUuid, cancellationToken);
@@ -385,7 +406,7 @@ namespace Altinn.AccessMgmt.Core.Services
                 return problem;
             }
 
-            await SaveWithRetryOnConflict(
+            return await TrySaveWithRetryOnConflict(
                 async () =>
                 {
                     await LockEstateAdministratorParties(db, [partyUuid], cancellationToken);
@@ -403,8 +424,6 @@ namespace Altinn.AccessMgmt.Core.Services
                     }
                 },
                 cancellationToken);
-
-            return null;
         }
     }
 
@@ -455,7 +474,7 @@ namespace Altinn.AccessMgmt.Core.Services
         /// <param name="configureConnections">An action to configure connection options.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A result containing the revoked assignment.</returns>
-        Task<ValidationProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default);
+        Task<ProblemInstance?> RevokeBankruptcyEstateAdministrator(Guid partyUuid, Guid toUuid, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// For each (estate, estate administrator party) relation, gives every bankruptcy estate administrator of

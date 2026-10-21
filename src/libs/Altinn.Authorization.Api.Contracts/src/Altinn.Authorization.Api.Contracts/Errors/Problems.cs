@@ -220,5 +220,5 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConcurrentPersistenceConflict { get; }
-    = _factory.Create(52, HttpStatusCode.BadRequest, "The same data was changed by another request at the same time. Try again.");
+    = _factory.Create(52, HttpStatusCode.Conflict, "The same data was changed by another request at the same time. Try again.");
 }
