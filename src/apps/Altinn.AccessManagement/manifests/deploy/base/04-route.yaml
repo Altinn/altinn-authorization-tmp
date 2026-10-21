@@ -15,13 +15,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: l5d-dst-override
-                value: access-management.product-access-management.svc.cluster.local:80
+            value: /accessmanagement/api
       backendRefs:
-        - name: access-management
+        - name: am-api
           port: 80
