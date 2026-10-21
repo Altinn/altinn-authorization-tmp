@@ -13,6 +13,7 @@ using Azure.Messaging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.Platform.Authentication.Services
@@ -24,16 +25,19 @@ namespace Altinn.Platform.Authentication.Services
     {
         private readonly IEventsQueueClient _queueClient;
         private readonly TimeProvider _timeProvider;
+        private readonly ILogger<EventLogService> _logger;
 
         /// <summary>
         /// Instantiation for event log servcie
         /// </summary>
         /// <param name="queueClient">queue client to store event in event log</param>
         /// <param name="timeProvider">the timeprovider to get the current datetime</param>
-        public EventLogService(IEventsQueueClient queueClient, TimeProvider timeProvider)
+        /// <param name="logger">the logger</param>
+        public EventLogService(IEventsQueueClient queueClient, TimeProvider timeProvider, ILogger<EventLogService> logger)
         {
             _queueClient = queueClient;
             _timeProvider = timeProvider;
+            _logger = logger;
         }
 
         /// <summary>
@@ -47,11 +51,7 @@ namespace Altinn.Platform.Authentication.Services
         {
             if (await featureManager.IsEnabledAsync(FeatureFlags.AuditLog))
             {
-                AuthenticationEvent authenticationEvent = EventlogHelper.MapAuthenticationEvent(authenticatedUser, eventType, context, _timeProvider.GetUtcNow());
-                if (authenticationEvent != null)
-                {
-                    _queueClient.EnqueueAuthenticationEvent(JsonSerializer.Serialize(authenticationEvent));
-                }
+                await EnqueueAsync(eventType, () => EventlogHelper.MapAuthenticationEvent(authenticatedUser, eventType, context, _timeProvider.GetUtcNow()));
             }
         }
 
@@ -72,11 +72,33 @@ namespace Altinn.Platform.Authentication.Services
         {
             if (await featureManager.IsEnabledAsync(FeatureFlags.AuditLog))
             {
-                AuthenticationEvent authenticationEvent = EventlogHelper.MapAuthenticationEvent(jwtToken, eventType, ipadress, _timeProvider.GetUtcNow(), externalSessionId);
-                if (authenticationEvent != null)
+                await EnqueueAsync(eventType, () => EventlogHelper.MapAuthenticationEvent(jwtToken, eventType, ipadress, _timeProvider.GetUtcNow(), externalSessionId));
+            }
+        }
+
+        /// <summary>
+        /// Maps and queues one audit event. Auditing must not break sign-in, refresh or logout, so a failure
+        /// is logged with the event type instead of being thrown to the caller.
+        /// </summary>
+        private async Task EnqueueAsync(AuthenticationEventType eventType, Func<AuthenticationEvent?> mapEvent)
+        {
+            try
+            {
+                AuthenticationEvent? authenticationEvent = mapEvent();
+                if (authenticationEvent is null)
                 {
-                    _queueClient.EnqueueAuthenticationEvent(JsonSerializer.Serialize(authenticationEvent));
+                    return;
                 }
+
+                QueuePostReceipt receipt = await _queueClient.EnqueueAuthenticationEvent(JsonSerializer.Serialize(authenticationEvent));
+                if (!receipt.Success)
+                {
+                    _logger.LogError(receipt.Exception, "Audit event {EventType} could not be queued", eventType);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Audit event {EventType} could not be created", eventType);
             }
         }
     }
