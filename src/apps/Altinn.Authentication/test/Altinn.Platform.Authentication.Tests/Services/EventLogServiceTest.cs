@@ -212,6 +212,30 @@ namespace Altinn.Platform.Authentication.Tests.Services
             Assert.Contains("Logout", record.Message);
         }
 
+        [Fact]
+        public async Task QueueAuthenticationEvent_FeatureCheckThrows_LogsErrorAndDoesNotThrow()
+        {
+            // Arrange
+            Mock<IEventsQueueClient> queueMock = new();
+            Mock<IFeatureManager> featureManagerMock = new();
+            featureManagerMock
+                .Setup(m => m.IsEnabledAsync("AuditLog"))
+                .ThrowsAsync(new InvalidOperationException("feature store unavailable"));
+
+            FakeLogger<EventLogService> logger = new();
+            var service = GetEventLogService(queueMock.Object, timeProviderMock, logger);
+
+            // Act
+            await service.CreateAuthenticationEventAsync(featureManagerMock.Object, "not-used", AuthenticationEventType.Refresh, IPAddress.Parse("244.233.12.2"));
+
+            // Assert
+            queueMock.Verify(r => r.EnqueueAuthenticationEvent(It.IsAny<string>()), Times.Never);
+            FakeLogRecord record = Assert.Single(logger.Collector.GetSnapshot());
+            Assert.Equal(LogLevel.Error, record.Level);
+            Assert.IsType<InvalidOperationException>(record.Exception);
+            Assert.Contains("Refresh", record.Message);
+        }
+
         private static IFeatureManager GetAuditLogEnabled()
         {
             Mock<IFeatureManager> featureManageMock = new();

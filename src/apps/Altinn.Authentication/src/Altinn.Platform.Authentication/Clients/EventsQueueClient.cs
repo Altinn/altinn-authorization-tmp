@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Altinn.Platform.Authentication.Clients.Interfaces;
 using Altinn.Platform.Authentication.Configuration;
@@ -22,8 +23,13 @@ namespace Altinn.Platform.Authentication.Clients
         /// <summary>
         /// Audit writes are awaited on the sign-in, refresh, logout and token exchange paths, so an
         /// unavailable queue must fail fast rather than hold the request through the SDK's default
-        /// retries (minutes). Worst case with these values is about 10 seconds; the caller logs the
-        /// lost event and the request continues.
+        /// retries (minutes). The whole write, queue creation and send together, is cut off at this
+        /// deadline; the caller logs the lost event and the request continues.
+        /// </summary>
+        private static readonly TimeSpan WriteDeadline = TimeSpan.FromSeconds(10);
+
+        /// <summary>
+        /// Short retries keep a transient fault inside <see cref="WriteDeadline"/>.
         /// </summary>
         private static readonly QueueClientOptions QueueOptions = new()
         {
@@ -53,11 +59,13 @@ namespace Altinn.Platform.Authentication.Clients
         /// <inheritdoc/>
         public async Task<QueuePostReceipt> EnqueueAuthenticationEvent(string content)
         {
+            using CancellationTokenSource deadline = new(WriteDeadline);
+
             try
             {
-                QueueClient client = await GetAuthenticationEventQueueClient();
+                QueueClient client = await GetAuthenticationEventQueueClient(deadline.Token);
                 TimeSpan timeToLive = TimeSpan.FromDays(_settings.TimeToLive);
-                await client.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(content)), null, timeToLive);
+                await client.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(content)), null, timeToLive, deadline.Token);
             }
             catch (Exception ex)
             {
@@ -68,12 +76,12 @@ namespace Altinn.Platform.Authentication.Clients
             return new QueuePostReceipt { Success = true };
         }
 
-        private async Task<QueueClient> GetAuthenticationEventQueueClient()
+        private async Task<QueueClient> GetAuthenticationEventQueueClient(CancellationToken cancellationToken)
         {
             if (_authenticationEventQueueClient == null)
             {
                 QueueClient client = new QueueClient(_settings.EventLogConnectionString, _settings.AuthenticationEventQueueName, QueueOptions);
-                await client.CreateIfNotExistsAsync();
+                await client.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
                 // Cache only once the queue exists, so a failed first attempt is retried on the next event.
                 _authenticationEventQueueClient = client;

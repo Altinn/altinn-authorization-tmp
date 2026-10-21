@@ -49,10 +49,7 @@ namespace Altinn.Platform.Authentication.Services
         /// <param name="context">the http context</param>
         public async Task CreateAuthenticationEventAsync(IFeatureManager featureManager, UserAuthenticationModel authenticatedUser, AuthenticationEventType eventType, HttpContext context)
         {
-            if (await featureManager.IsEnabledAsync(FeatureFlags.AuditLog))
-            {
-                await EnqueueAsync(eventType, () => EventlogHelper.MapAuthenticationEvent(authenticatedUser, eventType, context, _timeProvider.GetUtcNow()));
-            }
+            await EnqueueAsync(featureManager, eventType, () => EventlogHelper.MapAuthenticationEvent(authenticatedUser, eventType, context, _timeProvider.GetUtcNow()));
         }
 
         /// <summary>
@@ -70,20 +67,23 @@ namespace Altinn.Platform.Authentication.Services
             System.Net.IPAddress ipadress,
             string? externalSessionId = null)
         {
-            if (await featureManager.IsEnabledAsync(FeatureFlags.AuditLog))
-            {
-                await EnqueueAsync(eventType, () => EventlogHelper.MapAuthenticationEvent(jwtToken, eventType, ipadress, _timeProvider.GetUtcNow(), externalSessionId));
-            }
+            await EnqueueAsync(featureManager, eventType, () => EventlogHelper.MapAuthenticationEvent(jwtToken, eventType, ipadress, _timeProvider.GetUtcNow(), externalSessionId));
         }
 
         /// <summary>
-        /// Maps and queues one audit event. Auditing must not break sign-in, refresh or logout, so a failure
-        /// is logged with the event type instead of being thrown to the caller.
+        /// Checks the AuditLog flag, then maps and queues one audit event. Auditing must not break sign-in,
+        /// refresh, logout or token exchange, so any failure, the flag check included, is logged with the
+        /// event type instead of being thrown to the caller.
         /// </summary>
-        private async Task EnqueueAsync(AuthenticationEventType eventType, Func<AuthenticationEvent?> mapEvent)
+        private async Task EnqueueAsync(IFeatureManager featureManager, AuthenticationEventType eventType, Func<AuthenticationEvent?> mapEvent)
         {
             try
             {
+                if (!await featureManager.IsEnabledAsync(FeatureFlags.AuditLog))
+                {
+                    return;
+                }
+
                 AuthenticationEvent? authenticationEvent = mapEvent();
                 if (authenticationEvent is null)
                 {
