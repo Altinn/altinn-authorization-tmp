@@ -88,8 +88,13 @@ spec:
               mountPath: "/altinn-appsettings"
             - name: accesstoken
               mountPath: "/accesstoken"
+            - name: tmp
+              mountPath: /tmp
 
       volumes:
+        - name: tmp
+          emptyDir:
+            medium: memory
         - name: altinn-appsettings
           secret:
             secretName: altinn-appsettings-secret
