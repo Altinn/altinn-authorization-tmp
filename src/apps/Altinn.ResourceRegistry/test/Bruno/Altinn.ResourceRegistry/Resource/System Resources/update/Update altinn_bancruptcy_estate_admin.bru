@@ -42,8 +42,18 @@ body:json {
     "keywords": [],
     "accessListMode": "Disabled",
     "selfIdentifiedUserEnabled": false,
-    "enterpriseUserEnabled": true,
-    "resourceType": "SystemResource"
+    "enterpriseUserEnabled": false,
+    "resourceType": "SystemResource",
+    "availableForType": [
+        "PrivatePerson"
+      ],
+      "authorizationReference": [
+        {
+          "id": "urn:altinn:resource",
+          "value": "altinn_bankruptcy_estate_admin"
+        }
+      ],
+      "isOneTimeConsent": false
   }
 }
 
