@@ -84,12 +84,12 @@ spec:
               periodSeconds: 10
               timeoutSeconds: 10
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: altinn-appsettings
               mountPath: "/altinn-appsettings"
             - name: accesstoken
               mountPath: "/accesstoken"
-            - name: tmp
-              mountPath: /tmp
 
       volumes:
         - name: tmp
