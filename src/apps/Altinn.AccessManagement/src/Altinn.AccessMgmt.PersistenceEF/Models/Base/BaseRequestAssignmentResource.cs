@@ -33,4 +33,9 @@ public class BaseRequestAssignmentResource : BaseAudit, IEntityId
     /// The status of the request (e.g., pending, approved, rejected)
     /// </summary>
     public RequestStatus Status { get; set; }
+
+    /// <summary>
+    /// The rights requested for the resource, as right keys from the resource policy. Null when no specific rights were requested.
+    /// </summary>
+    public List<string>? RightKeys { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
+﻿using System.Text.Json.Serialization;
+
+namespace Altinn.Authorization.Api.Contracts.AccessManagement.Request;
 
 /// <summary>
 /// Base response dto for requests
@@ -34,6 +36,13 @@ public class RequestDto
     /// Requested resource
     /// </summary>
     public RequestReferenceDto Resource { get; set; }
+
+    /// <summary>
+    /// The rights requested for the resource, as right keys from the resource policy.
+    /// Not set for package requests or when no specific rights were requested.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IEnumerable<string>? RightKeys { get; set; }
 
     /// <summary>
     /// Requested package

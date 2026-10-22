@@ -125,6 +125,11 @@ public class RequestControllerTest
 
             var obj = await response.Content.ReadFromJsonAsync<RequestDto>(TestContext.Current.CancellationToken);
             Assert.Equal(RequestStatus.Pending, obj.Status);
+
+            // v1 cannot store right keys, so its responses must not contain the field added for v2
+            var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            using var json = JsonDocument.Parse(content);
+            Assert.False(json.RootElement.TryGetProperty("rightKeys", out _));
         }
 
         [Fact]
@@ -153,6 +158,7 @@ public class RequestControllerTest
                 byId: TestData.KnutVik.Id,
                 roleId: RoleConstants.Rightholder.Id,
                 resourceId: TestResourceId,
+                rightKeys: null,
                 ct: TestContext.Current.CancellationToken);
 
             Assert.True(result.IsProblem);

@@ -43,8 +43,20 @@ public interface IRequestService
     /// Creates a new request
     /// A Request from Kari by NAV to BakerAS for AppResource01.
     /// Will create an Assignment from BakerAS to Kari with an AssignmentResource for AppResource01.
+    /// The right keys being requested must already be validated with <see cref="ValidateResourceRightKeys"/>;
+    /// pass null or an empty list when no specific rights are requested.
     /// </summary>
-    Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default);
+    Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, IEnumerable<string>? rightKeys, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default);
+
+    /// <summary>
+    /// Validates the right keys of a resource request against the policy of the resource.
+    /// Every key must exist in the policy and be delegable to a user, that is, be given by at least one
+    /// role or access package in the policy. Returns null when the keys are valid or none are given.
+    /// </summary>
+    /// <param name="resource">The resource registry identifier of the resource (its RefId)</param>
+    /// <param name="rightKeys">The requested right keys</param>
+    /// <param name="ct">Cancellation token</param>
+    Task<ValidationProblemInstance?> ValidateResourceRightKeys(string resource, IEnumerable<string>? rightKeys, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a new request

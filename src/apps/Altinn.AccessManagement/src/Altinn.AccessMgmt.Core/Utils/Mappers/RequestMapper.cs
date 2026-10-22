@@ -40,6 +40,7 @@ public partial class DtoMapper : IDtoMapper
             By = ConvertToIdentifiedPartyOrStub(request.Assignment.By, request.Assignment.ById),
             Status = request.Status,
             Resource = new RequestReferenceDto() { Id = request.ResourceId, ReferenceId = request.Resource?.RefId },
+            RightKeys = request.RightKeys,
         };
     }
 
