@@ -7,6 +7,13 @@ auth {
   mode: inherit
 }
 
+script:pre-request {
+  // The activity log routes are behind feature flags that are off in TT02; remove this when they are on.
+  if (bru.getEnvVar("tokenEnv") === "tt02") {
+    bru.runner.skipRequest();
+  }
+}
+
 docs {
   # Enduser activity log
 
@@ -80,5 +87,7 @@ docs {
   flags `AccessManagement.Enduser.ConnectionsActivityLogApi`,
   `AccessManagement.Enduser.RequestActivityLogApi` and
   `AccessManagement.Enduser.MaskinportenActivityLogApi`; with a flag off, that area
-  returns 404.
+  returns 404. Until the flags are on in TT02, this folder's pre-request script skips
+  every request when the environment is TT02, because the Azure DevOps post-deployment
+  run executes the whole `test` folder there.
 }
