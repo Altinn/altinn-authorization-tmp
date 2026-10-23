@@ -186,7 +186,7 @@ public partial class ResourceSyncService : IResourceSyncService
     /// <returns>true when the feed was drained; false when it stopped on an error and phase 2 should not run.</returns>
     private async Task<bool> SyncResourceChanges(AppDbContext dbContext, ILease lease, ResourceRegistryLease leaseData, Activity? activity, CancellationToken cancellationToken)
     {
-        await foreach (var page in await _resourceRegistry.StreamResourceChanges(leaseData.ResourceChangesNextPageLink, cancellationToken))
+        await foreach (var page in (await _resourceRegistry.StreamResourceChanges(leaseData.ResourceChangesNextPageLink, cancellationToken)).WithCancellation(cancellationToken))
         {
             try
             {
