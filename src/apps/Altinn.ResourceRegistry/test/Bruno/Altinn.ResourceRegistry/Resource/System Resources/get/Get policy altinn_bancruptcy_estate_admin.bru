@@ -1,15 +1,15 @@
 meta {
-  name: Get policy altinn_bancruptcy_estate_admin
-  type: http
-  seq: 9
+	name: Get policy altinn_bancruptcy_estate_admin
+	type: http
+	seq: 9
 }
 
 get {
-  url: {{baseUrl}}/resourceregistry/api/v1/resource/{{id}}/policy
-  body: none
-  auth: none
+	url: {{baseUrl}}/resourceregistry/api/v1/resource/{{id}}/policy
+	body: none
+	auth: none
 }
 
 vars:pre-request {
-  id: altinn_bankruptcy_estate_admin
+	id: altinn_bankruptcy_estate_admin
 }
