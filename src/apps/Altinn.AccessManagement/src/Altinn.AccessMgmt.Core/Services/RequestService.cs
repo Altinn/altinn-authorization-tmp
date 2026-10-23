@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Appsettings;
 using Altinn.AccessMgmt.Core.Notifications;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Utils.Helper;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -22,7 +24,8 @@ namespace Altinn.AccessMgmt.Core.Services;
 public class RequestService(
     AppDbContext db,
     IOptions<CoreAppsettings> appsettings,
-    IFeatureManager featureManager) : IRequestService
+    IFeatureManager featureManager,
+    IPolicyRetrievalPoint policyRetrievalPoint) : IRequestService
 {
     /// <inheritdoc/>
     public async Task<Result<RequestDto>> GetRequest(Guid requestId, CancellationToken ct = default)
@@ -177,7 +180,7 @@ public class RequestService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
+    public async Task<Result<RequestDto>> CreateResourceRequest(Guid toId, Guid fromId, Guid byId, Guid roleId, Guid resourceId, IEnumerable<string>? rightKeys, RequestStatus status = RequestStatus.Pending, CancellationToken ct = default)
     {
         var systemUserProblem = await ValidateRecipientNotSystemUser(toId, ct);
         if (systemUserProblem is { } resourceGuard)
@@ -206,7 +209,43 @@ public class RequestService(
            );
         var requestAssignment = requestAssignmentResult.Value;
 
-        return await CreateResourceRequest(requestAssignment, resourceId, status, ct);
+        return await CreateResourceRequest(requestAssignment, resourceId, rightKeys, status, ct);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ValidationProblemInstance?> ValidateResourceRightKeys(string resource, IEnumerable<string>? rightKeys, CancellationToken ct = default)
+    {
+        var requestedKeys = rightKeys?.ToList() ?? [];
+        if (requestedKeys.Count == 0)
+        {
+            return null;
+        }
+
+        var policy = DelegationCheckHelper.IsAppResource(resource, out string org, out string app)
+            ? await policyRetrievalPoint.GetPolicyAsync(org, app, ct)
+            : await policyRetrievalPoint.GetPolicyAsync(resource, ct);
+
+        // A key exists if any rule in the policy gives it. It is delegable if a rule gives it to a role or
+        // access package; keys given only to other subjects, such as the service owner org, are not.
+        HashSet<string> policyKeys = policy is null ? [] : [.. policy.Rules.SelectMany(rule => DelegationCheckHelper.CalculateRightKeys(rule, resource))];
+        HashSet<string> delegableKeys = policy is null ? [] : [.. DelegationCheckHelper.DecomposePolicy(policy, resource).Select(right => right.Key)];
+
+        ValidationErrorBuilder errors = default;
+        for (int i = 0; i < requestedKeys.Count; i++)
+        {
+            var key = requestedKeys[i];
+            if (key is null || !policyKeys.Contains(key))
+            {
+                errors.Add(ValidationErrors.RightKeyNotFound, $"/rightKeys/{i}", [new("rightKey", $"Right key '{key}' does not exist in the policy for resource '{resource}'.")]);
+            }
+            else if (!delegableKeys.Contains(key))
+            {
+                errors.Add(ValidationErrors.RightKeyNotDelegable, $"/rightKeys/{i}", [new("rightKey", $"Right key '{key}' cannot be delegated for resource '{resource}'.")]);
+            }
+        }
+
+        errors.TryBuild(out var problem);
+        return problem;
     }
 
     /// <inheritdoc/>
@@ -388,7 +427,7 @@ public class RequestService(
         return null;
     }
 
-    private async Task<Result<RequestDto>> CreateResourceRequest(RequestAssignment assignment, Guid resourceId, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
+    private async Task<Result<RequestDto>> CreateResourceRequest(RequestAssignment assignment, Guid resourceId, IEnumerable<string>? rightKeys, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
     {
         var request = await db.RequestAssignmentResources
             .Include(r => r.Assignment)
@@ -400,7 +439,8 @@ public class RequestService(
             {
                 Status = initialStatus,
                 AssignmentId = assignment.Id,
-                ResourceId = resourceId
+                ResourceId = resourceId,
+                RightKeys = NormalizeRightKeys(rightKeys),
             };
             db.RequestAssignmentResources.Add(request);
             await UpsertOutboxMessage(ct);
@@ -424,6 +464,16 @@ public class RequestService(
                 ct
             );
         }
+    }
+
+    /// <summary>
+    /// Removes duplicate keys, keeping the order they were given in. An empty list is stored as null,
+    /// so null always means that no specific rights were requested.
+    /// </summary>
+    private static List<string>? NormalizeRightKeys(IEnumerable<string>? rightKeys)
+    {
+        var keys = rightKeys?.Distinct(StringComparer.Ordinal).ToList();
+        return keys is { Count: > 0 } ? keys : null;
     }
 
     private async Task<Result<RequestDto>> CreatePackageRequest(RequestAssignment assignment, string package, RequestStatus initialStatus = RequestStatus.Pending, CancellationToken ct = default)
